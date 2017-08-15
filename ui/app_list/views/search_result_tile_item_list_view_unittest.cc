@@ -25,8 +25,6 @@
 namespace app_list {
 
 namespace {
-constexpr int kNumSearchResultTiles = 8;
-// Constants when the Play Store app search feature is enabled.
 constexpr int kMaxNumSearchResultTiles = 6;
 constexpr int kInstalledApps = 4;
 constexpr int kPlayStoreApps = 2;
@@ -36,20 +34,24 @@ class SearchResultTileItemListViewTest
     : public views::ViewsTestBase,
       public ::testing::WithParamInterface<bool> {
  public:
-  SearchResultTileItemListViewTest() {}
-  ~SearchResultTileItemListViewTest() override {}
+  SearchResultTileItemListViewTest() = default;
+  ~SearchResultTileItemListViewTest() override = default;
 
  protected:
   void CreateSearchResultTileItemListView() {
-    // Switches on/off the Play Store app search feature.
+    // Enable fullscreen app list for parameterized Play Store app search
+    // feature.
     if (IsPlayStoreAppSearchEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          app_list::features::kEnablePlayStoreAppSearch);
+      scoped_feature_list_.InitWithFeatures(
+          {features::kEnableFullscreenAppList,
+           features::kEnablePlayStoreAppSearch},
+          {});
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          app_list::features::kEnablePlayStoreAppSearch);
+      scoped_feature_list_.InitWithFeatures(
+          {features::kEnableFullscreenAppList},
+          {features::kEnablePlayStoreAppSearch});
     }
-    EXPECT_EQ(IsPlayStoreAppSearchEnabled(),
+    ASSERT_EQ(IsPlayStoreAppSearchEnabled(),
               features::IsPlayStoreAppSearchEnabled());
 
     // Sets up the views.
@@ -142,7 +144,7 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   // we added a separator for result type grouping.
   const int expected_child_count = IsPlayStoreAppSearchEnabled()
                                        ? kMaxNumSearchResultTiles * 2
-                                       : kNumSearchResultTiles;
+                                       : kMaxNumSearchResultTiles;
   EXPECT_EQ(expected_child_count, view()->child_count());
 
   // Tests item indexing by pressing TAB.
