@@ -2413,6 +2413,10 @@ test("base_unittests") {
     # TODO(krasin): remove CFI_CAST_CHECK, see https://crbug.com/626794.
     defines += [ "CFI_CAST_CHECK" ]
   }
+
+  if (use_cfi_diag && !use_cfi_recover) {
+    defines += [ "CFI_ENFORCEMENT_DIAGNOSTIC" ]
+  }
 }
 
 action("build_date") {
