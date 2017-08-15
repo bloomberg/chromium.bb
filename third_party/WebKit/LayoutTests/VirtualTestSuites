@@ -414,16 +414,6 @@
     "args": ["--enable-features=AsmJsToWebAssembly"]
   },
   {
-    "prefix": "service-worker-navigation-preload-disabled",
-    "base": "webexposed",
-    "args": ["--disable-features=ServiceWorkerNavigationPreload"]
-  },
-  {
-    "prefix": "service-worker-navigation-preload-disabled",
-    "base": "http/tests/serviceworker/webexposed",
-    "args": ["--disable-features=ServiceWorkerNavigationPreload"]
-  },
-  {
     "prefix": "service-worker-script-streaming",
     "base": "external/wpt/service-workers",
     "args": ["--enable-features=ServiceWorkerScriptStreaming"]

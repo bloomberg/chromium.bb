@@ -71,7 +71,6 @@ CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT
 extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
-CONTENT_EXPORT extern const base::Feature kServiceWorkerNavigationPreload;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerScriptStreaming;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSignInProcessIsolation;

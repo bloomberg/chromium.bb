@@ -5,7 +5,6 @@
 // TODO(falken): Revise link when this lands in the spec:
 // https://github.com/w3c/ServiceWorker/issues/920
 [
-    RuntimeEnabled=ServiceWorkerNavigationPreload,
     Exposed=(Window,Worker)
 ] interface NavigationPreloadManager {
     // TODO(mgiuca): Put SecureContext on the interface, not individual methods.

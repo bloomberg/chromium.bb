@@ -1552,12 +1552,6 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     ServiceWorkerBrowserTest::SetUpOnMainThread();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kEnableFeatures,
-        features::kServiceWorkerNavigationPreload.name);
-  }
-
  protected:
   static const std::string kNavigationPreloadHeaderName;
   static const std::string kEnableNavigationPreloadScript;
