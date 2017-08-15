@@ -1022,10 +1022,9 @@ void BlinkTestRunner::OnTryLeakDetection() {
   blink::WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
 
   DCHECK(!main_frame->IsLoading());
-  if (main_frame->IsWebLocalFrame()) {
-    DCHECK_EQ(GURL(url::kAboutBlankURL),
-              GURL(main_frame->ToWebLocalFrame()->GetDocument().Url()));
-  }
+  DCHECK(main_frame->IsWebLocalFrame());
+  DCHECK_EQ(GURL(url::kAboutBlankURL),
+            GURL(main_frame->ToWebLocalFrame()->GetDocument().Url()));
 
   leak_detector_->TryLeakDetection(main_frame);
 }

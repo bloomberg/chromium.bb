@@ -63,7 +63,8 @@ class WebLeakDetector {
  public:
   virtual ~WebLeakDetector() {}
 
-  BLINK_EXPORT static WebLeakDetector* Create(WebLeakDetectorClient*);
+  BLINK_EXPORT static WebLeakDetector* Create(WebLeakDetectorClient*,
+                                              WebFrame*);
 
   // Leak detection is performed in two stages,
   // |prepareForLeakDetection()| and |collectGarbageAndReport()|.
@@ -81,7 +82,7 @@ class WebLeakDetector {
 
   // Perform initial stage of preparing for leak detection,
   // releasing references to resources held globally.
-  virtual void PrepareForLeakDetection(WebFrame*) = 0;
+  virtual void PrepareForLeakDetection() = 0;
 
   // Garbage collect Blink's heaps and report leak counts.
   // |WebLeakDetectorClient::onLeakDetectionComplete()| is called
