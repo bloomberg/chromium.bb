@@ -1005,6 +1005,15 @@ void ThreadState::CompleteSweep() {
   PostSweep();
 }
 
+BlinkGCObserver::BlinkGCObserver(ThreadState* thread_state)
+    : thread_state_(thread_state) {
+  thread_state_->AddObserver(this);
+}
+
+BlinkGCObserver::~BlinkGCObserver() {
+  thread_state_->RemoveObserver(this);
+}
+
 void ThreadState::PostSweep() {
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
@@ -1080,6 +1089,9 @@ void ThreadState::PostSweep() {
   }
 
   gc_age_++;
+
+  for (const auto& observer : observers_)
+    observer->OnCompleteSweepDone();
 }
 
 #if DCHECK_IS_ON()
@@ -1170,6 +1182,18 @@ void ThreadState::LeaveSafePoint() {
   DCHECK(CheckThread());
   stack_state_ = BlinkGC::kHeapPointersOnStack;
   ClearSafePointScopeMarker();
+}
+
+void ThreadState::AddObserver(BlinkGCObserver* observer) {
+  DCHECK(observer);
+  DCHECK(observers_.find(observer) == observers_.end());
+  observers_.insert(observer);
+}
+
+void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
+  DCHECK(observer);
+  DCHECK(observers_.find(observer) != observers_.end());
+  observers_.erase(observer);
 }
 
 void ThreadState::ReportMemoryToV8() {
