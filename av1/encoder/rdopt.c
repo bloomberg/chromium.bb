@@ -58,8 +58,6 @@
 #include "av1/encoder/tokenize.h"
 #if CONFIG_PVQ
 #include "av1/encoder/pvq_encoder.h"
-#endif  // CONFIG_PVQ
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
 #include "av1/common/pvq.h"
 #endif  // CONFIG_PVQ
 #if CONFIG_DUAL_FILTER
@@ -669,7 +667,7 @@ static INLINE int write_uniform_cost(int n, int v) {
 #define FAST_EXT_TX_CORR_MARGIN 0.5
 #define FAST_EXT_TX_EDST_MARGIN 0.3
 
-#if CONFIG_CDEF_DIST
+#if CONFIG_DIST_8X8
 static uint64_t cdef_dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                     int sstride, int coeff_shift) {
   uint64_t svar = 0;
@@ -713,9 +711,7 @@ static uint64_t cdef_dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
 
   return dist;
 }
-#endif  // CONFIG_CDEF_DIST
 
-#if CONFIG_DAALA_DIST
 static int od_compute_var_4x4(uint16_t *x, int stride) {
   int sum;
   int s2;
@@ -919,103 +915,83 @@ static double od_compute_dist_diff(uint16_t *x, int16_t *e, int bsize_w,
   }
   return sum;
 }
-#endif  // CONFIG_DAALA_DIST
 
-#if CONFIG_DIST_8X8
-#define NEW_FUTURE_DIST 0
-int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
+int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
                      const uint8_t *src, int src_stride, const uint8_t *dst,
                      int dst_stride, const BLOCK_SIZE tx_bsize, int bsw,
                      int bsh, int visible_w, int visible_h, int qindex) {
   int64_t d = 0;
-
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
   int i, j;
+  const MACROBLOCKD *xd = &x->e_mbd;
 
   DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, uint16_t, rec[MAX_TX_SQUARE]);
-  (void)cpi;
-  (void)tx_bsize;
-#endif  // CONFIG_DAALA_DIST || NEW_FUTURE_DIST
 
-#if !CONFIG_HIGHBITDEPTH
-  (void)xd;
-#endif
-
-#if !CONFIG_DAALA_DIST
-  (void)qindex;
-#endif
-
-#if !CONFIG_DAALA_DIST || !NEW_FUTURE_DIST
-  (void)xd;
-  (void)bsw, (void)bsh;
-  (void)visible_w, (void)visible_h;
-#endif
-
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
-  assert((bsw & 0x07) == 0);
-  assert((bsh & 0x07) == 0);
+  if (x->tune_metric == AOM_TUNE_CDEF_DIST ||
+      x->tune_metric == AOM_TUNE_DAALA_DIST) {
+    assert((bsw & 0x07) == 0);
+    assert((bsh & 0x07) == 0);
 
 #if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < bsh; j++)
-      for (i = 0; i < bsw; i++)
-        orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
-
-    if ((bsw == visible_w) && (bsh == visible_h)) {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       for (j = 0; j < bsh; j++)
         for (i = 0; i < bsw; i++)
-          rec[j * bsw + i] = CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i];
-    } else {
-      for (j = 0; j < visible_h; j++)
-        for (i = 0; i < visible_w; i++)
-          rec[j * bsw + i] = CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i];
+          orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
 
-      if (visible_w < bsw) {
+      if ((bsw == visible_w) && (bsh == visible_h)) {
         for (j = 0; j < bsh; j++)
-          for (i = visible_w; i < bsw; i++)
-            rec[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
-      }
-
-      if (visible_h < bsh) {
-        for (j = visible_h; j < bsh; j++)
           for (i = 0; i < bsw; i++)
-            rec[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
-      }
-    }
-  } else {
-#endif
-    for (j = 0; j < bsh; j++)
-      for (i = 0; i < bsw; i++) orig[j * bsw + i] = src[j * src_stride + i];
+            rec[j * bsw + i] = CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i];
+      } else {
+        for (j = 0; j < visible_h; j++)
+          for (i = 0; i < visible_w; i++)
+            rec[j * bsw + i] = CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i];
 
-    if ((bsw == visible_w) && (bsh == visible_h)) {
-      for (j = 0; j < bsh; j++)
-        for (i = 0; i < bsw; i++) rec[j * bsw + i] = dst[j * dst_stride + i];
+        if (visible_w < bsw) {
+          for (j = 0; j < bsh; j++)
+            for (i = visible_w; i < bsw; i++)
+              rec[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
+        }
+
+        if (visible_h < bsh) {
+          for (j = visible_h; j < bsh; j++)
+            for (i = 0; i < bsw; i++)
+              rec[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
+        }
+      }
     } else {
-      for (j = 0; j < visible_h; j++)
-        for (i = 0; i < visible_w; i++)
-          rec[j * bsw + i] = dst[j * dst_stride + i];
+#endif
+      for (j = 0; j < bsh; j++)
+        for (i = 0; i < bsw; i++) orig[j * bsw + i] = src[j * src_stride + i];
 
-      if (visible_w < bsw) {
+      if ((bsw == visible_w) && (bsh == visible_h)) {
         for (j = 0; j < bsh; j++)
-          for (i = visible_w; i < bsw; i++)
-            rec[j * bsw + i] = src[j * src_stride + i];
-      }
+          for (i = 0; i < bsw; i++) rec[j * bsw + i] = dst[j * dst_stride + i];
+      } else {
+        for (j = 0; j < visible_h; j++)
+          for (i = 0; i < visible_w; i++)
+            rec[j * bsw + i] = dst[j * dst_stride + i];
 
-      if (visible_h < bsh) {
-        for (j = visible_h; j < bsh; j++)
-          for (i = 0; i < bsw; i++) rec[j * bsw + i] = src[j * src_stride + i];
+        if (visible_w < bsw) {
+          for (j = 0; j < bsh; j++)
+            for (i = visible_w; i < bsw; i++)
+              rec[j * bsw + i] = src[j * src_stride + i];
+        }
+
+        if (visible_h < bsh) {
+          for (j = visible_h; j < bsh; j++)
+            for (i = 0; i < bsw; i++)
+              rec[j * bsw + i] = src[j * src_stride + i];
+        }
       }
-    }
 #if CONFIG_HIGHBITDEPTH
-  }
+    }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_DAALA_DIST || NEW_FUTURE_DIST
+  }
 
-#if CONFIG_DAALA_DIST
-  d = (int64_t)od_compute_dist(orig, rec, bsw, bsh, qindex);
-#elif CONFIG_CDEF_DIST
-  {
+  if (x->tune_metric == AOM_TUNE_DAALA_DIST) {
+    d = (int64_t)od_compute_dist(orig, rec, bsw, bsh, qindex);
+  } else if (x->tune_metric == AOM_TUNE_CDEF_DIST) {
     int coeff_shift = AOMMAX(xd->bd - 8, 0);
 
     for (i = 0; i < bsh; i += 8) {
@@ -1028,95 +1004,70 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       d = ((uint64_t)d) >> 2 * coeff_shift;
 #endif
+  } else {
+    // Otherwise, MSE by default
+    unsigned sse;
+    // TODO(Any): Use even faster function which does not calculate variance
+    cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+    d = sse;
   }
-#elif NEW_FUTURE_DIST
-  // Call new 8x8-wise distortion function here, for example
-  for (i = 0; i < bsh; i += 8) {
-    for (j = 0; j < bsw; j += 8) {
-      d +=
-          av1_compute_dist_8x8(&orig[i * bsw + j], &rec[i * bsw + j], bsw, bsh);
-    }
-  }
-#else
-  // Otherwise, MSE by default
-  unsigned sse;
-  // TODO(Any): Use even faster function which does not calculate variance
-  cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
-  d = sse;
-#endif  // CONFIG_DAALA_DIST
 
   return d;
 }
 
-static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
+static int64_t av1_dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
                                  int src_stride, const int16_t *diff,
                                  int diff_stride, int bsw, int bsh,
                                  int visible_w, int visible_h, int qindex) {
   int64_t d = 0;
-
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
   int i, j;
+  const MACROBLOCKD *xd = &x->e_mbd;
 
   DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int16_t, diff16[MAX_TX_SQUARE]);
-#endif  // CONFIG_DAALA_DIST || NEW_FUTURE_DIST
 
-#if !CONFIG_HIGHBITDEPTH
-  (void)xd;
-#endif
-
-#if !CONFIG_DAALA_DIST
-  (void)qindex;
-#endif
-
-#if !CONFIG_DAALA_DIST || !NEW_FUTURE_DIST
-  (void)xd;
-  (void)src, (void)src_stride;
-  (void)bsw, (void)bsh;
-  (void)visible_w, (void)visible_h;
-#endif
-
-#if CONFIG_DAALA_DIST || NEW_FUTURE_DIST || CONFIG_CDEF_DIST
-  assert((bsw & 0x07) == 0);
-  assert((bsh & 0x07) == 0);
+  if (x->tune_metric == AOM_TUNE_CDEF_DIST ||
+      x->tune_metric == AOM_TUNE_DAALA_DIST) {
+    assert((bsw & 0x07) == 0);
+    assert((bsh & 0x07) == 0);
 
 #if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < bsh; j++)
-      for (i = 0; i < bsw; i++)
-        orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
-  } else {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < bsh; j++)
+        for (i = 0; i < bsw; i++)
+          orig[j * bsw + i] = CONVERT_TO_SHORTPTR(src)[j * src_stride + i];
+    } else {
 #endif
-    for (j = 0; j < bsh; j++)
-      for (i = 0; i < bsw; i++) orig[j * bsw + i] = src[j * src_stride + i];
+      for (j = 0; j < bsh; j++)
+        for (i = 0; i < bsw; i++) orig[j * bsw + i] = src[j * src_stride + i];
 #if CONFIG_HIGHBITDEPTH
-  }
+    }
 #endif  // CONFIG_HIGHBITDEPTH
 
-  if ((bsw == visible_w) && (bsh == visible_h)) {
-    for (j = 0; j < bsh; j++)
-      for (i = 0; i < bsw; i++) diff16[j * bsw + i] = diff[j * diff_stride + i];
-  } else {
-    for (j = 0; j < visible_h; j++)
-      for (i = 0; i < visible_w; i++)
-        diff16[j * bsw + i] = diff[j * diff_stride + i];
-
-    if (visible_w < bsw) {
+    if ((bsw == visible_w) && (bsh == visible_h)) {
       for (j = 0; j < bsh; j++)
-        for (i = visible_w; i < bsw; i++) diff16[j * bsw + i] = 0;
-    }
+        for (i = 0; i < bsw; i++)
+          diff16[j * bsw + i] = diff[j * diff_stride + i];
+    } else {
+      for (j = 0; j < visible_h; j++)
+        for (i = 0; i < visible_w; i++)
+          diff16[j * bsw + i] = diff[j * diff_stride + i];
 
-    if (visible_h < bsh) {
-      for (j = visible_h; j < bsh; j++)
-        for (i = 0; i < bsw; i++) diff16[j * bsw + i] = 0;
+      if (visible_w < bsw) {
+        for (j = 0; j < bsh; j++)
+          for (i = visible_w; i < bsw; i++) diff16[j * bsw + i] = 0;
+      }
+
+      if (visible_h < bsh) {
+        for (j = visible_h; j < bsh; j++)
+          for (i = 0; i < bsw; i++) diff16[j * bsw + i] = 0;
+      }
     }
   }
-#endif  // CONFIG_DAALA_DIST || NEW_FUTURE_DIST
 
-#if CONFIG_DAALA_DIST
-  d = (int64_t)od_compute_dist_diff(orig, diff16, bsw, bsh, qindex);
-#elif CONFIG_CDEF_DIST
-  {
+  if (x->tune_metric == AOM_TUNE_DAALA_DIST) {
+    d = (int64_t)od_compute_dist_diff(orig, diff16, bsw, bsh, qindex);
+  } else if (x->tune_metric == AOM_TUNE_CDEF_DIST) {
     int coeff_shift = AOMMAX(xd->bd - 8, 0);
     DECLARE_ALIGNED(16, uint16_t, dst16[MAX_TX_SQUARE]);
 
@@ -1134,19 +1085,10 @@ static int64_t av1_dist_8x8_diff(const MACROBLOCKD *xd, const uint8_t *src,
     }
     // Don't scale 'd' for HBD since it will be done by caller side for diff
     // input
+  } else {
+    // Otherwise, MSE by default
+    d = aom_sum_squares_2d_i16(diff, diff_stride, bsw, bsh);
   }
-#elif NEW_FUTURE_DIST
-  // Call new 8x8-wise distortion function (with diff input) here, for example
-  for (i = 0; i < bsh; i += 8) {
-    for (j = 0; j < bsw; j += 8) {
-      d += av1_compute_dist_8x8_diff(&orig[i * bsw + j], &diff16[i * bsw + j],
-                                     bsw, bsh);
-    }
-  }
-#else
-  // Otherwise, MSE by default
-  d = aom_sum_squares_2d_i16(diff, diff_stride, bsw, bsh);
-#endif  // CONFIG_DAALA_DIST
 
   return d;
 }
@@ -1802,7 +1744,7 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && plane == 0 && txb_cols >= 8 && txb_rows >= 8)
-    return av1_dist_8x8(cpi, xd, src, src_stride, dst, dst_stride, tx_bsize,
+    return av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, tx_bsize,
                         txb_cols, txb_rows, visible_cols, visible_rows,
                         x->qindex);
 #endif  // CONFIG_DIST_8X8
@@ -1851,7 +1793,7 @@ static int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
 
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8)
-    return av1_dist_8x8_diff(xd, src, src_stride, diff, diff_stride, txb_width,
+    return av1_dist_8x8_diff(x, src, src_stride, diff, diff_stride, txb_width,
                              txb_height, visible_cols, visible_rows, x->qindex);
   else
 #endif
@@ -2287,9 +2229,9 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_HIGHBITDEPTH
 
-  tmp1 = av1_dist_8x8(cpi, xd, src, src_stride, pred8, bw, bsize, bw, bh, bw,
-                      bh, qindex);
-  tmp2 = av1_dist_8x8(cpi, xd, src, src_stride, dst, dst_stride, bsize, bw, bh,
+  tmp1 = av1_dist_8x8(cpi, x, src, src_stride, pred8, bw, bsize, bw, bh, bw, bh,
+                      qindex);
+  tmp2 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, bsize, bw, bh,
                       bw, bh, qindex);
 
   if (!is_inter_block(mbmi)) {
@@ -3832,7 +3774,7 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
     use_activity_masking = mb->daala_enc.use_activity_masking;
 #endif  // CONFIG_PVQ
     // Daala-defined distortion computed for the block of 8x8 pixels
-    total_distortion = av1_dist_8x8(cpi, xd, src, src_stride, dst, dst_stride,
+    total_distortion = av1_dist_8x8(cpi, mb, src, src_stride, dst, dst_stride,
                                     BLOCK_8X8, 8, 8, 8, 8, mb->qindex)
                        << 4;
   }
@@ -5005,7 +4947,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       DECLARE_ALIGNED(16, uint8_t, pred8[8 * 8]);
 #endif  // CONFIG_HIGHBITDEPTH
 
-      dist_8x8 = av1_dist_8x8(cpi, xd, src, src_stride, dst, dst_stride,
+      dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
                               BLOCK_8X8, 8, 8, 8, 8, qindex) *
                  16;
       sum_rd_stats.sse = dist_8x8;
@@ -5062,7 +5004,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #if CONFIG_HIGHBITDEPTH
       }
 #endif  // CONFIG_HIGHBITDEPTH
-      dist_8x8 = av1_dist_8x8(cpi, xd, src, src_stride, pred8, 8, BLOCK_8X8, 8,
+      dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, pred8, 8, BLOCK_8X8, 8,
                               8, 8, 8, qindex) *
                  16;
       sum_rd_stats.dist = dist_8x8;

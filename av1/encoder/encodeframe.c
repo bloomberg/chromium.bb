@@ -3754,7 +3754,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
         dist_8x8 =
-            av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4 * src_stride - 4,
+            av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4 * src_stride - 4,
                          src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8,
                          x->qindex)
             << 4;
@@ -3939,7 +3939,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
-        dist_8x8 = av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4 * src_stride,
+        dist_8x8 = av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4 * src_stride,
                                 src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8,
                                 8, x->qindex)
                    << 4;
@@ -4121,7 +4121,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           decoded_8x8 = (uint8_t *)x->decoded_8x8;
 
         dist_8x8 =
-            av1_dist_8x8(cpi, xd, x->plane[0].src.buf - 4, src_stride,
+            av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4, src_stride,
                          decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8, x->qindex)
             << 4;
         sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;

@@ -71,7 +71,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     OUTPUT_STATUS output_status);
 
 #if CONFIG_DIST_8X8
-int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
+int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
                      const uint8_t *src, int src_stride, const uint8_t *dst,
                      int dst_stride, const BLOCK_SIZE tx_bsize, int bsw,
                      int bsh, int visible_w, int visible_h, int qindex);
