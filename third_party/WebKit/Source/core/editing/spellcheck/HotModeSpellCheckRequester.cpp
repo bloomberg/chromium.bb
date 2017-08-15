@@ -35,23 +35,33 @@ EphemeralRange AdjacentWordIfExists(const Position& pos) {
   return EphemeralRange(word_start.DeepEquivalent(), word_end.DeepEquivalent());
 }
 
-EphemeralRange CurrentWordIfTypingInPartialWord(const Element& editable) {
+// Returns a pair that contains:
+// - The boolean indicates whether spell checking is prevented by the last
+//   typing command (e.g., typing in partial word, during composition, etc.);
+// - The EphemeralRange is non-null only when spell checking is prevented, in
+//   which case it is the range of text that may contain stale spell check
+//   markers that should be cleared due to typing.
+std::pair<bool, EphemeralRange> IsSpellCheckingPreventedByTyping(
+    const Element& editable) {
   const LocalFrame& frame = *editable.GetDocument().GetFrame();
   const SelectionInDOMTree& selection =
       frame.Selection().GetSelectionInDOMTree();
   if (!selection.IsCaret())
-    return EphemeralRange();
+    return {};
   if (RootEditableElementOf(selection.Base()) != &editable)
-    return EphemeralRange();
+    return {};
 
   CompositeEditCommand* last_command = frame.GetEditor().LastEditCommand();
   if (!last_command || !last_command->IsTypingCommand())
-    return EphemeralRange();
+    return {};
+  if (ToTypingCommand(last_command)->PreventsSpellChecking())
+    return {true, AdjacentWordIfExists(selection.Base())};
   if (!last_command->EndingSelection().IsValidFor(*frame.GetDocument()))
-    return EphemeralRange();
+    return {};
   if (last_command->EndingSelection().AsSelection() != selection)
-    return EphemeralRange();
-  return AdjacentWordIfExists(selection.Base());
+    return {};
+  const EphemeralRange& word = AdjacentWordIfExists(selection.Base());
+  return {word.IsNotNull(), word};
 }
 
 bool IsUnderActiveEditing(const Element& editable, const Position& position) {
@@ -118,11 +128,14 @@ void HotModeSpellCheckRequester::CheckSpellingAt(const Position& position) {
   if (!IsUnderActiveEditing(*root_editable, position))
     return;
 
-  const EphemeralRange& current_word =
-      CurrentWordIfTypingInPartialWord(*root_editable);
-  if (current_word.IsNotNull()) {
-    root_editable->GetDocument().Markers().RemoveMarkersInRange(
-        current_word, DocumentMarker::MisspellingMarkers());
+  const std::pair<bool, EphemeralRange>& prevented =
+      IsSpellCheckingPreventedByTyping(*root_editable);
+  if (prevented.first) {
+    const EphemeralRange& stale_marker_range = prevented.second;
+    if (stale_marker_range.IsNotNull()) {
+      root_editable->GetDocument().Markers().RemoveMarkersInRange(
+          stale_marker_range, DocumentMarker::MisspellingMarkers());
+    }
     return;
   }
 
