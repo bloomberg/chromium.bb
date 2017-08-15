@@ -304,7 +304,7 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
   frame_view->UpdateAllLifecyclePhases();
 
   LayoutObject* div_with_transform =
-      GetDocument().getElementById("divWithTransform")->GetLayoutObject();
+      GetLayoutObjectByElementId("divWithTransform");
   LayoutObject* child_layout_view = ChildDocument().GetLayoutView();
   LayoutObject* inner_div_with_transform =
       ChildDocument().getElementById("transform")->GetLayoutObject();
@@ -384,8 +384,7 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
   EXPECT_FALSE(GetDocument().View()->IsHiddenForThrottling());
   EXPECT_TRUE(ChildDocument().View()->IsHiddenForThrottling());
 
-  auto* transform =
-      GetDocument().getElementById("transform")->GetLayoutObject();
+  auto* transform = GetLayoutObjectByElementId("transform");
   auto* iframe_layout_view = ChildDocument().GetLayoutView();
   auto* iframe_transform =
       ChildDocument().getElementById("iframeTransform")->GetLayoutObject();
@@ -664,8 +663,7 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
       "  <div id='contents'></div>"
       "</div>");
 
-  auto* perspective =
-      GetDocument().getElementById("perspective")->GetLayoutObject();
+  auto* perspective = GetLayoutObjectByElementId("perspective");
   EXPECT_EQ(
       TransformationMatrix().ApplyPerspective(100),
       perspective->FirstFragment()->PaintProperties()->Perspective()->Matrix());
