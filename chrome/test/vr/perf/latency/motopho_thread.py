@@ -7,6 +7,10 @@ import subprocess
 import threading
 
 
+MIN_VALID_LATENCY = 10
+MAX_VALID_LATENCY = 1000
+
+
 class MotophoThread(threading.Thread):
   """Handles the running of the Motopho script and extracting results."""
   def __init__(self):
@@ -49,6 +53,27 @@ class MotophoThread(threading.Thread):
           if (len(self._latencies) > current_num_samples and
               len(self._correlations) > current_num_samples):
             break;
+      if not self._failed_iteration:
+        # Rarely, the reported latency will be lower than physically possible
+        # (Single digit latency when it should be impossible to get below the
+        # scan out latency of 16.7 ms) or impossibly high (tens of seconds when
+        # the test lasts < 10 seconds). Clearly, these results are invalid, so
+        # repeat as if we failed to get the latency at all.
+        # TODO(bsheedy): Figure out the root cause of this instead of working
+        # around it crbug.com/755596.
+        if self._latencies[-1] < MIN_VALID_LATENCY:
+          logging.error('Measured latency of %f lower than min of %d\n'
+                        'Logging raw output: %s', self._latencies[-1],
+                        MIN_VALID_LATENCY, motopho_output)
+          self._failed_iteration = True
+        elif self._latencies[-1] > MAX_VALID_LATENCY:
+          logging.error('Measured latency of %f higher than max of %d\n'
+                        'Logging raw output: %s', self._latencies[-1],
+                        MAX_VALID_LATENCY, motopho_output)
+          self._failed_iteration = True
+        if self._failed_iteration:
+          del self._latencies[-1]
+          del self._correlations[-1]
       self._EndIteration()
 
   def _WaitForIterationStart(self):
