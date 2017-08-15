@@ -47,11 +47,6 @@ cr.define('extension_pack_dialog_tests', function() {
     },
   };
 
-  var isElementVisible = function(element) {
-    var rect = element.getBoundingClientRect();
-    return rect.width * rect.height > 0;
-  };
-
   suite('ExtensionPackDialogTests', function() {
     /** @type {extensions.PackDialog} */
     var packDialog;
@@ -70,9 +65,9 @@ cr.define('extension_pack_dialog_tests', function() {
     test(assert(TestNames.Interaction), function() {
       var dialogElement = packDialog.$$('dialog');
 
-      expectFalse(isElementVisible(dialogElement));
+      expectFalse(extension_test_util.isElementVisible(dialogElement));
       packDialog.show();
-      expectTrue(isElementVisible(dialogElement));
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
       expectEquals('', packDialog.$$('#root-dir').value);
       MockInteractions.tap(packDialog.$$('#root-dir-browse'));
       expectTrue(!!mockDelegate.rootPromise);
@@ -110,7 +105,7 @@ cr.define('extension_pack_dialog_tests', function() {
       var dialogElement = packDialog.$$('dialog');
 
       packDialog.show();
-      expectTrue(isElementVisible(dialogElement));
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
@@ -128,7 +123,7 @@ cr.define('extension_pack_dialog_tests', function() {
             return PolymerTest.flushTasks();
           })
           .then(() => {
-            expectFalse(isElementVisible(dialogElement));
+            expectFalse(extension_test_util.isElementVisible(dialogElement));
           });
     });
 
@@ -138,7 +133,7 @@ cr.define('extension_pack_dialog_tests', function() {
       var alertElement;
 
       packDialog.show();
-      expectTrue(isElementVisible(dialogElement));
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
@@ -156,15 +151,15 @@ cr.define('extension_pack_dialog_tests', function() {
         // Make sure new alert and the appropriate buttons are visible.
         packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
         alertElement = packDialogAlert.$.dialog;
-        expectTrue(isElementVisible(alertElement));
-        expectTrue(isElementVisible(dialogElement));
+        expectTrue(extension_test_util.isElementVisible(alertElement));
+        expectTrue(extension_test_util.isElementVisible(dialogElement));
         expectFalse(packDialogAlert.$$('.cancel-button').hidden);
         expectTrue(packDialogAlert.$$('.action-button').hidden);
 
         // After cancel, original dialog is still open and values unchanged.
         MockInteractions.tap(packDialogAlert.$$('.cancel-button'));
-        expectFalse(isElementVisible(alertElement));
-        expectTrue(isElementVisible(dialogElement));
+        expectFalse(extension_test_util.isElementVisible(alertElement));
+        expectTrue(extension_test_util.isElementVisible(dialogElement));
         expectEquals(kRootPath, packDialog.$$('#root-dir').value);
       });
     });
@@ -175,7 +170,7 @@ cr.define('extension_pack_dialog_tests', function() {
       var alertElement;
 
       packDialog.show();
-      expectTrue(isElementVisible(dialogElement));
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
@@ -197,8 +192,8 @@ cr.define('extension_pack_dialog_tests', function() {
             // Make sure new alert and the appropriate buttons are visible.
             packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
             alertElement = packDialogAlert.$.dialog;
-            expectTrue(isElementVisible(alertElement));
-            expectTrue(isElementVisible(dialogElement));
+            expectTrue(extension_test_util.isElementVisible(alertElement));
+            expectTrue(extension_test_util.isElementVisible(dialogElement));
             expectFalse(packDialogAlert.$$('.cancel-button').hidden);
             expectFalse(packDialogAlert.$$('.action-button').hidden);
 
@@ -209,7 +204,7 @@ cr.define('extension_pack_dialog_tests', function() {
           })
           .then(() => {
             // Make sure packExtension is called again with the right params.
-            expectFalse(isElementVisible(alertElement));
+            expectFalse(extension_test_util.isElementVisible(alertElement));
             expectEquals(
                 mockDelegate.flag, mockDelegate.mockResponse.override_flags);
           });

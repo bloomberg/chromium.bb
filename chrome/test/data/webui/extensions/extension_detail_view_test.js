@@ -8,6 +8,7 @@ cr.define('extension_detail_view_tests', function() {
   var TestNames = {
     Layout: 'layout',
     ClickableElements: 'clickable elements',
+    Indicator: 'indicator',
   };
 
   suite('ExtensionItemTest', function() {
@@ -143,6 +144,14 @@ cr.define('extension_detail_view_tests', function() {
           [extensionData.id]);
       mockDelegate.testClickingCalls(
           item.$$('#remove-extension'), 'deleteItem', [extensionData.id]);
+    });
+
+    test(assert(TestNames.Indicator), function() {
+      var indicator = item.$$('cr-tooltip-icon');
+      expectTrue(indicator.hidden);
+      item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+      Polymer.dom.flush();
+      expectFalse(indicator.hidden);
     });
   });
 
