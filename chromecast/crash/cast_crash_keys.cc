@@ -83,12 +83,6 @@ size_t RegisterCastCrashKeys() {
       // Temporary for https://crbug.com/612711.
       {"aci_wrong_sp_extension_id", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/668633.
-      {"swdh_set_hosted_version_worker_pid", ::crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_host_pid", ::crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_is_new_process", ::crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_restart_count", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
   };

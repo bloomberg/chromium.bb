@@ -170,12 +170,6 @@ size_t RegisterCrashKeysHelper() {
       {"postmessage_dst_url", kLargeSize},
       {"postmessage_script_info", kLargeSize},
 
-      // Temporary for https://crbug.com/668633.
-      {"swdh_set_hosted_version_worker_pid", kSmallSize},
-      {"swdh_set_hosted_version_host_pid", kSmallSize},
-      {"swdh_set_hosted_version_is_new_process", kSmallSize},
-      {"swdh_set_hosted_version_restart_count", kSmallSize},
-
       // Temporary for https://crbug.com/697745.
       {"engine_params", kMediumSize},
       {"engine1_params", kMediumSize},
