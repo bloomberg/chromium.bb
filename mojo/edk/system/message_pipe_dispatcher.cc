@@ -288,7 +288,8 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
 }
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
-  DCHECK(port_closed_ && !in_transit_);
+  // TODO(crbug.com/740044): Remove this CHECK.
+  CHECK(port_closed_ && !in_transit_);
 }
 
 MojoResult MessagePipeDispatcher::CloseNoLock() {
