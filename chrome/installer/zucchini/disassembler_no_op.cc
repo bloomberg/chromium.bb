@@ -25,7 +25,7 @@ std::string DisassemblerNoOp::GetExeTypeString() const {
   return "(Unknown)";
 }
 
-std::vector<ReferenceGroup> DisassemblerNoOp::GetReferenceGroups() const {
+std::vector<ReferenceGroup> DisassemblerNoOp::MakeReferenceGroups() const {
   return std::vector<ReferenceGroup>();
 }
 
