@@ -22,7 +22,6 @@
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

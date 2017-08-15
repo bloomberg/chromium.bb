@@ -18,7 +18,6 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 

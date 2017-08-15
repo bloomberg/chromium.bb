@@ -94,7 +94,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h",
   "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
-  "+third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h",
