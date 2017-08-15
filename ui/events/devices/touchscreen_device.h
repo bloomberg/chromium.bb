@@ -5,8 +5,11 @@
 #ifndef UI_EVENTS_DEVICES_TOUCHSCREEN_DEVICE_H_
 #define UI_EVENTS_DEVICES_TOUCHSCREEN_DEVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/gfx/geometry/size.h"
@@ -33,8 +36,10 @@ struct EVENTS_DEVICES_EXPORT TouchscreenDevice : public InputDevice {
   gfx::Size size;    // Size of the touch screen area.
   int touch_points;  // The number of touch points this device supports (0 if
                      // unknown).
-  bool is_stylus;    // True if the specified touchscreen device is stylus
-                     // capable.
+  // True if the specified touchscreen device is stylus capable.
+  bool is_stylus = false;
+  // Id of the display the touch device targets.
+  int64_t target_display_id = display::kInvalidDisplayId;
 };
 
 }  // namespace ui

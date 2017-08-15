@@ -7,29 +7,28 @@
 
 #include <stdint.h>
 
-#include "ui/display/manager/chromeos/mojo/touch_device_transform.mojom.h"
-#include "ui/display/manager/chromeos/touch_device_transform.h"
+#include "ui/events/devices/mojo/touch_device_transform.mojom.h"
+#include "ui/events/devices/touch_device_transform.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<display::mojom::TouchDeviceTransformDataView,
-                    display::TouchDeviceTransform> {
+struct StructTraits<ui::mojom::TouchDeviceTransformDataView,
+                    ui::TouchDeviceTransform> {
  public:
-  static int64_t display_id(const display::TouchDeviceTransform& r) {
+  static int64_t display_id(const ui::TouchDeviceTransform& r) {
     return r.display_id;
   }
-  static int32_t device_id(const display::TouchDeviceTransform& r) {
+  static int32_t device_id(const ui::TouchDeviceTransform& r) {
     return r.device_id;
   }
-  static const gfx::Transform& transform(
-      const display::TouchDeviceTransform& r) {
+  static const gfx::Transform& transform(const ui::TouchDeviceTransform& r) {
     return r.transform;
   }
 
-  static bool Read(display::mojom::TouchDeviceTransformDataView data,
-                   display::TouchDeviceTransform* out) {
+  static bool Read(ui::mojom::TouchDeviceTransformDataView data,
+                   ui::TouchDeviceTransform* out) {
     out->display_id = data.display_id();
     out->device_id = data.device_id();
     if (!data.ReadTransform(&(out->transform)))

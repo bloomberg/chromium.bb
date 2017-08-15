@@ -68,5 +68,12 @@ void DeviceDataManagerTestAPI::SetTouchpadDevices(
   NOTREACHED();
 }
 
+void DeviceDataManagerTestAPI::UpdateTouchInfoForDisplay(
+    int64_t target_display_id,
+    int touch_device_id,
+    const gfx::Transform& touch_transformer) {
+  NOTREACHED();
+}
+
 }  // namespace test
 }  // namespace ui

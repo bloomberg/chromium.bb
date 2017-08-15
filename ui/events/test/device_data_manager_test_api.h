@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "ui/events/devices/events_devices_export.h"
 
+namespace gfx {
+class Transform;
+}
+
 namespace ui {
 
 class DeviceDataManager;
@@ -43,6 +47,10 @@ class DeviceDataManagerTestAPI {
   void SetKeyboardDevices(const std::vector<InputDevice>& devices);
   void SetMouseDevices(const std::vector<InputDevice>& devices);
   void SetTouchpadDevices(const std::vector<InputDevice>& devices);
+
+  void UpdateTouchInfoForDisplay(int64_t target_display_id,
+                                 int touch_device_id,
+                                 const gfx::Transform& touch_transformer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManagerTestAPI);

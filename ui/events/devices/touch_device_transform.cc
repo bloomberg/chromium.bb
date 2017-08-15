@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/manager/chromeos/touch_device_transform.h"
+#include "ui/events/devices/touch_device_transform.h"
 
-namespace display {
+namespace ui {
 
 TouchDeviceTransform::TouchDeviceTransform() = default;
 
 TouchDeviceTransform::~TouchDeviceTransform() = default;
 
-}  // namespace display
+}  // namespace ui

@@ -6,8 +6,7 @@
 
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "ui/display/manager/chromeos/mojo/touch_device_transform_struct_traits.h"
-#include "ui/display/manager/chromeos/touch_device_transform.h"
+#include "ui/events/devices/touch_device_transform.h"
 
 namespace ash {
 
@@ -23,7 +22,7 @@ TouchTransformSetterMus::~TouchTransformSetterMus() {}
 
 void TouchTransformSetterMus::ConfigureTouchDevices(
     const std::map<int32_t, double>& scales,
-    const std::vector<display::TouchDeviceTransform>& transforms) {
+    const std::vector<ui::TouchDeviceTransform>& transforms) {
   if (!touch_device_server_)
     return;  // May be null in tests.
 

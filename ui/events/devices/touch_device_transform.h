@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_DEVICE_TRANSFORM_H_
-#define UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_DEVICE_TRANSFORM_H_
+#ifndef UI_EVENTS_DEVICES_TOUCH_DEVICE_TRANSFORM_H_
+#define UI_EVENTS_DEVICES_TOUCH_DEVICE_TRANSFORM_H_
 
 #include <stdint.h>
 
-#include "ui/display/manager/display_manager_export.h"
+#include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/transform.h"
 
-namespace display {
+namespace ui {
 
-struct DISPLAY_MANAGER_EXPORT TouchDeviceTransform {
+struct EVENTS_DEVICES_EXPORT TouchDeviceTransform {
   TouchDeviceTransform();
   ~TouchDeviceTransform();
 
@@ -21,6 +21,6 @@ struct DISPLAY_MANAGER_EXPORT TouchDeviceTransform {
   gfx::Transform transform;
 };
 
-}  // namespace display
+}  // namespace ui
 
-#endif  // UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_DEVICE_TRANSFORM_H_
+#endif  // UI_EVENTS_DEVICES_TOUCH_DEVICE_TRANSFORM_H_

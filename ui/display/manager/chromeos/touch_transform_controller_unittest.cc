@@ -15,6 +15,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen_base.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/test/device_data_manager_test_api.h"
 
 namespace display {
 namespace test {
@@ -169,13 +170,14 @@ TEST_F(TouchTransformControllerTest, MirrorModeLetterboxing) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
                         internal_touchscreen));
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
                         external_touchscreen));
@@ -235,13 +237,14 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
                         internal_touchscreen));
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
                         external_touchscreen));
@@ -306,12 +309,13 @@ TEST_F(TouchTransformControllerTest, SoftwareMirrorMode) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display1_info.id(), display1_touchscreen.id,
       GetTouchTransform(display1_info, display1_info, display1_touchscreen));
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display1_info.id(), display2_touchscreen.id,
       GetTouchTransform(display1_info, display2_info, display2_touchscreen));
 
@@ -372,12 +376,13 @@ TEST_F(TouchTransformControllerTest, ExtendedMode) {
   ui::TouchscreenDevice touchscreen2 = CreateTouchscreenDevice(6, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display1.id(), touchscreen1.id,
       GetTouchTransform(display1, display1, touchscreen1));
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display2.id(), touchscreen2.id,
       GetTouchTransform(display2, display2, touchscreen2));
 
@@ -449,13 +454,14 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
       CreateTouchscreenDevice(kTouchId2, kDisplaySize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
   // Mirror displays. Touch screen 2 is associated to display 1.
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display1.id(), touchscreen1.id,
       GetTouchTransform(display1, display1, touchscreen1));
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display1.id(), touchscreen2.id,
       GetTouchTransform(display1, display2, touchscreen2));
 
@@ -489,7 +495,7 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
   EXPECT_NEAR(1200, y, 0.5);
 
   // Remove mirroring of displays.
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display2.id(), touchscreen2.id,
       GetTouchTransform(display2, display2, touchscreen2));
 
@@ -532,8 +538,9 @@ TEST_F(TouchTransformControllerTest, AccurateUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
       GetTouchTransform(display, display, touchscreen));
 
@@ -575,8 +582,9 @@ TEST_F(TouchTransformControllerTest, ErrorProneUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
       GetTouchTransform(display, display, touchscreen));
 
@@ -620,8 +628,9 @@ TEST_F(TouchTransformControllerTest, ResolutionChangeUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
       GetTouchTransform(display, display, touchscreen));
 
@@ -660,8 +669,9 @@ TEST_F(TouchTransformControllerTest, DifferentBoundsUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       display.id(), touchscreen.id,
       GetTouchTransform(display, display, touchscreen));
 
@@ -714,8 +724,9 @@ TEST_F(TouchTransformControllerTest, LetterboxingUserTouchCalibration) {
   TouchCalibrationData touch_data(user_input, kNativeDisplaySize);
   internal_display_info.SetTouchCalibrationData(touch_data);
   EXPECT_TRUE(internal_display_info.has_touch_calibration_data());
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
                         internal_touchscreen));
@@ -785,8 +796,9 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
   TouchCalibrationData touch_data(user_input, kNativeDisplaySize);
   internal_display_info.SetTouchCalibrationData(touch_data);
   EXPECT_TRUE(internal_display_info.has_touch_calibration_data());
+  ui::test::DeviceDataManagerTestAPI test_api;
 
-  device_manager->UpdateTouchInfoForDisplay(
+  test_api.UpdateTouchInfoForDisplay(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
                         internal_touchscreen));

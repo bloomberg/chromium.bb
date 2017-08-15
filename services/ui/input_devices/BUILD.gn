@@ -25,6 +25,7 @@ source_set("input_devices") {
       "touch_device_server.cc",
       "touch_device_server.h",
     ]
+    deps += [ "//ui/display/manager" ]
   }
 }
 

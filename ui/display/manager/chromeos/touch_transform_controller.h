@@ -17,6 +17,7 @@
 
 namespace ui {
 struct TouchscreenDevice;
+struct TouchDeviceTransform;
 }
 
 namespace display {
@@ -25,8 +26,6 @@ class DisplayConfigurator;
 class DisplayManager;
 class ManagedDisplayInfo;
 class TouchTransformSetter;
-
-struct TouchDeviceTransform;
 
 namespace test {
 class TouchTransformControllerTest;
@@ -59,7 +58,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
     ~UpdateData();
 
     std::map<int32_t, double> device_to_scale;
-    std::vector<TouchDeviceTransform> touch_device_transforms;
+    std::vector<ui::TouchDeviceTransform> touch_device_transforms;
   };
 
   void UpdateTouchTransforms(UpdateData* data) const;
