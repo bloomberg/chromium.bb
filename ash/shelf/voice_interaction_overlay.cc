@@ -87,8 +87,6 @@ constexpr float kBackgroundLargeHeightDip = 540.0f;
 constexpr float kBackgroundCornerRadiusDip = 12.f;
 constexpr float kBackgroundPaddingDip = 6.f;
 constexpr int kBackgroundMorphDurationMs = 150;
-constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr SkColor kBackgroundFinalColor = static_cast<SkColor>(0xFFF5F5F5);
 
 constexpr int kHideDurationMs = 200;
 
@@ -228,26 +226,18 @@ class VoiceInteractionIconBackground : public ui::Layer,
         center_point_(
             gfx::PointF(kBackgroundSizeDip / 2, kBackgroundSizeDip / 2)),
         circle_layer_delegate_(base::MakeUnique<views::CircleLayerDelegate>(
-            kBackgroundColor,
-            kBackgroundSizeDip / 2)),
-        bg_circle_layer_delegate_(base::MakeUnique<views::CircleLayerDelegate>(
-            kBackgroundFinalColor,
+            SK_ColorWHITE,
             kBackgroundSizeDip / 2)),
         rect_layer_delegate_(base::MakeUnique<views::RectangleLayerDelegate>(
-            kBackgroundColor,
-            gfx::SizeF(small_size_))),
-        bg_rect_layer_delegate_(base::MakeUnique<views::RectangleLayerDelegate>(
-            kBackgroundFinalColor,
+            SK_ColorWHITE,
             gfx::SizeF(small_size_))) {
     set_name("VoiceInteractionOverlay:BACKGROUND_LAYER");
     SetBounds(gfx::Rect(0, 0, kBackgroundInitSizeDip, kBackgroundInitSizeDip));
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
 
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
-      AddPaintLayer(static_cast<PaintedShape>(i), true);
-      AddPaintLayer(static_cast<PaintedShape>(i), false);
-    }
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+      AddPaintLayer(static_cast<PaintedShape>(i));
 
     shadow_values_ =
         gfx::ShadowValue::MakeMdShadowValues(kBackgroundShadowElevationDip);
@@ -327,26 +317,18 @@ class VoiceInteractionIconBackground : public ui::Layer,
 
   typedef gfx::Transform PaintedShapeTransforms[PAINTED_SHAPE_COUNT];
 
-  void AddPaintLayer(PaintedShape painted_shape, bool is_background) {
+  void AddPaintLayer(PaintedShape painted_shape) {
     ui::LayerDelegate* delegate = nullptr;
     switch (painted_shape) {
       case TOP_LEFT_CIRCLE:
       case TOP_RIGHT_CIRCLE:
       case BOTTOM_RIGHT_CIRCLE:
       case BOTTOM_LEFT_CIRCLE:
-        if (is_background) {
-          delegate = bg_circle_layer_delegate_.get();
-        } else {
-          delegate = circle_layer_delegate_.get();
-        }
+        delegate = circle_layer_delegate_.get();
         break;
       case HORIZONTAL_RECT:
       case VERTICAL_RECT:
-        if (is_background) {
-          delegate = bg_rect_layer_delegate_.get();
-        } else {
-          delegate = rect_layer_delegate_.get();
-        }
+        delegate = rect_layer_delegate_.get();
         break;
       case PAINTED_SHAPE_COUNT:
         NOTREACHED() << "PAINTED_SHAPE_COUNT is not an actual shape type.";
@@ -364,27 +346,17 @@ class VoiceInteractionIconBackground : public ui::Layer,
     layer->SetMasksToBounds(false);
     layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
 
-    if (is_background) {
-      bg_painted_layers_[static_cast<int>(painted_shape)].reset(layer);
-    } else {
-      painted_layers_[static_cast<int>(painted_shape)].reset(layer);
-    }
+    painted_layers_[static_cast<int>(painted_shape)].reset(layer);
   }
 
   void SetTransforms(const PaintedShapeTransforms transforms) {
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
       painted_layers_[i]->SetTransform(transforms[i]);
-      bg_painted_layers_[i]->SetTransform(transforms[i]);
-    }
   }
 
   void SetPaintedLayersVisible(bool visible) {
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
       painted_layers_[i]->SetVisible(visible);
-      painted_layers_[i]->SetOpacity(1);
-      bg_painted_layers_[i]->SetVisible(visible);
-      bg_painted_layers_[i]->SetOpacity(1);
-    }
   }
 
   void CalculateCircleTransforms(const gfx::Size& size,
@@ -487,25 +459,6 @@ class VoiceInteractionIconBackground : public ui::Layer,
       ui::ScopedLayerAnimationSettings animation(animator);
       animation.SetPreemptionStrategy(preemption_strategy);
       animation.SetTweenType(tween);
-      animation.SetTransitionDuration(duration);
-      painted_layers_[i]->SetOpacity(0);
-      std::unique_ptr<ui::LayerAnimationElement> element =
-          ui::LayerAnimationElement::CreateTransformElement(transforms[i],
-                                                            duration);
-      ui::LayerAnimationSequence* sequence =
-          new ui::LayerAnimationSequence(std::move(element));
-
-      if (animation_observer)
-        sequence->AddObserver(animation_observer);
-
-      animator->StartAnimation(sequence);
-    }
-
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i) {
-      ui::LayerAnimator* animator = bg_painted_layers_[i]->GetAnimator();
-      ui::ScopedLayerAnimationSettings animation(animator);
-      animation.SetPreemptionStrategy(preemption_strategy);
-      animation.SetTweenType(tween);
       std::unique_ptr<ui::LayerAnimationElement> element =
           ui::LayerAnimationElement::CreateTransformElement(transforms[i],
                                                             duration);
@@ -549,7 +502,7 @@ class VoiceInteractionIconBackground : public ui::Layer,
     gfx::Canvas* canvas = recorder.canvas();
 
     cc::PaintFlags flags;
-    flags.setColor(kBackgroundColor);
+    flags.setColor(SK_ColorWHITE);
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow_values_));
@@ -564,11 +517,8 @@ class VoiceInteractionIconBackground : public ui::Layer,
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
   // ui::Layers for all of the painted shape layers that compose the morphing
-  // shape. We have two sets, one is rendered in the foreground, the other set
-  // behind. We use them to create an animated transition between two colors by
-  // fading out one set during transformation.
+  // shape.
   std::unique_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
-  std::unique_ptr<ui::Layer> bg_painted_layers_[PAINTED_SHAPE_COUNT];
 
   const gfx::Size large_size_;
 
@@ -579,11 +529,9 @@ class VoiceInteractionIconBackground : public ui::Layer,
 
   // ui::LayerDelegate to paint circles for all the circle layers.
   std::unique_ptr<views::CircleLayerDelegate> circle_layer_delegate_;
-  std::unique_ptr<views::CircleLayerDelegate> bg_circle_layer_delegate_;
 
   // ui::LayerDelegate to paint rectangles for all the rectangle layers.
   std::unique_ptr<views::RectangleLayerDelegate> rect_layer_delegate_;
-  std::unique_ptr<views::RectangleLayerDelegate> bg_rect_layer_delegate_;
 
   gfx::ShadowValues shadow_values_;
 
