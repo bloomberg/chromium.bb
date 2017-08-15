@@ -25,5 +25,5 @@ message UserActionEventProto {
   // These numbers are only comparable within a session.  To sequence events
   // across sessions, order by the |session_id| from the
   // ChromeUserMetricsExtension message.
-  optional int64 time = 2;
+  optional int64 time_sec = 2;
 }

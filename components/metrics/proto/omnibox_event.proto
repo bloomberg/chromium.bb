@@ -23,7 +23,7 @@ message OmniboxEventProto {
   // These numbers are only comparable within a session.  To sequence events
   // across sessions, order by the |session_id| from the
   // ChromeUserMetricsExtension message.
-  optional int64 time = 1;
+  optional int64 time_sec = 1;
 
   // The id of the originating tab for this omnibox interaction.
   // This is the current tab *unless* the user opened the target in a new tab.

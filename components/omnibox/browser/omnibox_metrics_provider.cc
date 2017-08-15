@@ -117,7 +117,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
       base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   OmniboxEventProto* omnibox_event = omnibox_events_cache.add_omnibox_event();
-  omnibox_event->set_time(metrics::MetricsLog::GetCurrentTime());
+  omnibox_event->set_time_sec(metrics::MetricsLog::GetCurrentTime());
   if (log.tab_id != -1) {
     // If we know what tab the autocomplete URL was opened in, log it.
     omnibox_event->set_tab_id(log.tab_id);
