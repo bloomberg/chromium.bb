@@ -1,6 +1,9 @@
+{% from 'methods.cpp.tmpl' import runtime_timer_scope_disabled_by_default %}
+
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
 void {{v8_class_or_partial}}::{{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {{ runtime_timer_scope_disabled_by_default(constant.rcs_counter) }}
   {% if constant.deprecate_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{constant.deprecate_as}});
   {% endif %}

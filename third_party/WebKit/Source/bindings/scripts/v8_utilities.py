@@ -432,6 +432,16 @@ def context_enabled_feature_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ContextEnabled')
 
 
+# [RuntimeCallStatsCounter]
+def rcs_counter_name(member, generic_counter_name):
+    extended_attribute_defined = 'RuntimeCallStatsCounter' in member.extended_attributes
+    if extended_attribute_defined:
+        counter = 'k' + member.extended_attributes['RuntimeCallStatsCounter']
+    else:
+        counter = generic_counter_name
+    return (counter, extended_attribute_defined)
+
+
 # [RuntimeEnabled]
 def runtime_enabled_feature_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes

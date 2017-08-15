@@ -20,6 +20,7 @@
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
@@ -285,6 +286,8 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_ConstructorCallback");
+
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceGarbageCollected", ExceptionMessages::NotEnoughArguments(1, info.Length())));
     return;
@@ -304,52 +307,76 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 } // namespace TestInterfaceGarbageCollectedV8Internal
 
 void V8TestInterfaceGarbageCollected::attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_attr1_Getter");
+
   TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
 }
 
 void V8TestInterfaceGarbageCollected::attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_attr1_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceGarbageCollected::sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_size_Getter");
+
   TestInterfaceGarbageCollectedV8Internal::sizeAttributeGetter(info);
 }
 
 void V8TestInterfaceGarbageCollected::funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_func");
+
   TestInterfaceGarbageCollectedV8Internal::funcMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_keys");
+
   TestInterfaceGarbageCollectedV8Internal::keysMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_entries");
+
   TestInterfaceGarbageCollectedV8Internal::entriesMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_forEach");
+
   TestInterfaceGarbageCollectedV8Internal::forEachMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_has");
+
   TestInterfaceGarbageCollectedV8Internal::hasMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_add");
+
   TestInterfaceGarbageCollectedV8Internal::addMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_clear");
+
   TestInterfaceGarbageCollectedV8Internal::clearMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_delete");
+
   TestInterfaceGarbageCollectedV8Internal::deleteMethod(info);
 }
 
 void V8TestInterfaceGarbageCollected::iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_iterator");
+
   TestInterfaceGarbageCollectedV8Internal::iteratorMethod(info);
 }
 
@@ -371,6 +398,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageColle
 };
 
 void V8TestInterfaceGarbageCollected::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceGarbageCollected_Constructor");
+
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceGarbageCollected"));
     return;

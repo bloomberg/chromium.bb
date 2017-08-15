@@ -18,6 +18,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -98,10 +99,14 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
 } // namespace SVGTestInterfaceV8Internal
 
 void V8SVGTestInterface::typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_SVGTestInterface_type_Getter");
+
   SVGTestInterfaceV8Internal::typeAttributeGetter(info);
 }
 
 void V8SVGTestInterface::typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_SVGTestInterface_type_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -204,6 +205,18 @@ config("blink_platform_config") {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+}
+
+declare_args() {
+  runtime_call_stats_count_everything = false
+}
+
+buildflag_header("rcs_count_everything") {
+  header = "RuntimeCallStatsCountEverything.h"
+
+  header_dir = "blink/platform/bindings"
+
+  flags = [ "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything" ]
 }
 
 config("blink_platform_implementation") {
@@ -1476,6 +1489,7 @@ component("platform") {
 
   public_deps = [
     ":make_platform_generated",
+    ":rcs_count_everything",
     "//base",
     "//cc",
     "//cc/animation",

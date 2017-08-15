@@ -25,6 +25,8 @@ v8::Local<v8::Function> ScriptFunction::BindToV8Function() {
 void ScriptFunction::CallCallback(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Data()->IsExternal());
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(args.GetIsolate(),
+                                               "Blink_CallCallback");
   ScriptFunction* script_function = static_cast<ScriptFunction*>(
       v8::Local<v8::External>::Cast(args.Data())->Value());
   ScriptValue result = script_function->Call(

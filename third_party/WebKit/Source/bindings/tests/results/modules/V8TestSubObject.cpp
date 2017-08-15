@@ -16,6 +16,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -120,20 +121,28 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
 } // namespace TestSubObjectV8Internal
 
 void V8TestSubObject::unforgeableStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableStringAttribute_Getter");
+
   TestSubObjectV8Internal::unforgeableStringAttributeAttributeGetter(info);
 }
 
 void V8TestSubObject::unforgeableStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableStringAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestSubObjectV8Internal::unforgeableStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestSubObject::unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableLongAttribute_Getter");
+
   TestSubObjectV8Internal::unforgeableLongAttributeAttributeGetter(info);
 }
 
 void V8TestSubObject::unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableLongAttribute_Setter");
+
   v8::Local<v8::Value> v8Value = info[0];
 
   TestSubObjectV8Internal::unforgeableLongAttributeAttributeSetter(v8Value, info);

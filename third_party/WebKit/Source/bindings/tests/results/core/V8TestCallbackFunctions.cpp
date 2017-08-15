@@ -20,6 +20,7 @@
 #include "bindings/core/v8/VoidCallbackFunction.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -200,38 +201,56 @@ static void customElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8
 } // namespace TestCallbackFunctionsV8Internal
 
 void V8TestCallbackFunctions::customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_customElementsCallbacksReadonlyAttribute_Getter");
+
   TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
 }
 
 void V8TestCallbackFunctions::returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_returnCallbackFunctionMethod");
+
   TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethod(info);
 }
 
 void V8TestCallbackFunctions::returnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_returnCallbackFunctionMethod2");
+
   TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2Method(info);
 }
 
 void V8TestCallbackFunctions::voidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionInArg");
+
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::voidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionInArg2");
+
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2Method(info);
 }
 
 void V8TestCallbackFunctions::voidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionWithReturnValueInArg");
+
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::voidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodOptionalCallbackFunctionInArg");
+
   TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::voidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodNullableCallbackFunctionInArg");
+
   TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::customElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_customElementCallbacksMethod");
+
   TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethod(info);
 }
 
