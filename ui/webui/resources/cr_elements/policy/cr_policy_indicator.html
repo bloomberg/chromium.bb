@@ -1,30 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="cr_policy_indicator_behavior.html">
-<link rel="import" href="cr_policy_vars_css.html">
+<link rel="import" href="cr_tooltip_icon.html">
 
 <dom-module id="cr-policy-indicator">
   <template>
-    <style include="cr-hidden-style">
-      :host {
-        @apply(--cr-policy-indicator);
-      }
-
-      paper-tooltip {
-        --paper-tooltip: var(--cr-policy-tooltip);
-      }
-    </style>
-    <iron-icon id="indicator" tabindex="0" aria-label$="[[iconAriaLabel]]"
-        aria-describedby="tooltip" hidden$="[[!indicatorVisible]]"
-        icon="[[indicatorIcon]]"></iron-icon>
-    <paper-tooltip id="tooltip" for="indicator" position="top"
-        fit-to-visible-bounds>
-      [[indicatorTooltip]]
-    </paper-tooltip>
+    <style include="cr-hidden-style"></style>
+    <cr-tooltip-icon hidden$="[[!indicatorVisible]]"
+        tooltip-text="[[indicatorTooltip]]" icon-class="[[indicatorIcon]]"
+        icon-aria-label="[[iconAriaLabel]]">
+    </cr-tooltip-icon>
   </template>
   <script src="cr_policy_indicator.js"></script>
 </dom-module>

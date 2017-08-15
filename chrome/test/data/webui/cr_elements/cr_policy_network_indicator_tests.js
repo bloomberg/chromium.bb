@@ -7,8 +7,8 @@ suite('cr-policy-network-indicator', function() {
   /** @type {!CrPolicyNetworkIndicatorElement|undefined} */
   var indicator;
 
-  /** @type {!PaperTooltipElement|undefined} */
-  var tooltip;
+  /** @type {!CrTooltipIconElement|undefined} */
+  var icon;
 
   // Prevent 'Cannot read property of undefined' errors in cr_onc_types.js.
   chrome.networkingPrivate = {};
@@ -18,7 +18,7 @@ suite('cr-policy-network-indicator', function() {
 
     indicator = document.createElement('cr-policy-network-indicator');
     document.body.appendChild(indicator);
-    tooltip = indicator.$$('paper-tooltip');
+    icon = indicator.$$('cr-tooltip-icon');
   });
 
   teardown(function() {
@@ -26,13 +26,13 @@ suite('cr-policy-network-indicator', function() {
   });
 
   test('hidden by default', function() {
-    assertTrue(indicator.$.indicator.hidden);
+    assertTrue(icon.hidden);
   });
 
   test('no policy', function() {
     indicator.property = {Active: 'foo'};
     Polymer.dom.flush();
-    assertTrue(indicator.$.indicator.hidden);
+    assertTrue(icon.hidden);
   });
 
   test('recommended', function() {
@@ -43,13 +43,13 @@ suite('cr-policy-network-indicator', function() {
       Effective: 'UserPolicy',
     };
     Polymer.dom.flush();
-    assertFalse(indicator.$.indicator.hidden);
-    assertEquals('cr20:domain', indicator.$.indicator.icon);
-    assertEquals('differs', tooltip.textContent.trim());
+    assertFalse(icon.hidden);
+    assertEquals('cr20:domain', icon.iconClass);
+    assertEquals('differs', icon.tooltipText);
 
     indicator.set('property.Active', 'bar');
     Polymer.dom.flush();
-    assertEquals('matches', tooltip.textContent.trim());
+    assertEquals('matches', icon.tooltipText);
   });
 
   test('policy', function() {
@@ -58,9 +58,9 @@ suite('cr-policy-network-indicator', function() {
       Effective: 'DevicePolicy',
     };
     Polymer.dom.flush();
-    assertFalse(indicator.$.indicator.hidden);
-    assertEquals('cr20:domain', indicator.$.indicator.icon);
-    assertEquals('policy', tooltip.textContent.trim());
+    assertFalse(icon.hidden);
+    assertEquals('cr20:domain', icon.iconClass);
+    assertEquals('policy', icon.tooltipText);
   });
 
   test('extension', function() {
@@ -69,6 +69,6 @@ suite('cr-policy-network-indicator', function() {
       Effective: 'ActiveExtension',
     };
     Polymer.dom.flush();
-    assertEquals('cr:extension', indicator.$.indicator.icon);
+    assertEquals('cr:extension', icon.iconClass);
   });
 });

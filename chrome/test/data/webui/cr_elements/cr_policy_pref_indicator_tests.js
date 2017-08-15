@@ -7,15 +7,15 @@ suite('CrPolicyPrefIndicator', function() {
   /** @type {!CrPolicyPrefIndicatorElement|undefined} */
   var indicator;
 
-  /** @type {!PaperTooltipElement|undefined} */
-  var tooltip;
+  /** @type {!CrTooltipIconElement|undefined} */
+  var icon;
 
   setup(function() {
     PolymerTest.clearBody();
 
     indicator = document.createElement('cr-policy-pref-indicator');
     document.body.appendChild(indicator);
-    tooltip = indicator.$$('paper-tooltip');
+    icon = indicator.$$('cr-tooltip-icon');
   });
 
   teardown(function() {
@@ -23,7 +23,7 @@ suite('CrPolicyPrefIndicator', function() {
   });
 
   test('none', function() {
-    assertTrue(indicator.$.indicator.hidden);
+    assertTrue(icon.hidden);
   });
 
   test('pref', function() {
@@ -34,7 +34,7 @@ suite('CrPolicyPrefIndicator', function() {
       value: false,
     };
     Polymer.dom.flush();
-    assertTrue(indicator.$.indicator.hidden);
+    assertTrue(icon.hidden);
 
     indicator.set(
         'pref.controlledBy', chrome.settingsPrivate.ControlledBy.OWNER);
@@ -42,21 +42,21 @@ suite('CrPolicyPrefIndicator', function() {
     indicator.set(
         'pref.enforcement', chrome.settingsPrivate.Enforcement.ENFORCED);
     Polymer.dom.flush();
-    assertFalse(indicator.$.indicator.hidden);
-    assertEquals('cr:person', indicator.$.indicator.icon);
-    assertEquals('owner: owner_name', tooltip.textContent.trim());
+    assertFalse(icon.hidden);
+    assertEquals('cr:person', icon.iconClass);
+    assertEquals('owner: owner_name', icon.tooltipText);
 
     indicator.set('pref.value', 'foo');
     indicator.set('pref.recommendedValue', 'bar');
     indicator.set(
         'pref.enforcement', chrome.settingsPrivate.Enforcement.RECOMMENDED);
     Polymer.dom.flush();
-    assertFalse(indicator.$.indicator.hidden);
-    assertEquals('cr20:domain', indicator.$.indicator.icon);
-    assertEquals('differs', tooltip.textContent.trim());
+    assertFalse(icon.hidden);
+    assertEquals('cr20:domain', icon.iconClass);
+    assertEquals('differs', icon.tooltipText);
 
     indicator.set('pref.value', 'bar');
     Polymer.dom.flush();
-    assertEquals('matches', tooltip.textContent.trim());
+    assertEquals('matches', icon.tooltipText);
   });
 });

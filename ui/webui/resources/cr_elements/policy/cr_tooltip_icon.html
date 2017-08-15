@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
+
+<dom-module id="cr-tooltip-icon">
+  <template>
+    <style>
+      :host {
+        @apply(--cr-icon-height-width);
+        display: flex;  /* Position independently from the line-height. */
+      }
+
+      paper-tooltip {
+        --paper-tooltip: {
+          font-size: 92.31%;  /* Effectively 12px if the host default is 13px. */
+          font-weight: 500;
+          max-width: 330px;
+          min-width: 200px;
+          padding: 10px 8px;
+        };
+      }
+    </style>
+    <iron-icon id="indicator" tabindex="0" aria-label$="[[iconAriaLabel]]"
+        aria-describedby="tooltip" icon="[[iconClass]]"></iron-icon>
+    <paper-tooltip id="tooltip" for="indicator" position="top"
+        fit-to-visible-bounds>
+      [[tooltipText]]
+    </paper-tooltip>
+  </template>
+  <script src="cr_tooltip_icon.js"></script>
+</dom-module>
