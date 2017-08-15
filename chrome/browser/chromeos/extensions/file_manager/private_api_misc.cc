@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -22,6 +24,8 @@
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/fileapi/recent_context.h"
+#include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -696,6 +700,85 @@ void FileManagerPrivateInternalExecuteCustomActionFunction::OnCompleted(
   }
 
   Respond(NoArguments());
+}
+
+FileManagerPrivateInternalGetRecentFilesFunction::
+    FileManagerPrivateInternalGetRecentFilesFunction()
+    : chrome_details_(this) {}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalGetRecentFilesFunction::Run() {
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          chrome_details_.GetProfile(), render_frame_host());
+
+  chromeos::RecentModel* model =
+      chromeos::RecentModel::GetForProfile(chrome_details_.GetProfile());
+
+  model->GetRecentFiles(
+      chromeos::RecentContext(
+          file_system_context.get(),
+          Extension::GetBaseURLFromExtensionId(extension_id())),
+      base::BindOnce(
+          &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
+          this));
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
+    const std::vector<storage::FileSystemURL>& urls) {
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          chrome_details_.GetProfile(), render_frame_host());
+  DCHECK(file_system_context.get());
+
+  const storage::ExternalFileSystemBackend* external_backend =
+      file_system_context->external_backend();
+  DCHECK(external_backend);
+
+  file_manager::util::FileDefinitionList file_definition_list;
+  for (const storage::FileSystemURL& url : urls) {
+    DCHECK(external_backend->CanHandleType(url.type()));
+    file_manager::util::FileDefinition file_definition;
+    const bool result =
+        file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            chrome_details_.GetProfile(), extension_id(), url.path(),
+            &file_definition.virtual_path);
+    if (!result)
+      continue;
+    // Recent file system only lists regular files, not directories.
+    file_definition.is_directory = false;
+    file_definition_list.emplace_back(std::move(file_definition));
+  }
+
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      chrome_details_.GetProfile(), extension_id(),
+      file_definition_list,  // Safe, since copied internally.
+      base::Bind(&FileManagerPrivateInternalGetRecentFilesFunction::
+                     OnConvertFileDefinitionListToEntryDefinitionList,
+                 this));
+}
+
+void FileManagerPrivateInternalGetRecentFilesFunction::
+    OnConvertFileDefinitionListToEntryDefinitionList(
+        std::unique_ptr<file_manager::util::EntryDefinitionList>
+            entry_definition_list) {
+  DCHECK(entry_definition_list);
+
+  auto entries = base::MakeUnique<base::ListValue>();
+
+  for (const auto& definition : *entry_definition_list) {
+    if (definition.error != base::File::FILE_OK)
+      continue;
+    auto entry = base::MakeUnique<base::DictionaryValue>();
+    entry->SetString("fileSystemName", definition.file_system_name);
+    entry->SetString("fileSystemRoot", definition.file_system_root_url);
+    entry->SetString("fileFullPath", "/" + definition.full_path.AsUTF8Unsafe());
+    entry->SetBoolean("fileIsDirectory", definition.is_directory);
+    entries->Append(std::move(entry));
+  }
+
+  Respond(OneArgument(std::move(entries)));
 }
 
 }  // namespace extensions

@@ -661,6 +661,9 @@ callback GetCustomActionsCallback = void(fileSystemProvider.Action[] actions);
 // |size| result size.
 callback GetDirectorySizeCallback = void(double size);
 
+// |entries| Recently modified entries.
+callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -987,6 +990,10 @@ interface Functions {
   [nocompile]
   static void getDirectorySize([instanceof=DirectoryEntry] object entry,
                                GetDirectorySizeCallback callback);
+
+  // Gets recently modified files across file systems.
+  [nocompile]
+  static void getRecentFiles(GetRecentFilesCallback callback);
 };
 
 interface Events {
