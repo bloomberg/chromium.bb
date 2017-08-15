@@ -37,8 +37,10 @@ enum class ItemType {
   PLATFORM_APP,
 };
 
-// Creates an extension with the given |name| and |permissions|.
-scoped_refptr<Extension> CreateExtension(
+// Creates an extension of the given |type| with the given |id| and
+// |permissions|.
+scoped_refptr<Extension> CreateExtensionWithId(
+    const std::string& id,
     const std::string& name,
     ItemType type,
     const std::vector<std::string>& permissions) {
@@ -66,8 +68,17 @@ scoped_refptr<Extension> CreateExtension(
   return ExtensionBuilder()
       .SetManifest(manifest.Build())
       .SetLocation(Manifest::INTERNAL)
-      .SetID(crx_file::id_util::GenerateId(name))
+      .SetID(id)
       .Build();
+}
+
+// Same as CreateExtensionWithId(), but generates the id from |name|.
+scoped_refptr<Extension> CreateExtension(
+    const std::string& name,
+    ItemType type,
+    const std::vector<std::string>& permissions) {
+  return CreateExtensionWithId(name, crx_file::id_util::GenerateId(name), type,
+                               permissions);
 }
 
 class EventChangeHandler {
@@ -1117,6 +1128,86 @@ TEST_F(NativeExtensionBindingsSystemUnittest, UnmanagedEvents) {
   // We should have no notifications for event listeners added (since the
   // mock is a strict mock, this will fail if anything was called).
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+}
+
+// Tests that a context having access to an aliased API (like networking.onc)
+// does not allow for accessing the source API (networkingPrivate) directly.
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       AccessToAliasSourceDoesntGiveAliasAccess) {
+  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+  scoped_refptr<Extension> extension = CreateExtension(
+      kWhitelistedId, ItemType::EXTENSION, {"networkingPrivate"});
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // The extension only has access to networkingPrivate, so networking.onc
+  // (and chrome.networking in general) should be undefined.
+  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
+                          context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ("undefined", gin::V8ToString(V8ValueFromScriptSource(
+                             context, "typeof chrome.networking")));
+}
+
+// Tests that a context having access to the source for an aliased API does not
+// allow for accessing the alias.
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       AccessToAliasDoesntGiveAliasSourceAccess) {
+  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+  scoped_refptr<Extension> extension =
+      CreateExtension(kWhitelistedId, ItemType::EXTENSION, {"networking.onc"});
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // The extension only has access to networking.onc, so networkingPrivate
+  // should be undefined.
+  EXPECT_EQ("undefined", gin::V8ToString(V8ValueFromScriptSource(
+                             context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
+                          context, "typeof chrome.networking.onc")));
+}
+
+// Test that if an extension has access to both an alias and an alias source,
+// the objects on the API are different.
+TEST_F(NativeExtensionBindingsSystemUnittest, AliasedAPIsAreDifferentObjects) {
+  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+  scoped_refptr<Extension> extension =
+      CreateExtension(kWhitelistedId, ItemType::EXTENSION,
+                      {"networkingPrivate", "networking.onc"});
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // Both APIs should be defined, since the extension has access to each.
+  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
+                          context, "typeof chrome.networkingPrivate")));
+  EXPECT_EQ("object", gin::V8ToString(V8ValueFromScriptSource(
+                          context, "typeof chrome.networking.onc")));
+
+  // The APIs should not be equal.
+  bool equal = true;
+  EXPECT_TRUE(gin::ConvertFromV8(
+      isolate(),
+      V8ValueFromScriptSource(
+          context, "chrome.networkingPrivate == chrome.networking.onc"),
+      &equal));
+  EXPECT_FALSE(equal);
 }
 
 }  // namespace extensions
