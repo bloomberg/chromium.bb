@@ -29,6 +29,7 @@ source_set("browser") {
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/common:common",
+    "//components/safe_browsing/web_ui:constants",
     "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",

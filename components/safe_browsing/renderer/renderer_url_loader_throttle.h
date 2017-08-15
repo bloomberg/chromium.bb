@@ -44,6 +44,10 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
   size_t pending_checks_ = 0;
   bool blocked_ = false;
 
+  // The time when we started deferring the request.
+  base::TimeTicks defer_start_time_;
+  bool deferred_ = false;
+
   base::WeakPtrFactory<RendererURLLoaderThrottle> weak_factory_;
 };
 

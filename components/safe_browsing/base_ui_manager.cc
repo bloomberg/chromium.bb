@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "components/safe_browsing/base_blocking_page.h"
 #include "content/public/browser/browser_thread.h"
@@ -232,11 +231,6 @@ void BaseUIManager::DisplayBlockingPage(
 void BaseUIManager::EnsureWhitelistCreated(
     WebContents* web_contents) {
   GetOrCreateWhitelist(web_contents);
-}
-
-void BaseUIManager::LogPauseDelay(base::TimeDelta time) {
-  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
-  return;
 }
 
 void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}

@@ -30,8 +30,6 @@ class UrlCheckerDelegate;
 // queries from the browser. In that case, the public methods are called
 // directly instead of through Mojo.
 // Used when --enable-network-service is in effect.
-//
-// TODO(yzshen): Do all the logging like what BaseResourceThrottle does.
 class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
@@ -63,6 +61,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void BlockAndProcessUrls(bool showed_interstitial);
 
   void OnBlockingPageComplete(bool proceed);
+
+  SBThreatType CheckWebUIUrls(const GURL& url);
+
+  void RunNextCallback(bool proceed, bool showed_interstitial);
 
   enum State {
     // Haven't started checking or checking is complete.

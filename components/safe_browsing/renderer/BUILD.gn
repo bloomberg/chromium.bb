@@ -32,6 +32,7 @@ source_set("throttles") {
 
   deps = [
     "//base:base",
+    "//components/safe_browsing/common:common",
     "//components/safe_browsing/common:interfaces",
     "//content/public/common:common",
     "//content/public/renderer:renderer",
