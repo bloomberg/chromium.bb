@@ -71,6 +71,12 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   ProcessorInstances processor_instances_;
 };
 
+DEFINE_TYPE_CASTS(AudioWorkletGlobalScope,
+                  ExecutionContext,
+                  context,
+                  context->IsAudioWorkletGlobalScope(),
+                  context.IsAudioWorkletGlobalScope());
+
 }  // namespace blink
 
 #endif  // AudioWorkletGlobalScope_h
