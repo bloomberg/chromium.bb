@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)                                     \
   UMA_HISTOGRAM_CUSTOM_COUNTS((name), static_cast<int>((sample) / kMBytes), 1, \
@@ -78,6 +79,8 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 #if defined(OS_ANDROID)
       1000 * kMBytes;
 #elif defined(OS_CHROMEOS)
+      1000 * kMBytes;
+#elif defined(OS_FUCHSIA)
       1000 * kMBytes;
 #elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
       10000 * kMBytes;
