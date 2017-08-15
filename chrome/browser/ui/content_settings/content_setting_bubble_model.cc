@@ -502,7 +502,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_BLOCKED_PLUGINS),
           blocked_plugin, false, 0);
-      add_list_item(plugin_item);
+      AddListItem(plugin_item);
     }
   }
 
@@ -545,19 +545,33 @@ void ContentSettingPluginBubbleModel::RunPluginsOnPage() {
 
 // ContentSettingPopupBubbleModel ----------------------------------------------
 
-class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
+class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
+                                       public PopupBlockerTabHelper::Observer {
  public:
   ContentSettingPopupBubbleModel(Delegate* delegate,
                                  WebContents* web_contents,
                                  Profile* profile);
   ~ContentSettingPopupBubbleModel() override;
 
+  // PopupBlockerTabHelper::Observer:
+  void BlockedPopupAdded(int32_t id, const GURL& url) override;
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
  private:
+  ListItem CreateListItem(int32_t id, const GURL& id_and_url);
+
   void OnListItemClicked(int index, int event_flags) override;
 
   int32_t item_id_from_item_index(int index) const {
     return bubble_content().list_items[index].item_id;
   }
+
+  ScopedObserver<PopupBlockerTabHelper, PopupBlockerTabHelper::Observer>
+      popup_blocker_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupBubbleModel);
 };
@@ -569,28 +583,48 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
                                      profile,
-                                     CONTENT_SETTINGS_TYPE_POPUPS) {
+                                     CONTENT_SETTINGS_TYPE_POPUPS),
+      popup_blocker_observer_(this) {
   if (!web_contents)
     return;
 
   // Build blocked popup list.
   auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
   std::map<int32_t, GURL> blocked_popups = helper->GetBlockedPopupRequests();
-  for (const std::pair<int32_t, GURL>& blocked_popup : blocked_popups) {
-    base::string16 title;
-    // The pop-up may not have a valid URL.
-    if (blocked_popup.second.spec().empty())
-      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-    else
-      title = base::UTF8ToUTF16(blocked_popup.second.spec());
+  for (const auto& blocked_popup : blocked_popups)
+    AddListItem(CreateListItem(blocked_popup.first, blocked_popup.second));
 
-    ListItem popup_item(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                            IDR_DEFAULT_FAVICON),
-                        title, true, blocked_popup.first);
-    add_list_item(popup_item);
-  }
+  popup_blocker_observer_.Add(helper);
   content_settings::RecordPopupsAction(
       content_settings::POPUPS_ACTION_DISPLAYED_BUBBLE);
+}
+
+void ContentSettingPopupBubbleModel::BlockedPopupAdded(int32_t id,
+                                                       const GURL& url) {
+  AddListItem(CreateListItem(id, url));
+}
+
+void ContentSettingPopupBubbleModel::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  ContentSettingSingleRadioGroup::Observe(type, source, details);
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
+    popup_blocker_observer_.RemoveAll();
+}
+
+ContentSettingBubbleModel::ListItem
+ContentSettingPopupBubbleModel::CreateListItem(int32_t id, const GURL& url) {
+  base::string16 title;
+  // The pop-up may not have a valid URL.
+  if (url.spec().empty())
+    title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+  else
+    title = base::UTF8ToUTF16(url.spec());
+
+  return ListItem(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                      IDR_DEFAULT_FAVICON),
+                  title, true, id);
 }
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
@@ -599,7 +633,7 @@ void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
     auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
     helper->ShowBlockedPopup(item_id_from_item_index(index),
                              ui::DispositionFromEventFlags(event_flags));
-    remove_list_item(index);
+    RemoveListItem(index);
     content_settings::RecordPopupsAction(
         content_settings::POPUPS_ACTION_CLICKED_LIST_ITEM_CLICKED);
   }
@@ -611,6 +645,11 @@ ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel(){
     // Increases the counter.
     content_settings::RecordPopupsAction(
         content_settings::POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM);
+  }
+
+  if (web_contents()) {
+    auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
+    helper->RemoveObserver(this);
   }
 }
 
@@ -1552,6 +1591,7 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(Delegate* delegate,
                                                      Profile* profile)
     : web_contents_(web_contents),
       profile_(profile),
+      owner_(nullptr),
       delegate_(delegate),
       rappor_service_(g_browser_process->rappor_service()) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -1620,4 +1660,17 @@ ContentSettingBubbleModel::AsSubresourceFilterBubbleModel() {
 ContentSettingDownloadsBubbleModel*
 ContentSettingBubbleModel::AsDownloadsBubbleModel() {
   return nullptr;
+}
+
+void ContentSettingBubbleModel::AddListItem(const ListItem& item) {
+  bubble_content_.list_items.push_back(item);
+  if (owner_)
+    owner_->OnListItemAdded(item);
+}
+
+void ContentSettingBubbleModel::RemoveListItem(int index) {
+  if (owner_)
+    owner_->OnListItemRemovedAt(index);
+
+  bubble_content_.list_items.erase(bubble_content_.list_items.begin() + index);
 }

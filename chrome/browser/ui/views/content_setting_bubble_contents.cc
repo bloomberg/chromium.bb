@@ -18,7 +18,6 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -323,6 +322,19 @@ gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
   return preferred_size;
 }
 
+void ContentSettingBubbleContents::OnListItemAdded(
+    const ContentSettingBubbleModel::ListItem& item) {
+  DCHECK(list_item_container_);
+  list_item_container_->AddItem(item);
+  SizeToContents();
+}
+
+void ContentSettingBubbleContents::OnListItemRemovedAt(int index) {
+  DCHECK(list_item_container_);
+  list_item_container_->RemoveRowAtIndex(index);
+  SizeToContents();
+}
+
 void ContentSettingBubbleContents::OnNativeThemeChanged(
     const ui::NativeTheme* theme) {
   views::BubbleDialogDelegateView::OnNativeThemeChanged(theme);
@@ -528,6 +540,9 @@ void ContentSettingBubbleContents::Init() {
     }
     layout->AddPaddingRow(0, related_control_vertical_spacing);
   }
+
+  if (list_item_container_)
+    content_setting_bubble_model_->set_owner(this);
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
@@ -624,11 +639,6 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
   int row = list_item_container_->GetRowIndexOf(source);
   DCHECK_NE(row, -1);
   content_setting_bubble_model_->OnListItemClicked(row, event_flags);
-
-  // TODO(bug 35097) Need more work here. There's no way to be notified changes
-  // in |content_setting_bubble_model_| dynamically for now.
-  list_item_container_->RemoveRowAtIndex(row);
-  SizeToContents();
 }
 
 void ContentSettingBubbleContents::OnPerformAction(views::Combobox* combobox) {
