@@ -1,10 +1,8 @@
 This is a testharness.js-based test.
-FAIL Default event values Cannot read property 'length' of null
+PASS Default event values 
 PASS MessageEventInit dictionary 
-FAIL Passing null for ports member assert_throws: function "function () {
-    new MessageEvent("test", { ports: null })
-  }" did not throw
-FAIL ports attribute should be a FrozenArray assert_true: Object.isFrozen() should return true expected true got false
+PASS Passing null for ports member 
+PASS ports attribute should be a FrozenArray 
 PASS initMessageEvent operation 
 FAIL Passing null for ports parameter to initMessageEvent assert_throws: function "function () {
     ev.initMessageEvent("test", true, false, "testData", "testOrigin", "testId", window, null)

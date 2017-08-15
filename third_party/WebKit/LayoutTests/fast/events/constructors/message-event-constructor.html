@@ -17,7 +17,7 @@ shouldBe("new MessageEvent('eventType').data", "null");
 shouldBeEqualToString("new MessageEvent('eventType').origin", "");
 shouldBeEqualToString("new MessageEvent('eventType').lastEventId", "");
 shouldBe("new MessageEvent('eventType').source", "null");
-shouldBe("new MessageEvent('eventType').ports", "null");
+shouldBe("new MessageEvent('eventType').ports", "[]");
 
 // bubbles is passed.
 shouldBe("new MessageEvent('eventType', { bubbles: false }).bubbles", "false");
@@ -101,8 +101,7 @@ shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, 
 shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1]", "channel.port2");
 shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[2]", "channel2.port1");
 shouldBe("new MessageEvent('eventType', { ports: [] }).ports", "[]");
-shouldBe("new MessageEvent('eventType', { ports: undefined }).ports", "null");
-shouldBe("new MessageEvent('eventType', { ports: null }).ports", "null");
+shouldBe("new MessageEvent('eventType', { ports: undefined }).ports", "[]");
 
 // Invalid message ports.
 shouldThrow("new MessageEvent('eventType', { ports: [1, 2, 3] }).ports[2]");
@@ -117,6 +116,7 @@ shouldThrow("new MessageEvent('eventType', { ports: 18446744073709551615 }).port
 shouldThrow("new MessageEvent('eventType', { ports: NaN }).ports");
 shouldThrow("new MessageEvent('eventType', { get ports() { return 123; } }).ports");
 shouldThrow("new MessageEvent('eventType', { get ports() { throw 'MessageEvent Error'; } })");
+shouldThrow("new MessageEvent('eventType', { ports: null }).ports");
 // Note that valueOf() is not called, when the left hand side is evaluated.
 shouldThrow("new MessageEvent('eventType', { ports: {valueOf: function () { return [channel.port1, channel.port2, channel.port2]; } } }).ports[0]");
 shouldThrow("new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: {length: 3, 0: channel.port1, 1: channel.port2, 2: channel2.port1} }).ports[2]");

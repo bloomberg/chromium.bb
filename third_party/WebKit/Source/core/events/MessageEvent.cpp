@@ -171,6 +171,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   last_event_id_ = last_event_id;
   source_ = source;
   ports_ = ports;
+  is_ports_dirty_ = true;
   suborigin_ = "";
 }
 
@@ -194,6 +195,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   last_event_id_ = last_event_id;
   source_ = source;
   ports_ = ports;
+  is_ports_dirty_ = true;
   suborigin_ = "";
 
   if (data_as_serialized_script_value_)
@@ -220,6 +222,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   last_event_id_ = last_event_id;
   source_ = source;
   ports_ = ports;
+  is_ports_dirty_ = true;
   suborigin_ = "";
 }
 
@@ -227,26 +230,18 @@ const AtomicString& MessageEvent::InterfaceName() const {
   return EventNames::MessageEvent;
 }
 
-MessagePortArray MessageEvent::ports(bool& is_null) const {
+MessagePortArray MessageEvent::ports() {
   // TODO(bashi): Currently we return a copied array because the binding
   // layer could modify the content of the array while executing JS callbacks.
   // Avoid copying once we can make sure that the binding layer won't
   // modify the content.
-  if (ports_) {
-    is_null = false;
-    return *ports_;
-  }
-  is_null = true;
-  return MessagePortArray();
-}
-
-MessagePortArray MessageEvent::ports() const {
-  bool unused;
-  return ports(unused);
+  is_ports_dirty_ = false;
+  return ports_ ? *ports_ : MessagePortArray();
 }
 
 void MessageEvent::EntangleMessagePorts(ExecutionContext* context) {
   ports_ = MessagePort::EntanglePorts(*context, std::move(channels_));
+  is_ports_dirty_ = true;
 }
 
 DEFINE_TRACE(MessageEvent) {
