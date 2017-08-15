@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_QUADS_STRUCT_TRAITS_H_
-#define CC_IPC_QUADS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_QUADS_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_QUADS_STRUCT_TRAITS_H_
 
 #include "base/logging.h"
 #include "cc/ipc/filter_operation_struct_traits.h"
 #include "cc/ipc/filter_operations_struct_traits.h"
-#include "cc/ipc/quads.mojom-shared.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -20,43 +19,44 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "services/viz/public/interfaces/compositing/quads.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
 
 cc::DrawQuad* AllocateAndConstruct(
-    cc::mojom::DrawQuadStateDataView::Tag material,
+    viz::mojom::DrawQuadStateDataView::Tag material,
     cc::QuadList* list);
 
 template <>
-struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
-  static cc::mojom::DrawQuadStateDataView::Tag GetTag(
+struct UnionTraits<viz::mojom::DrawQuadStateDataView, cc::DrawQuad> {
+  static viz::mojom::DrawQuadStateDataView::Tag GetTag(
       const cc::DrawQuad& quad) {
     switch (quad.material) {
       case cc::DrawQuad::INVALID:
         break;
       case cc::DrawQuad::DEBUG_BORDER:
-        return cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
       case cc::DrawQuad::PICTURE_CONTENT:
         break;
       case cc::DrawQuad::RENDER_PASS:
-        return cc::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE;
       case cc::DrawQuad::SOLID_COLOR:
-        return cc::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE;
       case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-        return cc::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE;
       case cc::DrawQuad::SURFACE_CONTENT:
-        return cc::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE;
       case cc::DrawQuad::TEXTURE_CONTENT:
-        return cc::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE;
       case cc::DrawQuad::TILED_CONTENT:
-        return cc::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE;
       case cc::DrawQuad::YUV_VIDEO_CONTENT:
-        return cc::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE;
+        return viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE;
     }
     NOTREACHED();
-    return cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
+    return viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
   }
 
   static const cc::DrawQuad& debug_border_quad_state(const cc::DrawQuad& quad) {
@@ -91,23 +91,23 @@ struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
     return quad;
   }
 
-  static bool Read(cc::mojom::DrawQuadStateDataView data, cc::DrawQuad* out) {
+  static bool Read(viz::mojom::DrawQuadStateDataView data, cc::DrawQuad* out) {
     switch (data.tag()) {
-      case cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
         return data.ReadDebugBorderQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
         return data.ReadRenderPassQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
         return data.ReadSolidColorQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
         return data.ReadSurfaceQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
         return data.ReadTextureQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
         return data.ReadTileQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
         return data.ReadStreamVideoQuadState(out);
-      case cc::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
+      case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
         return data.ReadYuvVideoQuadState(out);
     }
     NOTREACHED();
@@ -116,7 +116,7 @@ struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::DebugBorderQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::DebugBorderQuadStateDataView, cc::DrawQuad> {
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::DebugBorderDrawQuad* quad =
         cc::DebugBorderDrawQuad::MaterialCast(&input);
@@ -129,12 +129,12 @@ struct StructTraits<cc::mojom::DebugBorderQuadStateDataView, cc::DrawQuad> {
     return quad->width;
   }
 
-  static bool Read(cc::mojom::DebugBorderQuadStateDataView data,
+  static bool Read(viz::mojom::DebugBorderQuadStateDataView data,
                    cc::DrawQuad* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
   static int32_t render_pass_id(const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
@@ -178,12 +178,12 @@ struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
     return quad->tex_coord_rect;
   }
 
-  static bool Read(cc::mojom::RenderPassQuadStateDataView data,
+  static bool Read(viz::mojom::RenderPassQuadStateDataView data,
                    cc::DrawQuad* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::SolidColorQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::SolidColorQuadStateDataView, cc::DrawQuad> {
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::SolidColorDrawQuad* quad =
         cc::SolidColorDrawQuad::MaterialCast(&input);
@@ -196,12 +196,12 @@ struct StructTraits<cc::mojom::SolidColorQuadStateDataView, cc::DrawQuad> {
     return quad->force_anti_aliasing_off;
   }
 
-  static bool Read(cc::mojom::SolidColorQuadStateDataView data,
+  static bool Read(viz::mojom::SolidColorQuadStateDataView data,
                    cc::DrawQuad* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::StreamVideoQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, cc::DrawQuad> {
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::StreamVideoDrawQuad* quad =
         cc::StreamVideoDrawQuad::MaterialCast(&input);
@@ -221,19 +221,19 @@ struct StructTraits<cc::mojom::StreamVideoQuadStateDataView, cc::DrawQuad> {
     return quad->matrix;
   }
 
-  static bool Read(cc::mojom::StreamVideoQuadStateDataView data,
+  static bool Read(viz::mojom::StreamVideoQuadStateDataView data,
                    cc::DrawQuad* out);
 };
 
 template <>
-struct EnumTraits<cc::mojom::SurfaceDrawQuadType, cc::SurfaceDrawQuadType> {
-  static cc::mojom::SurfaceDrawQuadType ToMojom(
+struct EnumTraits<viz::mojom::SurfaceDrawQuadType, cc::SurfaceDrawQuadType> {
+  static viz::mojom::SurfaceDrawQuadType ToMojom(
       cc::SurfaceDrawQuadType surface_draw_quad_type);
-  static bool FromMojom(cc::mojom::SurfaceDrawQuadType input,
+  static bool FromMojom(viz::mojom::SurfaceDrawQuadType input,
                         cc::SurfaceDrawQuadType* out);
 };
 template <>
-struct StructTraits<cc::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
   static const viz::SurfaceId& surface(const cc::DrawQuad& input) {
     const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
     return quad->surface_id;
@@ -245,11 +245,12 @@ struct StructTraits<cc::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
     return quad->surface_draw_quad_type;
   }
 
-  static bool Read(cc::mojom::SurfaceQuadStateDataView data, cc::DrawQuad* out);
+  static bool Read(viz::mojom::SurfaceQuadStateDataView data,
+                   cc::DrawQuad* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::TextureQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::TextureQuadStateDataView, cc::DrawQuad> {
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
     return quad->resource_id();
@@ -300,11 +301,12 @@ struct StructTraits<cc::mojom::TextureQuadStateDataView, cc::DrawQuad> {
     return quad->secure_output_only;
   }
 
-  static bool Read(cc::mojom::TextureQuadStateDataView data, cc::DrawQuad* out);
+  static bool Read(viz::mojom::TextureQuadStateDataView data,
+                   cc::DrawQuad* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::TileQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::TileQuadStateDataView, cc::DrawQuad> {
   static const gfx::RectF& tex_coord_rect(const cc::DrawQuad& input) {
     const cc::TileDrawQuad* quad = cc::TileDrawQuad::MaterialCast(&input);
     return quad->tex_coord_rect;
@@ -330,19 +332,19 @@ struct StructTraits<cc::mojom::TileQuadStateDataView, cc::DrawQuad> {
     return quad->resource_id();
   }
 
-  static bool Read(cc::mojom::TileQuadStateDataView data, cc::DrawQuad* out);
+  static bool Read(viz::mojom::TileQuadStateDataView data, cc::DrawQuad* out);
 };
 
 template <>
-struct EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace> {
-  static cc::mojom::YUVColorSpace ToMojom(
+struct EnumTraits<viz::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace> {
+  static viz::mojom::YUVColorSpace ToMojom(
       cc::YUVVideoDrawQuad::ColorSpace color_space);
-  static bool FromMojom(cc::mojom::YUVColorSpace input,
+  static bool FromMojom(viz::mojom::YUVColorSpace input,
                         cc::YUVVideoDrawQuad::ColorSpace* out);
 };
 
 template <>
-struct StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
+struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
   static const gfx::RectF& ya_tex_coord_rect(const cc::DrawQuad& input) {
     const cc::YUVVideoDrawQuad* quad =
         cc::YUVVideoDrawQuad::MaterialCast(&input);
@@ -426,7 +428,7 @@ struct StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
     return quad->require_overlay;
   }
 
-  static bool Read(cc::mojom::YUVVideoQuadStateDataView data,
+  static bool Read(viz::mojom::YUVVideoQuadStateDataView data,
                    cc::DrawQuad* out);
 };
 
@@ -436,7 +438,7 @@ struct DrawQuadWithSharedQuadState {
 };
 
 template <>
-struct StructTraits<cc::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
+struct StructTraits<viz::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
   static const gfx::Rect& rect(const DrawQuadWithSharedQuadState& input) {
     return input.quad->rect;
   }
@@ -467,8 +469,8 @@ struct StructTraits<cc::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
 
 // This StructTraits is only used for deserialization within RenderPasses.
 template <>
-struct StructTraits<cc::mojom::DrawQuadDataView, cc::DrawQuad> {
-  static bool Read(cc::mojom::DrawQuadDataView data, cc::DrawQuad* out);
+struct StructTraits<viz::mojom::DrawQuadDataView, cc::DrawQuad> {
+  static bool Read(viz::mojom::DrawQuadDataView data, cc::DrawQuad* out);
 };
 
 template <>
@@ -506,4 +508,4 @@ struct ArrayTraits<cc::QuadList> {
 
 }  // namespace mojo
 
-#endif  // CC_IPC_QUADS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_QUADS_STRUCT_TRAITS_H_

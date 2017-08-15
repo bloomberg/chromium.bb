@@ -8,11 +8,11 @@ public_headers = [
   "//cc/quads/render_pass.h",
 ]
 traits_headers = [
-  "//cc/ipc/quads_struct_traits.h",
+  "//services/viz/public/cpp/compositing/quads_struct_traits.h",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.h",
 ]
 sources = [
-  "//cc/ipc/quads_struct_traits.cc",
+  "//services/viz/public/cpp/compositing/quads_struct_traits.cc",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.cc",
 ]
 type_mappings = [ "viz.mojom.RenderPass=std::unique_ptr<cc::RenderPass>[move_only,nullable_is_same_type]" ]
