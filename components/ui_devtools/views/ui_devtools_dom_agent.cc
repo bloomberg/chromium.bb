@@ -12,12 +12,15 @@
 #include "components/ui_devtools/views/widget_element.h"
 #include "components/ui_devtools/views/window_element.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
@@ -80,20 +83,6 @@ std::unique_ptr<Array<std::string>> GetAttributes(UIElement* ui_element) {
       DCHECK(false);
   }
   return attributes;
-}
-
-int MaskColor(int value) {
-  return value & 0xff;
-}
-
-SkColor RGBAToSkColor(DOM::RGBA* rgba) {
-  if (!rgba)
-    return SkColorSetARGB(0, 0, 0, 0);
-  // Default alpha value is 0 (not visible) and need to convert alpha decimal
-  // percentage value to hex
-  return SkColorSetARGB(MaskColor(static_cast<int>(rgba->getA(0) * 255)),
-                        MaskColor(rgba->getR()), MaskColor(rgba->getG()),
-                        MaskColor(rgba->getB()));
 }
 
 views::Widget* GetWidgetFromWindow(aura::Window* window) {
@@ -203,14 +192,12 @@ UIElement* UIDevToolsDOMAgent::GetElementFromNodeId(int node_id) {
   return node_id_to_ui_element_[node_id];
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
-    std::unique_ptr<ui_devtools::protocol::Overlay::HighlightConfig>
-        highlight_config,
-    int node_id) {
+ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(int node_id) {
   if (!layer_for_highlighting_) {
-    layer_for_highlighting_.reset(
-        new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
+    layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
+    layer_for_highlighting_->set_delegate(this);
+    layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }
   std::pair<aura::Window*, gfx::Rect> window_and_bounds =
       node_id_to_ui_element_.count(node_id)
@@ -220,9 +207,7 @@ ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
   if (!window_and_bounds.first)
     return ui_devtools::protocol::Response::Error("No node found with that id");
 
-  SkColor content_color =
-      RGBAToSkColor(highlight_config->getContentColor(nullptr));
-  UpdateHighlight(window_and_bounds, content_color);
+  UpdateHighlight(window_and_bounds);
 
   if (!layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(true);
@@ -255,6 +240,43 @@ int UIDevToolsDOMAgent::FindElementIdTargetedByPoint(
   DCHECK(targeted_view);
   return window_element_root_->FindUIElementIdForBackendElement<views::View>(
       targeted_view);
+}
+
+void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
+  const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
+  ui::PaintRecorder recorder(context, screen_bounds.size());
+  gfx::Canvas* canvas_ = recorder.canvas();
+  gfx::RectF rect_f(hovered_element_bounds_);
+
+  cc::PaintFlags flags;
+  flags.setColor(SK_ColorBLUE);
+  flags.setStrokeWidth(1.f);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+
+  constexpr SkScalar intervals[] = {1.f, 1.f};
+  flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+
+  // Top horizontal dotted line from left to right.
+  canvas_->DrawLine(gfx::PointF(0.0f, rect_f.y()),
+                    gfx::PointF(screen_bounds.right(), rect_f.y()), flags);
+
+  // Bottom horizontal dotted line from left to right.
+  canvas_->DrawLine(gfx::PointF(0.0f, rect_f.bottom() + 0.5f),
+                    gfx::PointF(screen_bounds.right(), rect_f.bottom() + 0.5f),
+                    flags);
+
+  // Left vertical dotted line from top to bottom.
+  canvas_->DrawLine(gfx::PointF(rect_f.x() - 0.5f, 0.0f),
+                    gfx::PointF(rect_f.x() - 0.5f, screen_bounds.bottom()),
+                    flags);
+
+  // Right vertical dotted line from top to bottom.
+  canvas_->DrawLine(gfx::PointF(rect_f.right() + 0.5f, 0.0f),
+                    gfx::PointF(rect_f.right() + 0.5f, screen_bounds.bottom()),
+                    flags);
+
+  // Draw ui element bounds.
+  canvas_->DrawRect(rect_f, SK_ColorBLUE);
 }
 
 void UIDevToolsDOMAgent::OnHostInitialized(aura::WindowTreeHost* host) {
@@ -382,14 +404,14 @@ void UIDevToolsDOMAgent::Reset() {
 }
 
 void UIDevToolsDOMAgent::UpdateHighlight(
-    const std::pair<aura::Window*, gfx::Rect>& window_and_bounds,
-    SkColor background) {
-  layer_for_highlighting_->SetColor(background);
-
+    const std::pair<aura::Window*, gfx::Rect>& window_and_bounds) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_and_bounds.first);
   aura::Window* root = window_and_bounds.first->GetRootWindow();
+  layer_for_highlighting_->SetBounds(root->bounds());
+  layer_for_highlighting_->SchedulePaint(root->bounds());
+
   if (root->layer() != layer_for_highlighting_->parent())
     root->layer()->Add(layer_for_highlighting_.get());
   else
@@ -397,12 +419,10 @@ void UIDevToolsDOMAgent::UpdateHighlight(
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
-
-  gfx::Rect bounds(window_and_bounds.second);
-  gfx::Point origin = bounds.origin();
+  hovered_element_bounds_ = window_and_bounds.second;
+  gfx::Point origin = hovered_element_bounds_.origin();
   screen_position_client->ConvertPointFromScreen(root, &origin);
-  bounds.set_origin(origin);
-  layer_for_highlighting_->SetBounds(bounds);
+  hovered_element_bounds_.set_origin(origin);
 }
 
 }  // namespace ui_devtools

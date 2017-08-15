@@ -29,8 +29,7 @@ ui_devtools::protocol::Response UIDevToolsOverlayAgent::highlightNode(
     std::unique_ptr<ui_devtools::protocol::Overlay::HighlightConfig>
         highlight_config,
     ui_devtools::protocol::Maybe<int> node_id) {
-  return dom_agent_->HighlightNode(std::move(highlight_config),
-                                   node_id.fromJust());
+  return dom_agent_->HighlightNode(node_id.fromJust());
 }
 
 ui_devtools::protocol::Response UIDevToolsOverlayAgent::hideHighlight() {
