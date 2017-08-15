@@ -533,6 +533,9 @@ class MockAutofillDriver : public TestAutofillDriver {
                     RendererFormDataAction action,
                     const FormData& data));
 
+  MOCK_METHOD1(SendAutofillTypePredictionsToRenderer,
+               void(const std::vector<FormStructure*>& forms));
+
   void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
   bool IsIncognito() const override { return is_incognito_; }
@@ -857,7 +860,7 @@ class AutofillManagerTest : public testing::Test {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data_.set_database(autofill_client_.GetDatabase());
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
-    autofill_driver_.reset(new MockAutofillDriver());
+    autofill_driver_.reset(new testing::NiceMock<MockAutofillDriver>());
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
@@ -1268,6 +1271,31 @@ TEST_F(AutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
   histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                       0 /* FORMS_LOADED */, 2);
   download_manager_->VerifyLastQueriedForms(forms);
+}
+
+// Test that when forms are seen, the renderer is updated with the predicted
+// field types
+TEST_F(AutofillManagerTest, OnFormsSeen_SendAutofillTypePredictionsToRenderer) {
+  // Set up a queryable form.
+  FormData form1;
+  test::CreateTestAddressFormData(&form1);
+
+  // Set up a non-queryable form.
+  FormData form2;
+  FormFieldData field;
+  test::CreateTestFormField("Querty", "qwerty", "", "text", &field);
+  form2.name = ASCIIToUTF16("NonQueryable");
+  form2.origin = form1.origin;
+  form2.action = GURL("https://myform.com/submit.html");
+  form2.fields.push_back(field);
+
+  // Package the forms for observation.
+  std::vector<FormData> forms{form1, form2};
+
+  // Setup expectations.
+  EXPECT_CALL(*autofill_driver_, SendAutofillTypePredictionsToRenderer(_))
+      .Times(2);
+  FormsSeen(forms);
 }
 
 // Test that no autofill suggestions are returned for a field with an
