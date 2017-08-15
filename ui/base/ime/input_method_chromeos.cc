@@ -621,7 +621,7 @@ void InputMethodChromeOS::ExtractCompositionText(
       if (start >= end)
         continue;
       ImeTextSpan ime_text_span(char16_offsets[start], char16_offsets[end],
-                                text_ime_text_spans[i].color,
+                                text_ime_text_spans[i].underline_color,
                                 text_ime_text_spans[i].thick,
                                 text_ime_text_spans[i].background_color);
       out_composition->ime_text_spans.push_back(ime_text_span);

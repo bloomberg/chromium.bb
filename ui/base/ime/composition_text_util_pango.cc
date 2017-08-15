@@ -98,7 +98,7 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
           if (type == PANGO_UNDERLINE_DOUBLE)
             ime_text_span.thick = true;
           else if (type == PANGO_UNDERLINE_ERROR)
-            ime_text_span.color = SK_ColorRED;
+            ime_text_span.underline_color = SK_ColorRED;
         }
         composition->ime_text_spans.push_back(ime_text_span);
       }

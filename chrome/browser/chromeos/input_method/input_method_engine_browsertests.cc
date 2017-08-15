@@ -567,13 +567,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_EQ(2U, ime_text_spans.size());
     // single underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].color);
+    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].underline_color);
     EXPECT_FALSE(ime_text_spans[0].thick);
     EXPECT_EQ(0U, ime_text_spans[0].start_offset);
     EXPECT_EQ(5U, ime_text_spans[0].end_offset);
 
     // double underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[1].color);
+    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[1].underline_color);
     EXPECT_TRUE(ime_text_spans[1].thick);
     EXPECT_EQ(6U, ime_text_spans[1].start_offset);
     EXPECT_EQ(10U, ime_text_spans[1].end_offset);
@@ -1031,7 +1031,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_EQ(1U, ime_text_spans.size());
     // single underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].color);
+    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].underline_color);
     EXPECT_FALSE(ime_text_spans[0].thick);
     EXPECT_EQ(0U, ime_text_spans[0].start_offset);
     EXPECT_EQ(1U, ime_text_spans[0].end_offset);
