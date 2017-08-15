@@ -78,40 +78,6 @@ NSString* GetTextFieldForID(int categoryId) {
       stringWithFormat:@"%@_textField", l10n_util::GetNSString(categoryId)];
 }
 
-// Call this in the "Edit Address" view to clear the Country value. The case
-// of the value being empty is handled gracefully.
-void ClearCountryValue() {
-  // Switch on edit mode.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
-      performAction:grey_tap()];
-
-  // The test only can tap "Select All" if there is a text to select. Type "a"
-  // to ensure that.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(GetTextFieldForID(
-                                          IDS_IOS_AUTOFILL_COUNTRY))]
-      performAction:grey_typeText(@"a")];
-  // Remove the country value by select all + cut.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(GetTextFieldForID(
-                                          IDS_IOS_AUTOFILL_COUNTRY))]
-      performAction:grey_longPress()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(@"Select All"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitStaticText),
-                                   nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Cut"),
-                                          grey_accessibilityTrait(
-                                              UIAccessibilityTraitStaticText),
-                                          nil)] performAction:grey_tap()];
-
-  // Switch off edit mode.
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
-}
-
 }  // namespace
 
 // Various tests for the Autofill section of the settings.
@@ -179,27 +145,20 @@ void ClearCountryValue() {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
-  // TODO(crbug.com/747431): re-enable this test on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   [self loadAndSubmitTheForm];
   [self openEditAddress:@"George Washington, 1600 Pennsylvania Ave NW"];
 
   // Keep editing the Country field and verify that validation works.
   for (const UserTypedCountryExpectedResultPair& expectation : kCountryTests) {
-    ClearCountryValue();
-
     // Switch on edit mode.
     [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                             IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
         performAction:grey_tap()];
 
-    // Type the user-version of the country.
+    // Replace the text field with the user-version of the country.
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(GetTextFieldForID(
                                             IDS_IOS_AUTOFILL_COUNTRY))]
-        performAction:grey_typeText(expectation.user_typed_country)];
+        performAction:grey_replaceText(expectation.user_typed_country)];
 
     // Switch off edit mode.
     [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
