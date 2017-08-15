@@ -8,7 +8,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
@@ -20,102 +20,94 @@ using ProcessMemoryDumpPtr =
 
 namespace {
 
-void TryAddMetric(ukm::UkmEntryBuilder* builder,
-                  const char* metric_name,
-                  int64_t value) {
-  // Builder might be null if it was created before the UKMService was started.
-  // In that case, just no-op.
-  if (builder)
-    builder->AddMetric(metric_name, value);
-}
-
 void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
-                              ukm::UkmEntryBuilder* builder) {
-  TryAddMetric(builder, "ProcessType",
-               static_cast<int64_t>(
-                   memory_instrumentation::mojom::ProcessType::BROWSER));
+                              ukm::SourceId ukm_source_id,
+                              ukm::UkmRecorder* ukm_recorder) {
+  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::BROWSER));
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Resident",
                                 pmd->os_dump->resident_set_kb / 1024);
-  TryAddMetric(builder, "Resident", pmd->os_dump->resident_set_kb / 1024);
+  builder.SetResident(pmd->os_dump->resident_set_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Malloc",
                                 pmd->chrome_dump->malloc_total_kb / 1024);
-  TryAddMetric(builder, "Malloc", pmd->chrome_dump->malloc_total_kb / 1024);
+  builder.SetMalloc(pmd->chrome_dump->malloc_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Browser2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateMemoryFootprint",
                                 pmd->os_dump->private_footprint_kb / 1024);
-  TryAddMetric(builder, "PrivateMemoryFootprint",
-               pmd->os_dump->private_footprint_kb / 1024);
+  builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
+  builder.Record(ukm_recorder);
 }
 
 void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
-                               ukm::UkmEntryBuilder* builder) {
-  TryAddMetric(builder, "ProcessType",
-               static_cast<int64_t>(
-                   memory_instrumentation::mojom::ProcessType::RENDERER));
+                               ukm::SourceId ukm_source_id,
+                               ukm::UkmRecorder* ukm_recorder) {
+  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::RENDERER));
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Resident",
                                 pmd->os_dump->resident_set_kb / 1024);
-  TryAddMetric(builder, "Resident", pmd->os_dump->resident_set_kb / 1024);
+  builder.SetResident(pmd->os_dump->resident_set_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Malloc",
                                 pmd->chrome_dump->malloc_total_kb / 1024);
-  TryAddMetric(builder, "Malloc", pmd->chrome_dump->malloc_total_kb / 1024);
+  builder.SetMalloc(pmd->chrome_dump->malloc_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Renderer2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.PrivateMemoryFootprint",
                                 pmd->os_dump->private_footprint_kb / 1024);
-  TryAddMetric(builder, "PrivateMemoryFootprint",
-               pmd->os_dump->private_footprint_kb / 1024);
+  builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Renderer2.PartitionAlloc",
       pmd->chrome_dump->partition_alloc_total_kb / 1024);
-  TryAddMetric(builder, "PartitionAlloc",
-               pmd->chrome_dump->partition_alloc_total_kb / 1024);
+  builder.SetPartitionAlloc(pmd->chrome_dump->partition_alloc_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.BlinkGC",
                                 pmd->chrome_dump->blink_gc_total_kb / 1024);
-  TryAddMetric(builder, "BlinkGC", pmd->chrome_dump->blink_gc_total_kb / 1024);
+  builder.SetBlinkGC(pmd->chrome_dump->blink_gc_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.V8",
                                 pmd->chrome_dump->v8_total_kb / 1024);
-  TryAddMetric(builder, "V8", pmd->chrome_dump->v8_total_kb / 1024);
+  builder.SetV8(pmd->chrome_dump->v8_total_kb / 1024);
+  builder.Record(ukm_recorder);
 }
 
 void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
-                          ukm::UkmEntryBuilder* builder) {
-  TryAddMetric(
-      builder, "ProcessType",
+                          ukm::SourceId ukm_source_id,
+                          ukm::UkmRecorder* ukm_recorder) {
+  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Resident",
                                 pmd->os_dump->resident_set_kb / 1024);
-  TryAddMetric(builder, "Resident", pmd->os_dump->resident_set_kb / 1024);
+  builder.SetResident(pmd->os_dump->resident_set_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
                                 pmd->chrome_dump->malloc_total_kb / 1024);
-  TryAddMetric(builder, "Malloc", pmd->chrome_dump->malloc_total_kb / 1024);
+  builder.SetMalloc(pmd->chrome_dump->malloc_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.CommandBuffer",
       pmd->chrome_dump->command_buffer_total_kb / 1024);
-  TryAddMetric(builder, "CommandBuffer",
-               pmd->chrome_dump->command_buffer_total_kb / 1024);
+  builder.SetCommandBuffer(pmd->chrome_dump->command_buffer_total_kb / 1024);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
       pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateMemoryFootprint",
                                 pmd->os_dump->private_footprint_kb / 1024);
-  TryAddMetric(builder, "PrivateMemoryFootprint",
-               pmd->os_dump->private_footprint_kb / 1024);
+  builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
+  builder.Record(ukm_recorder);
 }
 
 }  // namespace
@@ -156,16 +148,6 @@ void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
 }
 
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
-
-std::unique_ptr<ukm::UkmEntryBuilder>
-ProcessMemoryMetricsEmitter::CreateUkmBuilder(int64_t ukm_source_id) {
-  static const char event_name[] = "Memory.Experimental";
-  ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
-  if (!ukm_recorder)
-    return nullptr;
-
-  return ukm_recorder->GetEntryBuilder(ukm_source_id, event_name);
-}
 
 void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
     bool success,
@@ -213,9 +195,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 
     switch (pmd->process_type) {
       case memory_instrumentation::mojom::ProcessType::BROWSER: {
-        std::unique_ptr<ukm::UkmEntryBuilder> builder =
-            CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
-        EmitBrowserMemoryMetrics(pmd, builder.get());
+        EmitBrowserMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
+                                 GetUkmRecorder());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
@@ -230,15 +211,12 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
             ukm_source_id = process_info->ukm_source_ids[0];
           }
         }
-        std::unique_ptr<ukm::UkmEntryBuilder> builder =
-            CreateUkmBuilder(ukm_source_id);
-        EmitRendererMemoryMetrics(pmd, builder.get());
+        EmitRendererMemoryMetrics(pmd, ukm_source_id, GetUkmRecorder());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::GPU: {
-        std::unique_ptr<ukm::UkmEntryBuilder> builder =
-            CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
-        EmitGpuMemoryMetrics(pmd, builder.get());
+        EmitGpuMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
+                             GetUkmRecorder());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::UTILITY:
@@ -253,8 +231,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                 private_footprint_total_kb / 1024);
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
-  TryAddMetric(builder.get(), "Total2.PrivateMemoryFootprint",
-               private_footprint_total_kb / 1024);
+  ukm::builders::Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
+      .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
+      .Record(GetUkmRecorder());
 }

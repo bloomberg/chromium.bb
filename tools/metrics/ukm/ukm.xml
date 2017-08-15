@@ -617,6 +617,11 @@ be describing additional metrics about the same event.
       Size of process' working set.
     </summary>
   </metric>
+  <metric name="Total2.PrivateMemoryFootprint">
+    <summary>
+      Measure of total memory consumed by all processes.
+    </summary>
+  </metric>
   <metric name="V8">
     <summary>
       Measure of memory consumed by V8.
