@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 
 import collections
 import datetime
@@ -36,7 +36,6 @@ from utils import tools
 
 import auth
 import cipd
-import isolated_format
 import isolateserver
 import run_isolated
 
@@ -124,7 +123,7 @@ NewTaskRequest = collections.namedtuple(
       'parent_task_id',
       'priority',
       'properties',
-      'service_account_token',
+      'service_account',
       'tags',
       'user',
     ])
@@ -147,19 +146,17 @@ def namedtuple_to_dict(value):
   return out
 
 
-def task_request_to_raw_request(task_request, hide_token):
+def task_request_to_raw_request(task_request):
   """Returns the json-compatible dict expected by the server for new request.
 
   This is for the v1 client Swarming API.
   """
   out = namedtuple_to_dict(task_request)
-  if hide_token:
-    if out['service_account_token'] not in (None, 'bot', 'none'):
-      out['service_account_token'] = '<hidden>'
-  # Don't send 'service_account_token' if it is None to avoid confusing older
-  # version of the server that doesn't know about 'service_account_token'.
-  if out['service_account_token'] in (None, 'none'):
-    out.pop('service_account_token')
+  # Don't send 'service_account' if it is None to avoid confusing older
+  # version of the server that doesn't know about 'service_account' and don't
+  # use it at all.
+  if not out['service_account']:
+    out.pop('service_account')
   out['properties']['dimensions'] = [
     {'key': k, 'value': v}
     for k, v in out['properties']['dimensions']
@@ -229,7 +226,7 @@ def trigger_task_shards(swarming, task_request, shards):
     None in case of failure.
   """
   def convert(index):
-    req = task_request_to_raw_request(task_request, False)
+    req = task_request_to_raw_request(task_request)
     if shards > 1:
       req['properties']['env'] = setup_googletest(
           req['properties']['env'], shards, index)
@@ -265,17 +262,6 @@ def trigger_task_shards(swarming, task_request, shards):
     return None
 
   return tasks
-
-
-def mint_service_account_token(service_account):
-  """Given a service account name returns a delegation token for this account.
-
-  The token is generated based on triggering user's credentials. It is passed
-  to Swarming, that uses it when running tasks.
-  """
-  logging.info(
-      'Generating delegation token for service account "%s"', service_account)
-  raise NotImplementedError('Custom service accounts are not implemented yet')
 
 
 ### Collection.
@@ -933,10 +919,10 @@ def add_trigger_options(parser):
       help='"<name> <relpath>" items to keep a persistent bot managed cache')
   group.add_option(
       '--service-account',
-      help='Name of a service account to run the task as. Only literal "bot" '
-           'string can be specified currently (to run the task under bot\'s '
-           'account). Don\'t use task service accounts if not given '
-           '(default).')
+      help='Email of a service account to run the task as, or literal "bot" '
+           'string to indicate that the task should use the same account the '
+           'bot itself is using to authenticate to Swarming. Don\'t use task '
+           'service accounts if not given (default).')
   group.add_option(
       '-o', '--output', action='append', default=[], metavar='PATH',
       help='A list of files to return in addition to those written to '
@@ -972,10 +958,7 @@ def add_trigger_options(parser):
 
 
 def process_trigger_options(parser, options, args):
-  """Processes trigger options and does preparatory steps.
-
-  Generates service account tokens if necessary.
-  """
+  """Processes trigger options and does preparatory steps."""
   process_filter_options(parser, options)
   options.env = dict(options.env)
   if args and args[0] == '--':
@@ -1060,22 +1043,13 @@ def process_trigger_options(parser, options, args):
       outputs=options.output,
       secret_bytes=secret_bytes)
 
-  # Convert a service account email to a signed service account token to pass
-  # to Swarming.
-  service_account_token = None
-  if options.service_account in ('bot', 'none'):
-    service_account_token = options.service_account
-  elif options.service_account:
-    # pylint: disable=assignment-from-no-return
-    service_account_token = mint_service_account_token(options.service_account)
-
   return NewTaskRequest(
       expiration_secs=options.expiration,
       name=default_task_name(options),
       parent_task_id=os.environ.get('SWARMING_TASK_ID', ''),
       priority=options.priority,
       properties=properties,
-      service_account_token=service_account_token,
+      service_account=options.service_account,
       tags=options.tags,
       user=options.user)
 
@@ -1632,7 +1606,7 @@ def CMDtrigger(parser, args):
         data = {
           'base_task_name': task_request.name,
           'tasks': tasks,
-          'request': task_request_to_raw_request(task_request, True),
+          'request': task_request_to_raw_request(task_request),
         }
         tools.write_json(unicode(options.dump_json), data, True)
         print('To collect results, use:')
