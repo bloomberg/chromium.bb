@@ -15,6 +15,7 @@ define('media_router_bindings', [
     'mojo/common/time.mojom',
     'mojo/public/js/bindings',
     'net/interfaces/ip_address.mojom',
+    'net/interfaces/ip_endpoint.mojom',
     'url/mojo/origin.mojom',
     'url/mojo/url.mojom',
 ], function(mediaControllerMojom,
@@ -27,6 +28,7 @@ define('media_router_bindings', [
             timeMojom,
             bindings,
             ipAddressMojom,
+            ipEndpointMojom,
             originMojom,
             urlMojom) {
   'use strict';
@@ -280,6 +282,7 @@ define('media_router_bindings', [
       DialMediaSink: mediaRouterMojom.DialMediaSink,
       CastMediaSink: mediaRouterMojom.CastMediaSink,
       IPAddress: ipAddressMojom.IPAddress,
+      IPEndpoint: ipEndpointMojom.IPEndpoint,
       InterfacePtrController: bindings.InterfacePtrController,
       InterfaceRequest: bindings.InterfaceRequest,
       MediaController: mediaControllerMojom.MediaController,

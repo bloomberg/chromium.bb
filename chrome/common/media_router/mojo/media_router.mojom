@@ -9,6 +9,7 @@ import "chrome/common/media_router/mojo/media_status.mojom";
 import "media/mojo/interfaces/mirror_service_remoting.mojom";
 import "mojo/common/time.mojom";
 import "net/interfaces/ip_address.mojom";
+import "net/interfaces/ip_endpoint.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 
@@ -54,7 +55,7 @@ struct DialMediaSink {
 };
 
 struct CastMediaSink {
-  net.interfaces.IPAddress ip_address;
+  net.interfaces.IPEndPoint ip_endpoint;
 
   // Model name of the sink, if it represents a physical device.
   string model_name;

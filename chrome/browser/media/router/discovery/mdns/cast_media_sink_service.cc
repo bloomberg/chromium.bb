@@ -65,8 +65,8 @@ ErrorType CreateCastMediaSink(const media_router::DnsSdService& service,
                                media_router::SinkIconType::CAST);
 
   media_router::CastSinkExtraData extra_data;
-  extra_data.ip_address = ip_address;
-  extra_data.port = service.service_host_port.port();
+  extra_data.ip_endpoint =
+      net::IPEndPoint(ip_address, service.service_host_port.port());
   extra_data.model_name = service_data["md"];
   extra_data.capabilities = cast_channel::CastDeviceCapability::NONE;
 

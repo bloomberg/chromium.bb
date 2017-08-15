@@ -6,6 +6,7 @@
 
 #include "chrome/common/media_router/media_source.h"
 #include "net/interfaces/ip_address_struct_traits.h"
+#include "net/interfaces/ip_endpoint_struct_traits.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 
 namespace mojo {
@@ -154,7 +155,7 @@ bool StructTraits<media_router::mojom::CastMediaSinkDataView,
                   media_router::CastSinkExtraData>::
     Read(media_router::mojom::CastMediaSinkDataView data,
          media_router::CastSinkExtraData* out) {
-  if (!data.ReadIpAddress(&out->ip_address))
+  if (!data.ReadIpEndpoint(&out->ip_endpoint))
     return false;
 
   if (!data.ReadModelName(&out->model_name))

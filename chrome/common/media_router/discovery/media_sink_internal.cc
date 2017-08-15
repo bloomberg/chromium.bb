@@ -175,8 +175,8 @@ CastSinkExtraData::CastSinkExtraData(const CastSinkExtraData& other) = default;
 CastSinkExtraData::~CastSinkExtraData() = default;
 
 bool CastSinkExtraData::operator==(const CastSinkExtraData& other) const {
-  return ip_address == other.ip_address && port == other.port &&
-         model_name == other.model_name && capabilities == other.capabilities &&
+  return ip_endpoint == other.ip_endpoint && model_name == other.model_name &&
+         capabilities == other.capabilities &&
          cast_channel_id == other.cast_channel_id &&
          discovered_by_dial == other.discovered_by_dial;
 }
