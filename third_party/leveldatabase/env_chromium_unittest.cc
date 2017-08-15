@@ -197,6 +197,24 @@ TEST(ChromiumEnv, TestWriteBufferSize) {
   EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(100 * MB * MB));
 }
 
+TEST(ChromiumEnv, LockFile) {
+  base::FilePath tmp_file_path;
+  base::CreateTemporaryFile(&tmp_file_path);
+  leveldb::FileLock* lock = nullptr;
+
+  Env* env = Env::Default();
+  EXPECT_TRUE(env->LockFile(tmp_file_path.MaybeAsASCII(), &lock).ok());
+  EXPECT_NE(nullptr, lock);
+
+  leveldb::FileLock* failed_lock = nullptr;
+  EXPECT_FALSE(env->LockFile(tmp_file_path.MaybeAsASCII(), &failed_lock).ok());
+  EXPECT_EQ(nullptr, failed_lock);
+
+  EXPECT_TRUE(env->UnlockFile(lock).ok());
+  EXPECT_TRUE(env->LockFile(tmp_file_path.MaybeAsASCII(), &lock).ok());
+  EXPECT_TRUE(env->UnlockFile(lock).ok());
+}
+
 class ChromiumEnvDBTrackerTest : public ::testing::Test {
  protected:
   void SetUp() override {
