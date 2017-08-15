@@ -230,7 +230,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) {}
 
   // Called when a WindowUpdate has been parsed.
-  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {}
+  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
+                                   const QuicTime& receive_time) {}
 
   // Called when a BlockedFrame has been parsed.
   virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}

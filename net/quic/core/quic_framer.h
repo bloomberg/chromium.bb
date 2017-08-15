@@ -326,6 +326,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // The minimum packet number length required to represent |packet_number|.
   static QuicPacketNumberLength GetMinPacketNumberLength(
+      QuicVersion version,
       QuicPacketNumber packet_number);
 
   void SetSupportedVersions(const QuicVersionVector& versions) {
@@ -405,7 +406,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessAckFrame(QuicDataReader* reader,
                        uint8_t frame_type,
                        QuicAckFrame* frame);
-  bool ProcessTimestampsInAckFrame(QuicDataReader* reader, QuicAckFrame* frame);
+  bool ProcessTimestampsInAckFrame(uint8_t num_received_packets,
+                                   QuicDataReader* reader,
+                                   QuicAckFrame* ack_frame);
   bool ProcessStopWaitingFrame(QuicDataReader* reader,
                                const QuicPacketHeader& public_header,
                                QuicStopWaitingFrame* stop_waiting);
@@ -482,8 +485,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   bool AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
                                  QuicDataWriter* builder);
-  bool AppendTimestampToAckFrame(const QuicAckFrame& frame,
-                                 QuicDataWriter* builder);
+  bool AppendTimestampsToAckFrame(const QuicAckFrame& frame,
+                                  size_t num_timestamps_offset,
+                                  QuicDataWriter* writer);
   bool AppendStopWaitingFrame(const QuicPacketHeader& header,
                               const QuicStopWaitingFrame& frame,
                               QuicDataWriter* builder);

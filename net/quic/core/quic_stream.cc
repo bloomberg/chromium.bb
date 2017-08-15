@@ -7,6 +7,7 @@
 #include "net/quic/core/quic_flow_controller.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
@@ -231,6 +232,8 @@ void QuicStream::WriteOrBufferData(
     }
     if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
       // Write data if there is no buffered data before.
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
+                        2, 4);
       WriteBufferedData();
     }
     return;
@@ -260,6 +263,8 @@ void QuicStream::OnCanWrite() {
       return;
     }
     if (HasBufferedData() || (fin_buffered_ && !fin_sent_)) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
+                        3, 4);
       WriteBufferedData();
     }
     if (!fin_buffered_ && !fin_sent_ && CanWriteNewData()) {
@@ -363,6 +368,8 @@ QuicConsumedData QuicStream::WritevData(
 
     if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
       // Write data if there is no buffered data before.
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
+                        1, 4);
       WriteBufferedData();
     }
 
@@ -586,12 +593,14 @@ void QuicStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
                                     QuicTime::Delta ack_delay_time) {
   OnStreamFrameDiscarded(frame);
   if (ack_listener_ != nullptr) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_stream_notifier2, 1, 3);
     ack_listener_->OnPacketAcked(frame.data_length, ack_delay_time);
   }
 }
 
 void QuicStream::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
   if (ack_listener_ != nullptr) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_stream_notifier2, 2, 3);
     ack_listener_->OnPacketRetransmitted(frame.data_length);
   }
 }

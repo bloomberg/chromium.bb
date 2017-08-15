@@ -48,16 +48,9 @@ const bool kShouldNotProcessData = false;
 class TestStream : public QuicStream {
  public:
   TestStream(QuicStreamId id, QuicSession* session, bool should_process_data)
-      : QuicStream(id, session), should_process_data_(should_process_data) {}
+      : QuicStream(id, session) {}
 
   void OnDataAvailable() override {}
-
-  uint32_t ProcessRawData(const char* data, uint32_t data_len) {
-    EXPECT_NE(0u, data_len);
-    QUIC_DVLOG(1) << "ProcessData data_len: " << data_len;
-    data_ += string(data, data_len);
-    return should_process_data_ ? data_len : 0;
-  }
 
   MOCK_METHOD0(OnCanWriteNewData, void());
 
@@ -68,7 +61,6 @@ class TestStream : public QuicStream {
   using QuicStream::OnClose;
 
  private:
-  bool should_process_data_;
   string data_;
 };
 

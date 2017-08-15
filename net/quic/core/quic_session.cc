@@ -10,6 +10,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_flow_controller.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
@@ -50,7 +51,7 @@ QuicSession::QuicSession(QuicConnection* connection,
           FLAGS_quic_reloadable_flag_quic_use_stream_notifier2),
       save_data_before_consumption_(
           use_stream_notifier_ &&
-          FLAGS_quic_reloadable_flag_quic_save_data_before_consumption) {}
+          FLAGS_quic_reloadable_flag_quic_save_data_before_consumption2) {}
 
 void QuicSession::Initialize() {
   connection_->set_visitor(this);
@@ -1025,6 +1026,7 @@ void QuicSession::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_stream_notifier2, 3, 3);
   stream->OnStreamFrameDiscarded(frame);
 }
 

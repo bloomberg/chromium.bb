@@ -605,7 +605,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   size_t chlo_multiplier_;
   QuicTestServer::StreamFactory* stream_factory_;
   bool support_server_push_;
-  bool force_hol_blocking_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -619,16 +618,14 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
   QuicCryptoStream* crypto_stream = QuicSessionPeer::GetMutableCryptoStream(
       client_->client()->client_session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
-  EXPECT_NE(FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicSession* server_session = dispatcher->session_map().begin()->second.get();
   crypto_stream = QuicSessionPeer::GetMutableCryptoStream(server_session);
   sequencer = QuicStreamPeer::sequencer(crypto_stream);
-  EXPECT_NE(FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponsev6) {
@@ -1548,25 +1545,6 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   // received for that stream.
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
-
-class WrongAddressWriter : public QuicPacketWriterWrapper {
- public:
-  WrongAddressWriter() { self_address_.FromString("127.0.0.2"); }
-
-  WriteResult WritePacket(const char* buffer,
-                          size_t buf_len,
-                          const QuicIpAddress& /*real_self_address*/,
-                          const QuicSocketAddress& peer_address,
-                          PerPacketOptions* options) override {
-    // Use wrong address!
-    return QuicPacketWriterWrapper::WritePacket(buffer, buf_len, self_address_,
-                                                peer_address, options);
-  }
-
-  bool IsWriteBlockedDataBuffered() const override { return false; }
-
-  QuicIpAddress self_address_;
-};
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   ASSERT_TRUE(Initialize());
@@ -2984,7 +2962,8 @@ class WindowUpdateObserver : public QuicConnectionDebugVisitor {
 
   size_t num_window_update_frames() const { return num_window_update_frames_; }
 
-  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
+                           const QuicTime& receive_time) override {
     ++num_window_update_frames_;
   }
 

@@ -231,7 +231,7 @@ void QuicSpdyClientBase::OnRendezvousResult(QuicSpdyStream* stream) {
   if (stream) {
     stream->set_visitor(this);
     stream->OnDataAvailable();
-  } else if (data_to_resend.get()) {
+  } else if (data_to_resend) {
     data_to_resend->Resend();
   }
 }

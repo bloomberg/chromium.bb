@@ -173,7 +173,7 @@ class QuicPacketGeneratorTest : public QuicTest {
     creator_->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                            new NullEncrypter(Perspective::IS_CLIENT));
     creator_->set_encryption_level(ENCRYPTION_FORWARD_SECURE);
-    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption) {
+    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption2) {
       framer_.set_data_producer(&producer_);
     }
   }

@@ -244,7 +244,7 @@ class QUIC_EXPORT_PRIVATE PacketNumberQueue {
 
  private:
   // TODO(lilika): Remove QuicIntervalSet<QuicPacketNumber>
-  // once FLAGS_quic_reloadable_flag_quic_frames_deque is removed
+  // once FLAGS_quic_reloadable_flag_quic_frames_deque2 is removed
   QuicIntervalSet<QuicPacketNumber> packet_number_intervals_;
   std::deque<Interval<QuicPacketNumber>> packet_number_deque_;
   bool use_deque_;

@@ -2030,14 +2030,14 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
       // frame type (ack frame)
       // (one ack block, 2 byte largest observed, 2 byte block length)
       0xA5,
+      // num timestamps.
+      0x00,
       // largest acked
       0x12, 0x34,
       // Zero delta time.
       0x00, 0x00,
       // first ack block length.
       0x12, 0x34,
-      // num timestamps.
-      0x00,
   };
   // clang-format on
 
@@ -2074,14 +2074,160 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
       kFirstAckBlockLengthOffset + PACKET_2BYTE_PACKET_NUMBER;
   for (size_t i = kQuicFrameTypeSize; i < ack_frame_size; ++i) {
     string expected_error;
-    if (i < kLargestAckedDeltaTimeOffset) {
-      expected_error = "Unable to read largest acked.";
-    } else if (i < kFirstAckBlockLengthOffset) {
-      expected_error = "Unable to read ack delay time.";
-    } else if (i < kNumTimestampsOffset) {
-      expected_error = "Unable to read first ack block length.";
+    if (framer_.version() > QUIC_VERSION_39) {
+      if (i < 2) {
+        expected_error = "Unable to read num received packets.";
+      } else if (i < 2 + PACKET_2BYTE_PACKET_NUMBER) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < 2 + PACKET_2BYTE_PACKET_NUMBER +
+                         kQuicDeltaTimeLargestObservedSize) {
+        expected_error = "Unable to read ack delay time.";
+      } else {
+        expected_error = "Unable to read first ack block length.";
+      }
     } else {
-      expected_error = "Unable to read num received packets.";
+      if (i < kLargestAckedDeltaTimeOffset) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < kFirstAckBlockLengthOffset) {
+        expected_error = "Unable to read ack delay time.";
+      } else if (i < kNumTimestampsOffset) {
+        expected_error = "Unable to read first ack block length.";
+      } else {
+        expected_error = "Unable to read num received packets.";
+      }
+    }
+    CheckProcessingFails(
+        p,
+        i + GetPacketHeaderSize(framer_.version(), PACKET_8BYTE_CONNECTION_ID,
+                                !kIncludeVersion, !kIncludeDiversificationNonce,
+                                PACKET_6BYTE_PACKET_NUMBER),
+        expected_error, QUIC_INVALID_ACK_DATA);
+  }
+}
+
+TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
+  // clang-format off
+  unsigned char packet[] = {
+      // public flags (8 byte connection_id)
+      0x3C,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+
+      // frame type (ack frame)
+      // (one ack block, 6 byte largest observed, 2 byte block length)
+      0x4D,
+      // largest acked
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x34, 0x12,
+      // num timestamps.
+      0x00,
+  };
+
+  unsigned char packet39[] = {
+      // public flags (8 byte connection_id)
+      0x3C,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+
+      // frame type (ack frame)
+      // (one ack block, 6 byte largest observed, 2 byte block length)
+      0x4D,
+      // largest acked
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x12, 0x34,
+      // num timestamps.
+      0x00,
+  };
+
+  unsigned char packet40[] = {
+      // public flags (8 byte connection_id)
+      0x3C,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+
+      // frame type (ack frame)
+      // (one ack block, 8 byte largest observed, 2 byte block length)
+      0xAD,
+      // num timestamps.
+      0x00,
+      // largest acked
+      0x00, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x12, 0x34
+  };
+  // clang-format on
+
+  unsigned char* p = packet;
+  size_t packet_size = arraysize(packet);
+  if (framer_.version() > QUIC_VERSION_39) {
+    p = packet40;
+    packet_size = arraysize(packet40);
+  } else if (framer_.version() > QUIC_VERSION_38) {
+    p = packet39;
+    packet_size = arraysize(packet39);
+  }
+
+  QuicEncryptedPacket encrypted(AsChars(p), packet_size, false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion,
+                              !kIncludeDiversificationNonce));
+
+  EXPECT_EQ(0u, visitor_.stream_frames_.size());
+  ASSERT_EQ(1u, visitor_.ack_frames_.size());
+  const QuicAckFrame& frame = *visitor_.ack_frames_[0];
+  EXPECT_EQ(kPacketNumber, frame.largest_observed);
+  ASSERT_EQ(4660u, frame.packets.NumPacketsSlow());
+
+  const size_t kLargestAckedOffset = kQuicFrameTypeSize;
+  const size_t kLargestAckedDeltaTimeOffset =
+      kLargestAckedOffset + PACKET_6BYTE_PACKET_NUMBER;
+  const size_t kFirstAckBlockLengthOffset =
+      kLargestAckedDeltaTimeOffset + kQuicDeltaTimeLargestObservedSize;
+  const size_t kNumTimestampsOffset =
+      kFirstAckBlockLengthOffset + PACKET_2BYTE_PACKET_NUMBER;
+  // Now test framing boundaries.
+  const size_t ack_frame_size =
+      kFirstAckBlockLengthOffset + PACKET_2BYTE_PACKET_NUMBER;
+  for (size_t i = kQuicFrameTypeSize; i < ack_frame_size; ++i) {
+    string expected_error;
+    if (framer_.version() > QUIC_VERSION_39) {
+      if (i < 2) {
+        expected_error = "Unable to read num received packets.";
+      } else if (i < 2 + PACKET_8BYTE_PACKET_NUMBER) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < 2 + PACKET_8BYTE_PACKET_NUMBER +
+                         kQuicDeltaTimeLargestObservedSize) {
+        expected_error = "Unable to read ack delay time.";
+      } else {
+        expected_error = "Unable to read first ack block length.";
+      }
+    } else {
+      if (i < kLargestAckedDeltaTimeOffset) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < kFirstAckBlockLengthOffset) {
+        expected_error = "Unable to read ack delay time.";
+      } else if (i < kNumTimestampsOffset) {
+        expected_error = "Unable to read first ack block length.";
+      } else {
+        expected_error = "Unable to read num received packets.";
+      }
     }
     CheckProcessingFails(
         p,
@@ -2199,12 +2345,14 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
       // frame type (ack frame)
       // (more than one ack block, 2 byte largest observed, 2 byte block length)
       0xB5,
+      // num ack blocks ranges.
+      0x04,
+      // Number of timestamps.
+      0x02,
       // largest acked
       0x12, 0x34,
       // Zero delta time.
       0x00, 0x00,
-      // num ack blocks ranges.
-      0x04,
       // first ack block length.
       0x00, 0x01,
       // gap to next block.
@@ -2223,8 +2371,6 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
       0x05,
       // ack block length.
       0x00, 0x04,
-      // Number of timestamps.
-      0x02,
       // Delta from largest observed.
       0x01,
       // Delta time.
@@ -2291,41 +2437,109 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
       kAckBlockLengthOffset4 + PACKET_2BYTE_PACKET_NUMBER;
   for (size_t i = kQuicFrameTypeSize; i < ack_frame_size; ++i) {
     string expected_error;
-    if (i < kLargestAckedDeltaTimeOffset) {
-      expected_error = "Unable to read largest acked.";
-    } else if (i < kNumberOfAckBlocksOffset) {
-      expected_error = "Unable to read ack delay time.";
-    } else if (i < kFirstAckBlockLengthOffset) {
-      expected_error = "Unable to read num of ack blocks.";
-    } else if (i < kGapToNextBlockOffset1) {
-      expected_error = "Unable to read first ack block length.";
-    } else if (i < kAckBlockLengthOffset1) {
-      expected_error = "Unable to read gap to next ack block.";
-    } else if (i < kGapToNextBlockOffset2) {
-      expected_error = "Unable to ack block length.";
-    } else if (i < kAckBlockLengthOffset2) {
-      expected_error = "Unable to read gap to next ack block.";
-    } else if (i < kGapToNextBlockOffset3) {
-      expected_error = "Unable to ack block length.";
-    } else if (i < kAckBlockLengthOffset3) {
-      expected_error = "Unable to read gap to next ack block.";
-    } else if (i < kGapToNextBlockOffset4) {
-      expected_error = "Unable to ack block length.";
-    } else if (i < kAckBlockLengthOffset4) {
-      expected_error = "Unable to read gap to next ack block.";
-    } else if (i < kNumTimestampsOffset) {
-      expected_error = "Unable to ack block length.";
-    } else if (i < kTimestampDeltaLargestObserved1) {
-      expected_error = "Unable to read num received packets.";
-    } else if (i < kTimestampTimeDeltaLargestObserved1) {
-      expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < kTimestampDeltaLargestObserved2) {
-      expected_error = "Unable to read time delta in received packets.";
-    } else if (i < kTimestampTimeDeltaLargestObserved2) {
-      expected_error = "Unable to read sequence delta in received packets.";
+    if (framer_.version() <= QUIC_VERSION_39) {
+      if (i < kLargestAckedDeltaTimeOffset) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < kNumberOfAckBlocksOffset) {
+        expected_error = "Unable to read ack delay time.";
+      } else if (i < kFirstAckBlockLengthOffset) {
+        expected_error = "Unable to read num of ack blocks.";
+      } else if (i < kGapToNextBlockOffset1) {
+        expected_error = "Unable to read first ack block length.";
+      } else if (i < kAckBlockLengthOffset1) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset2) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset2) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset3) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset3) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset4) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset4) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kNumTimestampsOffset) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kTimestampDeltaLargestObserved1) {
+        expected_error = "Unable to read num received packets.";
+      } else if (i < kTimestampTimeDeltaLargestObserved1) {
+        expected_error = "Unable to read sequence delta in received packets.";
+      } else if (i < kTimestampDeltaLargestObserved2) {
+        expected_error = "Unable to read time delta in received packets.";
+      } else if (i < kTimestampTimeDeltaLargestObserved2) {
+        expected_error = "Unable to read sequence delta in received packets.";
+      } else {
+        expected_error =
+            "Unable to read incremental time delta in received packets.";
+      }
     } else {
-      expected_error =
-          "Unable to read incremental time delta in received packets.";
+      const size_t kNumberOfAckBlocksOffset = kQuicFrameTypeSize;
+      const size_t kNumTimestampsOffset = kNumberOfAckBlocksOffset + 1;
+      const size_t kLargestAckedOffset = kNumTimestampsOffset + 1;
+      const size_t kLargestAckedDeltaTimeOffset =
+          kLargestAckedOffset + PACKET_2BYTE_PACKET_NUMBER;
+      const size_t kFirstAckBlockLengthOffset =
+          kLargestAckedDeltaTimeOffset + kQuicDeltaTimeLargestObservedSize;
+      const size_t kGapToNextBlockOffset1 =
+          kFirstAckBlockLengthOffset + PACKET_2BYTE_PACKET_NUMBER;
+      const size_t kAckBlockLengthOffset1 = kGapToNextBlockOffset1 + 1;
+      const size_t kGapToNextBlockOffset2 =
+          kAckBlockLengthOffset1 + PACKET_2BYTE_PACKET_NUMBER;
+      const size_t kAckBlockLengthOffset2 = kGapToNextBlockOffset2 + 1;
+      const size_t kGapToNextBlockOffset3 =
+          kAckBlockLengthOffset2 + PACKET_2BYTE_PACKET_NUMBER;
+      const size_t kAckBlockLengthOffset3 = kGapToNextBlockOffset3 + 1;
+      const size_t kGapToNextBlockOffset4 =
+          kAckBlockLengthOffset3 + PACKET_2BYTE_PACKET_NUMBER;
+      const size_t kAckBlockLengthOffset4 = kGapToNextBlockOffset3 + 1;
+      const size_t kTimestampDeltaLargestObserved1 =
+          kNumTimestampsOffset + kQuicNumTimestampsSize;
+      const size_t kTimestampTimeDeltaLargestObserved1 =
+          kTimestampDeltaLargestObserved1 + 1;
+      const size_t kTimestampDeltaLargestObserved2 =
+          kTimestampTimeDeltaLargestObserved1 + 4;
+      const size_t kTimestampTimeDeltaLargestObserved2 =
+          kTimestampDeltaLargestObserved2 + 1;
+      if (i < kNumTimestampsOffset) {
+        expected_error = "Unable to read num of ack blocks.";
+      } else if (i < kLargestAckedOffset) {
+        expected_error = "Unable to read num received packets.";
+      } else if (i < kLargestAckedDeltaTimeOffset) {
+        expected_error = "Unable to read largest acked.";
+      } else if (i < kFirstAckBlockLengthOffset) {
+        expected_error = "Unable to read ack delay time.";
+      } else if (i < kGapToNextBlockOffset1) {
+        expected_error = "Unable to read first ack block length.";
+      } else if (i < kAckBlockLengthOffset1) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset2) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset2) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset3) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset3) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kGapToNextBlockOffset4) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kAckBlockLengthOffset4) {
+        expected_error = "Unable to read gap to next ack block.";
+      } else if (i < kNumTimestampsOffset) {
+        expected_error = "Unable to ack block length.";
+      } else if (i < kTimestampDeltaLargestObserved1) {
+        expected_error = "Unable to read num received packets.";
+      } else if (i < kTimestampTimeDeltaLargestObserved1) {
+        expected_error = "Unable to read sequence delta in received packets.";
+      } else if (i < kTimestampDeltaLargestObserved2) {
+        expected_error = "Unable to read time delta in received packets.";
+      } else if (i < kTimestampTimeDeltaLargestObserved2) {
+        expected_error = "Unable to read sequence delta in received packets.";
+      } else {
+        expected_error =
+            "Unable to read incremental time delta in received packets.";
+      }
     }
 
     CheckProcessingFails(
@@ -3799,14 +4013,14 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
       // frame type (ack frame)
       // (no ack blocks, 2 byte largest observed, 2 byte block length)
       0xA5,
+      // num timestamps.
+      0x00,
       // largest acked
       0x12, 0x34,
       // Zero delta time.
       0x00, 0x00,
       // first ack block length.
       0x12, 0x34,
-      // num timestamps.
-      0x00,
   };
   // clang-format on
   unsigned char* p = packet;
@@ -3821,6 +4035,101 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
                                       data->length(), AsChars(p),
                                       arraysize(packet));
+}
+
+TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = kConnectionId;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicAckFrame ack_frame;
+  FLAGS_quic_reloadable_flag_quic_frames_deque2 = true;
+  ack_frame.largest_observed = kPacketNumber;
+  ack_frame.ack_delay_time = QuicTime::Delta::Zero();
+  ack_frame.packets.AddRange(1, kPacketNumber + 1);
+
+  QuicFrames frames = {QuicFrame(&ack_frame)};
+
+  // clang-format off
+  unsigned char packet[] = {
+      // public flags (8 byte connection_id)
+      0x38,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+
+      // frame type (ack frame)
+      // (no ack blocks, 6 byte largest observed, 6 byte block length)
+      0x4F,
+      // largest acked
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+      // num timestamps.
+      0x00,
+  };
+
+  unsigned char packet39[] = {
+      // public flags (8 byte connection_id)
+      0x38,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+
+      // frame type (ack frame)
+      // (no ack blocks, 6 byte largest observed, 6 byte block length)
+      0x4F,
+      // largest acked
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+      // num timestamps.
+      0x00,
+  };
+
+  unsigned char packet40[] = {
+      // public flags (8 byte connection_id)
+      0x38,
+      // connection_id
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // packet number
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+
+      // frame type (ack frame)
+      // (no ack blocks, 8 byte largest observed, 8 byte block length)
+      0xAF,
+      // num timestamps.
+      0x00,
+      // largest acked
+      0x00, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+      // Zero delta time.
+      0x00, 0x00,
+      // first ack block length.
+      0x00, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+  };
+  // clang-format on
+  unsigned char* p = packet;
+  size_t packet_size = arraysize(packet);
+  if (framer_.version() > QUIC_VERSION_39) {
+    p = packet40;
+    packet_size = arraysize(packet40);
+  } else if (framer_.version() > QUIC_VERSION_38) {
+    p = packet39;
+    packet_size = arraysize(packet39);
+  }
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(p), packet_size);
 }
 
 TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
@@ -3932,12 +4241,14 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
       // frame type (ack frame)
       // (has ack blocks, 2 byte largest observed, 2 byte block length)
       0xB5,
+      // num ack blocks ranges.
+      0x04,
+      // num timestamps.
+      0x00,
       // largest acked
       0x12, 0x34,
       // Zero delta time.
       0x00, 0x00,
-      // num ack blocks ranges.
-      0x04,
       // first ack block length.
       0x00, 0x01,
       // gap to next block.
@@ -3956,8 +4267,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
       0x05,
       // ack block length.
       0x00, 0x04,
-      // num timestamps.
-      0x00,
   };
   // clang-format on
   unsigned char* p = packet;
@@ -4191,12 +4500,14 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
       // frame type (ack frame)
       // (has ack blocks, 2 byte largest observed, 2 byte block length)
       0xB5,
+      // num ack blocks ranges.
+      0xff,
+      // num timestamps.
+      0x00,
       // largest acked
       0x12, 0x34,
       // Zero delta time.
       0x00, 0x00,
-      // num ack blocks ranges.
-      0xff,
       // first ack block length.
       0x0f, 0xdd,
       // 255 = 4 * 63 + 3
@@ -4270,8 +4581,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
       0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
       0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
       0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      // num timestamps.
-      0x00,
   };
   // clang-format on
   unsigned char* p = packet;
