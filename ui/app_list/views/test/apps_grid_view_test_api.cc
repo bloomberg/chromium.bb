@@ -40,10 +40,6 @@ gfx::Rect AppsGridViewTestApi::GetItemTileRectAt(int row, int col) const {
   return view_->GetExpectedTileBounds(row, col);
 }
 
-void AppsGridViewTestApi::SetPageFlipDelay(int page_flip_delay_in_ms) {
-  view_->page_flip_delay_in_ms_ = page_flip_delay_in_ms;
-}
-
 void AppsGridViewTestApi::PressItemAt(int index) {
   GetViewAtModelIndex(index)->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));

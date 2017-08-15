@@ -225,6 +225,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     return suggestions_container_;
   }
 
+  void set_page_flip_delay_in_ms_for_testing(int page_flip_delay_in_ms) {
+    page_flip_delay_in_ms_ = page_flip_delay_in_ms;
+  }
+
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;
@@ -572,10 +576,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Target page to switch to when |page_flip_timer_| fires.
   int page_flip_target_ = -1;
 
-  // Delay in milliseconds of when |page_flip_timer_| should fire after user
-  // drags an item near the edges.
-  int page_flip_delay_in_ms_;
-
   views::BoundsAnimator bounds_animator_;
 
   // The most recent activated folder item view.
@@ -592,6 +592,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // True if the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
+
+  // Delay in milliseconds of when |page_flip_timer_| should fire after user
+  // drags an item near the edges.
+  int page_flip_delay_in_ms_;
 
   // True if it is the end gesture from shelf dragging.
   bool is_end_gesture_ = false;

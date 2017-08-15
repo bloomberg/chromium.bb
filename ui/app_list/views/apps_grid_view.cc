@@ -37,6 +37,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -80,6 +82,9 @@ constexpr int kPageFlipZoneSize = 40;
 
 // Delay in milliseconds to do the page flip.
 constexpr int kPageFlipDelayInMs = 1000;
+
+// Delay in milliseconds to do the page flip in fullscreen app list.
+constexpr int kPageFlipDelayInMsFullscreen = 500;
 
 // The drag and drop proxy should get scaled by this factor.
 constexpr float kDragAndDropProxyScale = 1.2f;
@@ -294,9 +299,11 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
 
 AppsGridView::AppsGridView(ContentsView* contents_view)
     : contents_view_(contents_view),
-      page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      page_flip_delay_in_ms_(is_fullscreen_app_list_enabled_
+                                 ? kPageFlipDelayInMsFullscreen
+                                 : kPageFlipDelayInMs) {
   DCHECK(contents_view_);
   SetPaintToLayer();
   // Clip any icons that are outside the grid view's bounds. These icons would
@@ -2132,6 +2139,14 @@ void AppsGridView::DeleteItemViewAtIndex(int index) {
 }
 
 bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
+  if (is_fullscreen_app_list_enabled_) {
+    gfx::Point point_in_screen = point;
+    ConvertPointToScreen(this, &point_in_screen);
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestView(
+            GetWidget()->GetNativeView());
+    return display.work_area().Contains(point_in_screen);
+  }
   gfx::Rect rect(GetLocalBounds());
   rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
   return rect.Contains(point);

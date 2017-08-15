@@ -32,8 +32,6 @@ class AppsGridViewTestApi {
 
   gfx::Rect GetItemTileRectAt(int row, int col) const;
 
-  void SetPageFlipDelay(int page_flip_delay_in_ms);
-
   void PressItemAt(int index);
 
   bool HasPendingPageFlip() const;
