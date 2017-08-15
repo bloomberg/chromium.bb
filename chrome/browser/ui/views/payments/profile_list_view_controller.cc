@@ -229,9 +229,7 @@ class ShippingProfileViewController : public ProfileListViewController,
     return GetShippingAddressSectionString(spec()->shipping_type());
   }
 
-  int GetSecondaryButtonTextId() override {
-    return IDS_AUTOFILL_ADD_ADDRESS_CAPTION;
-  }
+  int GetSecondaryButtonTextId() override { return IDS_PAYMENTS_ADD_ADDRESS; }
 
   int GetSecondaryButtonTag() override {
     return static_cast<int>(
@@ -327,9 +325,7 @@ class ContactProfileViewController : public ProfileListViewController {
         IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   }
 
-  int GetSecondaryButtonTextId() override {
-    return IDS_AUTOFILL_ADD_CONTACT_CAPTION;
-  }
+  int GetSecondaryButtonTextId() override { return IDS_PAYMENTS_ADD_CONTACT; }
 
   int GetSecondaryButtonTag() override {
     return static_cast<int>(

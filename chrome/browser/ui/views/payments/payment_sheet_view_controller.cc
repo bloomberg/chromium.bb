@@ -639,8 +639,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   inline_summary->SetLayoutManager(layout.release());
 
   PaymentSheetRowBuilder builder(
-      this, l10n_util::GetStringUTF16(
-                IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME));
+      this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ORDER_SUMMARY_LABEL));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON)
       .Id(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
 
