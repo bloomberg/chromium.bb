@@ -99,7 +99,8 @@ void ProfilingProcessHost::StartProfilingForClient(
 
   memlog_->AddSender(
       pid,
-      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle));
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
+      base::OnceCallback<void()>());
   memlog_client->StartProfiling(
       mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle));
 }
@@ -158,11 +159,15 @@ void ProfilingProcessHost::LaunchAsService() {
   connector_->BindInterface(mojom::kServiceName, &memlog_);
 
   mojo::edk::PlatformChannelPair data_channel;
+  // Unretained is safe because this class is a leaaky singleton that owns the
+  // client object.
   memlog_->AddSender(
       base::Process::Current().Pid(),
-      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle));
-  memlog_client_.StartProfiling(
-      mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle));
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
+      base::BindOnce(&MemlogClient::StartProfiling,
+                     base::Unretained(&memlog_client_),
+                     mojo::WrapPlatformFile(
+                         data_channel.PassClientHandle().release().handle)));
 }
 
 void ProfilingProcessHost::GetOutputFileOnBlockingThread(base::ProcessId pid) {
