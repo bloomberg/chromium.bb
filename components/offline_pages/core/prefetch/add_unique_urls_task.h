@@ -46,7 +46,7 @@ class AddUniqueUrlsTask : public Task {
 
   // Prefetch store to execute against. Not owned.
   PrefetchStore* prefetch_store_;
-  const std::string& name_space_;
+  std::string name_space_;
   std::vector<PrefetchURL> prefetch_urls_;
 
   base::WeakPtrFactory<AddUniqueUrlsTask> weak_ptr_factory_;

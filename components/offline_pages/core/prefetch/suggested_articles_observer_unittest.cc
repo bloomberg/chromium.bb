@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -24,10 +25,15 @@ namespace offline_pages {
 
 namespace {
 
+const base::string16 kTestTitle = base::ASCIIToUTF16("Title 1");
+
 ContentSuggestion ContentSuggestionFromTestURL(const GURL& test_url) {
   auto category =
       Category::FromKnownCategory(ntp_snippets::KnownCategories::ARTICLES);
-  return ContentSuggestion(category, test_url.spec(), test_url);
+  ContentSuggestion suggestion =
+      ContentSuggestion(category, test_url.spec(), test_url);
+  suggestion.set_title(kTestTitle);
+  return suggestion;
 }
 
 }  // namespace
@@ -89,6 +95,8 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
   EXPECT_EQ(1U, test_prefetch_dispatcher()->latest_prefetch_urls.size());
   EXPECT_EQ(test_url_1,
             test_prefetch_dispatcher()->latest_prefetch_urls[0].url);
+  EXPECT_EQ(kTestTitle,
+            test_prefetch_dispatcher()->latest_prefetch_urls[0].title);
   EXPECT_EQ(kSuggestedArticlesNamespace,
             test_prefetch_dispatcher()->latest_name_space);
 }
