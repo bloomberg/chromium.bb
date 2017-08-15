@@ -410,15 +410,16 @@ static INLINE int has_base(tran_low_t qc, int base_idx) {
 
 static void gen_base_count_mag_arr(int (*base_count_arr)[MAX_TX_SQUARE],
                                    int (*base_mag_arr)[2],
-                                   const tran_low_t *qcoeff, int stride,
+                                   const tran_low_t *qcoeff, int bwl,
                                    int height, int eob, const int16_t *scan) {
+  const int stride = 1 << bwl;
   for (int c = 0; c < eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
     if (!has_base(qcoeff[coeff_idx], 0)) continue;
     const int row = coeff_idx / stride;
     const int col = coeff_idx % stride;
     int *mag = base_mag_arr[coeff_idx];
-    get_mag(mag, qcoeff, stride, height, row, col, base_ref_offset,
+    get_mag(mag, qcoeff, bwl, height, row, col, base_ref_offset,
             BASE_CONTEXT_POSITION_NUM);
     for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
       if (!has_base(qcoeff[coeff_idx], i)) continue;
@@ -481,8 +482,9 @@ static INLINE int has_br(tran_low_t qc) {
 }
 
 static void gen_br_count_mag_arr(int *br_count_arr, int (*br_mag_arr)[2],
-                                 const tran_low_t *qcoeff, int stride,
-                                 int height, int eob, const int16_t *scan) {
+                                 const tran_low_t *qcoeff, int bwl, int height,
+                                 int eob, const int16_t *scan) {
+  const int stride = 1 << bwl;
   for (int c = 0; c < eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
     if (!has_br(qcoeff[coeff_idx])) continue;
@@ -492,7 +494,7 @@ static void gen_br_count_mag_arr(int *br_count_arr, int (*br_mag_arr)[2],
     int *mag = br_mag_arr[coeff_idx];
     *count = get_level_count(qcoeff, stride, height, row, col, NUM_BASE_LEVELS,
                              br_ref_offset, BR_CONTEXT_POSITION_NUM);
-    get_mag(mag, qcoeff, stride, height, row, col, br_ref_offset,
+    get_mag(mag, qcoeff, bwl, height, row, col, br_ref_offset,
             BR_CONTEXT_POSITION_NUM);
   }
 }
@@ -551,13 +553,13 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
                  txb_info->qcoeff, txb_info->bwl, txb_info->eob,
                  txb_info->scan_order);
   gen_base_count_mag_arr(txb_cache->base_count_arr, txb_cache->base_mag_arr,
-                         txb_info->qcoeff, txb_info->stride, txb_info->height,
+                         txb_info->qcoeff, txb_info->bwl, txb_info->height,
                          txb_info->eob, scan);
   gen_base_ctx_arr(txb_cache->base_ctx_arr, txb_cache->base_count_arr,
                    txb_cache->base_mag_arr, txb_info->qcoeff, txb_info->stride,
                    txb_info->eob, scan);
   gen_br_count_mag_arr(txb_cache->br_count_arr, txb_cache->br_mag_arr,
-                       txb_info->qcoeff, txb_info->stride, txb_info->height,
+                       txb_info->qcoeff, txb_info->bwl, txb_info->height,
                        txb_info->eob, scan);
   gen_br_ctx_arr(txb_cache->br_ctx_arr, txb_cache->br_count_arr,
                  txb_cache->br_mag_arr, txb_info->qcoeff, txb_info->stride,

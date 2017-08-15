@@ -52,7 +52,7 @@ static INLINE int get_level_count(const tran_low_t *tcoeffs, int stride,
   return count;
 }
 
-static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int stride,
+static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int bwl,
                            int height, int row, int col, int (*nb_offset)[2],
                            int nb_num) {
   mag[0] = 0;
@@ -60,9 +60,10 @@ static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int stride,
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
-    const int pos = ref_row * stride + ref_col;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl))
       continue;
+    const int pos = (ref_row << bwl) + ref_col;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0) {
       if (abs_coeff > mag[0]) {
