@@ -6,6 +6,9 @@
 //
 // This test cannot use testharness.js because it doesn't work when you remove
 // all the global objects.
+
+'use strict';
+
 const testRunner = self.testRunner;
 if (testRunner) {
   testRunner.dumpAsText();
@@ -19,8 +22,21 @@ async function runTest() {
   const CountQueuingStrategy = self.CountQueuingStrategy;
   const Error = self.Error;
   const Promise = self.Promise;
-  const undefined = self.undefined;
-  const document = self.document;
+  const Object = self.Object;
+  const Object_getOwnPropertyNames = Object.getOwnPropertyNames;
+
+  function undefineObjectProperties(o, exceptions = new Set()) {
+    for (const key of Object_getOwnPropertyNames(o)) {
+      if (exceptions.has(key)) {
+        continue;
+      }
+      try {
+        o[key] = undefined;
+      } catch (e) {
+        assert(e.name === 'TypeError', 'expecting a TypeError');
+      }
+    }
+  }
 
   function assert(pred, message) {
     if (pred) {
@@ -107,13 +123,13 @@ async function runTest() {
       }
     }, { size: () => 1, highWaterMark: 19 });
     const [left, right] = rs.tee();
-    const cancellations = [ left.cancel() ];
+    const left_cancel = left.cancel();
     const reader = right.getReader();
     const { value, done } = await reader.read();
     assert(value === 'beef', 'value should be beef');
     assert(done === false, 'done should be false');
-    cancellations.push(reader.cancel());
-    await Promise.all(cancellations);
+    await reader.cancel();
+    await left_cancel;
   }
 
   async function testWritableStreamWriteAndReleaseLock() {
@@ -147,17 +163,33 @@ async function runTest() {
     }
   }
 
-  // Undefine (almost) everything on the global object.
-  const doNotSet = new Set(['location', 'window', 'self']);
-  for (const key of Object.getOwnPropertyNames(self)) {
-    if (doNotSet.has(key)) {
-      continue;
-    }
-    self[key] = undefined;
-  }
+  // Undefine various prototypes and static methods that might be used in the
+  // implementation.
 
-  // Make undefined be defined.
-  self['undefined'] = {};
+  // The "await" keyword uses Promise.prototype.then.
+  // TODO(ricea): Remove all uses of await from this test.
+  undefineObjectProperties(Promise.prototype, new Set(['then']));
+  undefineObjectProperties(Promise);
+  undefineObjectProperties(Object.prototype);
+  undefineObjectProperties(Object);
+  // Array.prototype.length is writable but assigning |undefined| to it results
+  // in a RangeError being thrown.
+  undefineObjectProperties(Array.prototype, new Set(['length']));
+  undefineObjectProperties(Array);
+  undefineObjectProperties(Function.prototype);
+  undefineObjectProperties(Function);
+  undefineObjectProperties(Number.prototype);
+  undefineObjectProperties(Number);
+  undefineObjectProperties(String.prototype);
+  undefineObjectProperties(String);
+  undefineObjectProperties(Boolean.prototype);
+  undefineObjectProperties(Boolean);
+  undefineObjectProperties(Math);
+
+  // Undefine (almost) everything on the global object.
+  // Assigning to 'location' causes a navigation which breaks the test.
+  const doNotSet = new Set(['location']);
+  undefineObjectProperties(self, doNotSet);
 
   await testReadAndPipeTo();
   await testReadableStreamClosed();
