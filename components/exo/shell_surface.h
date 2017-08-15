@@ -393,6 +393,7 @@ class ShellSurface : public SurfaceTreeHost,
   std::unique_ptr<aura::Window> shadow_overlay_;
   std::unique_ptr<aura::Window> shadow_underlay_;
   gfx::Rect shadow_content_bounds_;
+  bool shadow_content_bounds_changed_ = false;
   float shadow_background_opacity_ = 1.0;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
