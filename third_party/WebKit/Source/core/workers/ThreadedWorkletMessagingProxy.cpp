@@ -84,7 +84,7 @@ ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
     WorkerClients* worker_clients)
     : ThreadedMessagingProxyBase(execution_context, worker_clients) {
   worklet_object_proxy_ =
-      ThreadedWorkletObjectProxy::Create(this, GetParentFrameTaskRunners());
+      CreateObjectProxy(this, GetParentFrameTaskRunners());
 }
 
 void ThreadedWorkletMessagingProxy::Initialize() {
@@ -150,6 +150,14 @@ void ThreadedWorkletMessagingProxy::TerminateWorkletGlobalScope() {
     loader->Cancel();
   loaders_.clear();
   TerminateGlobalScope();
+}
+
+std::unique_ptr<ThreadedWorkletObjectProxy>
+    ThreadedWorkletMessagingProxy::CreateObjectProxy(
+        ThreadedWorkletMessagingProxy* messaging_proxy,
+        ParentFrameTaskRunners* parent_frame_task_runners) {
+  return ThreadedWorkletObjectProxy::Create(messaging_proxy,
+                                            parent_frame_task_runners);
 }
 
 void ThreadedWorkletMessagingProxy::NotifyLoadingFinished(

@@ -47,6 +47,10 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   friend class ThreadedWorkletMessagingProxyForTest;
   class LoaderClient;
 
+  virtual std::unique_ptr<ThreadedWorkletObjectProxy> CreateObjectProxy(
+      ThreadedWorkletMessagingProxy*,
+      ParentFrameTaskRunners*);
+
   void NotifyLoadingFinished(WorkletScriptLoader*);
   void EvaluateScript(const ScriptSourceCode&);
 
