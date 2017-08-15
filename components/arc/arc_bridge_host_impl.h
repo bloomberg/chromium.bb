@@ -47,6 +47,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::BluetoothInstancePtr bluetooth_ptr) override;
   void OnBootPhaseMonitorInstanceReady(
       mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) override;
+  void OnCastReceiverInstanceReady(
+      mojom::CastReceiverInstancePtr cast_receiver_ptr) override;
   void OnClipboardInstanceReady(
       mojom::ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(

@@ -20,6 +20,7 @@ class AudioInstance;
 class AuthInstance;
 class BluetoothInstance;
 class BootPhaseMonitorInstance;
+class CastReceiverInstance;
 class ClipboardInstance;
 class CrashCollectorInstance;
 class EnterpriseReportingInstance;
@@ -62,6 +63,9 @@ class ArcBridgeService {
   InstanceHolder<mojom::BluetoothInstance>* bluetooth() { return &bluetooth_; }
   InstanceHolder<mojom::BootPhaseMonitorInstance>* boot_phase_monitor() {
     return &boot_phase_monitor_;
+  }
+  InstanceHolder<mojom::CastReceiverInstance>* cast_receiver() {
+    return &cast_receiver_;
   }
   InstanceHolder<mojom::ClipboardInstance>* clipboard() { return &clipboard_; }
   InstanceHolder<mojom::CrashCollectorInstance>* crash_collector() {
@@ -116,6 +120,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::AuthInstance> auth_;
   InstanceHolder<mojom::BluetoothInstance> bluetooth_;
   InstanceHolder<mojom::BootPhaseMonitorInstance> boot_phase_monitor_;
+  InstanceHolder<mojom::CastReceiverInstance> cast_receiver_;
   InstanceHolder<mojom::ClipboardInstance> clipboard_;
   InstanceHolder<mojom::CrashCollectorInstance> crash_collector_;
   InstanceHolder<mojom::EnterpriseReportingInstance> enterprise_reporting_;

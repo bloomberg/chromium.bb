@@ -138,6 +138,7 @@ mojom("arc_bindings") {
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/boot_phase_monitor.mojom",
+    "common/cast_receiver.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
     "common/enterprise_reporting.mojom",
