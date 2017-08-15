@@ -220,7 +220,7 @@
     </else>
   </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
-    Save this card for faster checkout?
+    Save card to Google?
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
@@ -228,12 +228,12 @@
   <if expr="is_linux and not is_chromeos">
     <then>
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
-        Your card will be saved in your Google Account
+        To pay faster next time, save this info to your Google Account
       </message>
     </then>
     <else>
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
-        Your card will be saved in your Google Account and on this device
+        To pay faster next time, save this info to your Google Account and on this device
       </message>
     </else>
   </if>

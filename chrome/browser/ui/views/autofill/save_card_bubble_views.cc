@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -19,7 +20,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -119,8 +122,9 @@ bool SaveCardBubbleViews::Accept() {
     // the stack and update the bubble.
     DCHECK(controller_);
     controller_->SetShowUploadConfirmTitle(true);
-    GetWidget()->UpdateWindowTitle();
     view_stack_->Push(CreateRequestCvcView(), /*animate=*/true);
+    GetWidget()->UpdateWindowTitle();
+    GetWidget()->UpdateWindowIcon();
     // Disable the Save button until a valid CVC is entered:
     GetDialogClientView()->UpdateDialogButtons();
     // Make the legal messaging footer appear:
@@ -209,6 +213,19 @@ bool SaveCardBubbleViews::ShouldShowCloseButton() const {
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {
   return controller_ ? controller_->GetWindowTitle() : base::string16();
+}
+
+gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
+  if (IsAutofillUpstreamShowGoogleLogoExperimentEnabled())
+    return gfx::CreateVectorIcon(kGoogleGLogoIcon, 20, gfx::kPlaceholderColor);
+  return gfx::ImageSkia();
+}
+
+bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
+  // Only show the Google logo on the first screen of the bubble:
+  return IsAutofillUpstreamShowGoogleLogoExperimentEnabled() &&
+         (GetCurrentFlowStep() == UPLOAD_SAVE_ONLY_STEP ||
+          GetCurrentFlowStep() == UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD);
 }
 
 void SaveCardBubbleViews::WindowClosing() {

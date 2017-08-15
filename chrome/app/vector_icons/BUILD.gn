@@ -49,6 +49,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "folder_supervised.1x.icon",
     "folder_supervised.icon",
     "globe.icon",
+    "google_g_logo.icon",
     "image.icon",
     "incognito.1x.icon",
     "incognito.icon",
@@ -101,7 +102,6 @@ aggregate_vector_icons("chrome_vector_icons") {
   if (is_mac) {
     icons += [
       "default_favicon.icon",
-      "google_search_mac_touchbar.icon",
       "new_tab_mac_touchbar.icon",
     ]
   }
