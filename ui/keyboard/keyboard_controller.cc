@@ -411,8 +411,8 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       animation_observer_.reset(new CallbackAnimationObserver(
           container_animator,
-          base::Bind(&KeyboardController::HideAnimationFinished,
-                     base::Unretained(this))));
+          base::BindOnce(&KeyboardController::HideAnimationFinished,
+                         base::Unretained(this))));
       container_animator->AddObserver(animation_observer_.get());
 
       ui::ScopedLayerAnimationSettings settings(container_animator);
@@ -518,9 +518,9 @@ void KeyboardController::OnTextInputStateChanged(
 
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(&KeyboardController::HideKeyboard,
-                       weak_factory_will_hide_.GetWeakPtr(),
-                       HIDE_REASON_AUTOMATIC),
+            base::BindOnce(&KeyboardController::HideKeyboard,
+                           weak_factory_will_hide_.GetWeakPtr(),
+                           HIDE_REASON_AUTOMATIC),
             base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
         return;
       default:
@@ -770,8 +770,8 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
     case KeyboardControllerState::SHOWING:
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&KeyboardController::ReportLingeringState,
-                     weak_factory_report_lingering_state_.GetWeakPtr()),
+          base::BindOnce(&KeyboardController::ReportLingeringState,
+                         weak_factory_report_lingering_state_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kReportLingeringStateDelayMs));
       break;
     default:
