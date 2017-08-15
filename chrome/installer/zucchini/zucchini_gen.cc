@@ -22,17 +22,75 @@ constexpr int kMinEquivalenceSimilarity = 12;
 
 }  // namespace
 
+std::vector<offset_t> MakeNewTargetsFromEquivalenceMap(
+    const std::vector<offset_t>& old_targets,
+    const std::vector<Equivalence>& equivalences) {
+  auto current_equivalence = equivalences.begin();
+  std::vector<offset_t> new_targets;
+  new_targets.reserve(old_targets.size());
+  for (offset_t src : old_targets) {
+    while (current_equivalence != equivalences.end() &&
+           current_equivalence->src_end() <= src)
+      ++current_equivalence;
+
+    if (current_equivalence != equivalences.end() &&
+        current_equivalence->src_offset <= src) {
+      // Select the longest equivalence that contains |src|. In case of a tie,
+      // prefer equivalence with minimal |dst_offset|.
+      auto best_equivalence = current_equivalence;
+      for (auto next_equivalence = current_equivalence;
+           next_equivalence != equivalences.end() &&
+           src >= next_equivalence->src_offset;
+           ++next_equivalence) {
+        if (next_equivalence->length > best_equivalence->length ||
+            (next_equivalence->length == best_equivalence->length &&
+             next_equivalence->dst_offset < best_equivalence->dst_offset)) {
+          // If an |next_equivalence| is longer or equal to |best_equivalence|,
+          // it can be show that |src < next_equivalence->src_end()| i.e., |src|
+          // is inside |next_equivalence|.
+          DCHECK_LT(src, next_equivalence->src_end());
+          best_equivalence = next_equivalence;
+        }
+      }
+      new_targets.push_back(src - best_equivalence->src_offset +
+                            best_equivalence->dst_offset);
+    } else {
+      new_targets.push_back(kUnusedIndex);
+    }
+  }
+  return new_targets;
+}
+
+std::vector<offset_t> FindExtraTargets(
+    const std::vector<Reference>& new_references,
+    const EquivalenceMap& equivalence_map) {
+  auto equivalence = equivalence_map.begin();
+  std::vector<offset_t> targets;
+  for (const Reference& ref : new_references) {
+    while (equivalence != equivalence_map.end() &&
+           equivalence->eq.dst_end() <= ref.location)
+      ++equivalence;
+
+    if (equivalence == equivalence_map.end())
+      break;
+    if (ref.location >= equivalence->eq.dst_offset && !IsMarked(ref.target))
+      targets.push_back(ref.target);
+  }
+  return targets;
+}
+
 bool GenerateEquivalencesAndExtraData(ConstBufferView new_image,
                                       const EquivalenceMap& equivalence_map,
                                       PatchElementWriter* patch_writer) {
-  // Store data in gaps in |new_image| before / between / after
-  // |equivalence_map| blocks as "extra data". Write to sinks separately to
-  // reduce churn.
+  // Make 2 passes through |equivalence_map| to reduce write churn.
+  // Pass 1: Write all equivalences.
   EquivalenceSink equivalences_sink;
   for (const EquivalenceCandidate& candidate : equivalence_map)
     equivalences_sink.PutNext(candidate.eq);
   patch_writer->SetEquivalenceSink(std::move(equivalences_sink));
 
+  // Pass 2: Write data in gaps in |new_image| before / between  after
+  // |equivalence_map| as "extra data".
   ExtraDataSink extra_data_sink;
   offset_t dst_offset = 0;
   for (const EquivalenceCandidate& candidate : equivalence_map) {
@@ -56,27 +114,27 @@ bool GenerateRawDelta(ConstBufferView old_image,
 
   // Visit |equivalence_map| blocks in |new_image| order. Find and emit all
   // bytewise differences.
-  offset_t base_offset = 0;
+  offset_t base_copy_offset = 0;
   for (const EquivalenceCandidate& candidate : equivalence_map) {
     Equivalence equivalence = candidate.eq;
     // For each bytewise delta from |old_image| to |new_image|, compute "copy
     // offset" and pass it along with delta to the sink.
-    for (offset_t i = 0; i < candidate.eq.length; ++i) {
+    for (offset_t i = 0; i < equivalence.length; ++i) {
       if (new_image_index.IsReference(equivalence.dst_offset + i))
-        continue;
+        continue;  // Skip references since they're handled elsewhere.
 
       int8_t diff = new_image[equivalence.dst_offset + i] -
                     old_image[equivalence.src_offset + i];
       if (diff)
-        raw_delta_sink.PutNext({base_offset + i, diff});
+        raw_delta_sink.PutNext({base_copy_offset + i, diff});
     }
-    base_offset += equivalence.length;
+    base_copy_offset += equivalence.length;
   }
   patch_writer->SetRawDeltaSink(std::move(raw_delta_sink));
   return true;
 }
 
-bool GenerateRawElement(std::vector<offset_t> old_sa,
+bool GenerateRawElement(const std::vector<offset_t>& old_sa,
                         ConstBufferView old_image,
                         ConstBufferView new_image,
                         PatchElementWriter* patch_writer) {
@@ -93,6 +151,8 @@ bool GenerateRawElement(std::vector<offset_t> old_sa,
          GenerateRawDelta(old_image, new_image, equivalences, new_image_index,
                           patch_writer);
 }
+
+/******** Exported Functions ********/
 
 status::Code GenerateEnsemble(ConstBufferView old_image,
                               ConstBufferView new_image,
