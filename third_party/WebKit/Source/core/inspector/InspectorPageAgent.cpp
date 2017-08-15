@@ -827,7 +827,7 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setId(FrameId(frame))
           .setLoaderId(IdentifiersFactory::LoaderId(loader))
           .setUrl(UrlWithoutFragment(url).GetString())
-          .setMimeType(frame->Loader().GetDocumentLoader()->ResponseMIMEType())
+          .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
           .setSecurityOrigin(SecurityOrigin::Create(url)->ToRawString())
           .build();
   // FIXME: This doesn't work for OOPI.
