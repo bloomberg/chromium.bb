@@ -991,8 +991,11 @@ WebContents* DevToolsWindow::OpenURLFromTab(
   DCHECK(source == main_web_contents_);
   if (!params.url.SchemeIs(content::kChromeDevToolsScheme)) {
     WebContents* inspected_web_contents = GetInspectedWebContents();
-    return inspected_web_contents ?
-        inspected_web_contents->OpenURL(params) : NULL;
+    if (!inspected_web_contents)
+      return nullptr;
+    content::OpenURLParams modified = params;
+    modified.referrer = content::Referrer();
+    return inspected_web_contents->OpenURL(modified);
   }
   bindings_->Reload();
   return main_web_contents_;
