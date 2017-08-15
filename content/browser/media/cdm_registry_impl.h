@@ -16,7 +16,7 @@ namespace content {
 
 struct CdmInfo;
 
-class CONTENT_EXPORT CdmRegistryImpl : NON_EXPORTED_BASE(public CdmRegistry) {
+class CONTENT_EXPORT CdmRegistryImpl : public CdmRegistry {
  public:
   // Returns the CdmRegistryImpl singleton.
   static CdmRegistryImpl* GetInstance();

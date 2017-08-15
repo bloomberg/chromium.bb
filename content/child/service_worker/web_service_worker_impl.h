@@ -34,7 +34,7 @@ class ThreadSafeSender;
 // corresponding ServiceWorkerHandle doesn't go away in the browser process
 // while the ServiceWorker object is alive.
 class CONTENT_EXPORT WebServiceWorkerImpl
-    : NON_EXPORTED_BASE(public blink::WebServiceWorker),
+    : public blink::WebServiceWorker,
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
   WebServiceWorkerImpl(std::unique_ptr<ServiceWorkerHandleReference> handle_ref,

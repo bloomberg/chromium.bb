@@ -27,7 +27,7 @@ namespace gles2 {
 // TODO(backer): Investigate using glReleaseShaderCompiler as an alternative to
 // to this cache.
 class GPU_EXPORT ShaderTranslatorCache
-    : public NON_EXPORTED_BASE(ShaderTranslator::DestructionObserver) {
+    : public ShaderTranslator::DestructionObserver {
  public:
   explicit ShaderTranslatorCache(const GpuPreferences& gpu_preferences);
   ~ShaderTranslatorCache() override;

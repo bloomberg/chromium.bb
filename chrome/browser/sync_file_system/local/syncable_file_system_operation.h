@@ -27,8 +27,7 @@ namespace sync_file_system {
 class SyncableFileOperationRunner;
 
 // A wrapper class of FileSystemOperation for syncable file system.
-class SyncableFileSystemOperation
-    : public NON_EXPORTED_BASE(storage::FileSystemOperation) {
+class SyncableFileSystemOperation : public storage::FileSystemOperation {
  public:
   ~SyncableFileSystemOperation() override;
 

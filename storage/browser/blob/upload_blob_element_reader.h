@@ -27,8 +27,7 @@ class FileSystemContext;
 // This class is a wrapper around the BlobReader to make it conform
 // to the net::UploadElementReader interface, and it also holds around the
 // handle to the blob so it stays in memory while we read it.
-class STORAGE_EXPORT UploadBlobElementReader
-    : NON_EXPORTED_BASE(public net::UploadElementReader) {
+class STORAGE_EXPORT UploadBlobElementReader : public net::UploadElementReader {
  public:
   UploadBlobElementReader(std::unique_ptr<BlobDataHandle> handle,
                           FileSystemContext* file_system_context);

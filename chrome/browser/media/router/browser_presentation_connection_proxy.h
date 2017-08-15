@@ -40,7 +40,7 @@ class MediaRouter;
 // |route_| is closed or terminated, instance of this class will be destroyed.
 
 class BrowserPresentationConnectionProxy
-    : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection),
+    : public blink::mojom::PresentationConnection,
       public RouteMessageObserver {
  public:
   using OnMessageCallback = base::OnceCallback<void(bool)>;

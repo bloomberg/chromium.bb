@@ -41,8 +41,8 @@ class HostFrameSinkManagerTest;
 // UI thread. Manages frame sinks and is intended to replace all usage of
 // FrameSinkManagerImpl.
 class VIZ_HOST_EXPORT HostFrameSinkManager
-    : public NON_EXPORTED_BASE(mojom::FrameSinkManagerClient),
-      public NON_EXPORTED_BASE(CompositorFrameSinkSupportManager) {
+    : public mojom::FrameSinkManagerClient,
+      public CompositorFrameSinkSupportManager {
  public:
   HostFrameSinkManager();
   ~HostFrameSinkManager() override;

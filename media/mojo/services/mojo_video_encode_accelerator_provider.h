@@ -20,7 +20,7 @@ namespace media {
 // This class implements the interface mojom::VideoEncodeAcceleratorProvider,
 // holds on to the necessary objects to create mojom::VideoEncodeAccelerators.
 class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorProvider
-    : public NON_EXPORTED_BASE(mojom::VideoEncodeAcceleratorProvider) {
+    : public mojom::VideoEncodeAcceleratorProvider {
  public:
   using CreateAndInitializeVideoEncodeAcceleratorCallback =
       MojoVideoEncodeAcceleratorService::

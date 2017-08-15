@@ -76,10 +76,9 @@ namespace media {
 // TODO(henrika): Add support for event handling (e.g. OnStateChanged,
 // OnCaptureStopped etc.) and ensure that we can deliver these notifications
 // to any clients using this class.
-class MEDIA_EXPORT AudioInputDevice
-    : NON_EXPORTED_BASE(public AudioCapturerSource),
-      NON_EXPORTED_BASE(public AudioInputIPCDelegate),
-      NON_EXPORTED_BASE(public ScopedTaskRunnerObserver) {
+class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
+                                      public AudioInputIPCDelegate,
+                                      public ScopedTaskRunnerObserver {
  public:
   // NOTE: Clients must call Initialize() before using.
   AudioInputDevice(

@@ -26,8 +26,7 @@ struct ResourceRequest;
 // Can be used by callers to store extra data on every ResourceRequest
 // which will be incorporated into the ResourceHostMsg_RequestResource message
 // sent by ResourceDispatcher.
-class CONTENT_EXPORT RequestExtraData
-    : public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {
+class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
  public:
   RequestExtraData();
   ~RequestExtraData() override;

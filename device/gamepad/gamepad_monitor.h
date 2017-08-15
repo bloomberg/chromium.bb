@@ -13,9 +13,8 @@
 
 namespace device {
 
-class DEVICE_GAMEPAD_EXPORT GamepadMonitor
-    : public GamepadConsumer,
-      NON_EXPORTED_BASE(public mojom::GamepadMonitor) {
+class DEVICE_GAMEPAD_EXPORT GamepadMonitor : public GamepadConsumer,
+                                             public mojom::GamepadMonitor {
  public:
   GamepadMonitor();
   ~GamepadMonitor() override;

@@ -26,8 +26,7 @@ class WebString;
 
 namespace content {
 
-class CONTENT_EXPORT WebIDBDatabaseImpl
-    : public NON_EXPORTED_BASE(blink::WebIDBDatabase) {
+class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
   WebIDBDatabaseImpl(indexed_db::mojom::DatabaseAssociatedPtrInfo database,
                      scoped_refptr<base::SingleThreadTaskRunner> io_runner);

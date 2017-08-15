@@ -174,8 +174,8 @@ class CONTENT_EXPORT RenderThreadImpl
       public blink::scheduler::RendererScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
-      NON_EXPORTED_BASE(public mojom::Renderer),
-      NON_EXPORTED_BASE(public CompositorDependencies) {
+      public mojom::Renderer,
+      public CompositorDependencies {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
   static RenderThreadImpl* Create(

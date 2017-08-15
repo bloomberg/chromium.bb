@@ -13,9 +13,8 @@
 namespace content {
 namespace {
 
-class FakeCompositorResizeLockClient
-    : public CompositorResizeLockClient,
-      public NON_EXPORTED_BASE(ui::CompositorLockDelegate) {
+class FakeCompositorResizeLockClient : public CompositorResizeLockClient,
+                                       public ui::CompositorLockDelegate {
  public:
   FakeCompositorResizeLockClient() : weak_ptr_factory_(this) {}
 

@@ -77,9 +77,8 @@ class SharedContextRateLimiter;
 // TODO: Fix background rendering and remove this workaround. crbug.com/600386
 #define CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU 0
 
-class PLATFORM_EXPORT Canvas2DLayerBridge
-    : public NON_EXPORTED_BASE(cc::TextureLayerClient),
-      public ImageBufferSurface {
+class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
+                                            public ImageBufferSurface {
   WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 
  public:

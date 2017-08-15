@@ -59,10 +59,10 @@ using webrtc::AudioProcessorInterface;
 // processing components like AGC, AEC and NS. It enables the components based
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
-class CONTENT_EXPORT MediaStreamAudioProcessor :
-    NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink),
-    NON_EXPORTED_BASE(public AudioProcessorInterface),
-    NON_EXPORTED_BASE(public AecDumpMessageFilter::AecDumpDelegate) {
+class CONTENT_EXPORT MediaStreamAudioProcessor
+    : public WebRtcPlayoutDataSource::Sink,
+      public AudioProcessorInterface,
+      public AecDumpMessageFilter::AecDumpDelegate {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,

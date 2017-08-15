@@ -48,8 +48,8 @@ using CreateCdmFileIOCB =
 class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public CdmContext,
                                 public Decryptor,
-                                NON_EXPORTED_BASE(public cdm::Host_8),
-                                NON_EXPORTED_BASE(public cdm::Host_9) {
+                                public cdm::Host_8,
+                                public cdm::Host_9 {
  public:
   // Creates the CDM and initialize it using |key_system| and |cdm_config|.
   // |allocator| is to be used whenever the CDM needs memory and to create

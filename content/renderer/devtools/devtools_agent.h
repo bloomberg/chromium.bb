@@ -32,9 +32,8 @@ struct ManifestDebugInfo;
 // DevToolsAgent belongs to the inspectable RenderFrameImpl and communicates
 // with WebDevToolsAgent. There is a corresponding DevToolsAgentHost
 // on the browser side.
-class CONTENT_EXPORT DevToolsAgent
-    : public RenderFrameObserver,
-      NON_EXPORTED_BASE(public blink::WebDevToolsAgentClient) {
+class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
+                                     public blink::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderFrameImpl* frame);
   ~DevToolsAgent() override;

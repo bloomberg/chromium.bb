@@ -52,7 +52,7 @@ struct WebPluginInfo;
 class CONTENT_EXPORT RenderFrameMessageFilter
     : public BrowserMessageFilter,
       public BrowserAssociatedInterface<mojom::RenderFrameMessageFilter>,
-      public NON_EXPORTED_BASE(mojom::RenderFrameMessageFilter) {
+      public mojom::RenderFrameMessageFilter {
  public:
   RenderFrameMessageFilter(int render_process_id,
                            PluginServiceImpl* plugin_service,

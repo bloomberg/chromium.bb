@@ -34,7 +34,7 @@ class ServiceWorkerContextCore;
 // Hangs off ServiceWorkerContextCore (its reference is also held by each
 // EmbeddedWorkerInstance).  Operated only on IO thread.
 class CONTENT_EXPORT EmbeddedWorkerRegistry
-    : public NON_EXPORTED_BASE(base::RefCounted<EmbeddedWorkerRegistry>) {
+    : public base::RefCounted<EmbeddedWorkerRegistry> {
  public:
   static scoped_refptr<EmbeddedWorkerRegistry> Create(
       const base::WeakPtr<ServiceWorkerContextCore>& contxet);

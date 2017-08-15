@@ -27,8 +27,7 @@ class FileSystemFileUtil;
 //
 // This instance (as thus this->sync_file_util_) is guaranteed to be alive
 // as far as FileSystemOperationContext given to each operation is kept alive.
-class STORAGE_EXPORT AsyncFileUtilAdapter
-    : public NON_EXPORTED_BASE(AsyncFileUtil) {
+class STORAGE_EXPORT AsyncFileUtilAdapter : public AsyncFileUtil {
  public:
   // Creates a new AsyncFileUtil for |sync_file_util|. This takes the
   // ownership of |sync_file_util|. (This doesn't take std::unique_ptr<> just

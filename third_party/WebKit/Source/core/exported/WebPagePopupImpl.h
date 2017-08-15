@@ -52,11 +52,10 @@ class WebLayer;
 class WebViewImpl;
 class LocalDOMWindow;
 
-class CORE_EXPORT WebPagePopupImpl final
-    : public NON_EXPORTED_BASE(WebPagePopup),
-      public NON_EXPORTED_BASE(PageWidgetEventHandler),
-      public NON_EXPORTED_BASE(PagePopup),
-      public NON_EXPORTED_BASE(RefCounted<WebPagePopupImpl>) {
+class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
+                                           public PageWidgetEventHandler,
+                                           public PagePopup,
+                                           public RefCounted<WebPagePopupImpl> {
   WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
   USING_FAST_MALLOC(WebPagePopupImpl);
 

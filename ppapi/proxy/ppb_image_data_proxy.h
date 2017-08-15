@@ -42,10 +42,9 @@ class SerializedHandle;
 // ImageData is an abstract base class for image data resources. Unlike most
 // resources, ImageData must be public in the header since a number of other
 // resources need to access it.
-class PPAPI_PROXY_EXPORT ImageData
-    : public ppapi::Resource,
-      public NON_EXPORTED_BASE(ppapi::thunk::PPB_ImageData_API),
-      public ppapi::PPB_ImageData_Shared {
+class PPAPI_PROXY_EXPORT ImageData : public ppapi::Resource,
+                                     public ppapi::thunk::PPB_ImageData_API,
+                                     public ppapi::PPB_ImageData_Shared {
  public:
   ~ImageData() override;
 

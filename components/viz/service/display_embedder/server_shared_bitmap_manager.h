@@ -26,7 +26,7 @@ class BitmapData;
 // malloc/free, but can only be used in the same process as the display
 // compositor.
 class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
-    : public NON_EXPORTED_BASE(SharedBitmapManager),
+    : public SharedBitmapManager,
       public base::trace_event::MemoryDumpProvider {
  public:
   ServerSharedBitmapManager();

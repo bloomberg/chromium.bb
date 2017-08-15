@@ -19,7 +19,7 @@ namespace device {
 // This is used to connect to biod(through dbus) and perform fingerprint related
 // operations. It observes signals from biod.
 class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
-    : public NON_EXPORTED_BASE(mojom::Fingerprint),
+    : public mojom::Fingerprint,
       public chromeos::BiodClient::Observer {
  public:
   enum class FingerprintSession {

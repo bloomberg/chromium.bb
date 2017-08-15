@@ -50,7 +50,7 @@ class TabletModeWindowManagerTest;
 class ASH_EXPORT TabletModeController
     : public chromeos::AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      NON_EXPORTED_BASE(public mojom::TouchViewManager),
+      public mojom::TouchViewManager,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver {

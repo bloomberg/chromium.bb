@@ -44,7 +44,7 @@ class GeolocationServiceImplContext {
 };
 
 class CONTENT_EXPORT GeolocationServiceImpl
-    : public NON_EXPORTED_BASE(device::mojom::GeolocationService) {
+    : public device::mojom::GeolocationService {
  public:
   GeolocationServiceImpl(device::GeolocationContext* geolocation_context,
                          PermissionManager* permission_manager,

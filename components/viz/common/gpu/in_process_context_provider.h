@@ -33,8 +33,7 @@ class GrContextForGLES2Interface;
 
 namespace viz {
 
-class VIZ_COMMON_EXPORT InProcessContextProvider
-    : public NON_EXPORTED_BASE(ContextProvider) {
+class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
  public:
   InProcessContextProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,

@@ -17,8 +17,7 @@
 namespace media {
 
 // A MediaDrmStorage that proxies to a mojom::MediaDrmStoragePtr.
-class MEDIA_MOJO_EXPORT MojoMediaDrmStorage
-    : NON_EXPORTED_BASE(public MediaDrmStorage) {
+class MEDIA_MOJO_EXPORT MojoMediaDrmStorage : public MediaDrmStorage {
  public:
   explicit MojoMediaDrmStorage(mojom::MediaDrmStoragePtr media_drm_storage_ptr);
   ~MojoMediaDrmStorage() final;

@@ -11,7 +11,7 @@
 namespace android_webview {
 class AwRenderThreadContextProvider;
 
-class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
+class ParentOutputSurface : public cc::OutputSurface {
  public:
   explicit ParentOutputSurface(
       scoped_refptr<AwRenderThreadContextProvider> context_provider);

@@ -10,7 +10,7 @@ class {{export_attribute}} {{interface.name}}StubDispatch {
 template <typename ImplRefTraits =
               mojo::RawPtrImplRefTraits<{{interface.name}}>>
 class {{interface.name}}Stub
-    : public NON_EXPORTED_BASE(mojo::MessageReceiverWithResponderStatus) {
+    : public mojo::MessageReceiverWithResponderStatus {
  public:
   using ImplPointerType = typename ImplRefTraits::PointerType;
 

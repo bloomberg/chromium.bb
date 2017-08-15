@@ -53,10 +53,9 @@ class ScopedLayerAnimationSettings;
 // ensure that it is not disposed of until it finishes executing. It does this
 // by holding a reference to itself for the duration of methods for which it
 // must guarantee that |this| is valid.
-class COMPOSITOR_EXPORT LayerAnimator
-    : public base::RefCounted<LayerAnimator>,
-      public LayerThreadedAnimationDelegate,
-      NON_EXPORTED_BASE(public cc::AnimationDelegate) {
+class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
+                                        public LayerThreadedAnimationDelegate,
+                                        public cc::AnimationDelegate {
  public:
   enum PreemptionStrategy {
     IMMEDIATELY_SET_NEW_TARGET,

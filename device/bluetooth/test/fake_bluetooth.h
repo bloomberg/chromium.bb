@@ -17,7 +17,7 @@ namespace bluetooth {
 // src/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.
 // Implemented on top of the C++ device/bluetooth API, mainly
 // device/bluetooth/bluetooth_adapter_factory.h.
-class FakeBluetooth : NON_EXPORTED_BASE(public mojom::FakeBluetooth) {
+class FakeBluetooth : public mojom::FakeBluetooth {
  public:
   FakeBluetooth();
   ~FakeBluetooth() override;

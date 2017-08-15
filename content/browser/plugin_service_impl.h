@@ -47,8 +47,7 @@ class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;
 
-class CONTENT_EXPORT PluginServiceImpl
-    : NON_EXPORTED_BASE(public PluginService) {
+class CONTENT_EXPORT PluginServiceImpl : public PluginService {
  public:
   // Returns the PluginServiceImpl singleton.
   static PluginServiceImpl* GetInstance();

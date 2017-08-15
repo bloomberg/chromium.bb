@@ -22,7 +22,7 @@ class WebGestureCurveTarget;
 namespace ui {
 class GestureCurve;
 
-class WebGestureCurveImpl : public NON_EXPORTED_BASE(blink::WebGestureCurve) {
+class WebGestureCurveImpl : public blink::WebGestureCurve {
  public:
   static std::unique_ptr<blink::WebGestureCurve> CreateFromDefaultPlatformCurve(
       blink::WebGestureDevice device_source,

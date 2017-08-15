@@ -13,7 +13,7 @@
 namespace media {
 
 class MEDIA_MOJO_EXPORT MediaInterfaceProvider
-    : public NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider) {
+    : public service_manager::mojom::InterfaceProvider {
  public:
   explicit MediaInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest request);

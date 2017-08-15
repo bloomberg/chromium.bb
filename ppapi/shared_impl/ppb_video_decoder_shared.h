@@ -29,7 +29,7 @@ namespace ppapi {
 // events. Both the proxy and the renderer implementation share this code.
 class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
     : public Resource,
-      NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_Dev_API) {
+      public thunk::PPB_VideoDecoder_Dev_API {
  public:
   explicit PPB_VideoDecoder_Shared(PP_Instance instance);
   explicit PPB_VideoDecoder_Shared(const HostResource& host_resource);

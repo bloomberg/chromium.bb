@@ -112,9 +112,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
       public ui::GpuSwitchingObserver,
-      public NON_EXPORTED_BASE(mojom::RouteProvider),
-      public NON_EXPORTED_BASE(mojom::AssociatedInterfaceProvider),
-      public NON_EXPORTED_BASE(mojom::RendererHost) {
+      public mojom::RouteProvider,
+      public mojom::AssociatedInterfaceProvider,
+      public mojom::RendererHost {
  public:
   // Use the spare RenderProcessHost if it exists, or create a new one. This
   // should be the usual way to get a new RenderProcessHost.

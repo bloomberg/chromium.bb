@@ -44,7 +44,7 @@ class ChildConnection;
 /// class because it lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHostImpl
     : public BrowserChildProcessHost,
-      public NON_EXPORTED_BASE(ChildProcessHostDelegate),
+      public ChildProcessHostDelegate,
 #if defined(OS_WIN)
       public base::win::ObjectWatcher::Delegate,
 #endif

@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestTraceStateObserver
-    : public NON_EXPORTED_BASE(v8::TracingController::TraceStateObserver) {
+    : public v8::TracingController::TraceStateObserver {
  public:
   void OnTraceEnabled() final { ++enabled_; }
   void OnTraceDisabled() final { ++disabled_; }

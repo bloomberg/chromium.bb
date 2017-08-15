@@ -18,7 +18,7 @@ class PipeControlMessageHandlerDelegate;
 
 // Handler for messages defined in pipe_control_messages.mojom.
 class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageHandler
-    : NON_EXPORTED_BASE(public MessageReceiver) {
+    : public MessageReceiver {
  public:
   explicit PipeControlMessageHandler(
       PipeControlMessageHandlerDelegate* delegate);

@@ -18,7 +18,7 @@ namespace blink {
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     : public OffscreenCanvasFrameDispatcher,
-      NON_EXPORTED_BASE(public viz::mojom::blink::CompositorFrameSinkClient) {
+      public viz::mojom::blink::CompositorFrameSinkClient {
  public:
   OffscreenCanvasFrameDispatcherImpl(OffscreenCanvasFrameDispatcherClient*,
                                      uint32_t client_id,

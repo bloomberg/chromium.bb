@@ -38,7 +38,7 @@ class InterfaceEndpointController;
 // endpoint, either the implementation side or the client side.
 // It should only be accessed and destructed on the creating sequence.
 class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
-    : NON_EXPORTED_BASE(public MessageReceiverWithResponder) {
+    : public MessageReceiverWithResponder {
  public:
   // |receiver| is okay to be null. If it is not null, it must outlive this
   // object.

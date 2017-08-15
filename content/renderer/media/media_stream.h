@@ -33,8 +33,7 @@ class MediaStreamObserver {
 // MediaStream is the Chrome representation of blink::WebMediaStream.
 // It is owned by blink::WebMediaStream as blink::WebMediaStream::ExtraData.
 // Its lifetime is the same as the blink::WebMediaStream instance it belongs to.
-class CONTENT_EXPORT MediaStream
-    : NON_EXPORTED_BASE(public blink::WebMediaStream::ExtraData) {
+class CONTENT_EXPORT MediaStream : public blink::WebMediaStream::ExtraData {
  public:
   MediaStream();
   ~MediaStream() override;

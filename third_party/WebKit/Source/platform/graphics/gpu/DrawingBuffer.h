@@ -76,9 +76,8 @@ class WebLayer;
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can
 // publish its rendering results to a WebLayer for compositing.
-class PLATFORM_EXPORT DrawingBuffer
-    : public NON_EXPORTED_BASE(cc::TextureLayerClient),
-      public RefCounted<DrawingBuffer> {
+class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
+                                      public RefCounted<DrawingBuffer> {
   WTF_MAKE_NONCOPYABLE(DrawingBuffer);
 
  public:

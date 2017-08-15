@@ -63,11 +63,10 @@ class LayerThreadedAnimationDelegate;
 // NOTE: Unlike Views, each Layer does *not* own its child Layers. If you
 // delete a Layer and it has children, the parent of each child Layer is set to
 // NULL, but the children are not deleted.
-class COMPOSITOR_EXPORT Layer
-    : public LayerAnimationDelegate,
-      NON_EXPORTED_BASE(public cc::ContentLayerClient),
-      NON_EXPORTED_BASE(public cc::TextureLayerClient),
-      NON_EXPORTED_BASE(public cc::LayerClient) {
+class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
+                                public cc::ContentLayerClient,
+                                public cc::TextureLayerClient,
+                                public cc::LayerClient {
  public:
   Layer();
   explicit Layer(LayerType type);

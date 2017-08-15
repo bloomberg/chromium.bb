@@ -20,8 +20,7 @@ namespace internal {
 class MenuRunnerImpl;
 
 // Given a MenuModel, adapts MenuRunnerImpl which expects a MenuItemView.
-class VIEWS_EXPORT MenuRunnerImplAdapter
-    : public NON_EXPORTED_BASE(MenuRunnerImplInterface) {
+class VIEWS_EXPORT MenuRunnerImplAdapter : public MenuRunnerImplInterface {
  public:
   MenuRunnerImplAdapter(ui::MenuModel* menu_model,
                         const base::Closure& on_menu_closed_callback);

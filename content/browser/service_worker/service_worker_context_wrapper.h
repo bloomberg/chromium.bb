@@ -44,7 +44,7 @@ class URLLoaderFactoryGetter;
 // instance is strictly single threaded and is not refcounted, the core object
 // is what is used internally in the service worker lib.
 class CONTENT_EXPORT ServiceWorkerContextWrapper
-    : NON_EXPORTED_BASE(public ServiceWorkerContext),
+    : public ServiceWorkerContext,
       public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:

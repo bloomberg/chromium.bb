@@ -54,9 +54,8 @@ class VideoFrame;
 //
 // VideoFrameCompositor must live on the same thread as the compositor, though
 // it may be constructed on any thread.
-class MEDIA_BLINK_EXPORT VideoFrameCompositor
-    : public VideoRendererSink,
-      NON_EXPORTED_BASE(public cc::VideoFrameProvider) {
+class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
+                                                public cc::VideoFrameProvider {
  public:
   // Used to report back the time when the new frame has been processed.
   using OnNewProcessedFrameCB = base::Callback<void(base::TimeTicks)>;

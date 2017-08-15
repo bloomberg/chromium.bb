@@ -27,7 +27,7 @@ namespace content {
 // Callbacks to the webrtc::DataChannelObserver implementation also occur on
 // the main render thread.
 class CONTENT_EXPORT RtcDataChannelHandler
-    : NON_EXPORTED_BASE(public blink::WebRTCDataChannelHandler) {
+    : public blink::WebRTCDataChannelHandler {
  public:
   // This object can* be constructed on libjingle's signaling thread and then
   // ownership is passed to the UI thread where it's eventually given to WebKit.
@@ -70,7 +70,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
   class CONTENT_EXPORT Observer
       : public NON_EXPORTED_BASE(
             base::RefCountedThreadSafe<RtcDataChannelHandler::Observer>),
-        public NON_EXPORTED_BASE(webrtc::DataChannelObserver) {
+        public webrtc::DataChannelObserver {
    public:
     Observer(RtcDataChannelHandler* handler,
         const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,

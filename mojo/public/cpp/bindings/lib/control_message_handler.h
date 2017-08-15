@@ -18,7 +18,7 @@ namespace internal {
 
 // Handlers for request messages defined in interface_control_messages.mojom.
 class MOJO_CPP_BINDINGS_EXPORT ControlMessageHandler
-    : NON_EXPORTED_BASE(public MessageReceiverWithResponderStatus) {
+    : public MessageReceiverWithResponderStatus {
  public:
   static bool IsControlMessage(const Message* message);
 

@@ -37,9 +37,8 @@ class ExitWarningHandler;
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
-class ASH_EXPORT AcceleratorController
-    : public ui::AcceleratorTarget,
-      NON_EXPORTED_BASE(public mojom::AcceleratorController) {
+class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
+                                         public mojom::AcceleratorController {
  public:
   AcceleratorController(AcceleratorControllerDelegate* delegate,
                         ui::AcceleratorManagerDelegate* manager_delegate);

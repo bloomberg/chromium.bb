@@ -32,10 +32,9 @@ class MidiScheduler;
 class MidiService;
 
 // MidiManager for USB-MIDI.
-class USB_MIDI_EXPORT MidiManagerUsb
-    : public MidiManager,
-      public UsbMidiDeviceDelegate,
-      NON_EXPORTED_BASE(public UsbMidiInputStream::Delegate) {
+class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
+                                       public UsbMidiDeviceDelegate,
+                                       public UsbMidiInputStream::Delegate {
  public:
   MidiManagerUsb(MidiService* service,
                  std::unique_ptr<UsbMidiDevice::Factory> device_factory);

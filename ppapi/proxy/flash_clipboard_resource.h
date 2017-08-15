@@ -16,9 +16,8 @@
 namespace ppapi {
 namespace proxy {
 
-class FlashClipboardResource
-    : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_Flash_Clipboard_API) {
+class FlashClipboardResource : public PluginResource,
+                               public thunk::PPB_Flash_Clipboard_API {
  public:
   FlashClipboardResource(Connection connection, PP_Instance instance);
   ~FlashClipboardResource() override;

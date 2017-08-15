@@ -23,7 +23,7 @@ class ContextProviderCommandBuffer;
 namespace content {
 
 class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
-    : public NON_EXPORTED_BASE(blink::WebGraphicsContext3DProvider) {
+    : public blink::WebGraphicsContext3DProvider {
  public:
   explicit WebGraphicsContext3DProviderImpl(
       scoped_refptr<ui::ContextProviderCommandBuffer> provider,

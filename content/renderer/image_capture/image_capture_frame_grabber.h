@@ -26,8 +26,8 @@ namespace content {
 // thread and converts it into the appropriate SkBitmap which is sent back to
 // OnSkBitmap(). This class is single threaded throughout.
 class CONTENT_EXPORT ImageCaptureFrameGrabber final
-    : NON_EXPORTED_BASE(public blink::WebImageCaptureFrameGrabber),
-      NON_EXPORTED_BASE(public MediaStreamVideoSink) {
+    : public blink::WebImageCaptureFrameGrabber,
+      public MediaStreamVideoSink {
  public:
   using SkImageDeliverCB = base::Callback<void(sk_sp<SkImage>)>;
 

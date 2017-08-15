@@ -38,8 +38,7 @@ namespace mojo {
 //   - Sending messages can be configured to be thread safe (please see comments
 //     of the constructor). Other than that, the object should only be accessed
 //     on the creating sequence.
-class MOJO_CPP_BINDINGS_EXPORT Connector
-    : NON_EXPORTED_BASE(public MessageReceiver) {
+class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
  public:
   enum ConnectorConfig {
     // Connector::Accept() is only called from a single sequence.

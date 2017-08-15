@@ -53,8 +53,7 @@ class WebKeyboardEvent;
 // These classes are used to convert from WebInputEvent subclasses to
 // corresponding WebCore events.
 
-class CORE_EXPORT WebMouseEventBuilder
-    : NON_EXPORTED_BASE(public WebMouseEvent) {
+class CORE_EXPORT WebMouseEventBuilder : public WebMouseEvent {
  public:
   // Converts a MouseEvent to a corresponding WebMouseEvent.
   // NOTE: This is only implemented for mousemove, mouseover, mouseout,
@@ -72,8 +71,7 @@ class CORE_EXPORT WebMouseEventBuilder
 // NOTE: For KeyboardEvent, this is only implemented for keydown,
 // keyup, and keypress. If the event mapping fails, the event type will be set
 // to Undefined.
-class CORE_EXPORT WebKeyboardEventBuilder
-    : NON_EXPORTED_BASE(public WebKeyboardEvent) {
+class CORE_EXPORT WebKeyboardEventBuilder : public WebKeyboardEvent {
  public:
   WebKeyboardEventBuilder(const KeyboardEvent&);
 };
@@ -81,8 +79,7 @@ class CORE_EXPORT WebKeyboardEventBuilder
 // Converts a TouchEvent to a corresponding WebTouchEvent.
 // NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
 // exceeding that cap will be dropped.
-class CORE_EXPORT WebTouchEventBuilder
-    : NON_EXPORTED_BASE(public WebTouchEvent) {
+class CORE_EXPORT WebTouchEventBuilder : public WebTouchEvent {
  public:
   WebTouchEventBuilder(const LayoutItem, const TouchEvent&);
 };

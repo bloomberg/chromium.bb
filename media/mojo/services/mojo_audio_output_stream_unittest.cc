@@ -54,7 +54,7 @@ class TestCancelableSyncSocket : public base::CancelableSyncSocket {
   DISALLOW_COPY_AND_ASSIGN(TestCancelableSyncSocket);
 };
 
-class MockDelegate : NON_EXPORTED_BASE(public AudioOutputDelegate) {
+class MockDelegate : public AudioOutputDelegate {
  public:
   MockDelegate() {}
   ~MockDelegate() {}

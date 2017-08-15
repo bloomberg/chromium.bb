@@ -26,9 +26,8 @@ namespace proxy {
 
 class URLResponseInfoResource;
 
-class PPAPI_PROXY_EXPORT URLLoaderResource
-    : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_URLLoader_API) {
+class PPAPI_PROXY_EXPORT URLLoaderResource : public PluginResource,
+                                             public thunk::PPB_URLLoader_API {
  public:
   // Constructor for plugin-initiated loads.
   URLLoaderResource(Connection connection,

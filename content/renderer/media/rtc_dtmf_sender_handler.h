@@ -25,7 +25,7 @@ namespace content {
 // Callbacks to the webrtc::DtmfSenderObserverInterface implementation also
 // occur on the main render thread.
 class CONTENT_EXPORT RtcDtmfSenderHandler
-    : NON_EXPORTED_BASE(public blink::WebRTCDTMFSenderHandler) {
+    : public blink::WebRTCDTMFSenderHandler {
  public:
   explicit RtcDtmfSenderHandler(webrtc::DtmfSenderInterface* dtmf_sender);
   ~RtcDtmfSenderHandler() override;

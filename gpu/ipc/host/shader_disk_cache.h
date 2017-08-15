@@ -105,7 +105,7 @@ class ShaderDiskCache : public base::RefCounted<ShaderDiskCache> {
 
 // ShaderCacheFactory maintains a cache of ShaderDiskCache objects
 // so we only create one per profile directory.
-class ShaderCacheFactory : NON_EXPORTED_BASE(public base::ThreadChecker) {
+class ShaderCacheFactory : public base::ThreadChecker {
  public:
   ShaderCacheFactory();
   ~ShaderCacheFactory();

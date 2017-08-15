@@ -32,8 +32,8 @@ class PeerConnectionDependencyFactory;
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
 class CONTENT_EXPORT ProcessedLocalAudioSource final
-    : NON_EXPORTED_BASE(public MediaStreamAudioSource),
-      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
+    : public MediaStreamAudioSource,
+      public media::AudioCapturerSource::CaptureCallback {
  public:
   // |consumer_render_frame_id| references the RenderFrame that will consume the
   // audio data. Audio parameters and (optionally) a pre-existing audio session

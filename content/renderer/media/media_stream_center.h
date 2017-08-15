@@ -23,8 +23,7 @@ class WebMediaStreamCenterClient;
 namespace content {
 class PeerConnectionDependencyFactory;
 
-class CONTENT_EXPORT MediaStreamCenter
-    : NON_EXPORTED_BASE(public blink::WebMediaStreamCenter) {
+class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
   // TODO(miu): Remove these constructor args. They are no longer used.
   // http://crbug.com/577874

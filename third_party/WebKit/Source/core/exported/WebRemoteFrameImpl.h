@@ -22,8 +22,8 @@ enum class WebFrameLoadType;
 class WebView;
 
 class CORE_EXPORT WebRemoteFrameImpl final
-    : public NON_EXPORTED_BASE(GarbageCollectedFinalized<WebRemoteFrameImpl>),
-      public NON_EXPORTED_BASE(WebRemoteFrame) {
+    : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
+      public WebRemoteFrame {
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType, WebRemoteFrameClient*);
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,

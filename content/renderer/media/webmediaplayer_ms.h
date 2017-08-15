@@ -63,10 +63,10 @@ class WebMediaPlayerMSCompositor;
 // blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
 class CONTENT_EXPORT WebMediaPlayerMS
-    : public NON_EXPORTED_BASE(MediaStreamObserver),
-      public NON_EXPORTED_BASE(blink::WebMediaPlayer),
-      public NON_EXPORTED_BASE(media::WebMediaPlayerDelegate::Observer),
-      public NON_EXPORTED_BASE(base::SupportsWeakPtr<WebMediaPlayerMS>) {
+    : public MediaStreamObserver,
+      public blink::WebMediaPlayer,
+      public media::WebMediaPlayerDelegate::Observer,
+      public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides MediaStreamVideoRenderer.

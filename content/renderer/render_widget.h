@@ -131,7 +131,7 @@ struct ResizeParams;
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
-      NON_EXPORTED_BASE(virtual public blink::WebWidgetClient),
+      virtual public blink::WebWidgetClient,
       public mojom::Widget,
       public RenderWidgetCompositorDelegate,
       public RenderWidgetInputHandlerDelegate,

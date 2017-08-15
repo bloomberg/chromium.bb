@@ -15,7 +15,7 @@ namespace viz {
 // TODO(kylechar): Delete this class and all usage of
 // SurfaceReferenceFactory when surface references are enabled by default.
 class VIZ_COMMON_EXPORT StubSurfaceReferenceFactory
-    : public NON_EXPORTED_BASE(SurfaceReferenceFactory) {
+    : public SurfaceReferenceFactory {
  public:
   StubSurfaceReferenceFactory() = default;
 

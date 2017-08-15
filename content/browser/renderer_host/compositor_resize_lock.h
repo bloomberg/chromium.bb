@@ -30,8 +30,7 @@ class CompositorResizeLockClient {
 };
 
 // Used to prevent further resizes while a resize is pending.
-class CONTENT_EXPORT CompositorResizeLock
-    : NON_EXPORTED_BASE(public ui::CompositorLockClient) {
+class CONTENT_EXPORT CompositorResizeLock : public ui::CompositorLockClient {
  public:
   CompositorResizeLock(CompositorResizeLockClient* client,
                        const gfx::Size& new_size);

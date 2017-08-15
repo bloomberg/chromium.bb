@@ -43,11 +43,11 @@ class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
 
 // A default implementation for browser input event routing.
 class CONTENT_EXPORT InputRouterImpl
-    : public NON_EXPORTED_BASE(InputRouter),
-      public NON_EXPORTED_BASE(GestureEventQueueClient),
-      public NON_EXPORTED_BASE(MouseWheelEventQueueClient),
-      public NON_EXPORTED_BASE(TouchEventQueueClient),
-      public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
+    : public InputRouter,
+      public GestureEventQueueClient,
+      public MouseWheelEventQueueClient,
+      public TouchEventQueueClient,
+      public TouchpadTapSuppressionControllerClient {
  public:
   InputRouterImpl(InputRouterImplClient* client,
                   InputDispositionHandler* disposition_handler,

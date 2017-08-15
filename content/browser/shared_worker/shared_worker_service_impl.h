@@ -34,8 +34,7 @@ class WorkerStoragePartitionId;
 
 // The implementation of WorkerService. We try to place workers in an existing
 // renderer process when possible.
-class CONTENT_EXPORT SharedWorkerServiceImpl
-    : public NON_EXPORTED_BASE(WorkerService) {
+class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
  public:
   // Returns the SharedWorkerServiceImpl singleton.
   static SharedWorkerServiceImpl* GetInstance();

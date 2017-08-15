@@ -35,7 +35,7 @@ namespace content {
 // transmitting audio packets between the browser process and the renderer
 // process.
 class CONTENT_EXPORT AudioSyncReader
-    : public NON_EXPORTED_BASE(media::AudioOutputController::SyncReader) {
+    : public media::AudioOutputController::SyncReader {
  public:
   // Create() automatically initializes the AudioSyncReader correctly,
   // and should be strongly preferred over calling the constructor directly!

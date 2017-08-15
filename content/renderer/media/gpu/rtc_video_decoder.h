@@ -49,7 +49,7 @@ namespace content {
 // Decode() is non-blocking and queues the buffers. Decoded frames are
 // delivered to WebRTC on the media task runner.
 class CONTENT_EXPORT RTCVideoDecoder
-    : NON_EXPORTED_BASE(public webrtc::VideoDecoder),
+    : public webrtc::VideoDecoder,
       public media::VideoDecodeAccelerator::Client {
  public:
   ~RTCVideoDecoder() override;

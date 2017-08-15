@@ -49,7 +49,7 @@ struct WebRTCDataChannelInit;
 
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
-      NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient),
+      public WebRTCDataChannelHandlerClient,
       public ActiveScriptWrappable<RTCDataChannel>,
       public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);

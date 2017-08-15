@@ -28,9 +28,8 @@ class TrackedCallback;
 
 namespace proxy {
 
-class PPAPI_PROXY_EXPORT FileSystemResource
-    : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_FileSystem_API) {
+class PPAPI_PROXY_EXPORT FileSystemResource : public PluginResource,
+                                              public thunk::PPB_FileSystem_API {
  public:
   // Creates a new FileSystemResource. The resource must be subsequently opened
   // via Open() before use.

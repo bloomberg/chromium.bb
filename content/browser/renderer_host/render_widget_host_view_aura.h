@@ -79,7 +79,7 @@ class TouchSelectionControllerClientAura;
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
-      NON_EXPORTED_BASE(public RenderWidgetHostViewEventHandler::Delegate),
+      public RenderWidgetHostViewEventHandler::Delegate,
       public TextInputManager::Observer,
       public ui::TextInputClient,
       public display::DisplayObserver,

@@ -50,9 +50,9 @@ class SpeechRecognizer;
 //    corresponding listener (demuxing on the base of their session_id).
 //  - Relays also recognition results/status/error events of every session to
 //    the catch-all snoop listener (optionally) provided by the delegate.
-class CONTENT_EXPORT SpeechRecognitionManagerImpl :
-    public NON_EXPORTED_BASE(SpeechRecognitionManager),
-    public SpeechRecognitionEventListener {
+class CONTENT_EXPORT SpeechRecognitionManagerImpl
+    : public SpeechRecognitionManager,
+      public SpeechRecognitionEventListener {
  public:
   // Returns the current SpeechRecognitionManagerImpl or NULL if the call is
   // issued when it is not created yet or destroyed (by BrowserMainLoop).

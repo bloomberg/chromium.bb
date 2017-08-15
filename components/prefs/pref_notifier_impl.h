@@ -22,8 +22,7 @@
 class PrefService;
 
 // The PrefNotifier implementation used by the PrefService.
-class COMPONENTS_PREFS_EXPORT PrefNotifierImpl
-    : public NON_EXPORTED_BASE(PrefNotifier) {
+class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
  public:
   PrefNotifierImpl();
   explicit PrefNotifierImpl(PrefService* pref_service);

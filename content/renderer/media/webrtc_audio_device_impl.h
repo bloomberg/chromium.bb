@@ -250,10 +250,9 @@ class WebRtcPlayoutDataSource {
 // Note that this class inherits from webrtc::AudioDeviceModule but due to
 // the high number of non-implemented methods, we move the cruft over to the
 // WebRtcAudioDeviceNotImpl.
-class CONTENT_EXPORT WebRtcAudioDeviceImpl
-    : NON_EXPORTED_BASE(public WebRtcAudioDeviceNotImpl),
-      NON_EXPORTED_BASE(public WebRtcAudioRendererSource),
-      NON_EXPORTED_BASE(public WebRtcPlayoutDataSource) {
+class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
+                                             public WebRtcAudioRendererSource,
+                                             public WebRtcPlayoutDataSource {
  public:
   // The maximum volume value WebRtc uses.
   static const int kMaxVolumeLevel = 255;

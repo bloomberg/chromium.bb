@@ -67,7 +67,7 @@ struct ServiceWorkerVersionInfo;
 // one of them is activated. This class connects the actual script with a
 // running worker.
 class CONTENT_EXPORT ServiceWorkerVersion
-    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>),
+    : public base::RefCounted<ServiceWorkerVersion>,
       public EmbeddedWorkerInstance::Listener {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;

@@ -17,8 +17,8 @@
 
 namespace content {
 
-class CONTENT_EXPORT WebURLResponseExtraDataImpl :
-    public NON_EXPORTED_BASE(blink::WebURLResponse::ExtraData) {
+class CONTENT_EXPORT WebURLResponseExtraDataImpl
+    : public blink::WebURLResponse::ExtraData {
  public:
   WebURLResponseExtraDataImpl();
   ~WebURLResponseExtraDataImpl() override;

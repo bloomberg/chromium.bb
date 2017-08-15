@@ -13,7 +13,7 @@ namespace viz {
 
 // A surface reference factory that uses SurfaceSequence.
 class VIZ_COMMON_EXPORT SequenceSurfaceReferenceFactory
-    : public NON_EXPORTED_BASE(SurfaceReferenceFactory) {
+    : public SurfaceReferenceFactory {
  public:
   SequenceSurfaceReferenceFactory() = default;
 

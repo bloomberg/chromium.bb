@@ -19,7 +19,7 @@ namespace proxy {
 
 class PPAPI_PROXY_EXPORT VpnProviderResource
     : public PluginResource,
-      public NON_EXPORTED_BASE(thunk::PPB_VpnProvider_API) {
+      public thunk::PPB_VpnProvider_API {
  public:
   VpnProviderResource(Connection connection, PP_Instance instance);
   virtual ~VpnProviderResource();

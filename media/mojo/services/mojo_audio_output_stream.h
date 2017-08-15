@@ -19,8 +19,8 @@ namespace media {
 // This class handles IPC for single audio output stream by delegating method
 // calls to its AudioOutputDelegate.
 class MEDIA_MOJO_EXPORT MojoAudioOutputStream
-    : NON_EXPORTED_BASE(public mojom::AudioOutputStream),
-      NON_EXPORTED_BASE(public AudioOutputDelegate::EventHandler) {
+    : public mojom::AudioOutputStream,
+      public AudioOutputDelegate::EventHandler {
  public:
   using StreamCreatedCallback =
       mojom::AudioOutputStreamProvider::AcquireCallback;

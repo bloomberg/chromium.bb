@@ -20,8 +20,7 @@
 namespace media {
 
 // See mojom::WatchTimeRecorder for documentation.
-class MEDIA_MOJO_EXPORT WatchTimeRecorder
-    : NON_EXPORTED_BASE(public mojom::WatchTimeRecorder) {
+class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
  public:
   explicit WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties);
   ~WatchTimeRecorder() override;

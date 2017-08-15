@@ -23,8 +23,7 @@ class TextInputClient;
 // of this class as the global input method with calling
 // SetUpInputMethodFactoryForTesting() which is declared in
 // ui/base/ime/input_method_factory.h
-class UI_BASE_IME_EXPORT MockInputMethod
-    : NON_EXPORTED_BASE(public InputMethod) {
+class UI_BASE_IME_EXPORT MockInputMethod : public InputMethod {
  public:
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   ~MockInputMethod() override;

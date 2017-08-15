@@ -13,7 +13,7 @@
 namespace media {
 
 class MEDIA_BLINK_EXPORT WebMediaCapabilitiesClientImpl
-    : NON_EXPORTED_BASE(public blink::WebMediaCapabilitiesClient) {
+    : public blink::WebMediaCapabilitiesClient {
  public:
   WebMediaCapabilitiesClientImpl();
   ~WebMediaCapabilitiesClientImpl() override;

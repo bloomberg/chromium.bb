@@ -37,8 +37,8 @@ class WebRtcAudioRendererSource;
 // This renderer handles calls from the pipeline and WebRtc ADM. It is used
 // for connecting WebRtc MediaStream with the audio pipeline.
 class CONTENT_EXPORT WebRtcAudioRenderer
-    : NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
-      NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
+    : public media::AudioRendererSink::RenderCallback,
+      public MediaStreamAudioRenderer {
  public:
   // This is a little utility class that holds the configured state of an audio
   // stream.

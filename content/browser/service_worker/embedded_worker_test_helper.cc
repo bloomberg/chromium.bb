@@ -143,7 +143,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
 }
 
 class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
-    : public NON_EXPORTED_BASE(mojom::ServiceWorkerEventDispatcher) {
+    : public mojom::ServiceWorkerEventDispatcher {
  public:
   static void Create(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
                      int thread_id,

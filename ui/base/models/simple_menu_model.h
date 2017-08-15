@@ -28,8 +28,7 @@ class ButtonMenuItemModel;
 // The breadth of MenuModel is not exposed through this API.
 class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
  public:
-  class UI_BASE_EXPORT Delegate
-      : NON_EXPORTED_BASE(public AcceleratorProvider) {
+  class UI_BASE_EXPORT Delegate : public AcceleratorProvider {
    public:
     ~Delegate() override {}
 

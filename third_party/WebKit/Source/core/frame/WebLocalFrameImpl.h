@@ -81,8 +81,8 @@ class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
 class CORE_EXPORT WebLocalFrameImpl final
-    : public NON_EXPORTED_BASE(GarbageCollectedFinalized<WebLocalFrameImpl>),
-      public NON_EXPORTED_BASE(WebLocalFrame) {
+    : public GarbageCollectedFinalized<WebLocalFrameImpl>,
+      public WebLocalFrame {
  public:
   // WebFrame methods:
   // TODO(dcheng): Fix sorting here; a number of method have been moved to

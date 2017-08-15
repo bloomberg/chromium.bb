@@ -24,7 +24,7 @@ class RenderWidgetHostDelegate;
 // Utility class for tracking the latency of events passing through
 // a given RenderWidgetHost.
 class CONTENT_EXPORT RenderWidgetHostLatencyTracker
-    : NON_EXPORTED_BASE(public ui::LatencyTracker) {
+    : public ui::LatencyTracker {
  public:
   explicit RenderWidgetHostLatencyTracker(bool metric_sampling);
   ~RenderWidgetHostLatencyTracker();

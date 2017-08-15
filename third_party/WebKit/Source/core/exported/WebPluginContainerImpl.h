@@ -65,7 +65,7 @@ struct WebPrintPresetOptions;
 class CORE_EXPORT WebPluginContainerImpl final
     : public GarbageCollectedFinalized<WebPluginContainerImpl>,
       public PluginView,
-      NON_EXPORTED_BASE(public WebPluginContainer),
+      public WebPluginContainer,
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);

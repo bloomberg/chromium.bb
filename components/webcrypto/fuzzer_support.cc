@@ -19,7 +19,7 @@ namespace webcrypto {
 namespace {
 
 // This mock is used to initialize blink.
-class InitOnce : NON_EXPORTED_BASE(public blink::Platform) {
+class InitOnce : public blink::Platform {
  public:
   InitOnce() {
     base::CommandLine::Init(0, nullptr);

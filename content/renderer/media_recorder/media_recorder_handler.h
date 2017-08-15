@@ -43,7 +43,7 @@ class AudioTrackRecorder;
 // i.e. the Main Render thread. (Note that a BindToCurrentLoop is used to
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
 class CONTENT_EXPORT MediaRecorderHandler final
-    : public NON_EXPORTED_BASE(blink::WebMediaRecorderHandler) {
+    : public blink::WebMediaRecorderHandler {
  public:
   MediaRecorderHandler();
   ~MediaRecorderHandler() override;

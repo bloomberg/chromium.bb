@@ -40,8 +40,7 @@ namespace content {
 
 class IndexedDBConnection;
 
-class CONTENT_EXPORT IndexedDBContextImpl
-    : NON_EXPORTED_BASE(public IndexedDBContext) {
+class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
  public:
   // Recorded in histograms, so append only.
   enum ForceCloseReason {

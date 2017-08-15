@@ -50,9 +50,9 @@ namespace content {
 // and skip audio to maintain time synchronization between the producer and
 // consumer.
 class CONTENT_EXPORT TrackAudioRenderer
-    : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
-      NON_EXPORTED_BASE(public MediaStreamAudioSink),
-      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
+    : public MediaStreamAudioRenderer,
+      public MediaStreamAudioSink,
+      public media::AudioRendererSink::RenderCallback {
  public:
   // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
   // refers to the RenderFrame that owns this instance (e.g., it contains the

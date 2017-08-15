@@ -24,7 +24,7 @@ class WebContents;
 // Handles screen orientation lock/unlock. Platforms which wish to provide
 // custom implementations can provide a factory for ScreenOrientationDelegate.
 class CONTENT_EXPORT ScreenOrientationProvider
-    : NON_EXPORTED_BASE(public device::mojom::ScreenOrientation),
+    : public device::mojom::ScreenOrientation,
       public WebContentsObserver {
  public:
   ScreenOrientationProvider(WebContents* web_contents);

@@ -22,9 +22,8 @@ class NavigationState;
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDocumentLoader (see RenderView::DidCreateDataSource).
-class CONTENT_EXPORT DocumentState
-    : NON_EXPORTED_BASE(public blink::WebDocumentLoader::ExtraData),
-      public base::SupportsUserData {
+class CONTENT_EXPORT DocumentState : public blink::WebDocumentLoader::ExtraData,
+                                     public base::SupportsUserData {
  public:
   DocumentState();
   ~DocumentState() override;

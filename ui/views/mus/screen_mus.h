@@ -19,9 +19,8 @@ namespace views {
 class ScreenMusDelegate;
 
 // Screen implementation backed by ui::mojom::DisplayManager.
-class VIEWS_MUS_EXPORT ScreenMus
-    : public display::ScreenBase,
-      public NON_EXPORTED_BASE(ui::mojom::DisplayManagerObserver) {
+class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
+                                   public ui::mojom::DisplayManagerObserver {
  public:
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;

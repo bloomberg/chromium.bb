@@ -24,7 +24,7 @@ class WebContentsImpl;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
-class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
+class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap,
                                        public NotificationObserver {
  public:
   HostZoomMapImpl();

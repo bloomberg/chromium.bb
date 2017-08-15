@@ -38,8 +38,7 @@ namespace content {
 // the media thread.  RTCVideoEncoder is sychronized by webrtc::VideoSender.
 // webrtc::VideoEncoder methods do not run concurrently. RtcVideoEncoder needs
 // to synchronize RegisterEncodeCompleteCallback and encode complete callback.
-class CONTENT_EXPORT RTCVideoEncoder
-    : NON_EXPORTED_BASE(public webrtc::VideoEncoder) {
+class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
  public:
   RTCVideoEncoder(media::VideoCodecProfile profile,
                   media::GpuVideoAcceleratorFactories* gpu_factories);

@@ -30,7 +30,7 @@ namespace content {
 class CONTENT_EXPORT PPB_ImageData_Impl
     : public ppapi::Resource,
       public ppapi::PPB_ImageData_Shared,
-      public NON_EXPORTED_BASE(ppapi::thunk::PPB_ImageData_API) {
+      public ppapi::thunk::PPB_ImageData_API {
  public:
   // We delegate most of our implementation to a back-end class that either uses
   // a PlatformCanvas (for most trusted stuff) or bare shared memory (for use by

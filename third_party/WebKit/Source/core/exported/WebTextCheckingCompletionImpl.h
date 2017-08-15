@@ -40,7 +40,7 @@
 namespace blink {
 
 class CORE_EXPORT WebTextCheckingCompletionImpl final
-    : public NON_EXPORTED_BASE(WebTextCheckingCompletion) {
+    : public WebTextCheckingCompletion {
  public:
   explicit WebTextCheckingCompletionImpl(TextCheckingRequest* request)
       : request_(request) {}

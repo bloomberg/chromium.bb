@@ -18,8 +18,7 @@ class WebFileWriterClient;
 
 namespace content {
 
-class CONTENT_EXPORT WebFileWriterBase
-    : public NON_EXPORTED_BASE(blink::WebFileWriter) {
+class CONTENT_EXPORT WebFileWriterBase : public blink::WebFileWriter {
  public:
   WebFileWriterBase(const GURL& path, blink::WebFileWriterClient* client);
   ~WebFileWriterBase() override;

@@ -72,7 +72,7 @@ class MockWakeLock : public device::mojom::WakeLock {
 // Derived class for testing only.  Allows the tests to have their own instance
 // for testing and control the period for which WebRTCInternals will bulk up
 // updates (changes down from 500ms to 1ms).
-class WebRTCInternalsForTest : public NON_EXPORTED_BASE(WebRTCInternals) {
+class WebRTCInternalsForTest : public WebRTCInternals {
  public:
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),

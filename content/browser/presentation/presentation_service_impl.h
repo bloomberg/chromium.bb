@@ -43,7 +43,7 @@ class RenderFrameHost;
 // This class is instantiated on-demand via Mojo's ConnectToRemoteService
 // from the renderer when the first presentation API request is handled.
 class CONTENT_EXPORT PresentationServiceImpl
-    : public NON_EXPORTED_BASE(blink::mojom::PresentationService),
+    : public blink::mojom::PresentationService,
       public WebContentsObserver,
       public PresentationServiceDelegate::Observer {
  public:

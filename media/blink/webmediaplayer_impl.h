@@ -86,9 +86,9 @@ class WebMediaPlayerDelegate;
 // Pipeline. Handles normal resource loading, Media Source, and
 // Encrypted Media.
 class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
-    : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
-      public NON_EXPORTED_BASE(WebMediaPlayerDelegate::Observer),
-      public NON_EXPORTED_BASE(Pipeline::Client),
+    : public blink::WebMediaPlayer,
+      public WebMediaPlayerDelegate::Observer,
+      public Pipeline::Client,
       public MediaObserverClient,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:

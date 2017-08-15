@@ -29,7 +29,7 @@ struct WebPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollectedFinalized<WebFrameWidgetBase>,
-      public NON_EXPORTED_BASE(WebFrameWidget) {
+      public WebFrameWidget {
  public:
   virtual ~WebFrameWidgetBase() {}
 

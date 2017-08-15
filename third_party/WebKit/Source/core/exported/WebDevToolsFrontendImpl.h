@@ -45,8 +45,8 @@ class DevToolsHost;
 class WebLocalFrameImpl;
 
 class CORE_EXPORT WebDevToolsFrontendImpl final
-    : public NON_EXPORTED_BASE(WebDevToolsFrontend),
-      public NON_EXPORTED_BASE(InspectorFrontendClient) {
+    : public WebDevToolsFrontend,
+      public InspectorFrontendClient {
   WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 
  public:

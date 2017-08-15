@@ -57,7 +57,7 @@ class ShellSurface : public SurfaceTreeHost,
                      public ash::wm::WindowStateObserver,
                      public WMHelper::ActivationObserver,
                      public WMHelper::DisplayConfigurationObserver,
-                     NON_EXPORTED_BASE(public ui::CompositorLockClient) {
+                     public ui::CompositorLockClient {
  public:
   enum class BoundsMode { SHELL, CLIENT, FIXED };
 

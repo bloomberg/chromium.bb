@@ -56,10 +56,9 @@ struct FrameReplicationState;
 // RenderFrameProxy will be deleted when the node in the frame tree is deleted
 // or when navigating the frame causes it to return to this process and a new
 // RenderFrame is created for it.
-class CONTENT_EXPORT RenderFrameProxy
-    : public IPC::Listener,
-      public IPC::Sender,
-      NON_EXPORTED_BASE(public blink::WebRemoteFrameClient) {
+class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
+                                        public IPC::Sender,
+                                        public blink::WebRemoteFrameClient {
  public:
   // This method should be used to create a RenderFrameProxy, which will replace
   // an existing RenderFrame during its cross-process navigation from the

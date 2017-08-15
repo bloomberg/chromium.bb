@@ -17,8 +17,7 @@ namespace ash {
 // LockScreenClient, which we will dispatch to if one has been provided to us.
 // This could send requests to LockScreenClient and also handle requests from
 // LockScreenClient through mojo.
-class ASH_EXPORT LockScreenController
-    : NON_EXPORTED_BASE(public mojom::LockScreen) {
+class ASH_EXPORT LockScreenController : public mojom::LockScreen {
  public:
   using OnShownCallback = base::OnceCallback<void(bool did_show)>;
 

@@ -40,10 +40,9 @@ namespace IPC {
 // TODO(morrita): Add APIs to create extra MessagePipes to let
 //                Mojo-based objects talk over this Channel.
 //
-class IPC_EXPORT ChannelMojo
-    : public Channel,
-      public Channel::AssociatedInterfaceSupport,
-      public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
+class IPC_EXPORT ChannelMojo : public Channel,
+                               public Channel::AssociatedInterfaceSupport,
+                               public internal::MessagePipeReader::Delegate {
  public:
   // Creates a ChannelMojo.
   static std::unique_ptr<ChannelMojo>

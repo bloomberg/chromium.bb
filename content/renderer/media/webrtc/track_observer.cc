@@ -11,7 +11,7 @@ namespace content {
 
 class CONTENT_EXPORT TrackObserver::TrackObserverImpl
     : public base::RefCountedThreadSafe<TrackObserver::TrackObserverImpl>,
-      NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
+      public webrtc::ObserverInterface {
  public:
   TrackObserverImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,

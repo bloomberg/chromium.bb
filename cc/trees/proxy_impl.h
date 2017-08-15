@@ -22,8 +22,8 @@ class ProxyMain;
 // This class aggregates all the interactions that the main side of the
 // compositor needs to have with the impl side.
 // The class is created and lives on the impl thread.
-class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
-                            public NON_EXPORTED_BASE(SchedulerClient) {
+class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
+                            public SchedulerClient {
  public:
   ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
             LayerTreeHost* layer_tree_host,

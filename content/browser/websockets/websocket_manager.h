@@ -24,8 +24,8 @@ class StoragePartition;
 // WebSocketImpl objects for each WebSocketRequest and throttling the number of
 // WebSocketImpl objects in use.
 class CONTENT_EXPORT WebSocketManager
-    : NON_EXPORTED_BASE(public WebSocketImpl::Delegate),
-      NON_EXPORTED_BASE(public net::URLRequestContextGetterObserver) {
+    : public WebSocketImpl::Delegate,
+      public net::URLRequestContextGetterObserver {
  public:
   // Called on the UI thread:
   static void CreateWebSocket(

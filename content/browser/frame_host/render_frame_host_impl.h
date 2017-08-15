@@ -118,11 +118,11 @@ struct ResourceResponse;
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public base::SupportsUserData,
-      NON_EXPORTED_BASE(public mojom::FrameHost),
-      NON_EXPORTED_BASE(public mojom::FrameHostInterfaceBroker),
+      public mojom::FrameHost,
+      public mojom::FrameHostInterfaceBroker,
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
-      public NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider),
+      public service_manager::mojom::InterfaceProvider,
       public CSPContext {
  public:
   using AXTreeSnapshotCallback =

@@ -35,7 +35,7 @@ class Layer;
 
 namespace cc_blink {
 
-class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
+class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
  public:
   WebLayerImpl();
   explicit WebLayerImpl(scoped_refptr<cc::Layer>);

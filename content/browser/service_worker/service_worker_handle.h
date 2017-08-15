@@ -28,7 +28,7 @@ class ServiceWorkerContextCore;
 // Has references to the corresponding ServiceWorkerVersion in order to ensure
 // that the version is alive while this handle is around.
 class CONTENT_EXPORT ServiceWorkerHandle
-    : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
+    : public ServiceWorkerVersion::Listener {
  public:
   // Creates a handle for a live version. This may return nullptr if any of
   // |context|, |provider_host| and |version| is nullptr.

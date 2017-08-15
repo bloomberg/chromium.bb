@@ -29,7 +29,7 @@ class TracingObserver;
 // local dump manager remotely connects to the Coordinator service. In the
 // browser process, it locally connects to the Coordinator service.
 class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
-    : public NON_EXPORTED_BASE(mojom::ClientProcess) {
+    : public mojom::ClientProcess {
  public:
   struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
    public:

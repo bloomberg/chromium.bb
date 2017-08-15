@@ -22,7 +22,7 @@ class WebExternalTextureLayer;
 
 class PLATFORM_EXPORT ImageLayerBridge
     : public GarbageCollectedFinalized<ImageLayerBridge>,
-      NON_EXPORTED_BASE(public cc::TextureLayerClient) {
+      public cc::TextureLayerClient {
   WTF_MAKE_NONCOPYABLE(ImageLayerBridge);
 
  public:

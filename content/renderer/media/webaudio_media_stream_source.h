@@ -22,7 +22,7 @@ namespace content {
 // MediaStreamAudioTracks. Audio data is transported directly to the tracks in
 // 10 ms chunks.
 class WebAudioMediaStreamSource final
-    : NON_EXPORTED_BASE(public MediaStreamAudioSource),
+    : public MediaStreamAudioSource,
       public blink::WebAudioDestinationConsumer {
  public:
   explicit WebAudioMediaStreamSource(blink::WebMediaStreamSource* blink_source);

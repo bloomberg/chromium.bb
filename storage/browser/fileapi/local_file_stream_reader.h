@@ -33,8 +33,7 @@ namespace storage {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class STORAGE_EXPORT LocalFileStreamReader
-    : public NON_EXPORTED_BASE(FileStreamReader) {
+class STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
  public:
   ~LocalFileStreamReader() override;
 

@@ -43,7 +43,7 @@ class WebViewImpl;
 
 class CORE_EXPORT ValidationMessageClientImpl final
     : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
-      public NON_EXPORTED_BASE(ValidationMessageClient),
+      public ValidationMessageClient,
       private PopupOpeningObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 

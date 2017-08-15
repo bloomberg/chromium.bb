@@ -45,11 +45,11 @@ struct InputEventAck;
 // Chrome IPC which is deprecated. This class will be replaced with a Mojo
 // backed transport. See crbug.com/722928.
 class CONTENT_EXPORT LegacyInputRouterImpl
-    : public NON_EXPORTED_BASE(InputRouter),
-      public NON_EXPORTED_BASE(GestureEventQueueClient),
-      public NON_EXPORTED_BASE(MouseWheelEventQueueClient),
-      public NON_EXPORTED_BASE(TouchEventQueueClient),
-      public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
+    : public InputRouter,
+      public GestureEventQueueClient,
+      public MouseWheelEventQueueClient,
+      public TouchEventQueueClient,
+      public TouchpadTapSuppressionControllerClient {
  public:
   LegacyInputRouterImpl(IPC::Sender* sender,
                         InputRouterClient* client,

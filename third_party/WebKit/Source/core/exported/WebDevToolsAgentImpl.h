@@ -62,12 +62,12 @@ class WebString;
 
 class CORE_EXPORT WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
-      public NON_EXPORTED_BASE(WebDevToolsAgent),
-      public NON_EXPORTED_BASE(InspectorEmulationAgent::Client),
-      public NON_EXPORTED_BASE(InspectorTracingAgent::Client),
-      public NON_EXPORTED_BASE(InspectorPageAgent::Client),
-      public NON_EXPORTED_BASE(InspectorSession::Client),
-      public NON_EXPORTED_BASE(InspectorLayerTreeAgent::Client),
+      public WebDevToolsAgent,
+      public InspectorEmulationAgent::Client,
+      public InspectorTracingAgent::Client,
+      public InspectorPageAgent::Client,
+      public InspectorSession::Client,
+      public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
  public:
   static WebDevToolsAgentImpl* Create(WebLocalFrameImpl*,

@@ -17,8 +17,7 @@ namespace content {
 class DOMStorageContextWrapper;
 class DOMStorageSession;
 
-class SessionStorageNamespaceImpl
-    : NON_EXPORTED_BASE(public SessionStorageNamespace) {
+class SessionStorageNamespaceImpl : public SessionStorageNamespace {
  public:
   // Constructs a |SessionStorageNamespaceImpl| and allocates new IDs for it.
   //

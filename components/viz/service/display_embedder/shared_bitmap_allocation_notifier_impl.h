@@ -23,7 +23,7 @@ class SharedBitmapAllocationObserver {
 };
 
 class VIZ_SERVICE_EXPORT SharedBitmapAllocationNotifierImpl
-    : NON_EXPORTED_BASE(public mojom::SharedBitmapAllocationNotifier) {
+    : public mojom::SharedBitmapAllocationNotifier {
  public:
   explicit SharedBitmapAllocationNotifierImpl(
       ServerSharedBitmapManager* manager);

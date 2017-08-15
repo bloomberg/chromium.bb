@@ -113,8 +113,7 @@ class GPU_EXPORT GLES2DecoderClient {
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public CommonDecoder,
-                                NON_EXPORTED_BASE(public AsyncAPIInterface) {
+class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
  public:
   typedef error::Error Error;
 

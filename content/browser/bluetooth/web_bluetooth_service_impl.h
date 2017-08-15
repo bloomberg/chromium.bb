@@ -47,7 +47,7 @@ class RenderProcessHost;
 // RenderFrameHostImpl will create an instance of this class and keep
 // ownership of it.
 class CONTENT_EXPORT WebBluetoothServiceImpl
-    : public NON_EXPORTED_BASE(blink::mojom::WebBluetoothService),
+    : public blink::mojom::WebBluetoothService,
       public WebContentsObserver,
       public device::BluetoothAdapter::Observer {
  public:
