@@ -171,8 +171,8 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       render_frame_proxy_(render_frame_proxy),
       frame_(frame) {
   enable_surface_references_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSurfaceReferences);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSurfaceReferences);
   scoped_refptr<ThreadSafeSender> sender(
       RenderThreadImpl::current()->thread_safe_sender());
   if (enable_surface_references_) {

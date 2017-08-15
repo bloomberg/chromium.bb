@@ -44,6 +44,7 @@
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -101,9 +102,16 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 
 struct CompositorDependencies {
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
+    auto surface_lifetime_type =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSurfaceReferences)
+            ? viz::SurfaceManager::LifetimeType::SEQUENCES
+            : viz::SurfaceManager::LifetimeType::REFERENCES;
+
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
-    frame_sink_manager_impl = base::MakeUnique<viz::FrameSinkManagerImpl>();
+    frame_sink_manager_impl = base::MakeUnique<viz::FrameSinkManagerImpl>(
+        nullptr /* display_provider */, surface_lifetime_type);
     surface_utils::ConnectWithLocalFrameSinkManager(
         &host_frame_sink_manager, frame_sink_manager_impl.get());
   }

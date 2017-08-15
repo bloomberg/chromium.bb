@@ -182,8 +182,9 @@ class SurfaceRefMessageFilter : public BrowserMessageFilter {
 // Test that when a child frame submits its first compositor frame, the
 // embedding renderer process properly acquires and releases references to the
 // new Surface. See https://crbug.com/701175.
+// TODO(crbug.com/676384): Delete test with the rest of SurfaceSequence code.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
-                       ChildFrameSurfaceReference) {
+                       DISABLED_ChildFrameSurfaceReference) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(a)")));

@@ -1479,9 +1479,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // See https://crbug.com/676384.
     auto surface_lifetime_type =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSurfaceReferences)
-            ? viz::SurfaceManager::LifetimeType::REFERENCES
-            : viz::SurfaceManager::LifetimeType::SEQUENCES;
+            switches::kDisableSurfaceReferences)
+            ? viz::SurfaceManager::LifetimeType::SEQUENCES
+            : viz::SurfaceManager::LifetimeType::REFERENCES;
     frame_sink_manager_impl_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
         nullptr /* display_provider */, surface_lifetime_type);
 
