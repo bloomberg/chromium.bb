@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
@@ -64,8 +65,7 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   paint.setAntiAlias(true);
   paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorWHITE);
-  paint.setTypeface(SkTypeface::MakeFromName(
-      "sans", SkFontStyle::FromOldStyle(SkTypeface::kBold)));
+  paint.setTypeface(SkTypeface::MakeFromName("sans", SkFontStyle::Bold()));
   paint.setTextSize(kTextSize);
 
   // Calculate the vertical margin from the top
