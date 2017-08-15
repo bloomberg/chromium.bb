@@ -13,7 +13,6 @@
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace ukm {
-class UkmEntryBuilder;
 class UkmRecorder;
 }
 
@@ -58,9 +57,6 @@ class ProcessMemoryMetricsEmitter
 
  private:
   friend class base::RefCountedThreadSafe<ProcessMemoryMetricsEmitter>;
-
-  // The builder always has the same event name: "Memory.Experimental".
-  std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmBuilder(int64_t ukm_source_id);
 
   // This class sends two asynchronous service requests, whose results need to
   // be collated.
