@@ -9,7 +9,7 @@ PASS new MessageEvent('eventType').data is null
 PASS new MessageEvent('eventType').origin is ""
 PASS new MessageEvent('eventType').lastEventId is ""
 PASS new MessageEvent('eventType').source is null
-PASS new MessageEvent('eventType').ports is null
+PASS new MessageEvent('eventType').ports is []
 PASS new MessageEvent('eventType', { bubbles: false }).bubbles is false
 PASS new MessageEvent('eventType', { bubbles: true }).bubbles is true
 PASS new MessageEvent('eventType', { cancelable: false }).cancelable is false
@@ -81,8 +81,7 @@ PASS new MessageEvent('eventType', { ports: [channel.port1, channel.port2, chann
 PASS new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1] is channel.port2
 PASS new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[2] is channel2.port1
 PASS new MessageEvent('eventType', { ports: [] }).ports is []
-PASS new MessageEvent('eventType', { ports: undefined }).ports is null
-PASS new MessageEvent('eventType', { ports: null }).ports is null
+PASS new MessageEvent('eventType', { ports: undefined }).ports is []
 PASS new MessageEvent('eventType', { ports: [1, 2, 3] }).ports[2] threw exception TypeError: Failed to construct 'MessageEvent': Failed to convert value to 'MessagePort'..
 PASS new MessageEvent('eventType', { ports: test_object }).ports threw exception TypeError: Failed to construct 'MessageEvent': Iterator getter is not callable..
 PASS new MessageEvent('eventType', { ports: document }).ports threw exception TypeError: Failed to construct 'MessageEvent': Iterator getter is not callable..
@@ -95,6 +94,7 @@ PASS new MessageEvent('eventType', { ports: 18446744073709551615 }).ports threw 
 PASS new MessageEvent('eventType', { ports: NaN }).ports threw exception TypeError: Failed to construct 'MessageEvent': The provided value cannot be converted to a sequence..
 PASS new MessageEvent('eventType', { get ports() { return 123; } }).ports threw exception TypeError: Failed to construct 'MessageEvent': The provided value cannot be converted to a sequence..
 PASS new MessageEvent('eventType', { get ports() { throw 'MessageEvent Error'; } }) threw exception MessageEvent Error.
+PASS new MessageEvent('eventType', { ports: null }).ports threw exception TypeError: Failed to construct 'MessageEvent': The provided value cannot be converted to a sequence..
 PASS new MessageEvent('eventType', { ports: {valueOf: function () { return [channel.port1, channel.port2, channel.port2]; } } }).ports[0] threw exception TypeError: Failed to construct 'MessageEvent': Iterator getter is not callable..
 PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: {length: 3, 0: channel.port1, 1: channel.port2, 2: channel2.port1} }).ports[2] threw exception TypeError: Failed to construct 'MessageEvent': Iterator getter is not callable..
 PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: [channel.port1, channel.port2, channel2.port1] }).bubbles is true

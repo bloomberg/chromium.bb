@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5323 tests; 5124 PASS, 199 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5323 tests; 5125 PASS, 198 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Document interface: attribute domain 
 PASS Document interface: attribute referrer 
@@ -5004,7 +5004,7 @@ PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inher
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type 
 FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type Unrecognized type WindowProxy
-FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type assert_true: Value should be array expected true got false
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type 
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type 
 FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
             fn.apply(obj, args);
