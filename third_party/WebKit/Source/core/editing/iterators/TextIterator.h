@@ -95,7 +95,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // Calculate the minimum |actualLength >= minLength| such that code units
   // with offset range [position, position + actualLength) are whole code
   // points. Append these code points to |output| and return |actualLength|.
-  // TODO(xiaochengh): Use (start, end) instead of (start, length).
   int CopyTextTo(ForwardsTextBuffer* output,
                  int position,
                  int min_length) const;

@@ -86,9 +86,10 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
 
   bool IsValid() const;
 
-  // TODO(xiaochengh): We should have |DCHECK(isValid())| in the following
+  // TODO(editing-dev): We should have |DCHECK(isValid())| in the following
   // functions. However, there are some clients storing a VisiblePosition and
   // inspecting its properties after mutation. This should be fixed.
+  // See crbug.com/648949 for details.
   bool IsNull() const { return position_with_affinity_.IsNull(); }
   bool IsNotNull() const { return position_with_affinity_.IsNotNull(); }
   bool IsOrphan() const { return DeepEquivalent().IsOrphan(); }

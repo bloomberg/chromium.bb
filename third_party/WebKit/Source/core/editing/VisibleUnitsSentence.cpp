@@ -111,7 +111,7 @@ EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange& range) {
       CreateVisiblePosition(range.EndPosition());
   DCHECK(visible_end.IsNotNull());
   const Position& sentence_end = EndOfSentence(visible_end).DeepEquivalent();
-  // TODO(xiaochengh): |sentenceEnd < range.endPosition()| is possible,
+  // TODO(editing-dev): |sentenceEnd < range.endPosition()| is possible,
   // which would trigger a DCHECK in EphemeralRange's constructor if we return
   // it directly. However, this shouldn't happen and needs to be fixed.
   return EphemeralRange(
@@ -128,7 +128,7 @@ EphemeralRange ExpandRangeToSentenceBoundary(const EphemeralRange& range) {
   DCHECK(visible_start.IsNotNull());
   const Position& sentence_start =
       StartOfSentence(visible_start).DeepEquivalent();
-  // TODO(xiaochengh): |sentenceStart > range.startPosition()| is possible,
+  // TODO(editing-dev): |sentenceStart > range.startPosition()| is possible,
   // which would trigger a DCHECK in EphemeralRange's constructor if we return
   // it directly. However, this shouldn't happen and needs to be fixed.
   return ExpandEndToSentenceBoundary(EphemeralRange(

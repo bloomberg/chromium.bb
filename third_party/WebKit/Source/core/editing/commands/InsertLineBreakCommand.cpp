@@ -73,7 +73,8 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
   if (!selection.IsNonOrphanedCaretOrRange())
     return;
 
-  // TODO(xiaochengh): Stop storing VisiblePositions through mutations.
+  // TODO(editing-dev): Stop storing VisiblePositions through mutations.
+  // See crbug.com/648949 for details.
   VisiblePosition caret(selection.VisibleStart());
   // FIXME: If the node is hidden, we should still be able to insert text. For
   // now, we return to avoid a crash.

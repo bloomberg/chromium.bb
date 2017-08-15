@@ -665,7 +665,8 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   MergeWithNeighboringLists(list_element, editing_state);
 }
 
-// TODO(xiaochengh): Stop storing VisiblePositions through mutations.
+// TODO(editing-dev): Stop storing VisiblePositions through mutations.
+// See crbug.com/648949 for details.
 void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
     const VisiblePosition& pos,
     HTMLLIElement* list_item_element,

@@ -54,12 +54,9 @@ class NGOffsetMappingUnit {
 
   // Ideally, we should store |Node| as owner, instead of |LayoutObject|.
   // However, we need to ensure the invariant that, units of the same owner are
-  // consecutive in |NGOffsetMappingResult::units|. This might have a subtle
-  // conflict with :first-letter if, during inline collection, there there are
-  // other strings collected between the first letter and the remaining text of
-  // the node.
-  // TODO(xiaochengh): Figure out if this the issue really exists. If not, then
-  // we should use |Node| as owner.
+  // consecutive in |NGOffsetMappingResult::units|. There is a tricky case in
+  // ::first-letter handling that, the first letter and remaining text are not
+  // even laid out in the same block. As a workaround, we store |LayoutObject|.
   const LayoutText* const owner_;
 
   const unsigned dom_start_;

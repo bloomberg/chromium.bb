@@ -345,7 +345,6 @@ static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
   }
 
   while (!it.AtEnd()) {
-    // TODO(xiaochengh): Should allow copying text to SearchBuffer directly
     ForwardsTextBuffer characters;
     it.CopyTextTo(&characters);
     buffer.Append(characters.Data(), characters.Size());

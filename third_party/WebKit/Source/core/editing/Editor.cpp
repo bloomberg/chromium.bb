@@ -686,7 +686,6 @@ void Editor::ReplaceSelectionWithText(const String& text,
                                input_type);
 }
 
-// TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
 void Editor::ReplaceSelectionAfterDragging(DocumentFragment* fragment,
                                            InsertMode insert_mode,
                                            DragSourceType drag_source_type) {
