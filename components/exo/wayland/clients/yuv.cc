@@ -54,14 +54,14 @@ bool YuvClient::WriteSolidColor(gbm_bo* bo, SkColor color) {
         (0.439 * SkColorGetR(color)) - (0.368 * SkColorGetG(color)) -
             (0.071 * SkColorGetB(color)) + 128};
     if (i == 0) {
-      for (uint32_t y = 0; y < height_; ++y) {
-        for (uint32_t x = 0; x < width_; ++x) {
+      for (int y = 0; y < size_.height(); ++y) {
+        for (int x = 0; x < size_.width(); ++x) {
           data[stride * y + x] = yuv[0];
         }
       }
     } else {
-      for (uint32_t y = 0; y < height_ / 2; ++y) {
-        for (uint32_t x = 0; x < width_ / 2; ++x) {
+      for (int y = 0; y < size_.height() / 2; ++y) {
+        for (int x = 0; x < size_.width() / 2; ++x) {
           data[stride * y + x * 2] = yuv[1];
           data[stride * y + x * 2 + 1] = yuv[2];
         }
@@ -107,7 +107,8 @@ void YuvClient::Run(const ClientBase::InitParams& params) {
       return;
 
     wl_surface_set_buffer_scale(surface_.get(), scale_);
-    wl_surface_damage(surface_.get(), 0, 0, width_ / scale_, height_ / scale_);
+    wl_surface_damage(surface_.get(), 0, 0, size_.width() / scale_,
+                      size_.height() / scale_);
     wl_surface_attach(surface_.get(), buffer->buffer.get(), 0, 0);
 
     frame_callback.reset(wl_surface_frame(surface_.get()));
