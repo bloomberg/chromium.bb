@@ -12,12 +12,6 @@ Polymer({
       notify: true,
     },
 
-    /** @type {!Array<!CupsPrinterInfo>} */
-    cupsPrinters: {
-      type: Array,
-      notify: true,
-    },
-
     searchTerm: {
       type: String,
     },
