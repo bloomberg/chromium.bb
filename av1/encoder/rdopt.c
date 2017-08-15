@@ -3119,9 +3119,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 
   if (colors > 1 && colors <= 64) {
-    int r, c, i, j, k, palette_mode_cost;
+    int r, c, i, k, palette_mode_cost;
     const int max_itr = 50;
-    uint8_t color_order[PALETTE_MAX_SIZE];
     float *const data = x->palette_buffer->kmeans_data_buf;
     float centroids[PALETTE_MAX_SIZE];
     float lb, ub, val;
@@ -3230,16 +3229,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                                     color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                                     cpi->common.bit_depth);
-      for (i = 0; i < rows; ++i) {
-        for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
-          int color_idx;
-          const int color_ctx = av1_get_palette_color_index_context(
-              color_map, block_width, i, j, k, color_order, &color_idx);
-          assert(color_idx >= 0 && color_idx < k);
-          palette_mode_cost += x->palette_y_color_cost[k - PALETTE_MIN_SIZE]
-                                                      [color_ctx][color_idx];
-        }
-      }
+      palette_mode_cost += av1_cost_palette_sb(x, 0, bsize);
       this_model_rd = intra_model_yrd(cpi, x, bsize, palette_mode_cost);
       if (*best_model_rd != INT64_MAX &&
           this_model_rd > *best_model_rd + (*best_model_rd >> 1))
@@ -5573,7 +5563,6 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (colors > 1 && colors <= 64) {
     int r, c, n, i, j;
     const int max_itr = 50;
-    uint8_t color_order[PALETTE_MAX_SIZE];
     float lb_u, ub_u, val_u;
     float lb_v, ub_v, val_v;
     float *const data = x->palette_buffer->kmeans_data_buf;
@@ -5678,17 +5667,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                              color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                              cpi->common.bit_depth);
-      for (i = 0; i < rows; ++i) {
-        for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
-          int color_idx;
-          const int color_ctx = av1_get_palette_color_index_context(
-              color_map, plane_block_width, i, j, n, color_order, &color_idx);
-          assert(color_idx >= 0 && color_idx < n);
-          this_rate += x->palette_uv_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
-                                               [color_idx];
-        }
-      }
-
+      this_rate += av1_cost_palette_sb(x, 1, bsize);
       this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
       if (this_rd < *best_rd) {
         *best_rd = this_rd;

@@ -329,11 +329,10 @@ static INLINE void add_token(TOKENEXTRA **t,
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
-void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
-                             TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                             int *rate) {
+static int cost_and_tokenize_map_sb(const MACROBLOCK *const x, int plane,
+                                    TOKENEXTRA **t, int calc_rate,
+                                    BLOCK_SIZE bsize) {
   assert(plane == 0 || plane == 1);
-  const MACROBLOCK *const x = &td->mb;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const uint8_t *const color_map = xd->plane[plane].color_index_map;
@@ -342,17 +341,14 @@ void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
       *palette_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
       plane ? xd->tile_ctx->palette_uv_color_index_cdf
             : xd->tile_ctx->palette_y_color_index_cdf;
+  const int(*color_cost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
+                        [PALETTE_COLORS] = plane ? &x->palette_uv_color_cost
+                                                 : &x->palette_y_color_cost;
   int plane_block_width, rows, cols;
+  const int n = pmi->palette_size[plane];
   av1_get_block_dimensions(bsize, plane, xd, &plane_block_width, NULL, &rows,
                            &cols);
 
-  // The first color index does not use context or entropy.
-  (*t)->token = color_map[0];
-  (*t)->palette_cdf = NULL;
-  ++(*t);
-
-  const int n = pmi->palette_size[plane];
-  const int calc_rate = rate && dry_run == DRY_RUN_COSTCOEFFS;
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
 #if CONFIG_PALETTE_THROUGHPUT
@@ -368,15 +364,34 @@ void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
           color_map, plane_block_width, i, j, n, color_order, &color_new_idx);
       assert(color_new_idx >= 0 && color_new_idx < n);
       if (calc_rate) {
-        this_rate += x->palette_y_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
-                                            [color_new_idx];
+        this_rate +=
+            (*color_cost)[n - PALETTE_MIN_SIZE][color_ctx][color_new_idx];
+      } else {
+        (*t)->token = color_new_idx;
+        (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
+        ++(*t);
       }
-      (*t)->token = color_new_idx;
-      (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
-      ++(*t);
     }
   }
-  if (rate) *rate += this_rate;
+  if (calc_rate) return this_rate;
+  return 0;
+}
+
+int av1_cost_palette_sb(const MACROBLOCK *const x, int plane,
+                        BLOCK_SIZE bsize) {
+  return cost_and_tokenize_map_sb(x, plane, NULL, 1, bsize);
+}
+
+void av1_tokenize_palette_sb(const MACROBLOCK *const x, int plane,
+                             TOKENEXTRA **t, BLOCK_SIZE bsize) {
+  assert(plane == 0 || plane == 1);
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const uint8_t *const color_map = xd->plane[plane].color_index_map;
+  // The first color index does not use context or entropy.
+  (*t)->token = color_map[0];
+  (*t)->palette_cdf = NULL;
+  ++(*t);
+  cost_and_tokenize_map_sb(x, plane, t, 0, bsize);
 }
 
 #if CONFIG_PVQ

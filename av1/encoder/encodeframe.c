@@ -5968,10 +5968,14 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
     }
-    if (bsize >= BLOCK_8X8 && !dry_run) {
+    if (bsize >= BLOCK_8X8) {
       for (plane = 0; plane <= 1; ++plane) {
-        if (mbmi->palette_mode_info.palette_size[plane] > 0)
-          av1_tokenize_palette_sb(td, plane, t, dry_run, bsize, rate);
+        if (mbmi->palette_mode_info.palette_size[plane] > 0) {
+          if (!dry_run)
+            av1_tokenize_palette_sb(x, plane, t, bsize);
+          else if (dry_run == DRY_RUN_COSTCOEFFS)
+            rate += av1_cost_palette_sb(x, plane, bsize);
+        }
       }
     }
 #if CONFIG_VAR_TX
