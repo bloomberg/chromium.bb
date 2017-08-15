@@ -83,7 +83,7 @@ class UserSessionStateObserver {
 // load profile, restore OAuth authentication session etc.
 class UserSessionManager
     : public OAuth2LoginManager::Observer,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
       public base::SupportsWeakPtr<UserSessionManager>,
       public UserSessionManagerDelegate,
       public user_manager::UserManager::UserSessionStateObserver {
@@ -269,8 +269,8 @@ class UserSessionManager
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override;
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // UserSessionManagerDelegate overrides:
