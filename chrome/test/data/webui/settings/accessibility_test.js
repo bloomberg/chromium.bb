@@ -150,7 +150,8 @@ AccessibilityTest.define = function(testFixture, testDef) {
   });
 
   GEN('#endif  // defined(NDEBUG)');
-}
+};
+
 
 /**
  *
