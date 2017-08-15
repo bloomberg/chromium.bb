@@ -412,13 +412,6 @@ TEST_F(ES3MapBufferRangeTest, TransformFeedback) {
   if (ShouldSkipTest())
     return;
 
-  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-    // TODO(geofflang): crbug.com/754000
-    LOG(INFO)
-        << "Passthrough command decoder expected failure. Skipping test...";
-    return;
-  }
-
   GLuint transform_feedback = 0;
   glGenTransformFeedbacks(1, &transform_feedback);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transform_feedback);
@@ -483,13 +476,6 @@ TEST_F(ES3MapBufferRangeTest, TransformFeedback) {
 TEST_F(ES3MapBufferRangeTest, GetBufferParameteriv) {
   if (ShouldSkipTest())
     return;
-
-  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-    // TODO(geofflang): crbug.com/754000
-    LOG(INFO)
-        << "Passthrough command decoder expected failure. Skipping test...";
-    return;
-  }
 
   GLuint buffer;
   glGenBuffers(1, &buffer);

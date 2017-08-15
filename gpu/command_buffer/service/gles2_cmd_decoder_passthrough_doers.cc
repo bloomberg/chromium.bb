@@ -1204,7 +1204,12 @@ error::Error GLES2DecoderPassthroughImpl::DoGetBufferParameteri64v(
     GLsizei bufsize,
     GLsizei* length,
     GLint64* params) {
+  FlushErrors();
   glGetBufferParameteri64vRobustANGLE(target, pname, bufsize, length, params);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+  PatchGetBufferResults(target, pname, bufsize, length, params);
   return error::kNoError;
 }
 
@@ -1214,7 +1219,12 @@ error::Error GLES2DecoderPassthroughImpl::DoGetBufferParameteriv(
     GLsizei bufsize,
     GLsizei* length,
     GLint* params) {
+  FlushErrors();
   glGetBufferParameterivRobustANGLE(target, pname, bufsize, length, params);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+  PatchGetBufferResults(target, pname, bufsize, length, params);
   return error::kNoError;
 }
 
@@ -2914,7 +2924,8 @@ error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
 
   MappedBuffer mapped_buffer_info;
   mapped_buffer_info.size = size;
-  mapped_buffer_info.access = filtered_access;
+  mapped_buffer_info.original_access = access;
+  mapped_buffer_info.filtered_access = filtered_access;
   mapped_buffer_info.map_ptr = static_cast<uint8_t*>(mapped_ptr);
   mapped_buffer_info.data_shm_id = data_shm_id;
   mapped_buffer_info.data_shm_offset = data_shm_offset;
@@ -2945,8 +2956,8 @@ error::Error GLES2DecoderPassthroughImpl::DoUnmapBuffer(GLenum target) {
   }
 
   const MappedBuffer& map_info = mapped_buffer_info_iter->second;
-  if ((map_info.access & GL_MAP_WRITE_BIT) != 0 &&
-      (map_info.access & GL_MAP_FLUSH_EXPLICIT_BIT) == 0) {
+  if ((map_info.filtered_access & GL_MAP_WRITE_BIT) != 0 &&
+      (map_info.filtered_access & GL_MAP_FLUSH_EXPLICIT_BIT) == 0) {
     uint8_t* mem = GetSharedMemoryAs<uint8_t*>(
         map_info.data_shm_id, map_info.data_shm_offset, map_info.size);
     if (!mem) {
