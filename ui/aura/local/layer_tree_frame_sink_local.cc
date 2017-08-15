@@ -57,6 +57,11 @@ void LayerTreeFrameSinkLocal::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
+void LayerTreeFrameSinkLocal::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
+  local_surface_id_ = local_surface_id;
+}
+
 void LayerTreeFrameSinkLocal::SubmitCompositorFrame(cc::CompositorFrame frame) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
