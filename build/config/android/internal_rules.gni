@@ -755,11 +755,6 @@ if (enable_java_templates) {
   rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
   android_default_aapt_path = "$rebased_android_sdk_build_tools/aapt"
 
-  android_configuration_name = "Release"
-  if (is_debug) {
-    android_configuration_name = "Debug"
-  }
-
   template("android_lint") {
     action(target_name) {
       forward_variables_from(invoker,
@@ -1690,7 +1685,6 @@ if (enable_java_templates) {
           _rebased_android_sdk_jar,
           "--aapt-path",
           _android_aapt_path,
-          "--configuration-name=$android_configuration_name",
           "--android-manifest",
           rebase_path(invoker.android_manifest, root_build_dir),
           "--version-code",
@@ -1700,6 +1694,12 @@ if (enable_java_templates) {
           "--apk-path",
           rebase_path(_resource_packaged_apk_path, root_build_dir),
         ]
+
+        # Useful to have android:debuggable in the manifest even for Release
+        # builds. Just omit it for officai
+        if (debuggable_apks) {
+          args += [ "--debuggable" ]
+        }
 
         if (defined(_resources_zip)) {
           args += [

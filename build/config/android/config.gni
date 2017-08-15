@@ -130,6 +130,9 @@ if (is_android) {
     # off will enable proguard.
     is_java_debug = is_debug
 
+    # Mark APKs as android:debuggable="true".
+    debuggable_apks = !is_official_build
+
     # Set to true to enable the Errorprone compiler
     use_errorprone_java_compiler = false
 
