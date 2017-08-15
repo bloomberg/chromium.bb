@@ -39,6 +39,7 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<FileSystemDelegate> file_system_delegate_;
 #endif
   std::unique_ptr<MessagingDelegate> messaging_delegate_;
+  std::unique_ptr<FeedbackPrivateDelegate> feedback_private_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsAPIClient);
 };
