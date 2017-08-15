@@ -5,6 +5,8 @@
 #include "extensions/renderer/api_test_base.h"
 
 #include "base/macros.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "gin/modules/module_registry.h"
 
 // A test launcher for tests for the mojoPrivate API defined in
@@ -18,6 +20,20 @@ class MojoPrivateApiTest : public ApiTestBase {
 
   gin::ModuleRegistry* module_registry() {
     return gin::ModuleRegistry::From(env()->context()->v8_context());
+  }
+
+  scoped_refptr<const Extension> CreateExtension() override {
+    std::unique_ptr<base::DictionaryValue> manifest =
+        DictionaryBuilder()
+            .Set("name", "test")
+            .Set("version", "1.0")
+            .Set("manifest_version", 2)
+            .Build();
+    // Return an extension whitelisted for the mojoPrivate API.
+    return ExtensionBuilder()
+        .SetManifest(std::move(manifest))
+        .SetID("pkedcjkdefgpdelpbcmbmeomcjbeemfm")
+        .Build();
   }
 
  private:
