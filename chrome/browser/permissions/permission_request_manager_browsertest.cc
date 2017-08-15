@@ -398,20 +398,15 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       browser(),
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
-  // Now enable the geolocation killswitch.
-  EnableKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(web_contents, "requestGeolocation();"));
+  bubble_factory()->WaitForPermissionBubble();
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "requestGeolocation();", &result));
-  EXPECT_EQ("denied", result);
-  EXPECT_EQ(0, bubble_factory()->show_count());
-  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
-
-  // Disable the trial.
-  variations::testing::ClearAllVariationParams();
+  // Now enable the geolocation killswitch.
+  EnableKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
   // Reload the page to get around blink layer caching for geolocation
   // requests.
@@ -419,10 +414,14 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       browser(),
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "requestGeolocation();"));
-  bubble_factory()->WaitForPermissionBubble();
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "requestGeolocation();", &result));
+  EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+
+  variations::testing::ClearAllVariationParams();
 }
 
 // Bubble requests should not be shown when the killswitch is on.
@@ -434,25 +433,25 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       browser(),
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
-  // Now enable the notifications killswitch.
-  EnableKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(web_contents, "requestNotification();"));
+  bubble_factory()->WaitForPermissionBubble();
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+
+  // Now enable the notifications killswitch.
+  EnableKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents, "requestNotification();", &result));
   EXPECT_EQ("denied", result);
-  EXPECT_EQ(0, bubble_factory()->show_count());
-  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
-
-  // Disable the trial.
-  variations::testing::ClearAllVariationParams();
-
-  EXPECT_TRUE(content::ExecuteScript(web_contents, "requestNotification();"));
-  bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+
+  variations::testing::ClearAllVariationParams();
+
 }
 
 // Host wants to run flash.
