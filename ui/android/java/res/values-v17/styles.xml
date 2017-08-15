@@ -95,6 +95,14 @@
         <item name="android:textColor">@color/black_alpha_54</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
+    <style name="BlackDenseListText1" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/black_alpha_87</item>
+        <item name="android:textSize">@dimen/text_size_medium_dense</item>
+    </style>
+    <style name="BlackDenseListText2" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/black_alpha_54</item>
+        <item name="android:textSize">@dimen/text_size_medium_dense</item>
+    </style>
     <style name="BlackButtonText" parent="RobotoMediumStyle">
         <item name="android:textColor">@color/black_alpha_54</item>
         <item name="android:textSize">@dimen/text_size_medium</item>

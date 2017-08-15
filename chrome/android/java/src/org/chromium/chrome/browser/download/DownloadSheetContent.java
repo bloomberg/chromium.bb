@@ -111,6 +111,6 @@ public class DownloadSheetContent implements BottomSheetContent {
 
     @Override
     public boolean applyDefaultTopPadding() {
-        return true;
+        return false;
     }
 }

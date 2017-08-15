@@ -181,6 +181,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/divider_height</item>
         <item name="android:background">@color/google_grey_300</item>
+        <item name="android:importantForAccessibility">no</item>
     </style>
 
     <style name="ThemeWithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -544,6 +545,11 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
     </style>
+    <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/modern_toolbar_bg</item>
+        <item name="titleTextAppearance">@style/BlackHeadline1</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
     <style name="ToolbarButton">
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:layout_width">@dimen/toolbar_button_width</item>
@@ -564,9 +570,6 @@
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
-    </style>
-    <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">20sp</item>
     </style>
     <style name="SadTabBodyText">
         <item name="android:textColor">@color/sad_tab_body_text_color</item>
@@ -599,17 +602,17 @@
         <item name="android:scaleType">center</item>
     </style>
     <style name="HistoryEndIcon">
-        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_width">@dimen/selectable_list_layout_end_icon_width</item>
         <item name="android:layout_height">match_parent</item>
-        <item name="android:paddingStart">16dp</item>
         <item name="android:background">@null</item>
         <item name="android:scaleType">center</item>
-        <item name="android:paddingEnd">@dimen/selectable_list_layout_row_end_padding</item>
     </style>
     <style name="PrivacyDisclaimerText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">6dp</item>
+        <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
+        <item name="android:layout_marginEnd">@dimen/list_item_default_margin</item>
         <item name="android:lineSpacingExtra">6sp</item>
         <item name="android:textSize">14sp</item>
         <item name="android:visibility">gone</item>
@@ -626,13 +629,14 @@
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
     </style>
-    <style name="DateView" parent="RobotoMediumStyle">
+    <style name="DateView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/black_alpha_54</item>
+        <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
+        <item name="android:layout_marginEnd">@dimen/list_item_default_margin</item>
+        <item name="android:textAppearance">@style/BlackDenseListText2</item>
     </style>
     <style name="DownloadRowContainer">
         <item name="android:layout_width">match_parent</item>
@@ -654,7 +658,7 @@
         <item name="android:textSize">16sp</item>
     </style>
     <style name="DownloadDescriptionStyle">
-        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_alignParentBottom">true</item>
         <item name="android:layout_alignParentStart">true</item>

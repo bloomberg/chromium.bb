@@ -842,8 +842,8 @@ public class DownloadUtils {
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_site_white_24dp
                                                    : R.drawable.ic_drive_site_white_36dp;
             case DownloadFilter.FILTER_VIDEO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_play_arrow_white_24dp
-                                                   : R.drawable.ic_play_arrow_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_videocam_white_24dp
+                                                   : R.drawable.ic_videocam_white_36dp;
             case DownloadFilter.FILTER_AUDIO:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_white_24dp
                                                    : R.drawable.ic_music_note_white_36dp;

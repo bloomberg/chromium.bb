@@ -30,6 +30,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
 
     protected ImageView mIconImageView;
     protected TextView mTitleView;
+    protected TextView mDescriptionView;
     protected TintedImageButton mMoreIcon;
 
     protected BookmarkDelegate mDelegate;
@@ -166,6 +167,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
 
         mIconImageView = (ImageView) findViewById(R.id.bookmark_image);
         mTitleView = (TextView) findViewById(R.id.title);
+        mDescriptionView = (TextView) findViewById(R.id.description);
 
         mMoreIcon = (TintedImageButton) findViewById(R.id.more);
         mMoreIcon.setVisibility(VISIBLE);

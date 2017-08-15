@@ -30,9 +30,7 @@ import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObser
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.DownloadState;
@@ -325,7 +323,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
                         .inflate(R.layout.offline_download_header, parent, false);
         offlineHeader.setAdapter(this);
         offlineHeader.setSelectionDelegate((DownloadItemSelectionDelegate) getSelectionDelegate());
-        if (mUiConfig != null) offlineHeader.configureWideDisplayStyle(mUiConfig);
         return new SubsectionHeaderViewHolder(offlineHeader);
     }
 
@@ -338,23 +335,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     @Override
-    protected DateViewHolder createDateViewHolder(ViewGroup parent) {
-        DateViewHolder viewHolder = super.createDateViewHolder(parent);
-        if (mUiConfig != null) {
-            MarginResizer.createAndAttach(viewHolder.itemView, mUiConfig,
-                    parent.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin),
-                    SelectableListLayout.getDefaultListItemLateralShadowSizePx(
-                            parent.getResources()));
-        }
-        return viewHolder;
-    }
-
-    @Override
     public ViewHolder createViewHolder(ViewGroup parent) {
         DownloadItemView v = (DownloadItemView) LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
         v.setSelectionDelegate(getSelectionDelegate());
-        if (mUiConfig != null) v.configureWideDisplayStyle(mUiConfig);
         mViews.add(v);
         return new DownloadHistoryItemViewHolder(v);
     }
@@ -383,14 +367,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      */
     void generateHeaderItems() {
         mSpaceDisplay = new SpaceDisplay(null, this);
-        View view = mSpaceDisplay.getView();
+        View view = mSpaceDisplay.getViewContainer();
         registerAdapterDataObserver(mSpaceDisplay);
-        if (mUiConfig != null) {
-            MarginResizer.createAndAttach(view, mUiConfig,
-                    view.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin),
-                    SelectableListLayout.getDefaultListItemLateralShadowSizePx(
-                            view.getResources()));
-        }
         mSpaceDisplayHeaderItem = new HeaderItem(0, view);
     }
 

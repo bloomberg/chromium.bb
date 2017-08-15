@@ -13,9 +13,6 @@ import android.widget.Checkable;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
-import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 
 import java.util.List;
@@ -60,19 +57,6 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
             mSelectionDelegate = delegate;
             mSelectionDelegate.addObserver(this);
         }
-    }
-
-    /**
-     * Sets the lateral margins used in {@link HorizontalDisplayStyle#WIDE} and
-     * {@link HorizontalDisplayStyle#REGULAR}. This should be called when the item uses the
-     * list_item* 9-patches as a background and the SelectableListLayout that contains the item
-     * is width constrained.
-     *
-     * @param uiConfig The UiConfig used to observe display style changes.
-     */
-    public void configureWideDisplayStyle(UiConfig uiConfig) {
-        MarginResizer.createAndAttach(this, uiConfig,
-                SelectableListLayout.getDefaultListItemLateralMarginPx(getResources()), 0);
     }
 
     /**
@@ -182,26 +166,4 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
      * that case.
      */
     protected abstract void onClick();
-
-    /**
-     * Sets the background resource for this view using the item's positioning in its group.
-     * @param isFirstInGroup Whether this item is the first in its group.
-     * @param isLastInGroup Whether this item is the last in its group.
-     */
-    public void setBackgroundResourceForGroupPosition(
-            boolean isFirstInGroup, boolean isLastInGroup) {
-        int backgroundResource;
-
-        if (!isLastInGroup && !isFirstInGroup) {
-            backgroundResource = R.drawable.list_item_middle;
-        } else if (!isLastInGroup) {
-            backgroundResource = R.drawable.list_item_top;
-        } else if (!isFirstInGroup) {
-            backgroundResource = R.drawable.list_item_bottom;
-        } else {
-            backgroundResource = R.drawable.list_item_single;
-        }
-
-        setBackgroundResource(backgroundResource);
-    }
 }
