@@ -107,6 +107,24 @@ Element* TopDocumentRootScrollerController::FindGlobalRootScrollerElement() {
   return element;
 }
 
+void SetNeedsCompositingUpdateOnAncestors(ScrollableArea* area) {
+  if (!area || !area->Layer())
+    return;
+
+  Frame* frame = area->Layer()->GetLayoutObject().GetFrame();
+  for (; frame; frame = frame->Tree().Parent()) {
+    if (!frame->IsLocalFrame())
+      continue;
+
+    PaintLayerCompositor* plc =
+        ToLocalFrame(frame)->View()->GetLayoutView()->Compositor();
+    if (plc) {
+      plc->SetNeedsCompositingUpdate(
+          kCompositingUpdateAfterCompositingInputChange);
+    }
+  }
+}
+
 void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   if (!viewport_apply_scroll_)
     return;
@@ -140,6 +158,9 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   // ViewportScrollCallback to swap the target into the layout viewport
   // in RootFrameViewport.
   viewport_apply_scroll_->SetScroller(target_scroller);
+
+  SetNeedsCompositingUpdateOnAncestors(old_root_scroller_area);
+  SetNeedsCompositingUpdateOnAncestors(target_scroller);
 
   if (old_root_scroller_area)
     old_root_scroller_area->DidChangeGlobalRootScroller();

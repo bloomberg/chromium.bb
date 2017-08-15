@@ -280,6 +280,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void SetBrowserControlsState(float top_height,
                                        float bottom_height,
                                        bool shrinks_layout){};
+  virtual void SetBrowserControlsShownRatio(float){};
 
   virtual String AcceptLanguages() = 0;
 

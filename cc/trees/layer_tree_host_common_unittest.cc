@@ -8127,6 +8127,7 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+  outer_viewport_scroll_layer->SetIsResizedByBrowserControls(true);
 
   host()->SetRootLayer(root);
   LayerTreeHost::ViewportLayers viewport_layers;

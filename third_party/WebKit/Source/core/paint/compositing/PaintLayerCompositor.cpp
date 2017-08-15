@@ -513,6 +513,24 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    bool is_root_scroller_ancestor = IsRootScrollerAncestor();
+
+    if (scroll_layer_)
+      scroll_layer_->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
+
+    // Clip a frame's overflow controls layer only if it's not an ancestor of
+    // the root scroller. If it is an ancestor, then it's guaranteed to be
+    // viewport sized and so will be appropriately clipped by the visual
+    // viewport. We don't want to clip here in this case so that URL bar
+    // expansion doesn't need to resize the clip.
+
+    if (overflow_controls_host_layer_) {
+      overflow_controls_host_layer_->SetMasksToBounds(
+          !is_root_scroller_ancestor);
+    }
+  }
+
   // Inform the inspector that the layer tree has changed.
   if (IsMainFrame())
     probe::layerTreeDidChange(layout_view_.GetFrame());
@@ -1345,6 +1363,28 @@ bool PaintLayerCompositor::IsMainFrame() const {
 
 VisualViewport& PaintLayerCompositor::GetVisualViewport() const {
   return layout_view_.GetFrameView()->GetPage()->GetVisualViewport();
+}
+
+bool PaintLayerCompositor::IsRootScrollerAncestor() const {
+  const TopDocumentRootScrollerController& global_rsc =
+      layout_view_.GetDocument().GetPage()->GlobalRootScrollerController();
+  PaintLayer* root_scroller_layer = global_rsc.RootScrollerPaintLayer();
+
+  if (root_scroller_layer) {
+    Frame* frame = root_scroller_layer->GetLayoutObject().GetFrame();
+    while (frame) {
+      if (frame->IsLocalFrame()) {
+        PaintLayerCompositor* plc =
+            ToLocalFrame(frame)->View()->GetLayoutView()->Compositor();
+        if (plc == this)
+          return true;
+      }
+
+      frame = frame->Tree().Parent();
+    }
+  }
+
+  return false;
 }
 
 String PaintLayerCompositor::DebugName(

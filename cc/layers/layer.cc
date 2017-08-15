@@ -59,6 +59,7 @@ Layer::Inputs::Inputs(int layer_id)
       user_scrollable_vertical(true),
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),
+      is_resized_by_browser_controls(false),
       is_container_for_fixed_position_layers(false),
       mutable_properties(MutableProperty::kNone),
       scroll_parent(nullptr),
@@ -1110,6 +1111,18 @@ bool Layer::DescendantIsFixedToContainerLayer() const {
       return true;
   }
   return false;
+}
+
+void Layer::SetIsResizedByBrowserControls(bool resized) {
+  if (inputs_.is_resized_by_browser_controls == resized)
+    return;
+  inputs_.is_resized_by_browser_controls = resized;
+
+  SetNeedsCommit();
+}
+
+bool Layer::IsResizedByBrowserControls() const {
+  return inputs_.is_resized_by_browser_controls;
 }
 
 void Layer::SetIsContainerForFixedPositionLayers(bool container) {

@@ -208,6 +208,9 @@ class CC_EXPORT LayerImpl {
     return use_parent_backface_visibility_;
   }
 
+  bool IsResizedByBrowserControls() const;
+  void SetIsResizedByBrowserControls(bool resized);
+
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
     should_check_backface_visibility_ = should_check_backface_visibility;
   }
@@ -503,6 +506,7 @@ class CC_EXPORT LayerImpl {
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
   bool should_hit_test_ : 1;
+  bool is_resized_by_browser_controls_ : 1;
 
   static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
                 "enough bits for ViewportLayerType (viewport_layer_type_)");

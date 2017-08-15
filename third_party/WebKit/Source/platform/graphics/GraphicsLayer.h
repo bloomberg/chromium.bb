@@ -281,6 +281,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetHasWillChangeTransformHint(bool);
 
   void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
+  void SetIsResizedByBrowserControls(bool);
 
  protected:
   String DebugName(cc::Layer*) const;

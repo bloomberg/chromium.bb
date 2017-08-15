@@ -360,6 +360,10 @@ bool WebLayerImpl::IsContainerForFixedPositionLayers() const {
   return layer_->IsContainerForFixedPositionLayers();
 }
 
+void WebLayerImpl::SetIsResizedByBrowserControls(bool enable) {
+  layer_->SetIsResizedByBrowserControls(enable);
+}
+
 static blink::WebLayerPositionConstraint ToWebLayerPositionConstraint(
     const cc::LayerPositionConstraint& constraint) {
   blink::WebLayerPositionConstraint web_constraint;
