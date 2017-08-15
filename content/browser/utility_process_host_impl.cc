@@ -278,6 +278,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 #endif
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,
+      switches::kUtilityStartupDialog,
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));
