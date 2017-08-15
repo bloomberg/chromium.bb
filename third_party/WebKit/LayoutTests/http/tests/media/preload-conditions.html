@@ -120,13 +120,13 @@ function runTest(t, test) {
   assert_false(media.hasAttribute('preload'));
 
   // Test allowed values.
-  [ 'none', 'metadata', 'auto' ].forEach(t.step_func(preload => {
+  [ '', 'none', 'metadata', 'auto' ].forEach(t.step_func(preload => {
     var expected = test.expectations.allowed.includes(preload) ? preload : test.expectations.default;
     checkPreloadAttribute(media, preload, expected);
   }));
 
   // Test not allowed values.
-  [ '', 'default', 'foo' ].forEach(preload => {
+  [ 'default', 'foo' ].forEach(preload => {
     checkPreloadAttribute(media, preload, test.expectations.default);
   });
 
