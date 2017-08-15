@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace net {

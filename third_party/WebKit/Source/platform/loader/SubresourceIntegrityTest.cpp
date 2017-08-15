@@ -21,7 +21,6 @@
 #include "platform/wtf/dtoa/utils.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
