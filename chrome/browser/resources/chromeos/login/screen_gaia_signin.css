@@ -50,7 +50,8 @@
 }
 
 #signin-frame-container-v2 #signin-frame {
-  border-radius: 4px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
   height: 560px;
   position: static;
   width: 768px;
@@ -133,4 +134,12 @@
 #gaia-signin.v2.saml #signin-frame {
   height: 516px;
   padding-top: 44px;
+}
+
+#signin-frame-dialog #navigation-buttons[disabled] {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+#navigation-buttons {
+  height: 100%;
 }
