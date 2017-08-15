@@ -13265,8 +13265,7 @@ void V8TestObject::newObjectTestInterfaceMethodMethodCallback(const v8::Function
 }
 
 void V8TestObject::RuntimeCallStatsCounterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "kRuntimeCallStatsCounterMethod");
-
+  RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::kRuntimeCallStatsCounterMethod);
   TestObjectV8Internal::RuntimeCallStatsCounterMethodMethod(info);
 }
 

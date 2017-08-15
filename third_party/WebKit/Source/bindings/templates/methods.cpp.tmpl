@@ -494,7 +494,7 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  {% if method.extended_attribute_defined %}
+  {% if method.runtime_call_stats.extended_attribute_defined %}
   {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | indent(2) }}
   {% else %}
   {{ runtime_timer_scope_disabled_by_default(method.runtime_call_stats.method_counter) }}
