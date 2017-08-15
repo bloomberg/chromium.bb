@@ -4448,12 +4448,44 @@ weston_head_init(struct weston_head *head, const char *name)
 	head->name = strdup(name);
 }
 
+/** Idle task for emitting heads_changed_signal */
+static void
+weston_compositor_call_heads_changed(void *data)
+{
+	struct weston_compositor *compositor = data;
+
+	compositor->heads_changed_source = NULL;
+
+	wl_signal_emit(&compositor->heads_changed_signal, compositor);
+}
+
+/** Schedule a call on idle to heads_changed callback
+ *
+ * \param compositor The Compositor.
+ *
+ * \memberof weston_compositor
+ * \internal
+ */
+static void
+weston_compositor_schedule_heads_changed(struct weston_compositor *compositor)
+{
+	struct wl_event_loop *loop;
+
+	if (compositor->heads_changed_source)
+		return;
+
+	loop = wl_display_get_event_loop(compositor->wl_display);
+	compositor->heads_changed_source = wl_event_loop_add_idle(loop,
+			weston_compositor_call_heads_changed, compositor);
+}
+
 /** Register a new head
  *
  * \param compositor The compositor.
  * \param head The head to register, must not be already registered.
  *
- * This signals the core that a new head has become available.
+ * This signals the core that a new head has become available, leading to
+ * heads_changed hook being called later.
  *
  * \memberof weston_compositor
  * \internal
@@ -4467,6 +4499,30 @@ weston_compositor_add_head(struct weston_compositor *compositor,
 
 	wl_list_insert(compositor->head_list.prev, &head->compositor_link);
 	head->compositor = compositor;
+	weston_compositor_schedule_heads_changed(compositor);
+}
+
+/** Adds a listener to be called when heads change
+ *
+ * \param compositor The compositor.
+ * \param listener The listener to add.
+ *
+ * The listener notify function argument is the \var compositor.
+ *
+ * The listener function will be called after heads are added or their
+ * connection status has changed. Several changes may be accumulated into a
+ * single call. The user is expected to iterate over the existing heads and
+ * check their statuses to find out what changed.
+ *
+ * \sa weston_compositor_iterate_heads, weston_head_is_connected,
+ * weston_head_is_enabled
+ * \memberof weston_compositor
+ */
+WL_EXPORT void
+weston_compositor_add_heads_changed_listener(struct weston_compositor *compositor,
+					     struct wl_listener *listener)
+{
+	wl_signal_add(&compositor->heads_changed_signal, listener);
 }
 
 /** Iterate over available heads
@@ -4690,13 +4746,23 @@ weston_head_set_internal(struct weston_head *head)
  * disconnected. For nested backends, the connection status should reflect the
  * connection to the parent display server.
  *
+ * When the connection status changes, it schedules a call to the heads_changed
+ * hook.
+ *
+ * \sa weston_compositor_set_heads_changed_cb
  * \memberof weston_head
  * \internal
  */
 WL_EXPORT void
 weston_head_set_connection_status(struct weston_head *head, bool connected)
 {
+	if (head->connected == connected)
+		return;
+
 	head->connected = connected;
+
+	if (head->compositor)
+		weston_compositor_schedule_heads_changed(head->compositor);
 }
 
 /** Is the head currently connected?
@@ -5354,6 +5420,15 @@ weston_pending_output_coldplug(struct weston_compositor *compositor)
 
 	wl_list_for_each_safe(output, next, &compositor->pending_output_list, link)
 		wl_signal_emit(&compositor->output_pending_signal, output);
+
+	/* Execute the heads changed callback manually to ensure it is
+	 * processed before any plugins get their start-up idle tasks ran.
+	 * This ensures the plugins see all the initial outputs.
+	 */
+	if (compositor->heads_changed_source) {
+		wl_event_source_remove(compositor->heads_changed_source);
+		weston_compositor_call_heads_changed(compositor);
+	}
 }
 
 /** Uninitialize an output
@@ -5751,6 +5826,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_signal_init(&ec->output_destroyed_signal);
 	wl_signal_init(&ec->output_moved_signal);
 	wl_signal_init(&ec->output_resized_signal);
+	wl_signal_init(&ec->heads_changed_signal);
 	wl_signal_init(&ec->session_signal);
 	ec->session_active = 1;
 
@@ -6064,6 +6140,9 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 	assert(wl_list_empty(&compositor->head_list));
 
 	weston_plugin_api_destroy_list(compositor);
+
+	if (compositor->heads_changed_source)
+		wl_event_source_remove(compositor->heads_changed_source);
 
 	free(compositor);
 }

@@ -983,6 +983,8 @@ struct weston_compositor {
 	/* Whether to let the compositor run without any input device. */
 	bool require_input;
 
+	struct wl_signal heads_changed_signal;
+	struct wl_event_source *heads_changed_source;
 };
 
 struct weston_buffer {
@@ -1990,6 +1992,10 @@ weston_head_is_enabled(struct weston_head *head);
 struct weston_head *
 weston_compositor_iterate_heads(struct weston_compositor *compositor,
 				struct weston_head *iter);
+
+void
+weston_compositor_add_heads_changed_listener(struct weston_compositor *compositor,
+					     struct wl_listener *listener);
 
 void
 weston_output_set_scale(struct weston_output *output,
