@@ -59,39 +59,7 @@ DownloadService::ServiceStatus TestDownloadService::GetStatus() {
                    : DownloadService::ServiceStatus::STARTING_UP;
 }
 
-void TestDownloadService::StartDownload(const DownloadParams& download_params) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestDownloadService::HandleStartDownload,
-                            base::Unretained(this), download_params));
-}
-
-void TestDownloadService::PauseDownload(const std::string& guid) {}
-
-void TestDownloadService::ResumeDownload(const std::string& guid) {}
-
-void TestDownloadService::CancelDownload(const std::string& guid) {
-  for (auto iter = downloads_.begin(); iter != downloads_.end(); ++iter) {
-    if (iter->guid == guid) {
-      downloads_.erase(iter);
-      iter->callback.Run(iter->guid,
-                         DownloadParams::StartResult::UNEXPECTED_GUID);
-      return;
-    }
-  }
-}
-
-void TestDownloadService::ChangeDownloadCriteria(
-    const std::string& guid,
-    const SchedulingParams& params) {}
-
-void TestDownloadService::SetFailedDownload(
-    const std::string& failed_download_id,
-    bool fail_at_start) {
-  failed_download_id_ = failed_download_id;
-  fail_at_start_ = fail_at_start;
-}
-
-void TestDownloadService::HandleStartDownload(const DownloadParams& params) {
+void TestDownloadService::StartDownload(const DownloadParams& params) {
   if (!is_ready_) {
     params.callback.Run(params.guid,
                         DownloadParams::StartResult::INTERNAL_ERROR);
@@ -110,6 +78,39 @@ void TestDownloadService::HandleStartDownload(const DownloadParams& params) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&TestDownloadService::ProcessDownload,
                             base::Unretained(this)));
+}
+
+void TestDownloadService::PauseDownload(const std::string& guid) {}
+
+void TestDownloadService::ResumeDownload(const std::string& guid) {}
+
+void TestDownloadService::CancelDownload(const std::string& guid) {
+  for (auto iter = downloads_.begin(); iter != downloads_.end(); ++iter) {
+    if (iter->guid == guid) {
+      downloads_.erase(iter);
+      return;
+    }
+  }
+}
+
+void TestDownloadService::ChangeDownloadCriteria(
+    const std::string& guid,
+    const SchedulingParams& params) {}
+
+base::Optional<DownloadParams> TestDownloadService::GetDownload(
+    const std::string& guid) const {
+  for (const auto& download : downloads_) {
+    if (download.guid == guid)
+      return base::Optional<DownloadParams>(download);
+  }
+  return base::Optional<DownloadParams>();
+}
+
+void TestDownloadService::SetFailedDownload(
+    const std::string& failed_download_id,
+    bool fail_at_start) {
+  failed_download_id_ = failed_download_id;
+  fail_at_start_ = fail_at_start;
 }
 
 void TestDownloadService::ProcessDownload() {

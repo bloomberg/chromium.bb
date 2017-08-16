@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 source_set("test_support") {
-  visibility = [ "//components/download/internal:unit_tests" ]
+  visibility = [
+    "//components/download/internal:unit_tests",
+    "//components/offline_pages/core/prefetch:unit_tests",
+  ]
 
   testonly = true
 

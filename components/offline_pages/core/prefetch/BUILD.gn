@@ -163,6 +163,7 @@ source_set("unit_tests") {
     ":prefetch",
     ":test_support",
     "//base",
+    "//components/download/internal/test:test_support",
     "//components/download/public",
     "//components/gcm_driver/instance_id",
     "//components/offline_pages/core",

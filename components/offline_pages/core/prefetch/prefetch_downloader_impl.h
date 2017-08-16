@@ -38,7 +38,9 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
   void StartDownload(const std::string& download_id,
                      const std::string& download_location) override;
   void CancelDownload(const std::string& download_id) override;
-  void OnDownloadServiceReady() override;
+  void OnDownloadServiceReady(
+      const std::vector<std::string>& outstanding_download_ids) override;
+  void OnDownloadServiceUnavailable() override;
   void OnDownloadServiceShutdown() override;
   void OnDownloadSucceeded(const std::string& download_id,
                            const base::FilePath& file_path,
