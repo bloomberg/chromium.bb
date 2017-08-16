@@ -122,18 +122,6 @@ class PixelIntegrationTest(
       self.fail('page indicated test failure')
     if not tab.screenshot_supported:
       self.fail('Browser does not support screenshot capture')
-
-    if page.create_and_close_new_tab == True:
-      # Load the tmp tab.
-      tmp_tab = tab.browser.tabs.New()
-      tmp_tab.Navigate('chrome://about')
-      tmp_tab.Close()
-      # Activate the original tab and wait for completion.
-      tab.Activate()
-      tab.action_runner.WaitForJavaScriptCondition(
-        'domAutomationController._finished', timeout=300)
-      tab.EvaluateJavaScript('copyImage()')
-
     screenshot = tab.Screenshot(5)
     if screenshot is None:
       self.fail('Could not capture screenshot')
