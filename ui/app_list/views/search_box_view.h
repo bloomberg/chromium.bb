@@ -172,6 +172,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Updates the search box's background color.
   void UpdateBackgroundColor(SkColor color);
 
+  // Updates the visibility of close button.
+  void UpdateCloseButtonVisisbility();
+
   // Gets the search box background.
   SearchBoxBackground* GetSearchBoxBackground() const;
 

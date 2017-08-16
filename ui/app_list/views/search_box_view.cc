@@ -267,6 +267,7 @@ bool SearchBoxView::HasSearch() const {
 
 void SearchBoxView::ClearSearch() {
   search_box_->SetText(base::string16());
+  UpdateCloseButtonVisisbility();
   view_delegate_->AutoLaunchCanceled();
   // Updates model and fires query changed manually because SetText() above
   // does not generate ContentsChanged() notification.
@@ -506,9 +507,6 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
 
   UpdateKeyboardVisibility();
 
-  if (speech_button_)
-    speech_button_->SetVisible(!active);
-  close_button_->SetVisible(active);
   if (focused_view_ != FOCUS_CONTENTS_VIEW)
     ResetTabFocus(false);
   content_container_->Layout();
@@ -698,6 +696,7 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   NotifyQueryChanged();
   if (is_fullscreen_app_list_enabled_) {
     SetSearchBoxActive(true);
+    UpdateCloseButtonVisisbility();
     // If the query is only whitespace, don't transition the AppListView state.
     base::string16 trimmed_query = search_box_->text();
     base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
@@ -848,6 +847,7 @@ void SearchBoxView::SelectionModelChanged() {
 
 void SearchBoxView::Update() {
   search_box_->SetText(model_->search_box()->text());
+  UpdateCloseButtonVisisbility();
   NotifyQueryChanged();
 }
 
@@ -922,6 +922,16 @@ void SearchBoxView::UpdateBackgroundColor(SkColor color) {
     color = kSearchBoxBackgroundDefault;
   GetSearchBoxBackground()->set_color(color);
   search_box_->SetBackgroundColor(color);
+}
+
+void SearchBoxView::UpdateCloseButtonVisisbility() {
+  if (!close_button_)
+    return;
+  bool should_show_close_button_ = !search_box_->text().empty();
+  if (close_button_->visible() == should_show_close_button_)
+    return;
+  close_button_->SetVisible(should_show_close_button_);
+  content_container_->Layout();
 }
 
 SearchBoxBackground* SearchBoxView::GetSearchBoxBackground() const {

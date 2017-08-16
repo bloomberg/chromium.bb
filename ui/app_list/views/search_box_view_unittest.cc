@@ -287,6 +287,25 @@ TEST_F(SearchBoxViewFullscreenTest, CloseButtonVisibleAfterTyping) {
   EXPECT_TRUE(view()->close_button()->visible());
 }
 
+// Tests that the close button is still invisible after the search box is
+// activated.
+TEST_F(SearchBoxViewFullscreenTest, CloseButtonInvisibleAfterSearchBoxActived) {
+  view()->SetSearchBoxActive(true);
+  EXPECT_FALSE(view()->close_button()->visible());
+}
+
+// Tests that the close button becomes invisible after close button is clicked.
+TEST_F(SearchBoxViewFullscreenTest,
+       CloseButtonInvisibleAfterCloseButtonClicked) {
+  KeyPress(ui::VKEY_A);
+  view()->ButtonPressed(
+      view()->close_button(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_FALSE(view()->close_button()->visible());
+}
+
 // Tests that the search box becomes empty after close button is clicked.
 TEST_F(SearchBoxViewFullscreenTest, SearchBoxEmptyAfterCloseButtonClicked) {
   KeyPress(ui::VKEY_A);
