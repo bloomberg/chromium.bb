@@ -10,11 +10,13 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
@@ -27,6 +29,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -50,7 +53,8 @@ const CGFloat kMenuWidth = 264;
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
     BookmarkModelBridgeObserver,
-    BookmarkPromoControllerDelegate>
+    BookmarkPromoControllerDelegate,
+    BookmarkTableViewDelegate>
 
 @end
 
@@ -76,6 +80,7 @@ const CGFloat kMenuWidth = 264;
 @synthesize sideSwipingPossible = _sideSwipingPossible;
 @synthesize waitForModelView = _waitForModelView;
 @synthesize homeDelegate = _homeDelegate;
+@synthesize bookmarksTableView = _bookmarksTableView;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -107,14 +112,22 @@ const CGFloat kMenuWidth = 264;
   return self;
 }
 
+- (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode {
+  _rootNode = rootNode;
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.navigationBar = [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
-  [self.navigationBar setEditTarget:self
-                             action:@selector(navigationBarWantsEditing:)];
-  [self.navigationBar setBackTarget:self action:@selector(navigationBarBack:)];
+  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+    self.navigationBar =
+        [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
+    [self.navigationBar setEditTarget:self
+                               action:@selector(navigationBarWantsEditing:)];
+    [self.navigationBar setBackTarget:self
+                               action:@selector(navigationBarBack:)];
+  }
 }
 
 #pragma mark - Public
@@ -127,32 +140,67 @@ const CGFloat kMenuWidth = 264;
 #pragma mark - Protected
 
 - (void)loadBookmarkViews {
-  LayoutRect menuLayout =
-      LayoutRectMake(0, self.view.bounds.size.width, 0, self.menuWidth,
-                     self.view.bounds.size.height);
+  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+    // Set up new UI view. TODO(crbug.com/695749): Polish UI according to mocks.
+    self.bookmarksTableView =
+        [[BookmarkTableView alloc] initWithBrowserState:self.browserState
+                                               delegate:self
+                                               rootNode:_rootNode
+                                                  frame:self.view.bounds];
+    self.bookmarksTableView.autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 
-  // Create menu view.
-  self.menuView = [[BookmarkMenuView alloc]
-      initWithBrowserState:self.browserState
-                     frame:LayoutRectGetRect(menuLayout)];
-  self.menuView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    // Set up the navigation bar.
+    NSString* doneTitle =
+        l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
+            .uppercaseString;
+    UIBarButtonItem* doneButton =
+        [[UIBarButtonItem alloc] initWithTitle:doneTitle
+                                         style:UIBarButtonItemStyleDone
+                                        target:self
+                                        action:@selector(navigationBarCancel:)];
+    self.navigationItem.rightBarButtonItem = doneButton;
+    self.navigationItem.backBarButtonItem =
+        [[UIBarButtonItem alloc] initWithTitle:@""
+                                         style:UIBarButtonItemStylePlain
+                                        target:nil
+                                        action:nil];
+    self.navigationItem.title =
+        bookmark_utils_ios::TitleForBookmarkNode(_rootNode);
+    self.navigationController.navigationBar.tintColor = UIColor.blackColor;
+    self.navigationController.navigationBar.backgroundColor =
+        bookmark_utils_ios::mainBackgroundColor();
 
-  // Create panel view.
-  self.panelView = [[BookmarkPanelView alloc] initWithFrame:CGRectZero
-                                              menuViewWidth:self.menuWidth];
-  self.panelView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:self.bookmarksTableView];
+  } else {
+    // Set up old UI view.
+    LayoutRect menuLayout =
+        LayoutRectMake(0, self.view.bounds.size.width, 0, self.menuWidth,
+                       self.view.bounds.size.height);
 
-  // Create folder view.
-  BookmarkCollectionView* view =
-      [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
-                                                     frame:CGRectZero];
-  self.folderView = view;
-  [self.folderView setEditing:self.editing animated:NO];
-  self.folderView.autoresizingMask =
-      UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-  self.folderView.delegate = self;
+    // Create menu view.
+    self.menuView = [[BookmarkMenuView alloc]
+        initWithBrowserState:self.browserState
+                       frame:LayoutRectGetRect(menuLayout)];
+    self.menuView.autoresizingMask =
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+    // Create panel view.
+    self.panelView = [[BookmarkPanelView alloc] initWithFrame:CGRectZero
+                                                menuViewWidth:self.menuWidth];
+    self.panelView.autoresizingMask =
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+    // Create folder view.
+    BookmarkCollectionView* view =
+        [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
+                                                       frame:CGRectZero];
+    self.folderView = view;
+    [self.folderView setEditing:self.editing animated:NO];
+    self.folderView.autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    self.folderView.delegate = self;
+  }
 }
 
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
@@ -342,6 +390,26 @@ const CGFloat kMenuWidth = 264;
       [BookmarkMenuItem folderMenuItemForNode:parentFolder
                                  rootAncestor:rootAncestor];
   [self updatePrimaryMenuItem:menuItem animated:YES];
+}
+
+#pragma mark - BookmarkTableViewDelegate
+
+- (void)bookmarkTableView:(BookmarkTableView*)view
+    selectedUrlForNavigation:(const GURL&)url {
+  [self dismissWithURL:url];
+}
+
+- (void)bookmarkTableView:(BookmarkTableView*)view
+    selectedFolderForNavigation:(const bookmarks::BookmarkNode*)folder {
+  BookmarkControllerFactory* bookmarkControllerFactory =
+      [[BookmarkControllerFactory alloc] init];
+  BookmarkHomeViewController* controller =
+      (BookmarkHomeViewController*)[bookmarkControllerFactory
+          bookmarkControllerWithBrowserState:self.browserState
+                                      loader:_loader];
+  [controller setRootNode:folder];
+  controller.homeDelegate = self.homeDelegate;
+  [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate

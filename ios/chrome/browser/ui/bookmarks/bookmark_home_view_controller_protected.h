@@ -24,6 +24,7 @@ class BookmarkNode;
 @class BookmarkNavigationBar;
 @class BookmarkPanelView;
 @class BookmarkPromoController;
+@class BookmarkTableView;
 
 // BookmarkHomeViewController class extension for protected read/write
 // properties and methods for subclasses.
@@ -37,6 +38,9 @@ class BookmarkNode;
 
 // The main view showing all the bookmarks.
 @property(nonatomic, strong) BookmarkCollectionView* folderView;
+
+// The main view showing all the bookmarks.
+@property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
 
 // The view controller used to pick a folder in which to move the selected
 // bookmarks.
