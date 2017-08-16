@@ -23,6 +23,8 @@ const char kLoadMediaRouterComponentExtensionFlag[] =
 const char kYieldBetweenContentScriptRunsFieldTrial[] =
     "YieldBetweenContentScriptRuns";
 
+const char kNativeCrxBindingsFieldTrial[] = "NativeCrxBindings";
+
 class CommonSwitches {
  public:
   CommonSwitches()
@@ -56,6 +58,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
 #endif  // defined(GOOGLE_CHROME_BUILD)
         native_crx_bindings(switches::kNativeCrxBindings,
+                            kNativeCrxBindingsFieldTrial,
                             FeatureSwitch::DEFAULT_DISABLED),
         yield_between_content_script_runs(
             switches::kYieldBetweenContentScriptRuns,
