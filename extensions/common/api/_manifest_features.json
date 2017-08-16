@@ -28,12 +28,12 @@
     "whitelist": [
       // Keep this list in sync with extensions_misc::kHangoutsExtensionIds but
       // omit the Packaged App ids.
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Hangouts Production.
-      "ljclpkphhpbpinifbeabbhlfddcpfdde",  // Hangouts Debug.
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Hangouts Alpha.
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Hangouts Beta.
+      "53041A2FA309EECED01FFC751E7399186E860B2C",  // Hangouts Production.
+      "312745D9BF916161191143F6490085EEA0434997",  // Hangouts Debug.
+      "E7E2461CE072DF036CF9592740196159E2D7C089",  // Hangouts Alpha.
+      "A74A4D44C7CFCD8844830E6140C8D763E12DD8F3",  // Hangouts Beta.
 
-      "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
+      "5107DE9024C329EEA9C9A72D94C16723790C6422" // Apps Debugger
     ]
   },
   "app.background": {
@@ -229,20 +229,20 @@
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
     "whitelist": [
-      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
-      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
-      "ionpfmkccalenbmnddpbmocokhaknphg",  // QuickOffice Dev
-      "bpmcpldpdmajfigpchkicefoigmkfalc",  // Quickoffice component extension
-      "ehibbfinohgbchlgdbfpikodjaojhccn",  // Editor
-      "mhjfbmdgcfjbbpaeojofohoefgiehjai"   // PDF
+      "787000072C6FBB934AF5A42275CDE73FC977D995",  // browser_tests
+      "2FC374607C2DF285634B67C64A2E356C607091C3",  // QuickOffice
+      "5D3851BEFF680AB6D954B76678EFCCE834465C23",  // QuickOffice Dev
+      "12E618C3C6E97495AAECF2AC12DEB082353241C6",  // Quickoffice component extension
+      "3727DD3E564B6055387425027AD74C58784ACC15",  // Editor
+      "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // PDF
     ]
   },
   "mime_types_handler": {
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
     "whitelist": [
-      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
-      "mhjfbmdgcfjbbpaeojofohoefgiehjai"   // PDF
+      "787000072C6FBB934AF5A42275CDE73FC977D995",  // browser_tests
+      "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // PDF
     ]
   },
   "nacl_modules": {
@@ -267,9 +267,9 @@
       "extension", "platform_app"
     ],
     "whitelist": [
-      "mdbihdcgjmagbcapkhhkjbbdlkflmbfo",  // unit_tests
-      "pafkbggdmjlpgkdkcbjmhmfcdpncadgh",  // Google Now
-      "nmmhkkegccagdldgiimedpiccmgmieda",  // In-app payments support app.
+      "F57FDBA2822F21B82A4C417405ABC51241CC6426",  // unit_tests
+      "C41AD9DCD670210295614257EF8C9945AD68D86E",  // Google Now
+      "64291898C201DAF15B090EC4B9EC270BEB6BE6FF",  // In-app payments support app.
       "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C",
       "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA",
 
