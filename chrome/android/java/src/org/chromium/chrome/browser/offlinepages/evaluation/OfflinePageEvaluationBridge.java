@@ -252,6 +252,15 @@ public class OfflinePageEvaluationBridge {
                 filePath, fileSize, creationTime, accessCount, lastAccessTimeMs, requestOrigin));
     }
 
+    // This is added as a utility method in the bridge because SavePageRequest_jni.h is supposed
+    // only to be included in one bridge (OfflinePageBridge). So as a testing bridge, this will be
+    // used to create SavePageRequest on the native side.
+    @CalledByNative
+    private static SavePageRequest createSavePageRequest(
+            int state, long requestId, String url, String clientIdNamespace, String clientIdId) {
+        return SavePageRequest.create(state, requestId, url, clientIdNamespace, clientIdId);
+    }
+
     private static OfflinePageItem createOfflinePageItem(String url, long offlineId,
             String clientNamespace, String clientId, String filePath, long fileSize,
             long creationTime, int accessCount, long lastAccessTimeMs, String requestOrigin) {
