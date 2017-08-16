@@ -29,6 +29,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool gl_composited_overlay_candidate_quad_border = false;
   bool show_overdraw_feedback = false;
   bool enable_color_correct_rendering = false;
+  bool use_skia_renderer = false;
   int highp_threshold_min = 0;
 
   // Determines whether we disallow non-exact matches when finding resources

@@ -45,6 +45,7 @@ UI_BASE_EXPORT extern const char kTopChromeMDNonMaterial[];
 UI_BASE_EXPORT extern const char kExtendMdToSecondaryUi[];
 UI_BASE_EXPORT extern const char kUIDisablePartialSwap[];
 UI_BASE_EXPORT extern const char kShowOverdrawFeedback[];
+UI_BASE_EXPORT extern const char kUseSkiaRenderer[];
 
 // Test related.
 UI_BASE_EXPORT extern const char kDisallowNonExactResourceReuse[];

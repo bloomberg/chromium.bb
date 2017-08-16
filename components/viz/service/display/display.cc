@@ -20,6 +20,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -188,9 +189,14 @@ void Display::InitializeRenderer() {
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
-    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
-                                             resource_provider_.get(),
-                                             texture_mailbox_deleter_.get());
+    if (!settings_.use_skia_renderer) {
+      renderer_ = base::MakeUnique<GLRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          texture_mailbox_deleter_.get());
+    } else {
+      renderer_ = base::MakeUnique<SkiaRenderer>(
+          &settings_, output_surface_.get(), resource_provider_.get());
+    }
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);

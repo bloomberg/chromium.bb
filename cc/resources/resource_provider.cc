@@ -1253,7 +1253,12 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const Resource* resource = resource_provider->LockForRead(resource_id);
-  if (resource->gl_id) {
+  if (resource_provider_->resource_sk_image_.find(resource_id) !=
+      resource_provider_->resource_sk_image_.end()) {
+    // Use cached sk_image.
+    sk_image_ =
+        resource_provider_->resource_sk_image_.find(resource_id)->second;
+  } else if (resource->gl_id) {
     GrGLTextureInfo texture_info;
     texture_info.fID = resource->gl_id;
     texture_info.fTarget = resource->target;

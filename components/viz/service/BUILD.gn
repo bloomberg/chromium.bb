@@ -29,6 +29,8 @@ viz_component("service") {
     "display/program_binding.h",
     "display/shader.cc",
     "display/shader.h",
+    "display/skia_renderer.cc",
+    "display/skia_renderer.h",
     "display/static_geometry_binding.cc",
     "display/static_geometry_binding.h",
     "display/surface_aggregator.cc",
