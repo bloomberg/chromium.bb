@@ -91,7 +91,8 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false),
-        @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false)})
+        @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
+        @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false)})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -115,16 +116,26 @@ public class NewTabPageAdapterTest {
      * Stores information about a section that should be present in the adapter.
      */
     private static class SectionDescriptor {
+        // TODO(https://crbug.com/754763): Smells. To be cleaned up.
+        public boolean mIsSignInPromo;
+
         public boolean mHeader = true;
-        public final List<SnippetArticle> mSuggestions;
-        public final boolean mStatusCard;
+        public List<SnippetArticle> mSuggestions;
+        public boolean mStatusCard;
         public boolean mViewAllButton;
         public boolean mFetchButton;
         public boolean mProgressItem;
 
+        public SectionDescriptor() {}
+
         public SectionDescriptor(List<SnippetArticle> suggestions) {
+            withContentSuggestions(suggestions);
+        }
+
+        public SectionDescriptor withContentSuggestions(List<SnippetArticle> suggestions) {
             mSuggestions = suggestions;
             mStatusCard = suggestions.isEmpty();
+            return this;
         }
 
         public SectionDescriptor withoutHeader() {
@@ -144,6 +155,11 @@ public class NewTabPageAdapterTest {
 
         public SectionDescriptor withProgress() {
             mProgressItem = true;
+            return this;
+        }
+
+        public SectionDescriptor isSigninPromo() {
+            mIsSignInPromo = true;
             return this;
         }
     }
@@ -179,6 +195,11 @@ public class NewTabPageAdapterTest {
         }
 
         public void expectSection(SectionDescriptor descriptor) {
+            if (descriptor.mIsSignInPromo) {
+                mInOrder.verify(mVisitor, mVerification).visitSignInPromo();
+                return;
+            }
+
             if (descriptor.mHeader) {
                 mInOrder.verify(mVisitor, mVerification).visitHeader();
             }
@@ -899,6 +920,7 @@ public class NewTabPageAdapterTest {
         resetUiDelegate();
         reloadNtp();
 
+        assertItemsFor(sectionWithStatusCard().withProgress(), signinPromo());
         assertTrue(isSignInPromoVisible());
 
         // Note: As currently implemented, these variables should point to the same object, a
@@ -933,6 +955,23 @@ public class NewTabPageAdapterTest {
         mSource.setRemoteSuggestionsEnabled(true);
         suggestionsObserver.onCategoryStatusChanged(remoteCategory, CategoryStatus.AVAILABLE);
         assertTrue(isSignInPromoVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    // TODO(https://crbug.com/754778) improve annotation processor, flags repeated to enable modern.
+    @Features({@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false),
+            @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
+            @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT)})
+    public void testSigninPromoModern() {
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        mSource.setRemoteSuggestionsEnabled(true);
+        resetUiDelegate();
+        reloadNtp();
+
+        // Special case of the modern layout: the signin promo comes before the content suggestions.
+        assertItemsFor(signinPromo(), sectionWithStatusCard().withProgress());
     }
 
     @Test
@@ -1144,6 +1183,10 @@ public class NewTabPageAdapterTest {
     private SectionDescriptor section(List<SnippetArticle> suggestions) {
         assert !suggestions.isEmpty();
         return new SectionDescriptor(suggestions);
+    }
+
+    private SectionDescriptor signinPromo() {
+        return new SectionDescriptor().isSigninPromo();
     }
 
     /**
