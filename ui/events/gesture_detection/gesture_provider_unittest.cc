@@ -1220,7 +1220,7 @@ TEST_F(GestureProviderTest, GestureLongTap) {
             GetMostRecentGestureEvent().details.bounding_box_f());
 }
 
-TEST_F(GestureProviderTest, GestureLongPressPreventsScrolling) {
+TEST_F(GestureProviderTest, GestureLongPressDoesNotPreventScrolling) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 
   MockMotionEvent event =
@@ -1239,9 +1239,9 @@ TEST_F(GestureProviderTest, GestureLongPressPreventsScrolling) {
                             kFakeCoordY + 100);
   gesture_provider_->OnTouchEvent(event);
 
-  EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetMostRecentGestureEventType());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
 
   event = ObtainMotionEvent(event_time + long_press_timeout,
                             MotionEvent::ACTION_UP);
