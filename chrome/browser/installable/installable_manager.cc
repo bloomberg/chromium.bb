@@ -90,7 +90,6 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
       page_status_(InstallabilityCheckStatus::NOT_STARTED),
       menu_open_count_(0),
       menu_item_add_to_homescreen_count_(0),
-      is_active_(false),
       is_pwa_check_complete_(false),
       weak_factory_(this) {
   // This is null in unit tests.
@@ -141,10 +140,10 @@ void InstallableManager::GetData(const InstallableParams& params,
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
   task_queue_.Insert({params, callback});
-  if (is_active_)
+  if (task_queue_.is_active_)
     return;
 
-  is_active_ = true;
+  task_queue_.is_active_ = true;
   if (page_status_ == InstallabilityCheckStatus::NOT_STARTED)
     page_status_ = InstallabilityCheckStatus::NOT_COMPLETED;
 
@@ -331,7 +330,7 @@ void InstallableManager::Reset() {
   valid_manifest_ = base::MakeUnique<ValidManifestProperty>();
   worker_ = base::MakeUnique<ServiceWorkerProperty>();
 
-  is_active_ = false;
+  task_queue_.is_active_ = false;
 }
 
 void InstallableManager::SetManifestDependentTasksComplete() {
@@ -370,7 +369,7 @@ void InstallableManager::RunCallback(const Task& task,
 }
 
 void InstallableManager::StartNextTask() {
-  DCHECK(is_active_);
+  DCHECK(task_queue_.is_active_);
   WorkOnTask();
 }
 
@@ -392,7 +391,7 @@ void InstallableManager::WorkOnTask() {
     task_queue_.Next();
 
     if (task_queue_.IsEmpty())
-      is_active_ = false;
+      task_queue_.is_active_ = false;
     else
       StartNextTask();
 
@@ -524,7 +523,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
         if (task_queue_.IsEmpty())
-          is_active_ = false;
+          task_queue_.is_active_ = false;
         else
           StartNextTask();
 
@@ -601,8 +600,8 @@ void InstallableManager::OnRegistrationStored(const GURL& pattern) {
   // Start the pipeline again if it is not running. This will call
   // CheckHasServiceWorker to check if the SW has a fetch handler. Otherwise,
   // adding the tasks to the end of the active queue is sufficient.
-  if (!is_active_) {
-    is_active_ = true;
+  if (!task_queue_.is_active_) {
+    task_queue_.is_active_ = true;
     StartNextTask();
   }
 }
@@ -632,7 +631,7 @@ bool InstallableManager::is_installable() const {
   return valid_manifest_->is_valid && worker_->has_worker;
 }
 
-InstallableManager::TaskQueue::TaskQueue() {}
+InstallableManager::TaskQueue::TaskQueue() : is_active_(false) {}
 InstallableManager::TaskQueue::~TaskQueue() {}
 
 void InstallableManager::TaskQueue::Insert(Task task) {
