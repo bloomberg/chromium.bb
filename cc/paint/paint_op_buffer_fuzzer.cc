@@ -31,16 +31,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
     const cc::PaintOp* serialized = reinterpret_cast<const cc::PaintOp*>(data);
-
     if (serialized->skip > kMaxSerializedSize)
       break;
 
-    size_t deserialized_size = sizeof(cc::LargestPaintOp) + serialized->skip;
     std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
         static_cast<char*>(base::AlignedAlloc(
-            deserialized_size, cc::PaintOpBuffer::PaintOpAlign)));
-    cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
-        data, size, deserialized.get(), deserialized_size);
+            sizeof(cc::LargestPaintOp), cc::PaintOpBuffer::PaintOpAlign)));
+    size_t bytes_read = 0;
+    cc::PaintOp* deserialized_op =
+        cc::PaintOp::Deserialize(data, size, deserialized.get(),
+                                 sizeof(cc::LargestPaintOp), &bytes_read);
 
     if (!deserialized_op)
       break;
@@ -52,8 +52,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (serialized->skip >= size)
       break;
 
-    size -= serialized->skip;
-    data += serialized->skip;
+    size -= bytes_read;
+    data += bytes_read;
   }
   return 0;
 }

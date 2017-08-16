@@ -1417,21 +1417,22 @@ size_t PaintOp::Serialize(void* memory,
 PaintOp* PaintOp::Deserialize(const volatile void* input,
                               size_t input_size,
                               void* output,
-                              size_t output_size) {
+                              size_t output_size,
+                              size_t* read_bytes) {
   DCHECK_GE(output_size, sizeof(LargestPaintOp));
-  const volatile PaintOp* serialized =
-      reinterpret_cast<const volatile PaintOp*>(input);
-  uint32_t skip = serialized->skip;
+
+  uint32_t first_word = reinterpret_cast<const volatile uint32_t*>(input)[0];
+  uint8_t type = static_cast<uint8_t>(first_word & 0xFF);
+  uint32_t skip = first_word >> 8;
+
   if (input_size < skip)
     return nullptr;
   if (skip % PaintOpBuffer::PaintOpAlign != 0)
     return nullptr;
-  uint8_t type = serialized->type;
   if (type > static_cast<uint8_t>(PaintOpType::LastPaintOpType))
     return nullptr;
-
-  return g_deserialize_functions[serialized->type](input, skip, output,
-                                                   output_size);
+  *read_bytes = skip;
+  return g_deserialize_functions[type](input, skip, output, output_size);
 }
 
 // static
