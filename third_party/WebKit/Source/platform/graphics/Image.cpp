@@ -349,20 +349,17 @@ PassRefPtr<Image> Image::ImageForDefaultFrame() {
   return image;
 }
 
-PaintImage Image::PaintImageForCurrentFrame() {
+void Image::InitPaintImageBuilder(PaintImageBuilder& builder) {
   auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
                                         : PaintImage::AnimationType::STATIC;
   auto completion_state = CurrentFrameIsComplete()
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
-  PaintImageBuilder builder;
   builder.set_id(stable_image_id_)
       .set_animation_type(animation_type)
       .set_completion_state(completion_state)
       .set_frame_count(FrameCount())
       .set_is_multipart(is_multipart_);
-  PopulateImageForCurrentFrame(builder);
-  return builder.TakePaintImage();
 }
 
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {

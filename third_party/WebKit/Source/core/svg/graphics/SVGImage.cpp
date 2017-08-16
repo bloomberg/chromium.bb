@@ -314,8 +314,11 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
   });
 }
 
-void SVGImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
+PaintImage SVGImage::PaintImageForCurrentFrame() {
+  PaintImageBuilder builder;
+  InitPaintImageBuilder(builder);
   PopulatePaintRecordForCurrentFrameForContainer(builder, NullURL(), Size());
+  return builder.TakePaintImage();
 }
 
 void SVGImage::DrawPatternForContainer(GraphicsContext& context,

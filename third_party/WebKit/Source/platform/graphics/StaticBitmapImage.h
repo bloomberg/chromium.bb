@@ -26,6 +26,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   static RefPtr<StaticBitmapImage> Create(
       sk_sp<SkImage>,
       WeakPtr<WebGraphicsContext3DProviderWrapper>&& = nullptr);
+  static RefPtr<StaticBitmapImage> Create(PaintImage);
 
   bool IsStaticBitmapImage() const override { return true; }
 

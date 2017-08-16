@@ -26,6 +26,11 @@ RefPtr<StaticBitmapImage> StaticBitmapImage::Create(
   return UnacceleratedStaticBitmapImage::Create(image);
 }
 
+RefPtr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
+  DCHECK(!image.GetSkImage()->isTextureBacked());
+  return UnacceleratedStaticBitmapImage::Create(std::move(image));
+}
+
 void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                                    const PaintFlags& flags,
                                    const FloatRect& dst_rect,

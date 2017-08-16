@@ -61,9 +61,11 @@ bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
                                          local_matrix);
 }
 
-void SVGImageForContainer::PopulateImageForCurrentFrame(
-    PaintImageBuilder& builder) {
+PaintImage SVGImageForContainer::PaintImageForCurrentFrame() {
+  PaintImageBuilder builder;
+  InitPaintImageBuilder(builder);
   image_->PopulatePaintRecordForCurrentFrameForContainer(builder, url_, Size());
+  return builder.TakePaintImage();
 }
 
 }  // namespace blink

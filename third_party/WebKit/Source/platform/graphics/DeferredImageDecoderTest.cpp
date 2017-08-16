@@ -134,14 +134,21 @@ class DeferredImageDecoderTest : public ::testing::Test,
 
   IntSize DecodedSize() const override { return decoded_size_; }
 
-  sk_sp<SkImage> CreateFrameAtIndex(size_t index) {
-    return CreateFrameAtIndex(lazy_decoder_.get(), index);
+  PaintImage CreatePaintImageAtIndex(
+      size_t index,
+      PaintImage::CompletionState state = PaintImage::CompletionState::DONE) {
+    return CreatePaintImageAtIndex(lazy_decoder_.get(), index, state);
   }
 
-  sk_sp<SkImage> CreateFrameAtIndex(DeferredImageDecoder* decoder,
-                                    size_t index) {
-    return SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
-        decoder->CreateGeneratorAtIndex(index)));
+  PaintImage CreatePaintImageAtIndex(
+      DeferredImageDecoder* decoder,
+      size_t index,
+      PaintImage::CompletionState state = PaintImage::CompletionState::DONE) {
+    return PaintImageBuilder()
+        .set_id(PaintImage::GetNextId())
+        .set_completion_state(state)
+        .set_paint_image_generator(decoder->CreateGeneratorAtIndex(index))
+        .TakePaintImage();
   }
 
  protected:
@@ -166,18 +173,14 @@ class DeferredImageDecoderTest : public ::testing::Test,
 
 TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
   lazy_decoder_->SetData(data_, true);
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
+  PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  EXPECT_EQ(1, image->width());
-  EXPECT_EQ(1, image->height());
+  EXPECT_EQ(1, image.width());
+  EXPECT_EQ(1, image.height());
 
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImageBuilder()
-                             .set_id(PaintImage::GetNextId())
-                             .set_image(std::move(image))
-                             .TakePaintImage(),
-                         0, 0);
+  temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
 
@@ -192,30 +195,19 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
 
   // Received only half the file.
   lazy_decoder_->SetData(partial_data, false);
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
-  ASSERT_TRUE(image);
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  PaintImage::Id stable_id = PaintImage::GetNextId();
-  temp_canvas->drawImage(
-      PaintImageBuilder()
-          .set_id(stable_id)
-          .set_image(std::move(image))
-          .set_completion_state(PaintImage::CompletionState::PARTIALLY_DONE)
-          .TakePaintImage(),
-      0, 0);
+  PaintImage image =
+      CreatePaintImageAtIndex(0, PaintImage::CompletionState::PARTIALLY_DONE);
+  temp_canvas->drawImage(image, 0, 0);
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
 
   // Fully received the file and draw the PaintRecord again.
   lazy_decoder_->SetData(data_, true);
-  image = CreateFrameAtIndex(0);
+  image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
   temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImageBuilder()
-                             .set_id(stable_id)
-                             .set_image(std::move(image))
-                             .TakePaintImage(),
-                         0, 0);
+  temp_canvas->drawImage(image, 0, 0);
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
@@ -226,18 +218,14 @@ static void RasterizeMain(PaintCanvas* canvas, sk_sp<PaintRecord> record) {
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
   lazy_decoder_->SetData(data_, true);
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
+  PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  EXPECT_EQ(1, image->width());
-  EXPECT_EQ(1, image->height());
+  EXPECT_EQ(1, image.width());
+  EXPECT_EQ(1, image.height());
 
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImageBuilder()
-                             .set_id(PaintImage::GetNextId())
-                             .set_image(std::move(image))
-                             .TakePaintImage(),
-                         0, 0);
+  temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
 
@@ -257,9 +245,8 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading) {
   status_ = ImageFrame::kFramePartial;
   lazy_decoder_->SetData(data_, false);
   EXPECT_FALSE(lazy_decoder_->FrameIsReceivedAtIndex(0));
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
+  PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  unsigned first_id = image->uniqueID();
   EXPECT_FALSE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_TRUE(actual_decoder_);
 
@@ -269,11 +256,9 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading) {
   EXPECT_FALSE(actual_decoder_);
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
 
-  image = CreateFrameAtIndex(0);
+  image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  unsigned second_id = image->uniqueID();
   EXPECT_FALSE(decode_request_count_);
-  EXPECT_NE(first_id, second_id);
 }
 
 TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
@@ -283,9 +268,8 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   status_ = ImageFrame::kFramePartial;
   lazy_decoder_->SetData(data_, false);
 
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
+  PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  unsigned first_id = image->uniqueID();
   EXPECT_FALSE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_EQ(10.0f, lazy_decoder_->FrameDurationAtIndex(0));
 
@@ -295,10 +279,8 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   data_->Append(" ", 1u);
   lazy_decoder_->SetData(data_, false);
 
-  image = CreateFrameAtIndex(0);
+  image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  unsigned second_id = image->uniqueID();
-  EXPECT_NE(first_id, second_id);
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(1));
   EXPECT_EQ(20.0f, lazy_decoder_->FrameDurationAtIndex(1));
@@ -321,21 +303,17 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
 TEST_F(DeferredImageDecoderTest, decodedSize) {
   decoded_size_ = IntSize(22, 33);
   lazy_decoder_->SetData(data_, true);
-  sk_sp<SkImage> image = CreateFrameAtIndex(0);
+  PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
-  EXPECT_EQ(decoded_size_.Width(), image->width());
-  EXPECT_EQ(decoded_size_.Height(), image->height());
+  EXPECT_EQ(decoded_size_.Width(), image.width());
+  EXPECT_EQ(decoded_size_.Height(), image.height());
 
   UseMockImageDecoderFactory();
 
   // The following code should not fail any assert.
   PaintRecorder recorder;
   PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
-  temp_canvas->drawImage(PaintImageBuilder()
-                             .set_id(PaintImage::GetNextId())
-                             .set_image(std::move(image))
-                             .TakePaintImage(),
-                         0, 0);
+  temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
   canvas_->drawPicture(record);
@@ -373,7 +351,8 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     SkPixmap pixmap(pix_info, storage.data(), row_bytes);
 
     // Before decoding, the frame is not known to be opaque.
-    sk_sp<SkImage> frame = CreateFrameAtIndex(decoder.get(), 0);
+    sk_sp<SkImage> frame =
+        CreatePaintImageAtIndex(decoder.get(), 0).GetSkImage();
     ASSERT_TRUE(frame);
     EXPECT_FALSE(frame->isOpaque());
 
@@ -381,7 +360,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
 
     // After decoding, the frame is known to be opaque.
-    frame = CreateFrameAtIndex(decoder.get(), 0);
+    frame = CreatePaintImageAtIndex(decoder.get(), 0).GetSkImage();
     ASSERT_TRUE(frame);
     EXPECT_TRUE(frame->isOpaque());
 
@@ -399,8 +378,8 @@ TEST_F(DeferredImageDecoderTest, respectActualDecoderSizeOnCreate) {
   frame_count_ = 2;
   ForceFirstFrameToBeEmpty();
   lazy_decoder_->SetData(data_, false);
-  CreateFrameAtIndex(0);
-  CreateFrameAtIndex(1);
+  CreatePaintImageAtIndex(0);
+  CreatePaintImageAtIndex(1);
   lazy_decoder_->SetData(data_, true);
   // Clears only the first frame (0 bytes). If DeferredImageDecoder doesn't
   // check with the actual decoder it reports 4 bytes instead.

@@ -76,7 +76,7 @@ bool BitmapImage::CurrentFrameHasSingleSecurityOrigin() const {
 }
 
 void BitmapImage::DestroyDecodedData() {
-  cached_frame_.reset();
+  cached_frame_ = PaintImage();
   for (size_t i = 0; i < frames_.size(); ++i)
     frames_[i].Clear(true);
   source_.ClearCacheExceptFrame(kNotFound);
@@ -100,16 +100,14 @@ size_t BitmapImage::TotalFrameBytes() {
   return total_bytes;
 }
 
-sk_sp<PaintImageGenerator> BitmapImage::CreateAndCacheFrameGenerator(
-    size_t index) {
+PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
+  sk_sp<PaintImageGenerator> generator = source_.CreateGeneratorAtIndex(index);
+  if (!generator)
+    return PaintImage();
+
   size_t num_frames = FrameCount();
   if (frames_.size() < num_frames)
     frames_.Grow(num_frames);
-
-  // We are caching frame snapshots.  This is OK even for partially decoded
-  // frames, as they are cleared by dataChanged() when new data arrives.
-  cached_frame_ = source_.CreateGeneratorAtIndex(index);
-  cached_frame_index_ = index;
 
   frames_[index].orientation_ = source_.OrientationAtIndex(index);
   frames_[index].have_metadata_ = true;
@@ -118,6 +116,48 @@ sk_sp<PaintImageGenerator> BitmapImage::CreateAndCacheFrameGenerator(
     frames_[index].duration_ = source_.FrameDurationAtIndex(index);
   frames_[index].has_alpha_ = source_.FrameHasAlphaAtIndex(index);
   frames_[index].frame_bytes_ = source_.FrameBytesAtIndex(index);
+
+  PaintImageBuilder builder;
+  InitPaintImageBuilder(builder);
+
+  // The caching of the decoded image data by the external users of this image
+  // is keyed based on the uniqueID of the underlying SkImage for this
+  // PaintImage. For this reason once the decoded output of an image becomes
+  // constant, we want use the same uniqueID for repeated calls to create a
+  // PaintImage.
+  // The decoded bitmap for a PaintImage can be considered constant in the
+  // following cases:
+  // 1) Once all data for this image has been received, each frame of the image
+  //    is constant.
+  // 2) For multi-frame images, each frame represents a unique constant bitmap
+  //    once all data for that frame has been received.
+  //
+  // TODO(khushalsagar): This reliance on SkImage ids should be removed once cc
+  // is responsible for decoding all images and can rely on inputs provided in
+  // PaintImage/PaintImageGenerator. See crbug.com/753639.
+  const bool frame_complete = all_data_received_ || frames_[index].is_complete_;
+  if (frames_[index].sk_image_unique_id_ !=
+      SkiaPaintImageGenerator::kNeedNewImageUniqueID) {
+    // If the id was previously set, the frame must be complete. Continue using
+    // the same id.
+    DCHECK(frame_complete);
+    builder.set_paint_image_generator(std::move(generator),
+                                      frames_[index].sk_image_unique_id_);
+  } else if (frame_complete) {
+    // If this is the first time we have encountered a complete frame when
+    // creating a PaintImage, store the generated uniqueID to reuse later.
+    builder.set_paint_image_generator(
+        std::move(generator), SkiaPaintImageGenerator::kNeedNewImageUniqueID,
+        &frames_[index].sk_image_unique_id_);
+  } else {
+    // Continue generating new ids for partial decodes of this image.
+    builder.set_paint_image_generator(std::move(generator));
+  }
+
+  // We are caching frame snapshots.  This is OK even for partially decoded
+  // frames, as they are cleared by dataChanged() when new data arrives.
+  cached_frame_ = builder.TakePaintImage();
+  cached_frame_index_ = index;
 
   NotifyMemoryChanged();
   return cached_frame_;
@@ -191,7 +231,7 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
     if (frames_[i].have_metadata_ && !frames_[i].is_complete_) {
       frames_[i].Clear(true);
       if (i == cached_frame_index_)
-        cached_frame_.reset();
+        cached_frame_ = PaintImage();
     }
   }
 
@@ -298,14 +338,14 @@ bool BitmapImage::IsSizeAvailable() {
   return size_available_;
 }
 
-sk_sp<PaintImageGenerator> BitmapImage::FrameAtIndex(size_t index) {
+PaintImage BitmapImage::FrameAtIndex(size_t index) {
   if (index >= FrameCount())
-    return nullptr;
+    return PaintImage();
 
   if (index == cached_frame_index_ && cached_frame_)
     return cached_frame_;
 
-  return CreateAndCacheFrameGenerator(index);
+  return CreateAndCacheFrame(index);
 }
 
 bool BitmapImage::FrameIsReceivedAtIndex(size_t index) const {
@@ -323,53 +363,13 @@ float BitmapImage::FrameDurationAtIndex(size_t index) const {
   return source_.FrameDurationAtIndex(index);
 }
 
-void BitmapImage::PopulateImageForCurrentFrame(PaintImageBuilder& builder) {
-  size_t index = current_frame_index_;
-  sk_sp<PaintImageGenerator> generator = FrameAtIndex(index);
-  if (!generator)
-    return;
-
-  // The caching of the decoded image data by the external users of this image
-  // is keyed based on the uniqueID of the underlying SkImage for this
-  // PaintImage. For this reason once the decoded output of an image becomes
-  // constant, we want use the same uniqueID for repeated calls to create a
-  // PaintImage.
-  // The decoded bitmap for a PaintImage can be considered constant in the
-  // following cases:
-  // 1) Once all data for this image has been received, each frame of the image
-  //    is constant.
-  // 2) For multi-frame images, each frame represents a unique constant bitmap
-  //    once all data for that frame has been received.
-  //
-  // TODO(khushalsagar): This reliance on SkImage ids should be removed once cc
-  // is responsible for decoding all images and can rely on inputs provided in
-  // PaintImage/PaintImageGenerator. See crbug.com/753639.
-  const bool frame_complete = all_data_received_ || frames_[index].is_complete_;
-  if (frames_[index].sk_image_unique_id_ !=
-      SkiaPaintImageGenerator::kNeedNewImageUniqueID) {
-    // If the id was previously set, the frame must be complete. Continue using
-    // the same id.
-    DCHECK(frame_complete);
-    builder.set_paint_image_generator(std::move(generator),
-                                      frames_[index].sk_image_unique_id_);
-  } else if (frame_complete) {
-    // If this is the first time we have encountered a complete frame when
-    // creating a PaintImage, store the generated uniqueID to reuse later.
-    builder.set_paint_image_generator(
-        std::move(generator), SkiaPaintImageGenerator::kNeedNewImageUniqueID,
-        &frames_[index].sk_image_unique_id_);
-  } else {
-    // Continue generating new ids for partial decodes of this image.
-    builder.set_paint_image_generator(std::move(generator));
-  }
+PaintImage BitmapImage::PaintImageForCurrentFrame() {
+  return FrameAtIndex(current_frame_index_);
 }
 
 PassRefPtr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
-    sk_sp<SkImage> first_frame = SkImage::MakeFromGenerator(
-        base::MakeUnique<SkiaPaintImageGenerator>(FrameAtIndex(0)));
-    if (first_frame)
-      return StaticBitmapImage::Create(std::move(first_frame));
+    return StaticBitmapImage::Create(FrameAtIndex(0u));
   }
 
   return Image::ImageForDefaultFrame();
@@ -553,7 +553,7 @@ void BitmapImage::ResetAnimation() {
   repetitions_complete_ = 0;
   desired_frame_start_time_ = 0;
   animation_finished_ = false;
-  cached_frame_.reset();
+  cached_frame_ = PaintImage();
 }
 
 bool BitmapImage::MaybeAnimated() {

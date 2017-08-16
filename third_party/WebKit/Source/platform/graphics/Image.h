@@ -174,7 +174,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual PassRefPtr<Image> ImageForDefaultFrame();
 
-  PaintImage PaintImageForCurrentFrame();
+  virtual PaintImage PaintImageForCurrentFrame() = 0;
 
   enum ImageClampingMode {
     kClampImageToSourceRect,
@@ -250,7 +250,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                            const FloatRect&,
                            const FloatSize& repeat_spacing);
 
-  virtual void PopulateImageForCurrentFrame(PaintImageBuilder&) = 0;
+  // Initializes a PaintImageBuilder with the metadata flags for the PaintImage.
+  void InitPaintImageBuilder(PaintImageBuilder&);
 
  private:
   bool image_observer_disabled_;

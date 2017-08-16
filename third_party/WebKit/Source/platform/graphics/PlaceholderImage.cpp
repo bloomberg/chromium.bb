@@ -26,13 +26,14 @@ PlaceholderImage::PlaceholderImage(ImageObserver* observer, const IntSize& size)
 
 PlaceholderImage::~PlaceholderImage() {}
 
-void PlaceholderImage::PopulateImageForCurrentFrame(
-    PaintImageBuilder& builder) {
-  const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
+PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
+  PaintImageBuilder builder;
+  InitPaintImageBuilder(builder);
 
+  const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
   if (paint_record_for_current_frame_) {
     builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
-    return;
+    return builder.TakePaintImage();
   }
 
   PaintRecorder paint_recorder;
@@ -42,6 +43,7 @@ void PlaceholderImage::PopulateImageForCurrentFrame(
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
+  return builder.TakePaintImage();
 }
 
 void PlaceholderImage::Draw(PaintCanvas* canvas,

@@ -95,8 +95,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // Advance the image animation by one frame.
   void AdvanceAnimationForTesting() override { InternalAdvanceAnimation(); }
 
- protected:
-  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
+  PaintImage PaintImageForCurrentFrame() override;
 
  private:
   enum RepetitionCountStatus : uint8_t {
@@ -117,14 +116,14 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
-  sk_sp<PaintImageGenerator> FrameAtIndex(size_t);
+  PaintImage FrameAtIndex(size_t);
 
   bool FrameIsReceivedAtIndex(size_t) const;
   float FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(size_t);
   ImageOrientation FrameOrientationAtIndex(size_t);
 
-  sk_sp<PaintImageGenerator> CreateAndCacheFrameGenerator(size_t index);
+  PaintImage CreateAndCacheFrame(size_t index);
   void UpdateSize() const;
 
   // Returns the total number of bytes allocated for all framebuffers, i.e.
@@ -185,7 +184,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
                                  // animation. We have to ref frames to pin
                                  // them in the cache.
 
-  sk_sp<PaintImageGenerator>
+  PaintImage
       cached_frame_;  // A cached copy of the most recently-accessed frame.
   size_t cached_frame_index_;  // Index of the frame that is cached.
 
