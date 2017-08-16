@@ -48,4 +48,8 @@ net::TestURLFetcher* PrefetchRequestTestBase::GetRunningFetcher() {
   return url_fetcher_factory_.GetFetcherByID(0);
 }
 
+void PrefetchRequestTestBase::PumpLoop() {
+  task_runner_->RunUntilIdle();
+}
+
 }  // namespace offline_pages

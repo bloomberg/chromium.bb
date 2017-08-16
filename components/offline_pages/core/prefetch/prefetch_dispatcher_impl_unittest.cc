@@ -7,14 +7,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -23,8 +22,11 @@
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using testing::Contains;
 
 namespace offline_pages {
 namespace {
@@ -46,7 +48,7 @@ class TestScopedBackgroundTask
 
 }  // namespace
 
-class PrefetchDispatcherTest : public testing::Test {
+class PrefetchDispatcherTest : public PrefetchRequestTestBase {
  public:
   PrefetchDispatcherTest();
 
@@ -54,41 +56,41 @@ class PrefetchDispatcherTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void PumpLoop();
-
   PrefetchDispatcher::ScopedBackgroundTask* GetBackgroundTask() {
     return dispatcher_->background_task_.get();
   }
 
   TaskQueue* dispatcher_task_queue() { return &dispatcher_->task_queue_; }
   PrefetchDispatcher* prefetch_dispatcher() { return dispatcher_; }
-
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+  TestPrefetchNetworkRequestFactory* network_request_factory() {
+    return network_request_factory_;
+  }
 
  protected:
   std::vector<PrefetchURL> test_urls_;
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<PrefetchServiceTestTaco> taco_;
 
   base::test::ScopedFeatureList feature_list_;
 
   // Owned by |taco_|.
   PrefetchDispatcherImpl* dispatcher_;
+  // Owned by |taco_|.
+  TestPrefetchNetworkRequestFactory* network_request_factory_;
 };
 
-PrefetchDispatcherTest::PrefetchDispatcherTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {
+PrefetchDispatcherTest::PrefetchDispatcherTest() {
   feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
 }
 
 void PrefetchDispatcherTest::SetUp() {
   dispatcher_ = new PrefetchDispatcherImpl();
+  network_request_factory_ = new TestPrefetchNetworkRequestFactory();
   taco_.reset(new PrefetchServiceTestTaco);
   taco_->SetPrefetchDispatcher(base::WrapUnique(dispatcher_));
+  taco_->SetPrefetchNetworkRequestFactory(
+      base::WrapUnique(network_request_factory_));
   taco_->CreatePrefetchService();
 
   ASSERT_TRUE(test_urls_.empty());
@@ -101,10 +103,6 @@ void PrefetchDispatcherTest::TearDown() {
   // Ensures that the store is properly disposed off.
   taco_.reset();
   PumpLoop();
-}
-
-void PrefetchDispatcherTest::PumpLoop() {
-  task_runner()->RunUntilIdle();
 }
 
 TEST_F(PrefetchDispatcherTest, DispatcherDoesNotCrash) {
@@ -144,6 +142,39 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNothingIfFeatureNotEnabled) {
   EXPECT_EQ(nullptr, GetBackgroundTask());
 
   // Everything else is unimplemented.
+}
+
+TEST_F(PrefetchDispatcherTest, DispatcherReleasesBackgroundTask) {
+  PrefetchURL prefetch_url("id", GURL("https://www.chromium.org"),
+                           base::string16());
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(
+      kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
+  PumpLoop();
+
+  // We start the background task, causing reconcilers and action tasks to be
+  // run. We should hold onto the background task until there is no more work to
+  // do, after the network request ends.
+  ASSERT_EQ(nullptr, GetBackgroundTask());
+  prefetch_dispatcher()->BeginBackgroundTask(
+      base::MakeUnique<TestScopedBackgroundTask>());
+  EXPECT_TRUE(dispatcher_task_queue()->HasRunningTask());
+  PumpLoop();
+
+  // Still holding onto the background task.
+  EXPECT_NE(nullptr, GetBackgroundTask());
+  EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
+  EXPECT_THAT(*network_request_factory()->GetAllUrlsRequested(),
+              Contains(prefetch_url.url.spec()));
+
+  // When the network request finishes, the dispatcher should still hold the
+  // ScopedBackgroundTask because it needs to process the results of the
+  // request.
+  RespondWithHttpError(500);
+  EXPECT_NE(nullptr, GetBackgroundTask());
+  PumpLoop();
+
+  // Because there is no work remaining, the background task should be released.
+  EXPECT_EQ(nullptr, GetBackgroundTask());
 }
 
 }  // namespace offline_pages

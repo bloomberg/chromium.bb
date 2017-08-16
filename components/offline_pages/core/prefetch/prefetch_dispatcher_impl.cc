@@ -150,11 +150,18 @@ void PrefetchDispatcherImpl::OnTaskQueueIsIdle() {
   if (needs_pipeline_processing_) {
     needs_pipeline_processing_ = false;
     QueueActionTasks();
+  } else {
+    PrefetchNetworkRequestFactory* request_factory =
+        service_->GetPrefetchNetworkRequestFactory();
+    if (!request_factory->HasOutstandingRequests())
+      DisposeTask();
   }
 }
 
 void PrefetchDispatcherImpl::DisposeTask() {
-  DCHECK(background_task_);
+  if (!background_task_)
+    return;
+
   // Delay the deletion till the caller finishes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DeleteBackgroundTaskHelper,
