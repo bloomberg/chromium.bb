@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 class Browser;
@@ -25,7 +26,8 @@ namespace extensions {
 
 class ExtensionRegistry;
 
-class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
+class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
+                                         public ExtensionRegistryObserver {
  public:
   // UMA histogram constants.
   enum BubbleAction {
@@ -167,7 +169,8 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
 
   // Called when the bubble is actually shown. Because some bubbles are delayed
   // (in order to weather the "focus storm"), they are not shown immediately.
-  void OnShown();
+  // Accepts a callback from platform-specifc ui code to close the bubble.
+  void OnShown(const base::Closure& close_bubble_callback);
 
   // Callbacks from bubble. Declared virtual for testing purposes.
   virtual void OnBubbleAction();
@@ -183,6 +186,11 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
       bool should_ignore_learn_more);
 
  private:
+  // ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionReason reason) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
@@ -221,6 +229,11 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
   // Whether or not this bubble is the active bubble being shown.
   bool is_active_bubble_;
 
+  // Platform-specific implementation of closing the bubble.
+  base::Closure close_bubble_callback_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleController);
