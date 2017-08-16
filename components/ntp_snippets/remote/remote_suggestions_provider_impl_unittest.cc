@@ -569,21 +569,28 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kKeepPrefetchedContentSuggestions.name});
   }
 
-  void SetTriggeringNotificationsParams(bool fetched_enabled,
-                                        bool pushed_enabled) {
+  void SetTriggeringNotificationsAndSubscriptionParams(
+      bool fetched_notifications_enabled,
+      bool pushed_notifications_enabled,
+      bool subscribe_signed_in,
+      bool subscribe_signed_out) {
     // VariationParamsManager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
     // previous settings first to make this explicit.
     params_manager_.ClearAllVariationParams();
     params_manager_.SetVariationParamsWithFeatureAssociations(
-        kNotificationsFeature.name,
+        /*trial_name=*/kNotificationsFeature.name,
         {
             {"enable_fetched_suggestions_notifications",
-             BoolToString(fetched_enabled)},
+             BoolToString(fetched_notifications_enabled)},
             {"enable_pushed_suggestions_notifications",
-             BoolToString(pushed_enabled)},
+             BoolToString(pushed_notifications_enabled)},
+            {"enable_signed_in_users_subscription_for_pushed_suggestions",
+             BoolToString(subscribe_signed_in)},
+            {"enable_signed_out_users_subscription_for_pushed_suggestions",
+             BoolToString(subscribe_signed_out)},
         },
-        {kNotificationsFeature.name});
+        {kNotificationsFeature.name, kBreakingNewsPushFeature.name});
   }
 
  private:
@@ -3049,6 +3056,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        PrependingShouldNotAffectOtherSuggestions) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
+
   // Set up the provider with some article suggestions.
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3092,6 +3105,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
+
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/true,
@@ -3120,6 +3139,12 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldRestorePrependedSuggestionOnTopAfterRestart) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
+
   // Set up the provider with some article suggestions.
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3172,8 +3197,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(
     RemoteSuggestionsProviderImplTest,
     PrependingShouldNotTriggerFetchedSuggestionNotificationForTheSecondTime) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
-                                   /*pushed_enabled=*/true);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/true,
+      /*pushed_notifications_enabled=*/true,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   // Set up the provider with an article suggestion triggering a notification.
   auto provider = MakeSuggestionsProvider(
@@ -3220,8 +3248,11 @@ TEST_F(
 TEST_F(
     RemoteSuggestionsProviderImplTest,
     PrependingShouldNotTriggerPrependedSuggestionNotificationForTheSecondTime) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
-                                   /*pushed_enabled=*/true);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/true,
+      /*pushed_notifications_enabled=*/true,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3263,8 +3294,11 @@ TEST_F(
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        PrependingShouldNotTriggerNotificationWhenDisabled) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
-                                   /*pushed_enabled=*/false);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/true,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3291,8 +3325,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        FetchingShouldNotTriggerNotificationWhenDisabled) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/false,
-                                   /*pushed_enabled=*/true);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/true,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3323,8 +3360,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        PrependingShouldTriggerNotificationEvenIfFetchedNotificationsDisabled) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/false,
-                                   /*pushed_enabled=*/true);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/true,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3351,8 +3391,11 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        FetchingShouldTriggerNotificationEvenIfPrependedNotificationsDisabled) {
-  SetTriggeringNotificationsParams(/*fetched_enabled=*/true,
-                                   /*pushed_enabled=*/false);
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/true,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
 
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -3383,6 +3426,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotStartListeningForBreakingNewsIfSuggestionsDisabledAtStartup) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/true,
@@ -3402,7 +3451,41 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldNotStartListeningForBreakingNewsIfSignedOutAndDisabled) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/false);
+
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/true);
+
+  FakeBreakingNewsListener* fake_listener = fake_breaking_news_listener();
+  EXPECT_FALSE(fake_listener->IsListening());
+
+  WaitForSuggestionsProviderInitialization(provider.get());
+  EXPECT_FALSE(fake_listener->IsListening());
+
+  // Notify the provider about status change (simulating startup). The provider
+  // should not start listening, because the user is signed out and such
+  // subscription is disabled via feature params.
+  ChangeRemoteSuggestionsStatus(
+      RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
+      RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
+  EXPECT_FALSE(fake_listener->IsListening());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldStartListeningForBreakingNewsIfSuggestionsEnabledAtStartup) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/false,
+      /*subscribe_signed_out=*/true);
+
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/true,
@@ -3421,6 +3504,12 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldStartListeningForBreakingNewsIfSuggestionsEnabled) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/false);
+
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/true,
@@ -3435,14 +3524,19 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   // Simulate the user enabling suggestions by notifying the status change. The
   // provider should start listening.
-  ChangeRemoteSuggestionsStatus(
-      RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
-      RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
+  ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
+                                RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_TRUE(fake_listener->IsListening());
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldStopListeningForBreakingNewsIfSuggestionsDisabled) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/true);
+
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/true,
@@ -3460,6 +3554,64 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // provider should stop listening.
   ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
                                 RemoteSuggestionsStatus::EXPLICITLY_DISABLED);
+  EXPECT_FALSE(fake_listener->IsListening());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldStopListeningForBreakingNewsAfterSignOutIfDisabled) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/true,
+      /*subscribe_signed_out=*/false);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/true);
+
+  FakeBreakingNewsListener* fake_listener = fake_breaking_news_listener();
+
+  // Notify the provider about status change (simulating startup).
+  ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
+                                RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
+  ASSERT_TRUE(fake_listener->IsListening());
+
+  // Simulate the user signing out by notifying the status change. The provider
+  // should stop listening, because signed out subscription is disabled via
+  // feature params.
+  ChangeRemoteSuggestionsStatus(
+      RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
+      RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
+  EXPECT_FALSE(fake_listener->IsListening());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldStopListeningForBreakingNewsAfterSignInIfDisabled) {
+  SetTriggeringNotificationsAndSubscriptionParams(
+      /*fetched_notifications_enabled=*/false,
+      /*pushed_notifications_enabled=*/false,
+      /*subscribe_signed_in=*/false,
+      /*subscribe_signed_out=*/true);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/true,
+      /*use_mock_remote_suggestions_status_service=*/true);
+
+  FakeBreakingNewsListener* fake_listener = fake_breaking_news_listener();
+
+  // Notify the provider about status change (simulating startup).
+  ChangeRemoteSuggestionsStatus(
+      RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
+      RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
+  ASSERT_TRUE(fake_listener->IsListening());
+
+  // Simulate the user signing in by notifying the status change. The provider
+  // should stop listening, because signed in subscription is disabled via
+  // feature params.
+  ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
+                                RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_FALSE(fake_listener->IsListening());
 }
 
