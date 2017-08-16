@@ -146,6 +146,60 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
   string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
 endif ()
 
+################################################################################
+# Fix CONFIG_* dependencies. This must be done before including cpu.cmake to
+# ensure RTCD_CONFIG_* are properly set.
+
+if (CONFIG_ANALYZER)
+  find_package(wxWidgets REQUIRED adv base core)
+  include(${wxWidgets_USE_FILE})
+
+  if (NOT CONFIG_INSPECTION)
+    change_config_and_warn(CONFIG_INSPECTION 1 CONFIG_ANALYZER)
+  endif ()
+endif ()
+
+if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
+   change_config_and_warn(CONFIG_VAR_TX 1 CONFIG_VAR_TX_NO_TX_MODE)
+endif()
+
+if (CONFIG_DAALA_DCT64)
+  if (NOT CONFIG_TX64X64)
+    change_config_and_warn(CONFIG_TX64X64 1 CONFIG_DAALA_DCT64)
+   endif()
+endif()
+
+if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
+    CONFIG_DAALA_DCT32 OR CONFIG_DAALA_DCT64)
+  if (CONFIG_RECT_TX)
+    change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_DAALA_DCTx)
+  endif()
+  if (CONFIG_VAR_TX)
+     change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_DAALA_DCTx)
+  endif()
+  if (CONFIG_LGT)
+    change_config_and_warn(CONFIG_LGT 0 CONFIG_DAALA_DCTx)
+  endif()
+  if (NOT CONFIG_LOWBITDEPTH)
+    change_config_and_warn(CONFIG_LOWBITDEPTH 1 CONFIG_DAALA_DCTx)
+  endif()
+endif()
+
+if (CONFIG_TXK_SEL)
+  if (NOT CONFIG_LV_MAP)
+    change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
+  endif ()
+endif ()
+
+if (CONFIG_WARPED_MOTION)
+  if (CONFIG_NCOBMC)
+    change_config_and_warn(CONFIG_NCOBMC 0 CONFIG_WARPED_MOTION)
+  endif ()
+  if (CONFIG_NCOBMC_ADAPT_WEIGHT)
+    change_config_and_warn(CONFIG_NCOBMC_ADAPT_WEIGHT 0 CONFIG_WARPED_MOTION)
+  endif ()
+endif ()
+
 include("${AOM_ROOT}/build/cmake/cpu.cmake")
 
 if (ENABLE_CCACHE)
@@ -230,43 +284,6 @@ aom_check_source_compiles("aom_ports_check"
 aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
 aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 
-if (CONFIG_ANALYZER)
-  find_package(wxWidgets REQUIRED adv base core)
-  include(${wxWidgets_USE_FILE})
-
-  if (NOT CONFIG_INSPECTION)
-    change_config_and_warn(CONFIG_INSPECTION 1 CONFIG_ANALYZER)
-  endif ()
-endif ()
-
-if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
-   change_config_and_warn(CONFIG_VAR_TX 1 CONFIG_VAR_TX_NO_TX_MODE)
-endif()
-
-if (CONFIG_DAALA_DCT64)
-  if (NOT CONFIG_TX64X64)
-     message(WARNING
-       "--- Enabled CONFIG_TX64X64, needed for CONFIG_DAALA_DCT64.")
-     set(CONFIG_TX64X64 1)
-   endif()
-endif()
-
-if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
-    CONFIG_DAALA_DCT32 OR CONFIG_DAALA_DCT64)
-  if (CONFIG_RECT_TX)
-    change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (CONFIG_VAR_TX)
-     change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (CONFIG_LGT)
-    change_config_and_warn(CONFIG_LGT 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (NOT CONFIG_LOWBITDEPTH)
-    change_config_and_warn(CONFIG_LOWBITDEPTH 1 CONFIG_DAALA_DCTx)
-  endif()
-endif()
-
 if (CONFIG_GCOV)
   message("--- Testing for CONFIG_GCOV support.")
   require_compiler_flag("-fprofile-arcs -ftest-coverage" YES)
@@ -275,21 +292,6 @@ endif ()
 if (CONFIG_GPROF)
   message("--- Testing for CONFIG_GPROF support.")
   require_compiler_flag("-pg" YES)
-endif ()
-
-if (CONFIG_TXK_SEL)
-  if (NOT CONFIG_LV_MAP)
-    change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
-  endif ()
-endif ()
-
-if (CONFIG_WARPED_MOTION)
-  if (CONFIG_NCOBMC)
-    change_config_and_warn(CONFIG_NCOBMC 0 CONFIG_WARPED_MOTION)
-  endif ()
-  if (CONFIG_NCOBMC_ADAPT_WEIGHT)
-    change_config_and_warn(CONFIG_NCOBMC_ADAPT_WEIGHT 0 CONFIG_WARPED_MOTION)
-  endif ()
 endif ()
 
 if (NOT MSVC)
