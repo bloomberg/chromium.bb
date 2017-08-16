@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 namespace tracing {
 
 class MockAgent : public mojom::Agent {
@@ -33,6 +37,7 @@ class MockAgent : public mojom::Agent {
  private:
   // mojom::Agent
   void StartTracing(const std::string& config,
+                    base::TimeTicks coordinator_time,
                     const StartTracingCallback& cb) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
   void RequestClockSyncMarker(
