@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -557,8 +556,6 @@ void ChromeLauncherController::ActiveUserChanged(
   RestoreUnpinnedRunningApplicationOrder(user_email);
   // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
   if (!ash_util::IsRunningInMash()) {
-    // Inform the system tray of the change.
-    ash::Shell::Get()->system_tray_delegate()->ActiveUserWasChanged();
     // Force on-screen keyboard to reset.
     if (keyboard::IsKeyboardEnabled())
       ash::Shell::Get()->CreateKeyboard();

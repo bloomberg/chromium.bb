@@ -15,6 +15,4 @@ NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
   return nullptr;
 }
 
-void SystemTrayDelegate::ActiveUserWasChanged() {}
-
 }  // namespace ash

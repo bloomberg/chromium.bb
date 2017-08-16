@@ -25,11 +25,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
-
-  // The active user has been changed. This will be called when the UI is ready
-  // to be switched to the new user.
-  // Note: This will happen after SessionObserver::ActiveUserChanged fires.
-  virtual void ActiveUserWasChanged();
 };
 
 }  // namespace ash
