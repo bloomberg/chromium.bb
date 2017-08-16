@@ -76,7 +76,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // row height which is equivalent assuming fixed height), balanced rows and
   // minimal wasted space.
   // Optionally animates the windows to their targets when |animate| is true.
-  void PositionWindows(bool animate);
+  // If |ignored_item| is not null and is an item in |window_list_|, that item
+  // is not positioned. This is for split screen.
+  void PositionWindows(bool animate,
+                       WindowSelectorItem* ignored_item = nullptr);
 
   // Updates |selected_index_| according to the specified |direction| and calls
   // MoveSelectionWidget(). Returns |true| if the new selection index is out of
@@ -106,6 +109,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Sets bounds for the window grid and positions all windows in the grid.
   void SetBoundsAndUpdatePositions(const gfx::Rect& bounds_in_screen);
+  void SetBoundsAndUpdatePositionsIgnoringWindow(
+      const gfx::Rect& bounds,
+      WindowSelectorItem* ignored_item);
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
