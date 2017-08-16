@@ -1088,7 +1088,7 @@ def PanProjectChecks(input_api, output_api,
 
 def CheckPatchFormatted(input_api, output_api, check_js=False):
   import git_cl
-  cmd = ['cl', 'format', '--dry-run']
+  cmd = ['cl', 'format', '--dry-run', '--presubmit']
   if check_js:
     cmd.append('--js')
   cmd.append(input_api.PresubmitLocalPath())
