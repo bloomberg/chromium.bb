@@ -763,10 +763,21 @@ void V8ScriptRunner::ThrowException(v8::Isolate* isolate,
   // be "muted" (sanitized in our terminology) if CORS does not allow.
   // https://html.spec.whatwg.org/multipage/webappapis.html#report-the-error
   // Avoid compile and run scripts when API is available: crbug.com/639739
+  v8::ScriptOriginOptions origin_options = origin.Options();
+  // Create a new ScriptOrigin with is_wasm and is_module bits left off
+  // (they default to false).
+  v8::ScriptOrigin origin_copy(
+      origin.ResourceName(), origin.ResourceLineOffset(),
+      origin.ResourceColumnOffset(),
+      v8::Boolean::New(isolate, origin_options.IsSharedCrossOrigin()),
+      origin.ScriptID(), origin.SourceMapUrl(),
+      v8::Boolean::New(isolate, origin_options.IsOpaque()));
+  DCHECK(!origin_copy.Options().IsWasm());
+  DCHECK(!origin_copy.Options().IsModule());
   v8::Local<v8::Script> script =
       CompileWithoutOptions(
           V8CompileHistogram::Cacheability::kNoncacheable, isolate,
-          V8AtomicString(isolate, "((e) => { throw e; })"), origin)
+          V8AtomicString(isolate, "((e) => { throw e; })"), origin_copy)
           .ToLocalChecked();
   v8::Local<v8::Function> thrower = RunCompiledInternalScript(isolate, script)
                                         .ToLocalChecked()
