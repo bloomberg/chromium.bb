@@ -54,6 +54,17 @@ RTCRtpSender::RTCRtpSender(
 
 RTCRtpSender::~RTCRtpSender() {}
 
+std::unique_ptr<RTCRtpSender> RTCRtpSender::ShallowCopy() const {
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+      stream_adapter_copies(stream_adapters_.size());
+  for (size_t i = 0; i < stream_adapters_.size(); ++i) {
+    stream_adapter_copies[i] = stream_adapters_[i]->Copy();
+  }
+  return base::MakeUnique<RTCRtpSender>(webrtc_rtp_sender_,
+                                        track_adapter_->Copy(),
+                                        std::move(stream_adapter_copies));
+}
+
 uintptr_t RTCRtpSender::Id() const {
   return getId(webrtc_rtp_sender_.get());
 }

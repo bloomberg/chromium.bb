@@ -19,7 +19,7 @@
 namespace content {
 
 // Used to surface |webrtc::RtpSenderInterface| to blink. Multiple
-// |RTCRtpSender|s could reference the same webrtc receiver; |id| is the value
+// |RTCRtpSender|s could reference the same webrtc sender; |id| is the value
 // of the pointer to the webrtc sender.
 class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
  public:
@@ -35,6 +35,10 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
       std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
           stream_adapters);
   ~RTCRtpSender() override;
+
+  // Creates a shallow copy of the sender, representing the same underlying
+  // webrtc sender as the original.
+  std::unique_ptr<RTCRtpSender> ShallowCopy() const;
 
   uintptr_t Id() const override;
   const blink::WebMediaStreamTrack* Track() const override;
