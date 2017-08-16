@@ -109,8 +109,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         pinch_event_sent_(false),
         scroll_event_sent_(false),
         max_diameter_before_show_press_(0),
-        show_press_event_sent_(false),
-        long_press_event_sent_(false) {}
+        show_press_event_sent_(false) {}
 
   void OnTouchEvent(const MotionEvent& event) {
     const bool in_scale_gesture = IsScaleGestureDetectionInProgress();
@@ -126,7 +125,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       scroll_event_sent_ = false;
       pinch_event_sent_ = false;
       show_press_event_sent_ = false;
-      long_press_event_sent_ = false;
       gesture_detector_.set_longpress_enabled(true);
       tap_down_point_ = gfx::PointF(event.GetX(), event.GetY());
       max_diameter_before_show_press_ = event.GetTouchMajor();
@@ -176,7 +174,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         current_longpress_time_ = base::TimeTicks();
         break;
       case ET_GESTURE_SCROLL_BEGIN:
-        DCHECK(!long_press_event_sent_);
         DCHECK(!scroll_event_sent_);
         scroll_event_sent_ = true;
         break;
@@ -187,7 +184,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         scroll_event_sent_ = false;
         break;
       case ET_SCROLL_FLING_START:
-        DCHECK(!long_press_event_sent_);
         DCHECK(scroll_event_sent_);
         scroll_event_sent_ = false;
         break;
@@ -301,9 +297,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                 const MotionEvent& secondary_pointer_down,
                 float raw_distance_x,
                 float raw_distance_y) override {
-    if (long_press_event_sent_)
-      return true;
-
     float distance_x = raw_distance_x;
     float distance_y = raw_distance_y;
     if (!scroll_event_sent_ && e2.GetPointerCount() < 3) {
@@ -368,9 +361,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                const MotionEvent& e2,
                float velocity_x,
                float velocity_y) override {
-    if (long_press_event_sent_)
-      return true;
-
     if (snap_scroll_controller_.IsSnappingScrolls()) {
       if (snap_scroll_controller_.IsSnapHorizontal()) {
         velocity_y = 0;
@@ -505,7 +495,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     SetIgnoreSingleTap(true);
     GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS);
     long_press_details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
-    long_press_event_sent_ = true;
     Send(CreateGesture(long_press_details, e));
   }
 
@@ -762,10 +751,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   // Tracks whether an ET_GESTURE_SHOW_PRESS event has been sent for this touch
   // sequence.
   bool show_press_event_sent_;
-
-  // Tracks whether an ET_GESTURE_LONG_PRESS event has been sent for this touch
-  // sequence.
-  bool long_press_event_sent_;
 
   // The scroll focus point is set to the first touch down point when scroll
   // begins and is later updated based on the delta of touch points.
