@@ -7,6 +7,8 @@
 import json
 import logging
 
+from devil.android.sdk import shared_prefs
+
 
 def ExtractSettingsFromJson(filepath):
   """Extracts the settings data from the given JSON file.
@@ -33,12 +35,12 @@ def ExtractSettingsFromJson(filepath):
     return unicode_to_str(json.load(prefs_file))
 
 
-def ApplySharedPreferenceSetting(shared_pref, setting):
+def ApplySharedPreferenceSettings(device, settings):
   """Applies the given app settings to the given device.
 
   Modifies an installed app's settings by modifying its shared preference
-  settings file. Provided settings data must be a settings dictionary,
-  which are in the following format:
+  settings file. Provided settings data must be a list of settings dictionaries,
+  where dictionaries are in the following format:
   {
     "package": "com.example.package",
     "filename": "AppSettingsFile.xml",
@@ -59,26 +61,28 @@ def ApplySharedPreferenceSetting(shared_pref, setting):
   this function are in //chrome/android/shared_preference_files/test/.
 
   Args:
-    shared_pref: The devil SharedPrefs object for the device the settings will
-        be applied to.
-    setting: A settings dictionary to apply.
+    device: The devil DeviceUtils object for the device the settings will be
+        applied to.
+    settings: A list of settings dictionaries to apply.
   """
-  shared_pref.Load()
-  for key in setting.get('remove', []):
-    try:
-      shared_pref.Remove(key)
-    except KeyError:
-      logging.warning("Attempted to remove non-existent key %s", key)
-  for key, value in setting.get('set', {}).iteritems():
-    if isinstance(value, bool):
-      shared_pref.SetBoolean(key, value)
-    elif isinstance(value, basestring):
-      shared_pref.SetString(key, value)
-    elif isinstance(value, long) or isinstance(value, int):
-      shared_pref.SetLong(key, value)
-    elif isinstance(value, list):
-      shared_pref.SetStringSet(key, value)
-    else:
-      raise ValueError("Given invalid value type %s for key %s" % (
-          str(type(value)), key))
-  shared_pref.Commit()
+  for pref in settings:
+    prefs = shared_prefs.SharedPrefs(device, pref['package'], pref['filename'])
+    prefs.Load()
+    for key in pref.get('remove', []):
+      try:
+        prefs.Remove(key)
+      except KeyError:
+        logging.warning("Attempted to remove non-existent key %s", key)
+    for key, value in pref.get('set', {}).iteritems():
+      if isinstance(value, bool):
+        prefs.SetBoolean(key, value)
+      elif isinstance(value, basestring):
+        prefs.SetString(key, value)
+      elif isinstance(value, long) or isinstance(value, int):
+        prefs.SetLong(key, value)
+      elif isinstance(value, list):
+        prefs.SetStringSet(key, value)
+      else:
+        raise ValueError("Given invalid value type %s for key %s" % (
+            str(type(value)), key))
+    prefs.Commit()
