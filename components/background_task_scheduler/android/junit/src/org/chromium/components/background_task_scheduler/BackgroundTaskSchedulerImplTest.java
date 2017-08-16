@@ -4,12 +4,6 @@
 
 package org.chromium.components.background_task_scheduler;
 
-import android.os.Build;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.gcm.GcmNetworkManager;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -18,6 +12,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.os.Build;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.gcm.GcmNetworkManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
-public class BackgroundTaskSchedulerTest {
+public class BackgroundTaskSchedulerImplTest {
     private static final TaskInfo TASK =
             TaskInfo.createOneOffTask(
                             TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
@@ -58,7 +58,7 @@ public class BackgroundTaskSchedulerTest {
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
-                new BackgroundTaskScheduler(mDelegate));
+                new BackgroundTaskSchedulerImpl(mDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         TestBackgroundTask.reset();
 
