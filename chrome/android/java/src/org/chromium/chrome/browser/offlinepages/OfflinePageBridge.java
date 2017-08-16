@@ -193,6 +193,17 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Gets the offline pages associated with the provided origin.
+     * @param origin The JSON-like string of the app's package name and encrypted signature hash.
+     * @return A list of {@link OfflinePageItem} matching the provided origin, or an empty
+     *         list if none exist.
+     */
+    public void getPagesByRequestOrigin(String origin, Callback<List<OfflinePageItem>> callback) {
+        List<OfflinePageItem> result = new ArrayList<>();
+        nativeGetPagesByRequestOrigin(mNativeOfflinePageBridge, result, origin, callback);
+    }
+
+    /**
      * Gets the offline pages associated with the provided namespace.
      *
      * @param namespace The string form of the namespace to query.
@@ -644,6 +655,9 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetPagesByClientId(long nativeOfflinePageBridge, List<OfflinePageItem> result,
             String[] namespaces, String[] ids, Callback<List<OfflinePageItem>> callback);
+    native void nativeGetPagesByRequestOrigin(long nativeOfflinePageBridge,
+            List<OfflinePageItem> result, String requestOrigin,
+            Callback<List<OfflinePageItem>> callback);
     native void nativeGetPagesForNamespace(long nativeOfflinePageBridge,
             List<OfflinePageItem> result, String nameSpace,
             Callback<List<OfflinePageItem>> callback);

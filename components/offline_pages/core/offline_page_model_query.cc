@@ -70,6 +70,13 @@ OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetClientIds(
   return *this;
 }
 
+OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetRequestOrigin(
+    Requirement requirement,
+    const std::string& request_origin) {
+  request_origin_ = std::make_pair(requirement, request_origin);
+  return *this;
+}
+
 OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetUrls(
     Requirement requirement,
     const std::vector<GURL>& urls,
@@ -135,6 +142,10 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
       client_ids_.first,
       std::set<ClientId>(client_ids_.second.begin(), client_ids_.second.end()));
   client_ids_ = std::make_pair(Requirement::UNSET, std::vector<ClientId>());
+
+  query->request_origin_ =
+      std::make_pair(request_origin_.first, request_origin_.second);
+  request_origin_ = std::make_pair(Requirement::UNSET, std::string());
 
   std::vector<std::string> allowed_namespaces;
   bool uses_namespace_restrictions = false;
@@ -232,6 +243,13 @@ OfflinePageModelQuery::GetRestrictedToUrls() const {
   return urls_;
 }
 
+std::pair<Requirement, std::string> OfflinePageModelQuery::GetRequestOrigin()
+    const {
+  if (request_origin_.first == Requirement::UNSET)
+    return std::make_pair(Requirement::UNSET, std::string());
+  return request_origin_;
+}
+
 bool OfflinePageModelQuery::Matches(const OfflinePageItem& item) const {
   switch (offline_ids_.first) {
     case Requirement::UNSET:
@@ -274,6 +292,19 @@ bool OfflinePageModelQuery::Matches(const OfflinePageItem& item) const {
       break;
     case Requirement::EXCLUDE_MATCHING:
       if (client_ids_.second.count(client_id) > 0)
+        return false;
+      break;
+  }
+
+  switch (request_origin_.first) {
+    case Requirement::UNSET:
+      break;
+    case Requirement::INCLUDE_MATCHING:
+      if (request_origin_.second != item.request_origin)
+        return false;
+      break;
+    case Requirement::EXCLUDE_MATCHING:
+      if (request_origin_.second == item.request_origin)
         return false;
       break;
   }

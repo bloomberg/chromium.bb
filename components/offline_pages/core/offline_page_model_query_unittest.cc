@@ -65,6 +65,11 @@ class OfflinePageModelQueryTest : public testing::Test {
                            {kLastNNamespace, "id1"}, base::FilePath(), 7);
   }
 
+  const OfflinePageItem cct_page() {
+    OfflinePageItem page = kTestItem1;
+    page.request_origin = "[\"abc.xyz\",[\"12345\"]]";
+    return page;
+  }
   const OfflinePageItem CreatePageWithUrls(const GURL& url,
                                            const GURL& original_url) {
     OfflinePageItem page = kTestItem1;
@@ -686,6 +691,52 @@ TEST_F(OfflinePageModelQueryTest, UrlsSet_Exclude_SearchByAll_Defrag) {
   EXPECT_FALSE(
       query->Matches(CreatePageWithUrls(GURL("https://abc.def"), GURL(""))));
   EXPECT_TRUE(query->Matches(CreatePageWithUrls(kTempFragUrl, GURL(""))));
+}
+
+TEST_F(OfflinePageModelQueryTest, RequestOrigin_Exclude) {
+  builder_.SetRequestOrigin(Requirement::EXCLUDE_MATCHING, "");
+
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+  std::pair<Requirement, std::string> offline_origin_restriction =
+      query->GetRequestOrigin();
+  EXPECT_EQ(Requirement::EXCLUDE_MATCHING, offline_origin_restriction.first);
+
+  ASSERT_EQ("", offline_origin_restriction.second);
+
+  EXPECT_FALSE(query->Matches(kTestItem1));
+  EXPECT_TRUE(query->Matches(cct_page()));
+}
+
+TEST_F(OfflinePageModelQueryTest, RequestOrigin_Include) {
+  builder_.SetRequestOrigin(Requirement::INCLUDE_MATCHING, "");
+
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+  std::pair<Requirement, std::string> offline_origin_restriction =
+      query->GetRequestOrigin();
+  EXPECT_EQ(Requirement::INCLUDE_MATCHING, offline_origin_restriction.first);
+
+  ASSERT_EQ("", offline_origin_restriction.second);
+
+  EXPECT_TRUE(query->Matches(kTestItem1));
+  EXPECT_FALSE(query->Matches(cct_page()));
+}
+
+TEST_F(OfflinePageModelQueryTest, RequestOrigin_Replace) {
+  std::string origin1 = "";
+  std::string origin2 = "[\"abc.xyz\",[\"12345\"]]";
+
+  builder_.SetRequestOrigin(Requirement::INCLUDE_MATCHING, origin1);
+  builder_.SetRequestOrigin(Requirement::INCLUDE_MATCHING, origin2);
+
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+  std::pair<Requirement, std::string> offline_origin_restriction =
+      query->GetRequestOrigin();
+  EXPECT_EQ(Requirement::INCLUDE_MATCHING, offline_origin_restriction.first);
+
+  ASSERT_EQ(origin2, offline_origin_restriction.second);
+
+  EXPECT_FALSE(query->Matches(kTestItem1));
+  EXPECT_TRUE(query->Matches(cct_page()));
 }
 
 }  // namespace offline_pages

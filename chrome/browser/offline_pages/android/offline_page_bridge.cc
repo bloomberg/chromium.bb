@@ -437,6 +437,26 @@ void OfflinePageBridge::GetPagesByClientId(
       client_ids, base::Bind(&MultipleOfflinePageItemCallback, j_result_ref,
                              j_callback_ref));
 }
+
+void OfflinePageBridge::GetPagesByRequestOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj,
+    const JavaParamRef<jstring>& j_request_origin,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  ScopedJavaGlobalRef<jobject> j_result_ref;
+  j_result_ref.Reset(env, j_result_obj);
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
+  std::string request_origin = ConvertJavaStringToUTF8(env, j_request_origin);
+
+  offline_page_model_->GetPagesByRequestOrigin(
+      request_origin, base::Bind(&MultipleOfflinePageItemCallback, j_result_ref,
+                                 j_callback_ref));
+}
+
 void OfflinePageBridge::GetPagesForNamespace(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

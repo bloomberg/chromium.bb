@@ -58,6 +58,9 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
       const GURL& url,
       URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) override;
+  void GetPagesByRequestOrigin(
+      const std::string& origin,
+      const MultipleOfflinePageItemCallback& callback) override;
   ClientPolicyController* GetPolicyController() override;
   bool is_loaded() const override;
   OfflineEventLogger* GetLogger() override;
