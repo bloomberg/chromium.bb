@@ -71,7 +71,6 @@ class DictionaryValueUpdate {
                                std::unique_ptr<base::Value> in_value);
 
   // Convenience forms of SetWithoutPathExpansion().
-  void SetDoubleWithoutPathExpansion(base::StringPiece path, double in_value);
   void SetStringWithoutPathExpansion(base::StringPiece path,
                                      base::StringPiece in_value);
   void SetStringWithoutPathExpansion(base::StringPiece path,

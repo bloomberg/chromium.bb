@@ -124,8 +124,7 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
   if (modification_is_removal) {
     host_zoom_dictionary_weak->RemoveWithoutPathExpansion(change.host, nullptr);
   } else {
-    host_zoom_dictionary_weak->SetDoubleWithoutPathExpansion(change.host,
-                                                             level);
+    host_zoom_dictionary_weak->SetKey(change.host, base::Value(level));
   }
 }
 

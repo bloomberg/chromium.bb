@@ -39,7 +39,7 @@ void VideoFrameMetadata::SetInteger(Key key, int value) {
 }
 
 void VideoFrameMetadata::SetDouble(Key key, double value) {
-  dictionary_.SetDoubleWithoutPathExpansion(ToInternalKey(key), value);
+  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
 }
 
 void VideoFrameMetadata::SetRotation(Key key, VideoRotation value) {
