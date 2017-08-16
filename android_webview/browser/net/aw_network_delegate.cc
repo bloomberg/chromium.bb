@@ -56,14 +56,8 @@ int AwNetworkDelegate::OnBeforeURLRequest(
     url_blacklist_manager_ =
         AwBrowserContext::GetDefault()->GetURLBlacklistManager();
   }
-  // Ignore blob scheme for two reasons:
-  // 1) PlzNavigate uses it to deliver the response to the renderer.
-  // 2) A whitelisted page can use blob URLs internally.
-  if (!request->url().SchemeIs(url::kBlobScheme) &&
-      url_blacklist_manager_->IsURLBlocked(request->url())) {
+  if (url_blacklist_manager_->IsURLBlocked(request->url()))
     return net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  }
-
   return net::OK;
 }
 

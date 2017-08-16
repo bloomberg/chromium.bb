@@ -2416,6 +2416,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistAndWhitelist) {
+  // Regression test for http://crbug.com/755256. Blacklisting * and
+  // whitelisting an origin should work.
+
+  // Filter |kURLS| on IO thread, so that requests to those hosts end up
+  // as URLRequestMockHTTPJobs.
+  const char* kURLS[] = {
+      "http://aaa.com/empty.html",
+  };
+  {
+    base::RunLoop loop;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(RedirectHostsToTestData, kURLS, arraysize(kURLS)),
+        loop.QuitClosure());
+    loop.Run();
+  }
+
+  base::ListValue blacklist;
+  blacklist.AppendString("*");
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+
+  base::ListValue whitelist;
+  whitelist.AppendString("aaa.com");
+  policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+  CheckCanOpenURL(browser(), kURLS[0]);
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistSubresources) {
   // Checks that an image with a blacklisted URL is loaded, but an iframe with a
   // blacklisted URL is not.
