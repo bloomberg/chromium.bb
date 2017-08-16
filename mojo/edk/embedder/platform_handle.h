@@ -22,24 +22,32 @@ namespace mojo {
 namespace edk {
 
 #if defined(OS_FUCHSIA)
+// TODO(fuchsia): Find a clean way to share this with the POSIX version.
 // |mx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
 // created via explicit For<type>() creator functions.
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : handle(MX_HANDLE_INVALID) {}
-  // TODO: Implement file-descriptor PlatformHandles (crbug.com/754029).
+ public:
   static PlatformHandle ForHandle(mx_handle_t handle) {
     PlatformHandle platform_handle;
     platform_handle.handle = handle;
     return platform_handle;
   }
+  static PlatformHandle ForFd(int fd) {
+    PlatformHandle platform_handle;
+    platform_handle.fd = fd;
+    return platform_handle;
+  }
 
   void CloseIfNecessary();
-  bool is_valid() const { return handle != MX_HANDLE_INVALID; }
-
+  bool is_valid() const { return is_valid_fd() || is_valid_handle(); }
+  bool is_valid_handle() const { return handle != MX_HANDLE_INVALID && fd < 0; }
   mx_handle_t as_handle() const { return handle; }
+  bool is_valid_fd() const { return fd >= 0 && handle == MX_HANDLE_INVALID; }
+  int as_fd() const { return fd; }
 
  private:
-  mx_handle_t handle;
+  mx_handle_t handle = MX_HANDLE_INVALID;
+  int fd = -1;
 };
 #elif defined(OS_POSIX)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {

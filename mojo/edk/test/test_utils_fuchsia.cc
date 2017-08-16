@@ -4,51 +4,95 @@
 
 #include "mojo/edk/test/test_utils.h"
 
+#include <fcntl.h>
+#include <stddef.h>
+#include <unistd.h>
+
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
 namespace test {
 
-// TODO(fuchsia): Add file-descriptor support to PlatformHandle and implement
-// these, merge them with the POSIX impl, or remove them, as appropriate.
-// See crbug.com/754029.
+// TODO(fuchsia): Merge Fuchsia's PlatformHandle with the POSIX one and use the
+// POSIX-generic versions of these. See crbug.com/754029.
 
 bool BlockingWrite(const PlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written) {
-  NOTIMPLEMENTED();
-  return false;
+  int original_flags = fcntl(handle.as_fd(), F_GETFL);
+  if (original_flags == -1 ||
+      fcntl(handle.as_fd(), F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
+    return false;
+  }
+
+  ssize_t result = HANDLE_EINTR(write(handle.as_fd(), buffer, bytes_to_write));
+
+  fcntl(handle.as_fd(), F_SETFL, original_flags);
+
+  if (result < 0)
+    return false;
+
+  *bytes_written = result;
+  return true;
 }
 
 bool BlockingRead(const PlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read) {
-  NOTIMPLEMENTED();
-  return false;
+  int original_flags = fcntl(handle.as_fd(), F_GETFL);
+  if (original_flags == -1 ||
+      fcntl(handle.as_fd(), F_SETFL, original_flags & (~O_NONBLOCK)) != 0) {
+    return false;
+  }
+
+  ssize_t result = HANDLE_EINTR(read(handle.as_fd(), buffer, buffer_size));
+
+  fcntl(handle.as_fd(), F_SETFL, original_flags);
+
+  if (result < 0)
+    return false;
+
+  *bytes_read = result;
+  return true;
 }
 
 bool NonBlockingRead(const PlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read) {
-  NOTIMPLEMENTED();
-  return false;
+  ssize_t result = HANDLE_EINTR(read(handle.as_fd(), buffer, buffer_size));
+
+  if (result < 0) {
+    if (errno != EAGAIN && errno != EWOULDBLOCK)
+      return false;
+
+    *bytes_read = 0;
+  } else {
+    *bytes_read = result;
+  }
+
+  return true;
 }
 
 ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
-  NOTIMPLEMENTED();
-  return ScopedPlatformHandle(PlatformHandle());
+  CHECK(fp);
+  int rv = dup(fileno(fp.get()));
+  PCHECK(rv != -1) << "dup";
+  return ScopedPlatformHandle(PlatformHandle::ForFd(rv));
 }
 
 base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
                                         const char* mode) {
-  NOTIMPLEMENTED();
-  return base::ScopedFILE();
+  CHECK(h.get().is_valid_fd());
+  base::ScopedFILE rv(fdopen(h.release().as_fd(), mode));
+  PCHECK(rv) << "fdopen";
+  return rv;
 }
 
 }  // namespace test

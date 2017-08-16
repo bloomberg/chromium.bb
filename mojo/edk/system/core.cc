@@ -67,6 +67,10 @@ MojoResult MojoPlatformHandleToScopedPlatformHandle(
     case MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE:
       handle = PlatformHandle::ForHandle(platform_handle->value);
       break;
+    case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
+      handle = PlatformHandle::ForFd(platform_handle->value);
+      break;
+
 #elif defined(OS_POSIX)
     case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
       handle.handle = static_cast<int>(platform_handle->value);
@@ -106,8 +110,13 @@ MojoResult ScopedPlatformHandleToMojoPlatformHandle(
   }
 
 #if defined(OS_FUCHSIA)
-  platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
-  platform_handle->value = static_cast<uint64_t>(handle.release().as_handle());
+  if (handle.get().is_valid_fd()) {
+    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
+    platform_handle->value = handle.release().as_fd();
+  } else {
+    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
+    platform_handle->value = handle.release().as_handle();
+  }
 #elif defined(OS_POSIX)
   switch (handle.get().type) {
     case PlatformHandle::Type::POSIX:
