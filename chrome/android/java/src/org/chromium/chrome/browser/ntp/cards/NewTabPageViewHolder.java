@@ -65,7 +65,7 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
      * This empty class is used to strengthen type assertions, as those would be less useful with a
      * generic class due to type erasure.
      */
-    public abstract static class PartialBindCallback extends Callback<NewTabPageViewHolder> {}
+    public abstract static class PartialBindCallback implements Callback<NewTabPageViewHolder> {}
 
     /**
      * Callback to update the layout params for the view holder.

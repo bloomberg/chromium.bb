@@ -1343,7 +1343,7 @@ public class MediaDrmBridge {
     }
 
     @MainDex
-    private class KeyUpdatedCallback extends Callback<Boolean> {
+    private class KeyUpdatedCallback implements Callback<Boolean> {
         private final SessionId mSessionId;
         private final long mPromiseId;
         private final boolean mIsKeyRelease;
