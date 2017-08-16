@@ -46,6 +46,9 @@ import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Base class for defining methods where different behavior is required by downstream targets.
  * The correct version of {@link AppHooksImpl} will be determined at compile time via build rules.
@@ -297,11 +300,11 @@ public abstract class AppHooks {
     }
 
     /**
-     * @return A set of whitelisted apps that are allowed to receive notification when the
+     * @return A list of whitelisted apps that are allowed to receive notification when the
      * set of offlined pages downloaded on their behalf has changed. Apps are listed by their
      * package name.
      */
-    public String[] getOfflinePagesCctWhitelist() {
-        return new String[0];
+    public List<String> getOfflinePagesCctWhitelist() {
+        return Collections.emptyList();
     }
 }
