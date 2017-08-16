@@ -66,12 +66,8 @@ class SharedContextRateLimiter;
 // Canvas hibernation is currently disabled on MacOS X due to a bug that causes
 // content loss. TODO: Find a better fix for crbug.com/588434
 #define CANVAS2D_HIBERNATION_ENABLED 0
-
-// IOSurfaces are a primitive only present on OS X.
-#define USE_IOSURFACE_FOR_2D_CANVAS 1
 #else
 #define CANVAS2D_HIBERNATION_ENABLED 1
-#define USE_IOSURFACE_FOR_2D_CANVAS 0
 #endif
 
 // TODO: Fix background rendering and remove this workaround. crbug.com/600386
@@ -173,20 +169,16 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   void FlushInternal();
   void FlushGpuInternal();
 
-#if USE_IOSURFACE_FOR_2D_CANVAS
   // All information associated with a CHROMIUM image.
   struct ImageInfo;
-#endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
   struct MailboxInfo {
     gpu::Mailbox mailbox_;
     sk_sp<SkImage> image_;
 
-#if USE_IOSURFACE_FOR_2D_CANVAS
     // If this mailbox wraps an IOSurface-backed texture, the ids of the
     // CHROMIUM image and the texture.
     RefPtr<ImageInfo> image_info_;
-#endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
     MailboxInfo(const MailboxInfo&);
     MailboxInfo();
@@ -213,7 +205,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   // Returns the GL filter associated with |m_filterQuality|.
   GLenum GetGLFilter();
 
-#if USE_IOSURFACE_FOR_2D_CANVAS
   // Creates an IOSurface-backed texture. Copies |image| into the texture.
   // Prepares a mailbox from the texture. The caller must have created a new
   // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
@@ -229,7 +220,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
 
   // Releases all resources in the CHROMIUM image cache.
   void ClearCHROMIUMImageCache();
-#endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
   // Returns whether the mailbox was successfully prepared from the SkImage.
   // The mailbox is an out parameter only populated on success.
@@ -281,12 +271,10 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   CanvasColorParams color_params_;
   int recording_pixel_count_;
 
-#if USE_IOSURFACE_FOR_2D_CANVAS
   // Each element in this vector represents an IOSurface backed texture that
   // is ready to be reused.
   // Elements in this vector can safely be purged in low memory conditions.
   Vector<RefPtr<ImageInfo>> image_info_cache_;
-#endif  // USE_IOSURFACE_FOR_2D_CANVAS
 };
 
 }  // namespace blink
