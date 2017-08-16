@@ -48,9 +48,9 @@ AudioSinkAndroid::SinkType AudioSinkManager::GetDefaultSinkType() {
 }
 
 // static
-bool AudioSinkManager::GetSessionIds(int* media_id, int* non_media_id) {
+bool AudioSinkManager::GetSessionIds(int* media_id, int* communication_id) {
   return AudioSinkAndroid::GetSessionIds(GetDefaultSinkType(), media_id,
-                                         non_media_id);
+                                         communication_id);
 }
 
 AudioSinkManager::AudioSinkManager() {}

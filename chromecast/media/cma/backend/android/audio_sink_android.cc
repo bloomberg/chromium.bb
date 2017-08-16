@@ -27,7 +27,7 @@ const char* GetAudioContentTypeName(const AudioContentType type) {
 // static
 bool AudioSinkAndroid::GetSessionIds(SinkType sink_type,
                                      int* media_id,
-                                     int* non_media_id) {
+                                     int* communication_id) {
   switch (sink_type) {
     case AudioSinkAndroid::kSinkTypeNativeBased:
       // TODO(ckuiper): implement a sink using native code.
@@ -35,7 +35,7 @@ bool AudioSinkAndroid::GetSessionIds(SinkType sink_type,
       break;
     case AudioSinkAndroid::kSinkTypeJavaBased:
       return AudioSinkAndroidAudioTrackImpl::GetSessionIds(media_id,
-                                                           non_media_id);
+                                                           communication_id);
   }
   return false;
 }
