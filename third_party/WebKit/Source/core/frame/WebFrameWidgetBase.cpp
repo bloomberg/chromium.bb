@@ -283,12 +283,13 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       event_type = EventTypeNames::mousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
-      gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
-          UserGestureToken::Create(&GetPage()
-                                        ->GetPointerLockController()
-                                        .GetElement()
-                                        ->GetDocument(),
-                                   UserGestureToken::kNewGesture)));
+      gesture_indicator =
+          LocalFrame::CreateUserGesture(GetPage()
+                                            ->GetPointerLockController()
+                                            .GetElement()
+                                            ->GetDocument()
+                                            .GetFrame(),
+                                        UserGestureToken::kNewGesture);
       pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:

@@ -20,14 +20,6 @@ const double kUserGestureTimeout = 1.0;
 const double kUserGestureOutOfProcessTimeout = 10.0;
 
 // static
-RefPtr<UserGestureToken> UserGestureToken::Create(Document* document,
-                                                  Status status) {
-  if (document && document->GetFrame())
-    document->GetFrame()->NotifyUserActivation();
-  return AdoptRef(new UserGestureToken(status));
-}
-
-// static
 RefPtr<UserGestureToken> UserGestureToken::Adopt(Document* document,
                                                  UserGestureToken* token) {
   if (!token || !token->HasGestures())

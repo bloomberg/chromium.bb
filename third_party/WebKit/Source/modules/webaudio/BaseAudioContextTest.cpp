@@ -9,6 +9,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayPolicy.h"
@@ -264,8 +265,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CallResumeNoGesture_Main) {
 
 // Creates an AudioContext with a user gesture inside a x-origin child frame.
 TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Child) {
-  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
-      &ChildDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(ChildDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -292,8 +294,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Child) {
 
 // Creates an AudioContext with a user gesture inside a main frame.
 TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Main) {
-  UserGestureIndicator user_gesture_scope(
-      UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
 
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
@@ -323,8 +326,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Child) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
-      &ChildDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(ChildDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
 
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
@@ -357,8 +361,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Main) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(
-      UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
 
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()));
   RejectPendingResolvers(audio_context);
@@ -436,8 +441,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Child) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
-      &ChildDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(ChildDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->MaybeRecordStartAttempt();
   RecordAutoplayStatus(audio_context);
 
@@ -466,8 +472,9 @@ TEST_P(BaseAudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Main) {
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(
-      UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->MaybeRecordStartAttempt();
   RecordAutoplayStatus(audio_context);
 
@@ -497,8 +504,9 @@ TEST_P(BaseAudioContextAutoplayTest,
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
   audio_context->MaybeRecordStartAttempt();
 
-  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
-      &ChildDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(ChildDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
   RecordAutoplayStatus(audio_context);
@@ -532,8 +540,9 @@ TEST_P(BaseAudioContextAutoplayTest,
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
   audio_context->MaybeRecordStartAttempt();
 
-  UserGestureIndicator user_gesture_scope(
-      UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()));
   RejectPendingResolvers(audio_context);
   RecordAutoplayStatus(audio_context);
@@ -563,8 +572,9 @@ TEST_P(BaseAudioContextAutoplayTest,
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(UserGestureToken::Create(
-      &ChildDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(ChildDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->MaybeRecordStartAttempt();
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
@@ -598,8 +608,9 @@ TEST_P(BaseAudioContextAutoplayTest,
   BaseAudioContext* audio_context = BaseAudioContext::Create(
       GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator user_gesture_scope(
-      UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame(),
+                                    UserGestureToken::kNewGesture);
   audio_context->MaybeRecordStartAttempt();
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()));
   RejectPendingResolvers(audio_context);

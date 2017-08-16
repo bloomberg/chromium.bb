@@ -134,8 +134,8 @@ class MediaLoadedEventListener final : public EventListener {
   void handleEvent(ExecutionContext* context, Event* event) override {
     HTMLVideoElement* media =
         static_cast<HTMLVideoElement*>(event->target()->ToNode());
-    UserGestureIndicator gesture(
-        UserGestureToken::Create(&media->GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(media->GetDocument().GetFrame());
     // TODO(shaktisahu): Enable fullscreen after https://crbug/698353 is fixed.
     media->Play();
   }

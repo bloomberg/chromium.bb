@@ -19,31 +19,24 @@ namespace blink {
 // it to be considered as currently being processed.
 class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   WTF_MAKE_NONCOPYABLE(UserGestureToken);
+  friend class UserGestureIndicator;
 
  public:
   enum Status { kNewGesture, kPossiblyExistingGesture };
   enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
 
-  // Deprecated, use UserGestureIndicator(Status) instead.
-  // TODO(mustaq): Replace remaining refs and nuke this method.
-  //
-  // Creates a UserGestureToken with the given status. Also if a non-null
-  // Document* is provided, associates the token with the document.
-  static RefPtr<UserGestureToken> Create(Document*,
-                                         Status = kPossiblyExistingGesture);
-
   static RefPtr<UserGestureToken> Adopt(Document*, UserGestureToken*);
-
-  UserGestureToken(Status);
 
   ~UserGestureToken() {}
   bool HasGestures() const;
-  void TransferGestureTo(UserGestureToken*);
-  bool ConsumeGesture();
   void SetTimeoutPolicy(TimeoutPolicy);
-  void ResetTimestamp();
 
  private:
+  UserGestureToken(Status);
+
+  void TransferGestureTo(UserGestureToken*);
+  bool ConsumeGesture();
+  void ResetTimestamp();
   bool HasTimedOut() const;
 
   size_t consumable_gestures_;

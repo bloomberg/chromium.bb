@@ -175,8 +175,8 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
       *static_cast<MediaControlsImpl*>(video_element_->GetMediaControls());
 
   {
-    UserGestureIndicator gesture(
-        UserGestureToken::Create(&video_element_->GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(video_element_->GetDocument().GetFrame());
 
     bool should_be_fullscreen =
         current_screen_orientation_ == video_orientation;

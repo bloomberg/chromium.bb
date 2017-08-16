@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -107,8 +108,9 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(UserGestureToken::Create(
-      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::CreateUserGesture(&page_holder->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
   CancelPrompt(remote_playback);
@@ -140,8 +142,9 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
-  UserGestureIndicator indicator(UserGestureToken::Create(
-      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::CreateUserGesture(&page_holder->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
   CancelPrompt(remote_playback);
@@ -173,8 +176,9 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 
   SetState(remote_playback, WebRemotePlaybackState::kConnected);
 
-  UserGestureIndicator indicator(UserGestureToken::Create(
-      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::CreateUserGesture(&page_holder->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
 
@@ -250,8 +254,9 @@ TEST_F(RemotePlaybackTest,
   EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(UserGestureToken::Create(
-      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::CreateUserGesture(&page_holder->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
@@ -326,8 +331,9 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
   EXPECT_CALL(*resolve, Call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(::testing::_)).Times(1);
 
-  UserGestureIndicator indicator(UserGestureToken::Create(
-      &page_holder->GetDocument(), UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> indicator =
+      LocalFrame::CreateUserGesture(&page_holder->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
 

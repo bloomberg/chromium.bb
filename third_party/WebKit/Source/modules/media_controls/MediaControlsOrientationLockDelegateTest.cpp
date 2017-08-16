@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/ScreenOrientationController.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLAudioElement.h"
@@ -178,7 +179,8 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
   }
 
   void SimulateEnterFullscreen() {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     Fullscreen::RequestFullscreen(Video());
     testing::RunPendingTasks();
   }
@@ -375,7 +377,8 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
   void PlayVideo() {
     {
-      UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+      std::unique_ptr<UserGestureIndicator> gesture =
+          LocalFrame::CreateUserGesture(GetDocument().GetFrame());
       Video().Play();
     }
     testing::RunPendingTasks();

@@ -124,9 +124,9 @@ TEST(UserGestureIndicatorTest, Timeouts) {
 
   {
     // Token times out after 1 second.
-    RefPtr<UserGestureToken> token = UserGestureToken::Create(nullptr);
-    EXPECT_TRUE(token->HasGestures());
-    UserGestureIndicator user_gesture_scope(token.Get());
+    std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+        LocalFrame::CreateUserGesture(nullptr);
+    RefPtr<UserGestureToken> token = user_gesture_scope->CurrentToken();
     EXPECT_TRUE(token->HasGestures());
     AdvanceClock(0.75);
     EXPECT_TRUE(token->HasGestures());
@@ -135,16 +135,25 @@ TEST(UserGestureIndicatorTest, Timeouts) {
   }
 
   {
-    // Timestamp is reset when a token is put in a UserGestureIndicator.
-    RefPtr<UserGestureToken> token = UserGestureToken::Create(nullptr);
-    EXPECT_TRUE(token->HasGestures());
-    AdvanceClock(0.75);
-    EXPECT_TRUE(token->HasGestures());
-    UserGestureIndicator user_gesture_scope(token.Get());
-    AdvanceClock(0.75);
-    EXPECT_TRUE(token->HasGestures());
-    AdvanceClock(0.75);
-    EXPECT_FALSE(token->HasGestures());
+    // Timestamp is reset when a token is put in a new UserGestureIndicator.
+    RefPtr<UserGestureToken> token;
+
+    {
+      std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+          LocalFrame::CreateUserGesture(nullptr);
+      token = user_gesture_scope->CurrentToken();
+      EXPECT_TRUE(token->HasGestures());
+      AdvanceClock(0.75);
+      EXPECT_TRUE(token->HasGestures());
+    }
+
+    {
+      UserGestureIndicator user_gesture_scope(token.Get());
+      AdvanceClock(0.75);
+      EXPECT_TRUE(token->HasGestures());
+      AdvanceClock(0.75);
+      EXPECT_FALSE(token->HasGestures());
+    }
   }
 
   SetTimeFunctionsForTesting(previous);

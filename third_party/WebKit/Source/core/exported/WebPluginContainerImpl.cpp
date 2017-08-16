@@ -505,10 +505,12 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
     return WebString();
   }
 
-  UserGestureIndicator gesture_indicator(
-      popups_allowed ? UserGestureToken::Create(frame->GetDocument(),
-                                                UserGestureToken::kNewGesture)
-                     : nullptr);
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (popups_allowed) {
+    gesture_indicator =
+        LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
+  }
+
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =
       frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(

@@ -331,15 +331,13 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
   // For the rare case of multi-finger scenarios spanning documents, it
   // seems extremely unlikely to matter which document the gesture is
   // associated with so just pick the first finger.
-  RefPtr<UserGestureToken> possible_gesture_token;
+  std::unique_ptr<UserGestureIndicator> holder;
   if (event.GetType() == WebInputEvent::kTouchEnd &&
       !in_canceled_state_for_pointer_type_touch_ && event.touches_length &&
       first_pointer_event_target.target_frame) {
-    possible_gesture_token = UserGestureToken::Create(
-        first_pointer_event_target.target_frame->GetDocument());
+    holder =
+        LocalFrame::CreateUserGesture(first_pointer_event_target.target_frame);
   }
-  UserGestureIndicator holder(possible_gesture_token);
-
 
   for (unsigned touch_point_idx = 0; touch_point_idx < event.touches_length;
        ++touch_point_idx) {
