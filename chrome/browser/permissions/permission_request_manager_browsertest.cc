@@ -420,8 +420,6 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
-
-  variations::testing::ClearAllVariationParams();
 }
 
 // Bubble requests should not be shown when the killswitch is on.
@@ -449,9 +447,6 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
-
-  variations::testing::ClearAllVariationParams();
-
 }
 
 // Host wants to run flash.
