@@ -5,11 +5,11 @@
 #include "chrome/browser/predictors/loading_stats_collector.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -54,10 +54,7 @@ class LoadingStatsCollectorTest : public testing::Test {
 LoadingStatsCollectorTest::LoadingStatsCollectorTest()
     : profile_(base::MakeUnique<TestingProfile>()) {}
 
-LoadingStatsCollectorTest::~LoadingStatsCollectorTest() {
-  profile_ = nullptr;
-  base::RunLoop().RunUntilIdle();
-}
+LoadingStatsCollectorTest::~LoadingStatsCollectorTest() = default;
 
 void LoadingStatsCollectorTest::SetUp() {
   LoadingPredictorConfig config;
@@ -68,7 +65,7 @@ void LoadingStatsCollectorTest::SetUp() {
   stats_collector_ =
       base::MakeUnique<LoadingStatsCollector>(mock_predictor_.get(), config);
   histogram_tester_ = base::MakeUnique<base::HistogramTester>();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void LoadingStatsCollectorTest::TearDown() {

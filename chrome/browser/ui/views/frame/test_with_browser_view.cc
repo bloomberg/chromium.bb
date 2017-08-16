@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -82,7 +82,6 @@ void TestWithBrowserView::SetUp() {
 #endif
   testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
   BrowserWithTestWindowTest::SetUp();
-  predictor_db_.reset(new predictors::PredictorDatabase(GetProfile()));
   browser_view_ = static_cast<BrowserView*>(browser()->window());
 }
 
@@ -100,7 +99,6 @@ void TestWithBrowserView::TearDown() {
   content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   BrowserWithTestWindowTest::TearDown();
   testing_io_thread_state_.reset();
-  predictor_db_.reset();
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif

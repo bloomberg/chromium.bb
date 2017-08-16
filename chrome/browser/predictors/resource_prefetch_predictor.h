@@ -85,11 +85,11 @@ struct PreconnectPrediction {
 //   LoadingDataCollector on the UI thread. This is owned by the ProfileIOData
 //   for the profile.
 // * ResourcePrefetchPredictorTables - Persists ResourcePrefetchPredictor data
-//   to a sql database. Runs entirely on the DB thread. Owned by the
-//   PredictorDatabase.
+//   to a sql database. Runs entirely on the DB sequence provided by the client
+//   to the constructor of this class. Owned by the PredictorDatabase.
 // * ResourcePrefetchPredictor - Learns about resource requirements per URL in
-//   the UI thread through the LoadingPredictorObserver and persists
-//   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
+//   the UI thread through the LoadingPredictorObserver and persists it to disk
+//   in the DB sequence through the ResourcePrefetchPredictorTables. It
 //   initiates resource prefetching using the ResourcePrefetcherManager. Owned
 //   by profile.
 class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
@@ -132,8 +132,9 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                             Profile* profile);
   ~ResourcePrefetchPredictor() override;
 
-  // Starts initialization by posting a task to the DB thread to read the
-  // predictor database. Virtual for testing.
+  // Starts initialization by posting a task to the DB sequence of the
+  // ResourcePrefetchPredictorTables to read the predictor database. Virtual for
+  // testing.
   virtual void StartInitialization();
   virtual void Shutdown();
 

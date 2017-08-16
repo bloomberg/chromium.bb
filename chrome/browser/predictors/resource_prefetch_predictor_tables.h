@@ -25,7 +25,7 @@ class Location;
 namespace predictors {
 
 // Interface for database tables used by the ResourcePrefetchPredictor.
-// All methods except the constructor and destructor need to be called on the DB
+// All methods except the ExecuteDBTaskOnDBSequence need to be called on the UI
 // thread.
 //
 // Currently manages:
@@ -41,7 +41,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   virtual void ScheduleDBTask(const tracked_objects::Location& from_here,
                               DBTask task);
 
-  virtual void ExecuteDBTaskOnDBThread(DBTask task);
+  virtual void ExecuteDBTaskOnDBSequence(DBTask task);
 
   virtual GlowplugKeyValueTable<PrefetchData>* url_resource_table();
   virtual GlowplugKeyValueTable<RedirectData>* url_redirect_table();
@@ -79,7 +79,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
  protected:
   // Protected for testing. Use PredictorDatabase::resource_prefetch_tables()
   // instead of this constructor.
-  ResourcePrefetchPredictorTables();
+  ResourcePrefetchPredictorTables(
+      scoped_refptr<base::SequencedTaskRunner> db_task_runner);
   ~ResourcePrefetchPredictorTables() override;
 
  private:
