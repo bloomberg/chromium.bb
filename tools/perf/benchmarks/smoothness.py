@@ -334,6 +334,8 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
                           'crbug.com/528474')
         self.DisableStory('http://www.amazon.com', [story_module.expectations.ALL],
                           'crbug.com/667432')
+        self.DisableStory('Pinterest', [story_module.expectations.ALL],
+                          'crbug.com/667432')
     return StoryExpectations()
 
 
