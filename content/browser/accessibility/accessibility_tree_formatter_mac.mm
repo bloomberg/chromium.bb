@@ -180,6 +180,7 @@ NSArray* BuildAllAttributesArray() {
       @"AXGrabbed",
       @"AXHighestEditableAncestor",
       NSAccessibilityIndexAttribute,
+      @"AXLanguage",
       @"AXLoaded",
       @"AXLoadingProcess",
       NSAccessibilityNumberOfCharactersAttribute,
