@@ -18,7 +18,7 @@
     <org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:paddingTop="@dimen/bottom_control_container_height" />
 
     <org.chromium.chrome.browser.widget.FadingShadowView
