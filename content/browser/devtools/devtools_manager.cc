@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_http_handler.h"
-#include "content/browser/loader/netlog_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_socket_factory.h"

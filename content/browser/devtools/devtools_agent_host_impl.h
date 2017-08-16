@@ -84,7 +84,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<DevToolsSession>>
       session_by_client_;
   DevToolsIOContext io_context_;
-  static int s_attached_count_;
   static int s_force_creation_count_;
 };
 

@@ -22,7 +22,6 @@
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/loader/netlog_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -44,7 +43,6 @@ const char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
 const char DevToolsAgentHost::kTypeBrowser[] = "browser";
 const char DevToolsAgentHost::kTypeGuest[] = "webview";
 const char DevToolsAgentHost::kTypeOther[] = "other";
-int DevToolsAgentHostImpl::s_attached_count_ = 0;
 int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 
 // static
@@ -345,28 +343,11 @@ void DevToolsAgentHostImpl::NotifyCreated() {
 }
 
 void DevToolsAgentHostImpl::NotifyAttached() {
-  if (!s_attached_count_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&NetLogObserver::Attach,
-                   GetContentClient()->browser()->GetNetLog()));
-  }
-  ++s_attached_count_;
-
   for (auto& observer : g_observers.Get())
     observer.DevToolsAgentHostAttached(this);
 }
 
 void DevToolsAgentHostImpl::NotifyDetached() {
-  --s_attached_count_;
-  if (!s_attached_count_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&NetLogObserver::Detach));
-  }
-
   for (auto& observer : g_observers.Get())
     observer.DevToolsAgentHostDetached(this);
 }
