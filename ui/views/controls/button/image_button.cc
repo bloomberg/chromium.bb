@@ -112,6 +112,19 @@ gfx::Size ImageButton::CalculatePreferredSize() const {
   return size;
 }
 
+views::PaintInfo::ScaleType ImageButton::GetPaintScaleType() const {
+  // ImageButton contains an image which is rastered at the device scale factor.
+  // By default, the paint commands are recorded at a scale factor slighlty
+  // different from the device scale factor. Re-rastering the image at this
+  // paint recording scale will result in a distorted image. Paint recording
+  // scale might also not be uniform along the x and y axis, thus resulting in
+  // further distortion in the aspect ratio of the final image.
+  // |kUniformScaling| ensures that the paint recording scale is uniform along
+  // the x & y axis and keeps the scale equal to the device scale factor.
+  // See http://crbug.com/754010 for more details.
+  return views::PaintInfo::ScaleType::kUniformScaling;
+}
+
 void ImageButton::PaintButtonContents(gfx::Canvas* canvas) {
   // TODO(estade|tdanderson|bruthig): The ink drop layer should be positioned
   // behind the button's image which means the image needs to be painted to its
