@@ -61,6 +61,7 @@ source_set("unit_tests") {
     "//components/translate/core/browser",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//net:net",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

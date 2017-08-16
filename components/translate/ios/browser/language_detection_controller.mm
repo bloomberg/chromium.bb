@@ -18,6 +18,7 @@
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "net/http/http_response_headers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -110,7 +111,7 @@ bool LanguageDetectionController::OnTextCaptured(
   command.GetString("httpContentLanguage", &http_content_language);
   // If there is no language defined in httpEquiv, use the HTTP header.
   if (http_content_language.empty())
-    http_content_language = web_state()->GetContentLanguageHeader();
+    http_content_language = content_language_header_;
 
   [js_manager_ retrieveBufferedTextContent:
                    base::Bind(&LanguageDetectionController::OnTextRetrieved,
@@ -142,6 +143,20 @@ void LanguageDetectionController::OnTextRetrieved(
   language_detection_callbacks_.Notify(details);
 }
 
+void LanguageDetectionController::ExtractContentLanguageHeader(
+    net::HttpResponseHeaders* headers) {
+  if (!headers) {
+    content_language_header_.clear();
+    return;
+  }
+
+  headers->GetNormalizedHeader("content-language", &content_language_header_);
+  // Remove everything after the comma ',' if any.
+  size_t comma_index = content_language_header_.find_first_of(',');
+  if (comma_index != std::string::npos)
+    content_language_header_.resize(comma_index);
+}
+
 // web::WebStateObserver implementation:
 
 void LanguageDetectionController::PageLoaded(
@@ -152,8 +167,11 @@ void LanguageDetectionController::PageLoaded(
 
 void LanguageDetectionController::DidFinishNavigation(
     web::NavigationContext* navigation_context) {
-  if (navigation_context->IsSameDocument())
+  if (navigation_context->IsSameDocument()) {
     StartLanguageDetection();
+  } else {
+    ExtractContentLanguageHeader(navigation_context->GetResponseHeaders());
+  }
 }
 
 void LanguageDetectionController::WebStateDestroyed() {

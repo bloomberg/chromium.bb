@@ -191,7 +191,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;
   void ExecuteUserJavaScript(NSString* javaScript) override;
-  const std::string& GetContentLanguageHeader() const override;
   const std::string& GetContentsMimeType() const override;
   bool ContentIsHTML() const override;
   const base::string16& GetTitle() const override;
@@ -338,7 +337,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
       response_headers_map_;
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   std::string mime_type_;
-  std::string content_language_header_;
 
   // Weak pointer to the interstitial page being displayed, if any.
   WebInterstitialImpl* interstitial_;

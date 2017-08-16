@@ -206,13 +206,11 @@ TEST_F(WebStateImplTest, ResponseHeaders) {
   scoped_refptr<net::HttpResponseHeaders> real_headers(HeadersFromString(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html\r\n"
-      "Content-Language: en\r\n"
       "X-Should-Be-Here: yep\r\n"
       "\r\n"));
   scoped_refptr<net::HttpResponseHeaders> frame_headers(HeadersFromString(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: application/pdf\r\n"
-      "Content-Language: fr\r\n"
       "X-Should-Not-Be-Here: oops\r\n"
       "\r\n"));
   // Simulate a load of a page with a frame.
@@ -231,7 +229,6 @@ TEST_F(WebStateImplTest, ResponseHeaders) {
 
   // And that it was parsed correctly.
   EXPECT_EQ("text/html", web_state_->GetContentsMimeType());
-  EXPECT_EQ("en", web_state_->GetContentLanguageHeader());
 }
 
 TEST_F(WebStateImplTest, ResponseHeaderClearing) {
@@ -239,7 +236,6 @@ TEST_F(WebStateImplTest, ResponseHeaderClearing) {
   scoped_refptr<net::HttpResponseHeaders> headers(HeadersFromString(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html\r\n"
-      "Content-Language: en\r\n"
       "\r\n"));
   web_state_->OnHttpResponseHeadersReceived(headers.get(), url);
 
@@ -251,14 +247,12 @@ TEST_F(WebStateImplTest, ResponseHeaderClearing) {
   ASSERT_TRUE(web_state_->GetHttpResponseHeaders());
   EXPECT_TRUE(web_state_->GetHttpResponseHeaders()->HasHeader("Content-Type"));
   EXPECT_NE("", web_state_->GetContentsMimeType());
-  EXPECT_NE("", web_state_->GetContentLanguageHeader());
 
   // ... but not after loading another page, nor should there be specific
   // parsed values.
   web_state_->UpdateHttpResponseHeaders(GURL("http://elsewhere.com/"));
   EXPECT_EQ(NULL, web_state_->GetHttpResponseHeaders());
   EXPECT_EQ("", web_state_->GetContentsMimeType());
-  EXPECT_EQ("", web_state_->GetContentLanguageHeader());
 }
 
 // Tests forwarding to WebStateObserver callbacks.

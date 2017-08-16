@@ -127,10 +127,6 @@ const std::string& TestWebState::GetContentsMimeType() const {
   return mime_type_;
 }
 
-const std::string& TestWebState::GetContentLanguageHeader() const {
-  return content_language_;
-}
-
 bool TestWebState::ContentIsHTML() const {
   return content_is_html_;
 }
@@ -208,6 +204,11 @@ void TestWebState::OnPageLoaded(
 void TestWebState::OnNavigationStarted(NavigationContext* navigation_context) {
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_context);
+}
+
+void TestWebState::OnNavigationFinished(NavigationContext* navigation_context) {
+  for (auto& observer : observers_)
+    observer.DidFinishNavigation(navigation_context);
 }
 
 void TestWebState::OnRenderProcessGone() {
