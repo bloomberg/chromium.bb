@@ -27,6 +27,8 @@
 #define NetworkStateNotifier_h
 
 #include <memory>
+
+#include "base/rand_util.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
@@ -190,6 +192,12 @@ class PLATFORM_EXPORT NetworkStateNotifier {
                                 PassRefPtr<WebTaskRunner>);
   void RemoveOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
 
+  // Returns the randomization salt (weak and insecure) that should be used when
+  // adding noise to the network quality metrics. This is known only to the
+  // device, and is generated only once. This makes it possible to add the same
+  // amount of noise for a given origin.
+  uint8_t RandomizationSalt() const { return randomization_salt_; }
+
  private:
   struct ObserverList {
     ObserverList() : iterating(false) {}
@@ -252,6 +260,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   ObserverListMap connection_observers_;
   ObserverListMap on_line_state_observers_;
+
+  const uint8_t randomization_salt_ = base::RandInt(1, 20);
 };
 
 PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();

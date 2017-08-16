@@ -22,8 +22,8 @@ var typeChangeListener = function(e) {
     shouldBe('connection.type', 'initialType');
     shouldBe('connection.downlinkMax', 'initialDownlinkMax');
     shouldBe('connection.effectiveType', 'initialEffectiveType');
-    shouldBe('connection.rtt', 'initialRtt');
-    shouldBe('connection.downlink', 'initialDownlink');
+    shouldBe('connection.rtt', 'initialRtt', false, initialRttMaxNoise);
+    shouldBe('connection.downlink', 'initialDownlink', false, initialDownlinkMaxNoise);
     finishJSTest();
 }
 
@@ -32,8 +32,8 @@ var changeListener = function(e) {
     shouldBe('connection.type', 'newConnectionType');
     shouldBe('connection.downlinkMax', 'newDownlinkMax');
     shouldBe('connection.effectiveType', 'initialEffectiveType');
-    shouldBe('connection.rtt', 'initialRtt');
-    shouldBe('connection.downlink', 'initialDownlink');
+    shouldBe('connection.rtt', 'initialRtt', false, initialRttMaxNoise);
+    shouldBe('connection.downlink', 'initialDownlink', false, initialDownlinkMaxNoise);
     connection.removeEventListener('change', changeListener);
     connection.addEventListener('typechange', typeChangeListener);
 	internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);

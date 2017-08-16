@@ -16,26 +16,35 @@ document.body.appendChild(childFrame);
 
 var childConnection = childFrame.contentWindow.navigator.connection;
 
-if (connection.effectiveType != childConnection.effectiveType)
-    testFailed("Effective type not the same between main frame and child.");
-if (connection.rtt != childConnection.rtt)
-    testFailed("RTT not the same between main frame and child.");
-if (connection.downlink != childConnection.downlink)
-    testFailed("Downlink not the same between main frame and child.");
+// Verify that same amount of noise is added to the main frame and child frame
+// since they belong to same origin.
+function verifyMainFrameMatchesChildFrame() {
+    if (connection.effectiveType != childConnection.effectiveType)
+        testFailed("Effective type not the same between main frame and child.");
+    if (connection.rtt != childConnection.rtt)
+        testFailed("RTT not the same between main frame and child.");
+    if (connection.downlink != childConnection.downlink)
+        testFailed("Downlink not the same between main frame and child.");
+}
+
+verifyMainFrameMatchesChildFrame();
 
 var hasMainFrameEventFired = false;
 var hasChildFrameEventFired = false;
 
+// Up to 10% noise  may be added to rtt and downlink. Use 11% as the
+// buffer below to include any mismatches due to floating point
+// calculations.
 function mainFrameListener() {
     hasMainFrameEventFired = true;
     if (connection.effectiveType != newEffectiveType)
         testFailed("Event fired but effectiveType not yet changed.");
-    if (connection.rtt != newRtt)
+    if (Math.abs(connection.rtt - newRtt) > newRttMaxNoise)
         testFailed("Event fired but rtt not yet changed.");
-    if (connection.downlink != newDownlink)
+    if (Math.abs(connection.downlink - newDownlink) > newDownlinkMaxNoise)
         testFailed("Event fired but downlink not yet changed.");
     if (!hasChildFrameEventFired && childConnection.rtt != initialRtt)
-        testFailed("Child frame connection rtt changed before firing its event.");
+        testFailed("Child frame rtt changed before firing its event.");
     maybeFinishTest();
 }
 
@@ -43,9 +52,9 @@ function childFrameListener() {
     hasChildFrameEventFired = true;
     if (childConnection.effectiveType != newEffectiveType)
         testFailed("Child frame fired event but effectiveType not yet changed.");
-    if (childConnection.rtt != newRtt)
+    if (Math.abs(childConnection.rtt - newRtt) > newRttMaxNoise)
         testFailed("Child frame fired event but rtt not yet changed.");
-    if (childConnection.downlink != newDownlink)
+    if (Math.abs(childConnection.downlink - newDownlink) > newDownlinkMaxNoise)
         testFailed("Child frame fired event but downlink not yet changed.");
     if (!hasMainFrameEventFired && connection.rtt != initialRtt)
         testFailed("Main frame rtt changed before firing its event.");
@@ -54,6 +63,7 @@ function childFrameListener() {
 
 function maybeFinishTest() {
     if (hasMainFrameEventFired && hasChildFrameEventFired) {
+        verifyMainFrameMatchesChildFrame();
         finishJSTest();
     }
 }

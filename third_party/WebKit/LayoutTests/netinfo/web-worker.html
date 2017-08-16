@@ -17,19 +17,17 @@ var msg_count = 0;
 
 worker.addEventListener('message', function(e) {
     if (msg_count == 0) {
-        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker type disagrees with main frame.");
-        }
-       internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+        verifyOnChangeMessage(e.data, connection.type,
+            connection.downlinkMax, connection.effectiveType,
+            connection.rtt, connection.downlink);
+        internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
     } else if (msg_count == 1) {
-        if (e.data != newConnectionType + ',' + newDownlinkMax + ',' + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker switched to wrong connection type.");
-        }
+        verifyOnChangeMessage(e.data, newConnectionType, newDownlinkMax,
+            connection.effectiveType, connection.rtt, connection.downlink);
         internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
     } else if (msg_count == 2) {
-        if (e.data != initialType + ',' + initialDownlinkMax + ','  + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker did not revert back to initial type.");
-        }
+        verifyOnChangeMessage(e.data, initialType, initialDownlinkMax,
+            connection.effectiveType, connection.rtt, connection.downlink);
         finishJSTest();
     }
     msg_count += 1;
