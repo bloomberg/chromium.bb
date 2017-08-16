@@ -47,7 +47,7 @@ dnr_api::RuleActionType GetRuleActionType(const IndexedRule& indexed_rule) {
   }
   if (!indexed_rule.redirect_url.empty())
     return dnr_api::RULE_ACTION_TYPE_REDIRECT;
-  return dnr_api::RULE_ACTION_TYPE_BLOCK;
+  return dnr_api::RULE_ACTION_TYPE_BLACKLIST;
 }
 
 }  // namespace
@@ -118,7 +118,7 @@ FlatRulesetIndexer::SerializedData FlatRulesetIndexer::GetData() {
 FlatRulesetIndexer::UrlPatternIndexBuilder* FlatRulesetIndexer::GetBuilder(
     dnr_api::RuleActionType type) {
   switch (type) {
-    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+    case dnr_api::RULE_ACTION_TYPE_BLACKLIST:
       return &blacklist_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_WHITELIST:
       return &whitelist_index_builder_;
