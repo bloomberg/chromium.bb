@@ -294,8 +294,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // Tracks whether the main frame RenderFrameHost is swapped out.  Unlike
   // is_active_, this is false when the frame is pending swap out or deletion.
-  // TODO(creis): Remove this when we no longer use swappedout://.
-  // See http://crbug.com/357747.
+  // TODO(creis): Remove this when we no longer filter IPCs after swap out.
+  // See https://crbug.com/745091.
   bool is_swapped_out_;
 
   // Routing ID for the main frame's RenderFrameHost.
