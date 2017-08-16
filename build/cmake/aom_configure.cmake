@@ -185,6 +185,20 @@ if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
   endif()
 endif()
 
+if (NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU\|Clang")
+  set(CONFIG_GCC 1)
+endif ()
+
+if (CONFIG_GCOV)
+  message("--- Testing for CONFIG_GCOV support.")
+  require_compiler_flag("-fprofile-arcs -ftest-coverage" YES)
+endif ()
+
+if (CONFIG_GPROF)
+  message("--- Testing for CONFIG_GPROF support.")
+  require_compiler_flag("-pg" YES)
+endif ()
+
 if (CONFIG_TXK_SEL)
   if (NOT CONFIG_LV_MAP)
     change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
@@ -199,6 +213,34 @@ if (CONFIG_WARPED_MOTION)
     change_config_and_warn(CONFIG_NCOBMC_ADAPT_WEIGHT 0 CONFIG_WARPED_MOTION)
   endif ()
 endif ()
+
+if ("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows")
+  set(CONFIG_OS_SUPPORT 1)
+endif ()
+
+# Test compiler support.
+aom_get_inline("INLINE")
+
+# TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
+# anywhere in the aom sources. To be removed after parity with the legacy
+# build system stops being important.
+aom_check_source_compiles("aom_ports_check"
+                          "#include \"${AOM_ROOT}/aom/aom_integer.h\""
+                          HAVE_AOM_PORTS)
+aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
+aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
+
+if (NOT MSVC)
+  aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
+  aom_check_c_compiles("fenv_check"
+                       "#define _GNU_SOURCE
+                        #include <fenv.h>
+                        void unused(void) {
+                          (void)unused;
+                          (void)feenableexcept(FE_DIVBYZERO | FE_INVALID);
+                        }" HAVE_FEXCEPT)
+  aom_pop_var(CMAKE_REQUIRED_LIBRARIES)
+endif()
 
 include("${AOM_ROOT}/build/cmake/cpu.cmake")
 
@@ -257,53 +299,12 @@ else ()
   # to the existing configure/make build system.
   add_compiler_flag_if_supported("-Wno-unused-function")
 
-  if (CMAKE_C_COMPILER_ID MATCHES "GNU\|Clang")
-    set(CONFIG_GCC 1)
-  endif ()
-
   if ("${CMAKE_BUILD_TYPE}" MATCHES "Rel")
     add_compiler_flag_if_supported("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
   endif ()
   add_compiler_flag_if_supported("-D_LARGEFILE_SOURCE")
   add_compiler_flag_if_supported("-D_FILE_OFFSET_BITS=64")
 endif ()
-
-if ("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows")
-  set(CONFIG_OS_SUPPORT 1)
-endif ()
-
-# Test compiler support.
-aom_get_inline("INLINE")
-
-# TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
-# anywhere in the aom sources. To be removed after parity with the legacy
-# build system stops being important.
-aom_check_source_compiles("aom_ports_check"
-                          "#include \"${AOM_ROOT}/aom/aom_integer.h\""
-                          HAVE_AOM_PORTS)
-aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
-aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
-
-if (CONFIG_GCOV)
-  message("--- Testing for CONFIG_GCOV support.")
-  require_compiler_flag("-fprofile-arcs -ftest-coverage" YES)
-endif ()
-
-if (CONFIG_GPROF)
-  message("--- Testing for CONFIG_GPROF support.")
-  require_compiler_flag("-pg" YES)
-endif ()
-
-if (NOT MSVC)
-  aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
-  aom_check_c_compiles("fenv_check"
-                       "#define _GNU_SOURCE
-                        #include <fenv.h>
-                        void unused(void) {
-                          (void)feenableexcept(FE_DIVBYZERO | FE_INVALID);
-                        }" HAVE_FEXCEPT)
-  aom_pop_var(CMAKE_REQUIRED_LIBRARIES)
-endif()
 
 set(AOM_LIB_LINK_TYPE PUBLIC)
 if (EMSCRIPTEN)
