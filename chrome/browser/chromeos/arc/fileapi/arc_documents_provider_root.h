@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -29,7 +28,7 @@ namespace arc {
 
 // Represents a file system root in Android Documents Provider.
 //
-// All methods must be called on the IO thread.
+// All methods must be called on the UI thread.
 // If this object is deleted while there are in-flight operations, callbacks
 // for those operations will be never called.
 class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
@@ -37,12 +36,14 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;
   using ReadDirectoryCallback = storage::AsyncFileUtil::ReadDirectoryCallback;
   using ChangeType = storage::WatcherManager::ChangeType;
+  // TODO(nya): Use OnceCallback/RepeatingCallback.
   using WatcherCallback = base::Callback<void(ChangeType type)>;
   using StatusCallback = base::Callback<void(base::File::Error error)>;
   using ResolveToContentUrlCallback =
       base::Callback<void(const GURL& content_url)>;
 
-  ArcDocumentsProviderRoot(const std::string& authority,
+  ArcDocumentsProviderRoot(ArcFileSystemOperationRunner* runner,
+                           const std::string& authority,
                            const std::string& root_document_id);
   ~ArcDocumentsProviderRoot() override;
 
@@ -213,6 +214,11 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       const ReadDirectoryInternalCallback& callback,
       base::Optional<std::vector<mojom::DocumentPtr>> maybe_children);
 
+  // |runner_| outlives this object. ArcDocumentsProviderRootMap, the owner of
+  // this object, depends on ArcFileSystemOperationRunner in the
+  // BrowserContextKeyedServiceFactory dependency graph.
+  ArcFileSystemOperationRunner* const runner_;
+
   const std::string authority_;
   const std::string root_document_id_;
 
@@ -225,11 +231,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   std::map<base::FilePath, WatcherData> path_to_watcher_data_;
 
   uint64_t next_watcher_request_id_ = 1;
-
-  // Can be null if this instance is not observing ArcFileSystemOperationRunner.
-  // Observation is started on the first call of AddWatcher().
-  scoped_refptr<file_system_operation_runner_util::ObserverIOThreadWrapper>
-      observer_wrapper_;
 
   base::WeakPtrFactory<ArcDocumentsProviderRoot> weak_ptr_factory_;
 

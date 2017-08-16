@@ -41,7 +41,6 @@ class ArcDocumentsProviderBackendDelegate
                                  const storage::URLCallback& callback) override;
 
  private:
-  ArcDocumentsProviderRootMap roots_;
   ArcDocumentsProviderAsyncFileUtil async_file_util_;
   ArcDocumentsProviderWatcherManager watcher_manager_;
 

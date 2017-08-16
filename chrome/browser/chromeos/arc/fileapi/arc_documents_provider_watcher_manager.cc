@@ -16,9 +16,83 @@ using storage::FileSystemURL;
 
 namespace arc {
 
-ArcDocumentsProviderWatcherManager::ArcDocumentsProviderWatcherManager(
-    ArcDocumentsProviderRootMap* roots)
-    : roots_(roots), weak_ptr_factory_(this) {}
+namespace {
+
+void OnAddWatcherOnUIThread(
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, result));
+}
+
+void OnRemoveWatcherOnUIThread(
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, result));
+}
+
+void OnNotificationOnUIThread(
+    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback,
+    ArcDocumentsProviderRoot::ChangeType change_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(notification_callback, change_type));
+}
+
+void AddWatcherOnUIThread(
+    const storage::FileSystemURL& url,
+    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ArcDocumentsProviderRootMap* roots =
+      ArcDocumentsProviderRootMap::GetForArcBrowserContext();
+  if (!roots) {
+    OnAddWatcherOnUIThread(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
+  if (!root) {
+    OnAddWatcherOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  root->AddWatcher(path,
+                   base::Bind(&OnNotificationOnUIThread, notification_callback),
+                   base::Bind(&OnAddWatcherOnUIThread, callback));
+}
+
+void RemoveWatcherOnUIThread(
+    const storage::FileSystemURL& url,
+    const ArcDocumentsProviderRoot::StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ArcDocumentsProviderRootMap* roots =
+      ArcDocumentsProviderRootMap::GetForArcBrowserContext();
+  if (!roots) {
+    OnRemoveWatcherOnUIThread(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
+  if (!root) {
+    OnRemoveWatcherOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  root->RemoveWatcher(path, base::Bind(&OnRemoveWatcherOnUIThread, callback));
+}
+
+}  // namespace
+
+ArcDocumentsProviderWatcherManager::ArcDocumentsProviderWatcherManager()
+    : weak_ptr_factory_(this) {}
 
 ArcDocumentsProviderWatcherManager::~ArcDocumentsProviderWatcherManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -37,14 +111,14 @@ void ArcDocumentsProviderWatcherManager::AddWatcher(
     return;
   }
 
-  base::FilePath path;
-  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
-  if (!root) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  root->AddWatcher(path, notification_callback, callback);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &AddWatcherOnUIThread, url,
+          base::Bind(&ArcDocumentsProviderWatcherManager::OnAddWatcher,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+          base::Bind(&ArcDocumentsProviderWatcherManager::OnNotification,
+                     weak_ptr_factory_.GetWeakPtr(), notification_callback)));
 }
 
 void ArcDocumentsProviderWatcherManager::RemoveWatcher(
@@ -59,14 +133,33 @@ void ArcDocumentsProviderWatcherManager::RemoveWatcher(
     return;
   }
 
-  base::FilePath path;
-  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
-  if (!root) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
-    return;
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &RemoveWatcherOnUIThread, url,
+          base::Bind(&ArcDocumentsProviderWatcherManager::OnRemoveWatcher,
+                     weak_ptr_factory_.GetWeakPtr(), callback)));
+}
 
-  root->RemoveWatcher(path, callback);
+void ArcDocumentsProviderWatcherManager::OnAddWatcher(
+    const StatusCallback& callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback.Run(result);
+}
+
+void ArcDocumentsProviderWatcherManager::OnRemoveWatcher(
+    const StatusCallback& callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback.Run(result);
+}
+
+void ArcDocumentsProviderWatcherManager::OnNotification(
+    const NotificationCallback& notification_callback,
+    ChangeType change_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  notification_callback.Run(change_type);
 }
 
 }  // namespace arc

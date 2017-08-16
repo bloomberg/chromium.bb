@@ -33,23 +33,26 @@ const ArcDocumentsProviderRoot::WatcherData
                                                      kInvalidWatcherRequestId};
 
 ArcDocumentsProviderRoot::ArcDocumentsProviderRoot(
+    ArcFileSystemOperationRunner* runner,
     const std::string& authority,
     const std::string& root_document_id)
-    : authority_(authority),
+    : runner_(runner),
+      authority_(authority),
       root_document_id_(root_document_id),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  runner_->AddObserver(this);
+}
 
 ArcDocumentsProviderRoot::~ArcDocumentsProviderRoot() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (observer_wrapper_)
-    file_system_operation_runner_util::RemoveObserverOnIOThread(
-        std::move(observer_wrapper_));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  runner_->RemoveObserver(this);
 }
 
 void ArcDocumentsProviderRoot::GetFileInfo(
     const base::FilePath& path,
     const GetFileInfoCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResolveToDocumentId(
       path, base::Bind(&ArcDocumentsProviderRoot::GetFileInfoWithDocumentId,
                        weak_ptr_factory_.GetWeakPtr(), callback));
@@ -58,7 +61,7 @@ void ArcDocumentsProviderRoot::GetFileInfo(
 void ArcDocumentsProviderRoot::ReadDirectory(
     const base::FilePath& path,
     const ReadDirectoryCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResolveToDocumentId(
       path, base::Bind(&ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId,
                        weak_ptr_factory_.GetWeakPtr(), callback));
@@ -68,7 +71,7 @@ void ArcDocumentsProviderRoot::AddWatcher(
     const base::FilePath& path,
     const WatcherCallback& watcher_callback,
     const StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (path_to_watcher_data_.count(path)) {
     callback.Run(base::File::FILE_ERROR_FAILED);
     return;
@@ -91,7 +94,7 @@ void ArcDocumentsProviderRoot::AddWatcher(
 
 void ArcDocumentsProviderRoot::RemoveWatcher(const base::FilePath& path,
                                              const StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto iter = path_to_watcher_data_.find(path);
   if (iter == path_to_watcher_data_.end()) {
     callback.Run(base::File::FILE_ERROR_FAILED);
@@ -105,16 +108,15 @@ void ArcDocumentsProviderRoot::RemoveWatcher(const base::FilePath& path,
     callback.Run(base::File::FILE_OK);
     return;
   }
-  file_system_operation_runner_util::RemoveWatcherOnIOThread(
-      watcher_id,
-      base::Bind(&ArcDocumentsProviderRoot::OnWatcherRemoved,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  runner_->RemoveWatcher(watcher_id,
+                         base::Bind(&ArcDocumentsProviderRoot::OnWatcherRemoved,
+                                    weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ArcDocumentsProviderRoot::ResolveToContentUrl(
     const base::FilePath& path,
     const ResolveToContentUrlCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResolveToDocumentId(
       path,
       base::Bind(&ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId,
@@ -122,7 +124,7 @@ void ArcDocumentsProviderRoot::ResolveToContentUrl(
 }
 
 void ArcDocumentsProviderRoot::OnWatchersCleared() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Mark all watchers invalid.
   for (auto& entry : path_to_watcher_data_)
     entry.second = kInvalidWatcherData;
@@ -131,7 +133,7 @@ void ArcDocumentsProviderRoot::OnWatchersCleared() {
 void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
     const GetFileInfoCallback& callback,
     const std::string& document_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document_id.empty()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
     return;
@@ -149,7 +151,7 @@ void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
     callback.Run(base::File::FILE_OK, info);
     return;
   }
-  file_system_operation_runner_util::GetDocumentOnIOThread(
+  runner_->GetDocument(
       authority_, document_id,
       base::Bind(&ArcDocumentsProviderRoot::GetFileInfoWithDocument,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -158,7 +160,7 @@ void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
 void ArcDocumentsProviderRoot::GetFileInfoWithDocument(
     const GetFileInfoCallback& callback,
     mojom::DocumentPtr document) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document.is_null()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
     return;
@@ -175,7 +177,7 @@ void ArcDocumentsProviderRoot::GetFileInfoWithDocument(
 void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(
     const ReadDirectoryCallback& callback,
     const std::string& document_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document_id.empty()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(),
                  false /* has_more */);
@@ -192,7 +194,7 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
     const ReadDirectoryCallback& callback,
     base::File::Error error,
     NameToThinDocumentMap mapping) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     callback.Run(error, EntryList(), false /* has_more */);
     return;
@@ -211,7 +213,7 @@ void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
     uint64_t watcher_request_id,
     const WatcherCallback& watcher_callback,
     const std::string& document_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (IsWatcherInflightRequestCanceled(path, watcher_request_id))
     return;
@@ -222,14 +224,7 @@ void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
     return;
   }
 
-  // Start observing ArcFileSystemOperationRunner if we have not.
-  if (!observer_wrapper_) {
-    observer_wrapper_ =
-        new file_system_operation_runner_util::ObserverIOThreadWrapper(this);
-    file_system_operation_runner_util::AddObserverOnIOThread(observer_wrapper_);
-  }
-
-  file_system_operation_runner_util::AddWatcherOnIOThread(
+  runner_->AddWatcher(
       authority_, document_id, watcher_callback,
       base::Bind(&ArcDocumentsProviderRoot::OnWatcherAdded,
                  weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id));
@@ -238,10 +233,10 @@ void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
 void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
                                               uint64_t watcher_request_id,
                                               int64_t watcher_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (IsWatcherInflightRequestCanceled(path, watcher_request_id)) {
-    file_system_operation_runner_util::RemoveWatcherOnIOThread(
+    runner_->RemoveWatcher(
         watcher_id,
         base::Bind(&ArcDocumentsProviderRoot::OnWatcherAddedButRemoved,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -255,13 +250,13 @@ void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
 }
 
 void ArcDocumentsProviderRoot::OnWatcherAddedButRemoved(bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Ignore |success|.
 }
 
 void ArcDocumentsProviderRoot::OnWatcherRemoved(const StatusCallback& callback,
                                                 bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(success ? base::File::FILE_OK : base::File::FILE_ERROR_FAILED);
 }
 
@@ -276,7 +271,7 @@ bool ArcDocumentsProviderRoot::IsWatcherInflightRequestCanceled(
 void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(
     const ResolveToContentUrlCallback& callback,
     const std::string& document_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document_id.empty()) {
     callback.Run(GURL());
     return;
@@ -287,7 +282,7 @@ void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(
 void ArcDocumentsProviderRoot::ResolveToDocumentId(
     const base::FilePath& path,
     const ResolveToDocumentIdCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
   ResolveToDocumentIdRecursively(root_document_id_, components, callback);
@@ -297,7 +292,7 @@ void ArcDocumentsProviderRoot::ResolveToDocumentIdRecursively(
     const std::string& document_id,
     const std::vector<base::FilePath::StringType>& components,
     const ResolveToDocumentIdCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (components.empty()) {
     callback.Run(document_id);
     return;
@@ -315,7 +310,7 @@ void ArcDocumentsProviderRoot::
         const ResolveToDocumentIdCallback& callback,
         base::File::Error error,
         NameToThinDocumentMap mapping) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!components.empty());
   if (error != base::File::FILE_OK) {
     callback.Run(std::string());
@@ -335,7 +330,7 @@ void ArcDocumentsProviderRoot::
 void ArcDocumentsProviderRoot::ReadDirectoryInternal(
     const std::string& document_id,
     const ReadDirectoryInternalCallback& callback) {
-  file_system_operation_runner_util::GetChildDocumentsOnIOThread(
+  runner_->GetChildDocuments(
       authority_, document_id,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments,

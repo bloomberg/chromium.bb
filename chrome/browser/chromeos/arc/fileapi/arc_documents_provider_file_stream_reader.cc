@@ -12,29 +12,61 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
 namespace arc {
 
-ArcDocumentsProviderFileStreamReader::ArcDocumentsProviderFileStreamReader(
+namespace {
+
+void OnResolveToContentUrlOnUIThread(
+    const ArcDocumentsProviderRoot::ResolveToContentUrlCallback& callback,
+    const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, url));
+}
+
+void ResolveToContentUrlOnUIThread(
     const storage::FileSystemURL& url,
-    int64_t offset,
-    ArcDocumentsProviderRootMap* roots)
-    : offset_(offset), content_url_resolved_(false), weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    const ArcDocumentsProviderRoot::ResolveToContentUrlCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ArcDocumentsProviderRootMap* roots =
+      ArcDocumentsProviderRootMap::GetForArcBrowserContext();
+  if (!roots) {
+    OnResolveToContentUrlOnUIThread(callback, GURL());
+    return;
+  }
 
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    content_url_resolved_ = true;
+    OnResolveToContentUrlOnUIThread(callback, GURL());
     return;
   }
+
   root->ResolveToContentUrl(
-      path,
-      base::Bind(&ArcDocumentsProviderFileStreamReader::OnResolveToContentUrl,
-                 weak_ptr_factory_.GetWeakPtr()));
+      path, base::Bind(&OnResolveToContentUrlOnUIThread, callback));
+}
+
+}  // namespace
+
+ArcDocumentsProviderFileStreamReader::ArcDocumentsProviderFileStreamReader(
+    const storage::FileSystemURL& url,
+    int64_t offset)
+    : offset_(offset), content_url_resolved_(false), weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &ResolveToContentUrlOnUIThread, url,
+          base::Bind(
+              &ArcDocumentsProviderFileStreamReader::OnResolveToContentUrl,
+              weak_ptr_factory_.GetWeakPtr())));
 }
 
 ArcDocumentsProviderFileStreamReader::~ArcDocumentsProviderFileStreamReader() {
