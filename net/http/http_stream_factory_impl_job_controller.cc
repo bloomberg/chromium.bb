@@ -657,8 +657,7 @@ void HttpStreamFactoryImpl::JobController::
 
 void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMap() {
-  // TODO(xunjieli): Use a DCHECK once https://crbug.com/718576 is fixed.
-  CHECK(request_);
+  DCHECK(request_);
   session_->spdy_session_pool()->RemoveRequestFromSpdySessionRequestMap(
       request_);
 }

@@ -826,9 +826,8 @@ int HttpStreamFactoryImpl::Job::DoEvaluateThrottle() {
 void HttpStreamFactoryImpl::Job::ResumeInitConnection() {
   if (init_connection_already_resumed_)
     return;
+  DCHECK_EQ(next_state_, STATE_INIT_CONNECTION);
   net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_RESUME_INIT_CONNECTION);
-  // TODO(xunjieli): Change this to a DCHECK once crbug.com/718576 is stable.
-  CHECK_EQ(next_state_, STATE_INIT_CONNECTION);
   init_connection_already_resumed_ = true;
   OnIOComplete(OK);
 }
