@@ -154,9 +154,6 @@ class GFX_EXPORT ImageFamily {
   // desired size. If there are no images in the family, returns an empty image.
   gfx::Image CreateExact(const gfx::Size& size) const;
 
-  // Calls DisableThreadChecking() on all images.
-  void DisableThreadChecking();
-
  private:
   // Find the closest aspect ratio in the map to |desired_aspect|.
   // Ties are broken by the thinner aspect.

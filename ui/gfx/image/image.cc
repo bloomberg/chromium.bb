@@ -248,23 +248,23 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   }
 
   Image::RepresentationType default_representation_type() const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     return default_representation_type_;
   }
 
   bool HasRepresentation(Image::RepresentationType type) const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     return representations_.count(type) != 0;
   }
 
   size_t RepresentationCount() const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     return representations_.size();
   }
 
   const ImageRep* GetRepresentation(Image::RepresentationType rep_type,
                                     bool must_exist) const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     RepresentationMap::const_iterator it = representations_.find(rep_type);
     if (it == representations_.end()) {
       CHECK(!must_exist);
@@ -274,7 +274,7 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   }
 
   const ImageRep* AddRepresentation(std::unique_ptr<ImageRep> rep) const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     Image::RepresentationType type = rep->type();
     auto result = representations_.insert(std::make_pair(type, std::move(rep)));
 
@@ -287,34 +287,19 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   void set_default_representation_color_space(CGColorSpaceRef color_space) {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     default_representation_color_space_ = color_space;
   }
   CGColorSpaceRef default_representation_color_space() const {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
+    DCHECK(IsOnValidSequence());
     return default_representation_color_space_;
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-  void DisableThreadChecking() {
-    DCHECK(thread_checking_disabled() || IsOnValidSequence());
-#if DCHECK_IS_ON()
-    thread_checking_disabled_ = true;
-#endif
-  }
 
  private:
   friend class base::RefCounted<ImageStorage>;
 
   ~ImageStorage() {}
-
-  bool thread_checking_disabled() const {
-#if DCHECK_IS_ON()
-    return thread_checking_disabled_;
-#else
-    return true;
-#endif
-  }
 
   // The type of image that was passed to the constructor. This key will always
   // exist in the |representations_| map.
@@ -331,10 +316,6 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   // All the representations of an Image. Size will always be at least one, with
   // more for any converted representations.
   mutable RepresentationMap representations_;
-
-#if DCHECK_IS_ON()
-  bool thread_checking_disabled_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ImageStorage);
 };
@@ -675,10 +656,6 @@ void Image::SetSourceColorSpace(CGColorSpaceRef color_space) {
     storage()->set_default_representation_color_space(color_space);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-void Image::DisableThreadChecking() {
-  storage_->DisableThreadChecking();
-}
 
 Image::RepresentationType Image::DefaultRepresentationType() const {
   CHECK(storage());
