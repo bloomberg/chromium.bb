@@ -19,6 +19,7 @@
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -825,6 +826,15 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
             &work_to_schedule.checker_image_decode_queue);
       }
     }
+  }
+
+  // The hard_limit for low-end devices is 8MB, so we set the max_value for the
+  // histogram to be 8200KB.
+  if (had_enough_memory_to_schedule_tiles_needed_now &&
+      base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+    int64_t tiles_gpu_memory_kb = memory_usage.memory_bytes() / 1024;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("TileManager.TilesGPUMemoryUsage",
+                                tiles_gpu_memory_kb, 1, 8200, 100);
   }
 
   UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget",
