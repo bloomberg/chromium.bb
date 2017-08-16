@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/ServiceWorker/#service-worker-registration-obj
+// https://w3c.github.io/ServiceWorker/#serviceworkerregistration-interface
 [
     ActiveScriptWrappable,
     DependentLifetime,
