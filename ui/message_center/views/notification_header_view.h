@@ -51,6 +51,8 @@ class NotificationHeaderView : public views::CustomButton {
 
   views::ImageView* expand_button() { return expand_button_; }
 
+  SkColor accent_color_for_testing() { return accent_color_; }
+
  private:
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();

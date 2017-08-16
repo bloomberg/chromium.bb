@@ -549,4 +549,42 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
             notification_view()->GetPreferredSize().height());
 }
 
+TEST_F(NotificationViewMDTest, TestAccentColor) {
+  const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
+  const SkColor kCustomAccentColor = SkColorSetRGB(0xea, 0x61, 0x0);
+
+  notification()->set_buttons(CreateButtons(2));
+  UpdateNotificationViews();
+  widget()->Show();
+
+  // Action buttons are hidden by collapsed state.
+  if (!notification_view()->expanded_)
+    notification_view()->ToggleExpanded();
+  EXPECT_TRUE(notification_view()->actions_row_->visible());
+
+  // By default, header does not have accent color (default grey), and
+  // buttons have default accent color.
+  EXPECT_EQ(message_center::kNotificationDefaultAccentColor,
+            notification_view()->header_row_->accent_color_for_testing());
+  EXPECT_EQ(
+      kActionButtonTextColor,
+      notification_view()->action_buttons_[0]->enabled_color_for_testing());
+  EXPECT_EQ(
+      kActionButtonTextColor,
+      notification_view()->action_buttons_[1]->enabled_color_for_testing());
+
+  // If custom accent color is set, the header and the buttons should have the
+  // same accent color.
+  notification()->set_accent_color(kCustomAccentColor);
+  UpdateNotificationViews();
+  EXPECT_EQ(kCustomAccentColor,
+            notification_view()->header_row_->accent_color_for_testing());
+  EXPECT_EQ(
+      kCustomAccentColor,
+      notification_view()->action_buttons_[0]->enabled_color_for_testing());
+  EXPECT_EQ(
+      kCustomAccentColor,
+      notification_view()->action_buttons_[1]->enabled_color_for_testing());
+}
+
 }  // namespace message_center
