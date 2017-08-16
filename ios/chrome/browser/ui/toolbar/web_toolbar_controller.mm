@@ -1368,7 +1368,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 #pragma mark -
-#pragma mark QRScannerViewControllerDelegate methods.
+#pragma mark QRScanner Requirements.
 
 - (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
   DCHECK(result);

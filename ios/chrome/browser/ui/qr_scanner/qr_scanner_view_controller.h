@@ -9,26 +9,14 @@
 
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 
-@protocol QRScannerViewControllerDelegate
-
-// Called when the scanner detects a valid code. Camera recording is stopped
-// when a result is scanned and the QRScannerViewController is dismissed. This
-// function is called when the dismissal completes. A valid code is any
-// non-empty string. If |load| is YES, the scanned code was of a type which can
-// only encode digits, and the delegate can load the result immediately, instead
-// of prompting the user to confirm the result.
-- (void)receiveQRScannerResult:(NSString*)qrScannerResult
-               loadImmediately:(BOOL)load;
-
-@end
+@protocol QRScannerPresenting;
+@protocol QRScannerResultLoading;
 
 @interface QRScannerViewController : UIViewController<CameraControllerDelegate>
 
-// The delegate which receives the scanned result after the view controller is
-// dismissed.
-@property(nonatomic, weak) id<QRScannerViewControllerDelegate> delegate;
-
-- (instancetype)initWithDelegate:(id<QRScannerViewControllerDelegate>)delegate
+- (instancetype)
+initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
+                loadProvider:(id<QRScannerResultLoading>)loadProvider
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)name

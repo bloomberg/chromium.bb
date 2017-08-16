@@ -27,6 +27,7 @@ source_set("qr_scanner") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",
     "//ios/third_party/material_components_ios",
     "//ui/base",
@@ -34,6 +35,23 @@ source_set("qr_scanner") {
   libs = [
     "AVFoundation.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "qr_scanner_legacy_coordinator.h",
+    "qr_scanner_legacy_coordinator.mm",
+  ]
+  deps = [
+    ":qr_scanner",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/qr_scanner/requirements",
+    "//ios/shared/chrome/browser/ui/commands",
   ]
 }
 

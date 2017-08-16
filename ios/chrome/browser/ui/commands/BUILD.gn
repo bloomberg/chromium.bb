@@ -20,6 +20,7 @@ source_set("commands") {
     "open_new_tab_command.mm",
     "open_url_command.h",
     "open_url_command.mm",
+    "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
     "show_mail_composer_command.h",
