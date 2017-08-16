@@ -305,8 +305,8 @@ void MdTextButton::UpdateColors() {
     } else {
       // These alpha values will take the enabled button colors, 5a5a5a @ 1.0
       // alpha for non-Harmony, 757575 @ 1.0 alpha for Harmony and turn it into
-      // an effective cccccc @ 1.0 alpha or 000000 @ 0.2 for the stroke_color.
-      stroke_alpha = UseMaterialSecondaryButtons() ? 0x5f : 0x4e;
+      // an effective b2b2b2 @ 1.0 alpha or 000000 @ 0.3 for the stroke_color.
+      stroke_alpha = UseMaterialSecondaryButtons() ? 0x8f : 0x77;
     }
     stroke_color = SkColorSetA(text_color, stroke_alpha);
   }
