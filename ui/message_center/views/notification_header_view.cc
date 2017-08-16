@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
@@ -59,9 +60,11 @@ class ExpandButton : public views::ImageView {
   ExpandButton();
   ~ExpandButton() override;
 
+  // Overridden from views::ImageView:
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   std::unique_ptr<views::Painter> focus_painter_;
@@ -88,6 +91,11 @@ void ExpandButton::OnFocus() {
 void ExpandButton::OnBlur() {
   views::ImageView::OnBlur();
   SchedulePaint();
+}
+
+void ExpandButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->SetName(views::ImageView::GetTooltipText());
 }
 
 // Do relative time string formatting that is similar to
@@ -278,6 +286,10 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
   expand_button_->SetImage(gfx::CreateVectorIcon(
       expanded ? kNotificationExpandLessIcon : kNotificationExpandMoreIcon,
       kExpandIconSize, accent_color_));
+  // TODO(tetsui): Replace by more helpful accessibility strings.
+  // https://crbug.com/755855
+  expand_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      expanded ? IDS_APP_ACCNAME_MINIMIZE : IDS_APP_ACCNAME_MAXIMIZE));
 }
 
 void NotificationHeaderView::SetAccentColor(SkColor color) {
