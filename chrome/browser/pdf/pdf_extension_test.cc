@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -57,7 +58,9 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/test/test_clipboard.h"
 #include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
@@ -1035,4 +1038,274 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
 
   const GURL& url = new_web_contents->GetURL();
   EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
+class PDFExtensionClipboardTest : public PDFExtensionTest {
+ public:
+  PDFExtensionClipboardTest() : guest_contents_(nullptr) {}
+  ~PDFExtensionClipboardTest() override {}
+
+  void SetUpOnMainThread() override {
+    PDFExtensionTest::SetUpOnMainThread();
+    ui::TestClipboard::CreateForCurrentThread();
+  }
+
+  void TearDownOnMainThread() override {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+    PDFExtensionTest::TearDownOnMainThread();
+  }
+
+  void LoadTestComboBoxPdfGetGuestContents() {
+    GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/combobox_form.pdf"));
+    guest_contents_ = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents_);
+  }
+
+  // Returns a point near the left edge of the editable combo box in
+  // combobox_form.pdf, inside the combo box rect. The point is in Blink screen
+  // coordinates.
+  //
+  // The combo box's rect is [100 50 200 80] in PDF user space. (136, 318) in
+  // Blink page coordinates corresponds to approximately (102, 62) in PDF user
+  // space coordinates. See PDFExtensionLinkClickTest::GetLinkPosition() for
+  // more information on all the coordinate systems involved.
+  gfx::Point GetEditableComboBoxLeftPosition() {
+    gfx::Point position(136, 318);
+    ConvertPageCoordToScreenCoord(guest_contents_, &position);
+    return position;
+  }
+
+  void ClickLeftSideOfEditableComboBox() {
+    content::SimulateMouseClickAt(GetActiveWebContents(), 0,
+                                  blink::WebMouseEvent::Button::kLeft,
+                                  GetEditableComboBoxLeftPosition());
+  }
+
+  void TypeHello() {
+    auto* web_contents = GetActiveWebContents();
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('H'),
+                              ui::DomCode::US_H, ui::VKEY_H, false, false,
+                              false, false);
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
+                              ui::DomCode::US_E, ui::VKEY_E, false, false,
+                              false, false);
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('L'),
+                              ui::DomCode::US_L, ui::VKEY_L, false, false,
+                              false, false);
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('L'),
+                              ui::DomCode::US_L, ui::VKEY_L, false, false,
+                              false, false);
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                              ui::DomCode::US_O, ui::VKEY_O, false, false,
+                              false, false);
+  }
+
+  // Presses the left arrow key.
+  void PressLeftArrow() {
+    content::SimulateKeyPressWithoutChar(
+        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
+        ui::VKEY_LEFT, false, false, false, false);
+  }
+
+  // Presses down shift, presses the left arrow, and lets go of shift.
+  void PressShiftLeftArrow() {
+    content::SimulateKeyPressWithoutChar(
+        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
+        ui::VKEY_LEFT, false, /*shift=*/true, false, false);
+  }
+
+  // Presses the right arrow key.
+  void PressRightArrow() {
+    content::SimulateKeyPressWithoutChar(
+        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, false, false, false);
+  }
+
+  // Presses down shift, presses the right arrow, and lets go of shift.
+  void PressShiftRightArrow() {
+    content::SimulateKeyPressWithoutChar(
+        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, /*shift=*/true, false,
+        false);
+  }
+
+  // Checks the Linux selection clipboard by polling.
+  void CheckSelectionClipboard(const std::string& expected) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    CheckClipboard(ui::CLIPBOARD_TYPE_SELECTION, expected);
+#endif
+  }
+
+  // Sends a copy command and checks the copy/paste clipboard by
+  // polling. Note: Trying to send ctrl+c does not work correctly with
+  // SimulateKeyPress(). Using IDC_COPY does not work on Mac in browser_tests.
+  void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
+    content::RunAllPendingInMessageLoop();
+    GetActiveWebContents()->Copy();
+    CheckClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE, expected);
+  }
+
+ private:
+  // Waits and polls the clipboard of a given |clipboard_type| until its
+  // contents reaches the length of |expected|. Then checks and see if the
+  // clipboard contents matches |expected|.
+  // TODO(thestig): Change this to avoid polling after https://crbug.com/755826
+  // has been fixed.
+  void CheckClipboard(ui::ClipboardType clipboard_type,
+                      const std::string& expected) {
+    auto* clipboard = ui::Clipboard::GetForCurrentThread();
+    std::string clipboard_data;
+    const std::string& last_data = last_clipboard_data_[clipboard_type];
+    if (last_data.size() == expected.size()) {
+      DCHECK_EQ(last_data, expected);
+      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      EXPECT_EQ(expected, clipboard_data);
+      return;
+    }
+
+    const bool expect_increase = last_data.size() < expected.size();
+    while (true) {
+      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      if (expect_increase) {
+        if (clipboard_data.size() >= expected.size())
+          break;
+      } else {
+        if (clipboard_data.size() <= expected.size())
+          break;
+      }
+
+      content::RunAllPendingInMessageLoop();
+    }
+    EXPECT_EQ(expected, clipboard_data);
+
+    last_clipboard_data_[clipboard_type] = clipboard_data;
+  }
+
+  std::map<ui::ClipboardType, std::string> last_clipboard_data_;
+  WebContents* guest_contents_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+                       IndividualShiftRightArrowPresses) {
+  LoadTestComboBoxPdfGetGuestContents();
+
+  // Give the editable combo box focus.
+  ClickLeftSideOfEditableComboBox();
+
+  TypeHello();
+
+  // Put the cursor back to the left side of the combo box.
+  ClickLeftSideOfEditableComboBox();
+
+  // Press shift + right arrow 3 times. Letting go of shift in between.
+  PressShiftRightArrow();
+  CheckSelectionClipboard("H");
+  PressShiftRightArrow();
+  CheckSelectionClipboard("HE");
+  PressShiftRightArrow();
+  CheckSelectionClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+                       IndividualShiftLeftArrowPresses) {
+  LoadTestComboBoxPdfGetGuestContents();
+
+  // Give the editable combo box focus.
+  ClickLeftSideOfEditableComboBox();
+
+  TypeHello();
+
+  // Put the cursor back to the left side of the combo box.
+  ClickLeftSideOfEditableComboBox();
+
+  for (int i = 0; i < 3; ++i)
+    PressRightArrow();
+
+  // Press shift + left arrow 2 times. Letting go of shift in between.
+  PressShiftLeftArrow();
+  CheckSelectionClipboard("L");
+  PressShiftLeftArrow();
+  CheckSelectionClipboard("EL");
+  SendCopyCommandAndCheckCopyPasteClipboard("EL");
+
+  // Press shift + left arrow 2 times. Letting go of shift in between.
+  PressShiftLeftArrow();
+  CheckSelectionClipboard("HEL");
+  PressShiftLeftArrow();
+  CheckSelectionClipboard("HEL");
+  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
+                       CombinedShiftRightArrowPresses) {
+  LoadTestComboBoxPdfGetGuestContents();
+
+  // Give the editable combo box focus.
+  ClickLeftSideOfEditableComboBox();
+
+  TypeHello();
+
+  // Put the cursor back to the left side of the combo box.
+  ClickLeftSideOfEditableComboBox();
+
+  // Press shift + right arrow 3 times. Holding down shift in between.
+  {
+    content::ScopedSimulateModifierKeyPress hold_shift(
+        GetActiveWebContents(), false, true, false, false);
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
+                                   ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
+    CheckSelectionClipboard("H");
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
+                                   ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
+    CheckSelectionClipboard("HE");
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
+                                   ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
+    CheckSelectionClipboard("HEL");
+  }
+  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
+  LoadTestComboBoxPdfGetGuestContents();
+
+  // Give the editable combo box focus.
+  ClickLeftSideOfEditableComboBox();
+
+  TypeHello();
+
+  // Put the cursor back to the left side of the combo box.
+  ClickLeftSideOfEditableComboBox();
+
+  for (int i = 0; i < 3; ++i)
+    PressRightArrow();
+
+  // Press shift + left arrow 3 times. Holding down shift in between.
+  {
+    content::ScopedSimulateModifierKeyPress hold_shift(
+        GetActiveWebContents(), false, true, false, false);
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
+                                   ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
+    CheckSelectionClipboard("L");
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
+                                   ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
+    CheckSelectionClipboard("EL");
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
+                                   ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
+    CheckSelectionClipboard("HEL");
+  }
+  SendCopyCommandAndCheckCopyPasteClipboard("HEL");
+
+  // Press shift + right arrow 2 times. Holding down shift in between.
+  {
+    content::ScopedSimulateModifierKeyPress hold_shift(
+        GetActiveWebContents(), false, true, false, false);
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
+                                   ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
+    CheckSelectionClipboard("EL");
+    hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
+                                   ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
+    CheckSelectionClipboard("L");
+  }
+  SendCopyCommandAndCheckCopyPasteClipboard("L");
 }
