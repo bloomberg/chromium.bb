@@ -1480,6 +1480,13 @@ split_static_library("browser") {
     ]
   }
 
+  if (!is_android) {
+    sources += [
+      "embedded_ui_service_info_factory.cc",
+      "embedded_ui_service_info_factory.h",
+    ]
+  }
+
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
