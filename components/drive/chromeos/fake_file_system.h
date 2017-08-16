@@ -104,6 +104,7 @@ class FakeFileSystem : public FileSystemInterface {
   void SearchMetadata(const std::string& query,
                       int options,
                       int at_most_num_matches,
+                      MetadataSearchOrder order,
                       const SearchMetadataCallback& callback) override;
   void SearchByHashes(const std::set<std::string>& hashes,
                       const SearchByHashesCallback& callback) override;

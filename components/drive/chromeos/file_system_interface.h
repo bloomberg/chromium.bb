@@ -38,6 +38,15 @@ struct HashAndFilePath {
   base::FilePath path;
 };
 
+// Specifies the order in which SearchMetadata() results are sorted.
+enum class MetadataSearchOrder {
+  // Most recently accessed file comes first.
+  LAST_ACCESSED = 0,
+
+  // Most recently modified file comes first.
+  LAST_MODIFIED = 1,
+};
+
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
   MetadataSearchResult(const base::FilePath& path,
@@ -401,6 +410,7 @@ class FileSystemInterface {
   virtual void SearchMetadata(const std::string& query,
                               int options,
                               int at_most_num_matches,
+                              MetadataSearchOrder order,
                               const SearchMetadataCallback& callback) = 0;
 
   // Searches the local resource metadata, and returns the entries that have the
