@@ -44,6 +44,14 @@ Polymer({
 
     /** @private */
     showRemovePreferred_: Boolean,
+
+    /**
+     * We always show 'Forget' since we do not know whether or not to enable
+     * it until we fetch the managed properties, and we do not want an empty
+     * menu.
+     * @private
+     */
+    enableForget_: Boolean,
   },
 
   /** @private {string} */
@@ -153,8 +161,8 @@ Polymer({
     this.networkingPrivate.getManagedProperties(
         this.selectedGuid_, properties => {
           if (chrome.runtime.lastError || !properties) {
-            this.showAddPreferred_ = false;
-            this.showRemovePreferred_ = false;
+            console.error(
+                'Unexpected error: ' + chrome.runtime.lastError.message);
             return;
           }
           var preferred = button.hasAttribute('preferred');
@@ -165,6 +173,7 @@ Polymer({
             this.showAddPreferred_ = !preferred;
             this.showRemovePreferred_ = preferred;
           }
+          this.enableForget_ = !this.isPolicySource(properties.Source);
           /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).showAt(button);
         });
     event.stopPropagation();

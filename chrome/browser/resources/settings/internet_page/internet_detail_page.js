@@ -459,7 +459,8 @@ Polymer({
     var type = networkProperties.Type;
     if (type != CrOnc.Type.WI_FI && type != CrOnc.Type.VPN)
       return false;
-    return this.isRemembered_(networkProperties);
+    return !this.isPolicySource(networkProperties.Source) &&
+        this.isRemembered_(networkProperties);
   },
 
   /**
