@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/optional.h"
 #include "components/download/public/client.h"
 #include "components/download/public/download_params.h"
 #include "components/download/public/download_service.h"
@@ -33,18 +34,17 @@ class TestDownloadService : public DownloadService {
   void ChangeDownloadCriteria(const std::string& guid,
                               const SchedulingParams& params) override;
 
+  base::Optional<DownloadParams> GetDownload(const std::string& guid) const;
+
+  // Set failed_download_id and fail_at_start.
+  void SetFailedDownload(const std::string& failed_download_id,
+                         bool fail_at_start);
+
   void set_is_ready(bool is_ready) { is_ready_ = is_ready; }
 
   void set_client(Client* client) { client_ = client; }
 
  private:
-  // Set failed_download_id and fail_at_start.
-  void SetFailedDownload(const std::string& failed_download_id,
-                         bool fail_at_start);
-
-  // Raise success/failure events based on the starting of the download.
-  void HandleStartDownload(const DownloadParams& params);
-
   // Begin the download, raising success/failure events.
   void ProcessDownload();
 
