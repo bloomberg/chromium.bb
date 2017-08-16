@@ -9,6 +9,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -35,7 +36,7 @@ void DispatchToMethodImpl(ObjT* obj,
                           Method method,
                           P* parameter,
                           const Tuple& tuple,
-                          base::IndexSequence<Ns...>) {
+                          std::index_sequence<Ns...>) {
   // TODO(mdempsky): Apply UnwrapTraits like base::DispatchToMethod?
   (obj->*method)(parameter, std::get<Ns>(tuple)...);
 }
@@ -49,7 +50,7 @@ DispatchToMethod(ObjT* obj,
                  P* parameter,
                  const std::tuple<Ts...>& tuple) {
   DispatchToMethodImpl(obj, method, parameter, tuple,
-                       base::MakeIndexSequence<sizeof...(Ts)>());
+                       std::make_index_sequence<sizeof...(Ts)>());
 }
 
 enum class MessageKind {

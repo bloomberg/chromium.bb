@@ -604,6 +604,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td><code>std::integer_sequence</code></td>
+<td><code>template &lt;size_t... I&gt;<br>void CallFooImpl(std::index_sequence&lt;I...&gt;) {<br>&nbsp;&nbsp;Foo(I...);<br>}<br><br>template &lt;size_t N&gt;<br>void CallFoo() {<br>&nbsp;&nbsp;CallFooImpl(std::make_index_sequence&lt;N&gt;());<br>}</code></td>
+<td>Template metaprogramming utility for representing a sequence of integers as a type.</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/integer_sequence">std::integer_sequence</a></td>
+<td>This also includes the alias, <code>std::index_sequence</code>, which is the specialization for <code>size_t</code>. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/ow7hmdDm4yw/EDEvBRi_BQAJ">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td><code>std::make_unique</code></td>
 <td><code>auto widget = std::make_unique&lt;Widget&gt;();</code></td>
 <td>Allocates objects on the heap and immediately constructs an <code>std::unique_ptr</code> to assume ownership.</td>
@@ -1185,14 +1193,6 @@ than binary literals.</td>
 <td>Allows <code>std::complex</code> objects to be more easily constructed.</td>
 <td><a href="http://en.cppreference.com/w/cpp/numeric/complex/operator%22%22i">std::literals::complex_literals</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td><code>std::integer_sequence</code></td>
-<td><code>template &lt;size_t... I&gt;<br>void CallFooImpl(std::index_sequence&lt;I...&gt;) {<br>&nbsp;&nbsp;Foo(I...);<br>}<br><br>template &lt;size_t N&gt;<br>void CallFoo() {<br>&nbsp;&nbsp;CallFooImpl(std::make_index_sequence&lt;N&gt;());<br>}</code></td>
-<td>Template metaprogramming utility for representing a sequence of integers as a type.</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/integer_sequence">std::integer_sequence</a></td>
-<td>This also includes the alias, <code>std::index_sequence</code>, which is the specialization for <code>size_t</code>. Should replace <code>base::IndexSequence</code>.</td>
 </tr>
 
 <td><code>std::string</code> literals</td>

@@ -11,6 +11,7 @@
 #define PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
 
 #include <tuple>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/tuple.h"
@@ -27,7 +28,7 @@ inline void DispatchResourceReplyImpl(ObjT* obj,
                                       Method method,
                                       const ResourceMessageReplyParams& params,
                                       TupleType&& args_tuple,
-                                      base::IndexSequence<indices...>) {
+                                      std::index_sequence<indices...>) {
   (obj->*method)(params,
                  std::get<indices>(std::forward<TupleType>(args_tuple))...);
 }
@@ -50,7 +51,7 @@ template <typename CallbackType, typename TupleType, size_t... indices>
 inline void DispatchResourceReplyImpl(CallbackType&& callback,
                                       const ResourceMessageReplyParams& params,
                                       TupleType&& args_tuple,
-                                      base::IndexSequence<indices...>) {
+                                      std::index_sequence<indices...>) {
   std::forward<CallbackType>(callback).Run(
       params, std::get<indices>(std::forward<TupleType>(args_tuple))...);
 }
