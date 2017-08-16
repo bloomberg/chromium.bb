@@ -513,6 +513,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;
+
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
+    settings.use_half_width_tiles_for_gpu_rasterization = true;
 #else  // defined(OS_ANDROID)
   bool using_synchronous_compositor = false;  // Only for Android WebView.
   // On desktop, we never use the low memory policy unless we are simulating
