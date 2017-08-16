@@ -32,6 +32,7 @@ class MetricsInstance;
 class NetInstance;
 class NotificationsInstance;
 class ObbMounterInstance;
+class OemCryptoInstance;
 class PolicyInstance;
 class PowerInstance;
 class PrintInstance;
@@ -90,6 +91,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::ObbMounterInstance>* obb_mounter() {
     return &obb_mounter_;
   }
+  InstanceHolder<mojom::OemCryptoInstance>* oemcrypto() { return &oemcrypto_; }
   InstanceHolder<mojom::PolicyInstance>* policy() { return &policy_; }
   InstanceHolder<mojom::PowerInstance>* power() { return &power_; }
   InstanceHolder<mojom::PrintInstance>* print() { return &print_; }
@@ -132,6 +134,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::NetInstance> net_;
   InstanceHolder<mojom::NotificationsInstance> notifications_;
   InstanceHolder<mojom::ObbMounterInstance> obb_mounter_;
+  InstanceHolder<mojom::OemCryptoInstance> oemcrypto_;
   InstanceHolder<mojom::PolicyInstance> policy_;
   InstanceHolder<mojom::PowerInstance> power_;
   InstanceHolder<mojom::PrintInstance> print_;

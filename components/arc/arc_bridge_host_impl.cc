@@ -180,6 +180,11 @@ void ArcBridgeHostImpl::OnObbMounterInstanceReady(
                   std::move(obb_mounter_ptr));
 }
 
+void ArcBridgeHostImpl::OnOemCryptoInstanceReady(
+    mojom::OemCryptoInstancePtr oemcrypto_ptr) {
+  OnInstanceReady(arc_bridge_service_->oemcrypto(), std::move(oemcrypto_ptr));
+}
+
 void ArcBridgeHostImpl::OnPolicyInstanceReady(
     mojom::PolicyInstancePtr policy_ptr) {
   OnInstanceReady(arc_bridge_service_->policy(), std::move(policy_ptr));
