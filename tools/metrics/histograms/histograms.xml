@@ -81795,6 +81795,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TileManager.TilesGPUMemoryUsage" units="KB">
+  <owner>xidachen@chromium.org</owner>
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The amount of GPU memory, in kilobytes. Recorded on devices with less than
+    or equal to 512MB of memory and when tile manager had sufficient memory to
+    schedule all visible tiles.
+  </summary>
+</histogram>
+
 <histogram name="TimeZone.TimeZoneRequest.Event" enum="TimeZoneRequestEvent">
   <summary>Events in TimeZoneRequest.</summary>
 </histogram>
