@@ -41,21 +41,14 @@ def CbuildbotArgs(options):
   if options.branch:
     args.extend(('-b', options.branch))
 
-  if options.hwtest:
-    args.append('--hwtest')
-
   for g in options.gerrit_patches:
     args.extend(('-g', g))
 
-  # Specialty options.
-  if options.version:
-    args.extend(('--version', options.version))
+  if options.passthrough:
+    args.extend(options.passthrough)
 
-  for c in options.channels:
-    args.extend(('--channel', c))
-
-  # Tack on the pass through options.
-  args.extend(options.passthrough)
+  if options.passthrough_raw:
+    args.extend(options.passthrough_raw)
 
   return args
 
@@ -142,17 +135,16 @@ Production Examples (danger, can break production if misused):
         help='The manifest branch to test.  The branch to '
              'check the buildroot out to.')
     parser.add_argument(
-        '--hwtest', action='store_true', default=False,
-        help='Enable hwlab testing. Default false, except for production.')
-    parser.add_argument(
         '--yes', action='store_true', default=False,
         help='Never prompt to confirm.')
     parser.add_argument(
         '--production', action='store_true', default=False,
-        help='This is a production build, NOT a test build. Use with care.')
+        help='This is a production build, NOT a test build. '
+             'Confirm with Chrome OS deputy before use.')
     parser.add_argument(
-        '--passthrough', nargs=argparse.REMAINDER, default=[],
-        help='Arguments to pass to cbuildbot.')
+        '--passthrough', dest='passthrough_raw', nargs=argparse.REMAINDER,
+        help='Arguments to pass to cbuildbot. To be avoided.'
+             'Confirm with Chrome OS deputy before use.')
 
     # Do we build locally, on on a trybot builder?
     where_group = parser.add_argument_group(
@@ -202,16 +194,46 @@ Production Examples (danger, can break production if misused):
              'to make it easier to identify the results when it '
              'finishes')
 
-    # Specialized tryjob options.
-    special_group = parser.add_argument_group(
-        'Specialty',
-        description='Options only used by specific tryjobs.')
-    special_group.add_argument(
-        '--version', dest='version', default=None,
+    # Modify the build config.
+    how_group = parser.add_argument_group(
+        'Modifiers',
+        description='How do we change the build configuration?')
+    how_group.add_argument(
+        '--latest-toolchain', dest='passthrough', action='append_option',
+        help='Use the latest toolchain.')
+    how_group.add_argument(
+        '--nochromesdk', dest='passthrough', action='append_option',
+        help="Don't run the ChromeSDK stage which builds "
+             'Chrome outside of the chroot.')
+
+    # Overrides for the build configs testing behaviors.
+    test_group = parser.add_argument_group(
+        'Testing Flags',
+        description='How do we change testing behavior?')
+    test_group.add_argument(
+        '--hwtest', dest='passthrough', action='append_option',
+        help='Enable hwlab testing. Default false.')
+    test_group.add_argument(
+        '--notests', dest='passthrough', action='append_option',
+        help='Override values from buildconfig, run no '
+             'tests, and build no autotest artifacts.')
+    test_group.add_argument(
+        '--novmtests', dest='passthrough', action='append_option',
+        help='Override values from buildconfig, run no vmtests.')
+    test_group.add_argument(
+        '--noimagetests', dest='passthrough', action='append_option',
+        help='Override values from buildconfig and run no image tests.')
+
+    # <board>-payloads tryjob specific options.
+    payloads_group = parser.add_argument_group(
+        'Payloads',
+        description='Options only used by payloads tryjobs.')
+    payloads_group.add_argument(
+        '--version', dest='passthrough', action='append_option_value',
         help='Specify the release version for payload regeneration. '
              'Ex: 9799.0.0')
-    special_group.add_argument(
-        '--channel', dest='channels', action='append', default=[],
+    payloads_group.add_argument(
+        '--channel', dest='passthrough', action='append_option_value',
         help='Specify a channel for a payloads trybot. Can '
              'be specified multiple times. No valid for '
              'non-payloads configs.')
