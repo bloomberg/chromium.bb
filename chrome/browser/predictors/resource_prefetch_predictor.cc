@@ -107,17 +107,17 @@ void GetUrlVisitCountTask::DoneRunOnMainThread() {
 
 GetUrlVisitCountTask::~GetUrlVisitCountTask() {}
 
-void InitializeOnDBThread(
+void InitializeOnDBSequence(
     ResourcePrefetchPredictor::PrefetchDataMap* url_resource_data,
     ResourcePrefetchPredictor::PrefetchDataMap* host_resource_data,
     ResourcePrefetchPredictor::RedirectDataMap* url_redirect_data,
     ResourcePrefetchPredictor::RedirectDataMap* host_redirect_data,
     ResourcePrefetchPredictor::OriginDataMap* origin_data) {
-  url_resource_data->InitializeOnDBThread();
-  host_resource_data->InitializeOnDBThread();
-  url_redirect_data->InitializeOnDBThread();
-  host_redirect_data->InitializeOnDBThread();
-  origin_data->InitializeOnDBThread();
+  url_resource_data->InitializeOnDBSequence();
+  host_resource_data->InitializeOnDBSequence();
+  url_redirect_data->InitializeOnDBSequence();
+  host_redirect_data->InitializeOnDBSequence();
+  origin_data->InitializeOnDBSequence();
 }
 
 }  // namespace
@@ -226,7 +226,7 @@ void ResourcePrefetchPredictor::StartInitialization() {
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.
-  auto task = base::BindOnce(InitializeOnDBThread, url_resource_data.get(),
+  auto task = base::BindOnce(InitializeOnDBSequence, url_resource_data.get(),
                              host_resource_data.get(), url_redirect_data.get(),
                              host_redirect_data.get(), origin_data.get());
   auto reply = base::BindOnce(
@@ -235,8 +235,8 @@ void ResourcePrefetchPredictor::StartInitialization() {
       std::move(url_redirect_data), std::move(host_redirect_data),
       std::move(origin_data));
 
-  BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE, std::move(task),
-                                  std::move(reply));
+  tables_->GetTaskRunner()->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply));
 }
 
 bool ResourcePrefetchPredictor::IsUrlPrefetchable(

@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_DATA_H_
 #define CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_DATA_H_
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -26,8 +28,9 @@ namespace predictors {
 // the memory. The cache size is limited by max_size parameter using Compare
 // function to decide which entry should be evicted.
 //
-// InitializeOnDBThread() must be called on DB thread. All other methods must be
-// called on UI thread.
+// InitializeOnDBSequence() must be called on the DB sequence of the
+// ResourcePrefetchPredictorTables. All other methods must be called on UI
+// thread.
 template <typename T, typename Compare>
 class GlowplugKeyValueData {
  public:
@@ -35,8 +38,9 @@ class GlowplugKeyValueData {
                        GlowplugKeyValueTable<T>* backend,
                        size_t max_size);
 
-  // Must be called on DB thread before calling all other methods.
-  void InitializeOnDBThread();
+  // Must be called on the DB sequence of the ResourcePrefetchPredictorTables
+  // before calling all other methods.
+  void InitializeOnDBSequence();
 
   // Assigns data associated with the |key| to |data|. Returns true iff the
   // |key| exists, false otherwise. |data| pointer may be nullptr to get the
@@ -85,10 +89,10 @@ GlowplugKeyValueData<T, Compare>::GlowplugKeyValueData(
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::InitializeOnDBThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::DB);
+void GlowplugKeyValueData<T, Compare>::InitializeOnDBSequence() {
+  DCHECK(tables_->GetTaskRunner()->RunsTasksInCurrentSequence());
   auto data_map = base::MakeUnique<std::map<std::string, T>>();
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<T>::GetAllData,
                      base::Unretained(backend_table_), data_map.get()));
 
@@ -101,7 +105,7 @@ void GlowplugKeyValueData<T, Compare>::InitializeOnDBThread() {
     data_map->erase(entry_to_delete);
   }
   if (keys_to_delete.size() > 0) {
-    tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
         &GlowplugKeyValueTable<T>::DeleteData, base::Unretained(backend_table_),
         std::vector<std::string>(keys_to_delete)));
   }

@@ -32,7 +32,7 @@ namespace predictors {
 // would allow DeleteOldEntries to be cheaper through use of a join.
 //
 // All the functions apart from constructor and destructor have to be called in
-// the DB thread.
+// the DB sequence provided to the constructor of this class.
 class AutocompleteActionPredictorTable : public PredictorTableBase {
  public:
   struct Row {
@@ -62,7 +62,7 @@ class AutocompleteActionPredictorTable : public PredictorTableBase {
 
   typedef std::vector<Row> Rows;
 
-  // DB thread functions.
+  // DB sequence functions.
   void GetRow(const Row::Id& id, Row* row);
   void GetAllRows(Rows* row_buffer);
   void AddRow(const Row& row);
@@ -74,10 +74,11 @@ class AutocompleteActionPredictorTable : public PredictorTableBase {
  private:
   friend class PredictorDatabaseInternal;
 
-  AutocompleteActionPredictorTable();
+  explicit AutocompleteActionPredictorTable(
+      scoped_refptr<base::SequencedTaskRunner> db_task_runner);
   ~AutocompleteActionPredictorTable() override;
 
-  // PredictorTableBase methods (DB thread).
+  // PredictorTableBase methods (DB sequence).
   void CreateTableIfNonExistent() override;
   void LogDatabaseStats() override;
 

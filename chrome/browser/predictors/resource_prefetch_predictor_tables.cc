@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/browser/browser_thread.h"
 #include "sql/statement.h"
 
 using google::protobuf::MessageLite;
@@ -54,8 +53,6 @@ int GetResourceTypeMultiplier(
 }  // namespace
 
 namespace predictors {
-
-using content::BrowserThread;
 
 // static
 void ResourcePrefetchPredictorTables::TrimResources(
@@ -114,7 +111,9 @@ void ResourcePrefetchPredictorTables::SortOrigins(OriginData* data) {
             });
 }
 
-ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables() {
+ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables(
+    scoped_refptr<base::SequencedTaskRunner> db_task_runner)
+    : PredictorTableBase(db_task_runner) {
   url_resource_table_ = base::MakeUnique<GlowplugKeyValueTable<PrefetchData>>(
       kUrlResourceTableName);
   url_redirect_table_ = base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
@@ -187,14 +186,15 @@ float ResourcePrefetchPredictorTables::ComputeOriginScore(
 void ResourcePrefetchPredictorTables::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     DBTask task) {
-  BrowserThread::PostTask(
-      BrowserThread::DB, from_here,
-      base::BindOnce(&ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBThread,
-                     this, std::move(task)));
+  GetTaskRunner()->PostTask(
+      from_here,
+      base::BindOnce(
+          &ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBSequence, this,
+          std::move(task)));
 }
 
-void ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBThread(DBTask task) {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+void ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBSequence(DBTask task) {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;
 
@@ -288,7 +288,7 @@ bool ResourcePrefetchPredictorTables::SetDatabaseVersion(sql::Connection* db,
 }
 
 void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;
 
@@ -317,7 +317,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
 }
 
 void ResourcePrefetchPredictorTables::LogDatabaseStats() {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;
 

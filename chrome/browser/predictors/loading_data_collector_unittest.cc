@@ -8,13 +8,13 @@
 #include <memory>
 #include <utility>
 
-#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -27,7 +27,7 @@ namespace predictors {
 
 class LoadingDataCollectorTest : public testing::Test {
  public:
-  LoadingDataCollectorTest() : profile_(new TestingProfile()) {
+  LoadingDataCollectorTest() : profile_(base::MakeUnique<TestingProfile>()) {
     LoadingPredictorConfig config;
     PopulateTestConfig(&config);
     mock_predictor_ =
@@ -38,7 +38,7 @@ class LoadingDataCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
-    base::RunLoop().RunUntilIdle();  // Runs the DB lookup.
+    content::RunAllBlockingPoolTasksUntilIdle();  // Runs the DB lookup.
 
     url_request_job_factory_.Reset();
     url_request_context_.set_job_factory(&url_request_job_factory_);
