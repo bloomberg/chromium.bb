@@ -17,6 +17,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace content {
 class WebContents;
 }
@@ -42,6 +46,12 @@ class ManagePasswordsUIController
       public PasswordsClientUIDelegate {
  public:
   ~ManagePasswordsUIController() override;
+
+#if defined(UNIT_TEST)
+  static void set_save_fallback_timeout_in_seconds(int timeout) {
+    save_fallback_timeout_in_seconds_ = timeout;
+  }
+#endif
 
   // PasswordsClientUIDelegate:
   void OnPasswordSubmitted(
@@ -167,6 +177,9 @@ class ManagePasswordsUIController
     SHOWN_PENDING_ICON_UPDATE,
   };
 
+  // Returns the timeout for the manual save fallback.
+  static base::TimeDelta GetTimeoutForSaveFallback();
+
   // Shows the password bubble without user interaction.
   void ShowBubbleWithoutUserInteraction();
 
@@ -177,6 +190,9 @@ class ManagePasswordsUIController
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
+  // Timeout in seconds for the manual fallback for saving.
+  static int save_fallback_timeout_in_seconds_;
+
   // The wrapper around current state and data.
   ManagePasswordsState passwords_data_;
 
@@ -184,6 +200,12 @@ class ManagePasswordsUIController
   std::unique_ptr<PasswordDialogControllerImpl> dialog_controller_;
 
   BubbleStatus bubble_status_;
+
+  // The timer that controls whether the fallback for saving should be
+  // available. Should be reset once the fallback is not needed (an automatic
+  // popup will be shown or the user saved/updated the password with the
+  // fallback).
+  base::OneShotTimer save_fallback_timer_;
 
   // The bubbles of different types can pop up unpredictably superseding each
   // other. However, closing the bubble may affect the state of
