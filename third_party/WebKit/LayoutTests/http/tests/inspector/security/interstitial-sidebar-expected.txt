@@ -24,7 +24,7 @@ Overview
                 </LI>
                 <OL class=children role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -42,7 +42,7 @@ Reload to view details
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -51,7 +51,7 @@ Non-secure origins
                 </LI>
                 <OL class=children expanded hidden role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -86,7 +86,7 @@ https://bar.test
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -127,7 +127,7 @@ Overview
                 </LI>
                 <OL class=children role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -145,7 +145,7 @@ Reload to view details
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -154,7 +154,7 @@ Non-secure origins
                 </LI>
                 <OL class=children expanded hidden role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -189,7 +189,7 @@ https://bar.test
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins hidden aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins hidden aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -230,7 +230,7 @@ Overview
                 </LI>
                 <OL class=children role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -248,7 +248,7 @@ Reload to view details
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -257,7 +257,7 @@ Non-secure origins
                 </LI>
                 <OL class=children expanded role=group >
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -292,7 +292,7 @@ https://bar.test
                     <OL class=children role=group >
                     </OL>
                 </OL>
-                <LI role=treeitem class=parent expanded security-sidebar-origins aria-expanded=true >
+                <LI role=treeitem class=parent always-parent expanded security-sidebar-origins aria-expanded=true >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
