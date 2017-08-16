@@ -593,9 +593,9 @@ void LoginDisplayHostImpl::Finalize(base::OnceClosure completion_callback) {
   }
 }
 
-void LoginDisplayHostImpl::OpenProxySettings() {
+void LoginDisplayHostImpl::OpenProxySettings(const std::string& network_id) {
   if (login_view_)
-    login_view_->OpenProxySettings();
+    login_view_->OpenProxySettings(network_id);
 }
 
 void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {

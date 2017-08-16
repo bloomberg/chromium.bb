@@ -89,7 +89,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   }
   void BeforeSessionStart() override {}
   void Finalize(base::OnceClosure) override {}
-  void OpenProxySettings() override {}
+  void OpenProxySettings(const std::string& network_id) override {}
   void SetStatusAreaVisible(bool visible) override {}
   void StartWizard(chromeos::OobeScreen first_screen) override {}
   chromeos::WizardController* GetWizardController() override { return nullptr; }

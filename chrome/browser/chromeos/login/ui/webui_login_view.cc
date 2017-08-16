@@ -372,16 +372,19 @@ OobeUI* WebUILoginView::GetOobeUI() {
   return static_cast<OobeUI*>(GetWebUI()->GetController());
 }
 
-void WebUILoginView::OpenProxySettings() {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+void WebUILoginView::OpenProxySettings(const std::string& network_id) {
+  auto* network_state_handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network;
+  if (!network_id.empty())
+    network = network_state_handler->GetNetworkStateFromGuid(network_id);
+  else
+    network = network_state_handler->DefaultNetwork();
   if (!network) {
-    LOG(ERROR) << "No default network found!";
+    LOG(ERROR) << "Network not found: " << network_id;
     return;
   }
-  ProxySettingsDialog* dialog =
-      new ProxySettingsDialog(ProfileHelper::GetSigninProfile(),
-                              *network, NULL, GetNativeWindow());
+  ProxySettingsDialog* dialog = new ProxySettingsDialog(
+      ProfileHelper::GetSigninProfile(), *network, nullptr, GetNativeWindow());
   dialog->Show();
 }
 
