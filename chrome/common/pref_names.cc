@@ -2356,6 +2356,10 @@ const char kRecoveryComponentNeedsElevation[] =
 const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
 
+// Boolean that specifies whether the cloud policy will override conflicting
+// machine policy.
+const char kCloudPolicyOverridesMachinePolicy[] = "policy.cloud_override";
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Policy that indicates how to handle animated images.
 const char kAnimationPolicy[] = "settings.a11y.animation_policy";

@@ -11196,6 +11196,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="378" label="CastReceiverEnabled"/>
   <int value="379" label="CastReceiverName"/>
   <int value="380" label="DeviceOffHours"/>
+  <int value="381" label="CloudPolicyOverridesMachinePolicy"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
