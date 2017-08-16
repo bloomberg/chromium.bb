@@ -1255,38 +1255,6 @@ views::View* ProfileChooserView::CreateGuestProfileView() {
   return CreateCurrentProfileView(guest_avatar_item, true);
 }
 
-views::View* ProfileChooserView::CreateOtherProfilesView(
-    const Indexes& avatars_to_show) {
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
-
-  for (size_t index : avatars_to_show) {
-    const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
-    const int kSmallImageSide = 32;
-
-    // Use the low-res, small default avatars in the fast user switcher, like
-    // we do in the menu bar.
-    gfx::Image item_icon;
-    AvatarMenu::GetImageForMenuButton(item.profile_path, &item_icon);
-
-    gfx::Image image = profiles::GetSizedAvatarIcon(
-        item_icon, true, kSmallImageSide, kSmallImageSide);
-
-    views::LabelButton* button = new BackgroundColorHoverButton(
-        this,
-        profiles::GetProfileSwitcherTextForItem(item),
-        *image.ToImageSkia());
-    open_other_profile_indexes_map_[button] = index;
-
-    layout->StartRow(1, 0);
-    layout->AddView(new views::Separator());
-    layout->StartRow(1, 0);
-    layout->AddView(button);
-  }
-
-  return view;
-}
-
 views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
                                                    AvatarMenu* avatar_menu) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
