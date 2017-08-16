@@ -47,7 +47,7 @@ class ASH_EXPORT AshTouchExplorationManager
   ~AshTouchExplorationManager() override;
 
   // AccessibilityObserver overrides:
-  void OnAccessibilityModeChanged(
+  void OnAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify) override;
 
   // TouchExplorationControllerDelegate overrides:

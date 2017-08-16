@@ -422,7 +422,7 @@ void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {
   SetTrayIconVisible(GetInitialVisibility());
 }
 
-void TrayAccessibility::OnAccessibilityModeChanged(
+void TrayAccessibility::OnAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
   SetTrayIconVisible(GetInitialVisibility());
 

@@ -33,10 +33,10 @@ void SystemTrayNotifier::RemoveAccessibilityObserver(
   accessibility_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::NotifyAccessibilityModeChanged(
+void SystemTrayNotifier::NotifyAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
   for (auto& observer : accessibility_observers_)
-    observer.OnAccessibilityModeChanged(notify);
+    observer.OnAccessibilityStatusChanged(notify);
 }
 
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {

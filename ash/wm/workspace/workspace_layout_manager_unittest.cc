@@ -1312,7 +1312,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   // Enable spoken feedback.
   Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       ash::A11Y_NOTIFICATION_NONE);
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(
       Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled());
@@ -1329,7 +1329,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
   // Disable spoken feedback. Shadow underlay is restored.
   Shell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
       A11Y_NOTIFICATION_NONE);
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(
       Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled());
@@ -1456,7 +1456,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
           Shell::Get()->accessibility_delegate());
 
   accessibility_delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(accessibility_delegate->IsSpokenFeedbackEnabled());
 

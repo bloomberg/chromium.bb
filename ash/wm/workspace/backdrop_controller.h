@@ -66,7 +66,7 @@ class BackdropController : public ShellObserver, public AccessibilityObserver {
                                   aura::Window* root_window) override;
 
   // AccessibilityObserver:
-  void OnAccessibilityModeChanged(
+  void OnAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify) override;
 
  private:

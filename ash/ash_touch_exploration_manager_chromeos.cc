@@ -48,7 +48,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void AshTouchExplorationManager::OnAccessibilityModeChanged(
+void AshTouchExplorationManager::OnAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
   UpdateTouchExplorationState();
 }
