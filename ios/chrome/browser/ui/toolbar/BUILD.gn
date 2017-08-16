@@ -68,7 +68,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/popup_menu",
-    "//ios/chrome/browser/ui/qr_scanner",
+    "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/tools_menu:configuration",

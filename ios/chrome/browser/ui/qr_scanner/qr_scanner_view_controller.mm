@@ -12,6 +12,8 @@
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_alerts.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
+#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
+#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -49,6 +51,10 @@ enum DismissalReason {
   QRScannerTransitioningDelegate* _transitioningDelegate;
 }
 
+@property(nonatomic, readwrite, weak) id<QRScannerPresenting>
+    presentationProvider;
+@property(nonatomic, readwrite, weak) id<QRScannerResultLoading> loadProvider;
+
 // Dismisses the QRScannerViewController and runs |completion| on completion.
 // Logs metrics according to the |reason| for dismissal.
 - (void)dismissForReason:(DismissalReason)reason
@@ -72,15 +78,18 @@ enum DismissalReason {
 
 @implementation QRScannerViewController
 
-@synthesize delegate = _delegate;
+@synthesize loadProvider = _loadProvider;
+@synthesize presentationProvider = _presentationProvider;
 
 #pragma mark lifecycle
 
-- (instancetype)initWithDelegate:(id<QRScannerViewControllerDelegate>)delegate {
+- (instancetype)
+initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
+                loadProvider:(id<QRScannerResultLoading>)loadProvider {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    DCHECK(delegate);
-    _delegate = delegate;
+    _loadProvider = loadProvider;
+    _presentationProvider = presentationProvider;
     _cameraController = [CameraController cameraControllerWithDelegate:self];
   }
   return self;
@@ -235,8 +244,9 @@ enum DismissalReason {
     case IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE:
       break;
   }
-  [[self presentingViewController] dismissViewControllerAnimated:YES
-                                                      completion:completion];
+
+  [self.presentationProvider dismissQRScannerViewController:self
+                                                 completion:completion];
 }
 
 - (void)startReceivingNotifications {
@@ -279,8 +289,8 @@ enum DismissalReason {
     DCHECK(_result);
     [self dismissForReason:SCANNED_CODE
             withCompletion:^{
-              [[self delegate] receiveQRScannerResult:_result
-                                      loadImmediately:_loadResultImmediately];
+              [self.loadProvider receiveQRScannerResult:_result
+                                        loadImmediately:_loadResultImmediately];
             }];
   }
 }
@@ -346,8 +356,8 @@ enum DismissalReason {
     [_qrScannerView animateScanningResultWithCompletion:^void(void) {
       [self dismissForReason:SCANNED_CODE
               withCompletion:^{
-                [[self delegate] receiveQRScannerResult:result
-                                        loadImmediately:load];
+                [self.loadProvider receiveQRScannerResult:result
+                                          loadImmediately:load];
               }];
     }];
   }

@@ -135,7 +135,8 @@
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
-#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
+#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
@@ -356,6 +357,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     OverscrollActionsControllerDelegate,
                                     PassKitDialogProvider,
                                     PreloadControllerDelegate,
+                                    QRScannerPresenting,
                                     SKStoreProductViewControllerDelegate,
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
@@ -424,9 +426,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Used to display the Voice Search UI.  Nil if not visible.
   scoped_refptr<VoiceSearchController> _voiceSearchController;
-
-  // Used to display the QR Scanner UI. Nil if not visible.
-  QRScannerViewController* _qrScannerViewController;
 
   // Used to display the Reading List.
   ReadingListCoordinator* _readingListCoordinator;
@@ -524,6 +523,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Coordinator for displaying alerts.
   AlertCoordinator* _alertCoordinator;
+
+  // Coordinator for the QR scanner.
+  QRScannerLegacyCoordinator* _qrScannerCoordinator;
 
   // Coordinator for Tab History Popup.
   TabHistoryCoordinator* _tabHistoryCoordinator;
@@ -1357,7 +1359,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.typingShield = nil;
     if (_voiceSearchController)
       _voiceSearchController->SetDelegate(nil);
-    _qrScannerViewController = nil;
     _readingListCoordinator = nil;
     _toolbarController = nil;
     _toolbarModelDelegate = nil;
@@ -1740,6 +1741,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
+  [_qrScannerCoordinator disconnect];
   [_tabHistoryCoordinator disconnect];
 
   // The file remover needs the browser state, so needs to be destroyed now.
@@ -1846,6 +1848,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _activityServiceCoordinator.positionProvider = _toolbarController;
   _activityServiceCoordinator.presentationProvider = self;
   _activityServiceCoordinator.snackbarProvider = self;
+
+  _qrScannerCoordinator =
+      [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
+  _qrScannerCoordinator.dispatcher = _dispatcher;
+  _qrScannerCoordinator.loadProvider = _toolbarController;
+  _qrScannerCoordinator.presentationProvider = self;
 
   _tabHistoryCoordinator =
       [[TabHistoryCoordinator alloc] initWithBaseViewController:self];
@@ -4248,15 +4256,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self addToReadingListURL:[command URL] title:[command title]];
 }
 
-- (void)showQRScanner {
-  _qrScannerViewController =
-      [[QRScannerViewController alloc] initWithDelegate:_toolbarController];
-  [self presentViewController:[_qrScannerViewController
-                                  getViewControllerToPresent]
-                     animated:YES
-                   completion:nil];
-}
-
 - (void)showReadingList {
   _readingListCoordinator = [[ReadingListCoordinator alloc]
       initWithBaseViewController:self
@@ -5132,6 +5131,18 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)activityServiceDidEndPresenting {
   self.presenting = NO;
   [self.dialogPresenter tryToPresent];
+}
+
+#pragma mark - QRScanner Requirements
+
+- (void)presentQRScannerViewController:(UIViewController*)controller {
+  [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)dismissQRScannerViewController:(UIViewController*)controller
+                            completion:(void (^)(void))completion {
+  DCHECK_EQ(controller, self.presentedViewController);
+  [self dismissViewControllerAnimated:YES completion:completion];
 }
 
 #pragma mark - TabHistoryPresenter
