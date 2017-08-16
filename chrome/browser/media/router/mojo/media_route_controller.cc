@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "chrome/browser/media/router/event_page_request_manager.h"
+#include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 
 namespace media_router {
 
@@ -28,43 +31,69 @@ void MediaRouteController::Observer::InvalidateController() {
 
 void MediaRouteController::Observer::OnControllerInvalidated() {}
 
-MediaRouteController::MediaRouteController(
-    const MediaRoute::Id& route_id,
-    mojom::MediaControllerPtr mojo_media_controller,
-    MediaRouter* media_router)
+MediaRouteController::MediaRouteController(const MediaRoute::Id& route_id,
+                                           content::BrowserContext* context)
     : route_id_(route_id),
-      mojo_media_controller_(std::move(mojo_media_controller)),
-      media_router_(media_router),
-      binding_(this) {
-  DCHECK(mojo_media_controller_.is_bound());
-  DCHECK(media_router);
-  mojo_media_controller_.set_connection_error_handler(base::BindOnce(
-      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
+      media_router_(MediaRouterFactory::GetApiForBrowserContext(context)),
+      request_manager_(
+          EventPageRequestManagerFactory::GetApiForBrowserContext(context)),
+      binding_(this),
+      weak_factory_(this) {
+  DCHECK(media_router_);
+  DCHECK(request_manager_);
 }
 
-void MediaRouteController::Play() const {
-  DCHECK(is_valid_);
-  mojo_media_controller_->Play();
+void MediaRouteController::Play() {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->Play();
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::Play, weak_factory_.GetWeakPtr()),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
-void MediaRouteController::Pause() const {
-  DCHECK(is_valid_);
-  mojo_media_controller_->Pause();
+void MediaRouteController::Pause() {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->Pause();
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::Pause, weak_factory_.GetWeakPtr()),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
-void MediaRouteController::Seek(base::TimeDelta time) const {
-  DCHECK(is_valid_);
-  mojo_media_controller_->Seek(time);
+void MediaRouteController::Seek(base::TimeDelta time) {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->Seek(time);
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::Seek, weak_factory_.GetWeakPtr(),
+                     time),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
-void MediaRouteController::SetMute(bool mute) const {
-  DCHECK(is_valid_);
-  mojo_media_controller_->SetMute(mute);
+void MediaRouteController::SetMute(bool mute) {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->SetMute(mute);
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::SetMute, weak_factory_.GetWeakPtr(),
+                     mute),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
-void MediaRouteController::SetVolume(float volume) const {
-  DCHECK(is_valid_);
-  mojo_media_controller_->SetVolume(volume);
+void MediaRouteController::SetVolume(float volume) {
+  if (request_manager_->mojo_connections_ready()) {
+    mojo_media_controller_->SetVolume(volume);
+    return;
+  }
+  request_manager_->RunOrDefer(
+      base::BindOnce(&MediaRouteController::SetVolume,
+                     weak_factory_.GetWeakPtr(), volume),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
 void MediaRouteController::OnMediaStatusUpdated(const MediaStatus& status) {
@@ -83,9 +112,12 @@ void MediaRouteController::Invalidate() {
   // |this| is deleted here!
 }
 
+mojom::MediaControllerRequest MediaRouteController::CreateControllerRequest() {
+  return mojo::MakeRequest(&mojo_media_controller_);
+}
+
 mojom::MediaStatusObserverPtr MediaRouteController::BindObserverPtr() {
   DCHECK(is_valid_);
-  DCHECK(!binding_.is_bound());
   mojom::MediaStatusObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   binding_.set_connection_error_handler(base::BindOnce(
@@ -109,8 +141,8 @@ void MediaRouteController::RemoveObserver(Observer* observer) {
 }
 
 void MediaRouteController::OnMojoConnectionError() {
-  media_router_->DetachRouteController(route_id_, this);
-  Invalidate();
+  binding_.Close();
+  mojo_media_controller_.reset();
 }
 
 }  // namespace media_router

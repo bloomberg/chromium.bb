@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,58 +43,27 @@ class NullMessageObserver : public RouteMessageObserver {
       final {}
 };
 
-class TestEventPageRequestManager : public EventPageRequestManager {
- public:
-  static std::unique_ptr<KeyedService> Create(
-      content::BrowserContext* context) {
-    return base::MakeUnique<TestEventPageRequestManager>(context);
-  }
 
-  explicit TestEventPageRequestManager(content::BrowserContext* context)
-      : EventPageRequestManager(context) {}
-  ~TestEventPageRequestManager() = default;
-
-  MOCK_METHOD1(SetExtensionId, void(const std::string& extension_id));
-  void RunOrDefer(base::OnceClosure request,
-                  MediaRouteProviderWakeReason wake_reason) override {
-    RunOrDeferInternal(request, wake_reason);
-  }
-  MOCK_METHOD2(RunOrDeferInternal,
-               void(base::OnceClosure& request,
-                    MediaRouteProviderWakeReason wake_reason));
-  MOCK_METHOD0(OnMojoConnectionsReady, void());
-  MOCK_METHOD0(OnMojoConnectionError, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEventPageRequestManager);
-};
 
 }  // namespace
 
 class MediaRouterDesktopTest : public MediaRouterMojoTest {
  public:
-  MediaRouterDesktopTest() {
-    EventPageRequestManagerFactory::GetInstance()->SetTestingFactory(
-        profile(), &TestEventPageRequestManager::Create);
-    request_manager_ = static_cast<TestEventPageRequestManager*>(
-        EventPageRequestManagerFactory::GetApiForBrowserContext(profile()));
-    request_manager_->set_mojo_connections_ready_for_test(true);
-    ON_CALL(*request_manager_, RunOrDeferInternal(_, _))
-        .WillByDefault(Invoke([](base::OnceClosure& request,
-                                 MediaRouteProviderWakeReason wake_reason) {
-          std::move(request).Run();
-        }));
-  }
-
+  MediaRouterDesktopTest() {}
   ~MediaRouterDesktopTest() override {}
 
  protected:
-  std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
-    return std::unique_ptr<MediaRouterMojoImpl>(
-        new MediaRouterDesktop(profile()));
+  MediaRouterMojoImpl* SetTestingFactoryAndUse() override {
+    return static_cast<MediaRouterMojoImpl*>(
+        MediaRouterFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), &CreateMediaRouter));
   }
 
-  TestEventPageRequestManager* request_manager_ = nullptr;
+ private:
+  static std::unique_ptr<KeyedService> CreateMediaRouter(
+      content::BrowserContext* context) {
+    return std::unique_ptr<KeyedService>(new MediaRouterDesktop(context));
+  }
 };
 
 TEST_F(MediaRouterDesktopTest, CreateRoute) {

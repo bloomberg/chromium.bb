@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "extensions/common/test_util.h"
 
 using testing::_;
@@ -71,6 +72,24 @@ MockEventPageTracker::MockEventPageTracker() {}
 
 MockEventPageTracker::~MockEventPageTracker() {}
 
+// static
+std::unique_ptr<KeyedService> MockEventPageRequestManager::Create(
+    content::BrowserContext* context) {
+  return base::MakeUnique<MockEventPageRequestManager>(context);
+}
+
+MockEventPageRequestManager::MockEventPageRequestManager(
+    content::BrowserContext* context)
+    : EventPageRequestManager(context) {}
+
+MockEventPageRequestManager::~MockEventPageRequestManager() = default;
+
+void MockEventPageRequestManager::RunOrDefer(
+    base::OnceClosure request,
+    MediaRouteProviderWakeReason wake_reason) {
+  RunOrDeferInternal(request, wake_reason);
+}
+
 MockMediaController::MockMediaController() : binding_(this) {}
 
 MockMediaController::~MockMediaController() {}
@@ -95,11 +114,8 @@ void MockMediaController::CloseBinding() {
 
 MockMediaRouteController::MockMediaRouteController(
     const MediaRoute::Id& route_id,
-    mojom::MediaControllerPtr mojo_media_controller,
-    MediaRouter* media_router)
-    : MediaRouteController(route_id,
-                           std::move(mojo_media_controller),
-                           media_router) {}
+    content::BrowserContext* context)
+    : MediaRouteController(route_id, context) {}
 
 MockMediaRouteController::~MockMediaRouteController() {}
 
@@ -109,7 +125,17 @@ MockMediaRouteControllerObserver::MockMediaRouteControllerObserver(
 
 MockMediaRouteControllerObserver::~MockMediaRouteControllerObserver() {}
 
-MediaRouterMojoTest::MediaRouterMojoTest() {}
+MediaRouterMojoTest::MediaRouterMojoTest() {
+  request_manager_ = static_cast<MockEventPageRequestManager*>(
+      EventPageRequestManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &MockEventPageRequestManager::Create));
+  request_manager_->set_mojo_connections_ready_for_test(true);
+  ON_CALL(*request_manager_, RunOrDeferInternal(_, _))
+      .WillByDefault(Invoke([](base::OnceClosure& request,
+                               MediaRouteProviderWakeReason wake_reason) {
+        std::move(request).Run();
+      }));
+}
 
 MediaRouterMojoTest::~MediaRouterMojoTest() {}
 
@@ -125,7 +151,7 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
 }
 
 void MediaRouterMojoTest::SetUp() {
-  media_router_ = CreateMediaRouter();
+  media_router_ = SetTestingFactoryAndUse();
   media_router_->set_instance_id_for_test(kInstanceId);
   ConnectProviderManagerService();
   media_router_->Initialize();
@@ -135,7 +161,6 @@ void MediaRouterMojoTest::SetUp() {
 
 void MediaRouterMojoTest::TearDown() {
   media_router_->Shutdown();
-  media_router_.reset();
 }
 
 void MediaRouterMojoTest::ProcessEventLoop() {
