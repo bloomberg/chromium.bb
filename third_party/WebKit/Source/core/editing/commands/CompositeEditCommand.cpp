@@ -209,12 +209,12 @@ void CompositeEditCommand::ApplyCommandToComposite(
 
 void CompositeEditCommand::ApplyCommandToComposite(
     CompositeEditCommand* command,
-    const VisibleSelection& selection,
+    const SelectionForUndoStep& selection,
     EditingState* editing_state) {
   command->SetParent(this);
-  if (selection != command->EndingVisibleSelection()) {
+  if (selection != command->EndingSelection()) {
     command->SetStartingSelection(selection);
-    command->SetEndingVisibleSelection(selection);
+    command->SetEndingSelection(selection);
   }
   command->DoApply(editing_state);
   if (!editing_state->IsAborted())

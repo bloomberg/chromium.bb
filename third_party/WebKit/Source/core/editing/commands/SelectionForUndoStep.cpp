@@ -42,6 +42,21 @@ SelectionForUndoStep& SelectionForUndoStep::operator=(
   return *this;
 }
 
+bool SelectionForUndoStep::operator==(const SelectionForUndoStep& other) const {
+  if (IsNone())
+    return other.IsNone();
+  if (other.IsNone())
+    return false;
+  return base_ == other.base_ && extent_ == other.extent_ &&
+         affinity_ == other.affinity_ &&
+         is_base_first_ == other.is_base_first_ &&
+         is_directional_ == other.is_directional_;
+}
+
+bool SelectionForUndoStep::operator!=(const SelectionForUndoStep& other) const {
+  return !operator==(other);
+}
+
 SelectionInDOMTree SelectionForUndoStep::AsSelection() const {
   if (IsNone()) {
     return SelectionInDOMTree::Builder()
