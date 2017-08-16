@@ -5,21 +5,12 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.webkit.GeolocationPermissions;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.test.AwTestBase.TestDependencyFactory;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -34,16 +25,7 @@ import java.util.concurrent.Callable;
  * basic functionality, and tests to ensure the AwContents.onPause
  * and onResume APIs affect Geolocation as expected.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class GeolocationTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
-        @Override
-        public TestDependencyFactory createTestDependencyFactory() {
-            return mOverridenFactory == null ? new TestDependencyFactory() : mOverridenFactory;
-        }
-    };
-
+public class GeolocationTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private MockLocationProvider mMockLocationProvider;
@@ -95,10 +77,9 @@ public class GeolocationTest {
 
     private void initAwContents(TestAwContentsClient contentsClient) throws Exception {
         mContentsClient = contentsClient;
-        mAwContents = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient)
-                              .getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        mAwContents = createAwTestContainerViewOnMainSync(mContentsClient).getAwContents();
+        enableJavaScriptOnUiThread(mAwContents);
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.getSettings().setGeolocationEnabled(true);
@@ -106,31 +87,38 @@ public class GeolocationTest {
         });
     }
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mMockLocationProvider = new MockLocationProvider();
         LocationProviderFactory.setLocationProviderImpl(mMockLocationProvider);
     }
 
-    @After
+    @Override
     public void tearDown() throws Exception {
         mMockLocationProvider.stopUpdates();
         mOverridenFactory = null;
+        super.tearDown();
+    }
+
+    @Override
+    public TestDependencyFactory createTestDependencyFactory() {
+        return mOverridenFactory == null ? new TestDependencyFactory() : mOverridenFactory;
     }
 
     private int getPositionCountFromJS() {
         int result = -1;
         try {
-            result = Integer.parseInt(mActivityTestRule.executeJavaScriptAndWaitForResult(
+            result = Integer.parseInt(executeJavaScriptAndWaitForResult(
                     mAwContents, mContentsClient, "positionCount"));
         } catch (Exception e) {
-            Assert.fail("Unable to get positionCount");
+            fail("Unable to get positionCount");
         }
         return result;
     }
 
     private void ensureGeolocationRunning(final boolean running) throws Exception {
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mMockLocationProvider.isRunning() == running;
@@ -156,18 +144,17 @@ public class GeolocationTest {
     /**
      * Ensure that a call to navigator.getCurrentPosition works in WebView.
      */
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testGetPosition() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() == 1;
@@ -175,7 +162,7 @@ public class GeolocationTest {
         });
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() == 2;
@@ -186,19 +173,18 @@ public class GeolocationTest {
     /**
      * Ensure that a call to navigator.watchPosition works in WebView.
      */
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     @RetryOnFailure
     public void testWatchPosition() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -206,19 +192,18 @@ public class GeolocationTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testPauseGeolocationOnPause() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
         // Start a watch going.
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -227,7 +212,7 @@ public class GeolocationTest {
 
         ensureGeolocationRunning(true);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onPause();
@@ -237,14 +222,13 @@ public class GeolocationTest {
         ensureGeolocationRunning(false);
 
         try {
-            mActivityTestRule.executeJavaScriptAndWaitForResult(
-                    mAwContents, mContentsClient, "positionCount = 0");
+            executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, "positionCount = 0");
         } catch (Exception e) {
-            Assert.fail("Unable to clear positionCount");
+            fail("Unable to clear positionCount");
         }
-        Assert.assertEquals(0, getPositionCountFromJS());
+        assertEquals(0, getPositionCountFromJS());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onResume();
@@ -253,7 +237,7 @@ public class GeolocationTest {
 
         ensureGeolocationRunning(true);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -261,12 +245,11 @@ public class GeolocationTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testPauseAwContentsBeforeNavigating() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onPause();
@@ -274,17 +257,17 @@ public class GeolocationTest {
         });
 
         // Start a watch going.
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
-        Assert.assertEquals(0, getPositionCountFromJS());
+        assertEquals(0, getPositionCountFromJS());
 
         ensureGeolocationRunning(false);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onResume();
@@ -293,7 +276,7 @@ public class GeolocationTest {
 
         ensureGeolocationRunning(true);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -301,23 +284,22 @@ public class GeolocationTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testResumeWhenNotStarted() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onPause();
             }
         });
 
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.onResume();
@@ -327,63 +309,60 @@ public class GeolocationTest {
         ensureGeolocationRunning(false);
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @RetryOnFailure
     public void testDenyAccessByDefault() throws Throwable {
         initAwContents(new DefaultPermisionAwContentClient());
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "https://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {
                 Runtime.getRuntime().gc();
-                return "deny".equals(mActivityTestRule.getTitleOnUiThread(mAwContents));
+                return "deny".equals(getTitleOnUiThread(mAwContents));
             }
         });
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @RetryOnFailure
     public void testDenyOnInsecureOrigins() throws Throwable {
         mOverridenFactory = new GeolocationOnInsecureOriginsTestDependencyFactory(false);
         initAwContents(new GrantPermisionAwContentClient());
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "http://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {
                 Runtime.getRuntime().gc();
-                return "deny".equals(mActivityTestRule.getTitleOnUiThread(mAwContents));
+                return "deny".equals(getTitleOnUiThread(mAwContents));
             }
         });
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testAllowOnInsecureOriginsByDefault() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
-                "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,
+                "text/html", false, "http://google.com/",
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 0;

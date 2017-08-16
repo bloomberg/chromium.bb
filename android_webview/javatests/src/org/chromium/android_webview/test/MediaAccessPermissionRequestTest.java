@@ -6,13 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -30,11 +23,7 @@ import java.util.concurrent.Callable;
 /**
  * Test MediaAccessPermissionRequest.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class MediaAccessPermissionRequestTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class MediaAccessPermissionRequestTest extends AwTestBase {
     private static class OnPermissionRequestHelper extends CallbackHelper {
         private boolean mCanceled;
 
@@ -71,20 +60,21 @@ public class MediaAccessPermissionRequestTest {
     private TestWebServer mTestWebServer;
     private String mWebRTCPage;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mTestWebServer = TestWebServer.start();
         mWebRTCPage = mTestWebServer.setResponse("/WebRTC", DATA,
                 CommonResources.getTextHtmlHeaders(true));
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mTestWebServer.shutdown();
         mTestWebServer = null;
+        super.tearDown();
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/623921")
@@ -101,23 +91,21 @@ public class MediaAccessPermissionRequestTest {
                     }
                 };
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
-        mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
+        loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
         pollTitleAs("grant", awContents);
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @DisableIf
-            .Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
-            @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-            @RetryOnFailure
-            public void testDenyAccess() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @RetryOnFailure
+    public void testDenyAccess() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
                 new TestAwContentsClient() {
@@ -128,33 +116,31 @@ public class MediaAccessPermissionRequestTest {
                     }
                 };
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
-        mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
+        loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
         pollTitleAs("deny", awContents);
     }
 
     private void pollTitleAs(final String title, final AwContents awContents)
             throws Exception {
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return title.equals(mActivityTestRule.getTitleOnUiThread(awContents));
+                return title.equals(getTitleOnUiThread(awContents));
             }
         });
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @DisableIf
-            .Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
-            @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-            @RetryOnFailure
-            public void testDenyAccessByDefault() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @RetryOnFailure
+    public void testDenyAccessByDefault() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
                 new TestAwContentsClient() {
@@ -165,11 +151,11 @@ public class MediaAccessPermissionRequestTest {
                     }
                 };
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
-        mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
+        loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
 
         // Cause AwPermissionRequest to be garbage collected, which should deny
@@ -177,31 +163,29 @@ public class MediaAccessPermissionRequestTest {
         Runtime.getRuntime().gc();
 
         // Poll with gc in each iteration to reduce flake.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {
                 Runtime.getRuntime().gc();
-                return "deny".equals(mActivityTestRule.getTitleOnUiThread(awContents));
+                return "deny".equals(getTitleOnUiThread(awContents));
             }
         });
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @DisableIf
-            .Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
-            @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-            @RetryOnFailure
-            public void testCancelPermission() throws Throwable {
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    @RetryOnFailure
+    public void testCancelPermission() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
                 new TestAwContentsClient() {
                     private AwPermissionRequest mRequest;
                     @Override
                     public void onPermissionRequest(AwPermissionRequest awPermissionRequest) {
-                        Assert.assertNull(mRequest);
+                        assertNull(mRequest);
                         mRequest = awPermissionRequest;
                         // Don't respond and wait for the request canceled.
                         helper.notifyCalled();
@@ -209,22 +193,22 @@ public class MediaAccessPermissionRequestTest {
                     @Override
                     public void onPermissionRequestCanceled(
                             AwPermissionRequest awPermissionRequest) {
-                        Assert.assertNotNull(mRequest);
+                        assertNotNull(mRequest);
                         if (mRequest == awPermissionRequest) helper.notifyCanceled();
                         mRequest = null;
                     }
                 };
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
-        mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
+        loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
         callCount = helper.getCallCount();
         // Load the same page again, the previous request should be canceled.
-        mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
+        loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
-        Assert.assertTrue(helper.canceled());
+        assertTrue(helper.canceled());
     }
 }

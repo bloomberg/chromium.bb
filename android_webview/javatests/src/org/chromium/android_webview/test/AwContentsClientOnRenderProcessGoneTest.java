@@ -6,11 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSwitches;
@@ -26,11 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for AwContentsClient.onRenderProcessGone callback.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsClientOnRenderProcessGoneTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
     private static final String TAG = "AwRendererGone";
     private static class GetRenderProcessGoneHelper extends CallbackHelper {
         private AwRenderProcessGoneDetail mDetail;
@@ -65,7 +56,6 @@ public class AwContentsClientOnRenderProcessGoneTest {
         }
     }
 
-    @Test
     @DisabledTest // http://crbug.com/689292
     @Feature({"AndroidWebView"})
     @SmallTest
@@ -74,21 +64,19 @@ public class AwContentsClientOnRenderProcessGoneTest {
     public void testOnRenderProcessCrash() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
-        AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(contentsClient);
         AwContents awContents = testView.getAwContents();
         GetRenderProcessGoneHelper helper = contentsClient.getGetRenderProcessGoneHelper();
-        mActivityTestRule.loadUrlAsync(awContents, "chrome://crash");
+        loadUrlAsync(awContents, "chrome://crash");
         int callCount = helper.getCallCount();
         helper.waitForCallback(callCount, 1, CallbackHelper.WAIT_TIMEOUT_SECONDS * 5,
                 TimeUnit.SECONDS);
-        Assert.assertEquals(callCount + 1, helper.getCallCount());
-        Assert.assertTrue(helper.getAwRenderProcessGoneDetail().didCrash());
-        Assert.assertEquals(
-                RendererPriority.HIGH, helper.getAwRenderProcessGoneDetail().rendererPriority());
+        assertEquals(callCount + 1, helper.getCallCount());
+        assertTrue(helper.getAwRenderProcessGoneDetail().didCrash());
+        assertEquals(RendererPriority.HIGH,
+                helper.getAwRenderProcessGoneDetail().rendererPriority());
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
@@ -96,17 +84,16 @@ public class AwContentsClientOnRenderProcessGoneTest {
     public void testOnRenderProcessKill() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
-        AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(contentsClient);
         AwContents awContents = testView.getAwContents();
         GetRenderProcessGoneHelper helper = contentsClient.getGetRenderProcessGoneHelper();
-        mActivityTestRule.loadUrlAsync(awContents, "chrome://kill");
+        loadUrlAsync(awContents, "chrome://kill");
         int callCount = helper.getCallCount();
         helper.waitForCallback(callCount);
 
-        Assert.assertEquals(callCount + 1, helper.getCallCount());
-        Assert.assertFalse(helper.getAwRenderProcessGoneDetail().didCrash());
-        Assert.assertEquals(
-                RendererPriority.HIGH, helper.getAwRenderProcessGoneDetail().rendererPriority());
+        assertEquals(callCount + 1, helper.getCallCount());
+        assertFalse(helper.getAwRenderProcessGoneDetail().didCrash());
+        assertEquals(RendererPriority.HIGH,
+                helper.getAwRenderProcessGoneDetail().rendererPriority());
     }
 }

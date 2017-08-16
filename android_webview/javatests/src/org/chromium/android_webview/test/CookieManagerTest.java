@@ -4,18 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
 import android.util.Pair;
 import android.webkit.ValueCallback;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
@@ -39,39 +31,38 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the CookieManager.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class CookieManagerTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class CookieManagerTest extends AwTestBase {
 
     private AwCookieManager mCookieManager;
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
         mCookieManager = new AwCookieManager();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+                createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
         mAwContents.getSettings().setJavaScriptEnabled(true);
-        Assert.assertNotNull(mCookieManager);
+        assertNotNull(mCookieManager);
 
         mCookieManager.setAcceptCookie(true);
-        Assert.assertTrue(mCookieManager.acceptCookie());
+        assertTrue(mCookieManager.acceptCookie());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         try {
             clearCookies();
         } catch (Throwable e) {
             throw new RuntimeException("Could not clear cookies.");
         }
+        super.tearDown();
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAcceptCookie() throws Throwable {
@@ -83,42 +74,38 @@ public class CookieManagerTest {
             String url = webServer.setResponse(path, responseStr, null);
 
             mCookieManager.setAcceptCookie(false);
-            Assert.assertFalse(mCookieManager.acceptCookie());
+            assertFalse(mCookieManager.acceptCookie());
 
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             setCookieWithJavaScript("test1", "value1");
-            Assert.assertNull(mCookieManager.getCookie(url));
+            assertNull(mCookieManager.getCookie(url));
 
             List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
             responseHeaders.add(
                     Pair.create("Set-Cookie", "header-test1=header-value1; path=" + path));
             url = webServer.setResponse(path, responseStr, responseHeaders);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            Assert.assertNull(mCookieManager.getCookie(url));
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            assertNull(mCookieManager.getCookie(url));
 
             mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
+            assertTrue(mCookieManager.acceptCookie());
 
             url = webServer.setResponse(path, responseStr, null);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             setCookieWithJavaScript("test2", "value2");
             waitForCookie(url);
             String cookie = mCookieManager.getCookie(url);
-            Assert.assertNotNull(cookie);
+            assertNotNull(cookie);
             validateCookies(cookie, "test2");
 
             responseHeaders = new ArrayList<Pair<String, String>>();
             responseHeaders.add(
                     Pair.create("Set-Cookie", "header-test2=header-value2 path=" + path));
             url = webServer.setResponse(path, responseStr, responseHeaders);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             waitForCookie(url);
             cookie = mCookieManager.getCookie(url);
-            Assert.assertNotNull(cookie);
+            assertNotNull(cookie);
             validateCookies(cookie, "test2", "header-test2");
         } finally {
             webServer.shutdown();
@@ -127,25 +114,23 @@ public class CookieManagerTest {
 
     private void setCookieWithJavaScript(final String name, final String value)
             throws Throwable {
-        JSUtils.executeJavaScriptAndWaitForResult(InstrumentationRegistry.getInstrumentation(),
-                mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+        JSUtils.executeJavaScriptAndWaitForResult(getInstrumentation(), mAwContents,
+                mContentsClient.getOnEvaluateJavaScriptResultHelper(),
                 "var expirationDate = new Date();"
                         + "expirationDate.setDate(expirationDate.getDate() + 5);"
                         + "document.cookie='" + name + "=" + value
                         + "; expires=' + expirationDate.toUTCString();");
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveAllCookies() throws Exception {
         mCookieManager.setCookie("http://www.example.com", "name=test");
-        Assert.assertTrue(mCookieManager.hasCookies());
+        assertTrue(mCookieManager.hasCookies());
         mCookieManager.removeAllCookies();
-        Assert.assertFalse(mCookieManager.hasCookies());
+        assertFalse(mCookieManager.hasCookies());
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveSessionCookies() throws Exception {
@@ -159,21 +144,19 @@ public class CookieManagerTest {
         mCookieManager.removeSessionCookies();
 
         String allCookies = mCookieManager.getCookie(url);
-        Assert.assertFalse(allCookies.contains(sessionCookie));
-        Assert.assertTrue(allCookies.contains(normalCookie));
+        assertFalse(allCookies.contains(sessionCookie));
+        assertTrue(allCookies.contains(normalCookie));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetCookie() throws Throwable {
         String url = "http://www.example.com";
         String cookie = "name=test";
         mCookieManager.setCookie(url, cookie);
-        Assert.assertEquals(cookie, mCookieManager.getCookie(url));
+        assertEquals(cookie, mCookieManager.getCookie(url));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetSecureCookieForHttpUrl() throws Throwable {
@@ -181,19 +164,17 @@ public class CookieManagerTest {
         String secureUrl = "https://www.example.com";
         String cookie = "name=test";
         mCookieManager.setCookie(url, cookie + ";secure");
-        Assert.assertEquals(cookie, mCookieManager.getCookie(secureUrl));
+        assertEquals(cookie, mCookieManager.getCookie(secureUrl));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testHasCookie() throws Throwable {
-        Assert.assertFalse(mCookieManager.hasCookies());
+        assertFalse(mCookieManager.hasCookies());
         mCookieManager.setCookie("http://www.example.com", "name=test");
-        Assert.assertTrue(mCookieManager.hasCookies());
+        assertTrue(mCookieManager.hasCookies());
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetCookieCallback() throws Throwable {
@@ -206,30 +187,29 @@ public class CookieManagerTest {
 
         setCookieOnUiThread(url, cookie, callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertTrue(callback.getValue());
-        Assert.assertEquals(cookie, mCookieManager.getCookie(url));
+        assertTrue(callback.getValue());
+        assertEquals(cookie, mCookieManager.getCookie(url));
 
         callCount = callback.getOnReceiveValueHelper().getCallCount();
 
         setCookieOnUiThread(brokenUrl, cookie, callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertFalse(callback.getValue());
-        Assert.assertEquals(null, mCookieManager.getCookie(brokenUrl));
+        assertFalse(callback.getValue());
+        assertEquals(null, mCookieManager.getCookie(brokenUrl));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testSetCookieNullCallback() throws Throwable {
         mCookieManager.setAcceptCookie(true);
-        Assert.assertTrue(mCookieManager.acceptCookie());
+        assertTrue(mCookieManager.acceptCookie());
 
         final String url = "http://www.example.com";
         final String cookie = "name=test";
 
         mCookieManager.setCookie(url, cookie, null);
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mCookieManager.hasCookies();
@@ -237,7 +217,6 @@ public class CookieManagerTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveAllCookiesCallback() throws Throwable {
@@ -249,18 +228,17 @@ public class CookieManagerTest {
         // When we remove all cookies the first time some cookies are removed.
         removeAllCookiesOnUiThread(callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertTrue(callback.getValue());
-        Assert.assertFalse(mCookieManager.hasCookies());
+        assertTrue(callback.getValue());
+        assertFalse(mCookieManager.hasCookies());
 
         callCount = callback.getOnReceiveValueHelper().getCallCount();
 
         // The second time none are removed.
         removeAllCookiesOnUiThread(callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertFalse(callback.getValue());
+        assertFalse(callback.getValue());
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveAllCookiesNullCallback() throws Throwable {
@@ -269,7 +247,7 @@ public class CookieManagerTest {
         mCookieManager.removeAllCookies(null);
 
         // Eventually the cookies are removed.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !mCookieManager.hasCookies();
@@ -277,7 +255,6 @@ public class CookieManagerTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveSessionCookiesCallback() throws Throwable {
@@ -294,20 +271,19 @@ public class CookieManagerTest {
         // When there is a session cookie then it is removed.
         removeSessionCookiesOnUiThread(callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertTrue(callback.getValue());
+        assertTrue(callback.getValue());
         String allCookies = mCookieManager.getCookie(url);
-        Assert.assertTrue(!allCookies.contains(sessionCookie));
-        Assert.assertTrue(allCookies.contains(normalCookie));
+        assertTrue(!allCookies.contains(sessionCookie));
+        assertTrue(allCookies.contains(normalCookie));
 
         callCount = callback.getOnReceiveValueHelper().getCallCount();
 
         // If there are no session cookies then none are removed.
         removeSessionCookiesOnUiThread(callback);
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
-        Assert.assertFalse(callback.getValue());
+        assertFalse(callback.getValue());
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveSessionCookiesNullCallback() throws Throwable {
@@ -318,13 +294,13 @@ public class CookieManagerTest {
         mCookieManager.setCookie(url, sessionCookie);
         mCookieManager.setCookie(url, makeExpiringCookie(normalCookie, 600));
         String allCookies = mCookieManager.getCookie(url);
-        Assert.assertTrue(allCookies.contains(sessionCookie));
-        Assert.assertTrue(allCookies.contains(normalCookie));
+        assertTrue(allCookies.contains(sessionCookie));
+        assertTrue(allCookies.contains(normalCookie));
 
         mCookieManager.removeSessionCookies(null);
 
         // Eventually the session cookie is removed.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 String c = mCookieManager.getCookie(url);
@@ -333,7 +309,6 @@ public class CookieManagerTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testExpiredCookiesAreNotSet() throws Exception {
@@ -341,10 +316,9 @@ public class CookieManagerTest {
         final String cookie = "cookie1=peter";
 
         mCookieManager.setCookie(url, makeExpiringCookie(cookie, -1));
-        Assert.assertNull(mCookieManager.getCookie(url));
+        assertNull(mCookieManager.getCookie(url));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testCookiesExpire() throws Exception {
@@ -354,10 +328,10 @@ public class CookieManagerTest {
         mCookieManager.setCookie(url, makeExpiringCookieMs(cookie, 1200));
 
         // The cookie exists:
-        Assert.assertTrue(mCookieManager.hasCookies());
+        assertTrue(mCookieManager.hasCookies());
 
         // But eventually expires:
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !mCookieManager.hasCookies();
@@ -365,7 +339,6 @@ public class CookieManagerTest {
         });
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testCookieExpiration() throws Exception {
@@ -377,19 +350,18 @@ public class CookieManagerTest {
         mCookieManager.setCookie(url, makeExpiringCookie(longCookie, 600));
 
         String allCookies = mCookieManager.getCookie(url);
-        Assert.assertTrue(allCookies.contains(sessionCookie));
-        Assert.assertTrue(allCookies.contains(longCookie));
+        assertTrue(allCookies.contains(sessionCookie));
+        assertTrue(allCookies.contains(longCookie));
 
         // Removing expired cookies doesn't have an observable effect but since people will still
         // be calling it for a while it shouldn't break anything either.
         mCookieManager.removeExpiredCookies();
 
         allCookies = mCookieManager.getCookie(url);
-        Assert.assertTrue(allCookies.contains(sessionCookie));
-        Assert.assertTrue(allCookies.contains(longCookie));
+        assertTrue(allCookies.contains(sessionCookie));
+        assertTrue(allCookies.contains(longCookie));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookie() throws Throwable {
@@ -405,11 +377,11 @@ public class CookieManagerTest {
         try {
             // Turn global allow on.
             mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
+            assertTrue(mCookieManager.acceptCookie());
 
             // When third party cookies are disabled...
             mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-            Assert.assertFalse(mAwContents.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(mAwContents.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can't set third party cookies.
             // First on the third party server we create a url which tries to set a cookie.
@@ -417,23 +389,21 @@ public class CookieManagerTest {
                     makeCookieUrl(webServer, "/cookie_1.js", "test1", "value1"));
             // Then we create a url on the first party server which links to the first url.
             String url = makeScriptLinkUrl(webServer, "/content_1.html", cookieUrl);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            Assert.assertNull(mCookieManager.getCookie(cookieUrl));
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            assertNull(mCookieManager.getCookie(cookieUrl));
 
             // When third party cookies are enabled...
             mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-            Assert.assertTrue(mAwContents.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(mAwContents.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can set third party cookies.
             cookieUrl = toThirdPartyUrl(
                     makeCookieUrl(webServer, "/cookie_2.js", "test2", "value2"));
             url = makeScriptLinkUrl(webServer, "/content_2.html", cookieUrl);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             waitForCookie(cookieUrl);
             String cookie = mCookieManager.getCookie(cookieUrl);
-            Assert.assertNotNull(cookie);
+            assertNotNull(cookie);
             validateCookies(cookie, "test2");
         } finally {
             webServer.shutdown();
@@ -445,20 +415,18 @@ public class CookieManagerTest {
         try {
             // Turn global allow on.
             mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
+            assertTrue(mCookieManager.acceptCookie());
 
             // Sets the per-WebView value.
             mAwContents.getSettings().setAcceptThirdPartyCookies(acceptCookie);
-            Assert.assertEquals(
-                    acceptCookie, mAwContents.getSettings().getAcceptThirdPartyCookies());
+            assertEquals(acceptCookie, mAwContents.getSettings().getAcceptThirdPartyCookies());
 
             // |cookieUrl| is a third-party url that sets a cookie on response.
             String cookieUrl = toThirdPartyUrl(
                     makeCookieWebSocketUrl(webServer, "/cookie_1", "test1", "value1"));
             // This html file includes a script establishing a WebSocket connection to |cookieUrl|.
             String url = makeWebSocketScriptUrl(webServer, "/content_1.html", cookieUrl);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             final String connecting = "0"; // WebSocket.CONNECTING
             final String closed = "3"; // WebSocket.CLOSED
             String readyState = connecting;
@@ -467,7 +435,7 @@ public class CookieManagerTest {
                 readyState = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                         webContents, "ws.readyState");
             }
-            Assert.assertEquals("true",
+            assertEquals("true",
                     JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "hasOpened"));
             return mCookieManager.getCookie(cookieUrl);
         } finally {
@@ -475,18 +443,16 @@ public class CookieManagerTest {
         }
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookieForWebSocketDisabledCase() throws Throwable {
-        Assert.assertNull(thirdPartyCookieForWebSocket(false));
+        assertNull(thirdPartyCookieForWebSocket(false));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookieForWebSocketEnabledCase() throws Throwable {
-        Assert.assertEquals("test1=value1", thirdPartyCookieForWebSocket(true));
+        assertEquals("test1=value1", thirdPartyCookieForWebSocket(true));
     }
 
     /**
@@ -552,7 +518,6 @@ public class CookieManagerTest {
         return webServer.setResponse(path, responseStr, null);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyJavascriptCookie() throws Throwable {
@@ -563,18 +528,18 @@ public class CookieManagerTest {
                     new ThirdPartyCookiesTestHelper(webServer);
 
             mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
+            assertTrue(mCookieManager.acceptCookie());
 
             // When third party cookies are disabled...
             thirdParty.getSettings().setAcceptThirdPartyCookies(false);
-            Assert.assertFalse(thirdParty.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(thirdParty.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can't set third party cookies.
             thirdParty.assertThirdPartyIFrameCookieResult("1", false);
 
             // When third party cookies are enabled...
             thirdParty.getSettings().setAcceptThirdPartyCookies(true);
-            Assert.assertTrue(thirdParty.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(thirdParty.getSettings().getAcceptThirdPartyCookies());
 
             // ...we can set third party cookies.
             thirdParty.assertThirdPartyIFrameCookieResult("2", true);
@@ -583,7 +548,6 @@ public class CookieManagerTest {
         }
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookiesArePerWebview() throws Throwable {
@@ -591,34 +555,34 @@ public class CookieManagerTest {
         try {
             mCookieManager.setAcceptCookie(true);
             mCookieManager.removeAllCookies();
-            Assert.assertTrue(mCookieManager.acceptCookie());
-            Assert.assertFalse(mCookieManager.hasCookies());
+            assertTrue(mCookieManager.acceptCookie());
+            assertFalse(mCookieManager.hasCookies());
 
             ThirdPartyCookiesTestHelper helperOne = new ThirdPartyCookiesTestHelper(webServer);
             ThirdPartyCookiesTestHelper helperTwo = new ThirdPartyCookiesTestHelper(webServer);
 
             helperOne.getSettings().setAcceptThirdPartyCookies(false);
             helperTwo.getSettings().setAcceptThirdPartyCookies(false);
-            Assert.assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
-            Assert.assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
             helperOne.assertThirdPartyIFrameCookieResult("1", false);
             helperTwo.assertThirdPartyIFrameCookieResult("2", false);
 
             helperTwo.getSettings().setAcceptThirdPartyCookies(true);
-            Assert.assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
-            Assert.assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
             helperOne.assertThirdPartyIFrameCookieResult("3", false);
             helperTwo.assertThirdPartyIFrameCookieResult("4", true);
 
             helperOne.getSettings().setAcceptThirdPartyCookies(true);
-            Assert.assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
-            Assert.assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperTwo.getSettings().getAcceptThirdPartyCookies());
             helperOne.assertThirdPartyIFrameCookieResult("5", true);
             helperTwo.assertThirdPartyIFrameCookieResult("6", true);
 
             helperTwo.getSettings().setAcceptThirdPartyCookies(false);
-            Assert.assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
-            Assert.assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
+            assertTrue(helperOne.getSettings().getAcceptThirdPartyCookies());
+            assertFalse(helperTwo.getSettings().getAcceptThirdPartyCookies());
             helperOne.assertThirdPartyIFrameCookieResult("7", true);
             helperTwo.assertThirdPartyIFrameCookieResult("8", false);
         } finally {
@@ -626,7 +590,6 @@ public class CookieManagerTest {
         }
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAcceptFileSchemeCookies() throws Throwable {
@@ -634,12 +597,11 @@ public class CookieManagerTest {
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-        Assert.assertTrue(fileURLCanSetCookie("1"));
+        assertTrue(fileURLCanSetCookie("1"));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-        Assert.assertTrue(fileURLCanSetCookie("2"));
+        assertTrue(fileURLCanSetCookie("2"));
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRejectFileSchemeCookies() throws Throwable {
@@ -647,15 +609,15 @@ public class CookieManagerTest {
         mAwContents.getSettings().setAllowFileAccess(true);
 
         mAwContents.getSettings().setAcceptThirdPartyCookies(true);
-        Assert.assertFalse(fileURLCanSetCookie("3"));
+        assertFalse(fileURLCanSetCookie("3"));
         mAwContents.getSettings().setAcceptThirdPartyCookies(false);
-        Assert.assertFalse(fileURLCanSetCookie("4"));
+        assertFalse(fileURLCanSetCookie("4"));
     }
 
     private boolean fileURLCanSetCookie(String suffix) throws Throwable {
         String value = "value" + suffix;
         String url = "file:///android_asset/cookie_test.html?value=" + value;
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         String cookie = mCookieManager.getCookie(url);
         return cookie != null && cookie.contains("test=" + value);
     }
@@ -669,7 +631,7 @@ public class CookieManagerTest {
             mWebServer = webServer;
             mContentsClient = new TestAwContentsClient();
             final AwTestContainerView containerView =
-                    mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+                    createAwTestContainerViewOnMainSync(mContentsClient);
             mAwContents = containerView.getAwContents();
             mAwContents.getSettings().setJavaScriptEnabled(true);
         }
@@ -699,20 +661,19 @@ public class CookieManagerTest {
 
             // Then we load it as an iframe.
             String url = makeIframeUrl(getWebServer(), pagePath, cookieUrl);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
             if (expectedResult) {
                 String cookie = mCookieManager.getCookie(cookieUrl);
-                Assert.assertNotNull(cookie);
+                assertNotNull(cookie);
                 validateCookies(cookie, key);
             } else {
-                Assert.assertNull(mCookieManager.getCookie(cookieUrl));
+                assertNull(mCookieManager.getCookie(cookieUrl));
             }
 
             // Clear the cookies.
             clearCookies();
-            Assert.assertFalse(mCookieManager.hasCookies());
+            assertFalse(mCookieManager.hasCookies());
         }
     }
 
@@ -755,7 +716,7 @@ public class CookieManagerTest {
 
     private void setCookieOnUiThread(final String url, final String cookie,
             final ValueCallback<Boolean> callback) throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mCookieManager.setCookie(url, cookie, callback);
@@ -765,7 +726,7 @@ public class CookieManagerTest {
 
     private void removeSessionCookiesOnUiThread(final ValueCallback<Boolean> callback)
             throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mCookieManager.removeSessionCookies(callback);
@@ -775,7 +736,7 @@ public class CookieManagerTest {
 
     private void removeAllCookiesOnUiThread(final ValueCallback<Boolean> callback)
             throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mCookieManager.removeAllCookies(callback);
@@ -787,11 +748,11 @@ public class CookieManagerTest {
      * Clears all cookies synchronously.
      */
     private void clearCookies() throws Throwable {
-        CookieUtils.clearCookies(mCookieManager);
+        CookieUtils.clearCookies(this, mCookieManager);
     }
 
     private void waitForCookie(final String url) throws Exception {
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mCookieManager.getCookie(url) != null;

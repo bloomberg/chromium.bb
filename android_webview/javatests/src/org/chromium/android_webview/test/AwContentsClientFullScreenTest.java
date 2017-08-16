@@ -6,19 +6,10 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertNotEquals;
 
-import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
-
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.DisableIf;
@@ -43,12 +34,8 @@ import java.util.concurrent.TimeoutException;
  * we pick a div containing a video and custom html controls since this is a
  * very common use case.
  */
-@RunWith(AwJUnit4ClassRunner.class)
 @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
-public class AwContentsClientFullScreenTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class AwContentsClientFullScreenTest extends AwTestBase {
     private static final String VIDEO_TEST_URL =
             "file:///android_asset/full_screen_video_test.html";
     private static final String VIDEO_INSIDE_DIV_TEST_URL =
@@ -66,13 +53,15 @@ public class AwContentsClientFullScreenTest {
     private ContentViewCore mContentViewCore;
     private AwTestContainerView mTestContainerView;
 
-    @Before
-    public void setUp() throws Exception {
-        mContentsClient = new FullScreenVideoTestAwContentsClient(
-                mActivityTestRule.getActivity(), mActivityTestRule.isHardwareAcceleratedTest());
-        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mContentsClient = new FullScreenVideoTestAwContentsClient(getActivity(),
+                isHardwareAcceleratedTest());
+        mTestContainerView =
+                createAwTestContainerViewOnMainSync(mContentsClient);
         mContentViewCore = mTestContainerView.getContentViewCore();
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         mTestContainerView.getAwContents().getSettings().setFullscreenSupported(true);
     }
 
@@ -81,14 +70,13 @@ public class AwContentsClientFullScreenTest {
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testFullscreenVideoInSoftwareModeDoesNotDeadlock() throws Throwable {
         // Although fullscreen video is not supported without hardware acceleration
         // we should not deadlock if apps try to use it.
         loadTestPageAndClickFullscreen(VIDEO_TEST_URL);
         mContentsClient.waitForCustomViewShown();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mContentsClient.getExitCallback().onCustomViewHidden();
@@ -97,7 +85,6 @@ public class AwContentsClientFullScreenTest {
         mContentsClient.waitForCustomViewHidden();
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
@@ -111,7 +98,6 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithCallback_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
@@ -121,7 +107,6 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithCallback_videoInsideDiv() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
@@ -140,7 +125,6 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithJavascript_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
@@ -150,9 +134,9 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
-    public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv() throws Throwable {
+    public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv()
+            throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_INSIDE_DIV_TEST_URL);
     }
 
@@ -170,7 +154,6 @@ public class AwContentsClientFullScreenTest {
     @Feature({"AndroidWebView"})
     @SkipCommandLineParameterization  // crbug.com/616501
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
@@ -180,9 +163,9 @@ public class AwContentsClientFullScreenTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/618749")
-    public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv() throws Throwable {
+    public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv()
+            throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_INSIDE_DIV_TEST_URL);
     }
 
@@ -194,18 +177,17 @@ public class AwContentsClientFullScreenTest {
         mTestContainerView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Assert.fail("mTestContainerView received key event");
+                fail("mTestContainerView received key event");
                 return false;
             }
         });
 
-        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
+        sendKeys(KeyEvent.KEYCODE_BACK);
         mContentsClient.waitForCustomViewHidden();
-        Assert.assertFalse(mContentsClient.wasOnUnhandledKeyUpEventCalled());
+        assertFalse(mContentsClient.wasOnUnhandledKeyUpEventCalled());
         assertWaitForIsEmbedded();
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     @RetryOnFailure
@@ -219,14 +201,12 @@ public class AwContentsClientFullScreenTest {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewAndPlayWithHtmlControl_video() throws Throwable {
         doTestOnShowCustomViewAndPlayWithHtmlControl(VIDEO_TEST_URL);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv() throws Throwable {
@@ -235,20 +215,18 @@ public class AwContentsClientFullScreenTest {
 
     public void doTestOnShowCustomViewAndPlayWithHtmlControl(String videoTestUrl) throws Throwable {
         doOnShowCustomViewTest(videoTestUrl);
-        Assert.assertTrue(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
 
         tapPlayButton();
         DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testFullscreenNotSupported_video() throws Throwable {
         doTestFullscreenNotSupported(VIDEO_TEST_URL);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testFullscreenNotSupported_videoInsideDiv() throws Throwable {
@@ -262,18 +240,17 @@ public class AwContentsClientFullScreenTest {
 
         loadTestPageAndClickFullscreen(videoTestUrl);
 
-        Assert.assertTrue(fullscreenErrorObserver.waitForEvent(WAIT_TIMEOUT_MS));
-        Assert.assertFalse(mContentsClient.wasCustomViewShownCalled());
+        assertTrue(fullscreenErrorObserver.waitForEvent(WAIT_TIMEOUT_MS));
+        assertFalse(mContentsClient.wasCustomViewShownCalled());
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video() throws Throwable {
+    public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video()
+            throws Throwable {
         doTestPowerSaveBlockerIsEnabledDuringFullscreenPlayback(VIDEO_TEST_URL);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv()
@@ -299,11 +276,11 @@ public class AwContentsClientFullScreenTest {
         assertWaitForKeepScreenOnActive(customView, false);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    public void testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback() throws Throwable {
-        Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+    public void testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback()
+            throws Throwable {
+        assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
 
         // No power save blocker is active before playback starts.
@@ -318,12 +295,12 @@ public class AwContentsClientFullScreenTest {
         assertWaitForKeepScreenOnActive(mTestContainerView, false);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     @RetryOnFailure
-    public void testPowerSaveBlockerIsTransferredToFullscreen() throws Throwable {
-        Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
+    public void testPowerSaveBlockerIsTransferredToFullscreen()
+            throws Throwable {
+        assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
 
         // Play and verify that there is an active power save blocker.
@@ -346,11 +323,11 @@ public class AwContentsClientFullScreenTest {
         assertKeepScreenOnActive(mTestContainerView, false);
     }
 
-    @Test
     @MediumTest
     @Feature({"AndroidWebView"})
     @RetryOnFailure
-    public void testPowerSaveBlockerIsTransferredToEmbedded() throws Throwable {
+    public void testPowerSaveBlockerIsTransferredToEmbedded()
+            throws Throwable {
         // Enter fullscreen.
         doOnShowCustomViewTest(VIDEO_INSIDE_DIV_TEST_URL);
         View customView = mContentsClient.getCustomView();
@@ -398,7 +375,7 @@ public class AwContentsClientFullScreenTest {
                             && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID)
                             != expected;
                 } catch (InterruptedException | TimeoutException e) {
-                    Assert.fail(e.getMessage());
+                    fail(e.getMessage());
                     return false;
                 }
             }
@@ -407,20 +384,20 @@ public class AwContentsClientFullScreenTest {
 
     private void assertKeepScreenOnActive(final View view, final boolean expected)
             throws Exception {
-        Assert.assertEquals(expected, getKeepScreenOnOnInstrumentationThread(view));
+        assertEquals(expected, getKeepScreenOnOnInstrumentationThread(view));
         assertNotEquals(expected, DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
     }
 
     private boolean getKeepScreenOnOnInstrumentationThread(final View view) {
         try {
-            return mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+            return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getKeepScreenOnOnUiThread(view);
                 }
             });
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
             return false;
         }
     }
@@ -447,7 +424,7 @@ public class AwContentsClientFullScreenTest {
                 try {
                     return DOMUtils.isFullscreen(getWebContentsOnUiThread());
                 } catch (InterruptedException | TimeoutException e) {
-                    Assert.fail(e.getMessage());
+                    fail(e.getMessage());
                     return false;
                 }
             }
@@ -462,7 +439,7 @@ public class AwContentsClientFullScreenTest {
                 try {
                     return !DOMUtils.isFullscreen(getWebContentsOnUiThread());
                 } catch (InterruptedException | TimeoutException e) {
-                    Assert.fail(e.getMessage());
+                    fail(e.getMessage());
                     return false;
                 }
             }
@@ -472,7 +449,7 @@ public class AwContentsClientFullScreenTest {
 
     private JavascriptEventObserver registerObserver(final String observerName) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 observer.register(mContentViewCore, observerName);
@@ -484,7 +461,7 @@ public class AwContentsClientFullScreenTest {
     private void doOnShowAndHideCustomViewTest(String videoTestUrl, final Runnable existFullscreen)
             throws Throwable {
         doOnShowCustomViewTest(videoTestUrl);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(existFullscreen);
+        runTestOnUiThread(existFullscreen);
         mContentsClient.waitForCustomViewHidden();
         assertWaitForIsEmbedded();
     }
@@ -501,22 +478,22 @@ public class AwContentsClientFullScreenTest {
     }
 
     private void loadTestPage(String videoTestUrl) throws Exception {
-        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), videoTestUrl);
         // As we are loading a non-trivial page, let's wait until we have something displayed.
-        mActivityTestRule.waitForVisualStateCallback(mTestContainerView.getAwContents());
+        waitForVisualStateCallback(mTestContainerView.getAwContents());
     }
 
     private WebContents getWebContentsOnUiThread() {
         try {
-            return mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<WebContents>() {
+            return runTestOnUiThreadAndGetResult(new Callable<WebContents>() {
                 @Override
                 public WebContents call() throws Exception {
                     return mContentViewCore.getWebContents();
                 }
             });
         } catch (Exception e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
             return null;
         }
     }

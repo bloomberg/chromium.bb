@@ -6,15 +6,8 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
@@ -30,19 +23,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * AwContents rendering / pixel tests.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsRenderTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class AwContentsRenderTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private AwTestContainerView mContainerView;
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mContentsClient = new TestAwContentsClient();
-        mContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        mContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mContainerView.getAwContents();
     }
 
@@ -55,7 +46,7 @@ public class AwContentsRenderTest {
         });
     }
 
-    @Test
+
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSetGetBackgroundColor() throws Throwable {
@@ -65,29 +56,27 @@ public class AwContentsRenderTest {
         setBackgroundColorOnUiThread(Color.CYAN);
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.CYAN);
 
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        Assert.assertEquals(
-                Color.CYAN, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
+        assertEquals(Color.CYAN, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
 
         setBackgroundColorOnUiThread(Color.YELLOW);
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.YELLOW);
 
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
-                        + "<body></body></html>");
+                + "<body></body></html>");
         final int teal = 0xFF227788;
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, teal);
 
         // Changing the base background should not override CSS background.
         setBackgroundColorOnUiThread(Color.MAGENTA);
-        Assert.assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
+        assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
         // ...setting the background is asynchronous, so pause a bit and retest just to be sure.
         Thread.sleep(500);
-        Assert.assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
+        assertEquals(teal, GraphicsTestUtils.sampleBackgroundColorOnUiThread(mAwContents));
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testPictureListener() throws Throwable {
@@ -99,38 +88,37 @@ public class AwContentsRenderTest {
         });
 
         int pictureCount = mContentsClient.getPictureListenerHelper().getCallCount();
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         mContentsClient.getPictureListenerHelper().waitForCallback(pictureCount, 1);
         // Invalidation only, so picture should be null.
-        Assert.assertNull(mContentsClient.getPictureListenerHelper().getPicture());
+        assertNull(mContentsClient.getPictureListenerHelper().getPicture());
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testForceDrawWhenInvisible() throws Throwable {
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
                         + "<body>Hello world!</body></html>");
 
         Bitmap visibleBitmap = null;
         Bitmap invisibleBitmap = null;
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 final long requestId1 = 1;
                 mAwContents.insertVisualStateCallback(requestId1, new VisualStateCallback() {
                     @Override
                     public void onComplete(long id) {
-                        Assert.assertEquals(requestId1, id);
+                        assertEquals(requestId1, id);
                         latch.countDown();
                     }
                 });
             }
         });
-        Assert.assertTrue(latch.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(latch.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         final int width = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
@@ -150,22 +138,22 @@ public class AwContentsRenderTest {
         // 1. isPaused
         // 2. window's visibility, if the webview is attached to a window.
         // Note android.view.View's visibility does not affect DOM page visibility.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mContainerView.setVisibility(View.INVISIBLE);
-                Assert.assertTrue(mAwContents.isPageVisible());
+                assertTrue(mAwContents.isPageVisible());
 
                 mAwContents.onPause();
-                Assert.assertFalse(mAwContents.isPageVisible());
+                assertFalse(mAwContents.isPageVisible());
 
                 mAwContents.onResume();
-                Assert.assertTrue(mAwContents.isPageVisible());
+                assertTrue(mAwContents.isPageVisible());
 
                 // Simulate a window visiblity change. WebView test app can't
                 // manipulate the window visibility directly.
                 mAwContents.onWindowVisibilityChanged(View.INVISIBLE);
-                Assert.assertFalse(mAwContents.isPageVisible());
+                assertFalse(mAwContents.isPageVisible());
             }
         });
 
@@ -174,7 +162,7 @@ public class AwContentsRenderTest {
         // has taken effect. Just sleep the test thread for 500ms.
         Thread.sleep(500);
         invisibleBitmap = GraphicsTestUtils.drawAwContentsOnUiThread(mAwContents, width, height);
-        Assert.assertNotNull(invisibleBitmap);
-        Assert.assertTrue(invisibleBitmap.sameAs(visibleBitmap));
+        assertNotNull(invisibleBitmap);
+        assertTrue(invisibleBitmap.sameAs(visibleBitmap));
     }
 }

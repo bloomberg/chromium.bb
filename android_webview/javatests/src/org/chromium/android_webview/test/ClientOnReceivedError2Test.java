@@ -6,17 +6,8 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertNotEquals;
 
-import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
-
 import android.support.test.filters.SmallTest;
 import android.webkit.WebSettings;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceError;
@@ -35,10 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the ContentViewClient.onReceivedError2() method.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class ClientOnReceivedError2Test {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class ClientOnReceivedError2Test extends AwTestBase {
 
     private VerifyOnReceivedError2CallClient mContentsClient;
     private AwTestContainerView mTestContainerView;
@@ -48,16 +36,18 @@ public class ClientOnReceivedError2Test {
     private static final String BAD_HTML_URL =
             "http://id.be.really.surprised.if.this.address.existed/a.html";
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mContentsClient = new VerifyOnReceivedError2CallClient();
-        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         if (mWebServer != null) mWebServer.shutdown();
+        super.tearDown();
     }
 
     private void startWebServer() throws Exception {
@@ -80,11 +70,11 @@ public class ClientOnReceivedError2Test {
         @Override
         public void onPageFinished(String url) {
             if (!mBypass) {
-                Assert.assertEquals(
+                assertEquals(
                         "onPageFinished called twice for " + url, false, mIsOnPageFinishedCalled);
                 mIsOnPageFinishedCalled = true;
-                Assert.assertEquals("onReceivedError2 not called before onPageFinished for " + url,
-                        true, mIsOnReceivedError2Called);
+                assertEquals("onReceivedError2 not called before onPageFinished for " + url, true,
+                        mIsOnReceivedError2Called);
             }
             super.onPageFinished(url);
         }
@@ -93,7 +83,7 @@ public class ClientOnReceivedError2Test {
         public void onReceivedError2(AwWebResourceRequest request,
                 AwWebResourceError error) {
             if (!mBypass) {
-                Assert.assertEquals("onReceivedError2 called twice for " + request.url, false,
+                assertEquals("onReceivedError2 called twice for " + request.url, false,
                         mIsOnReceivedError2Called);
                 mIsOnReceivedError2Called = true;
             }
@@ -101,40 +91,37 @@ public class ClientOnReceivedError2Test {
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testMainFrame() throws Throwable {
-        mActivityTestRule.loadUrlSync(
-                mAwContents, mContentsClient.getOnPageFinishedHelper(), BAD_HTML_URL);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), BAD_HTML_URL);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(BAD_HTML_URL, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
+        assertNotNull(request);
+        assertEquals(BAD_HTML_URL, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
         // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
-        Assert.assertTrue(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertTrue(request.requestHeaders.isEmpty());
+        assertTrue(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
         assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUserGesture() throws Throwable {
         useDefaultTestAwContentsClient();
         final String pageHtml = CommonResources.makeHtmlPageWithSimpleLinkTo(BAD_HTML_URL);
-        mActivityTestRule.loadDataAsync(mAwContents, pageHtml, "text/html", false);
-        mActivityTestRule.waitForPixelColorAtCenterOfView(
-                mAwContents, mTestContainerView, CommonResources.LINK_COLOR);
+        loadDataAsync(mAwContents, pageHtml, "text/html", false);
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
@@ -145,49 +132,47 @@ public class ClientOnReceivedError2Test {
                 WAIT_TIMEOUT_MS,
                 TimeUnit.MILLISECONDS);
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(BAD_HTML_URL, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
+        assertNotNull(request);
+        assertEquals(BAD_HTML_URL, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
         // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
-        Assert.assertTrue(request.isMainFrame);
-        Assert.assertTrue(request.hasUserGesture);
+        assertTrue(request.requestHeaders.isEmpty());
+        assertTrue(request.isMainFrame);
+        assertTrue(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
         assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testIframeSubresource() throws Throwable {
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + BAD_HTML_URL + "' />");
-        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 pageHtml, "text/html", false);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(BAD_HTML_URL, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
+        assertNotNull(request);
+        assertEquals(BAD_HTML_URL, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
         // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertTrue(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
         assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testUserGestureForIframeSubresource() throws Throwable {
@@ -197,9 +182,9 @@ public class ClientOnReceivedError2Test {
         final String iframeUrl = mWebServer.setResponse("/iframe.html", iframeHtml, null);
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe style='width:100%;height:100%;' src='" + iframeUrl + "' />");
-        mActivityTestRule.loadDataAsync(mAwContents, pageHtml, "text/html", false);
-        mActivityTestRule.waitForPixelColorAtCenterOfView(
-                mAwContents, mTestContainerView, CommonResources.LINK_COLOR);
+        loadDataAsync(mAwContents, pageHtml, "text/html", false);
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
@@ -210,75 +195,72 @@ public class ClientOnReceivedError2Test {
                 WAIT_TIMEOUT_MS,
                 TimeUnit.MILLISECONDS);
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(BAD_HTML_URL, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
+        assertNotNull(request);
+        assertEquals(BAD_HTML_URL, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
         // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertTrue(request.hasUserGesture);
+        assertTrue(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertTrue(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
         assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testImageSubresource() throws Throwable {
         final String imageUrl = "http://man.id.be.really.surprised.if.this.address.existed/a.png";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<img src='" + imageUrl + "' />");
-        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 pageHtml, "text/html", false);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(imageUrl, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
+        assertNotNull(request);
+        assertEquals(imageUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
         // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertTrue(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
         // The particular error code that is returned depends on the configuration of the device
         // (such as existence of a proxy) so we don't test for it.
         assertNotEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnInvalidScheme() throws Throwable {
         final String iframeUrl = "foo://some/resource";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
-        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 pageHtml, "text/html", false);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(iframeUrl, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
-        Assert.assertFalse(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertNotNull(request);
+        assertEquals(iframeUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
+        assertFalse(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
-        Assert.assertEquals(ErrorCodeConversionHelper.ERROR_UNSUPPORTED_SCHEME, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNSUPPORTED_SCHEME, error.errorCode);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnNonExistentAssetUrl() throws Throwable {
@@ -286,26 +268,24 @@ public class ClientOnReceivedError2Test {
         final String iframeUrl = baseUrl + "does_not_exist.html";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), pageHtml, "text/html", false, baseUrl,
-                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageHtml,
+                "text/html", false, baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(iframeUrl, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
-        Assert.assertFalse(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertNotNull(request);
+        assertEquals(iframeUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
+        assertFalse(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
-        Assert.assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnNonExistentResourceUrl() throws Throwable {
@@ -313,53 +293,49 @@ public class ClientOnReceivedError2Test {
         final String iframeUrl = baseUrl + "does_not_exist.html";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), pageHtml, "text/html", false, baseUrl,
-                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageHtml,
+                "text/html", false, baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(iframeUrl, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
-        Assert.assertFalse(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertNotNull(request);
+        assertEquals(iframeUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
+        assertFalse(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
-        Assert.assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnCacheMiss() throws Throwable {
         final String iframeUrl = "http://example.com/index.html";
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe src='" + iframeUrl + "' />");
-        mActivityTestRule.getAwSettingsOnUiThread(mAwContents)
-                .setCacheMode(WebSettings.LOAD_CACHE_ONLY);
-        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        getAwSettingsOnUiThread(mAwContents).setCacheMode(WebSettings.LOAD_CACHE_ONLY);
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 pageHtml, "text/html", false);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         AwWebResourceRequest request = onReceivedError2Helper.getRequest();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(iframeUrl, request.url);
-        Assert.assertEquals("GET", request.method);
-        Assert.assertNotNull(request.requestHeaders);
-        Assert.assertFalse(request.requestHeaders.isEmpty());
-        Assert.assertFalse(request.isMainFrame);
-        Assert.assertFalse(request.hasUserGesture);
+        assertNotNull(request);
+        assertEquals(iframeUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
+        assertFalse(request.requestHeaders.isEmpty());
+        assertFalse(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
-        Assert.assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
-        Assert.assertNotNull(error.description);
+        assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, error.errorCode);
+        assertNotNull(error.description);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNotCalledOnStopLoading() throws Throwable {
@@ -375,15 +351,15 @@ public class ClientOnReceivedError2Test {
                             latch.await(
                                     WAIT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
                         } catch (InterruptedException e) {
-                            Assert.fail("Caught InterruptedException " + e);
+                            fail("Caught InterruptedException " + e);
                         }
                     }
                 });
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
         final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
-        mActivityTestRule.loadUrlAsync(mAwContents, url);
-        mActivityTestRule.stopLoading(mAwContents);
+        loadUrlAsync(mAwContents, url);
+        stopLoading(mAwContents);
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount,
                 1 /* numberOfCallsToWaitFor */,
                 WAIT_TIMEOUT_MS,
@@ -396,12 +372,12 @@ public class ClientOnReceivedError2Test {
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
         final int onReceivedError2CallCount = onReceivedError2Helper.getCallCount();
-        mActivityTestRule.loadUrlAsync(mAwContents, BAD_HTML_URL);
+        loadUrlAsync(mAwContents, BAD_HTML_URL);
         onReceivedError2Helper.waitForCallback(onReceivedError2CallCount,
                 1 /* numberOfCallsToWaitFor */,
                 WAIT_TIMEOUT_MS,
                 TimeUnit.MILLISECONDS);
-        Assert.assertEquals(onReceivedError2CallCount + 1, onReceivedError2Helper.getCallCount());
-        Assert.assertEquals(BAD_HTML_URL, onReceivedError2Helper.getRequest().url);
+        assertEquals(onReceivedError2CallCount + 1, onReceivedError2Helper.getCallCount());
+        assertEquals(BAD_HTML_URL, onReceivedError2Helper.getRequest().url);
     }
 }

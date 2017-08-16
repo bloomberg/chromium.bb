@@ -5,85 +5,71 @@
 package org.chromium.android_webview.test;
 
 import android.os.StrictMode;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 
 /**
  * Tests ensuring that starting up WebView does not cause any diskRead StrictMode violations.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwStrictModeTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule =
-            new AwActivityTestRule() {
-                @Override
-                public boolean needsAwBrowserContextCreated() {
-                    return false;
-                }
-
-                @Override
-                public boolean needsBrowserProcessStarted() {
-                    // Don't start the browser process in AwTestBase - we want to start it ourselves
-                    // with strictmode policies turned on.
-                    return false;
-                }
-            }
-
-    ;
-
+public class AwStrictModeTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mAwTestContainerView;
 
     private StrictMode.ThreadPolicy mOldThreadPolicy;
     private StrictMode.VmPolicy mOldVmPolicy;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mContentsClient = new TestAwContentsClient();
         enableStrictModeOnUiThreadSync();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         disableStrictModeOnUiThreadSync();
+        super.tearDown();
     }
 
-    @Test
+    @Override
+    public boolean needsAwBrowserContextCreated() {
+        return false;
+    }
+
+
+    @Override
+    public boolean needsBrowserProcessStarted() {
+        // Don't start the browser process in AwTestBase - we want to start it ourselves with
+        // strictmode policies turned on.
+        return false;
+    }
+
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testStartup() throws Exception {
         startEverythingSync();
     }
 
-    @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testLoadEmptyData() throws Exception {
         startEverythingSync();
-        mActivityTestRule.loadDataSync(mAwTestContainerView.getAwContents(),
+        loadDataSync(mAwTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), "", "text/html", false);
     }
 
-    @Test
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testSetJavaScriptAndLoadData() throws Exception {
         startEverythingSync();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwTestContainerView.getAwContents());
-        mActivityTestRule.loadDataSync(mAwTestContainerView.getAwContents(),
+        enableJavaScriptOnUiThread(mAwTestContainerView.getAwContents());
+        loadDataSync(mAwTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), "", "text/html", false);
     }
 
     private void enableStrictModeOnUiThreadSync() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mOldThreadPolicy = StrictMode.getThreadPolicy();
@@ -98,28 +84,26 @@ public class AwStrictModeTest {
                         .penaltyLog()
                         .penaltyDeath()
                         .build());
-            }
-        });
+            }});
     }
 
     private void disableStrictModeOnUiThreadSync() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 StrictMode.setThreadPolicy(mOldThreadPolicy);
                 StrictMode.setVmPolicy(mOldVmPolicy);
-            }
-        });
+            }});
     }
 
     private void startEverythingSync() throws Exception {
-        mActivityTestRule.getActivity();
-        mActivityTestRule.createAwBrowserContext();
-        mActivityTestRule.startBrowserProcess();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getActivity();
+        createAwBrowserContext();
+        startBrowserProcess();
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mAwTestContainerView = mActivityTestRule.createAwTestContainerView(mContentsClient);
+                mAwTestContainerView = createAwTestContainerView(mContentsClient);
             }
         });
     }

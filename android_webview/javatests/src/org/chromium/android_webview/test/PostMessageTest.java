@@ -6,16 +6,8 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.webkit.JavascriptInterface;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -37,11 +29,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * The tests for content postMessage API.
  */
-@RunWith(AwJUnit4ClassRunner.class)
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
-public class PostMessageTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class PostMessageTest extends AwTestBase {
 
     private static final String SOURCE_ORIGIN = "";
     // Timeout to failure, in milliseconds
@@ -94,16 +83,17 @@ public class PostMessageTest {
     private AwContents mAwContents;
     private TestWebServer mWebServer;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mMessageObject = new MessageObject();
         mContentsClient = new TestAwContentsClient();
-        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        enableJavaScriptOnUiThread(mAwContents);
 
         try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mAwContents.addJavascriptInterface(mMessageObject, "messageObject");
@@ -115,9 +105,10 @@ public class PostMessageTest {
         mWebServer = TestWebServer.start();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mWebServer.shutdown();
+        super.tearDown();
     }
 
     private static final String WEBVIEW_MESSAGE = "from_webview";
@@ -179,25 +170,22 @@ public class PostMessageTest {
                 CommonResources.getTextHtmlHeaders(true));
         OnPageFinishedHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         onPageFinishedHelper.waitForCallback(currentCallCount);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrame() throws Throwable {
         verifyPostMessageToMainFrame(mWebServer.getBaseUrl());
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrameUsingWildcard() throws Throwable {
         verifyPostMessageToMainFrame("*");
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrameUsingEmptyStringAsWildcard() throws Throwable {
@@ -206,24 +194,23 @@ public class PostMessageTest {
 
     private void verifyPostMessageToMainFrame(final String targetOrigin) throws Throwable {
         loadPage(TEST_PAGE);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, targetOrigin, null);
             }
         });
         mMessageObject.waitForMessage();
-        Assert.assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
-        Assert.assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
+        assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
+        assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testTransferringSamePortTwiceViaPostMessageToFrameNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -237,7 +224,7 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -248,13 +235,12 @@ public class PostMessageTest {
     // 2. setting an event handler.
     // A started port cannot return to "non-started" state. The four tests below verifies
     // these conditions for both conditions, using message ports and message channels.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testStartedPortCannotBeTransferredUsingPostMessageToFrame1() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -266,20 +252,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testStartedPortCannotBeTransferredUsingPostMessageToFrame2() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -295,21 +280,20 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     @RetryOnFailure
     public void testStartedPortCannotBeTransferredUsingMessageChannel1() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
@@ -321,20 +305,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testStartedPortCannotBeTransferredUsingMessageChannel2() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
@@ -350,7 +333,7 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -364,13 +347,12 @@ public class PostMessageTest {
     // an exception in this case either since the information of entangled port is not
     // available at the source port. We need a new mechanism to implement to prevent
     // this case.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testTransferringSourcePortViaMessageChannelNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -380,20 +362,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // Verify a closed port cannot be transferred to a frame.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testSendClosedPortToFrameNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -405,20 +386,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // Verify a closed port cannot be transferred to a port.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testSendClosedPortToPortNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
@@ -430,20 +410,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // Verify messages cannot be posted to closed ports.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToClosedPortNotAllowed() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -454,19 +433,18 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // Verify messages posted before closing a port is received at the destination port.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testMessagesPostedBeforeClosingPortAreTransferred() throws Throwable {
         loadPage(TITLE_FROM_POSTMESSAGE_TO_CHANNEL);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -481,13 +459,12 @@ public class PostMessageTest {
     }
 
     // Verify a transferred port using postmessagetoframe cannot be closed.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testClosingTransferredPortToFrameThrowsAnException() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -499,20 +476,19 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
     // Verify a transferred port using postmessagetoframe cannot be closed.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testClosingTransferredPortToChannelThrowsAnException() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
@@ -526,7 +502,7 @@ public class PostMessageTest {
                     latch.countDown();
                     return;
                 }
-                Assert.fail();
+                fail();
             }
         });
         boolean ignore = latch.await(TIMEOUT, java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -534,12 +510,11 @@ public class PostMessageTest {
 
     // Create two message channels, and while they are in pending state, transfer the
     // second one in the first one.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPendingPortCanBeTransferredInPendingPort() throws Throwable {
         loadPage(TITLE_FROM_POSTMESSAGE_TO_CHANNEL);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
@@ -610,13 +585,12 @@ public class PostMessageTest {
     // The issue seems like blocking the UI thread causes a racing SYNC ipc from renderer
     // to browser to block waiting for UI thread, and this would in turn block renderer
     // doing the conversion.
-    @Test
     @DisabledTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testReceiveMessageInBackgroundThread() throws Throwable {
         loadPage(TEST_PAGE);
         final ChannelContainer channelContainer = new ChannelContainer();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -633,12 +607,12 @@ public class PostMessageTest {
             }
         });
         mMessageObject.waitForMessage();
-        Assert.assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
-        Assert.assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
+        assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
+        assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
         // verify that one message port is received at the js side
-        Assert.assertEquals(1, mMessageObject.getPorts().length);
+        assertEquals(1, mMessageObject.getPorts().length);
         // wait until we receive a message from JS
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -648,7 +622,7 @@ public class PostMessageTest {
                 }
             }
         });
-        Assert.assertEquals(JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(JS_MESSAGE, channelContainer.getMessage());
     }
 
     private static final String ECHO_PAGE =
@@ -679,7 +653,6 @@ public class PostMessageTest {
     // can be transferred to JS and full communication can happen on it.
     // Do this by sending a message to JS and let it echo'ing the message with
     // some text prepended to it.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testMessageChannelUsingInitializedPort() throws Throwable {
@@ -695,7 +668,7 @@ public class PostMessageTest {
 
         waitUntilPortReady(channel[0]);
         waitUntilPortReady(channel[1]);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 channel[0].setMessageCallback(new MessagePort.MessageCallback() {
@@ -711,7 +684,7 @@ public class PostMessageTest {
         });
         // wait for the asynchronous response from JS
         channelContainer.waitForMessage();
-        Assert.assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
     }
 
     // Verify that a message port can be used immediately (even if it is in
@@ -722,12 +695,11 @@ public class PostMessageTest {
     // Disabled because flaky, see crbug.com/715960.
     // @SmallTest
     // @Feature({"AndroidWebView", "Android-PostMessage"})
-    @Test
     @DisabledTest
     public void testMessageChannelUsingPendingPort() throws Throwable {
         final ChannelContainer channelContainer = new ChannelContainer();
         loadPage(ECHO_PAGE);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -744,18 +716,17 @@ public class PostMessageTest {
         });
         // Wait for the asynchronous response from JS.
         channelContainer.waitForMessage();
-        Assert.assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
     }
 
     // Verify that a message port can be used for message transfer when both
     // ports are owned by same Webview.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testMessageChannelCommunicationWithinWebView() throws Throwable {
         final ChannelContainer channelContainer = new ChannelContainer();
         loadPage(ECHO_PAGE);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -770,17 +741,16 @@ public class PostMessageTest {
         });
         // Wait for the asynchronous response from JS.
         channelContainer.waitForMessage();
-        Assert.assertEquals(HELLO, channelContainer.getMessage());
+        assertEquals(HELLO, channelContainer.getMessage());
     }
 
     // Post a message with a pending port to a frame and then post a bunch of messages
     // after that. Make sure that they are not ordered at the receiver side.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToFrameNotReordersMessages() throws Throwable {
         loadPage(TITLE_FROM_POSTMESSAGE_TO_FRAME);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -819,11 +789,10 @@ public class PostMessageTest {
     // 5. Java responds to message in 4 using the channel in 2.
     // @SmallTest
     // @Feature({"AndroidWebView", "Android-PostMessage"})
-    @Test
     @DisabledTest
     public void testCanUseReceivedAwMessagePortFromJS() throws Throwable {
         loadPage(RECEIVE_JS_MESSAGE_CHANNEL_PAGE);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -835,7 +804,7 @@ public class PostMessageTest {
                         p[0].setMessageCallback(new MessagePort.MessageCallback() {
                             @Override
                             public void onMessage(String message, MessagePort[] q) {
-                                Assert.assertEquals("3", message);
+                                assertEquals("3", message);
                                 p[0].postMessage("4", null);
                             }
                         }, null);
@@ -881,7 +850,6 @@ public class PostMessageTest {
 
     // Test if message ports created at the native side can be transferred
     // to JS side, to establish a communication channel between a worker and a frame.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     @RetryOnFailure
@@ -889,7 +857,7 @@ public class PostMessageTest {
         mWebServer.setResponse("/worker.js", WORKER_SCRIPT,
                 CommonResources.getTextJavascriptHeaders(true));
         loadPage(TEST_PAGE_FOR_PORT_TRANSFER);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -898,7 +866,7 @@ public class PostMessageTest {
             }
         });
         mMessageObject.waitForMessage();
-        Assert.assertEquals(WORKER_MESSAGE, mMessageObject.getData());
+        assertEquals(WORKER_MESSAGE, mMessageObject.getData());
     }
 
     private static final String POPUP_MESSAGE = "from_popup";
@@ -929,16 +897,15 @@ public class PostMessageTest {
             + "</html>";
 
     // Test if WebView can post a message from/to a popup window owning a message port.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToPopup() throws Throwable {
-        mActivityTestRule.triggerPopup(mAwContents, mContentsClient, mWebServer,
-                MAIN_PAGE_FOR_POPUP_TEST, ECHO_PAGE, POPUP_URL, "createPopup()");
-        mActivityTestRule.connectPendingPopup(mAwContents);
+        triggerPopup(mAwContents, mContentsClient, mWebServer, MAIN_PAGE_FOR_POPUP_TEST, ECHO_PAGE,
+                POPUP_URL, "createPopup()");
+        connectPendingPopup(mAwContents);
         final ChannelContainer channelContainer = new ChannelContainer();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -955,21 +922,20 @@ public class PostMessageTest {
             }
         });
         channelContainer.waitForMessage();
-        Assert.assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
     }
 
     // Test if WebView can post a message from/to an iframe in a popup window.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToIframeInsidePopup() throws Throwable {
         mWebServer.setResponse(IFRAME_URL, ECHO_PAGE, null);
-        mActivityTestRule.triggerPopup(mAwContents, mContentsClient, mWebServer,
-                MAIN_PAGE_FOR_POPUP_TEST, POPUP_PAGE_WITH_IFRAME, POPUP_URL, "createPopup()");
-        mActivityTestRule.connectPendingPopup(mAwContents);
+        triggerPopup(mAwContents, mContentsClient, mWebServer, MAIN_PAGE_FOR_POPUP_TEST,
+                POPUP_PAGE_WITH_IFRAME, POPUP_URL, "createPopup()");
+        connectPendingPopup(mAwContents);
         final ChannelContainer channelContainer = new ChannelContainer();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -986,7 +952,7 @@ public class PostMessageTest {
             }
         });
         channelContainer.waitForMessage();
-        Assert.assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(HELLO + JS_MESSAGE, channelContainer.getMessage());
     }
 
     private static final String TEST_PAGE_FOR_UNSUPPORTED_MESSAGES = "<!DOCTYPE html><html><body>"
@@ -1005,13 +971,12 @@ public class PostMessageTest {
             + "</body></html>";
 
     // Make sure that postmessage can handle unsupported messages gracefully.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostUnsupportedWebMessageToApp() throws Throwable {
         loadPage(TEST_PAGE_FOR_UNSUPPORTED_MESSAGES);
         final ChannelContainer channelContainer = new ChannelContainer();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -1027,9 +992,9 @@ public class PostMessageTest {
             }
         });
         channelContainer.waitForMessage();
-        Assert.assertEquals(JS_MESSAGE, channelContainer.getMessage());
+        assertEquals(JS_MESSAGE, channelContainer.getMessage());
         // Assert that onMessage is called only once.
-        Assert.assertEquals(1, channelContainer.getMessageCount());
+        assertEquals(1, channelContainer.getMessageCount());
     }
 
     private static final String TEST_TRANSFER_EMPTY_PORTS = "<!DOCTYPE html><html><body>"
@@ -1042,13 +1007,12 @@ public class PostMessageTest {
             + "</body></html>";
 
     // Make sure that postmessage can handle unsupported messages gracefully.
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testTransferEmptyPortsArray() throws Throwable {
         loadPage(TEST_TRANSFER_EMPTY_PORTS);
         final ChannelContainer channelContainer = new ChannelContainer(2);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
@@ -1064,6 +1028,6 @@ public class PostMessageTest {
             }
         });
         channelContainer.waitForMessage();
-        Assert.assertEquals("12", channelContainer.getMessage());
+        assertEquals("12", channelContainer.getMessage());
     }
 }

@@ -13,13 +13,6 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
-import android.support.test.InstrumentationRegistry;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.test.util.DisabledTest;
@@ -33,22 +26,19 @@ import java.util.concurrent.TimeUnit;
  * the same application. Chromium is not designed for that, and attempting to do that
  * can cause data files corruption.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwSecondBrowserProcessTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
-        @Override
-        public boolean needsBrowserProcessStarted() {
-            return false;
-        }
-    };
-
+public class AwSecondBrowserProcessTest extends AwTestBase {
     private CountDownLatch mSecondBrowserProcessLatch;
     private int mSecondBrowserServicePid;
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    public boolean needsBrowserProcessStarted() {
+        return false;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         stopSecondBrowserProcess(false);
+        super.tearDown();
     }
 
     /*
@@ -58,24 +48,22 @@ public class AwSecondBrowserProcessTest {
      * process succeeds either, because in debug it will crash due to an assert
      * in the SQL DB code.
      */
-    @Test
     @DisabledTest(message = "crbug.com/582146")
     public void testCreatingSecondBrowserProcessFails() throws Throwable {
         startSecondBrowserProcess();
-        Assert.assertFalse(tryStartingBrowserProcess());
+        assertFalse(tryStartingBrowserProcess());
     }
 
     /*
      * @LargeTest
      * @Feature({"AndroidWebView"})
      */
-    @Test
     @DisabledTest(message = "crbug.com/582146")
     public void testLockCleanupOnProcessShutdown() throws Throwable {
         startSecondBrowserProcess();
-        Assert.assertFalse(tryStartingBrowserProcess());
+        assertFalse(tryStartingBrowserProcess());
         stopSecondBrowserProcess(true);
-        Assert.assertTrue(tryStartingBrowserProcess());
+        assertTrue(tryStartingBrowserProcess());
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {
@@ -83,14 +71,14 @@ public class AwSecondBrowserProcessTest {
         public void onServiceConnected(ComponentName className, IBinder service) {
             Parcel result = Parcel.obtain();
             try {
-                Assert.assertTrue(service.transact(
-                        SecondBrowserProcess.CODE_START, Parcel.obtain(), result, 0));
+                assertTrue(service.transact(
+                                SecondBrowserProcess.CODE_START, Parcel.obtain(), result, 0));
             } catch (RemoteException e) {
-                Assert.fail("RemoteException: " + e);
+                fail("RemoteException: " + e);
             }
             result.readException();
             mSecondBrowserServicePid = result.readInt();
-            Assert.assertTrue(mSecondBrowserServicePid > 0);
+            assertTrue(mSecondBrowserServicePid > 0);
             mSecondBrowserProcessLatch.countDown();
         }
 
@@ -100,25 +88,25 @@ public class AwSecondBrowserProcessTest {
     };
 
     private void startSecondBrowserProcess() throws Exception {
-        Context context = mActivityTestRule.getActivity();
+        Context context = getActivity();
         Intent intent = new Intent(context, SecondBrowserProcess.class);
         mSecondBrowserProcessLatch = new CountDownLatch(1);
-        Assert.assertNotNull(context.startService(intent));
-        Assert.assertTrue(context.bindService(intent, mConnection, 0));
-        Assert.assertTrue(mSecondBrowserProcessLatch.await(
-                AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(context.startService(intent));
+        assertTrue(context.bindService(intent, mConnection, 0));
+        assertTrue(mSecondBrowserProcessLatch.await(
+                        AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         mSecondBrowserProcessLatch = null;
     }
 
     private void stopSecondBrowserProcess(boolean sync) throws Exception {
         if (mSecondBrowserServicePid <= 0) return;
-        Assert.assertTrue(isSecondBrowserServiceRunning());
+        assertTrue(isSecondBrowserServiceRunning());
         // Note that using killProcess ensures that the service record gets removed
         // from ActivityManager after the process has actually died. While using
         // Context.stopService would result in the opposite outcome.
         Process.killProcess(mSecondBrowserServicePid);
         if (sync) {
-            AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
+            pollInstrumentationThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     return !isSecondBrowserServiceRunning();
@@ -131,9 +119,9 @@ public class AwSecondBrowserProcessTest {
     private boolean tryStartingBrowserProcess() {
         final Boolean success[] = new Boolean[1];
         // The activity must be launched in order for proper webview statics to be setup.
-        mActivityTestRule.getActivity();
+        getActivity();
         // runOnMainSync does not catch RuntimeExceptions, they just terminate the test.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -144,7 +132,7 @@ public class AwSecondBrowserProcessTest {
                 }
             }
         });
-        Assert.assertNotNull(success[0]);
+        assertNotNull(success[0]);
         return success[0];
     }
 
@@ -153,8 +141,7 @@ public class AwSecondBrowserProcessTest {
     // the locks. The only reliable way to do that is to scan the process list.
     private boolean isSecondBrowserServiceRunning() {
         ActivityManager activityManager =
-                (ActivityManager) mActivityTestRule.getActivity().getSystemService(
-                        Context.ACTIVITY_SERVICE);
+                (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo si : activityManager.getRunningServices(65536)) {
             if (si.pid == mSecondBrowserServicePid) return true;
         }

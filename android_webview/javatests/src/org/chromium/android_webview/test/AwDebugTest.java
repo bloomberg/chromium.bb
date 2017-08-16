@@ -8,13 +8,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwDebug;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
@@ -27,33 +21,26 @@ import java.util.Scanner;
  * A test suite for AwDebug class.
  */
 // Only works in single-process mode, crbug.com/568825.
-@RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
-public class AwDebugTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class AwDebugTest extends AwTestBase {
     private static final String TAG = "cr_AwDebugTest";
     private static final String WHITELISTED_DEBUG_KEY = "AW_WHITELISTED_DEBUG_KEY";
     private static final String NON_WHITELISTED_DEBUG_KEY = "AW_NONWHITELISTED_DEBUG_KEY";
     private static final String DEBUG_VALUE = "AW_DEBUG_VALUE";
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})
     public void testDump() throws Throwable {
         File f = File.createTempFile("dump", ".dmp");
         try {
-            Assert.assertTrue(AwDebug.dumpWithoutCrashing(f));
-            Assert.assertTrue(f.canRead());
+            assertTrue(AwDebug.dumpWithoutCrashing(f));
+            assertTrue(f.canRead());
             assertNotEquals(f.length(), 0);
         } finally {
-            Assert.assertTrue(f.delete());
+            assertTrue(f.delete());
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})
     public void testDumpContainsWhitelistedKey() throws Throwable {
@@ -61,14 +48,13 @@ public class AwDebugTest {
         try {
             AwDebug.initCrashKeysForTesting();
             AwDebug.setCrashKeyValue(WHITELISTED_DEBUG_KEY, DEBUG_VALUE);
-            Assert.assertTrue(AwDebug.dumpWithoutCrashing(f));
+            assertTrue(AwDebug.dumpWithoutCrashing(f));
             assertContainsCrashKeyValue(f, WHITELISTED_DEBUG_KEY, DEBUG_VALUE);
         } finally {
-            Assert.assertTrue(f.delete());
+            assertTrue(f.delete());
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})
     public void testDumpDoesNotContainNonWhitelistedKey() throws Throwable {
@@ -76,10 +62,10 @@ public class AwDebugTest {
         try {
             AwDebug.initCrashKeysForTesting();
             AwDebug.setCrashKeyValue(NON_WHITELISTED_DEBUG_KEY, DEBUG_VALUE);
-            Assert.assertTrue(AwDebug.dumpWithoutCrashing(f));
+            assertTrue(AwDebug.dumpWithoutCrashing(f));
             assertNotContainsCrashKeyValue(f, NON_WHITELISTED_DEBUG_KEY);
         } finally {
-            Assert.assertTrue(f.delete());
+            assertTrue(f.delete());
         }
     }
 
@@ -89,7 +75,7 @@ public class AwDebugTest {
         //
         // Content-Disposition: form-data; name="AW_DEBUG_KEY"
         // AW_DEBUG_VALUE
-        Assert.assertFalse(dumpContents.contains(getDebugKeyLine(key)));
+        assertFalse(dumpContents.contains(getDebugKeyLine(key)));
     }
 
     private void assertContainsCrashKeyValue(File dump, String key, String expectedValue)
@@ -100,14 +86,14 @@ public class AwDebugTest {
         // Content-Disposition: form-data; name="AW_DEBUG_KEY"
         // AW_DEBUG_VALUE
         String debugKeyLine = getDebugKeyLine(key);
-        Assert.assertTrue(dumpContents.contains(debugKeyLine));
+        assertTrue(dumpContents.contains(debugKeyLine));
 
         int debugKeyIndex = dumpContents.indexOf(debugKeyLine);
         // Read the word after the line containing the debug key
         Scanner debugValueScanner =
                 new Scanner(dumpContents.substring(debugKeyIndex + debugKeyLine.length()));
-        Assert.assertTrue(debugValueScanner.hasNext());
-        Assert.assertEquals(expectedValue, debugValueScanner.next());
+        assertTrue(debugValueScanner.hasNext());
+        assertEquals(expectedValue, debugValueScanner.next());
     }
 
     private static String getDebugKeyLine(String debugKey) {

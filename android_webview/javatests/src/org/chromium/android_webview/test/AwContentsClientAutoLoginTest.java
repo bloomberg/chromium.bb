@@ -7,11 +7,6 @@ package org.chromium.android_webview.test;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.base.test.util.Feature;
@@ -23,18 +18,13 @@ import java.util.List;
 /**
  * Tests for the AwContentsClient.onReceivedLoginRequest callback.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsClientAutoLoginTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class AwContentsClientAutoLoginTest extends AwTestBase {
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
     private void autoLoginTestHelper(final String testName, final String xAutoLoginHeader,
             final String expectedRealm, final String expectedAccount, final String expectedArgs)
             throws Throwable {
-        AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         final OnReceivedLoginRequestHelper loginRequestHelper =
                 mContentsClient.getOnReceivedLoginRequestHelper();
@@ -48,18 +38,17 @@ public class AwContentsClientAutoLoginTest {
         try {
             final String pageUrl = webServer.setResponse(path, html, headers);
             final int callCount = loginRequestHelper.getCallCount();
-            mActivityTestRule.loadUrlAsync(awContents, pageUrl);
+            loadUrlAsync(awContents, pageUrl);
             loginRequestHelper.waitForCallback(callCount);
 
-            Assert.assertEquals(expectedRealm, loginRequestHelper.getRealm());
-            Assert.assertEquals(expectedAccount, loginRequestHelper.getAccount());
-            Assert.assertEquals(expectedArgs, loginRequestHelper.getArgs());
+            assertEquals(expectedRealm, loginRequestHelper.getRealm());
+            assertEquals(expectedAccount, loginRequestHelper.getAccount());
+            assertEquals(expectedArgs, loginRequestHelper.getArgs());
         } finally {
             webServer.shutdown();
         }
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testAutoLoginOnGoogleCom() throws Throwable {
@@ -72,7 +61,6 @@ public class AwContentsClientAutoLoginTest {
 
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testAutoLoginWithNullAccount() throws Throwable {
@@ -84,7 +72,6 @@ public class AwContentsClientAutoLoginTest {
                 "not.very.inventive"  /* expectedArgs */);
     }
 
-    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testAutoLoginOnNonGoogle() throws Throwable {

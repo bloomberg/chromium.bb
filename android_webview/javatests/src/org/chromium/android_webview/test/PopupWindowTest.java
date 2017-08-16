@@ -4,18 +4,9 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.test.AwTestBase.PopupInfo;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -32,11 +23,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for pop up window flow.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class PopupWindowTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class PopupWindowTest extends AwTestBase {
     private TestAwContentsClient mParentContentsClient;
     private AwTestContainerView mParentContainerView;
     private AwContents mParentContents;
@@ -44,23 +31,23 @@ public class PopupWindowTest {
 
     private static final String POPUP_TITLE = "Popup Window";
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mParentContentsClient = new TestAwContentsClient();
-        mParentContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mParentContentsClient);
+        mParentContainerView = createAwTestContainerViewOnMainSync(mParentContentsClient);
         mParentContents = mParentContainerView.getAwContents();
         mWebServer = TestWebServer.start();
     }
 
-    @After
+    @Override
     public void tearDown() throws Exception {
         if (mWebServer != null) {
             mWebServer.shutdown();
         }
+        super.tearDown();
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testPopupWindow() throws Throwable {
@@ -74,14 +61,12 @@ public class PopupWindowTest {
                 "<title>" + POPUP_TITLE + "</title>",
                 "This is a popup window");
 
-        mActivityTestRule.triggerPopup(mParentContents, mParentContentsClient, mWebServer,
-                parentPageHtml, popupPageHtml, popupPath, "tryOpenWindow()");
-        AwContents popupContents =
-                mActivityTestRule.connectPendingPopup(mParentContents).popupContents;
-        Assert.assertEquals(POPUP_TITLE, mActivityTestRule.getTitleOnUiThread(popupContents));
+        triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        AwContents popupContents = connectPendingPopup(mParentContents).popupContents;
+        assertEquals(POPUP_TITLE, getTitleOnUiThread(popupContents));
     }
 
-    @Test
     @DisabledTest
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -99,23 +84,21 @@ public class PopupWindowTest {
                 "<title>" + POPUP_TITLE + "</title>",
                 "This is a popup window");
 
-        mActivityTestRule.triggerPopup(mParentContents, mParentContentsClient, mWebServer,
-                parentPageHtml, popupPageHtml, popupPath, "tryOpenWindow()");
-        PopupInfo popupInfo = mActivityTestRule.connectPendingPopup(mParentContents);
-        Assert.assertEquals(
-                POPUP_TITLE, mActivityTestRule.getTitleOnUiThread(popupInfo.popupContents));
+        triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        PopupInfo popupInfo = connectPendingPopup(mParentContents);
+        assertEquals(POPUP_TITLE, getTitleOnUiThread(popupInfo.popupContents));
 
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 popupInfo.popupContentsClient.getOnPageFinishedHelper();
         final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
 
-        mActivityTestRule.executeJavaScriptAndWaitForResult(
-                mParentContents, mParentContentsClient, "modifyDomOfPopup()");
+        executeJavaScriptAndWaitForResult(mParentContents, mParentContentsClient,
+                "modifyDomOfPopup()");
         // Test that |waitForCallback| does not time out.
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     @RetryOnFailure
@@ -130,19 +113,19 @@ public class PopupWindowTest {
                 "<title>" + POPUP_TITLE + "</title>",
                 "<span id=\"plain_text\" class=\"full_view\">This is a popup window.</span>");
 
-        mActivityTestRule.triggerPopup(mParentContents, mParentContentsClient, mWebServer,
-                parentPageHtml, popupPageHtml, popupPath, "tryOpenWindow()");
-        PopupInfo popupInfo = mActivityTestRule.connectPendingPopup(mParentContents);
+        triggerPopup(mParentContents, mParentContentsClient, mWebServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        PopupInfo popupInfo = connectPendingPopup(mParentContents);
         final AwContents popupContents = popupInfo.popupContents;
         TestAwContentsClient popupContentsClient = popupInfo.popupContentsClient;
-        Assert.assertEquals(POPUP_TITLE, mActivityTestRule.getTitleOnUiThread(popupContents));
+        assertEquals(POPUP_TITLE, getTitleOnUiThread(popupContents));
 
-        mActivityTestRule.enableJavaScriptOnUiThread(popupContents);
+        enableJavaScriptOnUiThread(popupContents);
 
         // Now long press on some texts and see if the text handles show up.
         DOMUtils.longPressNode(popupContents.getContentViewCore(), "plain_text");
         assertWaitForSelectActionBarStatus(true, popupContents.getContentViewCore());
-        Assert.assertTrue(mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+        assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return popupContents.getContentViewCore()
@@ -157,9 +140,8 @@ public class PopupWindowTest {
         assertWaitForSelectActionBarStatus(false, popupContents.getContentViewCore());
         String jsGetSelection = "window.getSelection().toString()";
         // Test window.getSelection() returns empty string "" literally.
-        Assert.assertEquals("\"\"",
-                mActivityTestRule.executeJavaScriptAndWaitForResult(
-                        popupContents, popupContentsClient, jsGetSelection));
+        assertEquals("\"\"", executeJavaScriptAndWaitForResult(
+                                     popupContents, popupContentsClient, jsGetSelection));
     }
 
     // Copied from imeTest.java.
@@ -173,7 +155,7 @@ public class PopupWindowTest {
     }
 
     private void hideSelectActionMode(final ContentViewCore cvc) {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 cvc.destroySelectActionMode();
