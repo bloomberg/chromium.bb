@@ -32,7 +32,6 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
@@ -206,61 +205,6 @@ void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 }
 
-// NotificationButtonMD ////////////////////////////////////////////////////////
-
-// This class is needed in addition to LabelButton mainly becuase we want to set
-// visible_opacity of InkDropHighlight.
-// This button capitalizes the given label string.
-class NotificationButtonMD : public views::LabelButton {
- public:
-  NotificationButtonMD(views::ButtonListener* listener,
-                       const base::string16& text);
-  ~NotificationButtonMD() override;
-
-  void SetText(const base::string16& text) override;
-  const char* GetClassName() const override;
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotificationButtonMD);
-};
-
-NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
-                                           const base::string16& text)
-    : views::LabelButton(listener,
-                         base::i18n::ToUpper(text),
-                         views::style::CONTEXT_BUTTON_MD) {
-  SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetInkDropMode(views::LabelButton::InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kActionButtonInkDropBaseColor);
-  set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
-  SetEnabledTextColors(kActionButtonTextColor);
-  SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
-  SetMinSize(kActionButtonMinSize);
-  SetFocusForPlatform();
-}
-
-NotificationButtonMD::~NotificationButtonMD() = default;
-
-void NotificationButtonMD::SetText(const base::string16& text) {
-  views::LabelButton::SetText(base::i18n::ToUpper(text));
-}
-
-const char* NotificationButtonMD::GetClassName() const {
-  return "NotificationButtonMD";
-}
-
-std::unique_ptr<views::InkDropHighlight>
-NotificationButtonMD::CreateInkDropHighlight() const {
-  std::unique_ptr<views::InkDropHighlight> highlight =
-      views::LabelButton::CreateInkDropHighlight();
-  highlight->set_visible_opacity(kActionButtonInkDropHighlightVisibleOpacity);
-  return highlight;
-}
-
 // LargeImageView //////////////////////////////////////////////////////////////
 
 class LargeImageView : public views::View {
@@ -375,6 +319,42 @@ const char* LargeImageContainerView::GetClassName() const {
 }
 
 }  // anonymous namespace
+
+// NotificationButtonMD ////////////////////////////////////////////////////////
+
+NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
+                                           const base::string16& text)
+    : views::LabelButton(listener,
+                         base::i18n::ToUpper(text),
+                         views::style::CONTEXT_BUTTON_MD) {
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  SetInkDropMode(views::LabelButton::InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
+  set_ink_drop_base_color(kActionButtonInkDropBaseColor);
+  set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
+  SetEnabledTextColors(kActionButtonTextColor);
+  SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
+  SetMinSize(kActionButtonMinSize);
+  SetFocusForPlatform();
+}
+
+NotificationButtonMD::~NotificationButtonMD() = default;
+
+void NotificationButtonMD::SetText(const base::string16& text) {
+  views::LabelButton::SetText(base::i18n::ToUpper(text));
+}
+
+const char* NotificationButtonMD::GetClassName() const {
+  return "NotificationButtonMD";
+}
+
+std::unique_ptr<views::InkDropHighlight>
+NotificationButtonMD::CreateInkDropHighlight() const {
+  std::unique_ptr<views::InkDropHighlight> highlight =
+      views::LabelButton::CreateInkDropHighlight();
+  highlight->set_visible_opacity(kActionButtonInkDropHighlightVisibleOpacity);
+  return highlight;
+}
 
 // ////////////////////////////////////////////////////////////
 // NotificationViewMD
