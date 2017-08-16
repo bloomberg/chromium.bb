@@ -7,7 +7,14 @@
       logs.push(text);
     }
 
+    function takeLogs() {
+      var result = logs.join('\\n');
+      logs = [];
+      return result;
+    }
+
     function logEvent(event) {
+      event.preventDefault();
       log('-----Event-----');
       log('type: ' + event.type);
       if (event.shiftKey)
@@ -28,46 +35,46 @@
     window.addEventListener('touchstart', logEvent);
     window.addEventListener('touchend', logEvent);
     window.addEventListener('touchmove', logEvent);
+    window.addEventListener('touchcancel', logEvent);
   `);
 
-  function dumpError(message) {
-    if (message.error)
-      testRunner.log('Error: ' + message.error.message);
+  async function dispatchEvent(params) {
+    testRunner.log('\nDispatching event:');
+    testRunner.logObject(params);
+    var response = await dp.Input.dispatchTouchEvent(params);
+    if (response.error)
+      testRunner.logMessage(response);
+    testRunner.log(await session.evaluate(`takeLogs()`));
   }
 
-  dumpError(await dp.Input.dispatchTouchEvent({
+  testRunner.log('\n\n------- Sequence ------');
+  await dispatchEvent({
     type: 'touchStart',
     touchPoints: [{
-      state: 'touchPressed',
       x: 100,
       y: 200
     }]
-  }));
-  dumpError(await dp.Input.dispatchTouchEvent({
+  });
+  await dispatchEvent({
     type: 'touchMove',
     touchPoints: [{
-      state: 'touchMoved',
-      x: 100,
-      y: 200
+      x: 200,
+      y: 100
     }]
-  }));
-  dumpError(await dp.Input.dispatchTouchEvent({
+  });
+  await dispatchEvent({
     type: 'touchEnd',
-    touchPoints: [{
-      state: 'touchReleased',
-      x: 100,
-      y: 200
-    }]
-  }));
-  dumpError(await dp.Input.dispatchTouchEvent({
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
     type: 'touchStart',
     touchPoints: [{
-      state: 'touchPressed',
       x: 20,
       y: 30,
       id: 0
     }, {
-      state: 'touchPressed',
       x: 100,
       y: 200,
       radiusX: 5,
@@ -77,22 +84,145 @@
       id: 1
     }],
     modifiers: 8 // shift
-  }));
-  dumpError(await dp.Input.dispatchTouchEvent({
+  });
+  await dispatchEvent({
     type: 'touchEnd',
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchStart',
     touchPoints: [{
-      state: 'touchReleased',
-      x: 100,
-      y: 100,
+      x: 20,
+      y: 30,
+      id: 0
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 20,
+      y: 30,
       id: 0
     }, {
-      state: 'touchReleased',
       x: 100,
       y: 200,
       id: 1
     }]
-  }));
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 120,
+      y: 130,
+      id: 0
+    }, {
+      x: 200,
+      y: 100,
+      id: 1
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 200,
+      y: 300,
+      id: 1
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchEnd',
+    touchPoints: []
+  });
 
-  testRunner.log(await session.evaluate(`window.logs.join('\\n')`));
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchEnd',
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchStart',
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchStart',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchEnd',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchCancel',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchCancel',
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchStart',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 100,
+      y: 100
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchEnd',
+    touchPoints: []
+  });
+
+  testRunner.log('\n------- Sequence ------');
+  await dispatchEvent({
+    type: 'touchStart',
+    touchPoints: [{
+      x: 100,
+      y: 100,
+      id: 1
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchMove',
+    touchPoints: [{
+      x: 100,
+      y: 100,
+      id: 2
+    }]
+  });
+  await dispatchEvent({
+    type: 'touchCancel',
+    touchPoints: []
+  });
+
   testRunner.completeTest();
 })

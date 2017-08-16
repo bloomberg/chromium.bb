@@ -57,10 +57,6 @@
                 "domain": "Overlay"
             },
             {
-                "domain": "Input",
-                "include": ["dispatchTouchEvent"]
-            },
-            {
                 "domain": "IO",
                 "include": ["resolveBlob"]
             },
