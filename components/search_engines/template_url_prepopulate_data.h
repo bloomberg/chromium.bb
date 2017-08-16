@@ -47,10 +47,8 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedEngine(PrefService* prefs,
                                                        int prepopulated_id);
 
 #if defined(OS_ANDROID)
-// Returns the prepopulated URLs associated with |locale|, if it differs from
-// the current country.  |locale| should be a two-character uppercase ISO 3166-1
-// country code. If the given locale is the same as the existing locale, returns
-// an empty vector.
+// Returns the prepopulated URLs associated with |locale|.  |locale| should be a
+// two-character uppercase ISO 3166-1 country code.
 std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
     const std::string& locale,
     PrefService* prefs);

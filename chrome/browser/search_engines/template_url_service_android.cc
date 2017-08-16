@@ -195,19 +195,25 @@ void TemplateUrlServiceAndroid::LoadTemplateURLs() {
   constexpr size_t kMaxRecentUrls = 3;
   const size_t recent_url_num = template_urls_.end() - it;
   auto end = it + std::min(recent_url_num, kMaxRecentUrls);
+  // If filtering is disabled, include all custom search engines.
+  if (filtering_disabled_)
+    end = it + recent_url_num;
+
   std::partial_sort(it, end, template_urls_.end(),
                     [](const TemplateURL* lhs, const TemplateURL* rhs) {
                       return lhs->last_visited() > rhs->last_visited();
                     });
 
-  // Limit to those three engines which must also have been visited in the last
-  // two days.
-  constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
-  const base::Time cutoff = base::Time::Now() - kMaxVisitAge;
-  const auto too_old = [cutoff](const TemplateURL* t_url) {
-    return t_url->last_visited() < cutoff;
-  };
-  template_urls_.erase(std::find_if(it, end, too_old), template_urls_.end());
+  if (!filtering_disabled_) {
+    // Limit to those three engines which must also have been visited in the
+    // last two days.
+    constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
+    const base::Time cutoff = base::Time::Now() - kMaxVisitAge;
+    const auto too_old = [cutoff](const TemplateURL* t_url) {
+      return t_url->last_visited() < cutoff;
+    };
+    template_urls_.erase(std::find_if(it, end, too_old), template_urls_.end());
+  }
 }
 
 void TemplateUrlServiceAndroid::OnTemplateURLServiceChanged() {
@@ -336,6 +342,17 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
       TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")),
       template_url_service_->search_terms_data()));
   return base::android::ConvertUTF8ToJavaString(env, url);
+}
+
+void TemplateUrlServiceAndroid::SetFilteringDisabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean filtering_disabled) {
+  if (filtering_disabled == filtering_disabled_)
+    return;
+
+  filtering_disabled_ = filtering_disabled;
+  OnTemplateURLServiceChanged();
 }
 
 base::android::ScopedJavaLocalRef<jstring>
