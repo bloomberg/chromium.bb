@@ -40,7 +40,7 @@ const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered{
     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamRequestCvcIfMissing{
