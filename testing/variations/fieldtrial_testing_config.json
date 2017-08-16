@@ -2577,58 +2577,6 @@
             ]
         }
     ],
-    "SafeBrowsingIncidentReportingService": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "collect_reg_data": "true"
-                    },
-                    "enable_features": [
-                        "IncidentReportingDisableUpload"
-                    ]
-                },
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingIncidentReportingServiceFeatures": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "WithSuspiciousModuleReporting",
-                    "enable_features": [
-                        "IncidentReportingModuleLoadAnalysis",
-                        "IncidentReportingSuspiciousModuleReporting"
-                    ]
-                },
-                {
-                    "name": "WithModuleLoadAnalysis",
-                    "enable_features": [
-                        "IncidentReportingModuleLoadAnalysis"
-                    ]
-                },
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
     "SafeBrowsingScoutTransitionStudy": [
         {
             "platforms": [
