@@ -37,7 +37,6 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "jni/OfflinePageEvaluationBridge_jni.h"
-#include "jni/SavePageRequest_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -74,7 +73,7 @@ void ToJavaOfflinePageList(JNIEnv* env,
 ScopedJavaLocalRef<jobject> ToJavaSavePageRequest(
     JNIEnv* env,
     const SavePageRequest& request) {
-  return Java_SavePageRequest_create(
+  return Java_OfflinePageEvaluationBridge_createSavePageRequest(
       env, static_cast<int>(request.request_state()), request.request_id(),
       ConvertUTF8ToJavaString(env, request.url().spec()),
       ConvertUTF8ToJavaString(env, request.client_id().name_space),
