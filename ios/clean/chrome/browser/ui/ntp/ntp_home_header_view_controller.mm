@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -173,16 +174,13 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   [self.fakeOmnibox addTarget:self
                        action:@selector(fakeOmniboxTapped:)
              forControlEvents:UIControlEventTouchUpInside];
-  UILongPressGestureRecognizer* longPressRecognizer = [
-      [UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                   action:@selector(doNothing)];
-  longPressRecognizer.numberOfTouchesRequired = 1;
-  [self.fakeOmnibox addGestureRecognizer:longPressRecognizer];
 
   [self.fakeOmnibox
       setAccessibilityLabel:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
   [self.fakeOmnibox setIsAccessibilityElement:NO];
+  self.fakeOmnibox.accessibilityIdentifier =
+      ntp_home::FakeOmniboxAccessibilityID();
 
   // Set up fakebox hint label.
   UILabel* searchHintLabel = [[UILabel alloc] init];
@@ -293,9 +291,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                           UIViewAutoresizingFlexibleTopMargin];
   [searchField addSubview:self.fakeOmniboxShadow];
   [self.fakeOmniboxShadow setAlpha:0];
-}
-
-- (void)doNothing {
 }
 
 // TODO(crbug.com/740793): Remove this method once no item is using it.
