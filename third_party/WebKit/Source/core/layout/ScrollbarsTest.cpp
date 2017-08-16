@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/testing/sim/SimDisplayItemList.h"
@@ -140,6 +141,43 @@ class ParameterizedScrollbarsTest : public ::testing::WithParamInterface<bool>,
                                     public SimTest {
  public:
   ParameterizedScrollbarsTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
+
+  HitTestResult HitTest(int x, int y) {
+    return WebView().CoreHitTestResultAt(WebPoint(x, y));
+  }
+
+  EventHandler& EventHandler() {
+    return GetDocument().GetFrame()->GetEventHandler();
+  }
+
+  void HandleMouseMoveEvent(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseMove, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
+        TimeTicks::Now().InSeconds());
+    event.SetFrameScale(1);
+    EventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>());
+  }
+
+  void HandleMousePressEvent(int x, int y) {
+    WebMouseEvent event(WebInputEvent::kMouseDown, WebFloatPoint(x, y),
+                        WebFloatPoint(x, y),
+                        WebPointerProperties::Button::kLeft, 0,
+                        WebInputEvent::Modifiers::kLeftButtonDown,
+                        TimeTicks::Now().InSeconds());
+    event.SetFrameScale(1);
+    EventHandler().HandleMousePressEvent(event);
+  }
+
+  void HandleMouseReleaseEvent(int x, int y) {
+    WebMouseEvent event(WebInputEvent::kMouseUp, WebFloatPoint(x, y),
+                        WebFloatPoint(x, y),
+                        WebPointerProperties::Button::kLeft, 0,
+                        WebInputEvent::Modifiers::kLeftButtonDown,
+                        TimeTicks::Now().InSeconds());
+    event.SetFrameScale(1);
+    EventHandler().HandleMouseReleaseEvent(event);
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(All, ParameterizedScrollbarsTest, ::testing::Bool());
@@ -215,6 +253,56 @@ TEST_P(ParameterizedScrollbarsTest,
   EXPECT_TRUE(scrollable_root->HorizontalScrollbar());
   EXPECT_TRUE(scrollable_root->HorizontalScrollbar()->IsCustomScrollbar());
   EXPECT_TRUE(scrollable_root->HorizontalScrollbar()->FrameRect().IsEmpty());
+}
+
+// Ensure hit test correct for scrollbar of element with translateZ(0)
+TEST_P(ParameterizedScrollbarsTest, HitTestTranslateZElementScrollbar) {
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "body {"
+      "  margin: 0;"
+      "}"
+      "#trans {"
+      "  overflow: auto;"
+      "  transform: translateZ(0);"
+      "  position: absolute;"
+      "  top: 0;"
+      "  bottom: 0;"
+      "  left: 20px;"
+      "  width: 100px;"
+      "  height: 100px;"
+      "}"
+      "#long {"
+      "  height: 1000px;"
+      "}"
+      "</style>"
+      "<div id='trans'>"
+      "  <div id='long'></div>"
+      "</div>");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+  Element* div = document.getElementById("trans");
+
+  // Ensure we have scrollbar for trans-z div.
+  ScrollableArea* scrollable_div =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  DCHECK(scrollable_div->VerticalScrollbar());
+  DCHECK(!scrollable_div->VerticalScrollbar()->IsOverlayScrollbar());
+
+  HitTestResult result = HitTest(110, 10);
+  DCHECK(result.GetScrollbar());
+
+  HandleMouseMoveEvent(110, 10);
+  EXPECT_EQ(scrollable_div->VerticalScrollbar()->HoveredPart(),
+            ScrollbarPart::kThumbPart);
 }
 
 typedef bool TestParamOverlayScrollbar;
