@@ -24,6 +24,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -281,6 +282,11 @@ bool InProcessCommandBuffer::Initialize(
 
 bool InProcessCommandBuffer::InitializeOnGpuThread(
     const InitializeOnGpuThreadParams& params) {
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com/707031): Implement this.
+  NOTIMPLEMENTED();
+  return false;
+#else
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
 
@@ -409,6 +415,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   image_factory_ = params.image_factory;
 
   return true;
+#endif  // defined(OS_FUCHSIA)
 }
 
 void InProcessCommandBuffer::Destroy() {

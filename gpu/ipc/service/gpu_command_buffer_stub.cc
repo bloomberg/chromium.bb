@@ -587,6 +587,11 @@ bool GpuCommandBufferStub::Initialize(
     GpuCommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
     std::unique_ptr<base::SharedMemory> shared_state_shm) {
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com/707031): Implement this.
+  NOTIMPLEMENTED();
+  return false;
+#else
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::Initialize");
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
@@ -858,6 +863,7 @@ bool GpuCommandBufferStub::Initialize(
 
   initialized_ = true;
   return true;
+#endif  // defined(OS_FUCHSIA)
 }
 
 void GpuCommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
