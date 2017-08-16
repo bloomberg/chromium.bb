@@ -8,7 +8,11 @@
 
 <dom-module id="settings-internet-known-networks-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="internet-shared">
+      cr-policy-indicator {
+        -webkit-margin-start: var(--settings-controlled-by-spacing);
+      }
+    </style>
 
     <div class="settings-box first">
       <div>$i18n{knownNetworksMessage}</div>
@@ -26,6 +30,11 @@
           filter="networkIsPreferred_">
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
+          <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+            <cr-policy-indicator
+                indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+            </cr-policy-indicator>
+          </template>
           <button class="subpage-arrow" is="paper-icon-button-light"
               actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
               aria-label$="[[item.Name]]">
@@ -48,6 +57,11 @@
           filter="networkIsNotPreferred_">
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
+          <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+            <cr-policy-indicator
+                indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+            </cr-policy-indicator>
+          </template>
           <button class="subpage-arrow" is="paper-icon-button-light"
               actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
               aria-label$="[[item.Name]]">
@@ -70,7 +84,8 @@
           on-tap="onRemovePreferredTap_">
         $i18n{knownNetworksMenuRemovePreferred}
       </button>
-      <button class="dropdown-item" on-tap="onForgetTap_">
+      <button class="dropdown-item" disabled="[[!enableForget_]]"
+          on-tap="onForgetTap_">
         $i18n{knownNetworksMenuForget}
       </button>
     </dialog>
