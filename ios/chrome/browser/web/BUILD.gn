@@ -9,6 +9,8 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
+    "features.h",
+    "features.mm",
     "mailto_handler.h",
     "mailto_handler.mm",
     "mailto_handler_gmail.h",
