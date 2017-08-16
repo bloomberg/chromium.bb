@@ -37,8 +37,9 @@ class TestExporterTest(unittest.TestCase):
             ChromiumCommit(host, position='refs/heads/master@{#458476}'),
             ChromiumCommit(host, position='refs/heads/master@{#458477}'),
         ], [])
-        test_exporter.run()
+        success = test_exporter.run()
 
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_for_chromium_commit',
             'pr_for_chromium_commit',
@@ -75,8 +76,9 @@ class TestExporterTest(unittest.TestCase):
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None, gerrit_token=None)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[], create_pr_fail_index=1)
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
-        test_exporter.run()
+        success = test_exporter.run()
 
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_for_chromium_commit',
             'pr_for_chromium_commit',
@@ -139,7 +141,9 @@ class TestExporterTest(unittest.TestCase):
             MockChromiumCommit(host, position='refs/heads/master@{#458477}', change_id='Idead'),
             MockChromiumCommit(host, position='refs/heads/master@{#458478}', change_id='I0118'),
         ], [])
-        test_exporter.run()
+        success = test_exporter.run()
+
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_for_chromium_commit',
             'remove_label "do not merge yet"',
@@ -219,7 +223,9 @@ class TestExporterTest(unittest.TestCase):
                 'owner': {'email': 'test@chromium.org'},
             }, api=test_exporter.gerrit),
         ]
-        test_exporter.run()
+        success = test_exporter.run()
+
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_with_change_id',
         ])
@@ -288,8 +294,9 @@ class TestExporterTest(unittest.TestCase):
         ], [])
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.query_exportable_open_cls = lambda: []
-        test_exporter.run()
+        success = test_exporter.run()
 
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_for_chromium_commit',
             'remove_label "do not merge yet"',
@@ -328,6 +335,22 @@ class TestExporterTest(unittest.TestCase):
                 'owner': {'email': 'test@chromium.org'},
             }, api=test_exporter.gerrit),
         ]
-        test_exporter.run()
+        success = test_exporter.run()
+
+        self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
+
+    def test_run_returns_false_on_patch_failure(self):
+        host = MockHost()
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
+                                     gerrit_token=None, dry_run=False)
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
+        test_exporter.get_exportable_commits = lambda: ([
+            ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240'),
+        ], ['There was an error with the rutabaga.'])
+        test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
+        success = test_exporter.run()
+
+        self.assertFalse(success)

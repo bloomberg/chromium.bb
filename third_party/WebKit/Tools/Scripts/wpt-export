@@ -16,6 +16,7 @@ interval (e.g. every 10 mins).
 import argparse
 import json
 import logging
+import sys
 
 from webkitpy.common.host import Host
 from webkitpy.w3c.test_exporter import TestExporter
@@ -45,7 +46,7 @@ def main():
     if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
         parser.error('Must provide both gh_user and gh_token for GitHub.')
 
-    TestExporter(
+    success = TestExporter(
         host=host,
         gh_user=credentials['GH_USER'],
         gh_token=credentials['GH_TOKEN'],
@@ -54,6 +55,8 @@ def main():
         dry_run=args.dry_run
     ).run()
 
+    return 0 if success else 1
+
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

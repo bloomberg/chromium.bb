@@ -31,9 +31,10 @@ class TestExporter(object):
         self.local_wpt.fetch()
 
     def run(self):
-        """For last n commits on Chromium master, create or try to merge a PR.
+        """Creates PRs for in-flight CLs and merges changes that land on master.
 
-        The exporter will look in chronological order at every commit in Chromium.
+        Returns:
+            A boolean: True if success, False if there were any patch failures.
         """
         open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         self.process_gerrit_cls(open_gerrit_cls)
@@ -51,6 +52,8 @@ class TestExporter(object):
                     _log.info('Pull request is not open: #%d %s', pull_request.number, pull_request.title)
             else:
                 self.create_pull_request(exportable_commit)
+
+        return not bool(errors)
 
     def process_gerrit_cls(self, gerrit_cls):
         """Creates or updates PRs for Gerrit CLs."""
