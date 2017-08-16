@@ -24,16 +24,16 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
     version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const PrefetchRequestFinishedCallback& callback)
-    : callback_(callback) {
+    : callback_(callback), requested_urls_(page_urls) {
   proto::GeneratePageBundleRequest request;
   request.set_user_agent(user_agent);
   request.set_max_bundle_size_bytes(max_bundle_size_bytes);
   request.set_output_format(proto::FORMAT_MHTML);
   request.set_gcm_registration_id(gcm_registration_id);
 
-  for (const auto& page_url : page_urls) {
+  for (const auto& url : requested_urls_) {
     proto::PageParameters* page = request.add_pages();
-    page->set_url(page_url);
+    page->set_url(url);
     page->set_transformation(proto::NO_TRANSFORMATION);
   }
 
