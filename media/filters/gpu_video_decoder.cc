@@ -33,44 +33,11 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-#include "media/formats/mp4/box_definitions.h"
+#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/base/android/extract_sps_and_pps.h"
 #endif
 
 namespace media {
-namespace {
-
-#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Extract the SPS and PPS lists from |extra_data|. Each SPS and PPS is prefixed
-// with 0x0001, the Annex B framing bytes. The out parameters are not modified
-// on failure.
-void ExtractSpsAndPps(const std::vector<uint8_t>& extra_data,
-                      std::vector<uint8_t>* sps_out,
-                      std::vector<uint8_t>* pps_out) {
-  if (extra_data.empty())
-    return;
-
-  mp4::AVCDecoderConfigurationRecord record;
-  if (!record.Parse(extra_data.data(), extra_data.size())) {
-    DVLOG(1) << "Failed to extract the SPS and PPS from extra_data";
-    return;
-  }
-
-  constexpr std::array<uint8_t, 4> prefix = {{0, 0, 0, 1}};
-  for (const std::vector<uint8_t>& sps : record.sps_list) {
-    sps_out->insert(sps_out->end(), prefix.begin(), prefix.end());
-    sps_out->insert(sps_out->end(), sps.begin(), sps.end());
-  }
-
-  for (const std::vector<uint8_t>& pps : record.pps_list) {
-    pps_out->insert(pps_out->end(), prefix.begin(), prefix.end());
-    pps_out->insert(pps_out->end(), pps.begin(), pps.end());
-  }
-}
-#endif
-
-}  // namespace
-
 const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
 
 // Maximum number of concurrent VDA::Decode() operations GVD will maintain.
