@@ -16,7 +16,10 @@
           "device::mojom::OrientationAbsoluteSensor",
           "device::mojom::OrientationSensor"
         ],
-        "device:serial": [ "device::mojom::SerialDeviceEnumerator" ],
+        "device:serial": [
+          "device::mojom::SerialDeviceEnumerator",
+          "device::mojom::SerialIoHandler"
+        ],
         "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ],
         "device:vibration": [ "device::mojom::VibrationManager" ],
         "device:wake_lock": [ "device::mojom::WakeLockProvider" ]

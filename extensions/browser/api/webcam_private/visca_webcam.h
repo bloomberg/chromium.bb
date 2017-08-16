@@ -13,6 +13,7 @@
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/api/webcam_private/webcam.h"
 #include "extensions/common/api/serial.h"
+#include "services/device/public/interfaces/serial.mojom.h"
 
 namespace extensions {
 
@@ -47,6 +48,7 @@ class ViscaWebcam : public Webcam {
 
   void OpenOnIOThread(const std::string& path,
                       const std::string& extension_id,
+                      device::mojom::SerialIoHandlerPtrInfo io_handler_info,
                       const OpenCompleteCallback& open_callback);
 
   // Callback function that will be called after the serial connection has been
@@ -71,11 +73,11 @@ class ViscaWebcam : public Webcam {
   void SendOnIOThread(const std::vector<char>& data,
                       const CommandCompleteCallback& callback);
   void OnSendCompleted(const CommandCompleteCallback& callback,
-                       int bytes_sent,
+                       uint32_t bytes_sent,
                        api::serial::SendError error);
   void ReceiveLoop(const CommandCompleteCallback& callback);
   void OnReceiveCompleted(const CommandCompleteCallback& callback,
-                          const std::vector<char>& data,
+                          std::vector<char> data,
                           api::serial::ReceiveError error);
 
   // Callback function that will be called after the send and reply of a command

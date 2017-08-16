@@ -101,6 +101,8 @@ class DeviceService : public service_manager::Service {
   void BindSerialDeviceEnumeratorRequest(
       mojom::SerialDeviceEnumeratorRequest request);
 
+  void BindSerialIoHandlerRequest(mojom::SerialIoHandlerRequest request);
+
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;

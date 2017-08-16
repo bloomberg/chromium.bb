@@ -14,6 +14,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -146,15 +150,25 @@ ViscaWebcam::~ViscaWebcam() {
 void ViscaWebcam::Open(const std::string& path,
                        const std::string& extension_id,
                        const OpenCompleteCallback& open_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  device::mojom::SerialIoHandlerPtrInfo io_handler_info;
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(device::mojom::kServiceName,
+                      mojo::MakeRequest(&io_handler_info));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ViscaWebcam::OpenOnIOThread, weak_ptr_factory_.GetWeakPtr(),
-                 path, extension_id, open_callback));
+                 path, extension_id, base::Passed(&io_handler_info),
+                 open_callback));
 }
 
-void ViscaWebcam::OpenOnIOThread(const std::string& path,
-                                 const std::string& extension_id,
-                                 const OpenCompleteCallback& open_callback) {
+void ViscaWebcam::OpenOnIOThread(
+    const std::string& path,
+    const std::string& extension_id,
+    device::mojom::SerialIoHandlerPtrInfo io_handler_info,
+    const OpenCompleteCallback& open_callback) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   api::serial::ConnectionOptions options;
@@ -171,10 +185,11 @@ void ViscaWebcam::OpenOnIOThread(const std::string& path,
   options.parity_bit = api::serial::PARITY_BIT_NO;
   options.stop_bits = api::serial::STOP_BITS_ONE;
 
-  serial_connection_.reset(new SerialConnection(path, extension_id));
+  serial_connection_.reset(
+      new SerialConnection(path, extension_id, std::move(io_handler_info)));
   serial_connection_->Open(
-      options, base::Bind(&ViscaWebcam::OnConnected,
-                          weak_ptr_factory_.GetWeakPtr(), open_callback));
+      options, base::BindOnce(&ViscaWebcam::OnConnected,
+                              weak_ptr_factory_.GetWeakPtr(), open_callback));
 }
 
 void ViscaWebcam::OnConnected(const OpenCompleteCallback& open_callback,
@@ -238,7 +253,7 @@ void ViscaWebcam::SendOnIOThread(const std::vector<char>& data,
 }
 
 void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
-                                  int bytes_sent,
+                                  uint32_t bytes_sent,
                                   api::serial::SendError error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(xdai): Check |bytes_sent|?
@@ -257,7 +272,7 @@ void ViscaWebcam::ReceiveLoop(const CommandCompleteCallback& callback) {
 }
 
 void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
-                                     const std::vector<char>& data,
+                                     std::vector<char> data,
                                      api::serial::ReceiveError error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   data_buffer_.insert(data_buffer_.end(), data.begin(), data.end());

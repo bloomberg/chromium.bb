@@ -4,6 +4,9 @@
 
 module device.mojom;
 
+// TODO(leonhsl): Merge this file into
+// services/device/public/interfaces/serial.mojom.
+
 struct SerialDeviceInfo {
   string path;
   uint16 vendor_id;

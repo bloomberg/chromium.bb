@@ -32,6 +32,7 @@ class CastChannelAsyncApiFunction;
 namespace api {
 class BluetoothSocketApiFunction;
 class BluetoothSocketEventDispatcher;
+class SerialConnectFunction;
 class SerialEventDispatcher;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
@@ -175,6 +176,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   friend class CastChannelAsyncApiFunction;
   friend class api::BluetoothSocketApiFunction;
   friend class api::BluetoothSocketEventDispatcher;
+  friend class api::SerialConnectFunction;
   friend class api::SerialEventDispatcher;
   friend class api::TCPServerSocketEventDispatcher;
   friend class api::TCPSocketEventDispatcher;

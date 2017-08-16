@@ -126,7 +126,10 @@ source_set("tests") {
   }
 
   if (is_serial_enabled_platform) {
-    sources += [ "serial/serial_device_enumerator_impl_unittest.cc" ]
+    sources += [
+      "serial/serial_device_enumerator_impl_unittest.cc",
+      "serial/serial_io_handler_impl_unittest.cc",
+    ]
     deps += [ "//services/device/serial" ]
   }
 

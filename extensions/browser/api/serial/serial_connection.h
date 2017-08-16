@@ -12,40 +12,62 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/serial/serial_io_handler.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 #include "net/base/io_buffer.h"
+#include "services/device/public/interfaces/serial.mojom.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-// Encapsulates an open serial port.
-// NOTE: Instances of this object should only be constructed on the IO thread,
-// and all methods should only be called on the IO thread unless otherwise
-// noted.
+// Encapsulates an mojo interface ptr of device::mojom::SerialIoHandler, which
+// corresponds with an open serial port in remote side(Device Service). NOTE:
+// Instances of this object should only be constructed on the IO thread, and all
+// methods should only be called on the IO thread unless otherwise noted.
 class SerialConnection : public ApiResource,
                          public base::SupportsWeakPtr<SerialConnection> {
  public:
-  typedef device::SerialIoHandler::OpenCompleteCallback OpenCompleteCallback;
+  using OpenCompleteCallback = device::mojom::SerialIoHandler::OpenCallback;
+  using GetInfoCompleteCallback =
+      base::OnceCallback<void(bool,
+                              std::unique_ptr<api::serial::ConnectionInfo>)>;
 
   // This is the callback type expected by Receive. Note that an error result
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
   using ReceiveCompleteCallback =
-      base::Callback<void(const std::vector<char>& data,
-                          api::serial::ReceiveError error)>;
+      base::OnceCallback<void(std::vector<char> data,
+                              api::serial::ReceiveError error)>;
 
   // This is the callback type expected by Send. Note that an error result
   // does not necessarily imply 0 bytes sent, since a send may complete
   // partially before being interrupted by an error condition.
   using SendCompleteCallback =
-      base::Callback<void(int bytes_sent, api::serial::SendError error)>;
+      base::OnceCallback<void(uint32_t bytes_sent,
+                              api::serial::SendError error)>;
+
+  using ConfigureCompleteCallback =
+      device::mojom::SerialIoHandler::ConfigurePortCallback;
+
+  using FlushCompleteCallback = device::mojom::SerialIoHandler::FlushCallback;
+
+  using GetControlSignalsCompleteCallback = base::OnceCallback<void(
+      std::unique_ptr<api::serial::DeviceControlSignals>)>;
+
+  using SetControlSignalsCompleteCallback =
+      device::mojom::SerialIoHandler::SetControlSignalsCallback;
+
+  using SetBreakCompleteCallback =
+      device::mojom::SerialIoHandler::SetBreakCallback;
+
+  using ClearBreakCompleteCallback =
+      device::mojom::SerialIoHandler::ClearBreakCallback;
 
   SerialConnection(const std::string& port,
-                   const std::string& owner_extension_id);
+                   const std::string& owner_extension_id,
+                   device::mojom::SerialIoHandlerPtrInfo io_handler_info);
   ~SerialConnection() override;
 
   // ApiResource override.
@@ -69,56 +91,56 @@ class SerialConnection : public ApiResource,
   void set_paused(bool paused);
   bool paused() const { return paused_; }
 
+  void set_connection_error_handler(base::OnceClosure connection_error_handler);
+
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive
   // until |callback| is run.
   virtual void Open(const api::serial::ConnectionOptions& options,
-                    const OpenCompleteCallback& callback);
+                    OpenCompleteCallback callback);
 
   // Begins an asynchronous receive operation. Calling this while a Receive
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Receive(const ReceiveCompleteCallback& callback);
+  virtual bool Receive(ReceiveCompleteCallback callback);
 
   // Begins an asynchronous send operation. Calling this while a Send
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
   virtual bool Send(const std::vector<char>& data,
-                    const SendCompleteCallback& callback);
+                    SendCompleteCallback callback);
 
   // Flushes input and output buffers.
-  bool Flush() const;
+  void Flush(FlushCompleteCallback callback) const;
 
   // Configures some subset of port options for this connection.
-  // Omitted options are unchanged. Returns |true| iff the configuration
-  // changes were successful.
-  bool Configure(const api::serial::ConnectionOptions& options);
+  // Omitted options are unchanged.
+  void Configure(const api::serial::ConnectionOptions& options,
+                 ConfigureCompleteCallback callback);
 
-  // Connection configuration query. Fills values in an existing
-  // ConnectionInfo. Returns |true| iff the connection's information
-  // was successfully retrieved.
-  bool GetInfo(api::serial::ConnectionInfo* info) const;
+  // Connection configuration query. Returns retrieved ConnectionInfo value via
+  // |callback|, and indicates whether it's complete info. Some ConnectionInfo
+  // fields are filled with local info from |this|, while some other fields must
+  // be retrieved from remote SerialIoHandler interface, which may fail.
+  void GetInfo(GetInfoCompleteCallback callback) const;
 
-  // Reads current control signals (DCD, CTS, etc.) into an existing
-  // DeviceControlSignals structure. Returns |true| iff the signals were
-  // successfully read.
-  bool GetControlSignals(
-      api::serial::DeviceControlSignals* control_signals) const;
+  // Reads current control signals (DCD, CTS, etc.) and returns via |callback|.
+  // Returns nullptr if we failed in getting values.
+  void GetControlSignals(GetControlSignalsCompleteCallback callback) const;
 
-  // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
-  // the signals were successfully set. Unininitialized flags in the
-  // HostControlSignals structure are left unchanged.
-  bool SetControlSignals(
-      const api::serial::HostControlSignals& control_signals);
+  // Sets one or more control signals (DTR and/or RTS). Returns result success
+  // or not via |callback|. Unininitialized flags in the HostControlSignals
+  // structure are left unchanged.
+  void SetControlSignals(const api::serial::HostControlSignals& control_signals,
+                         SetControlSignalsCompleteCallback callback);
 
   // Suspend character transmission. Known as setting/sending 'Break' signal.
-  bool SetBreak();
+  // Returns result success or not via |callback|.
+  void SetBreak(SetBreakCompleteCallback callback);
 
   // Restore character transmission. Known as clear/stop sending 'Break' signal.
-  bool ClearBreak();
-
-  // Overrides |io_handler_| for testing.
-  void SetIoHandlerForTest(scoped_refptr<device::SerialIoHandler> handler);
+  // Returns result success or not via |callback|.
+  void ClearBreak(ClearBreakCompleteCallback callback);
 
   static const BrowserThread::ID kThreadId = BrowserThread::IO;
 
@@ -149,12 +171,15 @@ class SerialConnection : public ApiResource,
   void OnSendTimeout();
 
   // Receives read completion notification from the |io_handler_|.
-  void OnAsyncReadComplete(int bytes_read,
+  void OnAsyncReadComplete(const std::vector<uint8_t>& data,
                            device::mojom::SerialReceiveError error);
 
   // Receives write completion notification from the |io_handler_|.
-  void OnAsyncWriteComplete(int bytes_sent,
+  void OnAsyncWriteComplete(uint32_t bytes_sent,
                             device::mojom::SerialSendError error);
+
+  // Handles |io_handler_| connection error.
+  void OnConnectionError();
 
   // The pathname of the serial device.
   std::string port_;
@@ -195,10 +220,11 @@ class SerialConnection : public ApiResource,
   // Send().
   std::unique_ptr<TimeoutTask> send_timeout_task_;
 
-  scoped_refptr<net::IOBuffer> receive_buffer_;
-
-  // Asynchronous I/O handler.
-  scoped_refptr<device::SerialIoHandler> io_handler_;
+  // Mojo interface ptr corresponding with remote asynchronous I/O handler.
+  device::mojom::SerialIoHandlerPtr io_handler_;
+  // Closure which is set by client and will be called when |io_handler_|
+  // connection encountered an error.
+  base::OnceClosure connection_error_handler_;
 };
 
 }  // namespace extensions
