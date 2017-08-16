@@ -53,7 +53,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 
-#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "SkFontConfigInterface.h"
 
 static sk_sp<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(
@@ -228,7 +228,9 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     CString& name) {
-#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+  // TODO(fuchsia): Revisit this and other font code for Fuchsia.
+
   if (creation_params.CreationType() == kCreateFontByFciIdAndTtcIndex) {
     if (Platform::Current()->GetSandboxSupport())
       return typefaceForFontconfigInterfaceIdAndTtcIndex(
