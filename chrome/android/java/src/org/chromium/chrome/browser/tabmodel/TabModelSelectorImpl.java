@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
+import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -346,6 +347,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     cacheTabBitmap(mVisibleTab);
                 }
                 mVisibleTab.hide();
+                mVisibleTab.setImportance(ChildProcessImportance.NORMAL);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
             mVisibleTab = null;
@@ -370,6 +372,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         // http://crbug.com/316166.
         if (type != TabSelectionType.FROM_EXIT) {
             tab.show(type);
+            mVisibleTab.setImportance(ChildProcessImportance.MODERATE);
             mUma.onShowTab(tab.getId(), tab.isBeingRestored());
         }
     }

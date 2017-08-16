@@ -572,17 +572,6 @@ public class ChildProcessConnection {
         updateWaivedBoundOnlyState();
     }
 
-    public void dropOomBindings() {
-        assert isRunningOnLauncherThread();
-        mInitialBinding.unbind();
-
-        mStrongBindingCount = 0;
-        mStrongBinding.unbind();
-        updateWaivedBoundOnlyState();
-
-        mModerateBinding.unbind();
-    }
-
     public void addStrongBinding() {
         assert isRunningOnLauncherThread();
         if (!isConnected()) {

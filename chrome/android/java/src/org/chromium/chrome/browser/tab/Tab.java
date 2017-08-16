@@ -97,6 +97,7 @@ import org.chromium.components.sync.SyncConstants;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
+import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -300,6 +301,13 @@ public class Tab
      * Whether or not the Tab is currently visible to the user.
      */
     private boolean mIsHidden = true;
+
+    /**
+     * Importance of the WebContents currently attached to this tab. Note the key difference from
+     * |mIsHidden| is that a tab is hidden when the application is hidden, but the importance is
+     * not affected by this signal.
+     */
+    private @ChildProcessImportance int mImportance = ChildProcessImportance.NORMAL;
 
     /** Whether the renderer is currently unresponsive. */
     private boolean mIsRendererUnresponsive;
@@ -1196,6 +1204,14 @@ public class Tab
         }
     }
 
+    public final void setImportance(@ChildProcessImportance int importance) {
+        if (mImportance == importance) return;
+        mImportance = importance;
+        WebContents webContents = getWebContents();
+        if (webContents == null) return;
+        webContents.setImportance(mImportance);
+    }
+
     /**
      * Shows the given {@code nativePage} if it's not already showing.
      * @param nativePage The {@link NativePage} to show.
@@ -1652,9 +1668,11 @@ public class Tab
 
             if (mContentViewCore != null) {
                 mContentViewCore.setObscuredByAnotherView(false);
+                mContentViewCore.getWebContents().setImportance(ChildProcessImportance.NORMAL);
             }
 
             mContentViewCore = cvc;
+            mContentViewCore.getWebContents().setImportance(mImportance);
             cvc.getContainerView().setOnHierarchyChangeListener(this);
             cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
 
