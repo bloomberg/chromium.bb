@@ -235,9 +235,11 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
 
     const mx_status_t wait_status =
         mx_port_wait(port_.get(), deadline, &packet, 0);
-    if (wait_status != MX_OK && wait_status != MX_ERR_TIMED_OUT) {
-      NOTREACHED() << "unexpected wait status: "
-                   << mx_status_get_string(wait_status);
+    if (wait_status != MX_OK) {
+      if (wait_status != MX_ERR_TIMED_OUT) {
+        NOTREACHED() << "unexpected wait status: "
+                     << mx_status_get_string(wait_status);
+      }
       continue;
     }
 
