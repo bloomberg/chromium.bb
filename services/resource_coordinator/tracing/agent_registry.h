@@ -14,6 +14,11 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
+
+namespace service_manager {
+struct BindSourceInfo;
+}  // namespace service_manager
 
 namespace tracing {
 
@@ -66,7 +71,9 @@ class AgentRegistry : public mojom::AgentRegistry {
 
   AgentRegistry();
 
-  void BindAgentRegistryRequest(mojom::AgentRegistryRequest request);
+  void BindAgentRegistryRequest(
+      mojom::AgentRegistryRequest request,
+      const service_manager::BindSourceInfo& source_info);
   void SetAgentInitializationCallback(
       const AgentInitializationCallback& callback);
   void RemoveAgentInitializationCallback();
@@ -95,7 +102,7 @@ class AgentRegistry : public mojom::AgentRegistry {
 
   void UnregisterAgent(size_t agent_id);
 
-  mojo::BindingSet<mojom::AgentRegistry> bindings_;
+  mojo::BindingSet<mojom::AgentRegistry, service_manager::Identity> bindings_;
   size_t next_agent_id_ = 0;
   std::map<size_t, std::unique_ptr<AgentEntry>> agents_;
   AgentInitializationCallback agent_initialization_callback_;

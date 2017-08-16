@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace {
 tracing::AgentRegistry* g_agent_registry;
@@ -57,8 +58,13 @@ void AgentRegistry::AgentEntry::OnConnectionError() {
   // as movable so that the version of |Run| that takes an rvalue reference is
   // selected not the version that takes a const reference. The former is for
   // once callbacks and the latter is for repeating callbacks.
-  for (auto& key_value : closures_) {
-    std::move(key_value.second).Run();
+  while (!closures_.empty()) {
+    auto iterator = closures_.begin();
+    auto callback = std::move(iterator->second);
+    const size_t closures_size = closures_.size();
+    std::move(callback).Run();
+    // Verify that the callback has removed itself.
+    DCHECK_EQ(1u, closures_size - closures_.size());
   }
   agent_registry_->UnregisterAgent(id_);
 }
@@ -79,9 +85,10 @@ AgentRegistry::~AgentRegistry() {
 }
 
 void AgentRegistry::BindAgentRegistryRequest(
-    mojom::AgentRegistryRequest request) {
+    mojom::AgentRegistryRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
 void AgentRegistry::SetAgentInitializationCallback(

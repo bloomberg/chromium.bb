@@ -4,17 +4,26 @@
 
 #include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
+
+const char kChromeTraceEventLabel[] = "traceEvents";
+
 tracing::ChromeTraceEventAgent* g_chrome_trace_event_agent;
+
 }  // namespace
 
 namespace tracing {
@@ -25,18 +34,23 @@ ChromeTraceEventAgent* ChromeTraceEventAgent::GetInstance() {
 }
 
 ChromeTraceEventAgent::ChromeTraceEventAgent(
-    mojom::AgentRegistryPtr agent_registry)
-    : binding_(this) {
+    service_manager::Connector* connector,
+    const std::string& service_name)
+    : binding_(this), enabled_tracing_modes_(0) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!g_chrome_trace_event_agent);
   g_chrome_trace_event_agent = this;
-  // agent_registry can be null in tests.
-  if (!agent_registry)
+  // |connector| can be null in tests.
+  if (!connector)
     return;
+
+  // Connecto to the agent registry interface.
+  tracing::mojom::AgentRegistryPtr agent_registry;
+  connector->BindInterface(service_name, &agent_registry);
 
   mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), "traceEvents",
+  agent_registry->RegisterAgent(std::move(agent), kChromeTraceEventLabel,
                                 mojom::TraceDataType::ARRAY,
                                 false /* supports_explicit_clock_sync */);
 }
@@ -53,20 +67,31 @@ void ChromeTraceEventAgent::AddMetadataGeneratorFunction(
 }
 
 void ChromeTraceEventAgent::StartTracing(const std::string& config,
+                                         base::TimeTicks coordinator_time,
                                          const StartTracingCallback& callback) {
   DCHECK(!recorder_);
-  if (!base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        base::trace_event::TraceConfig(config),
-        base::trace_event::TraceLog::RECORDING_MODE);
-  }
-  callback.Run();
+#if defined(__native_client__)
+  // NaCl and system times are offset by a bit, so subtract some time from
+  // the captured timestamps. The value might be off by a bit due to messaging
+  // latency.
+  base::TimeDelta time_offset = base::TimeTicks::Now() - coordinator_time;
+  TraceLog::GetInstance()->SetTimeOffset(time_offset);
+#endif
+  enabled_tracing_modes_ = base::trace_event::TraceLog::RECORDING_MODE;
+  const base::trace_event::TraceConfig trace_config(config);
+  if (!trace_config.event_filters().empty())
+    enabled_tracing_modes_ |= base::trace_event::TraceLog::FILTERING_MODE;
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      trace_config, enabled_tracing_modes_);
+  callback.Run(true);
 }
 
 void ChromeTraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   DCHECK(!recorder_);
   recorder_ = std::move(recorder);
-  base::trace_event::TraceLog::GetInstance()->SetDisabled();
+  base::trace_event::TraceLog::GetInstance()->SetDisabled(
+      enabled_tracing_modes_);
+  enabled_tracing_modes_ = 0;
   for (const auto& generator : metadata_generator_functions_) {
     auto metadata = generator.Run();
     if (metadata)
