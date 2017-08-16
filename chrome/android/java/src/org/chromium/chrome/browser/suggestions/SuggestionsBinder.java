@@ -328,7 +328,7 @@ public class SuggestionsBinder {
                 BidiFormatter.getInstance().unicodeWrap(relativeTimeSpan));
     }
 
-    private class FetchThumbnailCallback extends Callback<Bitmap> {
+    private class FetchThumbnailCallback implements Callback<Bitmap> {
         private final SnippetArticle mCapturedSuggestion;
         private final int mThumbnailSize;
 

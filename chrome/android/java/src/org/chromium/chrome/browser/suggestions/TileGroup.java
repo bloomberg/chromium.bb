@@ -525,7 +525,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             // Note: This does not track all the removals, but will track the most recent one. If
             // that removal is committed, it's good enough for change detection.
             mPendingRemovalUrl = mSuggestion.url;
-            mTileGroupDelegate.removeMostVisitedItem(tile, new RemovalUndoneCallback());
+            mTileGroupDelegate.removeMostVisitedItem(tile, url -> mPendingInsertionUrl = url);
         }
 
         @Override
@@ -545,13 +545,6 @@ public class TileGroup implements MostVisitedSites.Observer {
         public void onCreateContextMenu(
                 ContextMenu contextMenu, View view, ContextMenuInfo contextMenuInfo) {
             mContextMenuManager.createContextMenu(contextMenu, view, this);
-        }
-    }
-
-    private class RemovalUndoneCallback extends Callback<String> {
-        @Override
-        public void onResult(String restoredUrl) {
-            mPendingInsertionUrl = restoredUrl;
         }
     }
 
