@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
@@ -55,6 +56,7 @@ struct AXSnapshotNodeAndroid {
   int32_t start_selection;
   int32_t end_selection;
 
+  base::Optional<std::string> role;
   std::string class_name;
   std::vector<std::unique_ptr<AXSnapshotNodeAndroid>> children;
 

@@ -53,6 +53,8 @@ mojom::VoiceInteractionStructurePtr CreateVoiceInteractionStructure(
   structure->color = view_structure.color;
   structure->bgcolor = view_structure.bgcolor;
 
+  structure->role = view_structure.role;
+
   structure->class_name = view_structure.class_name;
   structure->rect = view_structure.rect;
 
