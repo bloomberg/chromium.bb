@@ -55,11 +55,11 @@ public class AutocompleteEditTextTest {
     // Limits the target of InOrder#verify.
     private static class Verifier {
         public void onAutocompleteTextStateChanged(boolean updateDisplay) {
-            if (DEBUG) Log.i(TAG, "onAutocompleteTextStateChanged: " + updateDisplay);
+            if (DEBUG) Log.i(TAG, "onAutocompleteTextStateChanged(%b)", updateDisplay);
         }
 
         public void onUpdateSelection(int selStart, int selEnd) {
-            if (DEBUG) Log.i(TAG, "onUpdateSelection: [%d,%d]", selStart, selEnd);
+            if (DEBUG) Log.i(TAG, "onUpdateSelection(%d, %d)", selStart, selEnd);
         }
     }
 
@@ -178,6 +178,8 @@ public class AutocompleteEditTextTest {
             mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
         } else {
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+            mInOrder.verify(mVerifier).onUpdateSelection(11, 11);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(true);
             mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
         }
@@ -334,6 +336,7 @@ public class AutocompleteEditTextTest {
         if (isUsingSpannableModel()) {
             assertFalse(mAutocomplete.isCursorVisible());
         } else {
+            mInOrder.verify(mVerifier).onUpdateSelection(11, 11);
             mInOrder.verify(mVerifier).onUpdateSelection(6, 11);
         }
         mInOrder.verifyNoMoreInteractions();
@@ -490,6 +493,7 @@ public class AutocompleteEditTextTest {
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
             mInOrder.verify(mVerifier).onUpdateSelection(7, 7);
         }
+        mInOrder.verifyNoMoreInteractions();
         assertFalse(mAutocomplete.shouldAutocomplete());
         assertTexts("hello world", "");
     }
@@ -537,9 +541,11 @@ public class AutocompleteEditTextTest {
             mInOrder.verify(mVerifier).onUpdateSelection(3, 3);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
         } else {
+            mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(true);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
             mInOrder.verify(mVerifier).onUpdateSelection(3, 3);
         }
+        mInOrder.verifyNoMoreInteractions();
         assertFalse(mAutocomplete.shouldAutocomplete());
         // Autocomplete text is removed.
         assertTexts("hello", "");
