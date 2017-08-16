@@ -162,6 +162,9 @@ template("lipo_binary") {
 #       entitlements (must generate a single file as output); cannot be
 #       defined if entitlements_path is set.
 #
+#   xcode_extra_attributes
+#       (optional) scope, extra attributes for Xcode projects.
+#
 #   xcode_test_application_name:
 #       (optional) string, name of the test application for Xcode unit or ui
 #       test target.
@@ -236,6 +239,7 @@ template("create_signed_bundle") {
                              "public_deps",
                              "testonly",
                              "visibility",
+                             "xcode_extra_attributes",
                              "xcode_test_application_name",
                            ])
 
@@ -1517,6 +1521,15 @@ template("ios_xctest_bundle") {
       output_name = _output_name
       bundle_binary_target = ":$_lipo_loadable_module_target"
       bundle_binary_output = _output_name
+
+      # Test files need to be known to Xcode for proper indexing and discovery
+      # of tests function for XCTest, but the compilation is done via ninja and
+      # thus must prevent Xcode from linking object files via this hack.
+      xcode_extra_attributes = {
+        OTHER_LDFLAGS = "-help"
+        ONLY_ACTIVE_ARCH = "YES"
+        DEBUG_INFORMATION_FORMAT = "dwarf"
+      }
 
       deps = [
         ":$_info_plist_bundle",
