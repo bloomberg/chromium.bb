@@ -309,9 +309,13 @@ INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
+ANDROID_MASTER_ARC_DEV_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_MNC_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
-ANDROID_COMMON_BUILD_TARGETS = {
+ANDROID_MASTER_ARC_DEV_BUILD_TARGETS = {
+    'AOSP_X86_USERDEBUG': ('linux-aosp_bertha_x86-userdebug', r'\.zip$'),
+}
+ANDROID_MNC_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
     # get rid of this.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
@@ -319,12 +323,16 @@ ANDROID_COMMON_BUILD_TARGETS = {
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
-}
-ANDROID_MNC_BUILD_TARGETS = {
-    # No MNC-specific targets exist, only NYC-specific. Declare the target
-    # dictionary for consistency.
+
 }
 ANDROID_NYC_BUILD_TARGETS = {
+    # TODO(b/29509721): Workaround to roll adb with system image. We want to
+    # get rid of this.
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
+    'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
+    'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
     'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_google_cheets_x86-userdebug',
                                  r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_google_cheets_x86_64-userdebug',

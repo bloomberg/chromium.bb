@@ -381,6 +381,19 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for build, (src, dst) in build_targets.iteritems():
       self.assertEquals(self._AuxGetArcBasename(build, src), dst)
 
+    # Check bertha also.
+    build_targets['X86_USERDEBUG'] = (
+        ('bertha_-XXX', 'bertha_x86_userdebug-XXX')
+    )
+    build_targets['AOSP_X86_USERDEBUG'] = (
+        ('bertha_-XXX', 'bertha_aosp_x86_userdebug-XXX')
+    )
+    build_targets['SDK_GOOGLE_X86_USERDEBUG'] = (
+        ('bertha_-XXX', 'bertha_sdk_google_x86_userdebug-XXX')
+    )
+    for build, (src, dst) in build_targets.iteritems():
+      self.assertEquals(self._AuxGetArcBasename(build, src), dst)
+
   def testGetArcBasenameRenameInvalid(self):
     """"Test that basename is unchanged if it's not as expected."""
     # Missing hyphen.
@@ -414,6 +427,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                 'googlestorage_acl_arm.txt'))
     self.assertEquals(acls['X86'], os.path.join(self.mock_android_dir,
                                                 'googlestorage_acl_x86.txt'))
+    # Test that all MASTER_ARC_DEV targets have their ACLs set.
+    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH).keys():
+      self.assertTrue(t in acls)
     # Test that all MNC targets have their ACLs set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_MNC_BUILD_BRANCH).keys():
@@ -423,22 +440,33 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
 
+  def testMakeBuildTargetDictMASTER_ARC_DEV(self):
+    """Test generation of MASTER_ARC_DEV build target dictionary.
+
+    If the number of targets is correct and MASTER_ARC_DEV-specific targets are
+    present, then the dictionary is correct.
+    """
+    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH)
+    # Test the number of targets.
+    self.assertEquals(len(targets),
+                      len(constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS))
+    # Test that all MASTER-specific targets are in the dictionary.
+    for target in constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS:
+      self.assertEquals(targets[target],
+                        constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS[target])
+
   def testMakeBuildTargetDictMNC(self):
     """Test generation of MNC build target dictionary.
 
-    If the number of targets is correct, all common targets are present and
-    MNC-specific targets are present, then the dictionary is correct.
+    If the number of targets is correct and MNC-specific targets are present,
+    then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_MNC_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEquals(len(targets),
-                      len(constants.ANDROID_COMMON_BUILD_TARGETS) +
                       len(constants.ANDROID_MNC_BUILD_TARGETS))
-    # Test that all common targets are in MNC.
-    for target in constants.ANDROID_COMMON_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_COMMON_BUILD_TARGETS[target])
     # Test that all MNC-specific targets are in the dictionary.
     for target in constants.ANDROID_MNC_BUILD_TARGETS:
       self.assertEquals(targets[target],
@@ -447,19 +475,14 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   def testMakeBuildTargetDictNYC(self):
     """Test generation of NYC build target dictionary.
 
-    If the number of targets is correct, all common targets are present and
-    NYC-specific targets are present, then the dictionary is correct.
+    If the number of targets is correct and NYC-specific targets are present,
+    then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_NYC_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEquals(len(targets),
-                      len(constants.ANDROID_COMMON_BUILD_TARGETS) +
                       len(constants.ANDROID_NYC_BUILD_TARGETS))
-    # Test that all common targets are in NYC.
-    for target in constants.ANDROID_COMMON_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_COMMON_BUILD_TARGETS[target])
     # Test that all NYC-specific targets are in the dictionary.
     for target in constants.ANDROID_NYC_BUILD_TARGETS:
       self.assertEquals(targets[target],

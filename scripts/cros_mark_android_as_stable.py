@@ -209,11 +209,13 @@ def _GetArcBasename(build, basename):
     logging.error(('Build %s: Could not find separator "-" in artifact'
                    ' basename %s'), build, basename)
     return basename
-  if 'cheets_' not in to_discard:
-    logging.error('Build %s: Unexpected artifact basename %s',
-                  build, basename)
-    return basename
-  return 'cheets_%s-%s' % (build.lower(), to_keep)
+  if 'cheets_' in to_discard:
+    return 'cheets_%s-%s' % (build.lower(), to_keep)
+  elif 'bertha_' in to_discard:
+    return 'bertha_%s-%s' % (build.lower(), to_keep)
+  logging.error('Build %s: Unexpected artifact basename %s',
+                build, basename)
+  return basename
 
 
 def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
@@ -327,7 +329,7 @@ def MakeAclDict(package_dir):
 def MakeBuildTargetDict(build_branch):
   """Creates a dictionary of build targets.
 
-  Not all targets are common between M and N branches, for example
+  Not all targets are common between branches, for example
   sdk_google_cheets_x86 only exists on N.
   This generates a dictionary listing the available build targets for a
   specific branch.
@@ -341,14 +343,14 @@ def MakeBuildTargetDict(build_branch):
   Raises:
     ValueError: if the Android build branch is invalid.
   """
-  d = constants.ANDROID_COMMON_BUILD_TARGETS.copy()
-  if build_branch == constants.ANDROID_MNC_BUILD_BRANCH:
-    d.update(constants.ANDROID_MNC_BUILD_TARGETS)
+  if build_branch == constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH:
+    return constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS
+  elif build_branch == constants.ANDROID_MNC_BUILD_BRANCH:
+    return constants.ANDROID_MNC_BUILD_TARGETS
   elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
-    d.update(constants.ANDROID_NYC_BUILD_TARGETS)
+    return constants.ANDROID_NYC_BUILD_TARGETS
   else:
     raise ValueError('Unknown branch: %s' % build_branch)
-  return d
 
 
 def GetAndroidRevisionListLink(build_branch, old_android, new_android):
