@@ -178,13 +178,6 @@ class WebStateImpl;
 // Stops loading the page.
 - (void)stopLoading;
 
-// Causes the page to start loading immediately if there is a pending load;
-// normally if the web view has been paged out for memory reasons, loads are
-// started lazily the next time the view is displayed. This can be called to
-// bypass the lazy behavior. This is equivalent to calling -view, but should be
-// used when deliberately pre-triggering a load without displaying.
-- (void)triggerPendingLoad;
-
 // Navigates to the item at the given |index|.
 - (void)goToItemAtIndex:(int)index;
 

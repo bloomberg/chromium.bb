@@ -39,7 +39,7 @@ void WebTestWithWebState::SetUp() {
   web_state_->SetWebUsageEnabled(true);
 
   // Force generation of child views; necessary for some tests.
-  [GetWebController(web_state()) triggerPendingLoad];
+  web_state_->GetView();
 }
 
 void WebTestWithWebState::TearDown() {
