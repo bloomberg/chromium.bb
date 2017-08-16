@@ -43,6 +43,7 @@ if (enable_oop_heap_profiling) {
       "//content/public/child",
       "//mojo/edk/system",
       "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+      "//third_party/zlib",
     ]
   }
 

@@ -180,7 +180,7 @@ void ProfilingProcessHost::LaunchAsService() {
 void ProfilingProcessHost::GetOutputFileOnBlockingThread(base::ProcessId pid) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath output_path = user_data_dir.AppendASCII("memlog_dump");
+  base::FilePath output_path = user_data_dir.AppendASCII("memlog_dump.json.gz");
   base::File file(output_path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 
