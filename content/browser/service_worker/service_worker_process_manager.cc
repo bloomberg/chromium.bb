@@ -90,7 +90,7 @@ void ServiceWorkerProcessManager::Shutdown() {
     for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
          it != instance_info_.end(); ++it) {
       RenderProcessHost::FromID(it->second.process_id)
-          ->DecrementServiceWorkerRefCount();
+          ->DecrementKeepAliveRefCount();
     }
   }
   instance_info_.clear();
@@ -185,7 +185,7 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
   if (can_use_existing_process) {
     int process_id = FindAvailableProcess(pattern);
     if (process_id != ChildProcessHost::kInvalidUniqueID) {
-      RenderProcessHost::FromID(process_id)->IncrementServiceWorkerRefCount();
+      RenderProcessHost::FromID(process_id)->IncrementKeepAliveRefCount();
       instance_info_.insert(
           std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
       out_info->process_id = process_id;
@@ -238,7 +238,7 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
   instance_info_.insert(
       std::make_pair(embedded_worker_id, ProcessInfo(site_instance)));
 
-  rph->IncrementServiceWorkerRefCount();
+  rph->IncrementKeepAliveRefCount();
   out_info->process_id = rph->GetID();
   out_info->start_situation = start_situation;
   return SERVICE_WORKER_OK;
@@ -278,7 +278,7 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
         << "Process " << info->second.process_id
         << " was destroyed unexpectedly. Did we actually hold a reference?";
   }
-  rph->DecrementServiceWorkerRefCount();
+  rph->DecrementKeepAliveRefCount();
   instance_info_.erase(info);
 }
 

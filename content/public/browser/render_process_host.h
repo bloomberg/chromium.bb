@@ -321,38 +321,38 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() const = 0;
 
-  // Returns the sum of the shared worker and service worker ref counts.
-  virtual size_t GetWorkerRefCount() const = 0;
+  // "Keep alive ref count" represents the number of the customers of this
+  // render process who wish the renderer process to be alive. While the ref
+  // count is positive, |this| object will keep the renderer process alive,
+  // unless DisableKeepAliveRefCount() is called.
+  //
+  // Here is the list of users:
+  //  - Service Worker:
+  //    While there are service workers who live on this process, they wish
+  //    the renderer process alive. The ref count is incremented when this
+  //    process is allocated to the worker, and decremented when worker's
+  //    shutdown sequence is completed.
+  //  - Shared Worker:
+  //    The ref count is incremented in two cases:
+  //    - there was no external renderer connected to a shared worker in this
+  //      process, and now there is at least one
+  //    - a new worker is being created in this process.
+  //    The ref count is decremented in two cases:
+  //    - there was an external renderer connected to a shared worker in this
+  //      process, and now there is none
+  //    - a new worker finished being created in this process.
+  virtual void IncrementKeepAliveRefCount() = 0;
+  virtual void DecrementKeepAliveRefCount() = 0;
 
-  // Counts the number of service workers who live on this process. The service
-  // worker ref count is incremented when this process is allocated to the
-  // worker, and decremented when worker's shutdown sequence is completed.
-  virtual void IncrementServiceWorkerRefCount() = 0;
-  virtual void DecrementServiceWorkerRefCount() = 0;
-
-  // The shared worker ref count is non-zero if any other process is connected
-  // to a shared worker in this process, or a new shared worker is being created
-  // in this process.
-  // IncrementSharedWorkerRefCount is called in two cases:
-  // - there was no external renderer connected to a shared worker in this
-  //   process, and now there is at least one
-  // - a new worker is being created in this process.
-  // DecrementSharedWorkerRefCount is called in two cases:
-  // - there was an external renderer connected to a shared worker in this
-  //    process, and now there is none
-  // - a new worker finished being created in this process.
-  virtual void IncrementSharedWorkerRefCount() = 0;
-  virtual void DecrementSharedWorkerRefCount() = 0;
-
-  // Sets worker ref counts to zero. Called when the browser context will be
+  // Sets keep alive ref counts to zero. Called when the browser context will be
   // destroyed so this RenderProcessHost can immediately die.
   //
-  // After this is called, the Increment/DecrementWorkerRefCount functions must
-  // not be called.
-  virtual void ForceReleaseWorkerRefCounts() = 0;
+  // After this is called, the Increment/DecrementKeepAliveRefCount() functions
+  // must not be called.
+  virtual void DisableKeepAliveRefCount() = 0;
 
-  // Returns true if ForceReleaseWorkerRefCounts was called.
-  virtual bool IsWorkerRefCountDisabled() = 0;
+  // Returns true if DisableKeepAliveRefCount() was called.
+  virtual bool IsKeepAliveRefCountDisabled() = 0;
 
   // Purges and suspends the renderer process.
   virtual void PurgeAndSuspend() = 0;
