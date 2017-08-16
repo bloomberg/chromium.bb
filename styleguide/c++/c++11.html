@@ -590,8 +590,6 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 
 <h2 id="whitelist"><a name="library-whitelist-14"></a>C++14 Allowed Library Features</h2>
 
-<p>Nothing yet. Suggest something!</p>
-<!--
 <p>The following library features are currently allowed.</p>
 
 <table id="whitelist_lib_list" class="unlined striped">
@@ -605,9 +603,16 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <th style='width:240px;'>Notes and Discussion Thread</th>
 </tr>
 
+<tr>
+<td><code>std::make_unique</code></td>
+<td><code>auto widget = std::make_unique&lt;Widget&gt;();</code></td>
+<td>Allocates objects on the heap and immediately constructs an <code>std::unique_ptr</code> to assume ownership.</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique">std::make_unique</a></td>
+<td>Should replace <code>base::MakeUnique</code> and <code>WTF::MakeUnique</code>. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/ow7hmdDm4yw/EDEvBRi_BQAJ">Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
--->
 
 <h2 id="blacklist">C++11 and C++14 Blacklist (Disallowed and Banned Features)</h2>
 
@@ -1190,15 +1195,6 @@ than binary literals.</td>
 <td>This also includes the alias, <code>std::index_sequence</code>, which is the specialization for <code>size_t</code>. Should replace <code>base::IndexSequence</code>.</td>
 </tr>
 
-<tr>
-<td><code>std::make_unique</code></td>
-<td><code>auto widget = std::make_unique&lt;Widget&gt;();</code></td>
-<td>Allocates objects on the heap and immediately constructs an <code>std::unique_ptr</code> to assume ownership.</td>
-<td><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique">std::make_unique</a></td>
-<td>Should replace <code>base::MakeUnique</code> and <code>WTF::MakeUnique</code>.</td>
-</tr>
-
-<tr>
 <td><code>std::string</code> literals</td>
 <td><code>
 #include &lt;string&gt;<br>
