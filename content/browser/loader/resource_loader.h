@@ -17,6 +17,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
+#include "net/http/http_raw_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -177,6 +178,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // asynchronously.
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
+
+  net::HttpRawRequestHeaders raw_request_headers_;
 
   base::ThreadChecker thread_checker_;
 

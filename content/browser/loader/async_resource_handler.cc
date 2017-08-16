@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_buffer.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -152,7 +151,6 @@ void AsyncResourceHandler::OnRequestRedirected(
     return;
   }
 
-  NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   reported_transfer_size_ = 0;
   response->head.request_start = request()->creation_time();
@@ -196,7 +194,6 @@ void AsyncResourceHandler::OnResponseStarted(
     return;
   }
 
-  NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->raw_header_size();
 
   // If the parent handler downloaded the resource to a file, grant the child

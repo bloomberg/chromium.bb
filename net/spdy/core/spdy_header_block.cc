@@ -344,32 +344,6 @@ std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
   return std::move(dict);
 }
 
-bool SpdyHeaderBlockFromNetLogParam(
-    const base::Value* event_param,
-    SpdyHeaderBlock* headers) {
-  headers->clear();
-
-  const base::DictionaryValue* dict = NULL;
-  const base::DictionaryValue* header_dict = NULL;
-
-  if (!event_param ||
-      !event_param->GetAsDictionary(&dict) ||
-      !dict->GetDictionary("headers", &header_dict)) {
-    return false;
-  }
-
-  for (base::DictionaryValue::Iterator it(*header_dict); !it.IsAtEnd();
-       it.Advance()) {
-    SpdyString value;
-    if (!it.value().GetAsString(&value)) {
-      headers->clear();
-      return false;
-    }
-    (*headers)[it.key()] = value;
-  }
-  return true;
-}
-
 size_t SpdyHeaderBlock::bytes_allocated() const {
   if (storage_ == nullptr) {
     return 0;

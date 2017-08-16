@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/loader/downloaded_temp_file_impl.h"
-#include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -157,7 +156,6 @@ void MojoAsyncResourceHandler::OnRequestRedirected(
   HoldController(std::move(controller));
   did_defer_on_redirect_ = true;
 
-  NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   response->head.request_start = request()->creation_time();
   response->head.response_start = base::TimeTicks::Now();
@@ -179,7 +177,6 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   }
 
   const ResourceRequestInfoImpl* info = GetRequestInfo();
-  NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->raw_header_size();
   reported_total_received_bytes_ = response->head.encoded_data_length;
 
