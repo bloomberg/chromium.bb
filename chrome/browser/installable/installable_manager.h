@@ -315,6 +315,9 @@ class InstallableManager
 
     // Tasks which are waiting indefinitely for a service worker to be detected.
     std::vector<Task> paused_tasks_;
+
+   public:
+    bool is_active_;
   };
 
   TaskQueue task_queue_;
@@ -340,7 +343,6 @@ class InstallableManager
   int menu_open_count_;
   int menu_item_add_to_homescreen_count_;
 
-  bool is_active_;
   bool is_pwa_check_complete_;
 
   base::WeakPtrFactory<InstallableManager> weak_factory_;
