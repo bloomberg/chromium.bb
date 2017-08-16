@@ -634,10 +634,14 @@ namespace networking.onc {
     DOMString? BSSID;
     // See $(ref:WiFiProperties.Frequency).
     long? Frequency;
+    // See $(ref:WiFiProperties.HexSSID).
+    DOMString? HexSSID;
     // See $(ref:WiFiProperties.Security).
     DOMString Security;
     // See $(ref:WiFiProperties.SignalStrength).
     long? SignalStrength;
+    // See $(ref:WiFiProperties.SSID).
+    DOMString? SSID;
   };
 
   dictionary WiMAXProperties {
