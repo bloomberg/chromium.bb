@@ -166,12 +166,14 @@ bool Renderbuffer::RegenerateAndBindBackingObjectIfNeeded() {
 
 void Renderbuffer::AddFramebufferAttachmentPoint(Framebuffer* framebuffer,
                                                  GLenum attachment) {
+  DCHECK_NE(static_cast<GLenum>(GL_DEPTH_STENCIL_ATTACHMENT), attachment);
   framebuffer_attachment_points_.insert(
       std::make_pair(framebuffer, attachment));
 }
 
 void Renderbuffer::RemoveFramebufferAttachmentPoint(Framebuffer* framebuffer,
                                                     GLenum attachment) {
+  DCHECK_NE(static_cast<GLenum>(GL_DEPTH_STENCIL_ATTACHMENT), attachment);
   framebuffer_attachment_points_.erase(std::make_pair(framebuffer, attachment));
 }
 
