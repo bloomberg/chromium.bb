@@ -218,7 +218,8 @@ void MediaSession::DidReceiveAction(
     blink::mojom::blink::MediaSessionAction action) {
   DCHECK(GetExecutionContext()->IsDocument());
   Document* document = ToDocument(GetExecutionContext());
-  UserGestureIndicator gesture_indicator(UserGestureToken::Create(document));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(document ? document->GetFrame() : nullptr);
 
   auto iter = action_handlers_.find(MojomActionToActionName(action));
   if (iter == action_handlers_.end())

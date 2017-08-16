@@ -547,16 +547,15 @@ TEST_P(ParameterizedWebFrameTest,
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  Document* document = main_frame->GetFrame()->GetDocument();
-  document->SuspendScheduledTasks();
+  main_frame->GetFrame()->GetDocument()->SuspendScheduledTasks();
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
       web_view_helper.LocalMainFrame()->MainWorldScriptContext();
 
   std::unique_ptr<UserGestureIndicator> indicator =
-      WTF::WrapUnique(new UserGestureIndicator(
-          UserGestureToken::Create(document, UserGestureToken::kNewGesture)));
+      LocalFrame::CreateUserGesture(main_frame->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
@@ -7370,9 +7369,9 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow) {
   web_view_helper.InitializeAndLoad(base_url_ + "ctrl_click.html",
                                     &web_frame_client, &web_view_client);
 
-  Document* document =
-      ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame())
-          ->GetDocument();
+  LocalFrame* frame =
+      ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame());
+  Document* document = frame->GetDocument();
   KURL destination = ToKURL(base_url_ + "hello_world.html");
 
   // ctrl+click event
@@ -7385,7 +7384,8 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow) {
       MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
   FrameLoadRequest frame_request(document, ResourceRequest(destination));
   frame_request.SetTriggeringEvent(event);
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame())
       ->Loader()
       .Load(frame_request);
@@ -8125,9 +8125,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_impl->UpdateAllLifecyclePhases();
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Document* document = frame->GetDocument();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -8163,9 +8164,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerNonScrollable) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_impl->UpdateAllLifecyclePhases();
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Document* document = frame->GetDocument();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -8231,9 +8233,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
   ASSERT_TRUE(web_scroll_layer->UserScrollableHorizontal());
   ASSERT_TRUE(web_scroll_layer->UserScrollableVertical());
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Document* document = frame->GetDocument();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Fullscreen::RequestFullscreen(*document->documentElement());
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
@@ -8277,11 +8280,12 @@ TEST_P(ParameterizedWebFrameTest, FullscreenSubframe) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_impl->UpdateAllLifecyclePhases();
 
-  Document* document =
+  LocalFrame* frame =
       ToWebLocalFrameImpl(web_view_helper.WebView()->MainFrame()->FirstChild())
-          ->GetFrame()
-          ->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+          ->GetFrame();
+  Document* document = frame->GetDocument();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   web_view_impl->DidEnterFullscreen();
@@ -8322,14 +8326,16 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
   Element* iframe_body = iframe_doc->body();
 
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(top_doc));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(top_doc->GetFrame());
     Fullscreen::RequestFullscreen(*top_body);
   }
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(iframe_doc));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(iframe_doc->GetFrame());
     Fullscreen::RequestFullscreen(*iframe_body);
   }
   web_view_impl->DidEnterFullscreen();
@@ -8373,10 +8379,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport) {
   EXPECT_FLOAT_EQ(1.2, web_view_impl->MinimumPageScaleFactor());
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
-  Fullscreen::RequestFullscreen(*document->documentElement());
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
+  Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
   EXPECT_EQ(384, layout_view_item.LogicalWidth().Floor());
@@ -8412,10 +8418,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport) {
                                         ->MainFrameImpl()
                                         ->GetFrameView()
                                         ->GetLayoutViewItem();
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
-  Fullscreen::RequestFullscreen(*document->documentElement());
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
+  Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
   EXPECT_EQ(384, layout_view_item.LogicalWidth().Floor());
@@ -8478,10 +8484,10 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 
   {
-    Document* document =
-        web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-    UserGestureIndicator gesture(UserGestureToken::Create(document));
-    Fullscreen::RequestFullscreen(*document->body());
+    LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(frame);
+    Fullscreen::RequestFullscreen(*frame->GetDocument()->body());
   }
 
   web_view_impl->DidEnterFullscreen();
@@ -8541,11 +8547,10 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   EXPECT_FLOAT_EQ(0.3125, web_view_impl->MinimumPageScaleFactor());
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(
-      UserGestureToken::Create(document, UserGestureToken::kNewGesture));
-  Fullscreen::RequestFullscreen(*document->documentElement());
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
+  Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
@@ -8561,8 +8566,8 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
 
   // Load a new page before exiting fullscreen.
   KURL test_url = ToKURL("about:blank");
-  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
-  FrameTestHelpers::LoadHTMLString(frame, kSource, test_url);
+  WebLocalFrame* web_frame = web_view_helper.LocalMainFrame();
+  FrameTestHelpers::LoadHTMLString(web_frame, kSource, test_url);
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
@@ -8615,11 +8620,11 @@ TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
   const TestFullscreenWebLayerTreeView& layer_tree_view =
       web_view_client.test_fullscreen_layer_tree_view;
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   HTMLVideoElement* video =
-      toHTMLVideoElement(document->getElementById("video"));
+      toHTMLVideoElement(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_FALSE(layer_tree_view.has_transparent_background);

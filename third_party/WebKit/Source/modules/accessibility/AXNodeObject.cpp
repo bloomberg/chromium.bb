@@ -2555,14 +2555,16 @@ void AXNodeObject::SetFocused(bool on) {
 }
 
 void AXNodeObject::Increment() {
-  UserGestureIndicator gesture_indicator(
-      UserGestureToken::Create(GetDocument(), UserGestureToken::kNewGesture));
+  LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(true);
 }
 
 void AXNodeObject::Decrement() {
-  UserGestureIndicator gesture_indicator(
-      UserGestureToken::Create(GetDocument(), UserGestureToken::kNewGesture));
+  LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(false);
 }
 

@@ -1840,8 +1840,8 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
 
   String script = DecodeURLEscapeSequences(
       url.GetString().Substring(strlen("javascript:")));
-  UserGestureIndicator gesture_indicator(
-      UserGestureToken::Create(owner_document, UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(

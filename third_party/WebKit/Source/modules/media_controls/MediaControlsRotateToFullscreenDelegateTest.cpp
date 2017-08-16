@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/fullscreen/Fullscreen.h"
@@ -217,7 +218,8 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
 
 void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -303,7 +305,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Should start observing visibility when played.
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -323,7 +326,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Should resume observing visibility when playback resumes.
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     GetVideo().Play();
   }
   testing::RunPendingTasks();
@@ -559,7 +563,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();
@@ -589,7 +594,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Start in fullscreen.
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     GetMediaControls().EnterFullscreen();
   }
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
@@ -619,7 +625,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Start in fullscreen.
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     GetMediaControls().EnterFullscreen();
   }
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
@@ -650,7 +657,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
   {
-    UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+    std::unique_ptr<UserGestureIndicator> gesture =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();

@@ -2273,10 +2273,10 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Enter fullscreen.
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* element = document->getElementById("fullscreenElement");
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -2313,10 +2313,10 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
   // Enter fullscreen.
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* element = document->getElementById("fullscreenElement");
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -2369,10 +2369,10 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
   EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
 
-  Document* document =
-      web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* element = document->body();
-  UserGestureIndicator gesture(UserGestureToken::Create(document));
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Element* element = frame->GetDocument()->body();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::CreateUserGesture(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
 
@@ -2381,7 +2381,7 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
 
   // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-  Element* other_element = document->getElementById("content");
+  Element* other_element = frame->GetDocument()->getElementById("content");
   Fullscreen::RequestFullscreen(*other_element);
 
   // Confirm that exiting fullscreen restores the parameters.

@@ -244,8 +244,9 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ =
       local_root.DocumentAtPoint(drag_data->ClientPosition());
-  UserGestureIndicator gesture(UserGestureToken::Create(
-      document_under_mouse_, UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> gesture = LocalFrame::CreateUserGesture(
+      document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
+      UserGestureToken::kNewGesture);
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {
     bool prevented_default = false;

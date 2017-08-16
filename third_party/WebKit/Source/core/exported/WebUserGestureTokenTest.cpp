@@ -31,6 +31,7 @@
 #include "public/web/WebUserGestureToken.h"
 
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/LocalFrame.h"
 #include "public/web/WebScopedUserGesture.h"
 #include "public/web/WebUserGestureIndicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,8 +48,8 @@ TEST(WebUserGestureTokenTest, Basic) {
   }
 
   {
-    UserGestureIndicator indicator(
-        UserGestureToken::Create(nullptr, UserGestureToken::kNewGesture));
+    std::unique_ptr<UserGestureIndicator> indicator =
+        LocalFrame::CreateUserGesture(nullptr, UserGestureToken::kNewGesture);
     EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
     token = WebUserGestureIndicator::CurrentUserGestureToken();
   }

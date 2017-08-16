@@ -44,28 +44,37 @@ class FrameTest : public ::testing::Test {
 };
 
 TEST_F(FrameTest, NoGesture) {
-  // A nullptr Document* will not set user gesture state.
-  UserGestureToken::Create(nullptr);
+  // A nullptr LocalFrame* will not set user gesture state.
+  std::unique_ptr<UserGestureIndicator> holder =
+      LocalFrame::CreateUserGesture(nullptr);
   EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 TEST_F(FrameTest, PossiblyExisting) {
-  // A non-null Document* will set state, but a subsequent nullptr Document*
+  // A non-null LocalFrame* will set state, but a subsequent nullptr Document*
   // token will not override it.
-  UserGestureToken::Create(&GetDocument());
-  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
-  UserGestureToken::Create(nullptr);
-  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  {
+    std::unique_ptr<UserGestureIndicator> holder =
+        LocalFrame::CreateUserGesture(GetDocument().GetFrame());
+    EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  }
+  {
+    std::unique_ptr<UserGestureIndicator> holder =
+        LocalFrame::CreateUserGesture(nullptr);
+    EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  }
 }
 
 TEST_F(FrameTest, NewGesture) {
   // UserGestureToken::Status doesn't impact Document gesture state.
-  UserGestureToken::Create(&GetDocument(), UserGestureToken::kNewGesture);
+  std::unique_ptr<UserGestureIndicator> holder = LocalFrame::CreateUserGesture(
+      GetDocument().GetFrame(), UserGestureToken::kNewGesture);
   EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 TEST_F(FrameTest, NavigateDifferentDomain) {
-  UserGestureToken::Create(&GetDocument());
+  std::unique_ptr<UserGestureIndicator> holder =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
@@ -79,7 +88,8 @@ TEST_F(FrameTest, NavigateDifferentDomain) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
-  UserGestureToken::Create(&GetDocument());
+  std::unique_ptr<UserGestureIndicator> holder =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
@@ -114,7 +124,8 @@ TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
-  UserGestureToken::Create(&GetDocument());
+  std::unique_ptr<UserGestureIndicator> holder =
+      LocalFrame::CreateUserGesture(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());

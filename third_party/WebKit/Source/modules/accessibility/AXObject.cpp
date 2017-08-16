@@ -1794,8 +1794,9 @@ bool AXObject::Press() {
   if (!document)
     return false;
 
-  UserGestureIndicator gesture_indicator(
-      UserGestureToken::Create(document, UserGestureToken::kNewGesture));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(document->GetFrame(),
+                                    UserGestureToken::kNewGesture);
   Element* action_elem = ActionElement();
   Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
   if (DispatchEventToAOMEventListeners(*event, action_elem))

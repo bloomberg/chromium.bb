@@ -41,6 +41,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/UseCounter.h"
 #include "core/probe/CoreProbes.h"
@@ -211,9 +212,10 @@ void Notification::DispatchShowEvent() {
 
 void Notification::DispatchClickEvent() {
   ExecutionContext* context = GetExecutionContext();
-  UserGestureIndicator gesture_indicator(UserGestureToken::Create(
-      context->IsDocument() ? ToDocument(context) : nullptr,
-      UserGestureToken::kNewGesture));
+  Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(document ? document->GetFrame() : nullptr,
+                                    UserGestureToken::kNewGesture);
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(Event::Create(EventTypeNames::click));
 }
