@@ -215,10 +215,14 @@ TEST_F(FileLockingTest, UnlockOnExit) {
   ASSERT_EQ(File::FILE_OK, lock_file_.Unlock());
 }
 
-// Flaky under Android ASAN (http://crbug.com/747518)
-#if !(defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 // Test that killing the process releases the lock.  This should cover crashing.
-TEST_F(FileLockingTest, UnlockOnTerminate) {
+// Flaky on Android (http://crbug.com/747518)
+#if defined(OS_ANDROID)
+#define MAYBE_UnlockOnTerminate DISABLED_UnlockOnTerminate
+#else
+#define MAYBE_UnlockOnTerminate UnlockOnTerminate
+#endif
+TEST_F(FileLockingTest, MAYBE_UnlockOnTerminate) {
   // The child will wait for an exit which never arrives.
   StartChildAndSignalLock(kExitUnlock);
 
@@ -227,4 +231,3 @@ TEST_F(FileLockingTest, UnlockOnTerminate) {
   ASSERT_EQ(File::FILE_OK, lock_file_.Lock());
   ASSERT_EQ(File::FILE_OK, lock_file_.Unlock());
 }
-#endif
