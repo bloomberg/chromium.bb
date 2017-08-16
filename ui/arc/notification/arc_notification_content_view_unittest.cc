@@ -249,8 +249,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
     auto* control_buttons_view =
         GetArcNotificationContentView()->control_buttons_view_;
     ASSERT_TRUE(control_buttons_view);
-    message_center::PaddedButton* close_button =
-        control_buttons_view->close_button();
+    views::Button* close_button = control_buttons_view->close_button();
     ASSERT_NE(nullptr, close_button);
     control_buttons_view->ButtonPressed(close_button, dummy_event);
   }

@@ -21,11 +21,11 @@
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
-#include "ui/message_center/views/toast_contents_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
 
 namespace arc {
