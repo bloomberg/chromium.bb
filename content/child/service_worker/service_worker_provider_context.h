@@ -29,39 +29,32 @@ class ServiceWorkerHandleReference;
 class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
 
-// ServiceWorkerProviderContext has different roles depending on if it's for a
-// "controllee" (a Document or Worker execution context), or a "controller" (a
-// service worker execution context). The roles are described below.
+// ServiceWorkerProviderContext stores common state for service worker
+// "providers" (currently WebServiceWorkerProviderImpl and
+// ServiceWorkerNetworkProvider). Providers for the same underlying entity hold
+// strong references to a shared instance of this class.
 //
-// WebServiceWorkerProviderImpl has a ServiceWorkerProviderContext.  Because
-// WebServiceWorkerProviderImpl is used for both controllees and controllers,
-// this class allows WebServiceWorkerProviderImpl to implement different
-// behaviors for controllees vs controllers.
-//
-// Created and destructed on the main thread. Unless otherwise noted, all
-// methods are called on the main thread. The lifetime of this class is equals
-// to the corresponding ServiceWorkerNetworkProvider.
-//
-// The role of this class varies for controllees and controllers:
-//  - For controllees, this is used for keeping the controller alive to create
-//    controllee's ServiceWorkerContainer#controller.
-//    The reference to the controller is kept until
-//    OnSetControllerServiceWorker() is called with an invalid worker info.
+// The ServiceWorkerProviderContext has different roles depending on if it's for
+// a "controllee" (a Document or Worker execution context), or a "controller" (a
+// service worker execution context).
+//  - For controllees, it's used for keeping the controller alive to create
+//    controllee's ServiceWorkerContainer#controller. The reference to the
+//    controller is kept until SetController() is called with an
+//    invalid worker info.
 //  - For controllers, this is used for keeping the associated registration and
 //    its versions alive to create the controller's
 //    ServiceWorkerGlobalScope#registration.
 //
-// These operations are actually done in delegate classes owned by this class:
-// ControlleeDelegate and ControllerDelegate.
+// Created and destructed on the main thread. Unless otherwise noted, all
+// methods are called on the main thread.
 class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter>,
       public mojom::ServiceWorkerProvider {
  public:
-  // |provider_id| specifies which host will receive the message from this
-  // provider. |provider_type| changes the behavior of this provider
-  // context. |request| is an endpoint which is connected to
-  // content::ServiceWorkerProviderHost which notifies changes of the
+  // |provider_id| is used to identify this provider in IPC messages to the
+  // browser process. |request| is an endpoint which is connected to
+  // the content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   // The new instance is registered to |dispatcher|, which is not owned.
   ServiceWorkerProviderContext(
@@ -70,64 +63,62 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       mojom::ServiceWorkerProviderAssociatedRequest request,
       ServiceWorkerDispatcher* dispatcher);
 
+  int provider_id() const { return provider_id_; }
+
   // For service worker execution contexts. Sets the registration for
-  // ServiceWorkerGlobalScope#registration. Called on the main thread.
+  // ServiceWorkerGlobalScope#registration. Unlike GetRegistration(),
+  // called on the main thread. SetRegistration() is called during
+  // the setup for service worker startup, so it is guaranteed to be called
+  // before GetRegistration().
   void SetRegistration(
       std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
       std::unique_ptr<ServiceWorkerHandleReference> installing,
       std::unique_ptr<ServiceWorkerHandleReference> waiting,
       std::unique_ptr<ServiceWorkerHandleReference> active);
 
-  // For service worker clients. Sets the controller for
-  // ServiceWorkerContainer#controller. Called on the main thread.
-  void OnSetControllerServiceWorker(
-      std::unique_ptr<ServiceWorkerHandleReference> controller,
-      const std::set<uint32_t>& used_features,
-      mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info);
-
-  // Called on the worker thread. Used for initializing
-  // ServiceWorkerGlobalScope#registration.
+  // For service worker execution contexts. Used for initializing
+  // ServiceWorkerGlobalScope#registration. Called on the worker thread.
   void GetRegistration(ServiceWorkerRegistrationObjectInfo* info,
                        ServiceWorkerVersionAttributes* attrs);
 
-  int provider_id() const { return provider_id_; }
-
-  mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
-    return event_dispatcher_.get();
-  }
-
+  // For service worker clients. The controller for
+  // ServiceWorkerContainer#controller.
+  void SetController(
+      std::unique_ptr<ServiceWorkerHandleReference> controller,
+      const std::set<uint32_t>& used_features,
+      mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info);
   ServiceWorkerHandleReference* controller();
+
+  // For service worker clients. Gets the ServiceWorkerEventDispatcher
+  // for dispatching events to the controller ServiceWorker.
+  mojom::ServiceWorkerEventDispatcher* event_dispatcher();
+
+  // For service worker clients. Keeps track of feature usage for UseCounter.
   void CountFeature(uint32_t feature);
-  const std::set<uint32_t>& used_features() const { return used_features_; }
+  const std::set<uint32_t>& used_features() const;
 
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
   friend class base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                           ServiceWorkerProviderContextDeleter>;
   friend struct ServiceWorkerProviderContextDeleter;
-
-  class Delegate;
-  class ControlleeDelegate;
-  class ControllerDelegate;
+  struct ControlleeState;
+  struct ControllerState;
 
   ~ServiceWorkerProviderContext() override;
   void DestructOnMainThread() const;
 
   const int provider_id_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
   // Mojo binding for the |request| passed to the constructor. This keeps the
   // connection to the content::ServiceWorkerProviderHost in the browser process
   // alive.
   mojo::AssociatedBinding<mojom::ServiceWorkerProvider> binding_;
 
-  // Only used for controllee contexts. Used to dispatch events to the
-  // controller ServiceWorker.
-  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
-
-  std::unique_ptr<Delegate> delegate_;
-
-  // Only used for controllee contexts.
-  std::set<uint32_t> used_features_;
+  // Either |controllee_state_| or |controller_state_| is non-null.
+  std::unique_ptr<ControlleeState> controllee_state_;
+  std::unique_ptr<ControllerState> controller_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
 };

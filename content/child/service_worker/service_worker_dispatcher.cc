@@ -807,9 +807,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   ProviderContextMap::iterator provider =
       provider_contexts_.find(params.provider_id);
   if (provider != provider_contexts_.end()) {
-    provider->second->OnSetControllerServiceWorker(
-        std::move(handle_ref), params.used_features,
-        std::move(event_dispatcher_ptr_info));
+    provider->second->SetController(std::move(handle_ref), params.used_features,
+                                    std::move(event_dispatcher_ptr_info));
   }
 
   ProviderClientMap::iterator found =

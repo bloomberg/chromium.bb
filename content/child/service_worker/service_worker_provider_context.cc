@@ -17,108 +17,28 @@
 
 namespace content {
 
-class ServiceWorkerProviderContext::Delegate {
- public:
-  virtual ~Delegate() {}
-  virtual void SetRegistration(
-      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      std::unique_ptr<ServiceWorkerHandleReference> installing,
-      std::unique_ptr<ServiceWorkerHandleReference> waiting,
-      std::unique_ptr<ServiceWorkerHandleReference> active) = 0;
-  virtual void GetRegistration(ServiceWorkerRegistrationObjectInfo* info,
-                               ServiceWorkerVersionAttributes* attrs) = 0;
-  virtual void SetController(
-      std::unique_ptr<ServiceWorkerHandleReference> controller) = 0;
-  virtual ServiceWorkerHandleReference* controller() = 0;
+// Holds state for service worker clients.
+struct ServiceWorkerProviderContext::ControlleeState {
+  ControlleeState() = default;
+  ~ControlleeState() = default;
+
+  std::unique_ptr<ServiceWorkerHandleReference> controller;
+
+  // Used to dispatch events to the controller.
+  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher;
+
+  // Tracks feature usage for UseCounter.
+  std::set<uint32_t> used_features;
 };
 
-// Delegate class for ServiceWorker client (Document, SharedWorker, etc) to
-// keep the controller until ServiceWorkerContainer is initialized.
-class ServiceWorkerProviderContext::ControlleeDelegate
-    : public ServiceWorkerProviderContext::Delegate {
- public:
-  ControlleeDelegate() {}
-  ~ControlleeDelegate() override {}
-
-  void SetRegistration(
-      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      std::unique_ptr<ServiceWorkerHandleReference> /* installing */,
-      std::unique_ptr<ServiceWorkerHandleReference> /* waiting */,
-      std::unique_ptr<ServiceWorkerHandleReference> /* active */) override {
-    NOTREACHED();
-  }
-
-  void SetController(
-      std::unique_ptr<ServiceWorkerHandleReference> controller) override {
-    DCHECK(!controller ||
-           controller->handle_id() != kInvalidServiceWorkerHandleId);
-    controller_ = std::move(controller);
-  }
-
-  void GetRegistration(ServiceWorkerRegistrationObjectInfo* /* info */,
-                       ServiceWorkerVersionAttributes* /* attrs */) override {
-    NOTREACHED();
-  }
-
-  ServiceWorkerHandleReference* controller() override {
-    return controller_.get();
-  }
-
- private:
-  std::unique_ptr<ServiceWorkerHandleReference> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlleeDelegate);
-};
-
-// Delegate class for ServiceWorkerGlobalScope to keep the associated
-// registration and its versions until the execution context is initialized.
-class ServiceWorkerProviderContext::ControllerDelegate
-    : public ServiceWorkerProviderContext::Delegate {
- public:
-  ControllerDelegate() {}
-  ~ControllerDelegate() override {}
-
-  void SetRegistration(
-      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      std::unique_ptr<ServiceWorkerHandleReference> installing,
-      std::unique_ptr<ServiceWorkerHandleReference> waiting,
-      std::unique_ptr<ServiceWorkerHandleReference> active) override {
-    DCHECK(!registration_);
-    registration_ = std::move(registration);
-    installing_ = std::move(installing);
-    waiting_ = std::move(waiting);
-    active_ = std::move(active);
-  }
-
-  void SetController(
-      std::unique_ptr<ServiceWorkerHandleReference> /* controller */) override {
-    NOTREACHED();
-  }
-
-  void GetRegistration(ServiceWorkerRegistrationObjectInfo* info,
-                       ServiceWorkerVersionAttributes* attrs) override {
-    DCHECK(registration_);
-    *info = registration_->info();
-    if (installing_)
-      attrs->installing = installing_->info();
-    if (waiting_)
-      attrs->waiting = waiting_->info();
-    if (active_)
-      attrs->active = active_->info();
-  }
-
-  ServiceWorkerHandleReference* controller() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
- private:
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration_;
-  std::unique_ptr<ServiceWorkerHandleReference> installing_;
-  std::unique_ptr<ServiceWorkerHandleReference> waiting_;
-  std::unique_ptr<ServiceWorkerHandleReference> active_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControllerDelegate);
+// Holds state for service worker execution contexts.
+struct ServiceWorkerProviderContext::ControllerState {
+  ControllerState() = default;
+  ~ControllerState() = default;
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration;
+  std::unique_ptr<ServiceWorkerHandleReference> installing;
+  std::unique_ptr<ServiceWorkerHandleReference> waiting;
+  std::unique_ptr<ServiceWorkerHandleReference> active;
 };
 
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
@@ -130,9 +50,9 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this, std::move(request)) {
   if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER)
-    delegate_.reset(new ControllerDelegate);
+    controller_state_ = base::MakeUnique<ControllerState>();
   else
-    delegate_.reset(new ControlleeDelegate);
+    controllee_state_ = base::MakeUnique<ControlleeState>();
 
   dispatcher->AddProviderContext(this);
 }
@@ -151,38 +71,70 @@ void ServiceWorkerProviderContext::SetRegistration(
     std::unique_ptr<ServiceWorkerHandleReference> waiting,
     std::unique_ptr<ServiceWorkerHandleReference> active) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  delegate_->SetRegistration(std::move(registration), std::move(installing),
-                             std::move(waiting), std::move(active));
-}
-
-void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
-    std::unique_ptr<ServiceWorkerHandleReference> controller,
-    const std::set<uint32_t>& used_features,
-    mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  delegate_->SetController(std::move(controller));
-  used_features_ = used_features;
-  if (event_dispatcher_ptr_info.is_valid())
-    event_dispatcher_.Bind(std::move(event_dispatcher_ptr_info));
+  ControllerState* state = controller_state_.get();
+  DCHECK(state);
+  DCHECK(!state->registration);
+  DCHECK(!state->installing && !state->waiting && !state->active);
+  state->registration = std::move(registration);
+  state->installing = std::move(installing);
+  state->waiting = std::move(waiting);
+  state->active = std::move(active);
 }
 
 void ServiceWorkerProviderContext::GetRegistration(
     ServiceWorkerRegistrationObjectInfo* info,
     ServiceWorkerVersionAttributes* attrs) {
   DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
-  delegate_->GetRegistration(info, attrs);
+  ControllerState* state = controller_state_.get();
+  DCHECK(state);
+  DCHECK(state->registration);
+  *info = state->registration->info();
+  if (state->installing)
+    attrs->installing = state->installing->info();
+  if (state->waiting)
+    attrs->waiting = state->waiting->info();
+  if (state->active)
+    attrs->active = state->active->info();
+}
+
+void ServiceWorkerProviderContext::SetController(
+    std::unique_ptr<ServiceWorkerHandleReference> controller,
+    const std::set<uint32_t>& used_features,
+    mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  ControlleeState* state = controllee_state_.get();
+  DCHECK(state);
+  DCHECK(!state->controller ||
+         state->controller->handle_id() != kInvalidServiceWorkerHandleId);
+  state->controller = std::move(controller);
+  state->used_features = used_features;
+  if (event_dispatcher_ptr_info.is_valid())
+    state->event_dispatcher.Bind(std::move(event_dispatcher_ptr_info));
 }
 
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  return delegate_->controller();
+  DCHECK(controllee_state_);
+  return controllee_state_->controller.get();
+}
+
+mojom::ServiceWorkerEventDispatcher*
+ServiceWorkerProviderContext::event_dispatcher() {
+  DCHECK(controllee_state_);
+  return controllee_state_->event_dispatcher.get();
 }
 
 void ServiceWorkerProviderContext::CountFeature(uint32_t feature) {
   // ServiceWorkerProviderContext keeps track of features in order to propagate
   // it to WebServiceWorkerProviderClient, which actually records the
   // UseCounter.
-  used_features_.insert(feature);
+  DCHECK(controllee_state_);
+  controllee_state_->used_features.insert(feature);
+}
+
+const std::set<uint32_t>& ServiceWorkerProviderContext::used_features() const {
+  DCHECK(controllee_state_);
+  return controllee_state_->used_features;
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {
