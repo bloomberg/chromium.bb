@@ -4782,6 +4782,55 @@ TEST_F(TileSizeTest, TileSizes) {
   EXPECT_EQ(result.height(), 512);  // 500 + 2, 32-byte aligned.
 }
 
+class HalfWidthTileTest : public PictureLayerImplTest {
+ public:
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettings settings = PictureLayerImplTest::CreateSettings();
+    settings.use_half_width_tiles_for_gpu_rasterization = true;
+    return settings;
+  }
+};
+
+TEST_F(HalfWidthTileTest, TileSizes) {
+  host_impl()->CreatePendingTree();
+
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+  std::unique_ptr<FakePictureLayerImpl> layer =
+      FakePictureLayerImpl::Create(pending_tree, layer_id());
+
+  gfx::Size result;
+  host_impl()->SetHasGpuRasterizationTrigger(true);
+  host_impl()->CommitComplete();
+  EXPECT_EQ(host_impl()->gpu_rasterization_status(),
+            GpuRasterizationStatus::ON);
+  host_impl()->SetViewportSize(gfx::Size(2000, 2000));
+  host_impl()->NotifyReadyToActivate();
+
+  layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
+  result = layer->CalculateTileSize(gfx::Size(10000, 10000));
+  EXPECT_EQ(result.width(),
+            MathUtil::UncheckedRoundUp(
+                (2000 + 2 * PictureLayerTiling::kBorderTexels) / 2, 32));
+  EXPECT_EQ(result.height(), 512);
+
+  // Clamp and round-up, when smaller than viewport.
+  // Tile-height doubles to 50% when width shrinks to <= 50%.
+  host_impl()->SetViewportSize(gfx::Size(1000, 1000));
+  layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
+  result = layer->CalculateTileSize(gfx::Size(447, 10000));
+  EXPECT_EQ(result.width(), 448);
+  EXPECT_EQ(result.height(), 512);
+
+  // Largest layer is 50% of viewport width (rounded up), and
+  // 50% of viewport in height.
+  result = layer->CalculateTileSize(gfx::Size(447, 400));
+  EXPECT_EQ(result.width(), 448);
+  EXPECT_EQ(result.height(), 448);
+  result = layer->CalculateTileSize(gfx::Size(500, 499));
+  EXPECT_EQ(result.width(), 512);
+  EXPECT_EQ(result.height(), 512);
+}
+
 TEST_F(NoLowResPictureLayerImplTest, LowResWasHighResCollision) {
   gfx::Size layer_bounds(1300, 1900);
 
