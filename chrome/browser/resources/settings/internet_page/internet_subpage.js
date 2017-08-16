@@ -135,13 +135,18 @@ Polymer({
   updateScanning_: function() {
     if (!this.deviceState)
       return;
-    if (this.deviceState.Type != CrOnc.Type.WI_FI) {
-      // deviceState probably changed, re-request networks.
-      this.getNetworkStateList_();
+
+    if (this.deviceState.Type == CrOnc.Type.WI_FI ||
+        this.deviceState.Type == CrOnc.Type.TETHER ||
+        (this.deviceState.Type == CrOnc.Type.CELLULAR &&
+         this.tetherDeviceState)) {
+      this.showSpinner = !!this.deviceState.Scanning;
+      this.startScanning_();
       return;
     }
-    this.showSpinner = !!this.deviceState.Scanning;
-    this.startScanning_();
+
+    // deviceState probably changed, re-request networks.
+    this.getNetworkStateList_();
   },
 
   /** @private */
