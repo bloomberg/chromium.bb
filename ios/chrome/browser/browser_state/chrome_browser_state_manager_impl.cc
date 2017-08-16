@@ -12,6 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -38,7 +40,6 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/web/public/active_state_manager.h"
-#include "ios/web/public/web_thread.h"
 
 namespace {
 
@@ -54,7 +55,7 @@ int64_t ComputeFilesSize(const base::FilePath& directory,
 
 // Simple task to log the size of the browser state at |path|.
 void BrowserStateSizeTask(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   const int64_t kBytesInOneMB = 1024 * 1024;
 
   int64_t size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
@@ -190,9 +191,12 @@ void ChromeBrowserStateManagerImpl::DoFinalInit(
   // Log the browser state size after a reasonable startup delay.
   base::FilePath path =
       browser_state->GetOriginalChromeBrowserState()->GetStatePath();
-  web::WebThread::PostDelayedTask(web::WebThread::FILE, FROM_HERE,
-                                  base::Bind(&BrowserStateSizeTask, path),
-                                  base::TimeDelta::FromSeconds(112));
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::Bind(&BrowserStateSizeTask, path),
+      base::TimeDelta::FromSeconds(112));
 
   LogNumberOfBrowserStates(
       GetApplicationContext()->GetChromeBrowserStateManager());
