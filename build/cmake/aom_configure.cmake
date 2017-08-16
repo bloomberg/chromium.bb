@@ -277,6 +277,12 @@ if (CONFIG_GPROF)
   require_compiler_flag("-pg" YES)
 endif ()
 
+if (CONFIG_TXK_SEL)
+  if (NOT CONFIG_LV_MAP)
+    change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
+  endif ()
+endif ()
+
 if (CONFIG_WARPED_MOTION)
   if (CONFIG_NCOBMC)
     change_config_and_warn(CONFIG_NCOBMC 0 CONFIG_WARPED_MOTION)
