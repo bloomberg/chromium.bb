@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -94,7 +95,7 @@ UIView* CollectionView() {
 // Test case for the NTP home UI. More precisely, this tests the positions of
 // the elements after interacting with the device.
 @interface NTPHomeTestCase : ChromeTestCase {
-  base::test::ScopedCommandLine _scopedCommandLine;
+  std::unique_ptr<base::test::ScopedCommandLine> _scopedCommandLine;
 }
 
 // Current non-incognito browser state.
@@ -144,7 +145,8 @@ UIView* CollectionView() {
 - (void)setUp {
   // The command line is set up before [super setUp] in order to have the NTP
   // opened with the command line already setup.
-  base::CommandLine* commandLine = _scopedCommandLine.GetProcessCommandLine();
+  _scopedCommandLine = base::MakeUnique<base::test::ScopedCommandLine>();
+  base::CommandLine* commandLine = _scopedCommandLine->GetProcessCommandLine();
   commandLine->AppendSwitch(switches::kEnableSuggestionsUI);
   self.provider->FireCategoryStatusChanged(self.category,
                                            CategoryStatus::AVAILABLE);
@@ -160,6 +162,7 @@ UIView* CollectionView() {
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                            errorOrNil:nil];
+  _scopedCommandLine.reset();
   [super tearDown];
 }
 
@@ -181,6 +184,11 @@ UIView* CollectionView() {
 
 // Tests that the fake omnibox width is correctly updated after a rotation.
 - (void)testOmniboxWidthRotation {
+  // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
+  // fixed.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
+  }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   CGFloat collectionWidth = CollectionView().bounds.size.width;
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -207,6 +215,11 @@ UIView* CollectionView() {
 // Tests that the fake omnibox width is correctly updated after a rotation done
 // while the settings screen is shown.
 - (void)testOmniboxWidthRotationBehindSettings {
+  // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
+  // fixed.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
+  }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   CGFloat collectionWidth = CollectionView().bounds.size.width;
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -240,6 +253,12 @@ UIView* CollectionView() {
 // Tests that the fake omnibox width is correctly updated after a rotation done
 // while the fake omnibox is pinned to the top.
 - (void)testOmniboxPinnedWidthRotation {
+  // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
+  // fixed.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
+  }
+
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
                                    [ContentSuggestionsViewController
