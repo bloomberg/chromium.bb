@@ -87,6 +87,11 @@ TEST_F(SpecialLocaleHandlerTest, AddLocalSearchEngines) {
             model()->GetTemplateURLForKeyword(naver)->prepopulate_id());
   ASSERT_EQ(TemplateURLPrepopulateData::so_360.id,
             model()->GetTemplateURLForKeyword(keyword_so)->prepopulate_id());
+
+  // Ensure multiple calls to Load does not duplicate the search engines.
+  unsigned int existing_size = model()->GetTemplateURLs().size();
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
+  ASSERT_EQ(existing_size, model()->GetTemplateURLs().size());
 }
 
 TEST_F(SpecialLocaleHandlerTest, RemoveLocalSearchEngines) {
