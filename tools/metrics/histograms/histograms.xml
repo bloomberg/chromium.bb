@@ -2597,16 +2597,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Ash.Shelf.Palette.Usage" enum="PaletteTrayOptions">
   <owner>xiaoyinh@chromium.org</owner>
   <summary>
-    Tracks the usage of each pen palette option when palette is not
-    automatically opened by a stylus eject event.
+    Recorded every time that the palette option has been selected from the
+    palette that has been opened manually (not via a stylus eject event).
   </summary>
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.Usage.AutoOpened" enum="PaletteTrayOptions">
   <owner>xiaoyinh@chromium.org</owner>
   <summary>
-    Tracks the usage of each pen palette option when palette is automatically
-    opened by a stylus eject event.
+    Recorded every time that the palette option has been selected from the
+    palette that has been opened automatically (by a stylus eject event).
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Usage.Shortcut" enum="PaletteTrayOptions">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    Recorded every time that the palette option has been selected by means other
+    that the palette menu (e.g. stylus barrel button or a keyboard accelerator).
   </summary>
 </histogram>
 

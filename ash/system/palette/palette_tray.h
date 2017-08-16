@@ -92,7 +92,8 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // PaletteToolManager::Delegate:
   void HidePalette() override;
   void HidePaletteImmediately() override;
-  void RecordPaletteOptionsUsage(PaletteTrayOptions option) override;
+  void RecordPaletteOptionsUsage(PaletteTrayOptions option,
+                                 PaletteInvocationMethod method) override;
   void RecordPaletteModeCancellation(PaletteModeCancelType type) override;
 
   // Returns true if the palette tray contains the given point. This is useful
