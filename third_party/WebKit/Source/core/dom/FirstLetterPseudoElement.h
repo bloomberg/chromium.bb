@@ -35,7 +35,7 @@ class Element;
 class LayoutObject;
 class LayoutTextFragment;
 
-class FirstLetterPseudoElement final : public PseudoElement {
+class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
   WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
 
  public:
