@@ -61,10 +61,6 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
                        kArcAppIconSizeInDp,
                        // The life time of icon must shorter than |this|.
                        this));
-    icon->image_skia().GetRepresentation(
-        ui::GetSupportedScaleFactor(display::Screen::GetScreen()
-                                        ->GetPrimaryDisplay()
-                                        .device_scale_factor()));
     // Apply icon now to set the default image.
     OnIconUpdated(icon.get());
 
