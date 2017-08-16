@@ -237,6 +237,12 @@ filelist.handleTap = function(e, index, eventType) {
       (this.selectionModel);
   var isTap = eventType == FileTapHandler.TapEvent.TAP ||
       eventType == FileTapHandler.TapEvent.LONG_TAP;
+  if (eventType == FileTapHandler.TapEvent.TAP &&
+      e.target.classList.contains('detail-checkmark')) {
+    // Single tap on the checkbox in the list view mode should toggle select,
+    // just like a mouse click on it.
+    return false;
+  }
   if (sm.multiple && sm.getCheckSelectMode() && isTap && !e.shiftKey) {
     // toggle item selection. Equivalent to mouse click on checkbox.
     sm.beginChange();
@@ -246,7 +252,7 @@ filelist.handleTap = function(e, index, eventType) {
     sm.anchorIndex = index;
     sm.endChange();
     return true;
-  } else if (sm.multiple && eventType == FileTapHandler.TapEvent.LONG_PRESS) {
+  } else if (sm.multiple && (eventType == FileTapHandler.TapEvent.LONG_PRESS)) {
     sm.beginChange();
     if (!sm.getCheckSelectMode()) {
       // Make sure to unselect the leading item that was not the touch target.

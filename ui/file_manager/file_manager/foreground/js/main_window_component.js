@@ -169,6 +169,11 @@ MainWindowComponent.prototype.handleTouchEvents_ = function(event) {
   // TODO(yamaguchi): Revise TapHandler.handleTouchEvents to delete the param.
   this.tapHandler_.handleTouchEvents(event, -1, function(e, index, eventType) {
     if (eventType == FileTapHandler.TapEvent.TAP) {
+      if (e.target.classList.contains('detail-checkmark')) {
+        // Tap on the checkmark should only toggle select the item just like a
+        // mouse click on it.
+        return false;
+      }
       // The selection model has the single selection at this point.
       // When using touchscreen, the selection should be cleared because
       // we don't want show the file selected when not in check-select
