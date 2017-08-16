@@ -250,7 +250,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
           // exit early immediately because we've lost the loop invariant.
           DCHECK(visible_end_of_selection.IsNotNull());
           if (visible_end_of_selection.IsNull() ||
-              !RootEditableElementOf(visible_end_of_selection))
+              !RootEditableElementOf(visible_end_of_selection.DeepEquivalent()))
             return;
           start_of_last_paragraph =
               StartOfParagraph(visible_end_of_selection,
