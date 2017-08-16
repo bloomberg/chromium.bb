@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/profiling/memlog.mojom.h"
-#include "chrome/profiling/backtrace_storage.h"
 #include "chrome/profiling/memlog_connection_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -58,7 +57,6 @@ class MemlogImpl : public mojom::Memlog {
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
-  BacktraceStorage backtrace_storage_;
   std::unique_ptr<MemlogConnectionManager, DeleteOnRunner> connection_manager_;
 
   // Must be last.
