@@ -200,15 +200,6 @@ class TestingProfile : public Profile {
   // for testing error conditions. Returns true on success.
   bool CreateHistoryService(bool delete_file, bool no_db) WARN_UNUSED_RESULT;
 
-  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // This bypasses the BrowserContextDependencyManager and thus may leave other
-  // KeyedServices with dangling pointers; see above. It's also usually not
-  // necessary to explicitly destroy the HistoryService; it'll be destroyed
-  // along with the TestingProfile anyway.
-  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
-  // Shuts down and nulls out the reference to HistoryService.
-  void DestroyHistoryService();
-
   // Creates the BookmarkBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
   // the model is created. As TestingProfile deletes the directory containing

@@ -166,18 +166,6 @@ class LastDownloadFinderTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
   }
 
-  void TearDown() override {
-    // Shut down the history service on all profiles.
-    std::vector<Profile*> profiles(
-        profile_manager_->profile_manager()->GetLoadedProfiles());
-    for (size_t i = 0; i < profiles.size(); ++i) {
-      profiles[0]->AsTestingProfile()->DestroyHistoryService();
-    }
-    profile_manager_.reset();
-    TestingBrowserProcess::DeleteInstance();
-    testing::Test::TearDown();
-  }
-
   TestingProfile* CreateProfile(SafeBrowsingDisposition safe_browsing_opt_in) {
     std::string profile_name("profile");
     profile_name.append(base::IntToString(++profile_number_));
@@ -235,25 +223,6 @@ class LastDownloadFinderTest : public testing::Test {
     run_loop.Run();
   }
 
-  // Wait for the history backend thread to process any outstanding tasks.
-  // This is needed because HistoryService::QueryDownloads uses PostTaskAndReply
-  // to do work on the backend thread and then invoke the caller's callback on
-  // the originating thread. The PostTaskAndReplyRelay holds a reference to the
-  // backend until its RunReplyAndSelfDestruct is called on the originating
-  // thread. This reference MUST be released (on the originating thread,
-  // remember) _before_ calling DestroyHistoryService in TearDown(). See the
-  // giant comment in HistoryService::Cleanup explaining where the backend's
-  // dtor must be run.
-  void FlushHistoryBackend(Profile* profile) {
-    base::RunLoop run_loop;
-    HistoryServiceFactory::GetForProfile(profile,
-                                         ServiceAccessType::EXPLICIT_ACCESS)
-        ->FlushForTest(run_loop.QuitClosure());
-    run_loop.Run();
-    // Then make sure anything bounced back to the main thread has been handled.
-    base::RunLoop().RunUntilIdle();
-  }
-
   // Runs the last download finder on all loaded profiles.
   void RunLastDownloadFinder(
       std::unique_ptr<ClientIncidentReport_DownloadDetails>*
@@ -306,9 +275,6 @@ class LastDownloadFinderTest : public testing::Test {
         std::vector<history::DownloadSliceInfo>());    // download_slice_info
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
-
  private:
   // A HistoryService::DownloadCreateCallback that asserts that the download was
   // created and runs |closure|.
@@ -327,6 +293,8 @@ class LastDownloadFinderTest : public testing::Test {
     callback.Run(std::unique_ptr<ClientIncidentReport_DownloadDetails>());
   }
 
+  content::TestBrowserThreadBundle browser_thread_bundle_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   int profile_number_;
 
   // Incremented on every download addition to avoid downloads with the same id.
@@ -440,9 +408,6 @@ TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
   LastDownloadFinder::Create(GetDownloadDetailsGetter(),
                              base::Bind(&LastDownloadFinderTest::NeverCalled,
                                         base::Unretained(this))).reset();
-
-  // Flush tasks on the history backend thread.
-  FlushHistoryBackend(profile);
 }
 
 // Tests that a download in profile added after the search is begun is found.

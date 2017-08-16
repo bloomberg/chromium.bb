@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -58,12 +60,6 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
         BookmarkModelFactory::GetForBrowserContext(testing_profile_));
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
-  }
-
-  void TearDown() override {
-    testing_profile_->DestroyHistoryService();
-    profile_manager_.DeleteTestingProfile(chrome::kInitialProfile);
-    testing_profile_ = nullptr;
   }
 
  protected:

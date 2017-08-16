@@ -70,12 +70,6 @@ class SQLiteCursorTest : public testing::Test,
         testing_profile_, ServiceAccessType::EXPLICIT_ACCESS);
   }
 
-  void TearDown() override {
-    testing_profile_->DestroyHistoryService();
-    profile_manager_.DeleteTestingProfile(chrome::kInitialProfile);
-    testing_profile_ = NULL;
-  }
-
   // Override SQLiteCursor::TestObserver.
   void OnPostMoveToTask() override {
     ASSERT_FALSE(run_loop_);

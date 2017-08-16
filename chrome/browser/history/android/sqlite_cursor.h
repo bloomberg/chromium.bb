@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_ANDROID_SQLITE_CURSOR_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"

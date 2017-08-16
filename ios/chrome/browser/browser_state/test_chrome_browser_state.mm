@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 
-#include <utility>
-
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -318,8 +316,9 @@ void TestChromeBrowserState::CreateBookmarkModel(bool delete_file) {
 }
 
 bool TestChromeBrowserState::CreateHistoryService(bool delete_file) {
-  // Ensure that no HistoryService exists before creating a new one.
-  DestroyHistoryService();
+  // Should never be created multiple times.
+  DCHECK(!ios::HistoryServiceFactory::GetForBrowserStateIfExists(
+      this, ServiceAccessType::EXPLICIT_ACCESS));
 
   if (delete_file) {
     base::FilePath path =
@@ -350,31 +349,6 @@ bool TestChromeBrowserState::CreateHistoryService(bool delete_file) {
                                                                   nullptr);
 
   return true;
-}
-
-void TestChromeBrowserState::DestroyHistoryService() {
-  history::HistoryService* history_service =
-      ios::HistoryServiceFactory::GetInstance()->GetForBrowserStateIfExists(
-          this, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!history_service)
-    return;
-
-  base::RunLoop run_loop;
-
-  history_service->ClearCachedDataForContextID(0);
-  history_service->SetOnBackendDestroyTask(run_loop.QuitWhenIdleClosure());
-  history_service->Shutdown();
-  history_service = nullptr;
-
-  // Resetting the testing factory force the destruction of the current
-  // HistoryService instance associated with the TestChromeBrowserState.
-  ios::HistoryServiceFactory::GetInstance()->SetTestingFactory(this, nullptr);
-
-  // Wait for the backend class to terminate before deleting the files and
-  // moving to the next test. Note: if this never terminates, somebody is
-  // probably leaking a reference to the history backend, so it never calls
-  // our destroy task.
-  run_loop.Run();
 }
 
 sync_preferences::TestingPrefServiceSyncable*
