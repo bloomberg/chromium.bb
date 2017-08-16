@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/ServiceWorker/#navigator-service-worker
+// https://w3c.github.io/ServiceWorker/#navigator-serviceworker
 partial interface Navigator {
     [RaisesException, CallWith=ScriptState] readonly attribute ServiceWorkerContainer serviceWorker;
 };

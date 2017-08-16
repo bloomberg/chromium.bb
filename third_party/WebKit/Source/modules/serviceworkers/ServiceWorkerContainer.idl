@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/ServiceWorker/#service-worker-container-interface
+// https://w3c.github.io/ServiceWorker/#serviceworkercontainer-interface
 interface ServiceWorkerContainer : EventTarget {
     readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;
