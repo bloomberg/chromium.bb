@@ -274,6 +274,12 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
       host_->active_tree()->LayerById(child1_id)->LayerPropertyChanged());
   EXPECT_TRUE(
       host_->active_tree()->LayerById(child2_id)->LayerPropertyChanged());
+  EXPECT_FALSE(host_->active_tree()
+                   ->LayerById(child2_id)
+                   ->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_TRUE(host_->active_tree()
+                  ->LayerById(child2_id)
+                  ->LayerPropertyChangedNotFromPropertyTrees());
   host_->active_tree()->DetachLayers();
 }
 

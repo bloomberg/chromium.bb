@@ -346,11 +346,13 @@ class CC_EXPORT LayerImpl {
 
   virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
 
-  // This includes |layer_property_changed_| and property_trees changes.
+  // This includes |layer_property_changed_not_from_property_trees_| and
+  // property_trees changes.
   bool LayerPropertyChanged() const;
-  // Only checks |layer_property_changed_|. Used in damage_tracker to determine
-  // if there is a contributing content damage not from property_trees changes
-  // in animaiton.
+  bool LayerPropertyChangedFromPropertyTrees() const;
+  // Only checks |layer_property_changed_not_from_property_trees_|. Used in
+  // damage_tracker to determine if there is a contributing content damage not
+  // from property_trees changes in animaiton.
   bool LayerPropertyChangedNotFromPropertyTrees() const;
 
   void ResetChangeTracking();
@@ -423,6 +425,7 @@ class CC_EXPORT LayerImpl {
   float GetIdealContentsScale() const;
 
   void NoteLayerPropertyChanged();
+  void NoteLayerPropertyChangedFromPropertyTrees();
 
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {
@@ -496,7 +499,14 @@ class CC_EXPORT LayerImpl {
   bool should_flatten_transform_from_property_tree_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
-  bool layer_property_changed_ : 1;
+  // TODO(wutao): We want to distinquish the sources of change so that we can
+  // reuse the cache of render pass. For example, we can reuse the cache when
+  // transform and opacity changing on a surface during animation. Currently
+  // |layer_property_changed_from_property_trees_| does not mean the layer is
+  // damaged from animation. We need better mechanism to explicitly capture
+  // damage from animations. http://crbug.com/755828.
+  bool layer_property_changed_not_from_property_trees_ : 1;
+  bool layer_property_changed_from_property_trees_ : 1;
   bool may_contain_video_ : 1;
 
   bool masks_to_bounds_ : 1;

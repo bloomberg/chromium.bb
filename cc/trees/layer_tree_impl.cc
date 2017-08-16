@@ -500,8 +500,8 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   // onto the layers.
   property_trees_.UpdateChangeTracking();
   for (auto* layer : *this) {
-    if (layer->LayerPropertyChanged())
-      layer->NoteLayerPropertyChanged();
+    if (layer->LayerPropertyChangedFromPropertyTrees())
+      layer->NoteLayerPropertyChangedFromPropertyTrees();
   }
   EffectTree& effect_tree = property_trees_.effect_tree;
   for (int id = EffectTree::kContentsRootNodeId;

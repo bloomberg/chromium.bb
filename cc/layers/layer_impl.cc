@@ -56,7 +56,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
           MainThreadScrollingReason::kNotScrollingOnMain),
       scrollable_(false),
       should_flatten_transform_from_property_tree_(false),
-      layer_property_changed_(false),
+      layer_property_changed_not_from_property_trees_(false),
+      layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
@@ -331,10 +332,13 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
 
-  if (layer_property_changed_) {
+  if (layer_property_changed_not_from_property_trees_ ||
+      layer_property_changed_from_property_trees_)
     layer->layer_tree_impl()->set_needs_update_draw_properties();
-    layer->layer_property_changed_ = true;
-  }
+  if (layer_property_changed_not_from_property_trees_)
+    layer->layer_property_changed_not_from_property_trees_ = true;
+  if (layer_property_changed_from_property_trees_)
+    layer->layer_property_changed_from_property_trees_ = true;
 
   layer->SetBounds(bounds_);
   if (scrollable_)
@@ -353,7 +357,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
-  layer_property_changed_ = false;
+  layer_property_changed_not_from_property_trees_ = false;
+  layer_property_changed_from_property_trees_ = false;
   needs_push_properties_ = false;
   update_rect_ = gfx::Rect();
   layer_tree_impl()->RemoveLayerShouldPushProperties(this);
@@ -419,7 +424,13 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
 }
 
 bool LayerImpl::LayerPropertyChanged() const {
-  if (layer_property_changed_ || GetPropertyTrees()->full_tree_damaged)
+  return layer_property_changed_not_from_property_trees_ ||
+         LayerPropertyChangedFromPropertyTrees();
+}
+
+bool LayerImpl::LayerPropertyChangedFromPropertyTrees() const {
+  if (layer_property_changed_from_property_trees_ ||
+      GetPropertyTrees()->full_tree_damaged)
     return true;
   if (transform_tree_index() == TransformTree::kInvalidNodeId)
     return false;
@@ -436,11 +447,17 @@ bool LayerImpl::LayerPropertyChanged() const {
 }
 
 bool LayerImpl::LayerPropertyChangedNotFromPropertyTrees() const {
-  return layer_property_changed_;
+  return layer_property_changed_not_from_property_trees_;
 }
 
 void LayerImpl::NoteLayerPropertyChanged() {
-  layer_property_changed_ = true;
+  layer_property_changed_not_from_property_trees_ = true;
+  layer_tree_impl()->set_needs_update_draw_properties();
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
+  layer_property_changed_from_property_trees_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
   SetNeedsPushProperties();
 }
@@ -459,7 +476,8 @@ const char* LayerImpl::LayerTypeAsString() const {
 }
 
 void LayerImpl::ResetChangeTracking() {
-  layer_property_changed_ = false;
+  layer_property_changed_not_from_property_trees_ = false;
+  layer_property_changed_from_property_trees_ = false;
   needs_push_properties_ = false;
 
   update_rect_.SetRect(0, 0, 0, 0);
