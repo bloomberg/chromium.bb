@@ -2136,10 +2136,9 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
 
   if (event.GetKeyCode() == ui::VKEY_BACK ||
       event.GetKeyCode() == ui::VKEY_ESCAPE) {
-    // Chrome doesn't send char events for backspace or escape keys, see
-    // PlatformKeyboardEventBuilder::isCharacterKey() and
-    // http://chrome-corpsvn.mtv.corp.google.com/viewvc?view=rev&root=chrome&revision=31805
-    // for more information.  So just fake one since PDFium uses it.
+    // Blink does not send char events for backspace or escape keys, see
+    // WebKeyboardEvent::IsCharacterKey() and b/961192 for more information.
+    // So just fake one since PDFium uses it.
     std::string str;
     str.push_back(event.GetKeyCode());
     pp::KeyboardInputEvent synthesized(pp::KeyboardInputEvent(
