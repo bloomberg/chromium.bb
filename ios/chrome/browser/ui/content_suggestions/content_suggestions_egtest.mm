@@ -183,8 +183,24 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that the "Learn More" cell is present.
+// Tests that the "Learn More" cell is present only if there is a suggestion in
+// the section.
 - (void)testLearnMore {
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   [ContentSuggestionsViewController
+                                       collectionAccessibilityIdentifier])]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [ContentSuggestionsLearnMoreItem
+                                              accessibilityIdentifier])]
+      assertWithMatcher:grey_nil()];
+
+  std::vector<ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium", GURL("http://chromium.org")));
+  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+
   [CellWithMatcher(grey_accessibilityID(
       [ContentSuggestionsLearnMoreItem accessibilityIdentifier]))
       assertWithMatcher:grey_sufficientlyVisible()];
