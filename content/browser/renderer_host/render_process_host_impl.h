@@ -203,13 +203,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
-  size_t GetWorkerRefCount() const override;
-  void IncrementServiceWorkerRefCount() override;
-  void DecrementServiceWorkerRefCount() override;
-  void IncrementSharedWorkerRefCount() override;
-  void DecrementSharedWorkerRefCount() override;
-  void ForceReleaseWorkerRefCounts() override;
-  bool IsWorkerRefCountDisabled() override;
+  void IncrementKeepAliveRefCount() override;
+  void DecrementKeepAliveRefCount() override;
+  void DisableKeepAliveRefCount() override;
+  bool IsKeepAliveRefCountDisabled() override;
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
@@ -556,16 +553,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
   service_manager::mojom::ServicePtr test_service_;
 
-  // The number of service workers running in this process.
-  size_t service_worker_ref_count_;
-  // See comments for IncrementSharedWorkerRefCount() and
-  // DecrementSharedWorkerRefCount(). This is more like a boolean flag and not
-  // actually the number of shared workers running in this process.
-  size_t shared_worker_ref_count_;
+  size_t keep_alive_ref_count_;
 
-  // Set in ForceReleaseWorkerRefCounts. When true, worker ref counts must no
-  // longer be modified.
-  bool is_worker_ref_count_disabled_;
+  // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
+  // no longer be modified.
+  bool is_keep_alive_ref_count_disabled_;
 
   // Whether this host is never suitable for reuse as determined in the
   // MayReuseHost() function.
@@ -722,7 +714,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
 
   // Records the time when the process starts surviving for workers for UMA.
-  base::TimeTicks survive_for_worker_start_time_;
+  base::TimeTicks keep_alive_start_time_;
 
   // Context shared for each mojom::PermissionService instance created for this
   // RPH.

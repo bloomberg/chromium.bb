@@ -117,13 +117,11 @@ class MockRenderProcessHost : public RenderProcessHost {
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
-  size_t GetWorkerRefCount() const override;
-  void IncrementServiceWorkerRefCount() override;
-  void DecrementServiceWorkerRefCount() override;
-  void IncrementSharedWorkerRefCount() override;
-  void DecrementSharedWorkerRefCount() override;
-  void ForceReleaseWorkerRefCounts() override;
-  bool IsWorkerRefCountDisabled() override;
+  size_t GetKeepAliveRefCount() const;
+  void IncrementKeepAliveRefCount() override;
+  void DecrementKeepAliveRefCount() override;
+  void DisableKeepAliveRefCount() override;
+  bool IsKeepAliveRefCountDisabled() override;
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
@@ -185,7 +183,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_process_backgrounded_;
   bool is_unused_;
   std::unique_ptr<base::ProcessHandle> process_handle;
-  int worker_ref_count_;
+  int keep_alive_ref_count_;
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
       renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
