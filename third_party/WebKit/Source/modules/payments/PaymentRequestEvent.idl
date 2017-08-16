@@ -17,6 +17,6 @@
     readonly attribute FrozenArray<PaymentDetailsModifier> modifiers;
     readonly attribute DOMString instrumentKey;
 
-    [CallWith=ScriptState] Promise<WindowClient> openWindow(USVString url);
+    [CallWith=ScriptState] Promise<WindowClient?> openWindow(USVString url);
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<PaymentResponse> response);
 };
