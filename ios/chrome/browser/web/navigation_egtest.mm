@@ -10,9 +10,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/web/public/test/http_server/data_response_provider.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,12 +38,9 @@ namespace {
 // When a button on the page is tapped, all pre-existing div text is cleared,
 // so matching against this webview text after a button is tapped ensures that
 // the state is set in response to the most recently executed script.
-const char kWindowHistoryGoTestURL[] =
-    "http://ios/testing/data/http_server_files/history_go.html";
-
-// URL of a sample file-based page.
-const char kSampleFileBasedURL[] =
-    "http://ios/testing/data/http_server_files/chromium_logo_page.html";
+const char kWindowHistoryGoTestURL[] = "/history_go.html";
+// URL for a file based test page which gives a simple string response.
+const char kSimpleFileBasedTestURL[] = "/pony.html";
 
 // Strings used by history_go.html.
 const char kOnLoadText[] = "OnLoadText";
@@ -53,26 +49,18 @@ const char kNoOpText[] = "NoOpText";
 // Button ids for history_go.html.
 NSString* const kGoNoParameterID = @"go-no-parameter";
 NSString* const kGoZeroID = @"go-zero";
+NSString* const kGoForwardID = @"go-forward";
 NSString* const kGoTwoID = @"go-2";
+NSString* const kGoBackID = @"go-back";
 NSString* const kGoBackTwoID = @"go-back-2";
 
-// URLs and labels for tests that navigate back and forward.
-const char kBackHTMLButtonLabel[] = "BackHTMLButton";
-const char kForwardHTMLButtonLabel[] = "ForwardHTMLButton";
-const char kForwardHTMLSentinel[] = "Forward page loaded";
-const char kTestPageSentinel[] = "Test Page";
-const char kBackURL[] = "http://back";
-const char kForwardURL[] = "http://forward";
-const char kTestURL[] = "http://test";
-
-// URLs and labels for scenarioWindowLocation* tests.
+// URLs and labels for testWindowLocation* tests.
 const char kHashChangeWithHistoryLabel[] = "hashChangedWithHistory";
 const char kHashChangeWithoutHistoryLabel[] = "hashChangedWithoutHistory";
-const char kPage1URL[] = "http://page1";
-const char kHashChangedWithHistoryURL[] =
-    "http://page1/#hashChangedWithHistory";
+const char kPage1URL[] = "/page1/";
+const char kHashChangedWithHistoryURL[] = "/page1/#hashChangedWithHistory";
 const char kHashChangedWithoutHistoryURL[] =
-    "http://page1/#hashChangedWithoutHistory";
+    "/page1/#hashChangedWithoutHistory";
 const char kNoHashChangeText[] = "No hash change";
 // An HTML page with two links that run JavaScript when they're clicked. The
 // first link updates |window.location.hash|, the second link changes
@@ -86,97 +74,53 @@ const char kHashChangedHTML[] =
     "   id=\"hashChangedWithoutHistory\">hashChangedWithoutHistory</a>"
     "</body></html>";
 
-void SetupBackAndForwardResponseProvider() {
-  std::map<GURL, std::string> responses;
-  GURL testURL = web::test::HttpServer::MakeUrl(kTestURL);
-  GURL backURL = web::test::HttpServer::MakeUrl(kBackURL);
-  GURL forwardURL = web::test::HttpServer::MakeUrl(kForwardURL);
-  responses[testURL] = "<html>Test Page</html>";
-  responses[backURL] =
-      "<html>"
-      "<input type=\"button\" value=\"BackHTMLButton\" id=\"BackHTMLButton\""
-      "onclick=\"window.history.back()\" />"
-      "</html>";
-  responses[forwardURL] =
-      "<html>"
-      "<input type=\"button\" value=\"ForwardHTMLButton\""
-      "id=\"ForwardHTMLButton\" onclick=\"window.history.forward()\" /></br>"
-      "Forward page loaded</html>";
-  web::test::SetUpSimpleHttpServer(responses);
+// URLs for server redirect tests.
+const char kRedirectIndexURL[] = "/redirect";
+const char kRedirectWindowURL[] = "/redirectWindow.html";
+const char kDestinationURL[] = "/destination.html";
+// Default URL for a sample html page. It is registered in the default handlers.
+const char kDefaultPageURL[] = "/defaultresponse";
+
+// Provides responses for redirect and changed window location URLs.
+std::unique_ptr<net::test_server::HttpResponse> RedirectHandlers(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+  if (request.relative_url == kRedirectIndexURL) {
+    http_response->set_content(
+        "<p><a href=\"server-redirect?destination.html\""
+        "      id=\"redirect301\">redirect301</a></p>"
+        "<p><a href=\"client-redirect?destination.html\""
+        "      id=\"redirectRefresh\">redirectRefresh</a></p>"
+        "<p><a href=\"redirectWindow.html\""
+        "      id=\"redirectWindow\">redirectWindow</a></p>");
+  } else if (request.relative_url == kRedirectWindowURL) {
+    http_response->set_content(
+        "<head>"
+        "  <meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=destination.html\">"
+        "</head>"
+        "<body>Redirecting"
+        "  <script>window.open(\"destination.html\", \"_self\");</script>"
+        "</body>");
+  } else {
+    return nullptr;
+  }
+  return std::move(http_response);
 }
 
-// URLs for server redirect tests.
-const char kRedirectIndexURL[] = "http://redirect";
-const char kRedirect301URL[] = "http://redirect/redirect?code=301";
-const char kRedirectWindowURL[] = "http://redirect/redirectWindow.html";
-const char kRedirectRefreshURL[] = "http://redirect/redirectRefresh.html";
-const char kDestinationURL[] = "http://redirect/destination.html";
-const char kLastURL[] = "http://redirect/last.html";
-
-class RedirectResponseProvider : public web::DataResponseProvider {
- public:
-  RedirectResponseProvider()
-      : index_url_(web::test::HttpServer::MakeUrl(kRedirectIndexURL)),
-        redirect_301_url_(web::test::HttpServer::MakeUrl(kRedirect301URL)),
-        redirect_refresh_url_(
-            web::test::HttpServer::MakeUrl(kRedirectRefreshURL)),
-        redirect_window_url_(
-            web::test::HttpServer::MakeUrl(kRedirectWindowURL)),
-        destination_url_(web::test::HttpServer::MakeUrl(kDestinationURL)) {}
-
- private:
-  bool CanHandleRequest(const Request& request) override {
-    return request.url == index_url_ || request.url == redirect_window_url_ ||
-           request.url == redirect_refresh_url_ ||
-           request.url == redirect_301_url_ || request.url == destination_url_;
+// Provides responses for redirect and changed window location URLs.
+std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+  if (request.relative_url != kPage1URL) {
+    return nullptr;
   }
-  void GetResponseHeadersAndBody(
-      const Request& request,
-      scoped_refptr<net::HttpResponseHeaders>* headers,
-      std::string* response_body) override {
-    *headers = GetDefaultResponseHeaders();
-    if (request.url == index_url_) {
-      *response_body =
-          "<p><a href=\"redirect?code=301\""
-          "      id=\"redirect301\">redirect301</a></p>"
-          "<p><a href=\"redirectRefresh.html\""
-          "      id=\"redirectRefresh\">redirectRefresh</a></p>"
-          "<p><a href=\"redirectWindow.html\""
-          "      id=\"redirectWindow\">redirectWindow</a></p>";
-    } else if (request.url == redirect_301_url_) {
-      *headers = GetRedirectResponseHeaders(destination_url_.spec(),
-                                            net::HTTP_MOVED_PERMANENTLY);
-    } else if (request.url == redirect_refresh_url_) {
-      *response_body =
-          "<head>"
-          "  <meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=destination.html\">"
-          "</head>"
-          "<body><p>Redirecting</p></body>";
-    } else if (request.url == redirect_window_url_) {
-      *response_body =
-          "<head>"
-          "  <meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=destination.html\">"
-          "</head>"
-          "<body>Redirecting"
-          "  <script>window.open(\"destination.html\", \"_self\");</script>"
-          "</body>";
-    } else if (request.url == destination_url_) {
-      *response_body = "<html><body><p>You've arrived</p></body></html>";
-    } else if (request.url == last_url_) {
-      *response_body = "<html><body><p>Go back from here</p></body></html>";
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  // Member variables for test URLs.
-  const GURL index_url_;
-  const GURL redirect_301_url_;
-  const GURL redirect_refresh_url_;
-  const GURL redirect_window_url_;
-  const GURL destination_url_;
-  const GURL last_url_;
-};
+  http_response->set_content(kHashChangedHTML);
+  return std::move(http_response);
+}
 
 }  // namespace
 
@@ -201,11 +145,10 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests reloading the current page via window.history.go() with no parameters.
 - (void)testHistoryGoNoParameter {
-  web::test::SetUpFileBasedHttpServer();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
-      web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
+      self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
@@ -220,11 +163,10 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests reloading the current page via history.go(0).
 - (void)testHistoryGoDeltaZero {
-  web::test::SetUpFileBasedHttpServer();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
-      web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
+      self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
@@ -240,11 +182,10 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Tests that calling window.history.go() with an offset that is out of bounds
 // is a no-op.
 - (void)testHistoryGoOutOfBounds {
-  web::test::SetUpFileBasedHttpServer();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
-      web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
+      self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
@@ -263,38 +204,29 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests going back and forward via history.go().
 - (void)testHistoryGoDelta {
-  std::map<GURL, std::string> responses;
-  const GURL firstURL = web::test::HttpServer::MakeUrl("http://page1");
-  const GURL secondURL = web::test::HttpServer::MakeUrl("http://page2");
-  const GURL thirdURL = web::test::HttpServer::MakeUrl("http://page3");
-  const GURL fourthURL = web::test::HttpServer::MakeUrl("http://page4");
-  responses[firstURL] =
-      "page1 <input type='button' value='goForward' id='goForward' "
-      "onclick='window.history.go(2)' />";
-  responses[secondURL] = "page2";
-  responses[thirdURL] = "page3";
-  responses[fourthURL] =
-      "page4 <input type='button' value='goBack' id='goBack' "
-      "onclick='window.history.go(-3)' />";
-  web::test::SetUpSimpleHttpServer(responses);
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL firstURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
+  const GURL secondURL = self.testServer->GetURL("/memory_usage.html");
+  const GURL thirdURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
+  const GURL fourthURL = self.testServer->GetURL("/history.html");
 
   // Load 4 pages.
   [ChromeEarlGrey loadURL:firstURL];
   [ChromeEarlGrey loadURL:secondURL];
   [ChromeEarlGrey loadURL:thirdURL];
   [ChromeEarlGrey loadURL:fourthURL];
-  [ChromeEarlGrey waitForWebViewContainingText:"page4"];
+  [ChromeEarlGrey waitForWebViewContainingText:"onload"];
 
   // Tap button to go back 3 pages.
-  TapWebViewElementWithId("goBack");
-  [ChromeEarlGrey waitForWebViewContainingText:"page1"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"goBack3"];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap button to go forward 2 pages.
-  TapWebViewElementWithId("goForward");
-  [ChromeEarlGrey waitForWebViewContainingText:"page3"];
+  [ChromeEarlGrey tapWebViewElementWithID:kGoTwoID];
+  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           thirdURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -303,15 +235,14 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Tests that calls to window.history.go() that span multiple documents causes
 // a load to occur.
 - (void)testHistoryCrossDocumentLoad {
-  web::test::SetUpFileBasedHttpServer();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Load the history test page and ensure that its onload text is visible.
   const GURL windowHistoryURL =
-      web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
+      self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
-  const GURL sampleURL = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
+  const GURL sampleURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:sampleURL];
 
   [ChromeEarlGrey loadURL:windowHistoryURL];
@@ -328,18 +259,17 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests going back via history.back() then forward via forward button.
 - (void)testHistoryBackNavigation {
-  SetupBackAndForwardResponseProvider();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Navigate to a URL.
-  const GURL firstURL = web::test::HttpServer::MakeUrl(kTestURL);
+  const GURL firstURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:firstURL];
 
   // Navigate to an HTML page with a back button.
-  const GURL secondURL = web::test::HttpServer::MakeUrl(kBackURL);
+  const GURL secondURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:secondURL];
 
   // Tap the back button in the HTML and verify the first URL is loaded.
-  TapWebViewElementWithId(kBackHTMLButtonLabel);
+  [ChromeEarlGrey tapWebViewElementWithID:kGoBackID];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -354,27 +284,26 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests going back via back button then forward via history.forward().
 - (void)testHistoryForwardNavigation {
-  SetupBackAndForwardResponseProvider();
-
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // Navigate to an HTML page with a forward button.
-  const GURL firstURL = web::test::HttpServer::MakeUrl(kForwardURL);
+  const GURL firstURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:firstURL];
 
   // Navigate to some other page.
-  const GURL secondURL = web::test::HttpServer::MakeUrl(kTestURL);
+  const GURL secondURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:secondURL];
 
   // Tap the back button in the toolbar and verify the page with forward button
   // is loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebViewContainingText:kForwardHTMLSentinel];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the HTML and verify the second URL is loaded.
-  TapWebViewElementWithId(kForwardHTMLButtonLabel);
-  [ChromeEarlGrey waitForWebViewContainingText:kTestPageSentinel];
+  [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID];
+  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -405,11 +334,10 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
 #endif
-
-  SetupBackAndForwardResponseProvider();
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Go to page 1 with a button which calls window.history.forward().
-  const GURL forwardURL = web::test::HttpServer::MakeUrl(kForwardURL);
+  const GURL forwardURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:forwardURL];
 
   // Go to page 2: 'www.badurljkljkljklfloofy.com'. This page should display a
@@ -426,7 +354,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
   // Go forward to page 2 by calling window.history.forward() and assert that
   // the error page is shown.
-  TapWebViewElementWithId(kForwardHTMLButtonLabel);
+  [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID];
   [ChromeEarlGrey waitForErrorPage];
 }
 
@@ -435,13 +363,13 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Loads a URL and modifies window.location.hash, then goes back and forward
 // and verifies the URLs and that hashchange event is fired.
 - (void)testWindowLocationChangeHash {
-  std::map<GURL, std::string> responses;
-  const GURL page1URL = web::test::HttpServer::MakeUrl(kPage1URL);
+  self.testServer->RegisterRequestHandler(
+      base::Bind(&WindowLocationHashHandlers));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL page1URL = self.testServer->GetURL(kPage1URL);
   const GURL hashChangedWithHistoryURL =
-      web::test::HttpServer::MakeUrl(kHashChangedWithHistoryURL);
-  responses[page1URL] = kHashChangedHTML;
-  responses[hashChangedWithHistoryURL] = kHashChangedHTML;
-  web::test::SetUpSimpleHttpServer(responses);
+      self.testServer->GetURL(kHashChangedWithHistoryURL);
+
   [ChromeEarlGrey loadURL:page1URL];
 
   // Click link to update location.hash and go to new URL (same page).
@@ -477,14 +405,15 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Loads a URL and replaces its location, then updates its location.hash
 // and verifies that going back returns to the replaced entry.
 - (void)testWindowLocationReplaceAndChangeHash {
-  std::map<GURL, std::string> responses;
-  const GURL page1URL = web::test::HttpServer::MakeUrl(kPage1URL);
-  const GURL hashChangedWithoutHistoryURL =
-      web::test::HttpServer::MakeUrl(kHashChangedWithoutHistoryURL);
+  self.testServer->RegisterRequestHandler(
+      base::Bind(&WindowLocationHashHandlers));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL page1URL = self.testServer->GetURL(kPage1URL);
   const GURL hashChangedWithHistoryURL =
-      web::test::HttpServer::MakeUrl(kHashChangedWithHistoryURL);
-  responses[page1URL] = kHashChangedHTML;
-  web::test::SetUpSimpleHttpServer(responses);
+      self.testServer->GetURL(kHashChangedWithHistoryURL);
+  const GURL hashChangedWithoutHistoryURL =
+      self.testServer->GetURL(kHashChangedWithoutHistoryURL);
+
   [ChromeEarlGrey loadURL:page1URL];
 
   // Tap link to replace the location value.
@@ -513,12 +442,13 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Loads a URL and modifies window.location.hash twice, verifying that there is
 // only one entry in the history by navigating back.
 - (void)testWindowLocationChangeToSameHash {
-  std::map<GURL, std::string> responses;
-  const GURL page1URL = web::test::HttpServer::MakeUrl(kPage1URL);
+  self.testServer->RegisterRequestHandler(
+      base::Bind(&WindowLocationHashHandlers));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL page1URL = self.testServer->GetURL(kPage1URL);
   const GURL hashChangedWithHistoryURL =
-      web::test::HttpServer::MakeUrl(kHashChangedWithHistoryURL);
-  responses[page1URL] = kHashChangedHTML;
-  web::test::SetUpSimpleHttpServer(responses);
+      self.testServer->GetURL(kHashChangedWithHistoryURL);
+
   [ChromeEarlGrey loadURL:page1URL];
 
   // Tap link to update location.hash with a new value.
@@ -551,20 +481,14 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Navigates to a page that immediately redirects to another page via JavaScript
 // then verifies the browsing history.
 - (void)testJavaScriptRedirect {
-  std::map<GURL, std::string> responses;
+  self.testServer->RegisterRequestHandler(base::Bind(&RedirectHandlers));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   // A starting page.
-  const GURL initialURL = web::test::HttpServer::MakeUrl("http://initialURL");
+  const GURL initialURL = self.testServer->GetURL(kDefaultPageURL);
   // A page that redirects immediately via the window.open JavaScript method.
-  const GURL originURL = web::test::HttpServer::MakeUrl(
-      "http://scenarioJavaScriptRedirect_origin");
-  const GURL destinationURL =
-      web::test::HttpServer::MakeUrl("http://destination");
-  responses[initialURL] = "<html><body>Initial page</body></html>";
-  responses[originURL] =
-      "<script>window.open('" + destinationURL.spec() + "', '_self');</script>";
-  responses[destinationURL] = "scenarioJavaScriptRedirect destination";
+  const GURL originURL = self.testServer->GetURL(kRedirectWindowURL);
+  const GURL destinationURL = self.testServer->GetURL(kDestinationURL);
 
-  web::test::SetUpSimpleHttpServer(responses);
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey loadURL:originURL];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -588,27 +512,18 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 // Test to load a page that contains a redirect window, then does multiple back
 // and forth navigations.
 - (void)testRedirectWindow {
-  std::unique_ptr<web::DataResponseProvider> provider(
-      new RedirectResponseProvider());
-  web::test::SetUpHttpServer(std::move(provider));
   [self verifyBackAndForwardAfterRedirect:"redirectWindow"];
 }
 
 // Test to load a page that contains a redirect refresh, then does multiple back
 // and forth navigations.
 - (void)testRedirectRefresh {
-  std::unique_ptr<web::DataResponseProvider> provider(
-      new RedirectResponseProvider());
-  web::test::SetUpHttpServer(std::move(provider));
   [self verifyBackAndForwardAfterRedirect:"redirectRefresh"];
 }
 
 // Test to load a page that performs a 301 redirect, then does multiple back and
 // forth navigations.
 - (void)test301Redirect {
-  std::unique_ptr<web::DataResponseProvider> provider(
-      new RedirectResponseProvider());
-  web::test::SetUpHttpServer(std::move(provider));
   [self verifyBackAndForwardAfterRedirect:"redirect301"];
 }
 
@@ -628,9 +543,11 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 }
 
 - (void)verifyBackAndForwardAfterRedirect:(std::string)redirectLabel {
-  const GURL indexURL(web::test::HttpServer::MakeUrl(kRedirectIndexURL));
-  const GURL destinationURL(web::test::HttpServer::MakeUrl(kDestinationURL));
-  const GURL lastURL(web::test::HttpServer::MakeUrl(kLastURL));
+  self.testServer->RegisterRequestHandler(base::Bind(&RedirectHandlers));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL indexURL(self.testServer->GetURL(kRedirectIndexURL));
+  const GURL destinationURL(self.testServer->GetURL(kDestinationURL));
+  const GURL lastURL(self.testServer->GetURL(kDefaultPageURL));
 
   // Load index, tap on redirect link, and assert that the page is redirected
   // to the proper destination.

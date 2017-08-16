@@ -128,6 +128,11 @@ function goBack2() {
   window.history.go(-2);
 };
 
+function goBack3() {
+  clearOnloadDivText();
+  window.history.go(-3);
+};
+
 function goBack4() {
   clearOnloadDivText();
   window.history.go(-4);
