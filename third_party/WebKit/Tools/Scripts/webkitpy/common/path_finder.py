@@ -116,29 +116,6 @@ class PathFinder(object):
     def path_from_layout_tests(self, *comps):
         return self._filesystem.join(self.layout_tests_dir(), *comps)
 
-    def layout_test_name(self, file_path):
-        """Returns a layout test name, given the path from the repo root.
-
-        Note: this appears to not work on Windows; see crbug.com/658795.
-        Also, this function duplicates functionality that's in
-        Port.relative_test_filename.
-
-        TODO(qyearsley): De-duplicate this and Port.relative_test_filename,
-        and ensure that it works properly with Windows paths.
-
-        Args:
-            file_path: A relative path from the root of the Chromium repo.
-
-        Returns:
-            The normalized layout test name, which is just the relative path from
-            the LayoutTests directory, using forward slash as the path separator.
-            Returns None if the given file is not in the LayoutTests directory.
-        """
-        layout_tests_rel_path = self._filesystem.relpath(self.layout_tests_dir(), self.chromium_base())
-        if not file_path.startswith(layout_tests_rel_path):
-            return None
-        return file_path[len(layout_tests_rel_path) + 1:]
-
     @memoized
     def depot_tools_base(self):
         """Returns the path to depot_tools, or None if not found.

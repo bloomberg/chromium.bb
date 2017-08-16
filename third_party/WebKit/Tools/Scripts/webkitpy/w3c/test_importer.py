@@ -498,8 +498,8 @@ class TestImporter(object):
         """List of layout tests that have been deleted."""
         out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
         deleted_tests = []
-        for line in out.splitlines():
-            test = self.finder.layout_test_name(line)
+        for path in out.splitlines():
+            test = self._relative_to_layout_test_dir(path)
             if test:
                 deleted_tests.append(test)
         return deleted_tests
@@ -513,8 +513,15 @@ class TestImporter(object):
         renamed_tests = {}
         for line in out.splitlines():
             _, source_path, dest_path = line.split()
-            source_test = self.finder.layout_test_name(source_path)
-            dest_test = self.finder.layout_test_name(dest_path)
+            source_test = self._relative_to_layout_test_dir(source_path)
+            dest_test = self._relative_to_layout_test_dir(dest_path)
             if source_test and dest_test:
                 renamed_tests[source_test] = dest_test
         return renamed_tests
+
+    def _relative_to_layout_test_dir(self, path_relative_to_repo_root):
+        """Returns a path that's relative to the layout tests directory."""
+        abs_path = self.finder.path_from_chromium_base(path_relative_to_repo_root)
+        if not abs_path.startswith(self.finder.layout_tests_dir()):
+            return None
+        return self.fs.relpath(abs_path, self.finder.layout_tests_dir())
