@@ -124,6 +124,18 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   friend class NetworkHandler;
   friend class NetworkDeviceHandlerTest;
 
+  // When there's no Wi-Fi device or there is one but we haven't asked if
+  // MAC address randomization is supported yet, the value of the member
+  // |mac_addr_randomizaton_supported_| will be |NOT_REQUESTED|. When we
+  // try to apply the |mac_addr_randomization_enabled_| value we will
+  // check whether it is supported and change to one of the other two
+  // values.
+  enum class MACAddressRandomizationSupport {
+    NOT_REQUESTED,
+    SUPPORTED,
+    UNSUPPORTED
+  };
+
   NetworkDeviceHandlerImpl();
 
   void Init(NetworkStateHandler* network_state_handler);
@@ -132,21 +144,26 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
   // cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
 
-  // Apply the current value of |mac_addr_randomization_| to wifi devices.
+  // Apply the current value of |mac_addr_randomization_enabled_| to wifi
+  // devices.
   void ApplyMACAddressRandomizationToShill();
 
-  void SetMACAddressRandomizationErrorCallback(
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+  // Sets the value of |mac_addr_randomization_supported_| based on
+  // whether shill thinks it is supported on the wifi device. If it is
+  // supported, also apply |mac_addr_randomization_enabled_| to the
+  // shill device.
+  void HandleMACAddressRandomization(const std::string& device_path,
+                                     const base::DictionaryValue& properties);
 
   // Get the DeviceState for the wifi device, if any.
   const DeviceState* GetWifiDeviceState(
       const network_handler::ErrorCallback& error_callback);
 
-  NetworkStateHandler* network_state_handler_;
-  bool cellular_allow_roaming_;
-  bool mac_addr_randomization_supported_;
-  bool mac_addr_randomization_enabled_;
+  NetworkStateHandler* network_state_handler_ = nullptr;
+  bool cellular_allow_roaming_ = false;
+  MACAddressRandomizationSupport mac_addr_randomization_supported_ =
+      MACAddressRandomizationSupport::NOT_REQUESTED;
+  bool mac_addr_randomization_enabled_ = false;
   base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);
