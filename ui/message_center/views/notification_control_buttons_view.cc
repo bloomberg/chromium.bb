@@ -131,13 +131,11 @@ bool NotificationControlButtonsView::IsSettingsButtonFocused() const {
   return settings_button_ && settings_button_->HasFocus();
 }
 
-message_center::PaddedButton* NotificationControlButtonsView::close_button()
-    const {
+views::CustomButton* NotificationControlButtonsView::close_button() const {
   return close_button_.get();
 }
 
-message_center::PaddedButton* NotificationControlButtonsView::settings_button()
-    const {
+views::CustomButton* NotificationControlButtonsView::settings_button() const {
   return settings_button_.get();
 }
 

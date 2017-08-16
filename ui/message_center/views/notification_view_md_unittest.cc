@@ -80,7 +80,7 @@ class NotificationViewMDTest : public views::ViewsTestBase,
   void BeginScroll();
   void EndScroll();
   void ScrollBy(int dx);
-  PaddedButton* GetCloseButton();
+  views::View* GetCloseButton();
 
  private:
   std::set<std::string> removed_ids_;
@@ -265,7 +265,7 @@ void NotificationViewMDTest::ScrollBy(int dx) {
   DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
 }
 
-PaddedButton* NotificationViewMDTest::GetCloseButton() {
+views::View* NotificationViewMDTest::GetCloseButton() {
   return notification_view()->GetControlButtonsView()->close_button();
 }
 
