@@ -46,10 +46,6 @@ public class CctOfflinePageModelObserver {
     }
 
     private static boolean isInWhitelist(String appName) {
-        String[] whitelist = AppHooks.get().getOfflinePagesCctWhitelist();
-        for (String s : whitelist) {
-            if (s.equals(appName)) return true;
-        }
-        return false;
+        return AppHooks.get().getOfflinePagesCctWhitelist().contains(appName);
     }
 }
