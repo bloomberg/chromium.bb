@@ -462,6 +462,8 @@ bool ArcSupportHost::Initialize() {
   DCHECK(message_host_);
 
   auto loadtime_data = base::MakeUnique<base::DictionaryValue>();
+  loadtime_data->SetString("appWindow", l10n_util::GetStringUTF16(
+                                            IDS_ARC_PLAYSTORE_ICON_TITLE_BETA));
   loadtime_data->SetString(
       "greetingHeader", l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_HEADING));
   loadtime_data->SetString(

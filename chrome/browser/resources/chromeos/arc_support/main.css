@@ -19,11 +19,12 @@ webview,
   padding: 64px 64px 0 64px;
 }
 
-h1.title {
+p.title {
   color: rgba(0, 0, 0, 0.87);
   font-size: 28px;
   font-weight: normal;
   margin: 36px 0 0 0; /* = 64 - font height*/
+  padding: 0 0 0 64px;
 }
 
 .subtitle {
@@ -81,7 +82,8 @@ h1.title {
   -webkit-margin-end: 18px;
 }
 
-.checkbox-text {
+.checkbox-text,
+.content-text {
   color: rgba(0, 0, 0, 0.54);
   font-size: 13px;
   font-weight: 400;
