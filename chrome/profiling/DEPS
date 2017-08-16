@@ -3,4 +3,5 @@ include_rules = [
   "+mojo/edk/embedder",
   "+services/resource_coordinator/public",
   "+services/service_manager/public/cpp",
+  "+third_party/zlib/zlib.h",
 ]
