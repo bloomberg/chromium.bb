@@ -117,8 +117,8 @@ void ChromeNativeAppWindowViewsAura::UpdateShape(
 
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape() && !had_shape) {
-    native_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
-        new ShapedAppWindowTargeter(native_window, this)));
+    native_window->SetEventTargeter(
+        std::unique_ptr<ui::EventTargeter>(new ShapedAppWindowTargeter(this)));
   } else if (!shape() && had_shape) {
     native_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>());
   }
