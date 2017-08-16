@@ -59,7 +59,8 @@ class PaletteToolManagerTest : public ::testing::Test,
     NOTREACHED();
     return nullptr;
   }
-  void RecordPaletteOptionsUsage(PaletteTrayOptions option) override {}
+  void RecordPaletteOptionsUsage(PaletteTrayOptions option,
+                                 PaletteInvocationMethod method) override {}
   void RecordPaletteModeCancellation(PaletteModeCancelType type) override {}
 
   // PaletteTool::Delegate:

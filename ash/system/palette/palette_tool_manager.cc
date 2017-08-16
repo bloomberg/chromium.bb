@@ -132,8 +132,10 @@ aura::Window* PaletteToolManager::GetWindow() {
   return delegate_->GetWindow();
 }
 
-void PaletteToolManager::RecordPaletteOptionsUsage(PaletteTrayOptions option) {
-  return delegate_->RecordPaletteOptionsUsage(option);
+void PaletteToolManager::RecordPaletteOptionsUsage(
+    PaletteTrayOptions option,
+    PaletteInvocationMethod method) {
+  return delegate_->RecordPaletteOptionsUsage(option, method);
 }
 
 void PaletteToolManager::RecordPaletteModeCancellation(

@@ -21,7 +21,8 @@ class MockPaletteToolDelegate : public PaletteTool::Delegate {
   MOCK_METHOD0(HidePalette, void());
   MOCK_METHOD0(HidePaletteImmediately, void());
   MOCK_METHOD0(GetWindow, aura::Window*());
-  MOCK_METHOD1(RecordPaletteOptionsUsage, void(PaletteTrayOptions option));
+  MOCK_METHOD2(RecordPaletteOptionsUsage,
+               void(PaletteTrayOptions option, PaletteInvocationMethod method));
   MOCK_METHOD1(RecordPaletteModeCancellation, void(PaletteModeCancelType type));
 };
 
