@@ -16,6 +16,7 @@ TEST(TouchDeviceTransformStructTraitsTest, SerializeAndDeserialize) {
   touch_device_transform.device_id = 202;
   touch_device_transform.transform =
       gfx::Transform(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+  touch_device_transform.radius_scale = 4;
   TouchDeviceTransform deserialized;
   ASSERT_TRUE(mojom::TouchDeviceTransform::Deserialize(
       mojom::TouchDeviceTransform::Serialize(&touch_device_transform),
@@ -23,6 +24,7 @@ TEST(TouchDeviceTransformStructTraitsTest, SerializeAndDeserialize) {
   EXPECT_EQ(touch_device_transform.display_id, deserialized.display_id);
   EXPECT_EQ(touch_device_transform.device_id, deserialized.device_id);
   EXPECT_EQ(touch_device_transform.transform, deserialized.transform);
+  EXPECT_EQ(touch_device_transform.radius_scale, deserialized.radius_scale);
 }
 
 }  // namespace ui

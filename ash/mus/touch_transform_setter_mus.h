@@ -24,7 +24,6 @@ class TouchTransformSetterMus : public display::TouchTransformSetter {
 
   // TouchTransformSetter:
   void ConfigureTouchDevices(
-      const std::map<int32_t, double>& scales,
       const std::vector<ui::TouchDeviceTransform>& transforms) override;
 
  private:

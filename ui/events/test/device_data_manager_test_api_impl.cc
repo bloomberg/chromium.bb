@@ -74,12 +74,5 @@ void DeviceDataManagerTestAPI::SetTouchpadDevices(
   DeviceDataManager::GetInstance()->touchpad_devices_ = devices;
 }
 
-void DeviceDataManagerTestAPI::UpdateTouchInfoForDisplay(
-    int64_t target_display_id,
-    int touch_device_id,
-    const gfx::Transform& touch_transformer) {
-  DeviceDataManager::GetInstance()->UpdateTouchInfoForDisplay(
-      target_display_id, touch_device_id, touch_transformer);
-}
 }  // namespace test
 }  // namespace ui

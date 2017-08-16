@@ -28,11 +28,8 @@ void TouchDeviceServer::AddInterface(
 }
 
 void TouchDeviceServer::ConfigureTouchDevices(
-    const std::unordered_map<int32_t, double>& transport_scales,
     const std::vector<ui::TouchDeviceTransform>& transforms) {
-  std::map<int32_t, double> scales(transport_scales.begin(),
-                                   transport_scales.end());
-  touch_transform_setter_->ConfigureTouchDevices(scales, transforms);
+  touch_transform_setter_->ConfigureTouchDevices(transforms);
 }
 
 void TouchDeviceServer::BindTouchDeviceServerRequest(

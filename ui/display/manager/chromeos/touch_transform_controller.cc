@@ -292,8 +292,7 @@ TouchTransformController::~TouchTransformController() {}
 void TouchTransformController::UpdateTouchTransforms() const {
   UpdateData update_data;
   UpdateTouchTransforms(&update_data);
-  setter_->ConfigureTouchDevices(update_data.device_to_scale,
-                                 update_data.touch_device_transforms);
+  setter_->ConfigureTouchDevices(update_data.touch_device_transforms);
 }
 
 void TouchTransformController::UpdateTouchRadius(
@@ -317,6 +316,9 @@ void TouchTransformController::UpdateTouchTransform(
     touch_device_transform.device_id = device_id;
     touch_device_transform.transform = GetTouchTransform(
         target_display, touch_display, FindTouchscreenById(device_id));
+    auto device_to_scale_iter = update_data->device_to_scale.find(device_id);
+    if (device_to_scale_iter != update_data->device_to_scale.end())
+      touch_device_transform.radius_scale = device_to_scale_iter->second;
     update_data->touch_device_transforms.push_back(touch_device_transform);
   }
 }

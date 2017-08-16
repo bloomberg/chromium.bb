@@ -5,7 +5,6 @@
 #ifndef UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_TRANSFORM_SETTER_H_
 #define UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_TRANSFORM_SETTER_H_
 
-#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -23,10 +22,8 @@ class DISPLAY_MANAGER_EXPORT TouchTransformSetter {
  public:
   virtual ~TouchTransformSetter() {}
 
-  // |scales| maps from the touch device id to the touch radius scale and
   // |transforms| contains the transform for each device and display pair.
   virtual void ConfigureTouchDevices(
-      const std::map<int32_t, double>& scales,
       const std::vector<ui::TouchDeviceTransform>& transforms) = 0;
 };
 

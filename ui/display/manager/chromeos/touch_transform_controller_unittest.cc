@@ -15,7 +15,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen_base.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 
 namespace display {
 namespace test {
@@ -40,6 +39,19 @@ ManagedDisplayInfo CreateDisplayInfo(int64_t id,
   info.SetManagedDisplayModes(default_modes);
 
   return info;
+}
+
+ui::TouchDeviceTransform CreateTouchDeviceTransform(
+    int64_t display_id,
+    int32_t device_id,
+    const gfx::Transform& transform,
+    double radius_scale = 1.0) {
+  ui::TouchDeviceTransform touch_device_transform;
+  touch_device_transform.display_id = display_id;
+  touch_device_transform.device_id = device_id;
+  touch_device_transform.transform = transform;
+  touch_device_transform.radius_scale = radius_scale;
+  return touch_device_transform;
 }
 
 ui::TouchscreenDevice CreateTouchscreenDevice(unsigned int id,
@@ -170,17 +182,17 @@ TEST_F(TouchTransformControllerTest, MirrorModeLetterboxing) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
 
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen));
-
-  test_api.UpdateTouchInfoForDisplay(
+                        internal_touchscreen)));
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
-                        external_touchscreen));
+                        external_touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -237,17 +249,18 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
+  std::vector<ui::TouchDeviceTransform> transforms;
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen));
+                        internal_touchscreen)));
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), external_touchscreen.id,
       GetTouchTransform(external_display_info, external_display_info,
-                        external_touchscreen));
+                        external_touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -309,15 +322,17 @@ TEST_F(TouchTransformControllerTest, SoftwareMirrorMode) {
       CreateTouchscreenDevice(11, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
+  std::vector<ui::TouchDeviceTransform> transforms;
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display1_info.id(), display1_touchscreen.id,
-      GetTouchTransform(display1_info, display1_info, display1_touchscreen));
+      GetTouchTransform(display1_info, display1_info, display1_touchscreen)));
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display1_info.id(), display2_touchscreen.id,
-      GetTouchTransform(display1_info, display2_info, display2_touchscreen));
+      GetTouchTransform(display1_info, display2_info, display2_touchscreen)));
+
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(10));
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(11));
@@ -376,15 +391,15 @@ TEST_F(TouchTransformControllerTest, ExtendedMode) {
   ui::TouchscreenDevice touchscreen2 = CreateTouchscreenDevice(6, fb_size);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
-
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       display1.id(), touchscreen1.id,
-      GetTouchTransform(display1, display1, touchscreen1));
+      GetTouchTransform(display1, display1, touchscreen1)));
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display2.id(), touchscreen2.id,
-      GetTouchTransform(display2, display2, touchscreen2));
+      GetTouchTransform(display2, display2, touchscreen2)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(1, device_manager->GetTargetDisplayForTouchDevice(5));
   EXPECT_EQ(2, device_manager->GetTargetDisplayForTouchDevice(6));
@@ -454,16 +469,17 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
       CreateTouchscreenDevice(kTouchId2, kDisplaySize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
+  std::vector<ui::TouchDeviceTransform> transforms;
 
   // Mirror displays. Touch screen 2 is associated to display 1.
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display1.id(), touchscreen1.id,
-      GetTouchTransform(display1, display1, touchscreen1));
+      GetTouchTransform(display1, display1, touchscreen1)));
 
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display1.id(), touchscreen2.id,
-      GetTouchTransform(display1, display2, touchscreen2));
+      GetTouchTransform(display1, display2, touchscreen2)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -495,9 +511,10 @@ TEST_F(TouchTransformControllerTest, OzoneTranslation) {
   EXPECT_NEAR(1200, y, 0.5);
 
   // Remove mirroring of displays.
-  test_api.UpdateTouchInfoForDisplay(
+  transforms.push_back(CreateTouchDeviceTransform(
       display2.id(), touchscreen2.id,
-      GetTouchTransform(display2, display2, touchscreen2));
+      GetTouchTransform(display2, display2, touchscreen2)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   x = 1920.0;
   y = 1200.0;
@@ -538,11 +555,11 @@ TEST_F(TouchTransformControllerTest, AccurateUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
-
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen));
+      GetTouchTransform(display, display, touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -582,11 +599,11 @@ TEST_F(TouchTransformControllerTest, ErrorProneUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
-
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen));
+      GetTouchTransform(display, display, touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -628,11 +645,11 @@ TEST_F(TouchTransformControllerTest, ResolutionChangeUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
-
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen));
+      GetTouchTransform(display, display, touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -669,11 +686,12 @@ TEST_F(TouchTransformControllerTest, DifferentBoundsUserTouchCalibration) {
       CreateTouchscreenDevice(kTouchId1, kTouchSize);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  ui::test::DeviceDataManagerTestAPI test_api;
 
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       display.id(), touchscreen.id,
-      GetTouchTransform(display, display, touchscreen));
+      GetTouchTransform(display, display, touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -724,12 +742,13 @@ TEST_F(TouchTransformControllerTest, LetterboxingUserTouchCalibration) {
   TouchCalibrationData touch_data(user_input, kNativeDisplaySize);
   internal_display_info.SetTouchCalibrationData(touch_data);
   EXPECT_TRUE(internal_display_info.has_touch_calibration_data());
-  ui::test::DeviceDataManagerTestAPI test_api;
 
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen));
+                        internal_touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));
@@ -796,12 +815,13 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
   TouchCalibrationData touch_data(user_input, kNativeDisplaySize);
   internal_display_info.SetTouchCalibrationData(touch_data);
   EXPECT_TRUE(internal_display_info.has_touch_calibration_data());
-  ui::test::DeviceDataManagerTestAPI test_api;
 
-  test_api.UpdateTouchInfoForDisplay(
+  std::vector<ui::TouchDeviceTransform> transforms;
+  transforms.push_back(CreateTouchDeviceTransform(
       internal_display_info.id(), internal_touchscreen.id,
       GetTouchTransform(internal_display_info, internal_display_info,
-                        internal_touchscreen));
+                        internal_touchscreen)));
+  device_manager->ConfigureTouchDevices(transforms);
 
   EXPECT_EQ(kDisplayId1,
             device_manager->GetTargetDisplayForTouchDevice(kTouchId1));

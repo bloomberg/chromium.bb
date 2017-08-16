@@ -42,13 +42,10 @@ TEST_F(DeviceDataManagerTest, DisplayIdUpdated) {
             device_data_manager->GetTouchscreenDevices()[0].target_display_id);
 
   constexpr int64_t kDisplayId = 2;
-  std::map<int32_t, double> touch_scales;
-  touch_scales[kTouchId] = 1.0f;
   std::vector<TouchDeviceTransform> touch_device_transforms(1);
   touch_device_transforms[0].display_id = kDisplayId;
   touch_device_transforms[0].device_id = kTouchId;
-  device_data_manager->ConfigureTouchDevices(touch_scales,
-                                             touch_device_transforms);
+  device_data_manager->ConfigureTouchDevices(touch_device_transforms);
   ASSERT_EQ(1u, device_data_manager->GetTouchscreenDevices().size());
   EXPECT_EQ(kDisplayId,
             device_data_manager->GetTouchscreenDevices()[0].target_display_id);
