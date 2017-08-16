@@ -50,7 +50,8 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -94,8 +95,8 @@ bool IsValidProfile(Profile* profile) {
 #if defined(FULL_SAFE_BROWSING)
 
 bool IsDownloadAllowedBySafeBrowsing(
-    safe_browsing::DownloadProtectionService::DownloadCheckResult result) {
-  using Result = safe_browsing::DownloadProtectionService::DownloadCheckResult;
+    safe_browsing::DownloadCheckResult result) {
+  using Result = safe_browsing::DownloadCheckResult;
   switch (result) {
     // Only allow downloads that are marked as SAFE or UNKNOWN by SafeBrowsing.
     // All other types are going to be blocked. UNKNOWN could be the result of a
@@ -114,9 +115,8 @@ bool IsDownloadAllowedBySafeBrowsing(
   return false;
 }
 
-void InterpretSafeBrowsingVerdict(
-    const base::Callback<void(bool)>& recipient,
-    safe_browsing::DownloadProtectionService::DownloadCheckResult result) {
+void InterpretSafeBrowsingVerdict(const base::Callback<void(bool)>& recipient,
+                                  safe_browsing::DownloadCheckResult result) {
   recipient.Run(IsDownloadAllowedBySafeBrowsing(result));
 }
 

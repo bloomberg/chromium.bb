@@ -7,7 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"

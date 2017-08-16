@@ -59,6 +59,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -119,8 +120,8 @@
 #include "ui/base/page_transition_types.h"
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/download_feedback_service.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #endif
 
@@ -1094,10 +1095,10 @@ class FakeDownloadProtectionService
   FakeDownloadProtectionService()
       : safe_browsing::DownloadProtectionService(nullptr) {}
 
-  void CheckClientDownload(DownloadItem* download_item,
-      const CheckDownloadCallback& callback) override {
-    callback.Run(
-      safe_browsing::DownloadProtectionService::UNCOMMON);
+  void CheckClientDownload(
+      DownloadItem* download_item,
+      const safe_browsing::CheckDownloadCallback& callback) override {
+    callback.Run(safe_browsing::DownloadCheckResult::UNCOMMON);
   }
 };
 
@@ -3503,8 +3504,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   safe_browsing::DownloadProtectionService* download_protection_service =
       sb_service->download_protection_service();
   download_protection_service->feedback_service()->MaybeStorePingsForDownload(
-      safe_browsing::DownloadProtectionService::UNCOMMON,
-      true /* upload_requested */, downloads[0], ping_request, ping_response);
+      safe_browsing::DownloadCheckResult::UNCOMMON, true /* upload_requested */,
+      downloads[0], ping_request, ping_response);
   ASSERT_TRUE(safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
       *(downloads[0])));
 
@@ -3559,8 +3560,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
   safe_browsing::DownloadProtectionService* download_protection_service =
       sb_service->download_protection_service();
   download_protection_service->feedback_service()->MaybeStorePingsForDownload(
-      safe_browsing::DownloadProtectionService::UNCOMMON,
-      true /* upload_requested */, downloads[0], ping_request, ping_response);
+      safe_browsing::DownloadCheckResult::UNCOMMON, true /* upload_requested */,
+      downloads[0], ping_request, ping_response);
   ASSERT_TRUE(safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
       *(downloads[0])));
 

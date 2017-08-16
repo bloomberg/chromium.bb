@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/two_phase_uploader.h"
+#include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 
 #include <stdint.h>
 
@@ -125,30 +125,27 @@ void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   source->GetResponseAsString(&response);
 
   switch (state_) {
-    case UPLOAD_METADATA:
-      {
-        if (response_code != 201) {
-          LOG(ERROR) << "Invalid response to initial request: "
-                     << response_code;
-          Finish(net::OK, response_code, response);
-          return;
-        }
-        std::string location;
-        if (!source->GetResponseHeaders()->EnumerateHeader(
-                nullptr, kLocationHeader, &location)) {
-          LOG(ERROR) << "no location header";
-          Finish(net::OK, response_code, std::string());
-          return;
-        }
-        DVLOG(1) << "upload location: " << location;
-        upload_url_ = GURL(location);
-        UploadFile();
-        break;
+    case UPLOAD_METADATA: {
+      if (response_code != 201) {
+        LOG(ERROR) << "Invalid response to initial request: " << response_code;
+        Finish(net::OK, response_code, response);
+        return;
       }
+      std::string location;
+      if (!source->GetResponseHeaders()->EnumerateHeader(
+              nullptr, kLocationHeader, &location)) {
+        LOG(ERROR) << "no location header";
+        Finish(net::OK, response_code, std::string());
+        return;
+      }
+      DVLOG(1) << "upload location: " << location;
+      upload_url_ = GURL(location);
+      UploadFile();
+      break;
+    }
     case UPLOAD_FILE:
       if (response_code != 200) {
-          LOG(ERROR) << "Invalid response to upload request: "
-                     << response_code;
+        LOG(ERROR) << "Invalid response to upload request: " << response_code;
       } else {
         state_ = STATE_SUCCESS;
       }

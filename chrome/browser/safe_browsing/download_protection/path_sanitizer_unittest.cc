@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/path_sanitizer.h"
+#include "chrome/browser/safe_browsing/download_protection/path_sanitizer.h"
 
 #include <vector>
 
@@ -52,8 +52,9 @@ TEST(SafeBrowsingPathSanitizerTest, DoStripHomeDirectoryTest) {
 
   base::FilePath path = path_sanitizer.GetHomeDirectory().Append(
       FILE_PATH_LITERAL("in_home_directory.ext"));
-  base::FilePath path_expected = base::FilePath(FILE_PATH_LITERAL("~")).Append(
-      FILE_PATH_LITERAL("in_home_directory.ext"));
+  base::FilePath path_expected =
+      base::FilePath(FILE_PATH_LITERAL("~"))
+          .Append(FILE_PATH_LITERAL("in_home_directory.ext"));
 
   path_sanitizer.StripHomeDirectory(&path);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_feedback.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/safe_browsing/two_phase_uploader.h"
+#include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -63,8 +63,7 @@ FakeUploader::FakeUploader(
       file_path_(file_path),
       progress_callback_(progress_callback),
       finish_callback_(finish_callback),
-      start_called_(false) {
-}
+      start_called_(false) {}
 
 class FakeUploaderFactory : public TwoPhaseUploaderFactory {
  public:
@@ -95,9 +94,9 @@ std::unique_ptr<TwoPhaseUploader> FakeUploaderFactory::CreateTwoPhaseUploader(
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   EXPECT_FALSE(uploader_);
 
-  uploader_ = new FakeUploader(url_request_context_getter, file_task_runner,
-                               base_url, metadata, file_path, progress_callback,
-                               finish_callback);
+  uploader_ =
+      new FakeUploader(url_request_context_getter, file_task_runner, base_url,
+                       metadata, file_path, progress_callback, finish_callback);
   return base::WrapUnique(uploader_);
 }
 
@@ -185,8 +184,8 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   EXPECT_TRUE(base::PathExists(upload_file_path_));
 
   EXPECT_FALSE(feedback_finish_called_);
-  uploader()->finish_callback_.Run(
-      TwoPhaseUploader::STATE_SUCCESS, net::OK, 0, "");
+  uploader()->finish_callback_.Run(TwoPhaseUploader::STATE_SUCCESS, net::OK, 0,
+                                   "");
   EXPECT_TRUE(feedback_finish_called_);
   feedback.reset();
   content::RunAllBlockingPoolTasksUntilIdle();

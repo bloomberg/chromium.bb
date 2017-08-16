@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
-#include "chrome/browser/safe_browsing/download_feedback.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
@@ -38,14 +38,9 @@ class DownloadFeedbackPings : public base::SupportsUserData::Data {
   static DownloadFeedbackPings* FromDownload(
       const content::DownloadItem& download);
 
+  const std::string& ping_request() const { return ping_request_; }
 
-  const std::string& ping_request() const {
-    return ping_request_;
-  }
-
-  const std::string& ping_response() const {
-    return ping_response_;
-  }
+  const std::string& ping_response() const { return ping_response_; }
 
  private:
   std::string ping_request_;
@@ -54,9 +49,7 @@ class DownloadFeedbackPings : public base::SupportsUserData::Data {
 
 DownloadFeedbackPings::DownloadFeedbackPings(const std::string& ping_request,
                                              const std::string& ping_response)
-    : ping_request_(ping_request),
-      ping_response_(ping_response) {
-}
+    : ping_request_(ping_request), ping_response_(ping_response) {}
 
 // static
 void DownloadFeedbackPings::CreateForDownload(
@@ -90,13 +83,13 @@ DownloadFeedbackService::~DownloadFeedbackService() {
 
 // static
 void DownloadFeedbackService::MaybeStorePingsForDownload(
-    DownloadProtectionService::DownloadCheckResult result,
+    DownloadCheckResult result,
     bool upload_requested,
     content::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
   // We never upload SAFE files.
-  if (result == DownloadProtectionService::SAFE)
+  if (result == DownloadCheckResult::SAFE)
     return;
 
   UMA_HISTOGRAM_BOOLEAN("SBDownloadFeedback.UploadRequestedByServer",
@@ -135,8 +128,7 @@ bool DownloadFeedbackService::GetPingsForDownloadForTesting(
 // static
 void DownloadFeedbackService::RecordEligibleDownloadShown(
     content::DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible",
-                            danger_type,
+  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible", danger_type,
                             content::DOWNLOAD_DANGER_TYPE_MAX);
 }
 

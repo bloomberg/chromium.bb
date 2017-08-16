@@ -5,8 +5,8 @@
 // Helper class which handles communication with the SafeBrowsing servers for
 // improved binary download protection.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SERVICE_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SERVICE_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_PROTECTION_SERVICE_H_
+#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_PROTECTION_SERVICE_H_
 
 #include <stdint.h>
 
@@ -23,17 +23,17 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-
 namespace content {
 class DownloadItem;
 class PageNavigator;
-}
+}  // namespace content
 
 namespace net {
 class X509Certificate;
@@ -45,52 +45,13 @@ namespace safe_browsing {
 class BinaryFeatureExtractor;
 class ClientDownloadRequest;
 class DownloadFeedbackService;
+class CheckClientDownloadRequest;
+class PPAPIDownloadRequest;
 
 // This class provides an asynchronous API to check whether a particular
 // client download is malicious or not.
 class DownloadProtectionService {
  public:
-  enum DownloadCheckResult {
-    UNKNOWN,
-    SAFE,
-    DANGEROUS,
-    UNCOMMON,
-    DANGEROUS_HOST,
-    POTENTIALLY_UNWANTED
-  };
-
-  // Callback type which is invoked once the download request is done.
-  typedef base::Callback<void(DownloadCheckResult)> CheckDownloadCallback;
-
-  // A type of callback run on the main thread when a ClientDownloadRequest has
-  // been formed for a download, or when one has not been formed for a supported
-  // download.
-  typedef base::Callback<void(content::DownloadItem*,
-                              const ClientDownloadRequest*)>
-      ClientDownloadRequestCallback;
-
-  // A list of ClientDownloadRequest callbacks.
-  typedef base::CallbackList<void(content::DownloadItem*,
-                                  const ClientDownloadRequest*)>
-      ClientDownloadRequestCallbackList;
-
-  // A subscription to a registered ClientDownloadRequest callback.
-  typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
-      ClientDownloadRequestSubscription;
-
-  // A type of callback run on the main thread when a PPAPI
-  // ClientDownloadRequest has been formed for a download.
-  typedef base::Callback<void(const ClientDownloadRequest*)>
-      PPAPIDownloadRequestCallback;
-
-  // A list of PPAPI ClientDownloadRequest callbacks.
-  typedef base::CallbackList<void(const ClientDownloadRequest*)>
-      PPAPIDownloadRequestCallbackList;
-
-  // A subscription to a registered PPAPI ClientDownloadRequest callback.
-  typedef std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>
-      PPAPIDownloadRequestSubscription;
-
   // Creates a download service.  The service is initially disabled.  You need
   // to call SetEnabled() to start it.  |sb_service| owns this object.
   explicit DownloadProtectionService(SafeBrowsingService* sb_service);
@@ -109,9 +70,8 @@ class DownloadProtectionService {
   // method must be called on the UI thread, and the callback will also be
   // invoked on the UI thread.  This method must be called once the download
   // is finished and written to disk.
-  virtual void CheckClientDownload(
-      content::DownloadItem* item,
-      const CheckDownloadCallback& callback);
+  virtual void CheckClientDownload(content::DownloadItem* item,
+                                   const CheckDownloadCallback& callback);
 
   // Checks whether any of the URLs in the redirect chain of the
   // download match the SafeBrowsing bad binary URL list.  The result is
@@ -123,9 +83,8 @@ class DownloadProtectionService {
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
-  virtual bool IsSupportedDownload(
-      const content::DownloadItem& item,
-      const base::FilePath& target_path) const;
+  virtual bool IsSupportedDownload(const content::DownloadItem& item,
+                                   const base::FilePath& target_path) const;
 
   virtual void CheckPPAPIDownloadRequest(
       const GURL& requestor_url,
@@ -148,9 +107,7 @@ class DownloadProtectionService {
   // callbacks called with "UNKNOWN" results.
   void SetEnabled(bool enabled);
 
-  bool enabled() const {
-    return enabled_;
-  }
+  bool enabled() const { return enabled_; }
 
   // Returns the timeout that is used by CheckClientDownload().
   int64_t download_request_timeout_ms() const {
@@ -171,9 +128,7 @@ class DownloadProtectionService {
   PPAPIDownloadRequestSubscription RegisterPPAPIDownloadRequestCallback(
       const PPAPIDownloadRequestCallback& callback);
 
-  double whitelist_sample_rate() const {
-    return whitelist_sample_rate_;
-  }
+  double whitelist_sample_rate() const { return whitelist_sample_rate_; }
 
   scoped_refptr<SafeBrowsingNavigationObserverManager>
   navigation_observer_manager() {
@@ -193,47 +148,13 @@ class DownloadProtectionService {
   void MaybeSendDangerousDownloadOpenedReport(const content::DownloadItem* item,
                                               bool show_download_in_folder);
 
- protected:
-  // Enum to keep track why a particular download verdict was chosen.
-  // Used for UMA metrics. Do not reorder.
-  enum DownloadCheckResultReason {
-    REASON_INVALID_URL = 0,
-    REASON_SB_DISABLED = 1,
-    REASON_WHITELISTED_URL = 2,
-    REASON_WHITELISTED_REFERRER = 3,
-    REASON_INVALID_REQUEST_PROTO = 4,
-    REASON_SERVER_PING_FAILED = 5,
-    REASON_INVALID_RESPONSE_PROTO = 6,
-    REASON_NOT_BINARY_FILE = 7,
-    REASON_REQUEST_CANCELED = 8,
-    REASON_DOWNLOAD_DANGEROUS = 9,
-    REASON_DOWNLOAD_SAFE = 10,
-    REASON_EMPTY_URL_CHAIN = 11,
-    DEPRECATED_REASON_HTTPS_URL = 12,
-    REASON_PING_DISABLED = 13,
-    REASON_TRUSTED_EXECUTABLE = 14,
-    REASON_OS_NOT_SUPPORTED = 15,
-    REASON_DOWNLOAD_UNCOMMON = 16,
-    REASON_DOWNLOAD_NOT_SUPPORTED = 17,
-    REASON_INVALID_RESPONSE_VERDICT = 18,
-    REASON_ARCHIVE_WITHOUT_BINARIES = 19,
-    REASON_DOWNLOAD_DANGEROUS_HOST = 20,
-    REASON_DOWNLOAD_POTENTIALLY_UNWANTED = 21,
-    REASON_UNSUPPORTED_URL_SCHEME = 22,
-    REASON_MANUAL_BLACKLIST = 23,
-    REASON_LOCAL_FILE = 24,
-    REASON_REMOTE_FILE = 25,
-    REASON_SAMPLED_UNSUPPORTED_FILE = 26,
-    REASON_VERDICT_UNKNOWN = 27,
-    REASON_MAX  // Always add new values before this one.
-  };
-
  private:
-  class CheckClientDownloadRequest;
-  class PPAPIDownloadRequest;
+  // todo(jialiul): Remove the need for non-test friending.
+  friend class PPAPIDownloadRequest;
   friend class DownloadUrlSBClient;
   friend class DownloadProtectionServiceTest;
   friend class DownloadDangerPromptTest;
+  friend class CheckClientDownloadRequest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadWhitelistedUrlWithoutSampling);
@@ -268,19 +189,16 @@ class DownloadProtectionService {
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            VerifyMaybeSendDangerousDownloadOpenedReport);
 
-  static const char kDownloadRequestUrl[];
-
   static const void* const kDownloadPingTokenKey;
 
   // Helper class for easy setting and getting token string.
   class DownloadPingToken : public base::SupportsUserData::Data {
    public:
     explicit DownloadPingToken(const std::string& token)
-       : token_string_(token) {}
+        : token_string_(token) {}
 
-    std::string token_string() {
-      return token_string_;
-    }
+    std::string token_string() { return token_string_; }
+
    private:
     std::string token_string_;
 
@@ -305,9 +223,6 @@ class DownloadProtectionService {
       const net::X509Certificate& issuer,
       std::vector<std::string>* whitelist_strings);
 
-  // Returns the URL that will be used for download requests.
-  static GURL GetDownloadRequestUrl();
-
   // If kDownloadAttribution feature is enabled, identify referrer chain info of
   // a download. This function also records UMA stats of download attribution
   // result.
@@ -330,7 +245,7 @@ class DownloadProtectionService {
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
-  navigation_observer_manager_;
+      navigation_observer_manager_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -373,4 +288,4 @@ class DownloadProtectionService {
 };
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SERVICE_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_PROTECTION_SERVICE_H_

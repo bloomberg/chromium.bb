@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/grit/chromium_strings.h"

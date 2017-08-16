@@ -20,7 +20,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/disk_image_type_sniffer_mac.h"
+#include "chrome/browser/safe_browsing/download_protection/disk_image_type_sniffer_mac.h"
 
 #include "base/files/file_path.h"
 #include "base/macros.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_SERVICE_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_SERVICE_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_SERVICE_H_
+#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_SERVICE_H_
 
 #include <memory>
 #include <queue>
@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_commands.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "content/public/browser/download_danger_type.h"
 
 namespace base {
@@ -46,12 +47,11 @@ class DownloadFeedbackService {
   // enabled for uploading. Some un-SAFE downloads can be marked for
   // upload by the server with |upload_requested| if it's needed for better
   // classification.
-  static void MaybeStorePingsForDownload(
-      DownloadProtectionService::DownloadCheckResult result,
-      bool upload_requested,
-      content::DownloadItem* download,
-      const std::string& ping,
-      const std::string& response);
+  static void MaybeStorePingsForDownload(DownloadCheckResult result,
+                                         bool upload_requested,
+                                         content::DownloadItem* download,
+                                         const std::string& ping,
+                                         const std::string& response);
 
   // Test if pings have been stored for |download|.
   static bool IsEnabledForDownload(const content::DownloadItem& download);
@@ -99,4 +99,4 @@ class DownloadFeedbackService {
 };
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_SERVICE_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_SERVICE_H_
