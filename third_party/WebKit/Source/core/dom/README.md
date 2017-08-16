@@ -2,6 +2,8 @@
 
 [Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/dom/README.md)
 
+Author: hayato@chromium.org
+
 The `Source/core/dom` directory contains the implementation of [DOM].
 
 [DOM]: https://dom.spec.whatwg.org/
@@ -24,7 +26,7 @@ directory.
 -   See [crbug.com/738794](http://crbug.com/738794) for tracking our efforts.
 
 
-# Node and DOM Tree
+# Node and Node Tree
 
 In this README, we draw a tree in left-to-right direction. `A` is the root of the tree.
 
@@ -38,7 +40,8 @@ A
 └───F
 ```
 
-`Node` is a base class of all kinds of nodes in DOM tree. Each `Node` has following 3 pointers (but not limited to):
+
+`Node` is a base class of all kinds of nodes in a node tree. Each `Node` has following 3 pointers (but not limited to):
 
 -   `parent_or_shadow_host_node_`: Points to the parent (or the shadow host if it is a shadow root; explained later)
 -   `previous_`: Points to the previous sibling
@@ -61,13 +64,15 @@ Further info:
 You can traverse a tree manually:
 
 ``` c++
+// In C++
+
 // Traverse a children.
 for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
   ...
 }
-```
 
-``` c++
+// ...
+
 // Traverse nodes in tree order, depth-first traversal.
 void foo(const Node& node) {
   ...
@@ -81,6 +86,7 @@ However, traversing a tree in this way might be error-prone.
 Instead, you can use `NodeTraversal` and `ElementTraversal`. They provides a C++11's range-based for loops, such as:
 
 ``` c++
+// In C++
 for (Node& child : NodeTraversal::childrenOf(parent) {
   ...
 }
@@ -90,6 +96,7 @@ e.g. Given a parent *A*, this traverses *B*, *C*, and *F* in this order.
 
 
 ``` c++
+// In C++
 for (Node& node : NodeTraversal::startsAt(root)) {
   ...
 }
@@ -107,7 +114,77 @@ Further info:
 
 # Shadow Tree
 
-TODO(hayato): Explain.
+A **shadow tree** is a node tree whose root is a `ShadowRoot`.
+From web developer's perspective, a shadow root can be created by calling `element.attachShadow{ ... }` API.
+The *element* here is called a **shadow host**, or just a **host** if the context is clear.
+
+- A shadow root is always attached to another node tree through its host. A shadow tree is therefore never alone.
+- The node tree of a shadow root’s host is sometimes referred to as the **light tree**.
+
+For example, given the example node tree:
+
+``` text
+A
+├───B
+├───C
+│   ├───D
+│   └───E
+└───F
+```
+
+Web developers can create a shadow root, and manipulate the shadow tree in the following way:
+
+``` javascript
+// In JavaScript
+const b = document.querySelector('#B');
+const shadowRoot = b.attachShadow({ mode: 'open'} )
+const sb = document.createElement('div');
+shadowRoot.appendChild(sb);
+```
+
+The resulting shadow tree would be:
+
+``` text
+shadowRoot
+└── sb
+```
+
+The *shadowRoot* has one child, *sb*. This shadow tree is being *attached* to B:
+
+``` text
+A
+└── B
+    ├──/shadowRoot
+    │   └── sb
+    ├── C
+    │   ├── D
+    │   └── E
+    └── F
+```
+
+In this README, a notation (`──/`) is used to represent a *shadowhost-shadowroot* relationship, in a **composed tree**.
+A composed tree will be explained later. A *shadowhost-shadowroot* is 1:1 relationship.
+
+Though a shadow root has always a corresponding shadow host element, a light tree and a shadow tree should be considered separately, from a node tree's perspective. (`──/`) is *NOT* a parent-child relationship in a node tree.
+
+For example, even though *B* *hosts* the shadow tree, *shadowRoot* is not considered as a *child* of *B*.
+The means the following traversal:
+
+
+``` c++
+// In C++
+for (Node& node : NodeTraversal::startsAt(A)) {
+  ...
+}
+```
+
+traverses only *A*, *B*, *C*, *D*, *E* and *F* nodes. It never visits *shadowRoot* nor *sb*.
+NodeTraversal never cross a shadow boundary, `──/`.
+
+Further info:
+
+- `ShadowRoot`
+- `Element#attachShadow`
 
 # TreeScope
 
