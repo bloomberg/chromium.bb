@@ -5,10 +5,12 @@
 #include "chrome/browser/installable/installable_manager.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -471,11 +473,10 @@ bool InstallableManager::IsManifestValidForWebApp(
     return false;
   }
 
-  // TODO(dominickn,mlamouri): when Chrome supports "minimal-ui", it should be
-  // accepted. If we accept it today, it would fallback to "browser" and make
-  // this check moot. See https://crbug.com/604390.
   if (manifest.display != blink::kWebDisplayModeStandalone &&
-      manifest.display != blink::kWebDisplayModeFullscreen) {
+      manifest.display != blink::kWebDisplayModeFullscreen &&
+      !(manifest.display == blink::kWebDisplayModeMinimalUi &&
+        base::FeatureList::IsEnabled(features::kPwaMinimalUi))) {
     valid_manifest_->error = MANIFEST_DISPLAY_NOT_SUPPORTED;
     return false;
   }
