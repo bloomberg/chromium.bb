@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/image_fetcher/core/image_fetcher.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 
@@ -23,14 +24,15 @@ class RemoteSuggestionsDatabase;
 
 // Retrieves contextual suggestions for a given URL and fetches images
 // for contextual suggestion, using caching.
-class ContextualSuggestionsSource {
+class ContextualContentSuggestionsService : public KeyedService {
  public:
-  ContextualSuggestionsSource(std::unique_ptr<ContextualSuggestionsFetcher>
-                                  contextual_suggestions_fetcher,
-                              std::unique_ptr<CachedImageFetcher> image_fetcher,
-                              std::unique_ptr<RemoteSuggestionsDatabase>
-                                  contextual_suggestions_database);
-  ~ContextualSuggestionsSource();
+  ContextualContentSuggestionsService(
+      std::unique_ptr<ContextualSuggestionsFetcher>
+          contextual_suggestions_fetcher,
+      std::unique_ptr<CachedImageFetcher> image_fetcher,
+      std::unique_ptr<RemoteSuggestionsDatabase>
+          contextual_suggestions_database);
+  ~ContextualContentSuggestionsService() override;
 
   using FetchContextualSuggestionsCallback =
       base::OnceCallback<void(Status status_code,
@@ -66,9 +68,9 @@ class ContextualSuggestionsSource {
   // get image URL.
   std::map<std::string, GURL> image_url_by_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsSource);
+  DISALLOW_COPY_AND_ASSIGN(ContextualContentSuggestionsService);
 };
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_SOURCE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_

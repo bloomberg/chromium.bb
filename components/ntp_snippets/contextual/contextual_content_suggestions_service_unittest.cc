@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 
 #include <memory>
 #include <utility>
@@ -105,7 +105,7 @@ class MockFetchContextualSuggestionsCallback {
     Run(status, url, &suggestions);
   }
 
-  ContextualSuggestionsSource::FetchContextualSuggestionsCallback
+  ContextualContentSuggestionsService::FetchContextualSuggestionsCallback
   ToOnceCallback() {
     return base::BindOnce(&MockFetchContextualSuggestionsCallback::WrappedRun,
                           base::Unretained(this));
@@ -119,32 +119,33 @@ class MockFetchContextualSuggestionsCallback {
 
 }  // namespace
 
-class ContextualSuggestionsSourceTest : public testing::Test {
+class ContextualContentSuggestionsServiceTest : public testing::Test {
  public:
-  ContextualSuggestionsSourceTest() {
+  ContextualContentSuggestionsServiceTest() {
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
     std::unique_ptr<FakeContextualSuggestionsFetcher> fetcher =
         base::MakeUnique<FakeContextualSuggestionsFetcher>();
     fetcher_ = fetcher.get();
-    source_ = base::MakeUnique<ContextualSuggestionsSource>(
+    source_ = base::MakeUnique<ContextualContentSuggestionsService>(
         std::move(fetcher),
         base::MakeUnique<FakeCachedImageFetcher>(&pref_service_),
         std::unique_ptr<RemoteSuggestionsDatabase>());
   }
 
   FakeContextualSuggestionsFetcher* fetcher() { return fetcher_; }
-  ContextualSuggestionsSource* source() { return source_.get(); }
+  ContextualContentSuggestionsService* source() { return source_.get(); }
 
  private:
   FakeContextualSuggestionsFetcher* fetcher_;
   base::MessageLoop message_loop_;
   TestingPrefServiceSimple pref_service_;
-  std::unique_ptr<ContextualSuggestionsSource> source_;
+  std::unique_ptr<ContextualContentSuggestionsService> source_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsSourceTest);
+  DISALLOW_COPY_AND_ASSIGN(ContextualContentSuggestionsServiceTest);
 };
 
-TEST_F(ContextualSuggestionsSourceTest, ShouldFetchContextualSuggestion) {
+TEST_F(ContextualContentSuggestionsServiceTest,
+       ShouldFetchContextualSuggestion) {
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kValidFromUrl = "http://some.url";
   const std::string kToUrl = "http://another.url";
@@ -169,7 +170,8 @@ TEST_F(ContextualSuggestionsSourceTest, ShouldFetchContextualSuggestion) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ContextualSuggestionsSourceTest, ShouldRunCallbackOnEmptyResults) {
+TEST_F(ContextualContentSuggestionsServiceTest,
+       ShouldRunCallbackOnEmptyResults) {
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kEmpty;
   fetcher()->SetFakeResponse(Status::Success(), RemoteSuggestion::PtrVector());
@@ -180,7 +182,7 @@ TEST_F(ContextualSuggestionsSourceTest, ShouldRunCallbackOnEmptyResults) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ContextualSuggestionsSourceTest, ShouldRunCallbackOnError) {
+TEST_F(ContextualContentSuggestionsServiceTest, ShouldRunCallbackOnError) {
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kEmpty;
   fetcher()->SetFakeResponse(Status(StatusCode::TEMPORARY_ERROR, ""),
@@ -193,7 +195,8 @@ TEST_F(ContextualSuggestionsSourceTest, ShouldRunCallbackOnError) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ContextualSuggestionsSourceTest, ShouldFetchEmptyImageIfNotFound) {
+TEST_F(ContextualContentSuggestionsServiceTest,
+       ShouldFetchEmptyImageIfNotFound) {
   base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
   const std::string kEmpty;
   ContentSuggestion::ID id(
@@ -207,7 +210,7 @@ TEST_F(ContextualSuggestionsSourceTest, ShouldFetchEmptyImageIfNotFound) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ContextualSuggestionsSourceTest,
+TEST_F(ContextualContentSuggestionsServiceTest,
        ShouldFetchImageForPreviouslyFetchedSuggestion) {
   const std::string kValidFromUrl = "http://some.url";
   const std::string kToUrl = "http://another.url";

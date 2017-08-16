@@ -27,6 +27,7 @@ class ListValue;
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
+class ContextualContentSuggestionsService;
 }  // namespace ntp_snippets
 
 class PrefService;
@@ -38,6 +39,8 @@ class SnippetsInternalsMessageHandler
  public:
   SnippetsInternalsMessageHandler(
       ntp_snippets::ContentSuggestionsService* content_suggestions_service,
+      ntp_snippets::ContextualContentSuggestionsService*
+          contextual_content_suggestions_service,
       PrefService* pref_service);
   ~SnippetsInternalsMessageHandler() override;
 
@@ -93,6 +96,8 @@ class SnippetsInternalsMessageHandler
   bool dom_loaded_;
 
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+  ntp_snippets::ContextualContentSuggestionsService*
+      contextual_content_suggestions_service_;
   ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider_;
   PrefService* pref_service_;
 

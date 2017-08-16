@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 
 #include <iterator>
 #include <memory>
@@ -18,8 +18,7 @@
 
 namespace ntp_snippets {
 
-// TODO(gaschler): Add unit tests.
-ContextualSuggestionsSource::ContextualSuggestionsSource(
+ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
         contextual_suggestions_fetcher,
     std::unique_ptr<CachedImageFetcher> image_fetcher,
@@ -30,18 +29,20 @@ ContextualSuggestionsSource::ContextualSuggestionsSource(
           std::move(contextual_suggestions_fetcher)),
       image_fetcher_(std::move(image_fetcher)) {}
 
-ContextualSuggestionsSource::~ContextualSuggestionsSource() = default;
+ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
+    default;
 
-void ContextualSuggestionsSource::FetchContextualSuggestions(
+void ContextualContentSuggestionsService::FetchContextualSuggestions(
     const GURL& url,
     FetchContextualSuggestionsCallback callback) {
   contextual_suggestions_fetcher_->FetchContextualSuggestions(
-      url, base::BindOnce(
-               &ContextualSuggestionsSource::DidFetchContextualSuggestions,
-               base::Unretained(this), url, std::move(callback)));
+      url,
+      base::BindOnce(
+          &ContextualContentSuggestionsService::DidFetchContextualSuggestions,
+          base::Unretained(this), url, std::move(callback)));
 }
 
-void ContextualSuggestionsSource::FetchContextualSuggestionImage(
+void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     ImageFetchedCallback callback) {
   const std::string& id_within_category = suggestion_id.id_within_category();
@@ -58,7 +59,7 @@ void ContextualSuggestionsSource::FetchContextualSuggestionImage(
 }
 
 // TODO(gaschler): Cache contextual suggestions at run-time.
-void ContextualSuggestionsSource::DidFetchContextualSuggestions(
+void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
     const GURL& url,
     FetchContextualSuggestionsCallback callback,
     Status status,
