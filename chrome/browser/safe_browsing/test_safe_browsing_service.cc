@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"

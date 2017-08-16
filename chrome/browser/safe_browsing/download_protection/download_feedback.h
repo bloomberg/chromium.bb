@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_H_
+#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_H_
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/safe_browsing/two_phase_uploader.h"
+#include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 
 namespace safe_browsing {
 
@@ -75,4 +75,4 @@ class DownloadFeedbackFactory {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_H_

@@ -20,7 +20,8 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -140,9 +141,8 @@ class ChromeDownloadManagerDelegate
                const content::NotificationDetails& details) override;
 
   // Callback function after the DownloadProtectionService completes.
-  void CheckClientDownloadDone(
-      uint32_t download_id,
-      safe_browsing::DownloadProtectionService::DownloadCheckResult result);
+  void CheckClientDownloadDone(uint32_t download_id,
+                               safe_browsing::DownloadCheckResult result);
 
   // Internal gateways for ShouldCompleteDownload().
   bool IsDownloadReadyForCompletion(

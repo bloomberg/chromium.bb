@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_TWO_PHASE_UPLOADER_H_
+#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_TWO_PHASE_UPLOADER_H_
 
 #include <stdint.h>
 
@@ -103,4 +103,4 @@ class TwoPhaseUploaderFactory {
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_TWO_PHASE_UPLOADER_H_

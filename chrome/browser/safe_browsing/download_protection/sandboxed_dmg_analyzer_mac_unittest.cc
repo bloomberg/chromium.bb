@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/sandboxed_dmg_analyzer_mac.h"
+#include "chrome/browser/safe_browsing/download_protection/sandboxed_dmg_analyzer_mac.h"
 
 #include <mach-o/loader.h>
 #include <stdint.h>
@@ -26,8 +26,7 @@ namespace {
 class SandboxedDMGAnalyzerTest : public testing::Test {
  public:
   SandboxedDMGAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void AnalyzeFile(const base::FilePath& path,
                    ArchiveAnalyzerResults* results) {
@@ -43,8 +42,8 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
     base::FilePath test_data;
     EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
     return test_data.AppendASCII("chrome")
-                    .AppendASCII("safe_browsing_dmg")
-                    .AppendASCII(file_name);
+        .AppendASCII("safe_browsing_dmg")
+        .AppendASCII(file_name);
   }
 
  private:
@@ -93,7 +92,7 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
     const std::string& file_name = binary.file_basename();
     const google::protobuf::RepeatedPtrField<
         ClientDownloadRequest_MachOHeaders>& headers =
-            binary.image_headers().mach_o_headers();
+        binary.image_headers().mach_o_headers();
 
     EXPECT_EQ(ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
               binary.download_type());
@@ -104,17 +103,17 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
 
       const ClientDownloadRequest_MachOHeaders& arch32 = headers.Get(0);
       EXPECT_EQ(15, arch32.load_commands().size());
-      EXPECT_EQ(MH_MAGIC,
-          *reinterpret_cast<const uint32_t*>(arch32.mach_header().c_str()));
+      EXPECT_EQ(MH_MAGIC, *reinterpret_cast<const uint32_t*>(
+                              arch32.mach_header().c_str()));
 
       const ClientDownloadRequest_MachOHeaders& arch64 = headers.Get(1);
       EXPECT_EQ(15, arch64.load_commands().size());
-      EXPECT_EQ(MH_MAGIC_64,
-          *reinterpret_cast<const uint32_t*>(arch64.mach_header().c_str()));
+      EXPECT_EQ(MH_MAGIC_64, *reinterpret_cast<const uint32_t*>(
+                                 arch64.mach_header().c_str()));
 
       const std::string& sha256_bytes = binary.digests().sha256();
-      std::string actual_sha256 = base::HexEncode(sha256_bytes.c_str(),
-                                                  sha256_bytes.size());
+      std::string actual_sha256 =
+          base::HexEncode(sha256_bytes.c_str(), sha256_bytes.size());
       EXPECT_EQ(
           "E462FF752FF9D84E34D843E5D46E2012ADCBD48540A8473FB794B286A389B945",
           actual_sha256);
@@ -125,11 +124,11 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
       const ClientDownloadRequest_MachOHeaders& arch = headers.Get(0);
       EXPECT_EQ(13, arch.load_commands().size());
       EXPECT_EQ(MH_MAGIC_64,
-          *reinterpret_cast<const uint32_t*>(arch.mach_header().c_str()));
+                *reinterpret_cast<const uint32_t*>(arch.mach_header().c_str()));
 
       const std::string& sha256_bytes = binary.digests().sha256();
-      std::string actual_sha256 = base::HexEncode(sha256_bytes.c_str(),
-                                                  sha256_bytes.size());
+      std::string actual_sha256 =
+          base::HexEncode(sha256_bytes.c_str(), sha256_bytes.size());
       EXPECT_EQ(
           "2012CE4987B0FA4A5D285DF7E810560E841CFAB3054BC19E1AAB345F862A6C4E",
           actual_sha256);

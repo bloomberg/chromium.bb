@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_feedback.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -213,14 +213,14 @@ void DownloadFeedbackImpl::FinishedUpload(base::Closure finish_callback,
 
 void DownloadFeedbackImpl::RecordUploadResult(UploadResultType result) {
   if (result == UPLOAD_SUCCESS) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "SBDownloadFeedback.SizeSuccess", file_size_, 1, kMaxUploadSize, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("SBDownloadFeedback.SizeSuccess", file_size_, 1,
+                                kMaxUploadSize, 50);
   } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "SBDownloadFeedback.SizeFailure", file_size_, 1, kMaxUploadSize, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("SBDownloadFeedback.SizeFailure", file_size_, 1,
+                                kMaxUploadSize, 50);
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "SBDownloadFeedback.UploadResult", result, UPLOAD_RESULT_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.UploadResult", result,
+                            UPLOAD_RESULT_MAX);
 }
 
 }  // namespace
@@ -248,9 +248,8 @@ std::unique_ptr<DownloadFeedback> DownloadFeedback::Create(
                                  file_path, ping_request, ping_response));
   }
   return DownloadFeedback::factory_->CreateDownloadFeedback(
-        request_context_getter, file_task_runner, file_path, ping_request,
-        ping_response);
+      request_context_getter, file_task_runner, file_path, ping_request,
+      ping_response);
 }
 
 }  // namespace safe_browsing
-

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/two_phase_uploader.h"
+#include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 
 #include <stdint.h>
 
@@ -28,8 +28,7 @@ namespace {
 
 class Delegate {
  public:
-  Delegate() : state_(TwoPhaseUploader::STATE_NONE) {
-  }
+  Delegate() : state_(TwoPhaseUploader::STATE_NONE) {}
 
   void ProgressCallback(int64_t current, int64_t total) {}
 

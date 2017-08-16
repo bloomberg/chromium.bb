@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
+#include "chrome/browser/safe_browsing/download_protection/sandboxed_zip_analyzer.h"
 
 #include <stdint.h>
 
@@ -194,19 +194,19 @@ const uint8_t SandboxedZipAnalyzerTest::kJSEFileDigest[] = {
     0x34, 0xd0, 0x82, 0x86, 0xa2, 0xe8, 0x46, 0xf6, 0xbe, 0x03};
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kUnsignedExe = {
-  "unsigned.exe",
-  ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
-  &kUnsignedDigest[0],
-  36864,
-  false,  // !is_signed
+        "unsigned.exe",
+        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        &kUnsignedDigest[0],
+        36864,
+        false,  // !is_signed
 };
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kSignedExe = {
-  "signed.exe",
-  ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
-  &kSignedDigest[0],
-  37768,
-  true,  // is_signed
+        "signed.exe",
+        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        &kSignedDigest[0],
+        37768,
+        true,  // is_signed
 };
 const SandboxedZipAnalyzerTest::BinaryData SandboxedZipAnalyzerTest::kJSEFile =
     {
