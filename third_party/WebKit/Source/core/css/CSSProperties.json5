@@ -1534,6 +1534,7 @@
     {
       name: "height",
       api_class: "CSSPropertyAPIWidthOrHeight",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
@@ -1817,7 +1818,8 @@
     },
     {
       name: "min-height",
-      api_class: "CSSPropertyAPIMinWidthOrHeight",
+      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
@@ -1827,7 +1829,8 @@
     },
     {
       name: "min-width",
-      api_class: "CSSPropertyAPIMinWidthOrHeight",
+      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
@@ -3547,6 +3550,7 @@
     {
       name: "width",
       api_class: "CSSPropertyAPIWidthOrHeight",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
