@@ -7725,6 +7725,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="Not Default"/>
   <int value="1" label="Default"/>
   <int value="2" label="Unknown"/>
+  <int value="3" label="Other Mode is Default"/>
 </enum>
 
 <enum name="DefaultSearchChangeOrigin">
@@ -7756,6 +7757,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Is default">Chrome is the default web client.</int>
   <int value="2" label="Unknown default">
     Chrome is in a unknown default state.
+  </int>
+  <int value="3" label="Other mode is default">
+    The current install of Chrome is not the default web client, yet another
+    side-by-side install of Chrome is.
   </int>
 </enum>
 
@@ -24297,6 +24302,9 @@ from previous Chrome versions.
   <int value="1" label="Dialog closed without explicit choice"/>
   <int value="2" label="Other browser selected"/>
   <int value="3" label="Chrome made default + Relaunch in Metro (obsolete)"/>
+  <int value="4">
+    A side-by-side install of Chrome was made default (not this one).
+  </int>
 </enum>
 
 <enum name="ManagedUserPasswordChange">

@@ -171,6 +171,12 @@ TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeUnknown) {
          false, false, true);
 }
 
+TEST_F(ExternalProtocolHandlerTest,
+       TestLaunchSchemeBlockedChromeOtherModeDefault) {
+  DoTest(ExternalProtocolHandler::BLOCK,
+         shell_integration::OTHER_MODE_IS_DEFAULT, false, false, true);
+}
+
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeDefault) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK, shell_integration::IS_DEFAULT,
          false, false, true);
@@ -187,6 +193,12 @@ TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeUnknown) {
 }
 
 TEST_F(ExternalProtocolHandlerTest,
+       TestLaunchSchemeUnBlockedChromeOtherModeDefault) {
+  DoTest(ExternalProtocolHandler::DONT_BLOCK,
+         shell_integration::OTHER_MODE_IS_DEFAULT, false, true, false);
+}
+
+TEST_F(ExternalProtocolHandlerTest,
        DISABLED_TestLaunchSchemeUnknownChromeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT, false,
          false, true);
@@ -200,6 +212,12 @@ TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeNotDefault) {
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeUnknown) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::UNKNOWN_DEFAULT,
          true, false, false);
+}
+
+TEST_F(ExternalProtocolHandlerTest,
+       TestLaunchSchemeUnknownChromeOtherModeDefault) {
+  DoTest(ExternalProtocolHandler::UNKNOWN,
+         shell_integration::OTHER_MODE_IS_DEFAULT, true, false, false);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {

@@ -22,10 +22,13 @@ namespace {
 void RecordDefaultBrowserResult(
     const std::string& histogram_suffix,
     shell_integration::DefaultWebClientState default_browser_state) {
+  // Consider the page successful if this or any other side-by-side install of
+  // Chrome was chosen as the user's default browser.
   base::UmaHistogramBoolean(
       base::StringPrintf("Welcome.Win10.DefaultPromptResult_%s",
                          histogram_suffix.c_str()),
-      default_browser_state == shell_integration::IS_DEFAULT);
+      (default_browser_state == shell_integration::IS_DEFAULT ||
+       default_browser_state == shell_integration::OTHER_MODE_IS_DEFAULT));
 }
 
 void RecordPinnedResult(const std::string& histogram_suffix,

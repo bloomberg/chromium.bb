@@ -44,11 +44,22 @@ class ShellUtil {
     SYSTEM_LEVEL = 0x2   // Make any shell changes only at the system level
   };
 
-  // Chrome's default handler state for a given protocol.
+  // Chrome's default handler state for a given protocol. If the current install
+  // mode is not default, the brand's other modes are checked. This allows
+  // callers to take specific action in case the current mode (e.g., Chrome Dev)
+  // is not the default handler, but another of the brand's modes (e.g., stable
+  // Chrome) is.
   enum DefaultState {
+    // An error occurred while attempting to check the default handler for the
+    // protocol.
     UNKNOWN_DEFAULT,
+    // No install mode for the brand is default for the protocol.
     NOT_DEFAULT,
+    // The current install mode is default.
     IS_DEFAULT,
+    // The current install mode is not default, although one of the brand's
+    // other install modes is.
+    OTHER_MODE_IS_DEFAULT,
   };
 
   // Typical shortcut directories. Resolved in GetShortcutPath().

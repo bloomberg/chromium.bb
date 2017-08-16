@@ -102,15 +102,16 @@ void OnCheckIsDefaultBrowserFinished(
   switch (state) {
     case shell_integration::IS_DEFAULT:
       OpenURLFromTabInternal(profile, params);
-      break;
+      return;
     case shell_integration::NOT_DEFAULT:
     case shell_integration::UNKNOWN_DEFAULT:
+    case shell_integration::OTHER_MODE_IS_DEFAULT:
       platform_util::OpenExternal(profile, params.url);
-      break;
+      return;
     case shell_integration::NUM_DEFAULT_STATES:
-      NOTREACHED();
       break;
   }
+  NOTREACHED();
 }
 
 }  // namespace

@@ -80,9 +80,13 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
     PrefService* local_state = g_browser_process->local_state();
     bool has_seen_win10_promo =
         local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
+    const shell_integration::DefaultWebClientState web_client_state =
+        g_browser_process->CachedDefaultWebClientState();
+    // Do not welcome if this Chrome or another side-by-side install was the
+    // default browser at startup.
     bool is_default_browser =
-        g_browser_process->CachedDefaultWebClientState() ==
-        shell_integration::IS_DEFAULT;
+        web_client_state == shell_integration::IS_DEFAULT ||
+        web_client_state == shell_integration::OTHER_MODE_IS_DEFAULT;
     return GetWin10OnboardingTabsForState(
         is_first_run, has_seen_welcome_page, has_seen_win10_promo,
         is_signin_allowed, is_signed_in, SetDefaultBrowserAllowed(local_state),

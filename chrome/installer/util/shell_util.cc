@@ -51,9 +51,13 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_constants.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -804,8 +808,7 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
   return true;
 }
 
-// Returns true if the current install's |chrome_exe| has been registered with
-// |suffix|.
+// Returns true if |chrome_exe| has been registered with |suffix| for |mode|.
 // |confirmation_level| is the level of verification desired as described in
 // the RegistrationConfirmationLevel enum above.
 // |suffix| can be the empty string (this is used to support old installs
@@ -815,9 +818,11 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
 // points to |chrome_exe|. This should only be used at run-time to determine
 // how Chrome is registered, not to know whether the registration is complete
 // at install-time (IsChromeRegistered() can be used for that).
-bool QuickIsChromeRegistered(const base::FilePath& chrome_exe,
-                             const base::string16& suffix,
-                             RegistrationConfirmationLevel confirmation_level) {
+bool QuickIsChromeRegisteredForMode(
+    const base::FilePath& chrome_exe,
+    const base::string16& suffix,
+    const install_static::InstallConstants& mode,
+    RegistrationConfirmationLevel confirmation_level) {
   // Get the appropriate key to look for based on the level desired.
   base::string16 reg_key;
   switch (confirmation_level) {
@@ -825,7 +830,7 @@ bool QuickIsChromeRegistered(const base::FilePath& chrome_exe,
       // Software\Classes\ChromeHTML|suffix|
       reg_key = ShellUtil::kRegClasses;
       reg_key.push_back(base::FilePath::kSeparators[0]);
-      reg_key.append(install_static::GetProgIdPrefix());
+      reg_key.append(mode.prog_id_prefix);
       reg_key.append(suffix);
       break;
     case CONFIRM_SHELL_REGISTRATION:
@@ -859,6 +864,69 @@ bool QuickIsChromeRegistered(const base::FilePath& chrome_exe,
   if (key_hklm.ReadValue(L"", &hklm_value) == ERROR_SUCCESS)
     return InstallUtil::ProgramCompare(chrome_exe).Evaluate(hklm_value);
   return false;
+}
+
+// Returns the installation suffix for |mode| at the current install level
+// (system or user).
+base::string16 GetInstallationSuffixForMode(
+    const install_static::InstallConstants& mode) {
+  // Search based on the default install location for the mode. If we ever
+  // support customizing the install location (https://crbug.com/113987,
+  // https://crbug.com/302491) this will have to change to something else, such
+  // as probing the Omaha keys in the registry to see where the mode is
+  // installed.
+  const bool system_install = !InstallUtil::IsPerUserInstall();
+  const base::FilePath chrome_exe =
+      installer::GetChromeInstallPath(system_install)
+          .Append(installer::kChromeExe);
+
+  // See the comment in ShellUtil::GetCurrentInstallationSuffix for details on
+  // what's going on here.
+  base::string16 tested_suffix;
+  if (!system_install &&
+      (!ShellUtil::GetUserSpecificRegistrySuffix(&tested_suffix) ||
+       !QuickIsChromeRegisteredForMode(chrome_exe, tested_suffix, mode,
+                                       CONFIRM_PROGID_REGISTRATION)) &&
+      (!ShellUtil::GetOldUserSpecificRegistrySuffix(&tested_suffix) ||
+       !QuickIsChromeRegisteredForMode(chrome_exe, tested_suffix, mode,
+                                       CONFIRM_PROGID_REGISTRATION)) &&
+      !QuickIsChromeRegisteredForMode(chrome_exe, tested_suffix.erase(), mode,
+                                      CONFIRM_PROGID_REGISTRATION)) {
+    // If Chrome is not registered under any of the possible suffixes (e.g.
+    // tests, Canary, etc.): use the new-style suffix at run-time.
+    if (!ShellUtil::GetUserSpecificRegistrySuffix(&tested_suffix))
+      NOTREACHED();
+  }
+  return tested_suffix;
+}
+
+// Returns |mode|'s application name. This application name will be suffixed as
+// is appropriate for the install. This is the name that is registered with
+// Default Programs on Windows and that should thus be used to "make chrome
+// default" and such.
+base::string16 GetApplicationNameForMode(
+    const install_static::InstallConstants& mode) {
+  return base::string16(mode.base_app_name)
+      .append(GetInstallationSuffixForMode(mode));
+}
+
+// Returns true if the current install's |chrome_exe| has been registered with
+// |suffix|.
+// |confirmation_level| is the level of verification desired as described in
+// the RegistrationConfirmationLevel enum above.
+// |suffix| can be the empty string (this is used to support old installs
+// where we used to not suffix user-level installs if they were the first to
+// request the non-suffixed registry entries on the machine).
+// NOTE: This a quick check that only validates that a single registry entry
+// points to |chrome_exe|. This should only be used at run-time to determine
+// how Chrome is registered, not to know whether the registration is complete
+// at install-time (IsChromeRegistered() can be used for that).
+bool QuickIsChromeRegistered(const base::FilePath& chrome_exe,
+                             const base::string16& suffix,
+                             RegistrationConfirmationLevel confirmation_level) {
+  return QuickIsChromeRegisteredForMode(
+      chrome_exe, suffix, install_static::InstallDetails::Get().mode(),
+      confirmation_level);
 }
 
 // Sets |suffix| to a 27 character string that is specific to this user on this
@@ -1057,18 +1125,50 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
   if (FAILED(hr))
     return ShellUtil::UNKNOWN_DEFAULT;
 
+  // Get the ProgID for the current install mode.
   base::string16 prog_id(install_static::GetProgIdPrefix());
   prog_id += ShellUtil::GetCurrentInstallationSuffix(chrome_exe);
 
+  const int current_install_mode_index =
+      install_static::InstallDetails::Get().install_mode_index();
+  bool other_mode_is_default = false;
   for (size_t i = 0; i < num_protocols; ++i) {
     base::win::ScopedCoMem<wchar_t> current_app;
     hr = registration->QueryCurrentDefault(protocols[i], AT_URLPROTOCOL,
                                            AL_EFFECTIVE, &current_app);
-    if (FAILED(hr) || prog_id.compare(current_app) != 0)
+    if (FAILED(hr))
       return ShellUtil::NOT_DEFAULT;
-  }
+    if (prog_id.compare(current_app) == 0)
+      continue;
 
-  return ShellUtil::IS_DEFAULT;
+    // See if another mode is the default handler for this protocol.
+    size_t current_app_len = std::char_traits<wchar_t>::length(current_app);
+    const auto* it = std::find_if(
+        &install_static::kInstallModes[0],
+        &install_static::kInstallModes[install_static::NUM_INSTALL_MODES],
+        [current_install_mode_index, &current_app,
+         current_app_len](const install_static::InstallConstants& mode) {
+          if (mode.index == current_install_mode_index)
+            return false;
+          const base::string16 mode_prog_id_prefix(mode.prog_id_prefix);
+          // Does the current app either match this mode's ProgID or contain
+          // this mode's ProgID as a prefix followed by the '.' separator for a
+          // per-user install's suffix?
+          return mode_prog_id_prefix.compare(current_app) == 0 ||
+                 (InstallUtil::IsPerUserInstall() &&
+                  current_app_len > mode_prog_id_prefix.length() &&
+                  current_app[mode_prog_id_prefix.length()] == L'.' &&
+                  std::char_traits<wchar_t>::compare(
+                      mode_prog_id_prefix.c_str(), current_app,
+                      mode_prog_id_prefix.length()) == 0);
+        });
+    if (it == &install_static::kInstallModes[install_static::NUM_INSTALL_MODES])
+      return ShellUtil::NOT_DEFAULT;
+    other_mode_is_default = true;
+  }
+  // This mode is default if it has all of the protocols.
+  return other_mode_is_default ? ShellUtil::OTHER_MODE_IS_DEFAULT
+                               : ShellUtil::IS_DEFAULT;
 }
 
 // Probe using IApplicationAssociationRegistration::QueryAppIsDefault (Vista and
@@ -1086,16 +1186,51 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
 
   base::string16 app_name(GetApplicationName(chrome_exe));
 
-  BOOL result;
-  for (size_t i = 0; i < num_protocols; ++i) {
-    result = TRUE;
-    hr = registration->QueryAppIsDefault(protocols[i], AT_URLPROTOCOL,
-        AL_EFFECTIVE, app_name.c_str(), &result);
-    if (FAILED(hr) || result == FALSE)
-      return ShellUtil::NOT_DEFAULT;
+  // Generate the app names for this brand's other install modes.
+  const int current_install_mode_index =
+      install_static::InstallDetails::Get().install_mode_index();
+  base::string16 other_app_names[install_static::NUM_INSTALL_MODES];
+  for (int mode_index = 0; mode_index < install_static::NUM_INSTALL_MODES;
+       ++mode_index) {
+    if (mode_index == current_install_mode_index)
+      continue;  // Leave the entry for the current mode empty.
+    other_app_names[mode_index] =
+        GetApplicationNameForMode(install_static::kInstallModes[mode_index]);
   }
 
-  return ShellUtil::IS_DEFAULT;
+  // Now check each protocol to see if this brand is default for all. This loop
+  // terminates when this brand is the default handler for the protocols.
+  bool other_mode_is_default = false;
+  for (size_t i = 0; i < num_protocols; ++i) {
+    const wchar_t* protocol = protocols[i];
+    BOOL result = TRUE;
+    // Check the current app name.
+    hr = registration->QueryAppIsDefault(protocol, AT_URLPROTOCOL, AL_EFFECTIVE,
+                                         app_name.c_str(), &result);
+    if (FAILED(hr))
+      return ShellUtil::NOT_DEFAULT;
+    if (result)
+      continue;
+
+    // Search for a different install mode that is the default handler.
+    const auto* it =
+        std::find_if(std::cbegin(other_app_names), std::cend(other_app_names),
+                     [&registration, protocol](const base::string16& app_name) {
+                       if (app_name.empty())
+                         return false;
+                       BOOL result = TRUE;
+                       HRESULT hr = registration->QueryAppIsDefault(
+                           protocol, AT_URLPROTOCOL, AL_EFFECTIVE,
+                           app_name.c_str(), &result);
+                       return SUCCEEDED(hr) && result;
+                     });
+    if (it == std::end(other_app_names))
+      return ShellUtil::NOT_DEFAULT;
+    other_mode_is_default = true;
+  }
+
+  return other_mode_is_default ? ShellUtil::OTHER_MODE_IS_DEFAULT
+                               : ShellUtil::IS_DEFAULT;
 }
 
 // A helper function that probes default protocol handler registration (in a

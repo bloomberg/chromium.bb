@@ -230,18 +230,15 @@ void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
   if (!callback_.is_null()) {
     switch (state) {
       case NOT_DEFAULT:
-        callback_.Run(NOT_DEFAULT);
-        break;
       case IS_DEFAULT:
-        callback_.Run(IS_DEFAULT);
-        break;
       case UNKNOWN_DEFAULT:
-        callback_.Run(UNKNOWN_DEFAULT);
-        break;
+      case OTHER_MODE_IS_DEFAULT:
+        callback_.Run(state);
+        return;
       case NUM_DEFAULT_STATES:
-        NOTREACHED();
         break;
     }
+    NOTREACHED();
   }
 }
 
