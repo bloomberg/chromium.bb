@@ -120,7 +120,15 @@ TEST_F(NetworkStateTest, SsidHex) {
       base::HexEncode(wifi_hex_result.c_str(), wifi_hex_result.length());
   EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
-  EXPECT_EQ(network_state_.name(), wifi_hex_result);
+  EXPECT_EQ(wifi_hex_result, network_state_.name());
+
+  // Check HexSSID via network state dictionary.
+  base::DictionaryValue dictionary;
+  network_state_.GetStateProperties(&dictionary);
+  std::string value;
+  EXPECT_TRUE(
+      dictionary.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &value));
+  EXPECT_EQ(wifi_hex, value);
 }
 
 // Non-UTF-8 SSID should be preserved in |raw_ssid_| field.

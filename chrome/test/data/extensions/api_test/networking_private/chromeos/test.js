@@ -274,8 +274,10 @@ var availableTests = [
           WiFi: {
             BSSID: '00:01:02:03:04:05',
             Frequency: 2400,
+            HexSSID: "7769666931",
             Security: 'WEP-PSK',
-            SignalStrength: 40
+            SignalStrength: 40,
+            SSID: "wifi1"
           }
         }, {
           GUID: 'stub_wifi2_guid',
@@ -286,7 +288,9 @@ var availableTests = [
           WiFi: {
             BSSID: '',
             Frequency: 5000,
+            HexSSID: "77696669325F50534B",
             Security: 'WPA-PSK',
+            SSID: "wifi2_PSK"
           }
         }], result);
 
@@ -306,8 +310,10 @@ var availableTests = [
               WiFi: {
                 BSSID: '00:01:02:03:04:05',
                 Frequency: 2400,
+                HexSSID: "7769666931",
                 Security: 'WEP-PSK',
-                SignalStrength: 40
+                SignalStrength: 40,
+                SSID: "wifi1"
               }
             }], result);
 
@@ -359,8 +365,10 @@ var availableTests = [
           WiFi: {
             BSSID: '00:01:02:03:04:05',
             Frequency: 2400,
+            HexSSID: "7769666931",
             Security: 'WEP-PSK',
-            SignalStrength: 40
+            SignalStrength: 40,
+            SSID: "wifi1"
           }
         }, {
           Connectable: true,
@@ -407,8 +415,10 @@ var availableTests = [
           WiFi: {
             BSSID: '',
             Frequency: 5000,
+            HexSSID: "77696669325F50534B",
             Security: 'WPA-PSK',
-            SignalStrength: 80
+            SignalStrength: 80,
+            SSID: "wifi2_PSK"
           }
         }], result);
       }));
@@ -428,8 +438,10 @@ var availableTests = [
           WiFi: {
             BSSID: '00:01:02:03:04:05',
             Frequency: 2400,
+            HexSSID: "7769666931",
             Security: 'WEP-PSK',
-            SignalStrength: 40
+            SignalStrength: 40,
+            SSID: "wifi1"
           }
         }, {
           Connectable: true,
@@ -442,8 +454,10 @@ var availableTests = [
           WiFi: {
             BSSID: '',
             Frequency: 5000,
+            HexSSID: "77696669325F50534B",
             Security: 'WPA-PSK',
-            SignalStrength: 80
+            SignalStrength: 80,
+            SSID: "wifi2_PSK"
           }
         }], result);
       }));
@@ -737,8 +751,10 @@ var availableTests = [
           WiFi: {
             BSSID: '',
             Frequency: 5000,
+            HexSSID: "77696669325F50534B",
             Security: 'WPA-PSK',
-            SignalStrength: 80
+            SignalStrength: 80,
+            SSID: "wifi2_PSK"
           }
         }, result);
       }));

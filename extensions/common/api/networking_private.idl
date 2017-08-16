@@ -652,8 +652,10 @@ namespace networkingPrivate {
   dictionary WiFiStateProperties {
     DOMString? BSSID;
     long? Frequency;
+    DOMString? HexSSID;
     DOMString Security;
     long? SignalStrength;
+    DOMString? SSID;
   };
 
   dictionary WiMAXProperties {

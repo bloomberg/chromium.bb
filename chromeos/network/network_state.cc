@@ -295,6 +295,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
                                               eap_method());
     dictionary->SetKey(shill::kWifiFrequency, base::Value(frequency_));
+    dictionary->SetStringWithoutPathExpansion(shill::kWifiHexSsid,
+                                              GetHexSsid());
   }
 
   // Mobile properties
