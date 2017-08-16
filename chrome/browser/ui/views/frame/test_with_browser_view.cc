@@ -96,7 +96,7 @@ void TestWithBrowserView::TearDown() {
   // the Profile.
   browser_view_->GetWidget()->CloseNow();
   browser_view_ = nullptr;
-  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
+  content::RunAllBlockingPoolTasksUntilIdle();
   BrowserWithTestWindowTest::TearDown();
   testing_io_thread_state_.reset();
 #if defined(OS_CHROMEOS)
