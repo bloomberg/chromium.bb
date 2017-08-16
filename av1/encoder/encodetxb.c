@@ -461,17 +461,15 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     // gen_base_count_mag_arr
     if (!has_base(qcoeff[coeff_idx], 0)) continue;
     int *base_mag = txb_cache->base_mag_arr[coeff_idx];
-    get_mag(base_mag, qcoeff, bwl, height, row, col, base_ref_offset,
-            BASE_CONTEXT_POSITION_NUM);
+    int count[NUM_BASE_LEVELS];
+    get_base_count_mag(base_mag, count, qcoeff, bwl, height, row, col);
 
     for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
-      if (!has_base(qcoeff[coeff_idx], i)) continue;
-      int *base_count = txb_cache->base_count_arr[i] + coeff_idx;
-      *base_count = get_level_count(qcoeff, bwl, height, row, col, i,
-                                    base_ref_offset, BASE_CONTEXT_POSITION_NUM);
+      if (!has_base(qcoeff[coeff_idx], i)) break;
+      txb_cache->base_count_arr[i][coeff_idx] = count[i];
       const int level = i + 1;
-      txb_cache->base_ctx_arr[i][coeff_idx] = get_base_ctx_from_count_mag(
-          row, col, *base_count, base_mag[0], level);
+      txb_cache->base_ctx_arr[i][coeff_idx] =
+          get_base_ctx_from_count_mag(row, col, count[i], base_mag[0], level);
     }
 
     // gen_br_count_mag_arr

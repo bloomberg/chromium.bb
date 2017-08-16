@@ -76,6 +76,37 @@ static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int bwl,
     }
   }
 }
+
+static INLINE void get_base_count_mag(int *mag, int *count,
+                                      const tran_low_t *tcoeffs, int bwl,
+                                      int height, int row, int col) {
+  mag[0] = 0;
+  mag[1] = 0;
+  for (int i = 0; i < NUM_BASE_LEVELS; ++i) count[i] = 0;
+  for (int idx = 0; idx < BASE_CONTEXT_POSITION_NUM; ++idx) {
+    const int ref_row = row + base_ref_offset[idx][0];
+    const int ref_col = col + base_ref_offset[idx][1];
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl))
+      continue;
+    const int pos = (ref_row << bwl) + ref_col;
+    tran_low_t abs_coeff = abs(tcoeffs[pos]);
+    // count
+    for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
+      count[i] += abs_coeff > i;
+    }
+    // mag
+    if (base_ref_offset[idx][0] >= 0 && base_ref_offset[idx][1] >= 0) {
+      if (abs_coeff > mag[0]) {
+        mag[0] = abs_coeff;
+        mag[1] = 1;
+      } else if (abs_coeff == mag[0]) {
+        ++mag[1];
+      }
+    }
+  }
+}
+
 static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
                                       int bwl, int height, int row, int col,
                                       int level, int (*nb_offset)[2],
