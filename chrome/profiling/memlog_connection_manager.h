@@ -36,8 +36,8 @@ namespace profiling {
 // (including deletion) is on the IO thread.
 class MemlogConnectionManager {
  public:
-  MemlogConnectionManager(scoped_refptr<base::SequencedTaskRunner> io_runner,
-                          BacktraceStorage* backtrace_storage);
+  explicit MemlogConnectionManager(
+      scoped_refptr<base::SequencedTaskRunner> io_runner);
   ~MemlogConnectionManager();
 
   // Dumps the memory log for the given process into |output_file|.  This must
@@ -64,7 +64,7 @@ class MemlogConnectionManager {
       base::ProcessId process_id);
 
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
-  BacktraceStorage* backtrace_storage_;  // Not owned.
+  BacktraceStorage backtrace_storage_;
 
   // Maps process ID to the connection information for it.
   base::flat_map<base::ProcessId, std::unique_ptr<Connection>> connections_;

@@ -39,9 +39,8 @@ struct MemlogConnectionManager::Connection {
 };
 
 MemlogConnectionManager::MemlogConnectionManager(
-    scoped_refptr<base::SequencedTaskRunner> io_runner,
-    BacktraceStorage* backtrace_storage)
-    : io_runner_(std::move(io_runner)), backtrace_storage_(backtrace_storage) {}
+    scoped_refptr<base::SequencedTaskRunner> io_runner)
+    : io_runner_(std::move(io_runner)) {}
 
 MemlogConnectionManager::~MemlogConnectionManager() {}
 
@@ -59,7 +58,7 @@ void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
       base::Unretained(this), base::MessageLoop::current()->task_runner(), pid);
 
   std::unique_ptr<Connection> connection = base::MakeUnique<Connection>(
-      std::move(complete_cb), backtrace_storage_, pid, new_pipe);
+      std::move(complete_cb), &backtrace_storage_, pid, new_pipe);
   connection->thread.Start();
 
   connection->parser = new MemlogStreamParser(&connection->tracker);

@@ -15,9 +15,8 @@ namespace profiling {
 
 MemlogImpl::MemlogImpl()
     : io_runner_(content::ChildThread::Get()->GetIOTaskRunner()),
-      connection_manager_(
-          new MemlogConnectionManager(io_runner_, &backtrace_storage_),
-          DeleteOnRunner(FROM_HERE, io_runner_.get())),
+      connection_manager_(new MemlogConnectionManager(io_runner_),
+                          DeleteOnRunner(FROM_HERE, io_runner_.get())),
       weak_factory_(this) {}
 
 MemlogImpl::~MemlogImpl() {}
