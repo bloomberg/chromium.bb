@@ -600,8 +600,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     return true;
 
   if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
-      (BackgroundInternal() != other.BackgroundInternal() ||
-       BackgroundColorInternal() != other.BackgroundColorInternal()))
+      !BackgroundVisuallyEqual(other))
     return true;
 
   if (PaintImagesInternal()) {
