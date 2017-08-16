@@ -154,7 +154,7 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/alert_text",
           WrapToCommand("SetAlertPrompt",
                         base::Bind(&ExecuteAlertCommand,
-                                   base::Bind(&ExecuteSetAlertValue)))),
+                                   base::Bind(&ExecuteSetAlertText)))),
       CommandMapping(kPost, "session/:sessionId/forward",
                      WrapToCommand("GoForward", base::Bind(&ExecuteGoForward))),
       CommandMapping(kPost, "session/:sessionId/back",

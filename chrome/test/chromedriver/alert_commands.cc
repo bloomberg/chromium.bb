@@ -61,10 +61,10 @@ Status ExecuteGetAlertText(Session* session,
   return Status(kOk);
 }
 
-Status ExecuteSetAlertValue(Session* session,
-                            WebView* web_view,
-                            const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+Status ExecuteSetAlertText(Session* session,
+                           WebView* web_view,
+                           const base::DictionaryValue& params,
+                           std::unique_ptr<base::Value>* value) {
   std::string text;
   if (!params.GetString("text", &text))
     return Status(kUnknownError, "missing or invalid 'text'");

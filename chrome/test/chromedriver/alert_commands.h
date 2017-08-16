@@ -43,10 +43,10 @@ Status ExecuteGetAlertText(Session* session,
                            std::unique_ptr<base::Value>* value);
 
 // Sets the value of the alert prompt.
-Status ExecuteSetAlertValue(Session* session,
-                            WebView* web_view,
-                            const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value);
+Status ExecuteSetAlertText(Session* session,
+                           WebView* web_view,
+                           const base::DictionaryValue& params,
+                           std::unique_ptr<base::Value>* value);
 
 // Accepts the open alert.
 Status ExecuteAcceptAlert(Session* session,
