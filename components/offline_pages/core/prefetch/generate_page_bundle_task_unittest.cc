@@ -17,7 +17,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Contains;
 using testing::HasSubstr;
+using testing::Not;
 
 namespace offline_pages {
 
@@ -44,8 +46,9 @@ TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
   task.Run();
   RunUntilIdle();
 
-  EXPECT_EQ(nullptr,
-            prefetch_request_factory()->CurrentGeneratePageBundleRequest());
+  EXPECT_FALSE(prefetch_request_factory()->HasOutstandingRequests());
+  auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
+  EXPECT_TRUE(requested_urls->empty());
 }
 
 TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
@@ -58,7 +61,13 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
   EXPECT_NE(item1.offline_id, item2.offline_id);
-  EXPECT_EQ(2, store_util()->CountPrefetchItems());
+
+  // This item should be unaffected by the task.
+  PrefetchItem item3 =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item3));
+
+  EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
   GeneratePageBundleTask task(store(), gcm_handler(),
                               prefetch_request_factory(),
@@ -67,13 +76,16 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   task.Run();
   RunUntilIdle();
 
-  EXPECT_NE(nullptr,
-            prefetch_request_factory()->CurrentGeneratePageBundleRequest());
+  auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
+  EXPECT_THAT(*requested_urls, Contains(item1.url.spec()));
+  EXPECT_THAT(*requested_urls, Contains(item2.url.spec()));
+  EXPECT_THAT(*requested_urls, Not(Contains(item3.url.spec())));
+
   std::string upload_data =
       url_fetcher_factory()->GetFetcherByID(0)->upload_data();
   EXPECT_THAT(upload_data, HasSubstr(MockPrefetchItemGenerator::kUrlPrefix));
 
-  EXPECT_EQ(2, store_util()->CountPrefetchItems());
+  EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
   ASSERT_TRUE(store_util()->GetPrefetchItem(item1.offline_id));
   ASSERT_TRUE(store_util()->GetPrefetchItem(item2.offline_id));

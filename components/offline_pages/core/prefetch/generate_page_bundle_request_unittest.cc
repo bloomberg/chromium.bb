@@ -15,8 +15,10 @@
 #include "url/url_constants.h"
 
 using testing::_;
+using testing::Contains;
 using testing::DoAll;
 using testing::Eq;
+using testing::Not;
 using testing::SaveArg;
 
 namespace offline_pages {
@@ -49,6 +51,10 @@ TEST_F(GeneratePageBundleRequestTest, RequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
       CreateRequest(callback.Get()));
+
+  EXPECT_EQ(2UL, request->requested_urls().size());
+  EXPECT_THAT(request->requested_urls(), Contains(kTestURL));
+  EXPECT_THAT(request->requested_urls(), Contains(kTestURL2));
 
   net::TestURLFetcher* fetcher = GetRunningFetcher();
   EXPECT_TRUE(fetcher->GetOriginalURL().SchemeIs(url::kHttpsScheme));
