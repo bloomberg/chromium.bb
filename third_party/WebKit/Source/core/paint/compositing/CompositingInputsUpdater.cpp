@@ -75,19 +75,22 @@ static bool HasClippedStackingAncestor(const PaintLayer* layer,
                                        const PaintLayer* clipping_layer) {
   if (layer == clipping_layer)
     return false;
+  bool found_intervening_clip = false;
   const LayoutObject& clipping_layout_object =
       clipping_layer->GetLayoutObject();
   for (const PaintLayer* current = layer->CompositingContainer(); current;
        current = current->CompositingContainer()) {
-    if (clipping_layout_object.IsDescendantOf(&current->GetLayoutObject()))
-      break;
+    if (current == clipping_layer)
+      return found_intervening_clip;
 
-    if (current->GetLayoutObject().HasClipRelatedProperty())
-      return true;
+    if (current->GetLayoutObject().HasClipRelatedProperty() &&
+        !clipping_layout_object.IsDescendantOf(&current->GetLayoutObject()))
+      found_intervening_clip = true;
 
     if (const LayoutObject* container = current->ClippingContainer()) {
-      if (!clipping_layout_object.IsDescendantOf(container))
-        return true;
+      if (&clipping_layout_object != container &&
+          !clipping_layout_object.IsDescendantOf(container))
+        found_intervening_clip = true;
     }
   }
   return false;
