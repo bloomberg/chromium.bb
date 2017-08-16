@@ -56,6 +56,7 @@
           on-keys-pressed="onKeysPressed_">
       </iron-a11y-keys>
       <iron-selector id="selector" on-iron-activate="onIronActivate_"
+          on-selected-item-changed="onSelectedItemChanged_"
           selected-item="{{selectedItem}}" role="radiogroup">
         <!-- Selects the camera as the picture source. -->
         <iron-icon id="cameraImage" role="radio"

@@ -130,6 +130,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     hideCurtain: function() {
       this.loading = false;
+      $('changePicture').focus();
     },
 
     /**
