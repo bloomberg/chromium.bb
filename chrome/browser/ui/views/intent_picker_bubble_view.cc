@@ -23,7 +23,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -183,9 +182,6 @@ void IntentPickerBubbleView::Init() {
   scroll_view_ = new views::ScrollView();
   scroll_view_->SetBackgroundColor(SK_ColorWHITE);
   scroll_view_->SetContents(scrollable_view);
-  // Setting a customized ScrollBar which is shown only when the mouse pointer
-  // is inside the ScrollView.
-  scroll_view_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   // This part gives the scroll a fixed width and height. The height depends on
   // how many app candidates we got and how many we actually want to show.
   // The added 0.5 on the else block allow us to let the user know there are
