@@ -51,6 +51,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -322,6 +323,44 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_EQ(1, tab_strip->count());
   EXPECT_EQ("chrome://newtab/",
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
+  // Add --app=<url> to the command line. Tests launching legacy apps which may
+  // have been created by "Add to Desktop" in old versions of Chrome.
+  // TODO(mgiuca): Delete this feature (https://crbug.com/751029). We are
+  // keeping it for now to avoid disrupting existing workflows.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title2.html")));
+  command_line.AppendSwitchASCII(switches::kApp, url.spec());
+
+  chrome::startup::IsFirstRun first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                    : chrome::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
+  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
+
+  Browser* new_browser = FindOneOtherBrowser(browser());
+  ASSERT_TRUE(new_browser);
+
+  // The new window should be an app window.
+  EXPECT_TRUE(new_browser->is_app());
+
+  TabStripModel* tab_strip = new_browser->tab_strip_model();
+  ASSERT_EQ(1, tab_strip->count());
+  content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
+  // At this stage, the web contents' URL should be the one passed in to --app
+  // (but it will not yet be committed into the navigation controller).
+  EXPECT_EQ("title2.html", web_contents->GetVisibleURL().ExtractFileName());
+
+  // Wait until the navigation is complete. Then the URL will be committed to
+  // the navigation controller.
+  content::TestNavigationObserver observer(web_contents, 1);
+  observer.Wait();
+  EXPECT_EQ("title2.html",
+            web_contents->GetLastCommittedURL().ExtractFileName());
 }
 
 // App shortcuts are not implemented on mac os.
