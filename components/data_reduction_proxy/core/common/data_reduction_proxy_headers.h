@@ -25,6 +25,7 @@ namespace data_reduction_proxy {
 
 // Transform directives that may be parsed out of http headers.
 enum TransformDirective {
+  TRANSFORM_UNKNOWN,
   TRANSFORM_NONE,
   TRANSFORM_LITE_PAGE,
   TRANSFORM_EMPTY_IMAGE,
