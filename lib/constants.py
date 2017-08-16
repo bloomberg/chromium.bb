@@ -910,7 +910,7 @@ STRATEGY_CQ_SUCCESS = 'strategy:cq-success'
 STRATEGY_PRECQ_SUBMIT = 'strategy:pre-cq-submit'
 STRATEGY_NONMANIFEST = 'strategy:non-manifest-submit'
 
-# Strategy for CQ parital pool submission
+# Strategy for CQ partial pool submission
 STRATEGY_CQ_PARTIAL_NOT_TESTED = 'strategy:cq-submit-partial-pool-not-tested'
 STRATEGY_CQ_PARTIAL_CQ_HISTORY = 'strategy:cq-submit-partial-pool-cq-history'
 STRATEGY_CQ_PARTIAL_IGNORED_STAGES = (
@@ -919,7 +919,7 @@ STRATEGY_CQ_PARTIAL_SUBSYSTEM = 'strategy:cq-submit-partial-pool-pass-subsystem'
 STRATEGY_CQ_PARTIAL_BUILDS_PASSED = (
     'strategy:cq-submit-partial-pool-builds-passed')
 
-# A dict mapping CQ parital pool submission strategies to their priorities;
+# A dict mapping CQ partial pool submission strategies to their priorities;
 # lower values have higher priorities.
 STRATEGY_CQ_PARTIAL_REASONS = {
     STRATEGY_CQ_PARTIAL_NOT_TESTED: 1,

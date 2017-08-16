@@ -1166,7 +1166,9 @@ class ValidationPool(object):
     errors.update(local_submission_errors)
     errors.update(remote_errors)
     for patch, error in errors.iteritems():
-      logging.error('Could not submit %s', patch)
+      logging.error("Could not submit %s, error: %s", patch, error)
+      logging.PrintBuildbotLink(
+          "Could not submit %s, error: %s" % (patch, error), patch.url)
       self._HandleCouldNotSubmit(patch, error)
 
     return submitted_locals | submitted_remotes, errors
