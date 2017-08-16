@@ -505,7 +505,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 
   // If the app list is active, hide the shelf background to prevent overlap.
   if (is_app_list_visible_ && is_fullscreen_app_list_enabled)
-    return SHELF_BACKGROUND_DEFAULT;
+    return SHELF_BACKGROUND_APP_LIST;
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
