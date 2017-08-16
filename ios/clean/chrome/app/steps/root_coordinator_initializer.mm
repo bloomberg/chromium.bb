@@ -10,12 +10,12 @@
 #import "ios/chrome/browser/ui/browser_list/browser_list.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list_session_service.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/clean/chrome/app/steps/step_context.h"
 #import "ios/clean/chrome/app/steps/step_features.h"
 #import "ios/clean/chrome/browser/ui/root/root_coordinator.h"
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/web/public/web_state/web_state.h"
 
 @protocol StepContext;

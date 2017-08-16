@@ -4,7 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/settings/material_cell_catalog_coordinator.h"
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator_test.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

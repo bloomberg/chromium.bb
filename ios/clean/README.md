@@ -66,7 +66,7 @@ model-layer services.
 Since view controllers are heavily encapsulated, another object is responsible
 for creating them and connecting them to other objects. This object is a
 coordinator, and in this architecture all coordinators are subclasses of
-[BrowserCoordinator](/ios/shared/chrome/browser/ui/coordinators/). Coordinators
+[BrowserCoordinator](/ios/chrome/browser/ui/coordinators/). Coordinators
 exist in a hierarchy, roughly parallel to the view controller hierarchy; each
 coordinator can have multiple child coordinators, and there is a single root
 coordinator that is created when the application launches.

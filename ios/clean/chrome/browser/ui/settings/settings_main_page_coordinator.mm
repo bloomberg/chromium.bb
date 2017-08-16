@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/clean/chrome/browser/ui/settings/material_cell_catalog_coordinator.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/shared/chrome/browser/ui/settings/settings_main_page_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

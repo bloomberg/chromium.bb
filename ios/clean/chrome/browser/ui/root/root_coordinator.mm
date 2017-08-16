@@ -9,9 +9,9 @@
 #endif
 
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/root/root_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

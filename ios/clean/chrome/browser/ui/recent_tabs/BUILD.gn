@@ -13,8 +13,8 @@ source_set("recent_tabs") {
   deps = [
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/ntp/recent_tabs",
-    "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }
 

@@ -6,11 +6,11 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/clean/chrome/browser/ui/omnibox/location_bar_mediator.h"
 #import "ios/clean/chrome/browser/ui/omnibox/location_bar_view_controller.h"
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

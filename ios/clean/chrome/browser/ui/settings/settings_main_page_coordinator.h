@@ -5,7 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_SETTINGS_SETTINGS_MAIN_PAGE_COORDINATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_SETTINGS_SETTINGS_MAIN_PAGE_COORDINATOR_H_
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // A coordinator for the Settings main screen. That screen is usually pushed
 // onto a navigation controller.

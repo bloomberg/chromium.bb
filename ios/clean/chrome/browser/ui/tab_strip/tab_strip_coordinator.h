@@ -5,7 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_COORDINATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_COORDINATOR_H_
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Coordinator that drives a UI showing a horizontal scrolling strip of tabs.
 @interface TabStripCoordinator : BrowserCoordinator
