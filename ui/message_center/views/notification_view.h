@@ -47,7 +47,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 

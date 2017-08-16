@@ -62,12 +62,14 @@ test("ui_arc_unittests") {
 
   deps = [
     ":arc",
+    "//ash:test_support_without_content",
     "//base",
     "//base/test:test_support",
     "//components/arc:arc_test_support",
     "//components/exo",
     "//components/exo:test_support",
     "//mojo/edk/system",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/base:test_support",

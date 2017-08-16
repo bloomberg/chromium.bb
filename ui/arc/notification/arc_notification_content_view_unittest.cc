@@ -8,12 +8,17 @@
 #include <string>
 #include <utility>
 
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
+#include "components/exo/keyboard.h"
+#include "components/exo/keyboard_delegate.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper_ash.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
@@ -22,6 +27,8 @@
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
@@ -34,6 +41,21 @@ namespace arc {
 namespace {
 
 constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
+constexpr gfx::Rect kNotificationSurfaceBounds(100, 100, 300, 300);
+
+class MockKeyboardDelegate : public exo::KeyboardDelegate {
+ public:
+  MockKeyboardDelegate() = default;
+
+  // Overridden from KeyboardDelegate:
+  MOCK_METHOD1(OnKeyboardDestroying, void(exo::Keyboard*));
+  MOCK_CONST_METHOD1(CanAcceptKeyboardEventsForSurface, bool(exo::Surface*));
+  MOCK_METHOD2(OnKeyboardEnter,
+               void(exo::Surface*, const std::vector<ui::DomCode>&));
+  MOCK_METHOD1(OnKeyboardLeave, void(exo::Surface*));
+  MOCK_METHOD3(OnKeyboardKey, uint32_t(base::TimeTicks, ui::DomCode, bool));
+  MOCK_METHOD1(OnKeyboardModifiers, void(int));
+};
 
 class TestWMHelper : public exo::WMHelper {
  public:
@@ -67,6 +89,11 @@ class TestWMHelper : public exo::WMHelper {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWMHelper);
 };
+
+aura::Window* GetFocusedWindow() {
+  DCHECK(exo::WMHelper::HasInstance());
+  return exo::WMHelper::GetInstance()->GetFocusedWindow();
+}
 
 }  // anonymous namespace
 
@@ -183,15 +210,17 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
-class ArcNotificationContentViewTest : public views::ViewsTestBase {
+class ArcNotificationContentViewTest : public ash::AshTestBase {
  public:
   ArcNotificationContentViewTest() = default;
   ~ArcNotificationContentViewTest() override = default;
 
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
+    ash::AshTestBase::SetUp();
 
-    exo::WMHelper::SetInstance(&wm_helper_);
+    wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
+    exo::WMHelper::SetInstance(wm_helper_.get());
+    DCHECK(exo::WMHelper::HasInstance());
 
     surface_manager_ = base::MakeUnique<ArcNotificationSurfaceManagerImpl>();
   }
@@ -208,9 +237,11 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
 
     surface_manager_.reset();
 
+    DCHECK(exo::WMHelper::HasInstance());
     exo::WMHelper::SetInstance(nullptr);
+    wm_helper_.reset();
 
-    views::ViewsTestBase::TearDown();
+    ash::AshTestBase::TearDown();
   }
 
   void PressCloseButton() {
@@ -242,10 +273,10 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
             message_center::MessageViewFactory::Create(controller(),
                                                        notification, true)));
     notification_view->set_owned_by_client();
-    views::Widget::InitParams params(
-        CreateParams(views::Widget::InitParams::TYPE_POPUP));
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.context = ash::Shell::GetPrimaryRootWindow();
     auto wrapper_widget = base::MakeUnique<views::Widget>();
     wrapper_widget->Init(params);
     wrapper_widget->SetContentsView(notification_view.get());
@@ -268,9 +299,9 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
         surface_manager(), surface_.get(), notification_key);
 
     exo::test::ExoTestHelper exo_test_helper;
-    const gfx::Rect bounds(100, 100, 300, 300);
-    surface_buffer_ = base::MakeUnique<exo::Buffer>(
-        exo_test_helper.CreateGpuMemoryBuffer(bounds.size()));
+    surface_buffer_ =
+        base::MakeUnique<exo::Buffer>(exo_test_helper.CreateGpuMemoryBuffer(
+            kNotificationSurfaceBounds.size()));
     surface_->Attach(surface_buffer_.get());
 
     surface_->Commit();
@@ -295,16 +326,31 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
   exo::Surface* surface() { return surface_.get(); }
+  ArcNotificationView* notification_view() { return notification_view_.get(); }
 
-  ArcNotificationContentView* GetArcNotificationContentView() {
+  message_center::NotificationControlButtonsView* GetControlButtonsView()
+      const {
+    DCHECK(GetArcNotificationContentView());
+    DCHECK(GetArcNotificationContentView()->control_buttons_view_);
+    return GetArcNotificationContentView()->control_buttons_view_;
+  }
+  views::Widget* GetControlButtonsWidget() const {
+    DCHECK(GetControlButtonsView()->GetWidget());
+    return GetControlButtonsView()->GetWidget();
+  }
+
+  ArcNotificationContentView* GetArcNotificationContentView() const {
     views::View* view = notification_view_->contents_view_;
     EXPECT_EQ(ArcNotificationContentView::kViewClassName, view->GetClassName());
     return static_cast<ArcNotificationContentView*>(view);
   }
+  void ActivateArcNotification() {
+    GetArcNotificationContentView()->Activate();
+  }
 
  private:
   TestMessageCenterController controller_;
-  TestWMHelper wm_helper_;
+  std::unique_ptr<exo::WMHelper> wm_helper_;
   std::unique_ptr<ArcNotificationSurfaceManagerImpl> surface_manager_;
   std::unique_ptr<exo::Buffer> surface_buffer_;
   std::unique_ptr<exo::Surface> surface_;
@@ -447,6 +493,213 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
   notification_view.reset();
 
   // Close second view.
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, Activate) {
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  auto notification = CreateNotification(notification_item.get());
+
+  PrepareSurface(key);
+  CreateAndShowNotificationView(notification);
+
+  EXPECT_FALSE(GetFocusedWindow());
+  ActivateArcNotification();
+  EXPECT_EQ(surface()->window(), GetFocusedWindow());
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, ActivateOnClick) {
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  auto notification = CreateNotification(notification_item.get());
+
+  PrepareSurface(key);
+  CreateAndShowNotificationView(notification);
+
+  EXPECT_FALSE(GetFocusedWindow());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                     kNotificationSurfaceBounds.CenterPoint());
+  generator.PressLeftButton();
+  EXPECT_EQ(surface()->window(), GetFocusedWindow());
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, AcceptInputTextWithActivate) {
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  auto notification = CreateNotification(notification_item.get());
+
+  PrepareSurface(key);
+  CreateAndShowNotificationView(notification);
+
+  EXPECT_FALSE(GetFocusedWindow());
+  ActivateArcNotification();
+  EXPECT_EQ(surface()->window(), GetFocusedWindow());
+
+  MockKeyboardDelegate delegate;
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface()))
+      .WillOnce(testing::Return(true));
+  auto keyboard = base::MakeUnique<exo::Keyboard>(&delegate);
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, true));
+  generator.PressKey(ui::VKEY_A, 0);
+
+  keyboard.reset();
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, NotAcceptInputTextWithoutActivate) {
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  auto notification = CreateNotification(notification_item.get());
+
+  PrepareSurface(key);
+  CreateAndShowNotificationView(notification);
+  EXPECT_FALSE(GetFocusedWindow());
+
+  MockKeyboardDelegate delegate;
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface())).Times(0);
+  auto keyboard = base::MakeUnique<exo::Keyboard>(&delegate);
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, testing::_, testing::_))
+      .Times(0);
+  generator.PressKey(ui::VKEY_A, 0);
+
+  keyboard.reset();
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, TraversalFocus) {
+  const bool reverse = false;
+
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  PrepareSurface(key);
+  auto notification = CreateNotification(notification_item.get());
+  CreateAndShowNotificationView(notification);
+
+  views::FocusManager* focus_manager = notification_view()->GetFocusManager();
+
+  views::View* view =
+      focus_manager->GetNextFocusableView(nullptr, widget(), reverse, true);
+  EXPECT_EQ(GetArcNotificationContentView(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(GetControlButtonsView()->settings_button(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(GetControlButtonsView()->close_button(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(nullptr, view);
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, TraversalFocusReverse) {
+  const bool reverse = true;
+
+  std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  PrepareSurface(key);
+  auto notification = CreateNotification(notification_item.get());
+  CreateAndShowNotificationView(notification);
+
+  views::FocusManager* focus_manager = notification_view()->GetFocusManager();
+
+  views::View* view =
+      focus_manager->GetNextFocusableView(nullptr, widget(), reverse, true);
+  EXPECT_EQ(GetControlButtonsView()->close_button(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(GetControlButtonsView()->settings_button(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(GetArcNotificationContentView(), view);
+
+  view = focus_manager->GetNextFocusableView(view, nullptr, reverse, true);
+  EXPECT_EQ(nullptr, view);
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, TraversalFocusByTabKey) {
+  const std::string key("notification id");
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  PrepareSurface(key);
+  auto notification = CreateNotification(notification_item.get());
+  CreateAndShowNotificationView(notification);
+  ActivateArcNotification();
+
+  views::FocusManager* focus_manager = notification_view()->GetFocusManager();
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  focus_manager->ClearFocus();
+  EXPECT_FALSE(focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, 0);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetArcNotificationContentView(), focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, 0);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetControlButtonsView()->settings_button(),
+            focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, 0);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetControlButtonsView()->close_button(),
+            focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, 0);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetArcNotificationContentView(), focus_manager->GetFocusedView());
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, TraversalFocusReverseByShiftTab) {
+  std::string key("notification id");
+
+  auto notification_item = base::MakeUnique<MockArcNotificationItem>(key);
+  PrepareSurface(key);
+  auto notification = CreateNotification(notification_item.get());
+  CreateAndShowNotificationView(notification);
+  ActivateArcNotification();
+
+  views::FocusManager* focus_manager = notification_view()->GetFocusManager();
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  focus_manager->ClearFocus();
+  EXPECT_FALSE(focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetControlButtonsView()->close_button(),
+            focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetControlButtonsView()->settings_button(),
+            focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetArcNotificationContentView(), focus_manager->GetFocusedView());
+
+  generator.PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_EQ(GetControlButtonsView()->close_button(),
+            focus_manager->GetFocusedView());
+
   CloseNotificationView();
 }
 

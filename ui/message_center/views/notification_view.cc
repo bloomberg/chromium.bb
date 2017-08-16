@@ -340,10 +340,6 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
   return views::GetNativeHandCursor();
 }
 
-void NotificationView::OnMouseMoved(const ui::MouseEvent& event) {
-  MessageView::OnMouseMoved(event);
-  UpdateControlButtonsVisibility();
-}
 
 void NotificationView::OnMouseEntered(const ui::MouseEvent& event) {
   MessageView::OnMouseEntered(event);
