@@ -200,8 +200,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
                                        ->surface_manager();
     viz::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
-    // There should be a SurfaceSequence created by the RWHVChildFrame.
-    EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
 #endif
 
     // Surface ID should have been passed to CrossProcessFrameConnector to
