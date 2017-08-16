@@ -21,37 +21,42 @@ class PaymentsValidators {
   // that currency is defined by [[ISO4217]], however any string of at most
   // 2048 characters is considered valid in other currencySystem.  Returns
   // false if currency |code| is too long (greater than 2048).
-  static bool isValidCurrencyCodeFormat(const std::string& code,
+  static bool IsValidCurrencyCodeFormat(const std::string& code,
                                         const std::string& system,
                                         std::string* optional_error_message);
 
   // Returns true if |amount| is a valid currency code as defined in ISO 20022
   // CurrencyAnd30Amount.
-  static bool isValidAmountFormat(const std::string& amount,
+  static bool IsValidAmountFormat(const std::string& amount,
                                   std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 3166 country code.
-  static bool isValidCountryCodeFormat(const std::string& code,
+  static bool IsValidCountryCodeFormat(const std::string& code,
                                        std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 639 language code.
-  static bool isValidLanguageCodeFormat(const std::string& code,
+  static bool IsValidLanguageCodeFormat(const std::string& code,
                                         std::string* optional_error_message);
 
   // Returns true if |code| is a valid ISO 15924 script code.
-  static bool isValidScriptCodeFormat(const std::string& code,
+  static bool IsValidScriptCodeFormat(const std::string& code,
                                       std::string* optional_error_message);
+
+  // Splits BCP-57 |tag| into |language_code| and |script_code|.
+  static void SplitLanguageTag(const std::string& tag,
+                               std::string* language_code,
+                               std::string* script_code);
 
   // Returns true if the payment address is valid:
   //  - Has a valid region code
   //  - Has a valid language code, if any.
   //  - Has a valid script code, if any.
   // A script code should be present only if language code is present.
-  static bool isValidShippingAddress(const mojom::PaymentAddressPtr& address,
+  static bool IsValidShippingAddress(const mojom::PaymentAddressPtr& address,
                                      std::string* optional_error_message);
 
   // Returns false if |error| is too long (greater than 2048).
-  static bool isValidErrorMsgFormat(const std::string& code,
+  static bool IsValidErrorMsgFormat(const std::string& code,
                                     std::string* optional_error_message);
 
  private:
