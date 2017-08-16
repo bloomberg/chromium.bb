@@ -6,21 +6,21 @@
 
 from __future__ import print_function
 
+import datetime
 import os
-import shutil
-import tempfile
 import time
 import unittest
 
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.workqueue import tasks
 
 
 _INTERVAL = float(0xdeadbeef)
 
-# N.B. The latency numbers need to be generous for the sake of
-# builders that may be loaded when they run here.
-_START_LATENCY = 0.5
+# N.B. The latency numbers need to be really generous for the sake of
+# builders that may be loaded when they run these tests.
+_START_LATENCY = 120.0
 _REAP_LATENCY = 1.0
 
 
@@ -44,21 +44,19 @@ def _TaskHandler(task_file):
   return task_file
 
 
-class ProcessPoolTaskManagerTests(unittest.TestCase):
+class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
   """Test cases for all `ProcessPoolTaskManager` methods."""
 
   # REQUEST_IDS - fake request ids used for `StartTask()`.
   _REQUEST_IDS = ['a', 'b']
 
   def setUp(self):
-    self._temp_dir = tempfile.mkdtemp()
     self._task_manager = tasks.ProcessPoolTaskManager(
         len(self._REQUEST_IDS), _TaskHandler, _INTERVAL)
     self._pending_tasks = {}
     self._expected = set()
 
   def tearDown(self):
-    shutil.rmtree(self._temp_dir)
     self._task_manager.Close()
 
   def _StopTask(self, rqid):
@@ -69,11 +67,26 @@ class ProcessPoolTaskManagerTests(unittest.TestCase):
 
   def _StartTask(self, rqid):
     """Call the task manager's `StartTask()` method."""
-    rqfile = os.path.join(self._temp_dir, rqid)
-    self._task_manager.StartTask(rqid, rqfile)
+    rqfile = os.path.join(self.tempdir, rqid)
     self._pending_tasks[rqid] = rqfile
-    time.sleep(_START_LATENCY)
-    self.assertTrue(os.path.exists(rqfile))
+    self._task_manager.StartTask(rqid, rqfile)
+    # Wait to confirm that the task we started is actually running.
+    # This code is complicated because it has to pass on release
+    # builders that can be heavily loaded when we do this.  The
+    # sleep() call is meant to solve two problems:
+    #  + Reduce overall CPU load.
+    #  + Make sure that the system scheduler sees a chance to schedule
+    #    the child process that we're waiting on.
+    # Note that the length of the sleep call here can't be too long, or
+    # the unit tests will be obnoxiously slow.  However, on a loaded
+    # system, we want to be patient, so _START_LATENCY can be big.
+    t_end = (datetime.datetime.now()
+             + datetime.timedelta(seconds=_START_LATENCY))
+    msg = ('Starting task "%s" timed out '
+           'after %.2f seconds.' % (rqid, _START_LATENCY))
+    while not os.path.exists(rqfile):
+      time.sleep(0.02)
+      self.assertLessEqual(datetime.datetime.now(), t_end, msg)
 
   def _TerminateTask(self, rqid):
     """Call the task manager's `TerminateTask()` method."""
