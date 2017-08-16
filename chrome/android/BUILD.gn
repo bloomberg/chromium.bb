@@ -39,9 +39,8 @@ chrome_sync_shell_jinja_variables =
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 
 if (enable_resource_whitelist_generation) {
-  # Path cannot depend on cur_toolchain.
   monochrome_resource_whitelist =
-      "$root_build_dir/monochrome_resource_whitelist.txt"
+      "$target_gen_dir/monochrome_resource_whitelist.txt"
   system_webview_locale_resource_id_list =
       "$target_gen_dir/system_webview_locale_resource_id_list.txt"
   monochrome_locale_whitelist =
@@ -718,30 +717,6 @@ shared_library("chrome") {
   public_configs = extra_chrome_shared_library_configs
 }
 
-# For why we defined the whitelist target in $fat_lib_toolchain rather than
-# just using :monochrome($fat_lib_toolchain) as a dep, see crbug.com/749003.
-if (enable_resource_whitelist_generation) {
-  if (!android_64bit_target_cpu) {
-    fat_lib_toolchain = current_toolchain
-  } else {
-    fat_lib_toolchain = android_secondary_abi_toolchain
-  }
-
-  # Always use the 32-bit library's whitelist since the 64-bit one is
-  # webview-only.
-  if (current_toolchain == fat_lib_toolchain) {
-    generate_resource_whitelist("monochrome_resource_whitelist") {
-      deps = [
-        ":monochrome",
-      ]
-
-      input = get_label_info(deps[0], "root_out_dir") +
-              "/libmonochrome$shlib_extension.whitelist"
-      output = monochrome_resource_whitelist
-    }
-  }
-}
-
 # Ensure that .pak files are built only once (build them in the default
 # toolchain). The central header file calling JNI registration functions
 # is generated from Java code so it just needs to be generated once.
@@ -760,6 +735,23 @@ if (current_toolchain == default_toolchain) {
   }
 
   if (enable_resource_whitelist_generation) {
+    generate_resource_whitelist("monochrome_resource_whitelist") {
+      # Always use the 32-bit library's whitelist since the 64-bit one is
+      # webview-only.
+      if (!android_64bit_target_cpu) {
+        _fat_lib_toolchain = current_toolchain
+      } else {
+        _fat_lib_toolchain = android_secondary_abi_toolchain
+      }
+      deps = [
+        ":monochrome($_fat_lib_toolchain)",
+      ]
+
+      input = get_label_info(deps[0], "root_out_dir") +
+              "/libmonochrome$shlib_extension.whitelist"
+      output = monochrome_resource_whitelist
+    }
+
     # Use custom resource ID list instead of android_webview's compiler
     # resource whitelist because //android_webview: generate_webui_resources
     # and //android_webview: generate_components_resources use hand-written
@@ -803,7 +795,7 @@ if (current_toolchain == default_toolchain) {
       ]
 
       deps = [
-        ":monochrome_resource_whitelist($fat_lib_toolchain)",
+        ":monochrome_resource_whitelist",
         ":system_webview_locale_resource_id_list",
         "//android_webview:system_webview_pak_whitelist",
       ]
@@ -829,7 +821,7 @@ if (current_toolchain == default_toolchain) {
 
     if (enable_resource_whitelist_generation) {
       repack_whitelist = monochrome_resource_whitelist
-      deps += [ ":monochrome_resource_whitelist($fat_lib_toolchain)" ]
+      deps += [ ":monochrome_resource_whitelist" ]
       locale_whitelist = monochrome_locale_whitelist
       deps += [ ":monochrome_locale_whitelist" ]
     }
