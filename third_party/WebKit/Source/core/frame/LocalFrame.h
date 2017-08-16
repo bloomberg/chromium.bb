@@ -332,7 +332,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* const interface_registry_;
 
   IntRect remote_viewport_intersection_;
-  std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
+  Member<FrameResourceCoordinator> frame_resource_coordinator_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

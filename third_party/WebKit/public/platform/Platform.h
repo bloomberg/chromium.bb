@@ -620,8 +620,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual InterfaceProvider* GetInterfaceProvider();
 
-  virtual const char* GetBrowserServiceName() const { return ""; }
-
   // Platform events -----------------------------------------------------
   // Device Orientation, Device Motion, Battery, Gamepad.
 
