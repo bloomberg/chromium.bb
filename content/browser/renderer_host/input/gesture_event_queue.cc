@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
+#include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
@@ -14,6 +15,11 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
 namespace content {
+
+GestureEventQueue::GestureEventWithLatencyInfoAndAckState::
+    GestureEventWithLatencyInfoAndAckState(
+        const GestureEventWithLatencyInfo& event)
+    : GestureEventWithLatencyInfo(event) {}
 
 GestureEventQueue::Config::Config() {
 }
@@ -57,7 +63,7 @@ bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
-  GestureQueue::const_reverse_iterator it =
+  GestureQueueWithAckState::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
     if (it->event.GetType() == WebInputEvent::kGestureFlingStart)
@@ -212,30 +218,81 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     return;
   }
 
-  size_t event_index = 0;
-  if (allow_multiple_inflight_events_) {
-    // Events are forwarded immediately.
-    // Assuming events of the same type are acked in a FIFO order, but it's
-    // still possible that GestureFling events are acked before
-    // GestureScroll/Pinch as they don't need to go through the queue in
-    // |InputHandlerProxy::HandleInputEventWithLatencyInfo|.
-    for (size_t i = 0; i < coalesced_gesture_events_.size(); ++i) {
-      if (coalesced_gesture_events_[i].event.GetType() == type) {
-        event_index = i;
-        break;
-      }
-    }
-  } else {
-    // Events are forwarded one-by-one.
-    // It's possible that the ack for the second event in an in-flight,
-    // coalesced Gesture{Scroll,Pinch}Update pair is received prior to the first
-    // event ack.
-    if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
-        coalesced_gesture_events_[0].event.GetType() != type &&
-        coalesced_gesture_events_[1].event.GetType() == type) {
-      event_index = 1;
+  if (!allow_multiple_inflight_events_) {
+    LegacyProcessGestureAck(ack_result, type, latency);
+    return;
+  }
+
+  // ACKs could come back out of order. We want to cache them to restore the
+  // original order.
+  for (auto& outstanding_event : coalesced_gesture_events_) {
+    if (outstanding_event.ack_state() != INPUT_EVENT_ACK_STATE_UNKNOWN)
+      continue;
+    if (outstanding_event.event.GetType() == type) {
+      outstanding_event.latency.AddNewLatencyFrom(latency);
+      outstanding_event.set_ack_state(ack_result);
+      break;
     }
   }
+
+  AckCompletedEvents();
+}
+
+void GestureEventQueue::AckCompletedEvents() {
+  // Don't allow re-entrancy into this method otherwise
+  // the ordering of acks won't be preserved.
+  if (processing_acks_)
+    return;
+  base::AutoReset<bool> process_acks(&processing_acks_, true);
+  while (!coalesced_gesture_events_.empty()) {
+    auto iter = coalesced_gesture_events_.begin();
+    if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
+      break;
+    GestureEventWithLatencyInfoAndAckState event = *iter;
+    coalesced_gesture_events_.erase(iter);
+    AckGestureEventToClient(event, event.ack_state());
+  }
+}
+
+void GestureEventQueue::AckGestureEventToClient(
+    const GestureEventWithLatencyInfo& event_with_latency,
+    InputEventAckState ack_result) {
+  DCHECK(allow_multiple_inflight_events_);
+
+  // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
+  // event before the forwarding of queued events below, such additional events
+  // can be coalesced with existing queued events prior to dispatch.
+  client_->OnGestureEventAck(event_with_latency, ack_result);
+
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  if (event_with_latency.event.GetType() ==
+      WebInputEvent::kGestureFlingCancel) {
+    if (event_with_latency.event.source_device ==
+        blink::kWebGestureDeviceTouchscreen)
+      touchscreen_tap_suppression_controller_.GestureFlingCancelAck(processed);
+    else if (event_with_latency.event.source_device ==
+             blink::kWebGestureDeviceTouchpad)
+      touchpad_tap_suppression_controller_.GestureFlingCancelAck(processed);
+  }
+}
+
+void GestureEventQueue::LegacyProcessGestureAck(
+    InputEventAckState ack_result,
+    WebInputEvent::Type type,
+    const ui::LatencyInfo& latency) {
+  DCHECK(!allow_multiple_inflight_events_);
+
+  // Events are forwarded one-by-one.
+  // It's possible that the ack for the second event in an in-flight,
+  // coalesced Gesture{Scroll,Pinch}Update pair is received prior to the first
+  // event ack.
+  size_t event_index = 0;
+  if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
+      coalesced_gesture_events_[0].event.GetType() != type &&
+      coalesced_gesture_events_[1].event.GetType() == type) {
+    event_index = 1;
+  }
+
   GestureEventWithLatencyInfo event_with_latency =
       coalesced_gesture_events_[event_index];
   DCHECK_EQ(event_with_latency.event.GetType(), type);
@@ -258,10 +315,6 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   DCHECK_LT(event_index, coalesced_gesture_events_.size());
   coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
                                   event_index);
-
-  // Events have been forwarded already.
-  if (allow_multiple_inflight_events_)
-    return;
 
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
