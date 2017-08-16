@@ -889,7 +889,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
+  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
     return nil;
 
   if (!manageButton_ && !doneButton_)
