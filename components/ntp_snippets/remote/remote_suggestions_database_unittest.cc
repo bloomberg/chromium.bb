@@ -181,7 +181,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Save) {
   RunUntilIdle();
 }
 
-TEST_F(RemoteSuggestionsDatabaseTest, SavePersist) {
+TEST_F(RemoteSuggestionsDatabaseTest, DISABLED_SavePersist) {
   CreateDatabase();
   RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
