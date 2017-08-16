@@ -356,6 +356,38 @@
         "test": "wtf_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose",
+            "--results-json-override-with-build-property",
+            "build_number",
+            "buildnumber",
+            "--results-json-override-with-build-property",
+            "builder_name",
+            "buildername",
+            "--results-json-override-with-build-property",
+            "chromium_revision",
+            "got_revision_cp"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10.5"
+            }
+          ],
+          "shards": 2
+        }
+      }
+    ],
     "scripts": [
       {
         "name": "webkit_lint",
@@ -380,6 +412,38 @@
       },
       {
         "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose",
+            "--results-json-override-with-build-property",
+            "build_number",
+            "buildnumber",
+            "--results-json-override-with-build-property",
+            "builder_name",
+            "buildername",
+            "--results-json-override-with-build-property",
+            "chromium_revision",
+            "got_revision_cp"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11.6"
+            }
+          ],
+          "shards": 2
+        }
       }
     ],
     "scripts": [
@@ -458,6 +522,39 @@
       },
       {
         "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose",
+            "--results-json-override-with-build-property",
+            "build_number",
+            "buildnumber",
+            "--results-json-override-with-build-property",
+            "builder_name",
+            "buildername",
+            "--results-json-override-with-build-property",
+            "chromium_revision",
+            "got_revision_cp"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "hidpi": "0",
+              "os": "Mac-10.12.5"
+            }
+          ],
+          "shards": 2
+        }
       }
     ],
     "scripts": [
