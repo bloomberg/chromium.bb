@@ -102,9 +102,10 @@ ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
 void ServiceWorkerDispatcherHost::Init(
     ServiceWorkerContextWrapper* context_wrapper) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&ServiceWorkerDispatcherHost::Init, this,
-                                       base::RetainedRef(context_wrapper)));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ServiceWorkerDispatcherHost::Init, this,
+                       base::RetainedRef(context_wrapper)));
     return;
   }
 

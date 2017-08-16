@@ -63,8 +63,9 @@ class SharedWorkerReserver {
         worker_process_id, worker_route_id, is_new_worker, instance));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SharedWorkerReserver::TryReserveOnUI, std::move(reserver),
-                   success_cb, failure_cb, try_increment_worker_ref_count));
+        base::BindOnce(&SharedWorkerReserver::TryReserveOnUI,
+                       std::move(reserver), success_cb, failure_cb,
+                       try_increment_worker_ref_count));
   }
 
  private:
@@ -99,8 +100,8 @@ class SharedWorkerReserver {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, worker_process_id_, worker_route_id_,
-                   is_new_worker_, pause_on_start));
+        base::BindOnce(callback, worker_process_id_, worker_route_id_,
+                       is_new_worker_, pause_on_start));
   }
 
   const int worker_process_id_;
@@ -149,16 +150,15 @@ void UpdateWorkerDependencyOnUI(const std::vector<int>& added_ids,
 void UpdateWorkerDependency(const std::vector<int>& added_ids,
                             const std::vector<int>& removed_ids) {
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UpdateWorkerDependencyOnUI, added_ids, removed_ids));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&UpdateWorkerDependencyOnUI, added_ids, removed_ids));
 }
 
 void DecrementWorkerRefCount(int process_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&DecrementWorkerRefCount, process_id));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&DecrementWorkerRefCount, process_id));
     return;
   }
   RenderProcessHostImpl* render_process_host_impl =

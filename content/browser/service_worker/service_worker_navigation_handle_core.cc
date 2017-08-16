@@ -44,7 +44,7 @@ void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(
       precreated_host_->provider_id(), this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ServiceWorkerNavigationHandle::DidCreateServiceWorkerProviderHost,
           ui_handle_, precreated_host_->provider_id()));
 }

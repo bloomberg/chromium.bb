@@ -53,8 +53,8 @@ ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
 void ServiceWorkerReadFromCacheJob::Start() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ReadInfo", this);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ServiceWorkerReadFromCacheJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ServiceWorkerReadFromCacheJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerReadFromCacheJob::Kill() {

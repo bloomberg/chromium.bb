@@ -686,11 +686,12 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker, AsWeakPtr(),
-                 params.embedded_worker_id, params.service_worker_version_id,
-                 params.scope, params.script_url, params.pause_after_download,
-                 base::Passed(&request), base::Passed(&instance_host),
-                 base::Passed(&provider_info)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnStartWorker, AsWeakPtr(),
+                     params.embedded_worker_id,
+                     params.service_worker_version_id, params.scope,
+                     params.script_url, params.pause_after_download,
+                     base::Passed(&request), base::Passed(&instance_host),
+                     base::Passed(&provider_info)));
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
@@ -698,14 +699,15 @@ void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnResumeAfterDownload,
-                            AsWeakPtr(), embedded_worker_id));
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnResumeAfterDownload,
+                     AsWeakPtr(), embedded_worker_id));
 }
 
 void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnStopWorker,
-                            AsWeakPtr(), embedded_worker_id));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnStopWorker,
+                                AsWeakPtr(), embedded_worker_id));
 }
 
 void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
@@ -721,8 +723,8 @@ void EmbeddedWorkerTestHelper::OnActivateEventStub(
     mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
-                            AsWeakPtr(), base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnActivateEvent,
+                                AsWeakPtr(), base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEventStub(
@@ -731,8 +733,8 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEventStub(
         DispatchBackgroundFetchAbortEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent,
-                 AsWeakPtr(), tag, base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent,
+                     AsWeakPtr(), tag, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEventStub(
@@ -742,8 +744,8 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEventStub(
         DispatchBackgroundFetchClickEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent,
-                 AsWeakPtr(), tag, state, base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent,
+                     AsWeakPtr(), tag, state, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEventStub(
@@ -753,8 +755,8 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEventStub(
         DispatchBackgroundFetchFailEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent,
-                 AsWeakPtr(), tag, fetches, base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent,
+                     AsWeakPtr(), tag, fetches, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchedEventStub(
@@ -764,8 +766,8 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchedEventStub(
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchedEvent,
-                 AsWeakPtr(), tag, fetches, base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchedEvent,
+                     AsWeakPtr(), tag, fetches, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
@@ -774,8 +776,9 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
-                 AsWeakPtr(), base::Passed(&event), base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
+                     AsWeakPtr(), base::Passed(&event),
+                     base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEventStub(
@@ -784,8 +787,8 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent, AsWeakPtr(),
-                 base::Passed(&client), base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnInstallEvent, AsWeakPtr(),
+                     base::Passed(&client), base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
@@ -797,11 +800,11 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
     FetchCallback finish_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
-                 thread_id_embedded_worker_id_map_[thread_id], fetch_event_id,
-                 request, base::Passed(&preload_handle),
-                 base::Passed(&response_callback),
-                 base::Passed(&finish_callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
+                     thread_id_embedded_worker_id_map_[thread_id],
+                     fetch_event_id, request, base::Passed(&preload_handle),
+                     base::Passed(&response_callback),
+                     base::Passed(&finish_callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
@@ -812,9 +815,10 @@ void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
     mojom::ServiceWorkerEventDispatcher::DispatchNotificationClickEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnNotificationClickEvent,
-                            AsWeakPtr(), notification_id, notification_data,
-                            action_index, reply, base::Passed(&callback)));
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnNotificationClickEvent,
+                     AsWeakPtr(), notification_id, notification_data,
+                     action_index, reply, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
@@ -823,17 +827,18 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
     mojom::ServiceWorkerEventDispatcher::DispatchNotificationCloseEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnNotificationCloseEvent,
-                            AsWeakPtr(), notification_id, notification_data,
-                            base::Passed(&callback)));
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnNotificationCloseEvent,
+                     AsWeakPtr(), notification_id, notification_data,
+                     base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(
     const PushEventPayload& payload,
     mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
-                            payload, base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnPushEvent,
+                                AsWeakPtr(), payload, base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(
@@ -841,9 +846,9 @@ void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(
     mojom::ServiceWorkerEventDispatcher::DispatchAbortPaymentEventCallback
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnAbortPaymentEvent, AsWeakPtr(),
-                 base::Passed(&response_callback), base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnAbortPaymentEvent,
+                                AsWeakPtr(), base::Passed(&response_callback),
+                                base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnCanMakePaymentEventStub(
@@ -853,9 +858,10 @@ void EmbeddedWorkerTestHelper::OnCanMakePaymentEventStub(
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnCanMakePaymentEvent, AsWeakPtr(),
-                 base::Passed(&event_data), base::Passed(&response_callback),
-                 base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnCanMakePaymentEvent,
+                     AsWeakPtr(), base::Passed(&event_data),
+                     base::Passed(&response_callback),
+                     base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
@@ -865,9 +871,10 @@ void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnPaymentRequestEvent, AsWeakPtr(),
-                 base::Passed(&event_data), base::Passed(&response_callback),
-                 base::Passed(&callback)));
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnPaymentRequestEvent,
+                     AsWeakPtr(), base::Passed(&event_data),
+                     base::Passed(&response_callback),
+                     base::Passed(&callback)));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

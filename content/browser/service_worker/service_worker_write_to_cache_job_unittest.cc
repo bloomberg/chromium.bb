@@ -117,8 +117,8 @@ class SSLCertificateErrorJob : public net::URLRequestTestJob {
         weak_factory_(this) {}
   void Start() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SSLCertificateErrorJob::NotifyError,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SSLCertificateErrorJob::NotifyError,
+                                  weak_factory_.GetWeakPtr()));
   }
   void NotifyError() {
     net::SSLInfo info;
@@ -127,8 +127,8 @@ class SSLCertificateErrorJob : public net::URLRequestTestJob {
   }
   void ContinueDespiteLastError() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SSLCertificateErrorJob::StartAsync,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SSLCertificateErrorJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
   }
 
  protected:

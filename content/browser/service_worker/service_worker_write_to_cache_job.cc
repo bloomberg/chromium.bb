@@ -98,8 +98,8 @@ ServiceWorkerWriteToCacheJob::~ServiceWorkerWriteToCacheJob() {
 
 void ServiceWorkerWriteToCacheJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ServiceWorkerWriteToCacheJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ServiceWorkerWriteToCacheJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerWriteToCacheJob::StartAsync() {

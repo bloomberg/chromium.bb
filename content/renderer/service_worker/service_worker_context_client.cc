@@ -788,8 +788,8 @@ void ServiceWorkerContextClient::DidEvaluateWorkerScript(bool success) {
   // so that at the time we send it we can be sure that the
   // worker run loop has been started.
   worker_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ServiceWorkerContextClient::SendWorkerStarted,
-                            GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ServiceWorkerContextClient::SendWorkerStarted,
+                                GetWeakPtr()));
 
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "EVALUATE_SCRIPT", this,
                                   "Status", success ? "Success" : "Failure");
@@ -859,8 +859,8 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(embedded_worker_client_);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
-                 base::Passed(&embedded_worker_client_)));
+      base::BindOnce(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
+                     base::Passed(&embedded_worker_client_)));
   return;
 }
 

@@ -87,8 +87,8 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
       case MOJO_RESULT_SHOULD_WAIT:
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(&ReadDataPipeInternal, handle, result,
-                       base::Passed(&quit_closure)));
+            base::BindOnce(&ReadDataPipeInternal, handle, result,
+                           base::Passed(&quit_closure)));
         return;
       case MOJO_RESULT_OK:
         EXPECT_NE(nullptr, buffer);

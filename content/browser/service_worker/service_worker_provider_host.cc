@@ -374,8 +374,8 @@ void ServiceWorkerProviderHost::BindWorkerFetchContext(
   mojom::ServiceWorkerWorkerClientAssociatedPtr client;
   client.Bind(std::move(client_ptr_info));
   client.set_connection_error_handler(
-      base::Bind(&ServiceWorkerProviderHost::UnregisterWorkerFetchContext,
-                 base::Unretained(this), client.get()));
+      base::BindOnce(&ServiceWorkerProviderHost::UnregisterWorkerFetchContext,
+                     base::Unretained(this), client.get()));
 
   if (controlling_version_)
     client->SetControllerServiceWorker(controlling_version_->version_id());
@@ -434,7 +434,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 
   provider_.Bind(std::move(info_.client_ptr_info));
   binding_.Bind(std::move(info_.host_request));
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &RemoveProviderHost, context_, render_process_id, info_.provider_id));
 }
 
@@ -840,8 +840,8 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
   provider_.Bind(provisional_host->provider_.PassInterface());
   binding_.Bind(provisional_host->binding_.Unbind());
   binding_.set_connection_error_handler(
-      base::Bind(&RemoveProviderHost, context_, provisional_host->process_id(),
-                 provider_id()));
+      base::BindOnce(&RemoveProviderHost, context_,
+                     provisional_host->process_id(), provider_id()));
 
   for (const GURL& pattern : associated_patterns_)
     IncreaseProcessReference(pattern);
@@ -874,7 +874,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   provider_.Bind(std::move(info.client_ptr_info));
   binding_.Bind(std::move(info.host_request));
   binding_.set_connection_error_handler(
-      base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));
+      base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
   info_.route_id = info.route_id;
   render_process_id_ = process_id;
   dispatcher_host_ = dispatcher_host;
@@ -944,7 +944,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 
   binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
   binding_.set_connection_error_handler(
-      base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));
+      base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
 
   // Set the document URL to the script url in order to allow
   // register/unregister/getRegistration on ServiceWorkerGlobalScope.

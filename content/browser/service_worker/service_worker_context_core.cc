@@ -372,8 +372,8 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
       providers_.get(), base::Bind(IsSameOriginWindowProviderHost, origin));
 
   if (provider_host_iterator.IsAtEnd()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, false));
     return;
   }
 
@@ -487,9 +487,8 @@ void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(
   }
   bool* overall_success = new bool(true);
   base::Closure barrier = base::BarrierClosure(
-      scopes.size(),
-      base::Bind(
-          &SuccessReportingCallback, base::Owned(overall_success), result));
+      scopes.size(), base::BindOnce(&SuccessReportingCallback,
+                                    base::Owned(overall_success), result));
 
   for (const GURL& scope : scopes) {
     UnregisterServiceWorker(
@@ -666,7 +665,8 @@ void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
   storage_->Disable();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ServiceWorkerContextWrapper::DeleteAndStartOver, wrapper_));
+      base::BindOnce(&ServiceWorkerContextWrapper::DeleteAndStartOver,
+                     wrapper_));
 }
 
 void ServiceWorkerContextCore::DeleteAndStartOver(

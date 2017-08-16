@@ -377,8 +377,9 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // failures, wait a bit before continuing.
   if (delay) {
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&ServiceWorkerRegistration::ContinueActivation,
-                              this, activating_version),
+        FROM_HERE,
+        base::BindOnce(&ServiceWorkerRegistration::ContinueActivation, this,
+                       activating_version),
         base::TimeDelta::FromSeconds(1));
   } else {
     ContinueActivation(std::move(activating_version));

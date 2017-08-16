@@ -52,10 +52,9 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(OperationCompleteCallback, internals, callback_id, status));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(OperationCompleteCallback, internals,
+                                           callback_id, status));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -73,13 +72,9 @@ void CallServiceWorkerVersionMethodWithVersionID(
     const ServiceWorkerInternalsUI::StatusCallback& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(CallServiceWorkerVersionMethodWithVersionID,
-                   method,
-                   context,
-                   version_id,
-                   callback));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(CallServiceWorkerVersionMethodWithVersionID, method,
+                       context, version_id, callback));
     return;
   }
 
@@ -233,8 +228,8 @@ void DidGetStoredRegistrationsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, context->GetAllLiveRegistrationInfo(),
-                 context->GetAllLiveVersionInfo(), stored_registrations));
+      base::BindOnce(callback, context->GetAllLiveRegistrationInfo(),
+                     context->GetAllLiveVersionInfo(), stored_registrations));
 }
 
 void GetRegistrationsOnIOThread(
@@ -455,10 +450,11 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(GetRegistrationsOnIOThread, context,
-                 base::Bind(DidGetRegistrations, AsWeakPtr(), partition_id,
-                            context->is_incognito() ? base::FilePath()
-                                                    : partition->GetPath())));
+      base::BindOnce(
+          GetRegistrationsOnIOThread, context,
+          base::Bind(DidGetRegistrations, AsWeakPtr(), partition_id,
+                     context->is_incognito() ? base::FilePath()
+                                             : partition->GetPath())));
 }
 
 void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(
@@ -601,8 +597,8 @@ void ServiceWorkerInternalsUI::UnregisterWithScope(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ServiceWorkerInternalsUI::UnregisterWithScope,
-                   base::Unretained(this), context, scope, callback));
+        base::BindOnce(&ServiceWorkerInternalsUI::UnregisterWithScope,
+                       base::Unretained(this), context, scope, callback));
     return;
   }
 
