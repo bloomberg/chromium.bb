@@ -19,9 +19,7 @@ extern const char kCredentialsEnableAutosignin[];
 
 // The value of this preference controls whether the Password Manager will save
 // credentials. When it is false, it doesn't ask if you want to save passwords
-// but will continue to fill passwords. This preference in a future will
-// substitute kPasswordManagerSavingEnabled, currently it's required that values
-// of these two preference are in sync with each other.
+// but will continue to fill passwords.
 // TODO(melandory): Preference should also control autofill behavior for the
 // passwords.
 extern const char kCredentialsEnableService[];
@@ -45,15 +43,6 @@ extern const char kOsPasswordLastChanged[];
 // database. Stores a value from MigrationStatus.
 extern const char kKeychainMigrationStatus[];
 #endif
-
-// Boolean that is true if password saving is on (will record new
-// passwords and fill in known passwords). When it is false, it doesn't
-// ask if you want to save passwords but will continue to fill passwords.
-// Constant name and its value differ because of historical reasons as it
-// was not deemed important enough to add migration code just for name
-// change.
-// See http://crbug.com/392387
-extern const char kPasswordManagerSavingEnabled[];
 
 // Boolean that indicated whether first run experience for the auto sign-in
 // prompt was shown or not.

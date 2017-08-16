@@ -86,7 +86,7 @@ class IOSChromePasswordManagerClient
   id<PasswordManagerClientDelegate> delegate_;  // (weak)
 
   // The preference associated with
-  // password_manager::prefs::kPasswordManagerSavingEnabled.
+  // password_manager::prefs::kCredentialsEnableService.
   BooleanPrefMember saving_passwords_enabled_;
 
   const password_manager::SyncCredentialsFilter credentials_filter_;

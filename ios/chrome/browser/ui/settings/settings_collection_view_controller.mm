@@ -285,7 +285,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     _prefObserverBridge->ObserveChangesForPreference(prefs::kVoiceSearchLocale,
                                                      &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
-        password_manager::prefs::kPasswordManagerSavingEnabled,
+        password_manager::prefs::kCredentialsEnableService,
         &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
         autofill::prefs::kAutofillEnabled, &_prefChangeRegistrar);
@@ -482,7 +482,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (CollectionViewItem*)savePasswordsDetailItem {
   BOOL savePasswordsEnabled = _browserState->GetPrefs()->GetBoolean(
-      password_manager::prefs::kPasswordManagerSavingEnabled);
+      password_manager::prefs::kCredentialsEnableService);
   NSString* passwordsDetail = savePasswordsEnabled
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1136,8 +1136,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [self reconfigureCellsForItems:@[ _voiceSearchDetailItem ]];
   }
 
-  if (preferenceName ==
-      password_manager::prefs::kPasswordManagerSavingEnabled) {
+  if (preferenceName == password_manager::prefs::kCredentialsEnableService) {
     BOOL savePasswordsEnabled =
         _browserState->GetPrefs()->GetBoolean(preferenceName);
     NSString* passwordsDetail =

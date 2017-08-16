@@ -1297,10 +1297,6 @@ TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   MockPasswordManagerClient* weak_client = nullptr;
   PasswordController* passwordController =
       CreatePasswordController(&web_state, nullptr, &weak_client);
-  static_cast<TestingPrefServiceSimple*>(weak_client->GetPrefs())
-      ->registry()
-      ->RegisterBooleanPref(
-          password_manager::prefs::kPasswordManagerSavingEnabled, true);
 
   // Use a mock LogManager to detect that OnPasswordFormsRendered has been
   // called. TODO(crbug.com/598672): this is a hack, we should modularize the
