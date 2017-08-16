@@ -4,9 +4,14 @@
 
 #include "ash/system/tray_caps_lock.h"
 
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "ui/chromeos/events/pref_names.h"
 
 namespace ash {
 namespace {
@@ -15,6 +20,17 @@ using TrayCapsLockTest = AshTestBase;
 
 // Tests that the icon becomes visible when the tray controller toggles it.
 TEST_F(TrayCapsLockTest, Visibility) {
+  // prefs::kLanguageRemapSearchKeyTo is owned by chrome and shared with ash
+  // when it connects. In unit tests, a TestingPrefServiceSimple is used
+  // instead so only ash-owned prefs are registered by default. Manually
+  // register prefs::kLanguageRemapSearchKeyTo so TrayCapsLock can be tested.
+  static_cast<PrefRegistrySimple*>(Shell::Get()
+                                       ->session_controller()
+                                       ->GetLastActiveUserPrefService()
+                                       ->DeprecatedGetPrefRegistry())
+      ->RegisterIntegerPref(prefs::kLanguageRemapSearchKeyTo,
+                            chromeos::input_method::kSearchKey);
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayCapsLock* caps_lock = SystemTrayTestApi(tray).tray_caps_lock();
 

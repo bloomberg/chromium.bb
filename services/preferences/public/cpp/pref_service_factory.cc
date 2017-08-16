@@ -111,7 +111,7 @@ void OnConnect(
   auto pref_service = base::MakeUnique<PrefService>(
       pref_notifier, pref_value_store, user_pref_store.get(),
       pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
-  switch (pref_service->GetInitializationStatus()) {
+  switch (pref_service->GetAllPrefStoresInitializationStatus()) {
     case PrefService::INITIALIZATION_STATUS_WAITING:
       pref_service->AddPrefInitObserver(base::Bind(&OnPrefServiceInit,
                                                    base::Passed(&pref_service),
@@ -138,14 +138,12 @@ void OnConnectError(
 
 }  // namespace
 
-void ConnectToPrefService(
-    service_manager::Connector* connector,
-    scoped_refptr<PrefRegistry> pref_registry,
-    ConnectCallback callback,
-    base::StringPiece service_name) {
+void ConnectToPrefService(mojom::PrefStoreConnectorPtr connector,
+                          scoped_refptr<PrefRegistry> pref_registry,
+                          ConnectCallback callback) {
   auto connector_ptr = make_scoped_refptr(
       new RefCountedInterfacePtr<mojom::PrefStoreConnector>());
-  connector->BindInterface(service_name.as_string(), &connector_ptr->get());
+  connector_ptr->get() = std::move(connector);
   connector_ptr->get().set_connection_error_handler(base::Bind(
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));
   auto serialized_pref_registry = SerializePrefRegistry(*pref_registry);
@@ -153,6 +151,16 @@ void ConnectToPrefService(
       std::move(serialized_pref_registry),
       base::BindOnce(&OnConnect, connector_ptr, std::move(pref_registry),
                      std::move(callback)));
+}
+
+void ConnectToPrefService(service_manager::Connector* connector,
+                          scoped_refptr<PrefRegistry> pref_registry,
+                          ConnectCallback callback,
+                          base::StringPiece service_name) {
+  mojom::PrefStoreConnectorPtr pref_connector;
+  connector->BindInterface(service_name.as_string(), &pref_connector);
+  ConnectToPrefService(std::move(pref_connector), std::move(pref_registry),
+                       std::move(callback));
 }
 
 }  // namespace prefs

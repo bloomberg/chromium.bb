@@ -54,7 +54,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   base::string16 GetProductName() const override;
   void OpenKeyboardShortcutHelpPage() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
-  PrefService* GetActiveUserPrefService() const override;
   bool IsTouchscreenEnabledInPrefs(bool use_local_state) const override;
   void SetTouchscreenEnabledInPrefs(bool enabled,
                                     bool use_local_state) override;

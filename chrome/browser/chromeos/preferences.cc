@@ -149,10 +149,6 @@ void Preferences::RegisterProfilePrefs(
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
-  // Register ash prefs.
-  if (!ash_util::IsRunningInMash())
-    ash::Shell::RegisterProfilePrefs(registry);
-
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 
   registry->RegisterBooleanPref(

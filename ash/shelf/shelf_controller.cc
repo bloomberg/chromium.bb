@@ -43,7 +43,7 @@ void SetShelfAutoHideFromPrefs() {
   // otherwise this wrongly tries to set the alignment on a secondary display
   // during login before the ShelfLockingManager is created.
   SessionController* session_controller = Shell::Get()->session_controller();
-  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  PrefService* prefs = session_controller->GetLastActiveUserPrefService();
   if (!prefs || !session_controller->IsActiveUserSessionStarted())
     return;
 
@@ -64,7 +64,7 @@ void SetShelfAlignmentFromPrefs() {
   // otherwise this wrongly tries to set the alignment on a secondary display
   // during login before the ShelfLockingManager is created.
   SessionController* session_controller = Shell::Get()->session_controller();
-  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  PrefService* prefs = session_controller->GetLastActiveUserPrefService();
   if (!prefs || !session_controller->IsActiveUserSessionStarted())
     return;
 
@@ -94,13 +94,13 @@ ShelfController::ShelfController() {
   model_.Set(0, item);
 
   model_.AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ShelfController::~ShelfController() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
 }
 
@@ -278,9 +278,6 @@ void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
 
 void ShelfController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
-  pref_change_registrar_.reset();
-  if (!pref_service)  // Null during startup, user switch and tests.
-    return;
   SetShelfBehaviorsFromPrefs();
   pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);

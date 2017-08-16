@@ -11,8 +11,6 @@
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
 
-class PrefService;
-
 namespace keyboard {
 class KeyboardUI;
 }
@@ -28,10 +26,6 @@ class TestShellDelegate : public ShellDelegate {
 
   void set_multi_profiles_enabled(bool multi_profiles_enabled) {
     multi_profiles_enabled_ = multi_profiles_enabled;
-  }
-
-  void set_active_user_pref_service(PrefService* pref_service) {
-    active_user_pref_service_ = pref_service;
   }
 
   // Overridden from ShellDelegate:
@@ -57,7 +51,6 @@ class TestShellDelegate : public ShellDelegate {
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
-  PrefService* GetActiveUserPrefService() const override;
   bool IsTouchscreenEnabledInPrefs(bool use_local_state) const override;
   void SetTouchscreenEnabledInPrefs(bool enabled,
                                     bool use_local_state) override;
@@ -80,7 +73,6 @@ class TestShellDelegate : public ShellDelegate {
   bool touchscreen_enabled_in_local_pref_ = true;
   bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
-  PrefService* active_user_pref_service_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

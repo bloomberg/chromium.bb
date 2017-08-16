@@ -20,7 +20,6 @@ import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
 
@@ -2346,8 +2345,6 @@ split_static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
-      "prefs/active_profile_pref_service.cc",
-      "prefs/active_profile_pref_service.h",
       "task_manager/providers/arc/arc_process_task.cc",
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
@@ -4670,9 +4667,4 @@ if (enable_rlz_support) {
       "//rlz:rlz_lib",
     ]
   }
-}
-
-service_manifest("preferences_forwarder_manifest") {
-  name = "preferences_forwarder"
-  source = "prefs/forwarder_manifest.json"
 }

@@ -1312,6 +1312,7 @@ source_set("common_unittests") {
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/base:test_support",
+    "//ui/chromeos/events",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/events:test_support",

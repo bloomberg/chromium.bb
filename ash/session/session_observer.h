@@ -10,6 +10,7 @@
 #include "components/session_manager/session_manager_types.h"
 
 class AccountId;
+class PrefService;
 
 namespace ash {
 
@@ -40,6 +41,12 @@ class ASH_EXPORT SessionObserver {
 
   // Called when the limit becomes available and when it changes.
   virtual void OnSessionLengthLimitChanged() {}
+
+  // Called when the PrefService for the active user session changes. This can
+  // be due to the active user session changing or the PrefService for the
+  // currently-active user session becoming initialized. This is never called
+  // with null.
+  virtual void OnActiveUserPrefServiceChanged(PrefService* pref_service) {}
 
  protected:
   virtual ~SessionObserver() {}

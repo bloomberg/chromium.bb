@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -176,6 +177,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     return CreatePublicAccountUser(account_id);
   }
 
+  void AddProfileCreatedObserver(base::OnceClosure on_profile_created);
+
  protected:
   friend class UserManagerBase;
   friend class chromeos::ChromeUserManagerImpl;
@@ -253,7 +256,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   void set_is_active(bool is_active) { is_active_ = is_active; }
 
-  void set_profile_is_created() { profile_is_created_ = true; }
+  void SetProfileIsCreated();
 
   // True if user has google account (not a guest or managed user).
   bool has_gaia_account() const;
@@ -305,6 +308,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if the user is affiliated to the device.
   bool is_affiliated_ = false;
+
+  std::vector<base::OnceClosure> on_profile_created_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

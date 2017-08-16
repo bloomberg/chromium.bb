@@ -39,7 +39,7 @@ class AppListButtonTest : public AshTestBase {
     app_list_button_ =
         GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
 
-    controller_ = base::MakeUnique<SessionController>();
+    controller_ = base::MakeUnique<SessionController>(nullptr);
     controller_->AddObserver(app_list_button_);
     user_manager_ = base::MakeUnique<user_manager::FakeUserManager>();
     user_manager_->Initialize();

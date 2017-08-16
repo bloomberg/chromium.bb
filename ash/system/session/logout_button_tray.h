@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
@@ -29,7 +29,7 @@ class TrayContainer;
 // kShowLogoutButtonInTray pref.
 class ASH_EXPORT LogoutButtonTray : public views::View,
                                     public views::ButtonListener,
-                                    public ShellObserver {
+                                    public SessionObserver {
  public:
   explicit LogoutButtonTray(Shelf* shelf);
   ~LogoutButtonTray() override;
@@ -45,7 +45,7 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // ShellObserver:
+  // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
  private:

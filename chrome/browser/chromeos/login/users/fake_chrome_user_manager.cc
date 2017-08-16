@@ -143,7 +143,7 @@ void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
   // NOTE: This does not match production. See function comment.
   for (auto* user : users_) {
     if (user->GetAccountId() == account_id) {
-      user->set_profile_is_created();
+      user->SetProfileIsCreated();
       break;
     }
   }

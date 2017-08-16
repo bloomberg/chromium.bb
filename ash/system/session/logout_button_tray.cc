@@ -36,7 +36,7 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
                                           CONTEXT_LAUNCHER_BUTTON)),
       show_logout_button_in_tray_(false) {
   DCHECK(shelf);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   SetLayoutManager(new views::FillLayout);
   AddChildView(container_);
 
@@ -48,13 +48,15 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
-  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 // static
 void LogoutButtonTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false);
-  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
+  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000,
+                                PrefRegistry::PUBLIC);
 }
 
 void LogoutButtonTray::UpdateAfterShelfAlignmentChange() {
@@ -79,8 +81,6 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
 
 void LogoutButtonTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {
   pref_change_registrar_.reset();
-  if (!prefs)  // Null during startup, user switch and tests.
-    return;
   pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(

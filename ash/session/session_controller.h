@@ -21,6 +21,11 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 class AccountId;
+class PrefService;
+
+namespace service_manager {
+class Connector;
+}
 
 namespace ash {
 
@@ -31,7 +36,11 @@ class SessionObserver;
 // queries for ash.
 class ASH_EXPORT SessionController : public mojom::SessionController {
  public:
-  SessionController();
+  // |connector| is used to connect to other services for connecting to per-user
+  // PrefServices. If |connector| is null, no per-user PrefService instances
+  // will be created. In tests, ProvideUserPrefServiceForTest() can be used to
+  // inject a PrefService for a user when |connector| is null.
+  explicit SessionController(service_manager::Connector* connector);
   ~SessionController() override;
 
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
@@ -115,6 +124,14 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // Show the multi-profile login UI to add another user to this session.
   void ShowMultiProfileLogin();
 
+  // Returns the PrefService for |account_id| or null if one does not exist.
+  PrefService* GetUserPrefServiceForUser(const AccountId& account_id);
+
+  // Returns the PrefService for the last active user that had one or null if no
+  // PrefService connection has been successfully established, for example,
+  // during login before the first user is active.
+  PrefService* GetLastActiveUserPrefService();
+
   void AddObserver(SessionObserver* observer);
   void RemoveObserver(SessionObserver* observer);
 
@@ -141,6 +158,8 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   void ClearUserSessionsForTest();
   void FlushMojoForTest();
   void LockScreenAndFlushForTest();
+  void ProvideUserPrefServiceForTest(const AccountId& account_id,
+                                     std::unique_ptr<PrefService> pref_service);
 
  private:
   void SetSessionState(session_manager::SessionState state);
@@ -159,6 +178,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // when post lock animation finishes and ash is fully locked. It would then
   // run |start_lock_callback_| to indicate ash is locked successfully.
   void OnLockAnimationFinished();
+
+  void OnProfilePrefServiceInitialized(
+      const AccountId& account_id,
+      std::unique_ptr<PrefService> pref_service);
 
   // Bindings for mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;
@@ -202,6 +225,11 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   base::TimeTicks session_start_time_;
 
   base::ObserverList<ash::SessionObserver> observers_;
+
+  service_manager::Connector* const connector_;
+
+  std::map<AccountId, std::unique_ptr<PrefService>> per_user_prefs_;
+  PrefService* last_active_user_prefs_ = nullptr;
 
   base::WeakPtrFactory<SessionController> weak_ptr_factory_;
 

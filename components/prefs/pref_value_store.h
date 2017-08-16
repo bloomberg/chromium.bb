@@ -175,6 +175,8 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
   // Update the command line PrefStore with |command_line_prefs|.
   void UpdateCommandLinePrefStore(PrefStore* command_line_prefs);
 
+  bool IsInitializationComplete() const;
+
  private:
   // Keeps a PrefStore reference on behalf of the PrefValueStore and monitors
   // the PrefStore for changes, forwarding notifications to PrefValueStore. This

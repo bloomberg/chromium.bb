@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//printing/features/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -147,6 +148,7 @@ source_set("chromeos") {
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
     "//services/device/public/interfaces",
+    "//services/preferences/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner/common",
     "//services/ui/public/interfaces/display",
@@ -1330,6 +1332,8 @@ source_set("chromeos") {
     "power/renderer_freezer.h",
     "preferences.cc",
     "preferences.h",
+    "prefs/pref_connector_service.cc",
+    "prefs/pref_connector_service.h",
     "printing/combining_printer_detector.cc",
     "printing/combining_printer_detector.h",
     "printing/cups_print_job.cc",
@@ -1988,4 +1992,9 @@ proto_library("attestation_proto") {
   sources = [
     "attestation/attestation_key_payload.proto",
   ]
+}
+
+service_manifest("ash_pref_connector_manifest") {
+  name = "ash_pref_connector"
+  source = "prefs/ash_pref_connector_manifest.json"
 }

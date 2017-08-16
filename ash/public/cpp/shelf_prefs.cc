@@ -171,7 +171,11 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
 
 bool CanUserModifyShelfAutoHideBehavior(PrefService* prefs) {
   const std::string& pref = prefs::kShelfAutoHideBehaviorLocal;
-  return prefs->FindPreference(pref)->IsUserModifiable();
+  auto* preference = prefs->FindPreference(pref);
+  if (!preference)
+    return true;
+
+  return preference->IsUserModifiable();
 }
 
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
@@ -199,6 +203,14 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
     prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
     prefs->SetString(prefs::kShelfAutoHideBehavior, value);
   }
+}
+
+bool AreShelfPrefsAvailable(PrefService* prefs) {
+  return prefs->FindPreference(prefs::kShelfAlignmentLocal) &&
+         prefs->FindPreference(prefs::kShelfAlignment) &&
+         prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal) &&
+         prefs->FindPreference(prefs::kShelfAutoHideBehavior) &&
+         prefs->FindPreference(prefs::kShelfPreferences);
 }
 
 ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
