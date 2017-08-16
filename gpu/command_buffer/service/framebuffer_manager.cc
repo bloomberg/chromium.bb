@@ -986,7 +986,7 @@ void Framebuffer::DoUnbindGLAttachmentsForWorkaround(GLenum target) {
 
 void Framebuffer::AttachRenderbuffer(
     GLenum attachment, Renderbuffer* renderbuffer) {
-  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
+  DCHECK_NE(static_cast<GLenum>(GL_DEPTH_STENCIL_ATTACHMENT), attachment);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this, attachment);
@@ -1003,7 +1003,7 @@ void Framebuffer::AttachRenderbuffer(
 void Framebuffer::AttachTexture(
     GLenum attachment, TextureRef* texture_ref, GLenum target,
     GLint level, GLsizei samples) {
-  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
+  DCHECK_NE(static_cast<GLenum>(GL_DEPTH_STENCIL_ATTACHMENT), attachment);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this, attachment);
@@ -1020,7 +1020,7 @@ void Framebuffer::AttachTexture(
 void Framebuffer::AttachTextureLayer(
     GLenum attachment, TextureRef* texture_ref, GLenum target,
     GLint level, GLint layer) {
-  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
+  DCHECK_NE(static_cast<GLenum>(GL_DEPTH_STENCIL_ATTACHMENT), attachment);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this, attachment);
