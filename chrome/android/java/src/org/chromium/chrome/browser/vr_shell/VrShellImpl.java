@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.StrictMode;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -62,23 +63,7 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
 @JNINamespace("vr_shell")
 public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
     private static final String TAG = "VrShellImpl";
-
-    // TODO(mthiesse): These values work well for Pixel/Pixel XL in VR, but we need to come up with
-    // a way to compute good values for any screen size/scaling ratio.
-
-    // Increasing DPR any more than this doesn't appear to increase text quality.
-    private static final float DEFAULT_DPR = 1.7f;
-    // Fairly arbitrary values that put a good amount of content on the screen without making the
-    // text too small to read.
-    @VisibleForTesting
-    public static final float DEFAULT_CONTENT_WIDTH = 645f;
-    @VisibleForTesting
-    public static final float DEFAULT_CONTENT_HEIGHT = 430f;
-
-    // Make full screen 16:9 until we get exact dimensions from playing video.
-    private static final float FULLSCREEN_DPR = 1.4f;
-    private static final float FULLSCREEN_CONTENT_WIDTH = 1024f;
-    private static final float FULLSCREEN_CONTENT_HEIGHT = 576f;
+    private static final float INCHES_TO_METERS = 0.0254f;
 
     private final ChromeActivity mActivity;
     private final VrShellDelegate mDelegate;
@@ -160,6 +145,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
         mContentVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
         mContentVirtualDisplay.setTo(primaryDisplay);
+        // Set the initial content size and DPR to be applied to reparented tabs. Otherwise, Chrome
+        // will crash due to a GL buffer initialized with zero bytes.
+        mLastContentWidth = mContentVirtualDisplay.getDisplayWidth();
+        mLastContentHeight = mContentVirtualDisplay.getDisplayHeight();
+        mLastContentDpr = mContentVirtualDisplay.getDipScale();
 
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(
                 new VrExternalNavigationDelegate(mActivity.getActivityTab()),
@@ -348,17 +338,22 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @Override
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
+        // Get physical and pixel size of the display, which is needed by native
+        // to dynamically calculate the content's resolution and window size.
+        DisplayMetrics dm = new DisplayMetrics();
+        mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        float displayWidthMeters = (dm.widthPixels / dm.xdpi) * INCHES_TO_METERS;
+        float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
+
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
         mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
                 webVrAutopresentationExpected, inCct, getGvrApi().getNativeGvrContext(),
-                mReprojectedRendering);
+                mReprojectedRendering, displayWidthMeters, displayHeightMeters, dm.widthPixels,
+                dm.heightPixels);
 
         // We need to set the icon bitmap from here because we can't read the app icon from native
         // code.
         setSplashScreenIcon();
-
-        // Set the UI and content sizes before we load the UI.
-        setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
 
         reparentAllTabs(mContentVrWindowAndroid);
         swapToForegroundTab();
@@ -497,15 +492,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mRenderToSurfaceLayout.setLayoutParams(
                 new FrameLayout.LayoutParams(surfaceWidth, surfaceHeight));
         nativeContentPhysicalBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
-    }
-
-    @CalledByNative
-    public void onFullscreenChanged(boolean enabled) {
-        if (enabled) {
-            setContentCssSize(FULLSCREEN_CONTENT_WIDTH, FULLSCREEN_CONTENT_HEIGHT, FULLSCREEN_DPR);
-        } else {
-            setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
-        }
     }
 
     @CalledByNative
@@ -766,9 +752,20 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         return mCanGoBack;
     }
 
+    @VisibleForTesting
+    public float getContentWidthForTesting() {
+        return mLastContentWidth;
+    }
+
+    @VisibleForTesting
+    public float getContentHeightForTesting() {
+        return mLastContentHeight;
+    }
+
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
             boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct, long gvrApi,
-            boolean reprojectedRendering);
+            boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
+            int displayWidthPixels, int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSetSplashScreenIcon(long nativeVrShell, Bitmap bitmap);
     private native void nativeSwapContents(

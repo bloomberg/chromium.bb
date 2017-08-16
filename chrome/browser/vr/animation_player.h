@@ -63,6 +63,8 @@ class AnimationPlayer final {
 
   void SetTransitionedProperties(const std::set<int>& properties);
 
+  // TODO(754820): Remove duplicate code from the transition functions
+  // by using templates.
   void TransitionFloatTo(base::TimeTicks monotonic_time,
                          int target_property,
                          float current,
@@ -85,6 +87,9 @@ class AnimationPlayer final {
                            bool target);
 
   bool IsAnimatingProperty(int property) const;
+
+  // TODO(754822): Implement target getters for other value types.
+  gfx::SizeF GetTargetSizeValue(int target_property) const;
 
  private:
   void StartAnimations(base::TimeTicks monotonic_time);

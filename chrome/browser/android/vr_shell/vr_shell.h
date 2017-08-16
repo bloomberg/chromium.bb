@@ -77,7 +77,11 @@ class VrShell : device::GvrGamepadDataProvider,
           bool in_cct,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
-          bool reprojected_rendering);
+          bool reprojected_rendering,
+          float display_width_meters,
+          float display_height_meters,
+          int display_width_pixels,
+          int display_height_pixels);
   void SwapContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -180,6 +184,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnUnsupportedMode(vr::UiUnsupportedMode mode);
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice);
+  void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
@@ -267,6 +272,9 @@ class VrShell : device::GvrGamepadDataProvider,
   device::CardboardGamepadDataFetcher* cardboard_gamepad_data_fetcher_ =
       nullptr;
   int64_t cardboard_gamepad_timer_ = 0;
+
+  gfx::SizeF display_size_meters_;
+  gfx::Size display_size_pixels_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

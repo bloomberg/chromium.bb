@@ -153,6 +153,12 @@ void VrGLThread::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             reason, choice));
 }
 
+void VrGLThread::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VrShell::OnContentScreenBoundsChanged,
+                            weak_vr_shell_, bounds));
+}
+
 void VrGLThread::SetFullscreen(bool enabled) {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
@@ -256,6 +262,11 @@ void VrGLThread::SetSplashScreenIcon(const SkBitmap& bitmap) {
 void VrGLThread::OnWebVrFrameAvailable() {
   DCHECK(task_runner()->BelongsToCurrentThread());
   scene_manager_->OnWebVrFrameAvailable();
+}
+
+void VrGLThread::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  scene_manager_->OnProjMatrixChanged(proj_matrix);
 }
 
 void VrGLThread::SetExitVrPromptEnabled(bool enabled,

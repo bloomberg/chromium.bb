@@ -65,6 +65,7 @@ class UiSceneManager {
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
   void OnWebVrFrameAvailable();
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
 
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
 
@@ -153,6 +154,8 @@ class UiSceneManager {
   std::vector<Rect*> background_panels_;
   std::vector<UiElement*> content_elements_;
   std::vector<UiElement*> control_elements_;
+
+  gfx::SizeF last_content_screen_bounds_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 
