@@ -228,20 +228,20 @@
   <if expr="is_linux and not is_chromeos">
     <then>
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
-        To pay faster next time, save this info to your Google Account
+        To pay faster next time, save this card to your Google Account.
       </message>
     </then>
     <else>
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
-        To pay faster next time, save this info to your Google Account and on this device
+        To pay faster next time, save this card to your Google Account and to this device.
       </message>
     </else>
   </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.  It will display the network and last four digits of the card to be saved.">
-    Confirm <ph name="CREDIT_CARD">$1<ex>Visa - 5678</ex></ph>
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE" desc="Title text to show for the Autofill upload save credit card prompt when more information (e.g., CVC) is needed in order to save the card.">
+    Confirm security code
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION" desc="Text displayed in the Autofill save credit card prompt explaining the usage of the additional CVC information needed in order to save the card to Google Payments.">
-    The CVC is used to validate your card and won't be saved in your account
+  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION" desc="Text displayed in the Autofill save credit card prompt requesting the additional CVC information needed in order to save the card to Google Payments.  It will display the network and last four digits of the card to be saved.">
+    Enter the security code for <ph name="CREDIT_CARD">$1<ex>Visa ****5678</ex></ph>.  This code won't be saved.
   </message>
 
   <!-- Autofill credit card suggestion popup -->

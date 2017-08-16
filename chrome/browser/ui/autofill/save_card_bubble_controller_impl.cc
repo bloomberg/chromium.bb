@@ -139,10 +139,10 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   if (is_uploading_) {
     if (show_upload_confirm_title_) {
-      return l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE,
-          card_.NetworkAndLastFourDigits());
-    } else if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE);
+    }
+    if (IsAutofillUpstreamShowNewUiExperimentEnabled()) {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2);
     }

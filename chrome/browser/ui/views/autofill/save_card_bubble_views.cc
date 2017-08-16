@@ -222,10 +222,7 @@ gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
 }
 
 bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
-  // Only show the Google logo on the first screen of the bubble:
-  return IsAutofillUpstreamShowGoogleLogoExperimentEnabled() &&
-         (GetCurrentFlowStep() == UPLOAD_SAVE_ONLY_STEP ||
-          GetCurrentFlowStep() == UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD);
+  return IsAutofillUpstreamShowGoogleLogoExperimentEnabled();
 }
 
 void SaveCardBubbleViews::WindowClosing() {
@@ -362,8 +359,10 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
       request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
 
-  views::Label* explanation_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION));
+  const CreditCard& card = controller_->GetCard();
+  views::Label* explanation_label = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION,
+      card.NetworkAndLastFourDigits()));
   explanation_label->SetMultiLine(true);
   explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   request_cvc_view->AddChildView(explanation_label);
