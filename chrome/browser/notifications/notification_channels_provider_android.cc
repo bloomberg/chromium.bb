@@ -267,6 +267,10 @@ void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
   }
 }
 
+void NotificationChannelsProviderAndroid::ShutdownOnUIThread() {
+  RemoveAllObservers();
+}
+
 base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -287,10 +291,6 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     return base::Time();
 
   return channel_entry->second.timestamp;
-}
-
-void NotificationChannelsProviderAndroid::ShutdownOnUIThread() {
-  RemoveAllObservers();
 }
 
 // InitCachedChannels() must be called prior to calling this method.
