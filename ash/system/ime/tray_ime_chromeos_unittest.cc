@@ -79,7 +79,7 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   AccessibilityNotificationVisibility notification =
       enabled ? A11Y_NOTIFICATION_SHOW : A11Y_NOTIFICATION_NONE;
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       notification);
 }
 

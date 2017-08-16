@@ -43,7 +43,7 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   }
 
   // AccessibilityObserver:
-  void OnAccessibilityModeChanged(
+  void OnAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify) override {
     bool enabled = IsEnabled();
     if (enabled_ == enabled)

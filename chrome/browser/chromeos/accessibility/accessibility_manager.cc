@@ -381,7 +381,7 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
     return;
 
   // Update system tray menu visibility.
-  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       ash::A11Y_NOTIFICATION_NONE);
 }
 
@@ -734,7 +734,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   }
 
-  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       ash::A11Y_NOTIFICATION_NONE);
   ash::Shell::Get()->autoclick_controller()->SetEnabled(enabled);
 }
@@ -1340,8 +1340,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
 
   // Update system tray menu visibility.
   if (details.notification_type != ACCESSIBILITY_MANAGER_SHUTDOWN) {
-    // TODO(jamescook): Rename to NotifyAccessibilityPrefChanged() or similar.
-    ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+    ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
         details.notify);
   }
 }

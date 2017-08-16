@@ -14,11 +14,11 @@ class ASH_EXPORT AccessibilityObserver {
  public:
   virtual ~AccessibilityObserver() {}
 
-  // Notifies when accessibility mode changes. Used to:
+  // Notifies when accessibility status changes. Used to:
   // * Show the accessibility menu when any feature is enabled.
   // * Show notifications when spoken feedback or braille is enabled.
   // TODO(jamescook): Split into two methods.
-  virtual void OnAccessibilityModeChanged(
+  virtual void OnAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify) = 0;
 };
 

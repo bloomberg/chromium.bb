@@ -168,7 +168,7 @@ void BackdropController::OnAppListVisibilityChanged(bool shown,
     RemoveForceHidden();
 }
 
-void BackdropController::OnAccessibilityModeChanged(
+void BackdropController::OnAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
   UpdateBackdrop();
 }
