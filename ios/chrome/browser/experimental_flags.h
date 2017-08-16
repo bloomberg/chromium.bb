@@ -78,10 +78,6 @@ bool IsStartupCrashEnabled();
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 
-// Whether password generation fields are determined using local heuristics
-// only.
-bool UseOnlyLocalHeuristicsForPasswordGeneration();
-
 // Whether the Suggestions UI is enabled.
 bool IsSuggestionsUIEnabled();
 
