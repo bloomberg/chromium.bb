@@ -56,6 +56,8 @@ static_library("prefetch") {
     "prefetch_service_impl.h",
     "prefetch_types.cc",
     "prefetch_types.h",
+    "stale_entry_finalizer_task.cc",
+    "stale_entry_finalizer_task.h",
     "store/prefetch_store.cc",
     "store/prefetch_store.h",
     "store/prefetch_store_utils.cc",
@@ -155,6 +157,7 @@ source_set("unit_tests") {
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_operation_response_unittest.cc",
     "prefetch_server_urls_unittest.cc",
+    "stale_entry_finalizer_task_unittest.cc",
     "store/prefetch_store_unittest.cc",
     "suggested_articles_observer_unittest.cc",
   ]

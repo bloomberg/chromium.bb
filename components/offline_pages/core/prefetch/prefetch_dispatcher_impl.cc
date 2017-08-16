@@ -28,6 +28,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/offline_pages/core/prefetch/stale_entry_finalizer_task.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/task.h"
 #include "url/gurl.h"
@@ -99,7 +100,14 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 }
 
 void PrefetchDispatcherImpl::QueueReconcileTasks() {
-  // TODO(dimich): add Reconcile tasks here.
+  // Note: For optimal results StaleEntryFinalizerTask should be executed before
+  // other reconciler tasks that deal with external systems so that entries
+  // finalized by it will promptly effect any external processing they relate
+  // to.
+  task_queue_.AddTask(
+      base::MakeUnique<StaleEntryFinalizerTask>(service_->GetPrefetchStore()));
+
+  // TODO(dimich): add more reconciliation tasks here.
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
