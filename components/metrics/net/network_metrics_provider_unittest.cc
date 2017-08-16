@@ -37,8 +37,9 @@ class TestNetworkQualityEstimatorProvider
     return base::ThreadTaskRunnerHandle::Get();
   }
 
-  net::NetworkQualityEstimator* GetNetworkQualityEstimator() override {
-    return estimator_;
+  void PostReplyNetworkQualityEstimator(
+      base::Callback<void(net::NetworkQualityEstimator*)> callback) override {
+    callback.Run(estimator_);
   }
 
   net::TestNetworkQualityEstimator* estimator_;
