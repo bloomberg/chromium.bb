@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -25,7 +26,6 @@
 #import "ios/clean/chrome/browser/ui/transitions/zoom_transition_controller.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
 #import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 

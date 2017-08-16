@@ -9,12 +9,12 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/commands/find_in_page_visibility_commands.h"
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_mediator.h"
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_view_controller.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

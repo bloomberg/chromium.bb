@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -40,7 +41,6 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "skia/ext/skia_utils_ios.h"
 

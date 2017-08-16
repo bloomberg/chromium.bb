@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
