@@ -45,7 +45,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoadingContext.h"
-#include "core/loader/private/CrossOriginPreflightResultCache.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
@@ -65,6 +64,7 @@
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCORS.h"
+#include "public/platform/WebCORSPreflightResultCache.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
@@ -468,7 +468,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   }
 
   if (should_ignore_preflight_cache ||
-      !CrossOriginPreflightResultCache::Shared().CanSkipPreflight(
+      !WebCORSPreflightResultCache::Shared().CanSkipPreflight(
           GetSecurityOrigin()->ToString(), cross_origin_request.Url(),
           cross_origin_request.GetFetchCredentialsMode(),
           cross_origin_request.HttpMethod(),
@@ -779,7 +779,6 @@ void DocumentThreadableLoader::ResponseReceived(
 
 void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
-  String access_control_error_description;
 
   WebCORS::AccessStatus cors_status = WebCORS::CheckAccess(
       response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
@@ -820,10 +819,13 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     }
   }
 
-  std::unique_ptr<CrossOriginPreflightResultCacheItem> preflight_result =
-      WTF::WrapUnique(new CrossOriginPreflightResultCacheItem(
-          actual_request_.GetFetchCredentialsMode()));
-  if (!preflight_result->Parse(response, access_control_error_description) ||
+  WebString access_control_error_description;
+  std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result =
+      WebCORSPreflightResultCacheItem::Create(
+          actual_request_.GetFetchCredentialsMode(),
+          response.HttpHeaderFields(), access_control_error_description);
+
+  if (!preflight_result ||
       !preflight_result->AllowsCrossOriginMethod(
           actual_request_.HttpMethod(), access_control_error_description) ||
       !preflight_result->AllowsCrossOriginHeaders(
@@ -836,7 +838,7 @@ void DocumentThreadableLoader::HandlePreflightResponse(
   if (IsMainThread()) {
     // TODO(horo): Currently we don't support the CORS preflight cache on worker
     // thread when off-main-thread-fetch is enabled. https://crbug.com/443374
-    CrossOriginPreflightResultCache::Shared().AppendEntry(
+    WebCORSPreflightResultCache::Shared().AppendEntry(
         GetSecurityOrigin()->ToString(), actual_request_.Url(),
         std::move(preflight_result));
   }

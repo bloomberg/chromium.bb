@@ -24,42 +24,50 @@
  *
  */
 
-#ifndef CrossOriginPreflightResultCache_h
-#define CrossOriginPreflightResultCache_h
+#ifndef WebCORSPreflightResultCache_h
+#define WebCORSPreflightResultCache_h
 
 #include <memory>
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/weborigin/KURLHash.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
 
 namespace blink {
 
 class HTTPHeaderMap;
-class ResourceResponse;
 
 // Represents an entry of the CORS-preflight cache.
 // See https://fetch.spec.whatwg.org/#concept-cache.
-class CrossOriginPreflightResultCacheItem {
-  WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem);
-  USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem {
+  WTF_MAKE_NONCOPYABLE(WebCORSPreflightResultCacheItem);
+  USING_FAST_MALLOC(WebCORSPreflightResultCacheItem);
 
  public:
-  explicit CrossOriginPreflightResultCacheItem(
-      WebURLRequest::FetchCredentialsMode);
+  static std::unique_ptr<WebCORSPreflightResultCacheItem> Create(
+      const WebURLRequest::FetchCredentialsMode,
+      const HTTPHeaderMap&,
+      WebString& error_description);
 
-  bool Parse(const ResourceResponse&, String& error_description);
-  bool AllowsCrossOriginMethod(const String&, String& error_description) const;
+  bool AllowsCrossOriginMethod(const WebString&,
+                               WebString& error_description) const;
   bool AllowsCrossOriginHeaders(const HTTPHeaderMap&,
-                                String& error_description) const;
+                                WebString& error_description) const;
   bool AllowsRequest(WebURLRequest::FetchCredentialsMode,
-                     const String& method,
+                     const WebString& method,
                      const HTTPHeaderMap& request_headers) const;
 
  private:
   typedef HashSet<String, CaseFoldingHash> HeadersSet;
+
+  explicit WebCORSPreflightResultCacheItem(WebURLRequest::FetchCredentialsMode);
+
+  bool Parse(const HTTPHeaderMap& response_header,
+             WebString& error_description);
 
   // FIXME: A better solution to holding onto the absolute expiration time might
   // be to start a timer for the expiration delta that removes this from the
@@ -72,30 +80,32 @@ class CrossOriginPreflightResultCacheItem {
   HeadersSet headers_;
 };
 
-class CrossOriginPreflightResultCache {
-  WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCache);
-  USING_FAST_MALLOC(CrossOriginPreflightResultCache);
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
+  WTF_MAKE_NONCOPYABLE(WebCORSPreflightResultCache);
+  USING_FAST_MALLOC(WebCORSPreflightResultCache);
 
  public:
-  static CrossOriginPreflightResultCache& Shared();
+  static WebCORSPreflightResultCache& Shared();
 
-  void AppendEntry(const String& origin,
-                   const KURL&,
-                   std::unique_ptr<CrossOriginPreflightResultCacheItem>);
-  bool CanSkipPreflight(const String& origin,
-                        const KURL&,
+  void AppendEntry(const WebString& origin,
+                   const WebURL&,
+                   std::unique_ptr<WebCORSPreflightResultCacheItem>);
+  bool CanSkipPreflight(const WebString& origin,
+                        const WebURL&,
                         WebURLRequest::FetchCredentialsMode,
-                        const String& method,
+                        const WebString& method,
                         const HTTPHeaderMap& request_headers);
 
- private:
-  CrossOriginPreflightResultCache() {}
+ protected:
+  // Protected for tests:
+  WebCORSPreflightResultCache() {}
 
-  typedef HashMap<std::pair<String, KURL>,
-                  std::unique_ptr<CrossOriginPreflightResultCacheItem>>
-      CrossOriginPreflightResultHashMap;
+  typedef std::map<
+      std::string,
+      std::map<std::string, std::unique_ptr<WebCORSPreflightResultCacheItem>>>
+      WebCORSPreflightResultHashMap;
 
-  CrossOriginPreflightResultHashMap preflight_hash_map_;
+  WebCORSPreflightResultHashMap preflight_hash_map_;
 };
 
 }  // namespace blink

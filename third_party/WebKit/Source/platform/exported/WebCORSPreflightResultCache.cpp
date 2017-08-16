@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/loader/private/CrossOriginPreflightResultCache.h"
+#include "public/platform/WebCORSPreflightResultCache.h"
 
 #include <memory>
 #include "platform/HTTPNames.h"
@@ -94,18 +94,33 @@ bool ParseAccessControlAllowList(const String& string,
 
 }  // namespace
 
-CrossOriginPreflightResultCacheItem::CrossOriginPreflightResultCacheItem(
+WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
     WebURLRequest::FetchCredentialsMode credentials_mode)
     : absolute_expiry_time_(0),
       credentials_(
           FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {}
 
-bool CrossOriginPreflightResultCacheItem::Parse(
-    const ResourceResponse& response,
-    String& error_description) {
+// static
+std::unique_ptr<WebCORSPreflightResultCacheItem>
+WebCORSPreflightResultCacheItem::Create(
+    const WebURLRequest::FetchCredentialsMode credentials_mode,
+    const HTTPHeaderMap& response_header,
+    WebString& error_description) {
+  std::unique_ptr<WebCORSPreflightResultCacheItem> item =
+      base::WrapUnique(new WebCORSPreflightResultCacheItem(credentials_mode));
+
+  if (!item->Parse(response_header, error_description))
+    return nullptr;
+
+  return item;
+}
+
+bool WebCORSPreflightResultCacheItem::Parse(
+    const HTTPHeaderMap& response_header,
+    WebString& error_description) {
   methods_.clear();
   if (!ParseAccessControlAllowList(
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Methods),
+          response_header.Get(HTTPNames::Access_Control_Allow_Methods),
           methods_)) {
     error_description =
         "Cannot parse Access-Control-Allow-Methods response header field in "
@@ -115,7 +130,7 @@ bool CrossOriginPreflightResultCacheItem::Parse(
 
   headers_.clear();
   if (!ParseAccessControlAllowList(
-          response.HttpHeaderField(HTTPNames::Access_Control_Allow_Headers),
+          response_header.Get(HTTPNames::Access_Control_Allow_Headers),
           headers_)) {
     error_description =
         "Cannot parse Access-Control-Allow-Headers response header field in "
@@ -125,7 +140,7 @@ bool CrossOriginPreflightResultCacheItem::Parse(
 
   unsigned expiry_delta;
   if (ParseAccessControlMaxAge(
-          response.HttpHeaderField(HTTPNames::Access_Control_Max_Age),
+          response_header.Get(HTTPNames::Access_Control_Max_Age),
           expiry_delta)) {
     if (expiry_delta > kMaxPreflightCacheTimeoutSeconds)
       expiry_delta = kMaxPreflightCacheTimeoutSeconds;
@@ -134,42 +149,47 @@ bool CrossOriginPreflightResultCacheItem::Parse(
   }
 
   absolute_expiry_time_ = CurrentTime() + expiry_delta;
+
   return true;
 }
 
-bool CrossOriginPreflightResultCacheItem::AllowsCrossOriginMethod(
-    const String& method,
-    String& error_description) const {
+bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
+    const WebString& method,
+    WebString& error_description) const {
   if (methods_.Contains(method) || FetchUtils::IsCORSSafelistedMethod(method))
     return true;
 
-  error_description =
-      "Method " + method +
-      " is not allowed by Access-Control-Allow-Methods in preflight response.";
+  error_description.Assign(WebString::FromASCII("Method " + method.Ascii() +
+                                                " is not allowed by "
+                                                "Access-Control-Allow-Methods "
+                                                "in preflight response."));
+
   return false;
 }
 
-bool CrossOriginPreflightResultCacheItem::AllowsCrossOriginHeaders(
+bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
     const HTTPHeaderMap& request_headers,
-    String& error_description) const {
+    WebString& error_description) const {
   for (const auto& header : request_headers) {
     if (!headers_.Contains(header.key) &&
         !FetchUtils::IsCORSSafelistedHeader(header.key, header.value) &&
         !FetchUtils::IsForbiddenHeaderName(header.key)) {
-      error_description = "Request header field " + header.key.GetString() +
-                          " is not allowed by Access-Control-Allow-Headers in "
-                          "preflight response.";
+      error_description.Assign(
+          String::Format("Request header field %s is not allowed by "
+                         "Access-Control-Allow-Headers in preflight response.",
+                         header.key.GetString().Utf8().data()));
       return false;
     }
   }
   return true;
 }
 
-bool CrossOriginPreflightResultCacheItem::AllowsRequest(
+bool WebCORSPreflightResultCacheItem::AllowsRequest(
     WebURLRequest::FetchCredentialsMode credentials_mode,
-    const String& method,
+    const WebString& method,
     const HTTPHeaderMap& request_headers) const {
-  String ignored_explanation;
+  WebString ignored_explanation;
+
   if (absolute_expiry_time_ < CurrentTime())
     return false;
   if (!credentials_ &&
@@ -182,37 +202,52 @@ bool CrossOriginPreflightResultCacheItem::AllowsRequest(
   return true;
 }
 
-CrossOriginPreflightResultCache& CrossOriginPreflightResultCache::Shared() {
-  DEFINE_STATIC_LOCAL(CrossOriginPreflightResultCache, cache, ());
+WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
+  DEFINE_STATIC_LOCAL(WebCORSPreflightResultCache, cache, ());
   DCHECK(IsMainThread());
   return cache;
 }
 
-void CrossOriginPreflightResultCache::AppendEntry(
-    const String& origin,
-    const KURL& url,
-    std::unique_ptr<CrossOriginPreflightResultCacheItem> preflight_result) {
+void WebCORSPreflightResultCache::AppendEntry(
+    const WebString& origin,
+    const WebURL& url,
+    std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result) {
   DCHECK(IsMainThread());
-  preflight_hash_map_.Set(std::make_pair(origin, url),
-                          std::move(preflight_result));
+
+  preflight_hash_map_[origin.Ascii()][url.GetString().Ascii()] =
+      std::move(preflight_result);
 }
 
-bool CrossOriginPreflightResultCache::CanSkipPreflight(
-    const String& origin,
-    const KURL& url,
+bool WebCORSPreflightResultCache::CanSkipPreflight(
+    const WebString& web_origin,
+    const WebURL& web_url,
     WebURLRequest::FetchCredentialsMode credentials_mode,
-    const String& method,
+    const WebString& method,
     const HTTPHeaderMap& request_headers) {
   DCHECK(IsMainThread());
-  CrossOriginPreflightResultHashMap::iterator cache_it =
-      preflight_hash_map_.find(std::make_pair(origin, url));
-  if (cache_it == preflight_hash_map_.end())
+
+  std::string origin(web_origin.Ascii());
+  std::string url(web_url.GetString().Ascii());
+
+  // either origin or url not in cache:
+  if (preflight_hash_map_.find(origin) == preflight_hash_map_.end() ||
+      preflight_hash_map_[origin].find(url) ==
+          preflight_hash_map_[origin].end()) {
     return false;
+  }
 
-  if (cache_it->value->AllowsRequest(credentials_mode, method, request_headers))
+  // both origin and url in cache -> check if still valid and if sufficient to
+  // skip redirect:
+  if (preflight_hash_map_[origin][url]->AllowsRequest(credentials_mode, method,
+                                                      request_headers)) {
     return true;
+  }
 
-  preflight_hash_map_.erase(cache_it);
+  // Either cache entry is stale or not sufficient. Remove item from cache:
+  preflight_hash_map_[origin].erase(url);
+  if (preflight_hash_map_[origin].empty())
+    preflight_hash_map_.erase(origin);
+
   return false;
 }
 
