@@ -23,7 +23,7 @@ class BeforeInstallPromptEventInit;
 
 using UserChoiceProperty =
     ScriptPromiseProperty<Member<BeforeInstallPromptEvent>,
-                          Member<AppBannerPromptResult>,
+                          AppBannerPromptResult,
                           ToV8UndefinedGenerator>;
 
 class BeforeInstallPromptEvent final

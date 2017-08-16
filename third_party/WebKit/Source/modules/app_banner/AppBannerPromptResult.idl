@@ -4,7 +4,7 @@
 
 enum AppBannerPromptOutcome { "accepted", "dismissed" };
 
-interface AppBannerPromptResult {
-    readonly attribute DOMString platform;
-    readonly attribute AppBannerPromptOutcome outcome;
+dictionary AppBannerPromptResult {
+    required DOMString platform;
+    required AppBannerPromptOutcome outcome;
 };

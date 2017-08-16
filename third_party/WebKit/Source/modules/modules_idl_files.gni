@@ -39,7 +39,6 @@ modules_global_constructors_generated_idl_files = process_file_template(
 
 modules_idl_files =
     get_path_info([
-                    "app_banner/AppBannerPromptResult.idl",
                     "app_banner/BeforeInstallPromptEvent.idl",
                     "background_fetch/BackgroundFetchClickEvent.idl",
                     "background_fetch/BackgroundFetchEvent.idl",
@@ -406,6 +405,7 @@ modules_idl_files =
 
 modules_dictionary_idl_files =
     get_path_info([
+                    "app_banner/AppBannerPromptResult.idl",
                     "app_banner/BeforeInstallPromptEventInit.idl",
                     "background_fetch/BackgroundFetchClickEventInit.idl",
                     "background_fetch/BackgroundFetchEventInit.idl",
