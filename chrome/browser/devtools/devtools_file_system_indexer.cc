@@ -34,11 +34,12 @@ using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 using std::map;
-using std::set;
 using std::string;
 using std::vector;
 
 namespace {
+
+using std::set;
 
 base::SequencedTaskRunner* impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {base::MayBlock(),
