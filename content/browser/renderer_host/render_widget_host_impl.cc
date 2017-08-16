@@ -675,6 +675,14 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   WasResized();
 }
 
+void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
+  if (importance_ == importance)
+    return;
+  ChildProcessImportance old = importance_;
+  importance_ = importance;
+  process_->UpdateWidgetImportance(old, importance_);
+}
+
 bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   *resize_params = ResizeParams();
 

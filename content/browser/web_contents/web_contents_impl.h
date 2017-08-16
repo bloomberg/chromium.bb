@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_importance.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
@@ -294,6 +295,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
 
   void NotifyManifestUrlChanged(const base::Optional<GURL>& manifest_url);
+
+  // Set importance of WebContents that's independent from visibility.
+  //
+  // Note this is only used by and implemented on Android which exposes this API
+  // through public java code. If this is useful on other platforms, then this
+  // can be moved to the public class.
+  void SetImportance(ChildProcessImportance importance);
 
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;

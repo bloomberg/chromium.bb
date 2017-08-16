@@ -12,6 +12,7 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_importance.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -161,7 +162,8 @@ class ChildProcessLauncherHelper :
 
   void SetProcessPriorityOnLauncherThread(base::Process process,
                                           bool background,
-                                          bool boost_for_pending_views);
+                                          bool boost_for_pending_views,
+                                          ChildProcessImportance importance);
 
   static void SetRegisteredFilesForService(
       const std::string& service_name,

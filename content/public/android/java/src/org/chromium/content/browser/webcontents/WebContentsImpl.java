@@ -25,6 +25,7 @@ import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
+import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -298,6 +299,11 @@ import java.util.UUID;
     @Override
     public void onShow() {
         nativeOnShow(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void setImportance(@ChildProcessImportance int importance) {
+        nativeSetImportance(mNativeWebContentsAndroid, importance);
     }
 
     @Override
@@ -643,6 +649,7 @@ import java.util.UUID;
     private native void nativeCollapseSelection(long nativeWebContentsAndroid);
     private native void nativeOnHide(long nativeWebContentsAndroid);
     private native void nativeOnShow(long nativeWebContentsAndroid);
+    private native void nativeSetImportance(long nativeWebContentsAndroid, int importance);
     private native void nativeSuspendAllMediaPlayers(long nativeWebContentsAndroid);
     private native void nativeSetAudioMuted(long nativeWebContentsAndroid, boolean mute);
     private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);

@@ -16,12 +16,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.content_shell.Shell;
+import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
@@ -360,6 +364,53 @@ public class WebContentsTest {
                         WebContentsStatics.fromRenderFrameHost(frameHost);
                 Assert.assertEquals("RenderFrameHost associated with different WebContents",
                         webContents, associatedWebContents);
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testChildProcessImportance() {
+        final ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        final WebContents webContents = activity.getActiveWebContents();
+
+        Callable<ChildProcessConnection> getConnectionCallable =
+                new Callable<ChildProcessConnection>() {
+                    @Override
+                    public ChildProcessConnection call() {
+                        for (ChildProcessLauncherHelper process :
+                                ChildProcessLauncherHelper.getAllProcessesForTesting().values()) {
+                            ChildProcessConnection connection = process.getChildProcessConnection();
+                            if (connection.getServiceName().getClassName().indexOf("Sandbox")
+                                    != -1) {
+                                return connection;
+                            }
+                        }
+                        Assert.assertTrue(false);
+                        return null;
+                    }
+                };
+        final ChildProcessConnection connection =
+                ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(getConnectionCallable);
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertFalse(connection.isModerateBindingBound());
+            }
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                webContents.setImportance(ChildProcessImportance.MODERATE);
+            }
+        });
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertTrue(connection.isModerateBindingBound());
             }
         });
     }

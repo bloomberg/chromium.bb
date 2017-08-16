@@ -338,6 +338,13 @@ void WebContentsAndroid::OnShow(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->WasShown();
 }
 
+void WebContentsAndroid::SetImportance(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint importance) {
+  web_contents_->SetImportance(static_cast<ChildProcessImportance>(importance));
+}
+
 void WebContentsAndroid::SuspendAllMediaPlayers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj) {

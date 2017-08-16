@@ -2271,6 +2271,32 @@ int RenderProcessHostImpl::VisibleWidgetCount() const {
   return visible_widgets_;
 }
 
+void RenderProcessHostImpl::UpdateWidgetImportance(
+    ChildProcessImportance old_value,
+    ChildProcessImportance new_value) {
+  DCHECK_NE(old_value, new_value);
+  DCHECK(widget_importance_counts_[static_cast<size_t>(old_value)]);
+  widget_importance_counts_[static_cast<size_t>(old_value)]--;
+  widget_importance_counts_[static_cast<size_t>(new_value)]++;
+  UpdateProcessPriority();
+}
+
+ChildProcessImportance RenderProcessHostImpl::GetWidgetImportanceForTesting() {
+  return ComputeEffectiveImportance();
+}
+
+ChildProcessImportance RenderProcessHostImpl::ComputeEffectiveImportance() {
+  ChildProcessImportance importance = ChildProcessImportance::NORMAL;
+  for (size_t i = 0u; i < arraysize(widget_importance_counts_); ++i) {
+    DCHECK_GE(widget_importance_counts_[i], 0);
+    if (widget_importance_counts_[i]) {
+      // No early out. Highest importance wins.
+      importance = static_cast<ChildProcessImportance>(i);
+    }
+  }
+  return importance;
+}
+
 RendererAudioOutputStreamFactoryContext*
 RenderProcessHostImpl::GetRendererAudioOutputStreamFactoryContext() {
   if (!audio_output_stream_factory_context_) {
@@ -3092,11 +3118,22 @@ void RenderProcessHostImpl::RemovePendingView() {
 }
 
 void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
-  widgets_.insert(static_cast<RenderWidgetHostImpl*>(widget));
+  RenderWidgetHostImpl* widget_impl =
+      static_cast<RenderWidgetHostImpl*>(widget);
+  widgets_.insert(widget_impl);
+  widget_importance_counts_[static_cast<size_t>(widget_impl->importance())]++;
+  UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::RemoveWidget(RenderWidgetHost* widget) {
-  widgets_.erase(static_cast<RenderWidgetHostImpl*>(widget));
+  RenderWidgetHostImpl* widget_impl =
+      static_cast<RenderWidgetHostImpl*>(widget);
+  widgets_.erase(widget_impl);
+
+  ChildProcessImportance importance = widget_impl->importance();
+  DCHECK(widget_importance_counts_[static_cast<size_t>(importance)]);
+  widget_importance_counts_[static_cast<size_t>(importance)]--;
+  UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
@@ -3775,9 +3812,11 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   const bool should_background_changed =
       is_process_backgrounded_ != should_background;
   const bool has_pending_views = !!pending_views_;
+  const ChildProcessImportance importance = ComputeEffectiveImportance();
 
   if (!should_background_changed &&
-      boost_priority_for_pending_views_ == has_pending_views) {
+      boost_priority_for_pending_views_ == has_pending_views &&
+      effective_importance_ == importance) {
     return;
   }
 
@@ -3786,6 +3825,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
                has_pending_views);
   is_process_backgrounded_ = should_background;
   boost_priority_for_pending_views_ = has_pending_views;
+  effective_importance_ = importance;
 
 #if defined(OS_WIN)
   // The cbstext.dll loads as a global GetMessage hook in the browser process
@@ -3804,7 +3844,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // swiftly scheduled by the OS per the low process priority
   // (http://crbug.com/398103).
   child_process_launcher_->SetProcessPriority(should_background,
-                                              has_pending_views);
+                                              has_pending_views, importance);
 
   // Notify the child process of background state. Note
   // |boost_priority_for_pending_views_| state is not sent to renderer simply

@@ -28,6 +28,7 @@ import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.ChildProcessImportance;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -149,6 +150,8 @@ public class ChildProcessLauncherHelper {
 
     // Note native pointer is only guaranteed live until nativeOnChildProcessStarted.
     private long mNativeChildProcessLauncherHelper;
+
+    private @ChildProcessImportance int mImportance = ChildProcessImportance.NORMAL;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -458,10 +461,48 @@ public class ChildProcessLauncherHelper {
     }
 
     @CalledByNative
-    private void setInForeground(int pid, boolean foreground, boolean boostForPendingViews) {
+    private void setPriority(int pid, boolean foreground, boolean boostForPendingViews,
+            @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
         getBindingManager().setPriority(pid, foreground, boostForPendingViews);
+
+        if (mImportance == importance) return;
+        ChildProcessConnection connection = mLauncher.getConnection();
+        // Add first and remove second.
+        switch (importance) {
+            case ChildProcessImportance.NORMAL:
+                // Nothing to add.
+                break;
+            case ChildProcessImportance.MODERATE:
+                connection.addModerateBinding();
+                break;
+            case ChildProcessImportance.IMPORTANT:
+                connection.addStrongBinding();
+                break;
+            case ChildProcessImportance.COUNT:
+                assert false;
+                break;
+            default:
+                assert false;
+        }
+        switch (mImportance) {
+            case ChildProcessImportance.NORMAL:
+                // Nothing to remove.
+                break;
+            case ChildProcessImportance.MODERATE:
+                connection.removeModerateBinding();
+                break;
+            case ChildProcessImportance.IMPORTANT:
+                connection.removeStrongBinding();
+                break;
+            case ChildProcessImportance.COUNT:
+                assert false;
+                break;
+            default:
+                assert false;
+        }
+        mImportance = importance;
     }
 
     @CalledByNative
@@ -552,6 +593,12 @@ public class ChildProcessLauncherHelper {
     }
 
     // Testing only related methods.
+
+    @VisibleForTesting
+    public static Map<Integer, ChildProcessLauncherHelper> getAllProcessesForTesting() {
+        return sLauncherByPid;
+    }
+
     @VisibleForTesting
     public static ChildProcessLauncherHelper createAndStartForTesting(
             ChildProcessCreationParams creationParams, String[] commandLine,

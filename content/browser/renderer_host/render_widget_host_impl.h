@@ -28,6 +28,7 @@
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
+#include "content/browser/child_process_importance.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -274,6 +275,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // having been hidden.
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
+
+  // Set the importance of widget. The importance is passed onto
+  // RenderProcessHost which aggregates importance of all of its widgets.
+  void SetImportance(ChildProcessImportance importance);
+  ChildProcessImportance importance() const { return importance_; }
 
   // Returns true if the RenderWidget is hidden.
   bool is_hidden() const { return is_hidden_; }
@@ -799,6 +805,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether a page is hidden or not. It has to stay in sync with the
   // most recent call to process_->WidgetRestored() / WidgetHidden().
   bool is_hidden_;
+
+  // Tracks the current importance of widget, so the old value can be passed to
+  // RenderProcessHost on changes.
+  ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
 
   // Set if we are waiting for a repaint ack for the view.
   bool repaint_ack_pending_;

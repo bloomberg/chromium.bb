@@ -507,6 +507,7 @@ source_set("browser") {
     "cache_storage/cache_storage_scheduler.cc",
     "cache_storage/cache_storage_scheduler.h",
     "cache_storage/cache_storage_scheduler_client.h",
+    "child_process_importance.h",
     "child_process_launcher.cc",
     "child_process_launcher.h",
     "child_process_launcher_helper.cc",

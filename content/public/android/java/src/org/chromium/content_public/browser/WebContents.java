@@ -144,6 +144,12 @@ public interface WebContents extends Parcelable {
      */
     void onShow();
 
+    /**
+     * ChildProcessImportance on Android allows controls of the renderer process bindings
+     * independent of visibility.
+     */
+    void setImportance(@ChildProcessImportance int importance);
+
     // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
      * Removes handles used in text selection.

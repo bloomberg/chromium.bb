@@ -171,11 +171,13 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
     bool background,
-    bool boost_for_pending_views) {
+    bool boost_for_pending_views,
+    ChildProcessImportance importance) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  return Java_ChildProcessLauncherHelper_setInForeground(
-      env, java_peer_, process.Handle(), !background, boost_for_pending_views);
+  return Java_ChildProcessLauncherHelper_setPriority(
+      env, java_peer_, process.Handle(), !background, boost_for_pending_views,
+      static_cast<jint>(importance));
 }
 
 // static

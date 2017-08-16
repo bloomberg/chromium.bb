@@ -228,8 +228,9 @@ public class ChildProcessConnection {
     // to start() and stop().
     private final ChildServiceConnection mWaivedBinding;
 
-    // Incremented on addStrongBinding(), decremented on removeStrongBinding().
+    // Refcount of bindings.
     private int mStrongBindingCount;
+    private int mModerateBindingCount;
 
     // Indicates whether the connection only has the waived binding (if the connection is unbound,
     // it contains the state at time of unbinding).
@@ -620,8 +621,11 @@ public class ChildProcessConnection {
             Log.w(TAG, "The connection is not bound for %d", getPid());
             return;
         }
-        mModerateBinding.bind();
-        updateWaivedBoundOnlyState();
+        if (mModerateBindingCount == 0) {
+            mModerateBinding.bind();
+            updateWaivedBoundOnlyState();
+        }
+        mModerateBindingCount++;
     }
 
     public void removeModerateBinding() {
@@ -630,8 +634,12 @@ public class ChildProcessConnection {
             Log.w(TAG, "The connection is not bound for %d", getPid());
             return;
         }
-        mModerateBinding.unbind();
-        updateWaivedBoundOnlyState();
+        assert mModerateBindingCount > 0;
+        mModerateBindingCount--;
+        if (mModerateBindingCount == 0) {
+            mModerateBinding.unbind();
+            updateWaivedBoundOnlyState();
+        }
     }
 
     /**
