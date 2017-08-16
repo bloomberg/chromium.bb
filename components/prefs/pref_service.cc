@@ -382,6 +382,10 @@ void PrefService::ClearMutableValues() {
   user_pref_store_->ClearMutableValues();
 }
 
+void PrefService::OnStoreDeletionFromDisk() {
+  user_pref_store_->OnStoreDeletionFromDisk();
+}
+
 void PrefService::Set(const std::string& path, const base::Value& value) {
   SetUserPrefValue(path, value.CreateDeepCopy());
 }

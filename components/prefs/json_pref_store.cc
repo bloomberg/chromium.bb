@@ -393,6 +393,11 @@ void JsonPrefStore::ClearMutableValues() {
   NOTIMPLEMENTED();
 }
 
+void JsonPrefStore::OnStoreDeletionFromDisk() {
+  if (pref_filter_)
+    pref_filter_->OnStoreDeletionFromDisk();
+}
+
 void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

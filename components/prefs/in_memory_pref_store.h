@@ -48,6 +48,7 @@ class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override {}
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
+  void OnStoreDeletionFromDisk() override {}
 
  protected:
   ~InMemoryPrefStore() override;

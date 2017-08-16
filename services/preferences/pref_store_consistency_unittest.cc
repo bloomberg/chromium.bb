@@ -156,6 +156,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
   void CommitPendingWrite(base::OnceClosure) override {}
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
+  void OnStoreDeletionFromDisk() override {}
 
   // mojom::PrefStoreObserver
   void OnPrefsChanged(std::vector<mojom::PrefUpdatePtr> updates) override {

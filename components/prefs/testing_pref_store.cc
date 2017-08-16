@@ -183,6 +183,8 @@ void TestingPrefStore::ClearMutableValues() {
   NOTIMPLEMENTED();
 }
 
+void TestingPrefStore::OnStoreDeletionFromDisk() {}
+
 void TestingPrefStore::set_read_only(bool read_only) {
   read_only_ = read_only;
 }

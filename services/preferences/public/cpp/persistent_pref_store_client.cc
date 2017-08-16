@@ -243,6 +243,11 @@ void PersistentPrefStoreClient::ClearMutableValues() {
   return pref_store_->ClearMutableValues();
 }
 
+void PersistentPrefStoreClient::OnStoreDeletionFromDisk() {
+  DCHECK(pref_store_);
+  return pref_store_->OnStoreDeletionFromDisk();
+}
+
 PersistentPrefStoreClient::~PersistentPrefStoreClient() {
   if (!pref_store_)
     return;

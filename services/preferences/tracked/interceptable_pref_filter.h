@@ -50,6 +50,8 @@ class InterceptablePrefFilter
   void InterceptNextFilterOnLoad(
       const FilterOnLoadInterceptor& filter_on_load_interceptor);
 
+  void OnStoreDeletionFromDisk() override;
+
  private:
   // Does any extra filtering required by the implementation of this
   // InterceptablePrefFilter and hands back the |pref_store_contents| to the

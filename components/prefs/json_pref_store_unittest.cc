@@ -82,6 +82,7 @@ class InterceptingPrefFilter : public PrefFilter {
       base::DictionaryValue* pref_store_contents) override {
     return on_write_callback_pair_;
   }
+  void OnStoreDeletionFromDisk() override {}
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
 

@@ -311,6 +311,10 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Clears mutable values.
   void ClearMutableValues();
 
+  // Invoked when the store is deleted from disk. Allows this PrefService
+  // to tangentially cleanup data it may have saved outside the store.
+  void OnStoreDeletionFromDisk();
+
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

@@ -136,6 +136,9 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
     pref_store_->SchedulePendingLossyWrites();
   }
   void ClearMutableValues() override { pref_store_->ClearMutableValues(); }
+  void OnStoreDeletionFromDisk() override {
+    pref_store_->OnStoreDeletionFromDisk();
+  }
 
   void OnConnectionError() { pref_store_->OnConnectionError(this); }
 
@@ -279,6 +282,10 @@ void PersistentPrefStoreImpl::SchedulePendingLossyWrites() {
 
 void PersistentPrefStoreImpl::ClearMutableValues() {
   backing_pref_store_->ClearMutableValues();
+}
+
+void PersistentPrefStoreImpl::OnStoreDeletionFromDisk() {
+  backing_pref_store_->OnStoreDeletionFromDisk();
 }
 
 void PersistentPrefStoreImpl::OnConnectionError(Connection* connection) {
