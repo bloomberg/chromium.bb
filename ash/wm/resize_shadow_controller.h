@@ -37,6 +37,7 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
 
  private:
   // Creates a shadow for a given window and returns it.  |window_shadows_|

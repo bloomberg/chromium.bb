@@ -41,6 +41,12 @@ void ResizeShadowController::OnWindowDestroying(aura::Window* window) {
   window_shadows_.erase(window);
 }
 
+void ResizeShadowController::OnWindowVisibilityChanging(aura::Window* window,
+                                                        bool visible) {
+  if (!visible)
+    HideShadow(window);
+}
+
 ResizeShadow* ResizeShadowController::CreateShadow(aura::Window* window) {
   auto shadow = base::MakeUnique<ResizeShadow>(window);
   window->AddObserver(this);

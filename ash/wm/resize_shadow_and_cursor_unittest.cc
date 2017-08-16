@@ -242,4 +242,20 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   EXPECT_EQ(ui::CursorType::kEastResize, GetCurrentCursorType());
 }
 
+// Verifies that the shadow hides when a window is minimized. Regression test
+// for crbug.com/752583
+TEST_F(ResizeShadowAndCursorTest, Minimize) {
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+
+  generator.MoveMouseTo(200, 50);
+  VerifyResizeShadow(true);
+
+  ash::wm::GetWindowState(window())->Minimize();
+  VerifyResizeShadow(false);
+
+  ash::wm::GetWindowState(window())->Restore();
+  VerifyResizeShadow(false);
+}
+
 }  // namespace ash
