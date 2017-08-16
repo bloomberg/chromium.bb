@@ -201,9 +201,8 @@ void ShelfBackgroundAnimator::CreateAnimator(
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-      duration_ms = 500;
-      break;
     case SHELF_BACKGROUND_OVERLAP:
+    case SHELF_BACKGROUND_APP_LIST:
       duration_ms = 500;
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
@@ -246,6 +245,10 @@ void ShelfBackgroundAnimator::GetTargetValues(
       target_shelf_color_alpha = kMaxAlpha;
       target_item_color_alpha = 0;
       break;
+    case SHELF_BACKGROUND_APP_LIST:
+      target_shelf_color_alpha = 0;
+      target_item_color_alpha = 0;
+      break;
   }
 
   SkColor target_color =
@@ -260,6 +263,7 @@ void ShelfBackgroundAnimator::GetTargetValues(
     switch (background_type) {
       case SHELF_BACKGROUND_DEFAULT:
       case SHELF_BACKGROUND_OVERLAP:
+      case SHELF_BACKGROUND_APP_LIST:
         darkening_alpha = kShelfTranslucentColorDarkenAlpha;
         break;
       case SHELF_BACKGROUND_MAXIMIZED:

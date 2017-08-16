@@ -516,7 +516,7 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
       Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
           ->shelf_layout_manager();
   EXPECT_TRUE(shelf_layout_manager->GetShelfBackgroundType() ==
-              ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT);
+              ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST);
 }
 
 // Tests that the peeking app list closes if the user taps or clicks outside
@@ -749,7 +749,7 @@ TEST_F(AppListPresenterDelegateTest,
   ShelfLayoutManager* shelf_layout_manager =
       GetPrimaryShelf()->shelf_layout_manager();
   EXPECT_EQ(shelf_layout_manager->GetShelfBackgroundType(),
-            SHELF_BACKGROUND_DEFAULT);
+            SHELF_BACKGROUND_APP_LIST);
   app_list_presenter_impl()->Dismiss();
 
   // Set the alignment to the side and show the app list. The background
@@ -759,7 +759,7 @@ TEST_F(AppListPresenterDelegateTest,
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
   EXPECT_EQ(GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType(),
-            SHELF_BACKGROUND_DEFAULT);
+            SHELF_BACKGROUND_APP_LIST);
 }
 
 // Tests that the app list in HALF with an active search transitions to PEEKING

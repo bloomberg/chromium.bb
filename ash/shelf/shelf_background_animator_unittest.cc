@@ -229,6 +229,15 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
+// Verify the alpha values for the SHELF_BACKGROUND_APP_LIST state.
+TEST_F(ShelfBackgroundAnimatorTest, FullscreenAppListBackground) {
+  PaintBackground(SHELF_BACKGROUND_APP_LIST);
+
+  EXPECT_EQ(SHELF_BACKGROUND_APP_LIST, animator_->target_background_type());
+  EXPECT_EQ(0, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
+}
+
 TEST_F(ShelfBackgroundAnimatorTest,
        AnimatorIsDetroyedWhenCompletingSuccessfully) {
   PaintBackground(SHELF_BACKGROUND_OVERLAP, AnimationChangeType::ANIMATE);
