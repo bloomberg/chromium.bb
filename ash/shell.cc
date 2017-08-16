@@ -86,7 +86,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/touch/ash_touch_transform_controller.h"
@@ -729,12 +728,9 @@ Shell::~Shell() {
 
   toast_manager_.reset();
 
-  // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
-  // to deinitialize the shelf first, as it is initialized after the delegate.
   for (aura::Window* root : GetAllRootWindows())
     Shelf::ForWindow(root)->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
-  system_tray_delegate_.reset();
 
   // Accesses root window containers.
   logout_confirmation_controller_.reset();
@@ -1110,9 +1106,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
-
-  system_tray_delegate_ =
-      base::WrapUnique(shell_delegate_->CreateSystemTrayDelegate());
 
   logout_confirmation_controller_ =
       base::MakeUnique<LogoutConfirmationController>();

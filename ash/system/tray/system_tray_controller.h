@@ -17,9 +17,7 @@ namespace ash {
 // Both implements mojom::SystemTray and wraps the mojom::SystemTrayClient
 // interface. Implements both because it caches state pushed down from the
 // browser process via SystemTray so it can be synchronously queried inside ash.
-//
-// Conceptually similar to historical ash-to-chrome interfaces like
-// SystemTrayDelegate. Lives on the main thread.
+// Lives on the main thread.
 //
 // TODO: Consider renaming this to SystemTrayClient or renaming the current
 // SystemTray to SystemTrayView and making this class SystemTray.

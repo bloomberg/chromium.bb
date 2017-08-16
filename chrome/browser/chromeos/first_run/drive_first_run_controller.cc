@@ -7,8 +7,6 @@
 #include <stdint.h>
 #include <utility>
 
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"

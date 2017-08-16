@@ -17,7 +17,6 @@
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -112,8 +111,8 @@ void ShellDelegateImpl::ShelfInit() {
 
 void ShellDelegateImpl::ShelfShutdown() {}
 
-SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
-  return new SystemTrayDelegate;
+NetworkingConfigDelegate* ShellDelegateImpl::GetNetworkingConfigDelegate() {
+  return nullptr;
 }
 
 std::unique_ptr<WallpaperDelegate>

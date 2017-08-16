@@ -49,10 +49,10 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -395,7 +395,9 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
 }  // namespace
 
-ChromeShellDelegate::ChromeShellDelegate() {
+ChromeShellDelegate::ChromeShellDelegate()
+    : networking_config_delegate_(
+          base::MakeUnique<chromeos::NetworkingConfigDelegateChromeos>()) {
   PlatformInit();
 }
 
@@ -592,8 +594,9 @@ ChromeShellDelegate::CreatePaletteDelegate() {
   return base::MakeUnique<chromeos::PaletteDelegateChromeOS>();
 }
 
-ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
-  return chromeos::CreateSystemTrayDelegate();
+ash::NetworkingConfigDelegate*
+ChromeShellDelegate::GetNetworkingConfigDelegate() {
+  return networking_config_delegate_.get();
 }
 
 std::unique_ptr<ash::WallpaperDelegate>

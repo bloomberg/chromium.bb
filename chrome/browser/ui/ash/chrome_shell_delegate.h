@@ -44,7 +44,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void OpenUrlFromArc(const GURL& url) override;
   void ShelfInit() override;
   void ShelfShutdown() override;
-  ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<ash::PaletteDelegate> CreatePaletteDelegate() override;
@@ -76,6 +76,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
+
+  std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

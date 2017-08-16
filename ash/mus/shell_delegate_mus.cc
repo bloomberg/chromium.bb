@@ -9,7 +9,6 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
-#include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/palette_delegate.h"
 #include "base/memory/ptr_util.h"
@@ -85,8 +84,11 @@ void ShellDelegateMus::ShelfShutdown() {
   NOTIMPLEMENTED();
 }
 
-SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
-  return new SystemTrayDelegateMus();
+NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
+  // TODO(mash): Provide a real implementation, perhaps by folding its behavior
+  // into an ash-side network information cache. http://crbug.com/651157
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -21,7 +22,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -583,7 +583,7 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
 views::View* NetworkListView::CreateControlledByExtensionView(
     const NetworkInfo& info) {
   NetworkingConfigDelegate* networking_config_delegate =
-      Shell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
+      Shell::Get()->shell_delegate()->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
     return nullptr;
   std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>

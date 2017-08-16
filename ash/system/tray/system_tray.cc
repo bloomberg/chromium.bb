@@ -219,12 +219,11 @@ SystemTray::~SystemTray() {
 }
 
 void SystemTray::InitializeTrayItems(
-    SystemTrayDelegate* delegate,
     WebNotificationTray* web_notification_tray) {
   DCHECK(web_notification_tray);
   web_notification_tray_ = web_notification_tray;
   TrayBackgroundView::Initialize();
-  CreateItems(delegate);
+  CreateItems();
 }
 
 void SystemTray::Shutdown() {
@@ -232,7 +231,7 @@ void SystemTray::Shutdown() {
   web_notification_tray_ = nullptr;
 }
 
-void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
+void SystemTray::CreateItems() {
   AddTrayItem(base::MakeUnique<TrayUser>(this));
 
   // Crucially, this trailing padding has to be inside the user item(s).
