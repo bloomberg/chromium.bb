@@ -25,8 +25,6 @@ const char kOsPasswordLastChanged[] =
 const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
 #endif
 
-const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
-
 const char kWasAutoSignInFirstRunExperienceShown[] =
     "profile.was_auto_sign_in_first_run_experience_shown";
 

@@ -1140,7 +1140,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
     const bool expected_final_state = !expected_initial_state;
     GREYAssertEqual(expected_final_state,
                     browserState->GetPrefs()->GetBoolean(
-                        password_manager::prefs::kPasswordManagerSavingEnabled),
+                        password_manager::prefs::kCredentialsEnableService),
                     @"State of the UI toggle differs from real preferences.");
   }
 

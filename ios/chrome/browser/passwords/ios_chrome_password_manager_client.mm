@@ -56,7 +56,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
           base::Bind(&GetSigninManager, delegate_.browserState)),
       ukm_source_id_(0) {
   saving_passwords_enabled_.Init(
-      password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
+      password_manager::prefs::kCredentialsEnableService, GetPrefs());
 }
 
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;

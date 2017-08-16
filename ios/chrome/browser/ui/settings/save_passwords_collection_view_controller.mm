@@ -169,8 +169,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     DCHECK(passwordStore_);
     passwordManagerEnabled_ = [[PrefBackedBoolean alloc]
         initWithPrefService:browserState_->GetPrefs()
-                   prefName:password_manager::prefs::
-                                kPasswordManagerSavingEnabled];
+                   prefName:password_manager::prefs::kCredentialsEnableService];
     [passwordManagerEnabled_ setObserver:self];
     [self getLoginsFromPasswordStore];
     [self updateEditButton];
