@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
@@ -34,11 +35,13 @@ class Origin;
 namespace media_router {
 
 class IssuesObserver;
-class MediaRouteController;
 class MediaRoutesObserver;
 class MediaSinksObserver;
 class PresentationConnectionStateObserver;
 class RouteRequestResult;
+#if !defined(OS_ANDROID)
+class MediaRouteController;
+#endif  // !defined(OS_ANDROID)
 
 // Type of callback used in |CreateRoute()|, |JoinRoute()|, and
 // |ConnectRouteByRouteId()|. Callback is invoked when the route request either
@@ -195,10 +198,12 @@ class MediaRouter : public KeyedService {
   // there is a change to the media routes, subclass MediaRoutesObserver.
   virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
 
+#if !defined(OS_ANDROID)
   // Returns a controller for sending media commands to a route. Returns a
   // nullptr if no MediaRoute exists for the given |route_id|.
   virtual scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) = 0;
+#endif  // !defined(OS_ANDROID)
 
   // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a
   // given |tab_id|, only one CastRemotingConnector can be registered. The
@@ -211,10 +216,12 @@ class MediaRouter : public KeyedService {
  private:
   friend class IssuesObserver;
   friend class MediaSinksObserver;
-  friend class MediaRouteController;
   friend class MediaRoutesObserver;
   friend class PresentationConnectionStateObserver;
   friend class RouteMessageObserver;
+#if !defined(OS_ANDROID)
+  friend class MediaRouteController;
+#endif  // !defined(OS_ANDROID)
 
   // The following functions are called by friend Observer classes above.
 
@@ -268,11 +275,13 @@ class MediaRouter : public KeyedService {
   virtual void UnregisterRouteMessageObserver(
       RouteMessageObserver* observer) = 0;
 
+#if !defined(OS_ANDROID)
   // Removes the MediaRouteController for |route_id| from the list of
   // controllers held by |this|. Called by MediaRouteController when it is
   // invalidated.
   virtual void DetachRouteController(const MediaRoute::Id& route_id,
                                      MediaRouteController* controller) = 0;
+#endif  // !defined(OS_ANDROID)
 };
 
 }  // namespace media_router

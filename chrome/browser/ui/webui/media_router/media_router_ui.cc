@@ -930,7 +930,7 @@ void MediaRouterUI::UpdateMaxDialogHeight(int height) {
   handler_->UpdateMaxDialogHeight(height);
 }
 
-const MediaRouteController* MediaRouterUI::GetMediaRouteController() const {
+MediaRouteController* MediaRouterUI::GetMediaRouteController() const {
   return route_controller_observer_
              ? route_controller_observer_->controller().get()
              : nullptr;

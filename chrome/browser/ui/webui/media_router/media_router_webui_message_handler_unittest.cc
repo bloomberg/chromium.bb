@@ -103,7 +103,7 @@ class MockMediaRouterUI : public MediaRouterUI {
   MOCK_METHOD1(SeekRoute, void(base::TimeDelta time));
   MOCK_METHOD1(SetRouteMute, void(bool mute));
   MOCK_METHOD1(SetRouteVolume, void(float volume));
-  MOCK_CONST_METHOD0(GetMediaRouteController, const MediaRouteController*());
+  MOCK_CONST_METHOD0(GetMediaRouteController, MediaRouteController*());
 };
 
 class TestMediaRouterWebUIMessageHandler
@@ -600,12 +600,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnRouteDetailsOpenedAndClosed) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
-  mojom::MediaControllerPtr mojo_media_controller;
-  mojo::MakeRequest(&mojo_media_controller);
-  MockMediaRouter media_router;
-  scoped_refptr<MockMediaRouteController> controller =
-      new MockMediaRouteController("routeId", std::move(mojo_media_controller),
-                                   &media_router);
+  auto controller =
+      base::MakeRefCounted<MockMediaRouteController>("routeId", profile());
   EXPECT_CALL(*mock_media_router_ui_, GetMediaRouteController())
       .WillRepeatedly(Return(controller.get()));
   MediaStatus status;
@@ -642,12 +638,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnInvalidMediaCommandsReceived) {
-  mojom::MediaControllerPtr mojo_media_controller;
-  mojo::MakeRequest(&mojo_media_controller);
-  MockMediaRouter media_router;
-  scoped_refptr<MockMediaRouteController> controller =
-      new MockMediaRouteController("routeId", std::move(mojo_media_controller),
-                                   &media_router);
+  auto controller =
+      base::MakeRefCounted<MockMediaRouteController>("routeId", profile());
   EXPECT_CALL(*mock_media_router_ui_, GetMediaRouteController())
       .WillRepeatedly(Return(controller.get()));
 

@@ -175,6 +175,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // if or a Mojo channel error occured.
   mojom::MediaRouteProviderPtr media_route_provider_;
 
+  // Stores route controllers that can be used to send media commands.
+  std::unordered_map<MediaRoute::Id, MediaRouteController*> route_controllers_;
+
  private:
   friend class MediaRouterFactory;
   friend class MediaRouterMojoImplTest;
@@ -341,10 +344,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // The last reported sink availability from the media route provider manager.
   mojom::MediaRouter::SinkAvailability availability_;
-
-  // Stores route controllers that can be used to send media commands to the
-  // extension.
-  std::unordered_map<MediaRoute::Id, MediaRouteController*> route_controllers_;
 
   // Media sink service for DIAL devices.
   scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;

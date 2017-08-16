@@ -907,7 +907,7 @@ void MediaRouterWebUIMessageHandler::OnMediaControllerClosed(
 
 void MediaRouterWebUIMessageHandler::OnPauseCurrentMedia(
     const base::ListValue* args) {
-  const MediaRouteController* route_controller =
+  MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller)
     route_controller->Pause();
@@ -915,7 +915,7 @@ void MediaRouterWebUIMessageHandler::OnPauseCurrentMedia(
 
 void MediaRouterWebUIMessageHandler::OnPlayCurrentMedia(
     const base::ListValue* args) {
-  const MediaRouteController* route_controller =
+  MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller)
     route_controller->Play();
@@ -931,7 +931,7 @@ void MediaRouterWebUIMessageHandler::OnSeekCurrentMedia(
     return;
   }
   base::TimeDelta time_delta = base::TimeDelta::FromSeconds(time);
-  const MediaRouteController* route_controller =
+  MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller && current_media_status_ &&
       time_delta >= base::TimeDelta() &&
@@ -949,7 +949,7 @@ void MediaRouterWebUIMessageHandler::OnSetCurrentMediaMute(
     DVLOG(1) << "Unable to extract mute";
     return;
   }
-  const MediaRouteController* route_controller =
+  MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller)
     route_controller->SetMute(mute);
@@ -964,7 +964,7 @@ void MediaRouterWebUIMessageHandler::OnSetCurrentMediaVolume(
     DVLOG(1) << "Unable to extract volume";
     return;
   }
-  const MediaRouteController* route_controller =
+  MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller && volume >= 0 && volume <= 1)
     route_controller->SetVolume(volume);

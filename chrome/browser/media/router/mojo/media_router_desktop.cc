@@ -7,6 +7,7 @@
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "extensions/common/extension.h"
 #if defined(OS_WIN)
@@ -354,6 +355,16 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // ExecutePendingRequests().
   is_mdns_enabled_ = false;
 #endif
+  // Now that we have a Mojo pointer to the MRP, we request MRP-side route
+  // controllers to be created again. This must happen before |request_manager_|
+  // executes requests to the MRP and its route controllers.
+  for (const auto& pair : route_controllers_) {
+    const MediaRoute::Id& route_id = pair.first;
+    MediaRouteController* route_controller = pair.second;
+    MediaRouterMojoImpl::DoCreateMediaRouteController(
+        route_id, route_controller->CreateControllerRequest(),
+        route_controller->BindObserverPtr());
+  }
   request_manager_->OnMojoConnectionsReady();
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/test_helper.h"
@@ -168,6 +169,26 @@ class MockEventPageTracker : public extensions::EventPageTracker {
                     const base::Callback<void(bool)>& callback));
 };
 
+class MockEventPageRequestManager : public EventPageRequestManager {
+ public:
+  static std::unique_ptr<KeyedService> Create(content::BrowserContext* context);
+
+  explicit MockEventPageRequestManager(content::BrowserContext* context);
+  ~MockEventPageRequestManager();
+
+  MOCK_METHOD1(SetExtensionId, void(const std::string& extension_id));
+  void RunOrDefer(base::OnceClosure request,
+                  MediaRouteProviderWakeReason wake_reason) override;
+  MOCK_METHOD2(RunOrDeferInternal,
+               void(base::OnceClosure& request,
+                    MediaRouteProviderWakeReason wake_reason));
+  MOCK_METHOD0(OnMojoConnectionsReady, void());
+  MOCK_METHOD0(OnMojoConnectionError, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEventPageRequestManager);
+};
+
 class MockMediaController : public mojom::MediaController {
  public:
   MockMediaController();
@@ -190,14 +211,13 @@ class MockMediaController : public mojom::MediaController {
 class MockMediaRouteController : public MediaRouteController {
  public:
   MockMediaRouteController(const MediaRoute::Id& route_id,
-                           mojom::MediaControllerPtr mojo_media_controller,
-                           MediaRouter* media_router);
+                           content::BrowserContext* context);
 
-  MOCK_CONST_METHOD0(Play, void());
-  MOCK_CONST_METHOD0(Pause, void());
-  MOCK_CONST_METHOD1(Seek, void(base::TimeDelta time));
-  MOCK_CONST_METHOD1(SetMute, void(bool mute));
-  MOCK_CONST_METHOD1(SetVolume, void(float volume));
+  MOCK_METHOD0(Play, void());
+  MOCK_METHOD0(Pause, void());
+  MOCK_METHOD1(Seek, void(base::TimeDelta time));
+  MOCK_METHOD1(SetMute, void(bool mute));
+  MOCK_METHOD1(SetVolume, void(float volume));
 
  protected:
   // The dtor is protected because MockMediaRouteController is ref-counted.
@@ -242,8 +262,9 @@ class MediaRouterMojoTest : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  // Create a MediaRouter instance to test.
-  virtual std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() = 0;
+  // Set the MediaRouter instance to be used by the MediaRouterFactory and
+  // return it.
+  virtual MediaRouterMojoImpl* SetTestingFactoryAndUse() = 0;
 
   void ProcessEventLoop();
 
@@ -264,12 +285,13 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   const std::string& extension_id() const { return extension_->id(); }
 
-  MediaRouterMojoImpl* router() const { return media_router_.get(); }
+  MediaRouterMojoImpl* router() const { return media_router_; }
 
   Profile* profile() { return &profile_; }
 
   // Mock objects.
   MockMediaRouteProvider mock_media_route_provider_;
+  MockEventPageRequestManager* request_manager_ = nullptr;
 
   RegisterMediaRouteProviderHandler provide_handler_;
 
@@ -277,7 +299,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
   TestingProfile profile_;
-  std::unique_ptr<MediaRouterMojoImpl> media_router_;
+  MediaRouterMojoImpl* media_router_ = nullptr;
   std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);

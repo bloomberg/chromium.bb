@@ -177,7 +177,7 @@ class MediaRouterUI
 
   // Gets the route controller currently in use by the UI. Returns a nullptr if
   // none is in use.
-  virtual const MediaRouteController* GetMediaRouteController() const;
+  virtual MediaRouteController* GetMediaRouteController() const;
 
   // Called when a media controller UI surface is created. Creates an observer
   // for the MediaRouteController for |route_id| to listen for media status

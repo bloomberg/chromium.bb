@@ -25317,6 +25317,7 @@ from previous Chrome versions.
   <int value="17" label="SearchSinks"/>
   <int value="18" label="ProvideSinks"/>
   <int value="19" label="CreateMediaRouteController"/>
+  <int value="20" label="RouteControllerCommand"/>
 </enum>
 
 <enum name="MediaRouteProviderWakeup">

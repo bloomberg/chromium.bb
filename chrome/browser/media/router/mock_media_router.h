@@ -10,20 +10,31 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_base.h"
-#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/router/mojo/media_route_controller.h"
+#endif  // !defined(OS_ANDROID)
+
+namespace content {
+class BrowserContext;
+}
 
 namespace media_router {
 
 // Media Router mock class. Used for testing purposes.
 class MockMediaRouter : public MediaRouterBase {
  public:
+  // This method can be passed into MediaRouterFactory::SetTestingFactory() to
+  // make the factory return a MockMediaRouter.
+  static std::unique_ptr<KeyedService> Create(content::BrowserContext* context);
+
   MockMediaRouter();
   ~MockMediaRouter() override;
 
@@ -143,9 +154,11 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_CONST_METHOD0(GetCurrentRoutes, std::vector<MediaRoute>());
 
   MOCK_METHOD0(OnIncognitoProfileShutdown, void());
+#if !defined(OS_ANDROID)
   MOCK_METHOD1(
       GetRouteController,
       scoped_refptr<MediaRouteController>(const MediaRoute::Id& route_id));
+#endif  // !defined(OS_ANDROID)
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&
                         callback));
@@ -162,9 +175,11 @@ class MockMediaRouter : public MediaRouterBase {
                void(RouteMessageObserver* observer));
   MOCK_METHOD1(UnregisterRouteMessageObserver,
                void(RouteMessageObserver* observer));
+#if !defined(OS_ANDROID)
   MOCK_METHOD2(DetachRouteController,
                void(const MediaRoute::Id& route_id,
                     MediaRouteController* controller));
+#endif  // !defined(OS_ANDROID)
 
  private:
   base::CallbackList<void(

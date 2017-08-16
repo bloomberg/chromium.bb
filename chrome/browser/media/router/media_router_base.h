@@ -12,6 +12,7 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/media_route.h"
@@ -34,8 +35,10 @@ class MediaRouterBase : public MediaRouter {
 
   std::vector<MediaRoute> GetCurrentRoutes() const override;
 
+#if !defined(OS_ANDROID)
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
+#endif  // !defined(OS_ANDROID)
 
   void RegisterRemotingSource(int32_t tab_id,
                               CastRemotingConnector* remoting_source) override;
@@ -100,9 +103,11 @@ class MediaRouterBase : public MediaRouter {
   // KeyedService
   void Shutdown() override;
 
+#if !defined(OS_ANDROID)
   // MediaRouter
   void DetachRouteController(const MediaRoute::Id& route_id,
                              MediaRouteController* controller) override;
+#endif  // !defined(OS_ANDROID)
 
   std::unique_ptr<InternalMediaRoutesObserver> internal_routes_observer_;
   bool initialized_;
