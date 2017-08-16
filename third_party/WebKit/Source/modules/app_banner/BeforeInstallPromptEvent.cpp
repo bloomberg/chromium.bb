@@ -107,13 +107,17 @@ bool BeforeInstallPromptEvent::HasPendingActivity() const {
 }
 
 void BeforeInstallPromptEvent::BannerAccepted(const String& platform) {
-  user_choice_->Resolve(AppBannerPromptResult::Create(
-      platform, AppBannerPromptResult::Outcome::kAccepted));
+  AppBannerPromptResult result;
+  result.setPlatform(platform);
+  result.setOutcome("accepted");
+  user_choice_->Resolve(result);
 }
 
 void BeforeInstallPromptEvent::BannerDismissed() {
-  user_choice_->Resolve(AppBannerPromptResult::Create(
-      g_empty_atom, AppBannerPromptResult::Outcome::kDismissed));
+  AppBannerPromptResult result;
+  result.setPlatform(g_empty_atom);
+  result.setOutcome("dismissed");
+  user_choice_->Resolve(result);
 }
 
 DEFINE_TRACE(BeforeInstallPromptEvent) {

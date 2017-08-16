@@ -26,11 +26,6 @@ interface AnimationEvent : Event
     getter animationName
     getter elapsedTime
     method constructor
-interface AppBannerPromptResult
-    attribute @@toStringTag
-    getter outcome
-    getter platform
-    method constructor
 interface ApplicationCache : EventTarget
     attribute @@toStringTag
     attribute CHECKING
