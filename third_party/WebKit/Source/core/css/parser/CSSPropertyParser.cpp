@@ -409,12 +409,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
           range_, *context_, UnitlessQuirk::kAllow);
-    case CSSPropertyMinWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyWidth:
-    case CSSPropertyHeight:
-      return CSSPropertyLengthUtils::ConsumeWidthOrHeight(
-          range_, *context_, UnitlessQuirk::kAllow);
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
