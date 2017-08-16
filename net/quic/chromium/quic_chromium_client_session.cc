@@ -755,11 +755,6 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
 }
 
-std::unique_ptr<QuicStream> QuicChromiumClientSession::CreateStream(
-    QuicStreamId id) {
-  return QuicMakeUnique<QuicChromiumClientStream>(id, this, net_log_);
-}
-
 void QuicChromiumClientSession::Initialize() {
   QuicSpdyClientSessionBase::Initialize();
   SetHpackEncoderDebugVisitor(
