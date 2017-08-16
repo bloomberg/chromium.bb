@@ -482,7 +482,6 @@ target(link_target_type, "renderer") {
     "//ppapi/features",
     "//printing/features",
     "//sandbox",
-    "//services/device/public/cpp/generic_sensor",
     "//services/device/public/interfaces",
     "//services/device/public/interfaces:constants",
     "//services/metrics/public/cpp:metrics_cpp",
