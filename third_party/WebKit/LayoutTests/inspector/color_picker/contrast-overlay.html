@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script src="../../http/tests/inspector/inspector-test.js"></script>
+    <script type="text/javascript">
+      async function test() {
+        await self.runtime.loadModulePromise("color_picker");
+        var colorElement = document.createElement('div')
+        var contentElement = document.createElement('div');
+        var overlay = new ColorPicker.ContrastOverlay(colorElement, contentElement);
+        var svg = colorElement.firstChild;
+        InspectorTest.assertTrue(svg != null);
+        InspectorTest.assertEquals(svg.tagName, 'svg');
+        var path = svg.firstChild;
+        InspectorTest.assertTrue(path != null);
+        InspectorTest.assertEquals(path.tagName, 'path');
+        overlay._width = 100;
+        overlay._height = 100;
+
+        var colorPairs = [
+          // Boring black on white
+          { fg: 'black', bg: 'white' },
+          // Blue on white - line does not go to RHS
+          { fg: 'blue', bg: 'white' },
+          // Transparent on white - no possible line
+          { fg: 'transparent', bg: 'white' },
+          // White on color which previously caused infinite loop
+          { fg: 'rgba(255, 255, 255, 1)', bg: 'rgba(157, 83, 95, 1)' }
+        ]
+
+        function logLineForColorPair(fgColorString, bgColorString) {
+          var contrastInfo = { backgroundColors: [bgColorString],
+                               computedFontSize: '16px',
+                               computedFontWeight: '400',
+                               computedBodyFontSize: '16px' };
+          overlay.setContrastInfo(contrastInfo);
+          var fgColor = Common.Color.parse(fgColorString);
+          overlay.setColor(fgColor.hsva(), 'rgba(255, 255, 255, 1)');
+          overlay._drawContrastRatioLine();
+          var d = path.getAttribute('d');
+          InspectorTest.addResult('');
+          InspectorTest.addResult('For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', path was' + (d.length ? '' : ' empty.'));
+          if (d.length)
+            InspectorTest.addResult(path.getAttribute('d'));
+      }
+
+        for (var pair of colorPairs)
+          logLineForColorPair(pair.fg, pair.bg);
+
+        InspectorTest.completeTest();
+      }
+    </script>
+  </head>
+  <body onload="runTest()">
+    Tests that the contrast line algorithm produces good results and terminates.
+  </body>
+</html>
