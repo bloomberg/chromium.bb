@@ -14,8 +14,6 @@ GEN_INCLUDE([
   'settings_accessibility_test.js',
 ]);
 
-// TODO(quacht): refactor to provide a default set of axeOptions and violation
-// filters for settings accessibility tests.
 AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   name: 'MANAGE_PROFILE',

@@ -35,9 +35,8 @@ SettingsAccessibilityTest.axeOptions = {
 
 // Default accessibility audit options. Specify in test definition to use.
 SettingsAccessibilityTest.violationFilter = {
-  // TODO(quacht): remove this exception once the color contrast issue is
-  // solved.
-  // http://crbug.com/748608
+  // TODO(crbug.com/748608): remove this exception once the color contrast issue
+  // is resolved.
   'color-contrast': function(nodeResult) {
     return nodeResult.element.id === 'prompt';
   },
