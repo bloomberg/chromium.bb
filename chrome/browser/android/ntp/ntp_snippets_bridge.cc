@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
+#include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -220,6 +221,8 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetForProfile(profile);
+  contextual_content_suggestions_service_ =
+      ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   content_suggestions_service_observer_.Add(content_suggestions_service_);
@@ -338,11 +341,10 @@ void NTPSnippetsBridge::FetchContextualSuggestions(
   DCHECK(base::FeatureList::IsEnabled(
       chrome::android::kContextualSuggestionsCarousel));
   GURL url(ConvertJavaStringToUTF8(env, j_url));
-  content_suggestions_service_->contextual_suggestions_source()
-      ->FetchContextualSuggestions(
-          url, base::Bind(&NTPSnippetsBridge::OnContextualSuggestionsFetched,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          ScopedJavaGlobalRef<jobject>(j_callback)));
+  contextual_content_suggestions_service_->FetchContextualSuggestions(
+      url, base::Bind(&NTPSnippetsBridge::OnContextualSuggestionsFetched,
+                      weak_ptr_factory_.GetWeakPtr(),
+                      ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 void NTPSnippetsBridge::FetchContextualSuggestionImage(
@@ -352,13 +354,11 @@ void NTPSnippetsBridge::FetchContextualSuggestionImage(
     const JavaParamRef<jstring>& id_within_category,
     const JavaParamRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
-  content_suggestions_service_->contextual_suggestions_source()
-      ->FetchContextualSuggestionImage(
-          ContentSuggestion::ID(
-              Category::FromIDValue(j_category_id),
-              ConvertJavaStringToUTF8(env, id_within_category)),
-          base::Bind(&NTPSnippetsBridge::OnImageFetched,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+  contextual_content_suggestions_service_->FetchContextualSuggestionImage(
+      ContentSuggestion::ID(Category::FromIDValue(j_category_id),
+                            ConvertJavaStringToUTF8(env, id_within_category)),
+      base::Bind(&NTPSnippetsBridge::OnImageFetched,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void NTPSnippetsBridge::ReloadSuggestions(JNIEnv* env,

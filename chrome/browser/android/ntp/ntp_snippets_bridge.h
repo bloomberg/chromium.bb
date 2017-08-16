@@ -13,6 +13,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/status.h"
 
 namespace gfx {
@@ -139,6 +140,8 @@ class NTPSnippetsBridge
       std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+  ntp_snippets::ContextualContentSuggestionsService*
+      contextual_content_suggestions_service_;
   history::HistoryService* history_service_;
   base::CancelableTaskTracker tracker_;
 

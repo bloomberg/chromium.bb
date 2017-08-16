@@ -26,7 +26,6 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -246,12 +245,6 @@ class ContentSuggestionsService : public KeyedService,
   // child account.
   bool AreRemoteSuggestionsManagedByCustodian() const;
 
-  void set_contextual_suggestions_source(
-      std::unique_ptr<ContextualSuggestionsSource>
-          contextual_suggestions_source) {
-    contextual_suggestions_source_ = std::move(contextual_suggestions_source);
-  }
-
   // The reference to the RemoteSuggestionsProvider provider should
   // only be set by the factory and only used for debugging.
   // TODO(jkrcal) The way we deal with the circular dependency feels wrong.
@@ -280,11 +273,6 @@ class ContentSuggestionsService : public KeyedService,
   UserClassifier* user_classifier() { return user_classifier_.get(); }
 
   CategoryRanker* category_ranker() { return category_ranker_.get(); }
-
-  ContextualSuggestionsSource* contextual_suggestions_source() {
-    DCHECK(contextual_suggestions_source_);
-    return contextual_suggestions_source_.get();
-  }
 
  private:
   friend class ContentSuggestionsServiceTest;
@@ -430,9 +418,6 @@ class ContentSuggestionsService : public KeyedService,
 
   // Provides order for categories.
   std::unique_ptr<CategoryRanker> category_ranker_;
-
-  // Fetches and caches contextual suggestions for a given URL.
-  std::unique_ptr<ContextualSuggestionsSource> contextual_suggestions_source_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsService);
 };

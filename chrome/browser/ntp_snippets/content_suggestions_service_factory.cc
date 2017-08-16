@@ -42,8 +42,6 @@
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
@@ -105,8 +103,6 @@ using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::BreakingNewsListener;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
-using ntp_snippets::ContextualSuggestionsFetcherImpl;
-using ntp_snippets::ContextualSuggestionsSource;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::PersistentScheduler;
@@ -160,48 +156,6 @@ bool IsChromeHomeEnabled() {
 #else
   return false;
 #endif
-}
-
-bool IsContextualSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(
-      chrome::android::kContextualSuggestionsCarousel);
-}
-
-void RegisterContextualSuggestionsSourceIfEnabled(
-    ContentSuggestionsService* service,
-    Profile* profile) {
-  if (!IsContextualSuggestionsEnabled()) {
-    return;
-  }
-
-  PrefService* pref_service = profile->GetPrefs();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      profile->GetRequestContext();
-  auto contextual_suggestions_fetcher =
-      base::MakeUnique<ContextualSuggestionsFetcherImpl>(
-          signin_manager, token_service, request_context, pref_service,
-          base::Bind(&safe_json::SafeJsonParser::Parse));
-  base::FilePath database_dir(
-      profile->GetPath().Append("contextualSuggestionsDatabase"));
-  auto contextual_suggestions_database =
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir);
-  auto cached_image_fetcher =
-      base::MakeUnique<ntp_snippets::CachedImageFetcher>(
-          base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-              base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
-          pref_service, contextual_suggestions_database.get());
-  auto contextual_suggestions_source =
-      base::MakeUnique<ContextualSuggestionsSource>(
-          std::move(contextual_suggestions_fetcher),
-          std::move(cached_image_fetcher),
-          std::move(contextual_suggestions_database));
-
-  service->set_contextual_suggestions_source(
-      std::move(contextual_suggestions_source));
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -575,7 +529,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       pref_service, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler));
 
-  RegisterContextualSuggestionsSourceIfEnabled(service, profile);
   RegisterArticleProviderIfEnabled(service, profile, signin_manager,
                                    user_classifier_raw, offline_page_model);
   RegisterBookmarkProviderIfEnabled(service, profile);

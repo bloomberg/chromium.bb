@@ -33,7 +33,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_source.h"
+#include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
@@ -168,10 +168,14 @@ std::string TimeToJSONTimeString(const base::Time time) {
 
 SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler(
     ntp_snippets::ContentSuggestionsService* content_suggestions_service,
+    ntp_snippets::ContextualContentSuggestionsService*
+        contextual_content_suggestions_service,
     PrefService* pref_service)
     : content_suggestions_service_observer_(this),
       dom_loaded_(false),
       content_suggestions_service_(content_suggestions_service),
+      contextual_content_suggestions_service_(
+          contextual_content_suggestions_service),
       remote_suggestions_provider_(
           content_suggestions_service_
               ->remote_suggestions_provider_for_debugging()),
@@ -380,12 +384,11 @@ void SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions(
   DCHECK_EQ(1u, args->GetSize());
   std::string url_str;
   args->GetString(0, &url_str);
-  content_suggestions_service_->contextual_suggestions_source()
-      ->FetchContextualSuggestions(
-          GURL(url_str),
-          base::BindOnce(
-              &SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched,
-              weak_ptr_factory_.GetWeakPtr()));
+  contextual_content_suggestions_service_->FetchContextualSuggestions(
+      GURL(url_str),
+      base::BindOnce(
+          &SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched(

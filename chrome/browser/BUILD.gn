@@ -820,6 +820,8 @@ split_static_library("browser") {
     "ntp_snippets/content_suggestions_notifier_service_factory.h",
     "ntp_snippets/content_suggestions_service_factory.cc",
     "ntp_snippets/content_suggestions_service_factory.h",
+    "ntp_snippets/contextual_content_suggestions_service_factory.cc",
+    "ntp_snippets/contextual_content_suggestions_service_factory.h",
     "ntp_snippets/download_suggestions_provider.cc",
     "ntp_snippets/download_suggestions_provider.h",
     "ntp_snippets/ntp_snippets_metrics.cc",
