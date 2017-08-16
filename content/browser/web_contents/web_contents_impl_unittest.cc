@@ -1693,7 +1693,7 @@ TEST_F(WebContentsImplTest,
        ShowInterstitialFromBrowserWithNewNavigationDontProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial.
@@ -1745,7 +1745,7 @@ TEST_F(WebContentsImplTest,
        ShowInterstitialFromRendererWithNewNavigationDontProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial (no pending entry, the interstitial would have been
@@ -1792,7 +1792,7 @@ TEST_F(WebContentsImplTest,
 TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -1839,7 +1839,7 @@ TEST_F(WebContentsImplTest,
        ShowInterstitialFromBrowserNewNavigationProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
@@ -1903,7 +1903,7 @@ TEST_F(WebContentsImplTest,
        ShowInterstitialFromRendererNewNavigationProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -1941,7 +1941,7 @@ TEST_F(WebContentsImplTest,
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
   GURL url3("http://www.thepage.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url3);
+  NavigationSimulator::NavigateAndCommitFromDocument(url3, main_test_rfh());
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
@@ -1961,7 +1961,7 @@ TEST_F(WebContentsImplTest,
 TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -2020,7 +2020,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenNavigate) {
 
   // While interstitial showing, navigate to a new URL.
   const GURL url2("http://www.yahoo.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url2);
+  NavigationSimulator::NavigateAndCommitFromDocument(url2, main_test_rfh());
 
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
 
@@ -2032,7 +2032,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenNavigate) {
 TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show interstitial.
@@ -2072,7 +2072,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
 TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
   NavigationEntry* entry = controller().GetLastCommittedEntry();
 
@@ -2114,7 +2114,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
 TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show interstitial.
@@ -2194,7 +2194,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
 TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger an interstitial.
@@ -2240,7 +2240,7 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
 TEST_F(WebContentsImplTest, TabNavigationDoesntRaceInterstitial) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger an interstitial.
@@ -2285,7 +2285,7 @@ TEST_F(WebContentsImplTest, TabNavigationDoesntRaceInterstitial) {
 TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -2321,7 +2321,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
 TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL start_url("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, start_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(start_url,
+                                                     main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -2376,7 +2377,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL start_url("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, start_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(start_url,
+                                                     main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
@@ -2631,7 +2633,7 @@ TEST_F(WebContentsImplTest, NoJSMessageOnInterstitials) {
 TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
