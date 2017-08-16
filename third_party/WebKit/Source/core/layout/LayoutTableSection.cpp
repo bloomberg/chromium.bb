@@ -1464,7 +1464,8 @@ void LayoutTableSection::DirtiedRowsAndEffectiveColumns(
     CellSpan& columns) const {
   if (!grid_.size()) {
     rows = CellSpan();
-    columns = CellSpan();
+    columns = CellSpan(1, 1);
+    return;
   }
 
   if (force_full_paint_) {
