@@ -20,7 +20,6 @@
 -NetworkInterfacesTest.GetNetworkList
 -NetworkQualitiesPrefManager*
 -NetworkQualityEstimatorTest*
--NetworkThrottleManager*
 -Proxy*
 -PythonUtils*
 -QuicSimpleClientTest*
