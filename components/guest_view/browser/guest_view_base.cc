@@ -431,12 +431,16 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   SendQueuedEvents();
 }
 
+// TODO(wjmaclean): Delete this when browser plugin goes away;
+// https://crbug.com/533069 .
 void GuestViewBase::DidDetach() {
   GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(this);
   StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));
   element_instance_id_ = kInstanceIDNone;
+  if (ShouldDestroyOnDetach())
+    Destroy(true);
 }
 
 WebContents* GuestViewBase::GetOwnerWebContents() const {
@@ -449,6 +453,10 @@ void GuestViewBase::GuestSizeChanged(const gfx::Size& new_size) {
 
 const GURL& GuestViewBase::GetOwnerSiteURL() const {
   return owner_web_contents()->GetLastCommittedURL();
+}
+
+bool GuestViewBase::ShouldDestroyOnDetach() const {
+  return false;
 }
 
 void GuestViewBase::Destroy(bool also_delete) {

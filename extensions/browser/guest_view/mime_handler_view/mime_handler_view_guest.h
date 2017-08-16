@@ -87,6 +87,7 @@ class MimeHandlerViewGuest :
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) final;
   bool ZoomPropagatesFromEmbedderToGuest() const final;
+  bool ShouldDestroyOnDetach() const final;
 
   // WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(
