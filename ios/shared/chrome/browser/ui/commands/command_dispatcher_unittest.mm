@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#import "ios/shared/chrome/browser/ui/metrics/metrics_recorder.h"
+#import "ios/chrome/browser/ui/metrics/metrics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 

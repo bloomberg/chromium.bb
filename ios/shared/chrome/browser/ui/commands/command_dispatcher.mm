@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/shared/chrome/browser/ui/metrics/metrics_recorder.h"
+#import "ios/chrome/browser/ui/metrics/metrics_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
