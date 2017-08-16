@@ -647,6 +647,46 @@ class LinkedHashSetConstReverseIterator
   friend class LinkedHashSet;
 };
 
+inline void SwapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
+  DCHECK(a.prev_);
+  DCHECK(a.next_);
+  DCHECK(b.prev_);
+  DCHECK(b.next_);
+  swap(a.prev_, b.prev_);
+  swap(a.next_, b.next_);
+  if (b.next_ == &a) {
+    DCHECK_EQ(b.prev_, &a);
+    b.next_ = &b;
+    b.prev_ = &b;
+  } else {
+    b.next_->prev_ = &b;
+    b.prev_->next_ = &b;
+  }
+  if (a.next_ == &b) {
+    DCHECK_EQ(a.prev_, &b);
+    a.next_ = &a;
+    a.prev_ = &a;
+  } else {
+    a.next_->prev_ = &a;
+    a.prev_->next_ = &a;
+  }
+}
+
+inline void swap(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
+  DCHECK_NE(a.next_, &a);
+  DCHECK_NE(b.next_, &b);
+  swap(a.prev_, b.prev_);
+  swap(a.next_, b.next_);
+  if (b.next_) {
+    b.next_->prev_ = &b;
+    b.prev_->next_ = &b;
+  }
+  if (a.next_) {
+    a.next_->prev_ = &a;
+    a.prev_->next_ = &a;
+  }
+}
+
 template <typename T, typename U, typename V, typename Allocator>
 inline LinkedHashSet<T, U, V, Allocator>::LinkedHashSet() {
   static_assert(
@@ -875,46 +915,6 @@ inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
   erase(find(value));
-}
-
-inline void SwapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
-  DCHECK(a.prev_);
-  DCHECK(a.next_);
-  DCHECK(b.prev_);
-  DCHECK(b.next_);
-  swap(a.prev_, b.prev_);
-  swap(a.next_, b.next_);
-  if (b.next_ == &a) {
-    DCHECK_EQ(b.prev_, &a);
-    b.next_ = &b;
-    b.prev_ = &b;
-  } else {
-    b.next_->prev_ = &b;
-    b.prev_->next_ = &b;
-  }
-  if (a.next_ == &b) {
-    DCHECK_EQ(a.prev_, &b);
-    a.next_ = &a;
-    a.prev_ = &a;
-  } else {
-    a.next_->prev_ = &a;
-    a.prev_->next_ = &a;
-  }
-}
-
-inline void swap(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
-  DCHECK_NE(a.next_, &a);
-  DCHECK_NE(b.next_, &b);
-  swap(a.prev_, b.prev_);
-  swap(a.next_, b.next_);
-  if (b.next_) {
-    b.next_->prev_ = &b;
-    b.prev_->next_ = &b;
-  }
-  if (a.next_) {
-    a.next_->prev_ = &a;
-    a.prev_->next_ = &a;
-  }
 }
 
 template <typename T, typename Allocator>
