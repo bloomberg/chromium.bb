@@ -1076,8 +1076,6 @@ test("ash_content_unittests") {
     "content/display/screen_orientation_controller_chromeos_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_delegate_unittest.cc",
     "content/keyboard_overlay/keyboard_overlay_view_unittest.cc",
-    "test/ash_test_suite.cc",
-    "test/ash_test_suite.h",
     "test/ash_unittests.cc",
   ]
   configs += [
@@ -1098,7 +1096,6 @@ test("ash_content_unittests") {
     "//components/quirks",
     "//components/signin/core/account_id",
     "//components/user_manager",
-    "//components/viz/test:test_support",
     "//content/public/browser",
     "//content/test:test_support",
     "//device/bluetooth",
@@ -1123,9 +1120,7 @@ test("ash_content_unittests") {
   ]
 
   data_deps = [
-    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_with_content_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
   ]
 }
 
@@ -1380,8 +1375,6 @@ test("ash_unittests") {
     # TODO: fails as ScreenLayoutObserver is not installed in mash,
     # http://crbug.com/696752.
     "system/screen_layout_observer_unittest.cc",
-    "test/ash_test_suite.cc",
-    "test/ash_test_suite.h",
     "test/ash_unittests.cc",
 
     # TODO(riajiang): port to work with mash. http://crbug.com/698032.
@@ -1449,13 +1442,11 @@ test("ash_unittests") {
     "//ash/touch_hud",
     "//base",
     "//base/test:test_support",
-    "//cc:test_support",
     "//chromeos",
     "//chromeos:test_support_without_gmock",
     "//components/quirks",
     "//components/signin/core/account_id",
     "//components/user_manager",
-    "//components/viz/test:test_support",
     "//device/bluetooth",
     "//mojo/edk/system",
     "//net:net",
@@ -1499,9 +1490,7 @@ test("ash_unittests") {
   ]
 
   data_deps = [
-    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
     "//testing/buildbot/filters:ash_unittests_filters",
   ]
 
@@ -1516,17 +1505,13 @@ test("ash_perftests") {
   sources = [
     "perftests/ash_background_filter_blur_perftest.cc",
     "test/ash_perftests.cc",
-    "test/ash_test_suite.cc",
-    "test/ash_test_suite.h",
   ]
 
   deps = [
     ":test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
     "//base/test:test_support",
-    "//cc:test_support",
     "//cc/base",
-    "//components/viz/test:test_support",
     "//mojo/edk/embedder:headers",
     "//testing/gtest",
     "//testing/perf",
@@ -1555,9 +1540,7 @@ executable("ash_shell_with_content") {
   ]
 
   data_deps = [
-    "//ash/strings:ash_test_strings",
     "//ash/resources:ash_test_resources_with_content_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
   ]
 }
 
@@ -1658,6 +1641,8 @@ static_library("test_support_common") {
     "test/ash_test_environment.h",
     "test/ash_test_helper.cc",
     "test/ash_test_helper.h",
+    "test/ash_test_suite.cc",
+    "test/ash_test_suite.h",
     "test/ash_test_views_delegate.cc",
     "test/ash_test_views_delegate.h",
 
@@ -1709,10 +1694,12 @@ static_library("test_support_common") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//cc:test_support",
     "//chromeos",
     "//components/prefs:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager:user_manager",
+    "//components/viz/test:test_support",
     "//device/bluetooth",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
@@ -1739,6 +1726,12 @@ static_library("test_support_common") {
     "//ui/views:test_support",
     "//ui/wm",
     "//ui/wm/public",
+  ]
+
+  data_deps = [
+    "//ash/strings:ash_test_strings",
+    "//ash/resources:ash_test_resources_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
   ]
 }
 

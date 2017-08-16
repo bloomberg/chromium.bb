@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/test/ash_test_suite.h"
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -12,40 +13,11 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-namespace {
-
-class UiArcTestSuite : public base::TestSuite {
- public:
-  UiArcTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
-
- protected:
-  void Initialize() override {
-    base::TestSuite::Initialize();
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-
-    // To use resource bundles
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-  }
-
-  void Shutdown() override {
-    ui::ResourceBundle::CleanupSharedInstance();
-    base::TestSuite::Shutdown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UiArcTestSuite);
-};
-
-}  // namespace
-
 int main(int argc, char** argv) {
-  UiArcTestSuite test_suite(argc, argv);
+  ash::AshTestSuite test_suite(argc, argv);
 
   mojo::edk::Init();
   return base::LaunchUnitTests(
       argc, argv,
-      base::Bind(&UiArcTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
 }
