@@ -1,41 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<!DOCTYPE HTML>
+<title>Verify that MediaStreamTracks created while dispatching MediaStreamSource
+ events do not crash.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Verify that MediaStreamTracks created while dispatching MediaStreamSource events do not crash.");
+  async_test(test => {
+    navigator.mediaDevices.getUserMedia({audio:true, video: true})
+      .then(test.step_func(stream => {
+        // |track| may be any of the audio or video tracks.
+        var track = stream.getTracks()[0];
+        assert_equals(track.readyState, "live");
+        track.onended = test.unreached_func("ended event should not be fired.");
+        track.onmute = test.step_func(() => {
+          assert_equals(track.readyState, "live");
+          track.clone();
+          track.stop();
+          assert_equals(track.readyState, "ended");
+          track.clone();
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
-var jsTestIsAsync = true;
-
-function getUserMedia(constraints, callback) {
-    try {
-        navigator.webkitGetUserMedia(constraints, callback, function () { });
-    } catch (e) {
-        testFailed("Unexpected exception: " + e.toString());
-        finishJSTest();
-    }
-}
-
-getUserMedia({audio: true,video: true}, function (stream) {
-    var track = stream.getTracks()[0];
-    track.onmute = function () {
-        track.clone();
-        track.stop();
-    };
-    track.onended = function () {
-        track.clone(undefined);
-        testPassed("Test did not crash.");
-        finishJSTest();
-    };
-    track.enabled = false;
-});
+          // Use a timeout to detect a misfire of the ended event.
+          test.step_timeout(test.step_func_done(() => {
+            assert_equals(track.readyState, "ended");
+          }));
+        });
+        track.enabled = false;
+      }))
+      .catch(test.unreached_func("getUserMedia failed"));
+  });
 </script>
-</body>
-</html>
