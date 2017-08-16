@@ -2597,6 +2597,23 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 //     cancels the gesture, all remaining touches are forwarded to the content
 //     scroll logic. The user cannot trigger the navigation logic again.
 - (void)scrollWheel:(NSEvent*)event {
+#if defined(MAC_OS_X_VERSION_10_11) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
+  // When linking against the 10.11 (or later) SDK and running on 10.11 or
+  // later, check the phase of the event and specially handle the "begin" and
+  // "end" phases.
+  if (base::mac::IsAtLeastOS10_11()) {
+    if (event.phase == NSEventPhaseBegan) {
+      [self handleBeginGestureWithEvent:event];
+    }
+
+    if (event.phase == NSEventPhaseEnded ||
+        event.phase == NSEventPhaseCancelled) {
+      [self handleEndGestureWithEvent:event];
+    }
+  }
+#endif
+
   if (responderDelegate_ &&
       [responderDelegate_ respondsToSelector:@selector(handleEvent:)]) {
     BOOL handled = [responderDelegate_ handleEvent:event];
