@@ -709,11 +709,11 @@ class LoadCommittedCapturer : public WebContentsObserver {
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(render_frame_host);
 
-    // Don't pay attention to swapped out RenderFrameHosts in the main frame.
-    // TODO(nasko): Remove once swappedout:// is gone.
-    // See https://crbug.com/357747.
+    // Don't pay attention to pending delete RenderFrameHosts in the main frame,
+    // which might happen in a race if a cross-process navigation happens
+    // quickly.
     if (!rfh->is_active()) {
-      DLOG(INFO) << "Skipping swapped out RFH: "
+      DLOG(INFO) << "Skipping pending delete RFH: "
                  << rfh->GetSiteInstance()->GetSiteURL();
       return;
     }

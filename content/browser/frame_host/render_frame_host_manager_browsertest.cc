@@ -1709,16 +1709,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 }
 
 // Test for crbug.com/143155.  Frame tree updates during unload should not
-// interrupt the intended navigation and show swappedout:// instead.
+// interrupt the intended navigation.
 // Specifically:
 // 1) Open 2 tabs in an HTTP SiteInstance, with a subframe in the opener.
 // 2) Send the second tab to a different foo.com SiteInstance.
-//    This creates a swapped out opener for the first tab in the foo process.
+//    This created a swapped out opener for the first tab in the foo process.
 // 3) Navigate the first tab to the foo.com SiteInstance, and have the first
 //    tab's unload handler remove its frame.
-// This used to cause an update to the frame tree of the swapped out RV,
-// just as it was navigating to a real page.  That pre-empted the real
-// navigation and visibly sent the tab to swappedout://.
+// In older versions of Chrome, this caused an update to the frame tree that
+// resulted in showing an internal page rather than the real page.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontPreemptNavigationWithFrameTreeUpdate) {
   StartEmbeddedServer();

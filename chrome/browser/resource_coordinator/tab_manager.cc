@@ -918,8 +918,8 @@ WebContents* TabManager::DiscardWebContentsAt(int index,
 
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs.
-  // Find a different approach that doesn't do that, perhaps based on navigation
-  // to swappedout://.
+  // Find a different approach that doesn't do that, perhaps based on
+  // RenderFrameProxyHosts.
   delete old_contents;
   recent_tab_discard_ = true;
 
