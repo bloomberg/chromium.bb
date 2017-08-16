@@ -420,7 +420,7 @@ public class CompositorViewHolder extends FrameLayout
     /**
      * @return The SurfaceView proxy used by the Compositor.
      */
-    public View getCompositorView() {
+    public CompositorView getCompositorView() {
         return mCompositorView;
     }
 
