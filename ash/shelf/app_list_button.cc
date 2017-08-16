@@ -156,14 +156,14 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (is_primary_user_active_ && voice_interaction_overlay_) {
+      if (IsVoiceInteractionActive()) {
         voice_interaction_overlay_->EndAnimation();
         voice_interaction_animation_delay_timer_->Stop();
       }
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (is_primary_user_active_ && voice_interaction_overlay_) {
+      if (IsVoiceInteractionActive()) {
         voice_interaction_animation_delay_timer_->Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(
@@ -176,12 +176,10 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_LONG_PRESS:
-      if (chromeos::switches::IsVoiceInteractionEnabled() &&
-          is_primary_user_active_) {
+      if (IsVoiceInteractionActive()) {
         base::RecordAction(base::UserMetricsAction(
             "VoiceInteraction.Started.AppListButtonLongPress"));
         Shell::Get()->app_list()->StartVoiceInteractionSession();
-        DCHECK(voice_interaction_overlay_);
         voice_interaction_overlay_->BurstAnimation();
         event->SetHandled();
       } else {
@@ -189,8 +187,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       }
       return;
     case ui::ET_GESTURE_LONG_TAP:
-      if (chromeos::switches::IsVoiceInteractionEnabled() &&
-          is_primary_user_active_) {
+      if (IsVoiceInteractionActive()) {
         // Also consume the long tap event. This happens after the user long
         // presses and lifts the finger. We already handled the long press
         // ignore the long tap to avoid bringing up the context menu again.
@@ -375,7 +372,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   // factors.
   float ring_outer_radius_dp = 7.f;
   float ring_thickness_dp = 1.5f;
-  if (chromeos::switches::IsVoiceInteractionEnabled()) {
+  if (IsVoiceInteractionActive()) {
     ring_outer_radius_dp = 8.f;
     ring_thickness_dp = 1.f;
   }
@@ -388,7 +385,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
     fg_flags.setColor(kShelfIconColor);
 
-    if (chromeos::switches::IsVoiceInteractionEnabled())
+    if (IsVoiceInteractionActive())
       // active: 100% alpha, inactive: 54% alpha
       fg_flags.setAlpha(voice_interaction_state_ ==
                                 ash::VoiceInteractionState::RUNNING
@@ -401,7 +398,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     // Make sure the center of the circle lands on pixel centers.
     canvas->DrawCircle(circle_center, radius, fg_flags);
 
-    if (chromeos::switches::IsVoiceInteractionEnabled()) {
+    if (IsVoiceInteractionActive()) {
       fg_flags.setAlpha(255);
       const float kCircleRadiusDp = 5.f;
       fg_flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -506,6 +503,7 @@ void AppListButton::OnVoiceInteractionStatusChanged(
 }
 
 void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
+  SchedulePaint();
   // If the active user is not the primary user, app list button animation will
   // be disabled.
   if (!user_manager::UserManager::IsInitialized() ||
@@ -576,6 +574,15 @@ void AppListButton::GenerateAndSendBackEvent(
     ignore_result(
         root_window->GetHost()->event_sink()->OnEventFromSource(&key_event));
   }
+}
+
+bool AppListButton::IsVoiceInteractionActive() {
+  if (chromeos::switches::IsVoiceInteractionEnabled() &&
+      is_primary_user_active_) {
+    DCHECK(voice_interaction_overlay_);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace ash
