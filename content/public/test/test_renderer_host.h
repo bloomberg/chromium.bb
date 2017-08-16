@@ -143,6 +143,7 @@ class RenderFrameHostTester {
   virtual void SimulateSwapOutACK() = 0;
 
   // Simulate a renderer-initiated navigation up until commit.
+  // DEPRECATED: Use NavigationSimulator::NavigateAndCommitFromDocument().
   virtual void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
                                                   const GURL& url) = 0;
 
