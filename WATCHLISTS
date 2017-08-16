@@ -43,16 +43,14 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/infobar/'
     },
     'android_infra': {
-      'filepath': 'build/android/' \
+      'filepath': 'build/config/android/' \
+                  'build/android/' \
                   '|testing/android/' \
                   '|tools/android/'
     },
     'android_item_chooser_dialogs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/.*ChooserDialog.java|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java'
-    },
-    'android_java': {
-      'filepath': '/java/'
     },
     'android_loading': {
       'filepath': 'tools/android/loading/'
@@ -1626,19 +1624,16 @@
                       'je_julie.kim@chromium.org',
                       'nektar+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
-    'add_to_homescreen': ['agrieve+watch@chromium.org',
-                          'dominickn+watch@chromium.org',
+    'add_to_homescreen': ['dominickn+watch@chromium.org',
                           'hanxi+watch@chromium.org',
                           'pkotwicz+watch@chromium.org'],
     'android_crash_reporting': ['asvitkine+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org',
-                      'jbudorick+watch@chromium.org',
-                      'mikecase+watch@chromium.org'],
+                      'jbudorick+watch@chromium.org'],
     'android_item_chooser_dialogs': ['juncai+watch@chromium.org',
                                      'ortuno+watch@chromium.org'],
-    'android_java': ['agrieve+watch@chromium.org'],
     'android_loading': ['gabadie+watch@chromium.org',
                         'lizeb+watch-android-loading@chromium.org'],
     'android_media': ['avayvod+watch@chromium.org',
