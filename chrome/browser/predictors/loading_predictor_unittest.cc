@@ -70,7 +70,6 @@ void LoadingPredictorTest::SetUp() {
 
 void LoadingPredictorTest::TearDown() {
   predictor_->Shutdown();
-  profile_->DestroyHistoryService();
 }
 
 TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {

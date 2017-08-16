@@ -5,6 +5,7 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -92,7 +93,14 @@ class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
       : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {}
-  ~AutocompleteActionPredictorTest() override = default;
+
+  ~AutocompleteActionPredictorTest() override {
+    // Since we instantiated the predictor instead of going through a factory
+    // and dependencies, no one else is going to call Shutdown(), which is
+    // supposed to be called as part of being a KeyedService. The behavior of
+    // this method is not explicitly verified.
+    predictor_->Shutdown();
+  }
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -108,11 +116,6 @@ class AutocompleteActionPredictorTest : public testing::Test {
     ASSERT_TRUE(predictor_->initialized_);
     ASSERT_TRUE(db_cache()->empty());
     ASSERT_TRUE(db_id_cache()->empty());
-  }
-
-  void TearDown() override {
-    predictor_->Shutdown();
-    profile_->DestroyHistoryService();
   }
 
  protected:

@@ -7,7 +7,10 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
