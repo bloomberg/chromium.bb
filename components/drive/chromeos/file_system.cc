@@ -797,6 +797,7 @@ void FileSystem::Search(const std::string& search_query,
 void FileSystem::SearchMetadata(const std::string& query,
                                 int options,
                                 int at_most_num_matches,
+                                MetadataSearchOrder order,
                                 const SearchMetadataCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -807,7 +808,7 @@ void FileSystem::SearchMetadata(const std::string& query,
   drive::internal::SearchMetadata(
       blocking_task_runner_, resource_metadata_, query,
       base::Bind(&drive::internal::MatchesType, options), at_most_num_matches,
-      callback);
+      order, callback);
 }
 
 void FileSystem::SearchByHashes(const std::set<std::string>& hashes,
@@ -817,6 +818,7 @@ void FileSystem::SearchByHashes(const std::set<std::string>& hashes,
       blocking_task_runner_, resource_metadata_,
       /* any file name */ "", base::Bind(&CheckHashes, hashes),
       std::numeric_limits<size_t>::max(),
+      drive::MetadataSearchOrder::LAST_ACCESSED,
       base::Bind(&RunSearchByHashesCallback, callback));
 }
 

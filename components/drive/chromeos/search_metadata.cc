@@ -42,24 +42,37 @@ struct ResultCandidate {
 
 // Used to sort the result candidates per the last accessed/modified time. The
 // recently accessed/modified files come first.
-bool CompareByTimestamp(const ResourceEntry& a, const ResourceEntry& b) {
+bool CompareByTimestamp(const ResourceEntry& a,
+                        const ResourceEntry& b,
+                        MetadataSearchOrder order) {
   const PlatformFileInfoProto& a_file_info = a.file_info();
   const PlatformFileInfoProto& b_file_info = b.file_info();
 
-  if (a_file_info.last_accessed() != b_file_info.last_accessed())
-    return a_file_info.last_accessed() > b_file_info.last_accessed();
+  switch (order) {
+    case MetadataSearchOrder::LAST_ACCESSED:
+      if (a_file_info.last_accessed() != b_file_info.last_accessed())
+        return a_file_info.last_accessed() > b_file_info.last_accessed();
 
-  // When the entries have the same last access time (which happens quite often
-  // because Drive server doesn't set the field until an entry is viewed via
-  // drive.google.com), we use last modified time as the tie breaker.
-  return a_file_info.last_modified() > b_file_info.last_modified();
+      // When the entries have the same last access time (which happens quite
+      // often because Drive server doesn't set the field until an entry is
+      /// viewed via drive.google.com), we use last modified time as the tie
+      // breaker.
+      return a_file_info.last_modified() > b_file_info.last_modified();
+    case MetadataSearchOrder::LAST_MODIFIED:
+      return a_file_info.last_modified() > b_file_info.last_modified();
+  }
 }
 
 struct ResultCandidateComparator {
+  explicit ResultCandidateComparator(MetadataSearchOrder order)
+      : order_(order) {}
   bool operator()(const std::unique_ptr<ResultCandidate>& a,
                   const std::unique_ptr<ResultCandidate>& b) const {
-    return CompareByTimestamp(a->entry, b->entry);
+    return CompareByTimestamp(a->entry, b->entry, order_);
   }
+
+ private:
+  const MetadataSearchOrder order_;
 };
 
 typedef std::priority_queue<std::unique_ptr<ResultCandidate>,
@@ -127,6 +140,7 @@ FileError MaybeAddEntryToResult(
         base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>& queries,
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
+    MetadataSearchOrder order,
     HiddenEntryClassifier* hidden_entry_classifier,
     ResultCandidateQueue* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
@@ -137,7 +151,7 @@ FileError MaybeAddEntryToResult(
   // We perform this check first in order to avoid the costly find-and-highlight
   // or FilePath lookup as much as possible.
   if (result_candidates->size() == at_most_num_matches &&
-      !CompareByTimestamp(entry, result_candidates->top()->entry))
+      !CompareByTimestamp(entry, result_candidates->top()->entry, order))
     return FILE_ERROR_OK;
 
   // Add |entry| to the result if the entry is eligible for the given
@@ -167,8 +181,9 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
                                        const std::string& query_text,
                                        const SearchMetadataPredicate& predicate,
                                        int at_most_num_matches,
+                                       MetadataSearchOrder order,
                                        MetadataSearchResultVector* results) {
-  ResultCandidateQueue result_candidates;
+  ResultCandidateQueue result_candidates((ResultCandidateComparator(order)));
 
   // Prepare data structure for searching.
   std::vector<base::string16> keywords =
@@ -201,7 +216,7 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
   for (; !it->IsAtEnd(); it->Advance()) {
     FileError error = MaybeAddEntryToResult(
         resource_metadata, it.get(), queries, predicate, at_most_num_matches,
-        &hidden_entry_classifier, &result_candidates);
+        order, &hidden_entry_classifier, &result_candidates);
     if (error != FILE_ERROR_OK)
       return error;
   }
@@ -267,6 +282,7 @@ void SearchMetadata(
     const std::string& query,
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
+    MetadataSearchOrder order,
     const SearchMetadataCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -278,7 +294,7 @@ void SearchMetadata(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner.get(), FROM_HERE,
       base::Bind(&SearchMetadataOnBlockingPool, resource_metadata, query,
-                 predicate, at_most_num_matches, results_ptr),
+                 predicate, at_most_num_matches, order, results_ptr),
       base::Bind(&RunSearchMetadataCallback, callback, start_time,
                  base::Passed(&results)));
 }

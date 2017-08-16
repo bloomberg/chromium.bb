@@ -824,11 +824,11 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
   DCHECK_NE(options, -1);
 
   file_system->SearchMetadata(
-      params->search_params.query,
-      options,
-      params->search_params.max_results,
-      base::Bind(&FileManagerPrivateSearchDriveMetadataFunction::
-                     OnSearchMetadata, this));
+      params->search_params.query, options, params->search_params.max_results,
+      drive::MetadataSearchOrder::LAST_ACCESSED,
+      base::Bind(
+          &FileManagerPrivateSearchDriveMetadataFunction::OnSearchMetadata,
+          this));
   return true;
 }
 

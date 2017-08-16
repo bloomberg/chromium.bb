@@ -41,6 +41,7 @@ void SearchMetadata(
     const std::string& query,
     const SearchMetadataPredicate& predicate,
     size_t at_most_num_matches,
+    MetadataSearchOrder order,
     const SearchMetadataCallback& callback);
 
 // Returns true if |entry| is eligible for the search |options| and should be

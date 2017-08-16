@@ -183,11 +183,11 @@ void FakeFileSystem::Search(const std::string& search_query,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void FakeFileSystem::SearchMetadata(
-    const std::string& query,
-    int options,
-    int at_most_num_matches,
-    const SearchMetadataCallback& callback) {
+void FakeFileSystem::SearchMetadata(const std::string& query,
+                                    int options,
+                                    int at_most_num_matches,
+                                    MetadataSearchOrder order,
+                                    const SearchMetadataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
