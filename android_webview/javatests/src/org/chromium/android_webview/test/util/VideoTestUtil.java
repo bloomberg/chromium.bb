@@ -4,9 +4,11 @@
 
 package org.chromium.android_webview.test.util;
 
+import android.app.Instrumentation;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.test.AwTestBase;
+import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.TestAwContentsClient;
 
 /**
@@ -15,18 +17,21 @@ import org.chromium.android_webview.test.TestAwContentsClient;
 public class VideoTestUtil {
     /**
      * Run video test.
-     * @param testCase the test case instance we're going to run the test in.
+     * @param instr the test instrumentation
+     * @param testRule the test rule instance we're going to run the test in.
      * @param requiredUserGesture the settings of MediaPlaybackRequiresUserGesture.
      * @return true if the event happened,
      * @throws Throwable throw exception if timeout.
      */
-    public static boolean runVideoTest(final AwTestBase testCase, final boolean requiredUserGesture,
+    public static boolean runVideoTest(final Instrumentation instr,
+            final AwActivityTestRule testRule,
+            final boolean requiredUserGesture,
             long waitTime) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         TestAwContentsClient client = new TestAwContentsClient();
         final AwContents awContents =
-                testCase.createAwTestContainerViewOnMainSync(client).getAwContents();
-        testCase.getInstrumentation().runOnMainSync(() -> {
+                testRule.createAwTestContainerViewOnMainSync(client).getAwContents();
+        instr.runOnMainSync(() -> {
             AwSettings awSettings = awContents.getSettings();
             awSettings.setJavaScriptEnabled(true);
             awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
@@ -43,7 +48,7 @@ public class VideoTestUtil {
                     + "</script></head><body>"
                     + "<video id='video' autoplay control src='"
                     + webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
-            testCase.loadDataAsync(awContents, data, "text/html", false);
+            testRule.loadDataAsync(awContents, data, "text/html", false);
             return observer.waitForEvent(waitTime);
         } finally {
             if (webServer != null && webServer.getTestWebServer() != null) {
