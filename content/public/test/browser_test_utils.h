@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -172,6 +173,8 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
 // |key_code| alone is good enough for scenarios that only need the char
 // value represented by a key event and not the physical key on the keyboard
 // or the keyboard layout.
+// If set to true, the modifiers |control|, |shift|, |alt|, and |command| are
+// pressed down first before the key event, and released after.
 void SimulateKeyPress(WebContents* web_contents,
                       ui::DomKey key,
                       ui::DomCode code,
@@ -180,6 +183,54 @@ void SimulateKeyPress(WebContents* web_contents,
                       bool shift,
                       bool alt,
                       bool command);
+
+// Like SimulateKeyPress(), but does not send the char (AKA keypress) event.
+// This is useful for arrow keys and other key presses that do not generate
+// characters.
+void SimulateKeyPressWithoutChar(WebContents* web_contents,
+                                 ui::DomKey key,
+                                 ui::DomCode code,
+                                 ui::KeyboardCode key_code,
+                                 bool control,
+                                 bool shift,
+                                 bool alt,
+                                 bool command);
+
+// Holds down modifier keys for the duration of its lifetime and releases them
+// upon destruction. This allows simulating multiple input events without
+// simulating modifier key releases in between.
+class ScopedSimulateModifierKeyPress {
+ public:
+  ScopedSimulateModifierKeyPress(WebContents* web_contents,
+                                 bool control,
+                                 bool shift,
+                                 bool alt,
+                                 bool command);
+  ~ScopedSimulateModifierKeyPress();
+
+  // Similar to SimulateMouseClickAt().
+  void MouseClickAt(int additional_modifiers,
+                    blink::WebMouseEvent::Button button,
+                    const gfx::Point& point);
+
+  // Similar to SimulateKeyPress().
+  void KeyPress(ui::DomKey key, ui::DomCode code, ui::KeyboardCode key_code);
+
+  // Similar to SimulateKeyPressWithoutChar().
+  void KeyPressWithoutChar(ui::DomKey key,
+                           ui::DomCode code,
+                           ui::KeyboardCode key_code);
+
+ private:
+  WebContents* const web_contents_;
+  int modifiers_;
+  const bool control_;
+  const bool shift_;
+  const bool alt_;
+  const bool command_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSimulateModifierKeyPress);
+};
 
 // Method to check what devices we have on the system.
 bool IsWebcamAvailableOnSystem(WebContents* web_contents);
@@ -421,8 +472,7 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
 // safe to assume that events sent to the top-level RenderWidgetHostView can
 // be expected to properly hit-test to this surface, if appropriate.
 void WaitForGuestSurfaceReady(content::WebContents* web_contents);
-
-#endif
+#endif  // defined(USE_AURA)
 
 // Waits until the cc::Surface associated with a cross-process child frame
 // has been drawn for the first time. Once this method returns it should be
