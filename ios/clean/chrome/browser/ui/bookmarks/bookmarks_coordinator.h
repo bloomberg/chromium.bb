@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // A coordinator for the bookmarks UI, which can be presented modally on its
 // own or inside the NTP.

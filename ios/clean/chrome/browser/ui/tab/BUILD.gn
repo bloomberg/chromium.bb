@@ -17,6 +17,7 @@ source_set("tab") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/commands",
@@ -28,7 +29,6 @@ source_set("tab") {
     "//ios/clean/chrome/browser/ui/web_contents",
     "//ios/shared/chrome/browser/ui/broadcaster",
     "//ios/shared/chrome/browser/ui/commands",
-    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
   ]
 }
@@ -65,9 +65,9 @@ source_set("unit_tests") {
     ":tab_ui",
     "//base",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/coordinators",
+    "//ios/chrome/browser/ui/coordinators:test_support",
     "//ios/chrome/browser/ui/toolbar/test",
-    "//ios/shared/chrome/browser/ui/coordinators",
-    "//ios/shared/chrome/browser/ui/coordinators:test_support",
     "//ios/shared/chrome/browser/ui/tab:test_support",
     "//ios/web/public/test",
     "//testing/gtest",

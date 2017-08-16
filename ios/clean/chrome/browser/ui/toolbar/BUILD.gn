@@ -17,6 +17,7 @@ source_set("toolbar") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/tools_menu:configuration",
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser/ui/commands",
@@ -24,7 +25,6 @@ source_set("toolbar") {
     "//ios/clean/chrome/browser/ui/tools",
     "//ios/shared/chrome/browser/ui/broadcaster",
     "//ios/shared/chrome/browser/ui/commands",
-    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web",
   ]
 }

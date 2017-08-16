@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // A coordinator for the Settings UI, which is usually presented modally
 // on top of whatever other UI is currently active.

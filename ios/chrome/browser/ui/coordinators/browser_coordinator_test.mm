@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator_test.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"

@@ -5,7 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_COORDINATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_COORDINATOR_H_
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Coordinator for the location bar, which contains the omnibox and associated
 // decorations (such as the security icon, voice search icon, and bookmark

@@ -5,8 +5,8 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_ROOT_ROOT_COORDINATOR_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_ROOT_ROOT_COORDINATOR_H_
 
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 #import "ios/clean/chrome/browser/url_opening.h"
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Coordinator that runs the root container.
 @interface RootCoordinator : BrowserCoordinator<URLOpening>

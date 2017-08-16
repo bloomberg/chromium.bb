@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
+#ifndef IOS_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
+#define IOS_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
 
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Internal API for subclasses and categories of BrowserCoordinator.
 //
@@ -94,4 +94,4 @@
 
 @end
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_
+#endif  // IOS_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_INTERNAL_H_

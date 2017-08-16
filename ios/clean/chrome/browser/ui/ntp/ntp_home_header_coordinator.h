@@ -6,7 +6,7 @@
 #define IOS_CLEAN_CHROME_BROWSER_UI_NTP_NTP_HOME_HEADER_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
-#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 @protocol ContentSuggestionsHeaderControlling;
 @protocol ContentSuggestionsHeaderProvider;

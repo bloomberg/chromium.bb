@@ -56,11 +56,11 @@ source_set("steps") {
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser/ui/root",
     "//ios/net",
-    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web:web_arc",
   ]
 }

@@ -104,9 +104,9 @@ source_set("application_state") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/coordinators",
     "//ios/clean/chrome/app/steps:step_runner",
     "//ios/clean/chrome/app/steps:steps",
-    "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/testing/perf:startup",
   ]
 }
