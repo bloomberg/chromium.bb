@@ -507,6 +507,13 @@ if (CONFIG_Q_ADAPT_PROBS)
       "${AOM_ROOT}/av1/common/token_cdfs.h")
 endif ()
 
+if (CONFIG_XIPHRC)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/ratectrl_xiph.c"
+      "${AOM_ROOT}/av1/encoder/ratectrl_xiph.h")
+endif ()
+
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
 # this function is called.
 function (setup_av1_targets)
