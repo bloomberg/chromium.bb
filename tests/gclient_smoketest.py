@@ -727,7 +727,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertFalse(os.path.exists(output_deps))
 
     self.gclient(['config', self.git_base + 'repo_6', '--name', 'src'])
-    self.gclient(['sync'])
+    self.gclient(['sync', '--process-all-deps'])
     self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps,
                   '--pin-all-deps'])
 
@@ -756,13 +756,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src -> src/repo2',
         '  "src/repo2": {',
         '    "url": "{git_base}repo_2@%s",' % (
-                 self.githash('repo_2', 1)[:7]),
+                 self.githash('repo_2', 1)),
         '    "condition": "True",',
         '  },',
         '',
         '  # src -> src/repo4',
         '  "src/repo4": {',
-        '    "url": "/repo_4",',
+        '    "url": "/repo_4@%s",' % (self.githash('repo_4', 2)),
         '    "condition": "False",',
         '  },',
         '',
@@ -777,12 +777,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "mac": {',
         '    # src -> src/mac_repo',
         '    "src/mac_repo": {',
-        '      "url": "{repo5_var}",',
+        '      "url": "{repo5_var}@%s",' % (self.githash('repo_5', 3)),
         '    },',
         '',
         '    # src -> src/repo8 -> src/recursed_os_repo',
         '    "src/recursed_os_repo": {',
-        '      "url": "/repo_5",',
+        '      "url": "/repo_5@%s",' % (self.githash('repo_5', 3)),
         '    },',
         '',
         '  },',
@@ -790,12 +790,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "unix": {',
         '    # src -> src/repo8 -> src/recursed_os_repo',
         '    "src/recursed_os_repo": {',
-        '      "url": "/repo_5",',
+        '      "url": "/repo_5@%s",' % (self.githash('repo_5', 3)),
         '    },',
         '',
         '    # src -> src/unix_repo',
         '    "src/unix_repo": {',
-        '      "url": "{repo5_var}",',
+        '      "url": "{repo5_var}@%s",' % (self.githash('repo_5', 3)),
         '    },',
         '',
         '  },',
@@ -803,7 +803,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "win": {',
         '    # src -> src/win_repo',
         '    "src/win_repo": {',
-        '      "url": "{repo5_var}",',
+        '      "url": "{repo5_var}@%s",' % (self.githash('repo_5', 3)),
         '    },',
         '',
         '  },',

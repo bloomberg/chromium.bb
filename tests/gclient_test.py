@@ -593,7 +593,8 @@ class GclientTest(trial_dir.TestCase):
       ]
     for deps, deps_os, target_os_list, expected_deps in test_data:
       orig_deps = copy.deepcopy(deps)
-      result = gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list)
+      result = gclient.Dependency.MergeWithOsDeps(
+          deps, deps_os, target_os_list, False)
       self.assertEqual(result, expected_deps)
       self.assertEqual(deps, orig_deps)
 
@@ -616,7 +617,7 @@ class GclientTest(trial_dir.TestCase):
       ]
     for deps, deps_os, target_os_list in test_data:
       with self.assertRaises(gclient_utils.Error):
-        gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list)
+        gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list, False)
 
   def testLateOverride(self):
     """Verifies expected behavior of LateOverride."""

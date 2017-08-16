@@ -544,7 +544,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     raise gclient_utils.Error('Unknown url type')
 
   @staticmethod
-  def MergeWithOsDeps(deps, deps_os, target_os_list):
+  def MergeWithOsDeps(deps, deps_os, target_os_list, process_all_deps):
     """Returns a new "deps" structure that is the deps sent in updated
     with information from deps_os (the deps_os section of the DEPS
     file) that matches the list of target os."""
@@ -561,7 +561,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if isinstance(value, basestring):
           value = {'url': value}
         assert isinstance(value, collections.Mapping), (key, value)
-        value['should_process'] = dep_os in target_os_list
+        value['should_process'] = dep_os in target_os_list or process_all_deps
 
         # Handle collisions/overrides.
         if key in new_deps and new_deps[key] != value:
@@ -642,7 +642,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if condition:
         condition_value = gclient_eval.EvaluateCondition(
             condition, self.get_vars())
-        should_process = should_process and condition_value
+        if not self._get_option('process_all_deps', False):
+          should_process = should_process and condition_value
       deps_to_add.append(Dependency(
           self, name, raw_url, url, None, None, self.custom_vars, None,
           deps_file, should_process, use_relative_paths, condition,
@@ -770,7 +771,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if target_os_list and not self._get_option(
           'do_not_merge_os_specific_entries', False):
         deps = self.MergeWithOsDeps(
-            deps, local_scope['deps_os'], target_os_list)
+            deps, local_scope['deps_os'], target_os_list,
+            self._get_option('process_all_deps', False))
 
     deps_to_add = self._deps_to_objects(
         self._postprocess_deps(deps, rel_prefix), use_relative_paths)
@@ -1719,6 +1721,31 @@ class Flattener(object):
     assert self._deps_string is not None
     return self._deps_string
 
+  def _pin_dep(self, dep):
+    """Pins a dependency to specific full revision sha.
+
+    Arguments:
+      dep (Dependency): dependency to process
+    """
+    if dep.parsed_url is None:
+      return
+
+    # Make sure the revision is always fully specified (a hash),
+    # as opposed to refs or tags which might change. Similarly,
+    # shortened shas might become ambiguous; make sure to always
+    # use full one for pinning.
+    url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
+    if revision and gclient_utils.IsFullGitSha(revision):
+      return
+
+    scm = gclient_scm.CreateSCM(
+        dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
+    revinfo = scm.revinfo(self._client._options, [], None)
+
+    dep._parsed_url = dep._url = '%s@%s' % (url, revinfo)
+    raw_url, _ = gclient_utils.SplitUrlRevision(dep._raw_url)
+    dep._raw_url = '%s@%s' % (raw_url, revinfo)
+
   def _flatten(self, pin_all_deps=False):
     """Runs the flattener. Saves resulting DEPS string.
 
@@ -1732,21 +1759,15 @@ class Flattener(object):
 
     if pin_all_deps:
       for dep in self._deps.itervalues():
-        if dep.parsed_url is None:
-          continue
+        self._pin_dep(dep)
 
-        scm = gclient_scm.CreateSCM(
-            dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
-        revinfo = scm.revinfo(self._client._options, [], None)
+      for os_deps in self._deps_os.itervalues():
+        for dep in os_deps.itervalues():
+          # OS-specific deps need to have their full URL resolved manually.
+          assert not dep.parsed_url, (dep, dep.parsed_url)
+          dep._parsed_url = dep.LateOverride(dep.url)
 
-        # Make sure the revision is always fully specified (a hash),
-        # as opposed to refs or tags which might change.
-        url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
-        if revision and gclient_utils.IsGitSha(revision):
-          continue
-        dep._parsed_url = dep._url = '%s@%s' % (url, revinfo)
-        raw_url, _ = gclient_utils.SplitUrlRevision(dep._raw_url)
-        dep._raw_url = '%s@%s' % (raw_url, revinfo)
+          self._pin_dep(dep)
 
     self._deps_string = '\n'.join(
         _GNSettingsToLines(
@@ -1824,6 +1845,7 @@ def CMDflatten(parser, args):
 
   options.do_not_merge_os_specific_entries = True
   options.nohooks = True
+  options.process_all_deps = True
   client = GClient.LoadCurrentConfig(options)
 
   # Only print progress if we're writing to a file. Otherwise, progress updates
@@ -2193,6 +2215,9 @@ def CMDsync(parser, args):
   parser.add_option('--do-not-merge-os-specific-entries', action='store_true',
                     help='INTERNAL ONLY - disables merging of deps_os and '
                          'hooks_os to dependencies and hooks')
+  parser.add_option('--process-all-deps', action='store_true',
+                    help='Check out all deps, even for different OS-es, '
+                         'or with conditions evaluating to false')
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
   parser.add_option('--output-json',
