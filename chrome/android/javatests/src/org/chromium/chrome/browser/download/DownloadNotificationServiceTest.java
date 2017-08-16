@@ -16,6 +16,7 @@ import android.test.ServiceTestCase;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -304,9 +305,10 @@ public class DownloadNotificationServiceTest extends
     /**
      * Tests resume all pending downloads. Only auto resumable downloads can resume.
      */
-    @SmallTest
-    @Feature({"Download"})
-    @RetryOnFailure
+    //@SmallTest
+    //@Feature({"Download"})
+    //@RetryOnFailure
+    @DisabledTest
     public void testResumeAllPendingDownloads() throws Exception {
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
