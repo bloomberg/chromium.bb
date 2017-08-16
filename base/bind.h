@@ -71,14 +71,14 @@ struct TransformToUnwrappedTypeImpl;
 
 template <typename T>
 struct TransformToUnwrappedTypeImpl<RepeatMode::Once, T> {
-  using StoredType = typename std::decay<T>::type;
+  using StoredType = std::decay_t<T>;
   using ForwardType = StoredType&&;
   using Unwrapped = decltype(Unwrap(std::declval<ForwardType>()));
 };
 
 template <typename T>
 struct TransformToUnwrappedTypeImpl<RepeatMode::Repeating, T> {
-  using StoredType = typename std::decay<T>::type;
+  using StoredType = std::decay_t<T>;
   using ForwardType = const StoredType&;
   using Unwrapped = decltype(Unwrap(std::declval<ForwardType>()));
 };
@@ -126,12 +126,11 @@ using MakeUnwrappedTypeList =
 template <typename Functor, typename... Args>
 inline OnceCallback<MakeUnboundRunType<Functor, Args...>>
 BindOnce(Functor&& functor, Args&&... args) {
-  static_assert(
-      !internal::IsOnceCallback<typename std::decay<Functor>::type>() ||
-          (std::is_rvalue_reference<Functor&&>() &&
-           !std::is_const<typename std::remove_reference<Functor>::type>()),
-      "BindOnce requires non-const rvalue for OnceCallback binding."
-      " I.e.: base::BindOnce(std::move(callback)).");
+  static_assert(!internal::IsOnceCallback<std::decay_t<Functor>>() ||
+                    (std::is_rvalue_reference<Functor&&>() &&
+                     !std::is_const<std::remove_reference_t<Functor>>()),
+                "BindOnce requires non-const rvalue for OnceCallback binding."
+                " I.e.: base::BindOnce(std::move(callback)).");
 
   // This block checks if each |args| matches to the corresponding params of the
   // target function. This check does not affect the behavior of Bind, but its
@@ -171,7 +170,7 @@ template <typename Functor, typename... Args>
 inline RepeatingCallback<MakeUnboundRunType<Functor, Args...>>
 BindRepeating(Functor&& functor, Args&&... args) {
   static_assert(
-      !internal::IsOnceCallback<typename std::decay<Functor>::type>(),
+      !internal::IsOnceCallback<std::decay_t<Functor>>(),
       "BindRepeating cannot bind OnceCallback. Use BindOnce with std::move().");
 
   // This block checks if each |args| matches to the corresponding params of the
