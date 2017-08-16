@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -455,6 +456,13 @@ media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
 
   media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
       device_id, &formats);
+  // Remove formats that have zero resolution.
+  formats.erase(std::remove_if(formats.begin(), formats.end(),
+                               [](const media::VideoCaptureFormat& format) {
+                                 return format.frame_size.GetArea() <= 0;
+                               }),
+                formats.end());
+
   return formats;
 }
 

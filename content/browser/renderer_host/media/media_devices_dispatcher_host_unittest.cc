@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -30,6 +31,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +48,10 @@ namespace {
 const int kProcessId = 5;
 const int kRenderId = 6;
 const size_t kNumFakeVideoDevices = 3;
-const char kDefaultVideoDeviceID[] = "/dev/video2";
+const char kNormalVideoDeviceID[] = "/dev/video0";
+const char kNoFormatsVideoDeviceID[] = "/dev/video1";
+const char kZeroResolutionVideoDeviceID[] = "/dev/video2";
+const char* const kDefaultVideoDeviceID = kZeroResolutionVideoDeviceID;
 const char kDefaultAudioDeviceID[] = "fake_audio_input_2";
 
 void PhysicalDevicesEnumerated(base::Closure quit_closure,
@@ -83,16 +88,25 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
-        base::StringPrintf("device-count=%zu, video-input-default-id=%s, "
+        base::StringPrintf("video-input-default-id=%s, "
                            "audio-input-default-id=%s",
-                           kNumFakeVideoDevices, kDefaultVideoDeviceID,
-                           kDefaultAudioDeviceID));
+                           kDefaultVideoDeviceID, kDefaultAudioDeviceID));
     audio_manager_.reset(new media::MockAudioManager(
         base::MakeUnique<media::TestAudioThread>()));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_system_.get());
 
+    auto video_capture_device_factory =
+        base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
+    video_capture_device_factory_ = video_capture_device_factory.get();
+    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+        std::move(video_capture_device_factory));
+    auto video_capture_provider =
+        base::MakeUnique<InProcessVideoCaptureProvider>(
+            std::move(video_capture_system),
+            base::ThreadTaskRunnerHandle::Get());
+
+    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_system_.get(), std::move(video_capture_provider));
     host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());
@@ -101,6 +115,26 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   ~MediaDevicesDispatcherHostTest() override { audio_manager_->Shutdown(); }
 
   void SetUp() override {
+    std::vector<media::FakeVideoCaptureDeviceSettings> fake_video_devices(
+        kNumFakeVideoDevices);
+    // A regular video device
+    fake_video_devices[0].device_id = kNormalVideoDeviceID;
+    fake_video_devices[0].supported_formats = {
+        {gfx::Size(640, 480), 30.0, media::PIXEL_FORMAT_I420},
+        {gfx::Size(800, 600), 30.0, media::PIXEL_FORMAT_I420},
+        {gfx::Size(1020, 780), 30.0, media::PIXEL_FORMAT_I420},
+        {gfx::Size(1920, 1080), 20.0, media::PIXEL_FORMAT_I420},
+    };
+    // A video device that does not report any formats
+    fake_video_devices[1].device_id = kNoFormatsVideoDeviceID;
+    ASSERT_TRUE(fake_video_devices[1].supported_formats.empty());
+    // A video device that reports a 0x0 resolution.
+    fake_video_devices[2].device_id = kZeroResolutionVideoDeviceID;
+    fake_video_devices[2].supported_formats = {
+        {gfx::Size(0, 0), 0.0, media::PIXEL_FORMAT_I420},
+    };
+    video_capture_device_factory_->SetToCustomDevicesConfig(fake_video_devices);
+
     base::RunLoop run_loop;
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
     devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
@@ -133,13 +167,13 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     EXPECT_EQ(kNumFakeVideoDevices, capabilities.size());
     EXPECT_EQ(expected_first_device_id, capabilities[0]->device_id);
     for (const auto& capability : capabilities) {
+      // Always expect at least one format
       EXPECT_GT(capability->formats.size(), 1u);
-      EXPECT_GT(capability->formats[0].frame_size.width(), 1);
-      EXPECT_GT(capability->formats[0].frame_size.height(), 1);
-      EXPECT_GT(capability->formats[0].frame_rate, 1);
-      EXPECT_GT(capability->formats[1].frame_size.width(), 1);
-      EXPECT_GT(capability->formats[1].frame_size.height(), 1);
-      EXPECT_GT(capability->formats[1].frame_rate, 1);
+      for (auto& format : capability->formats) {
+        EXPECT_GE(format.frame_size.width(), 1);
+        EXPECT_GE(format.frame_size.height(), 1);
+        EXPECT_GE(format.frame_rate, 0.0);
+      }
     }
   }
 
@@ -314,6 +348,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
 
   std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
+  media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
   content::TestBrowserContext browser_context_;
   MediaDeviceEnumeration physical_devices_;
   url::Origin origin_;
