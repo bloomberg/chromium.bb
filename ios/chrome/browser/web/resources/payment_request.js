@@ -128,7 +128,7 @@ __gCrWeb['PromiseResolver'] = __gCrWeb.PromiseResolver;
 }());  // End of anonymous object
 
 /**
- * A simple object representation of |window.PaymentRequest| meant for
+ * A simple object representation of |PaymentRequest| meant for
  * communication to the app side.
  * @typedef {{
  *   methodData: !Array<!window.PaymentMethodData>,
@@ -139,7 +139,7 @@ __gCrWeb['PromiseResolver'] = __gCrWeb.PromiseResolver;
 var SerializedPaymentRequest;
 
 /**
- * A simple object representation of |window.PaymentResponse| meant for
+ * A simple object representation of |PaymentResponse| meant for
  * communication to the app side.
  * @typedef {{
  *   paymentRequestId: string,
@@ -195,7 +195,7 @@ var SerializedPaymentResponse;
   /**
    * The PaymentRequest object, if any. This object is provided by the page and
    * only updated by the app side.
-   * @type {window.PaymentRequest}
+   * @type {PaymentRequest}
    */
   __gCrWeb['paymentRequestManager'].pendingRequest = null;
 
@@ -216,20 +216,21 @@ var SerializedPaymentResponse;
   /**
    * The PromiseResolver object used to resolve the promise returned by
    * PaymentResponse.prototype.complete, if any.
-   * @type {window.PaymentRequest}
+   * @type {PaymentRequest}
    */
   __gCrWeb['paymentRequestManager'].responsePromiseResolver = null;
 
   /**
-   * Parses |paymentResponseData| into a window.PaymentResponse object.
+   * Parses |paymentResponseData| into a PaymentResponse object.
    * @param {!SerializedPaymentResponse} paymentResponseData
-   * @return {window.PaymentResponse}
+   * @return {PaymentResponse}
    */
   __gCrWeb['paymentRequestManager'].parsePaymentResponseData = function(
       paymentResponseData) {
-    var response = new window.PaymentResponse(
-        paymentResponseData['requestId'], paymentResponseData['methodName'],
-        paymentResponseData['details']);
+    var response = new PaymentResponse();
+    response.requestId = paymentResponseData['requestId'];
+    response.methodName = paymentResponseData['methodName'];
+    response.details = paymentResponseData['details'];
     if (paymentResponseData['shippingAddress'])
       response.shippingAddress = paymentResponseData['shippingAddress'];
     if (paymentResponseData['shippingOption'])
@@ -396,7 +397,7 @@ var SerializedPaymentResponse;
 
   /**
    * Serializes |paymentRequest| to a SerializedPaymentRequest object.
-   * @param {window.PaymentRequest} paymentRequest
+   * @param {PaymentRequest} paymentRequest
    * @return {SerializedPaymentRequest}
    */
   __gCrWeb['paymentRequestManager'].serializePaymentRequest = function(
@@ -514,7 +515,7 @@ var SerializedPaymentResponse;
  * @throws {DOMException}
  * @suppress {checkTypes} Required for DOMException's constructor.
  */
-window.PaymentRequest = function(methodData, details, opt_options) {
+function PaymentRequest(methodData, details, opt_options) {
   __gCrWeb.EventTarget.call(this);
 
   if (window.top != window.self) {
@@ -584,29 +585,11 @@ window.PaymentRequest = function(methodData, details, opt_options) {
    */
   this.updating = false;
 
-  /**
-   * A provided or generated ID for the this Payment Request instance.
-   * @type {string}
-   */
   this.id = details.id ? details.id : __gCrWeb['paymentRequestManager'].guid();
 
-  /**
-   * Shipping address selected by the user.
-   * @type {?window.PaymentAddress}
-   */
+  // Initialize these properties to make them own (vs. inherited) properties.
   this.shippingAddress = null;
-
-  /**
-   * Shipping option selected by the user.
-   * @type {?string}
-   */
   this.shippingOption = null;
-
-  /**
-   * Set to the value of shippingType property of |opt_options| if it is a valid
-   * PaymentShippingType. Otherwise set to PaymentShippingType.SHIPPING.
-   * @type {?PaymentShippingType}
-   */
   this.shippingType = null;
 
   if (opt_options && opt_options.requestShipping) {
@@ -625,18 +608,50 @@ window.PaymentRequest = function(methodData, details, opt_options) {
   __gCrWeb.message.invokeOnHost(message);
 };
 
-window.PaymentRequest.prototype = {
-  __proto__: __gCrWeb.EventTarget.prototype
-};
+PaymentRequest.prototype.__proto__ = __gCrWeb.EventTarget.prototype;
+
+/**
+ * A provided or generated ID for the this Payment Request instance.
+ * @type {string}
+ */
+PaymentRequest.prototype.id = '';
+
+/**
+ * Shipping address selected by the user.
+ * @type {?window.PaymentAddress}
+ */
+PaymentRequest.prototype.shippingAddress = null;
+
+/**
+ * Shipping option selected by the user.
+ * @type {?string}
+ */
+PaymentRequest.prototype.shippingOption = null;
+
+/**
+ * Set to the value of shippingType property of |opt_options| if it is a valid
+ * PaymentShippingType. Otherwise set to PaymentShippingType.SHIPPING.
+ * @type {?PaymentShippingType}
+ */
+PaymentRequest.prototype.shippingType = null;
 
 /**
  * Presents the PaymentRequest UI to the user.
- * @return {!Promise<window.PaymentResponse>} A promise to notify the caller
+ * @return {!Promise<PaymentResponse>} A promise to notify the caller
  *     whether the user accepted or rejected the request.
+ * @suppress {checkTypes} Required for DOMException's constructor.
  */
-window.PaymentRequest.prototype.show = function() {
-  if (__gCrWeb['paymentRequestManager'].pendingRequest) {
-    throw new Error('Only one PaymentRequest may be shown at a time.');
+PaymentRequest.prototype.show = function() {
+  if (!(this instanceof PaymentRequest)) {
+    return Promise.reject(new DOMException(
+        'show() must be called on an instance of PaymentRequest.',
+        'InvalidStateError'));
+  }
+
+  if (__gCrWeb['paymentRequestManager'].pendingRequest ||
+      __gCrWeb['paymentRequestManager'].requestPromiseResolver) {
+    return Promise.reject(
+        new DOMException('Already called show() once', 'InvalidStateError'));
   }
   __gCrWeb['paymentRequestManager'].pendingRequest = this;
 
@@ -657,11 +672,25 @@ window.PaymentRequest.prototype.show = function() {
  * payment request and to tear down any user interface that might be shown.
  * @return {!Promise<undefined>} A promise to notify the caller whether the user
  *     agent was able to abort the payment request.
+ * @suppress {checkTypes} Required for DOMException's constructor.
  */
-window.PaymentRequest.prototype.abort = function() {
-  if (!__gCrWeb['paymentRequestManager'].pendingRequest) {
-    __gCrWeb['paymentRequestManager'].rejectRequestPromise(
-        'Internal PaymentRequest error: No pending request.');
+PaymentRequest.prototype.abort = function() {
+  if (!(this instanceof PaymentRequest)) {
+    return Promise.reject(new DOMException(
+        'abort() must be called on an instance of PaymentRequest.',
+        'InvalidStateError'));
+  }
+
+  if (!__gCrWeb['paymentRequestManager'].pendingRequest ||
+      !__gCrWeb['paymentRequestManager'].requestPromiseResolver) {
+    return Promise.reject(new DOMException(
+        'Never called show(), so nothing to abort', 'InvalidStateError'));
+  }
+
+  if (__gCrWeb['paymentRequestManager'].abortPromiseResolver) {
+    return Promise.reject(new DOMException(
+        'Cannot abort() again until the previous abort() has resolved or ' +
+        'rejected'));
   }
 
   var message = {
@@ -679,8 +708,15 @@ window.PaymentRequest.prototype.abort = function() {
  * can be used to make a payment.
  * @return {!Promise<boolean>} A promise to notify the caller whether the
  *     PaymentRequest object can be used to make a payment.
+ * @suppress {checkTypes} Required for DOMException's constructor.
  */
-window.PaymentRequest.prototype.canMakePayment = function() {
+PaymentRequest.prototype.canMakePayment = function() {
+  if (!(this instanceof PaymentRequest)) {
+    return Promise.reject(new DOMException(
+        'canMakePayment() must be called on an instance of PaymentRequest.',
+        'InvalidStateError'));
+  }
+
   // TODO(crbug.com/602666): return a promise rejected with InvalidStateError if
   // |this.state| != 'created'.
 
@@ -798,77 +834,85 @@ window.PaymentShippingOption;
  * user and provided to the web page through the resolve function of the Promise
  * returned by PaymentRequest.show().
  * https://w3c.github.io/browser-payment-api/#paymentresponse-interface
- * @param {string} methodName
- * @param {Object} details
  * @constructor
  * @private
  */
-window.PaymentResponse = function(requestId, methodName, details) {
-  /**
-   * The same identifier present in the original window.PaymentRequest.
-   * @type {string}
-   */
-  this.requestId = requestId;
-
-  /**
-   * The payment method identifier for the payment method that the user selected
-   * to fulfil the transaction.
-   * @type {string}
-   */
-  this.methodName = methodName;
-
-  /**
-   * An object that provides a payment method specific message used by the
-   * merchant to process the transaction and determine successful fund transfer.
-   * the payment request.
-   * @type {Object}
-   */
-  this.details = details;
-
-  /**
-   * If the requestShipping flag was set to true in the window.PaymentOptions
-   * passed to the window.PaymentRequest constructor, this will be the full and
-   * final shipping address chosen by the user.
-   * @type {?window.PaymentAddress}
-   */
+function PaymentResponse(){
+  // Initialize these properties to make them own (vs. inherited) properties.
+  this.requestId = '';
+  this.methodName = '';
+  this.details = {};
   this.shippingAddress = null;
-
-  /**
-   * If the requestShipping flag was set to true in the window.PaymentOptions
-   * passed to the window.PaymentRequest constructor, this will be the id
-   * attribute of the selected shipping option.
-   * @type {?string}
-   */
   this.shippingOption = null;
-
-  /**
-   * If the requestPayerName flag was set to true in the window.PaymentOptions
-   * passed to the window.PaymentRequest constructor, this will be the name
-   * provided by the user.
-   * @type {?string}
-   */
   this.payerName = null;
-
-  /**
-   * If the requestPayerEmail flag was set to true in the window.PaymentOptions
-   * passed to the window.PaymentRequest constructor, this will be the email
-   * address chosen by the user.
-   * @type {?string}
-   */
   this.payerEmail = null;
-
-  /**
-   * If the requestPayerPhone flag was set to true in the window.PaymentOptions
-   * passed to the window.PaymentRequest constructor, this will be the phone
-   * number chosen by the user.
-   * @type {?string}
-   */
   this.payerPhone = null;
 };
 
 /**
+ * The same identifier present in the original PaymentRequest.
+ * @type {string}
+ */
+PaymentResponse.prototype.requestId = '';
+
+/**
+ * The payment method identifier for the payment method that the user selected
+ * to fulfil the transaction.
+ * @type {string}
+ */
+PaymentResponse.prototype.methodName = '';
+
+/**
+ * An object that provides a payment method specific message used by the
+ * merchant to process the transaction and determine successful fund transfer.
+ * the payment request.
+ * @type {Object}
+ */
+PaymentResponse.prototype.details = {};
+
+/**
+ * If the requestShipping flag was set to true in the window.PaymentOptions
+ * passed to the PaymentRequest constructor, this will be the full and
+ * final shipping address chosen by the user.
+ * @type {?window.PaymentAddress}
+ */
+PaymentResponse.prototype.shippingAddress = null;
+
+/**
+ * If the requestShipping flag was set to true in the window.PaymentOptions
+ * passed to the PaymentRequest constructor, this will be the id
+ * attribute of the selected shipping option.
+ * @type {?string}
+ */
+PaymentResponse.prototype.shippingOption = null;
+
+/**
+ * If the requestPayerName flag was set to true in the window.PaymentOptions
+ * passed to the PaymentRequest constructor, this will be the name
+ * provided by the user.
+ * @type {?string}
+ */
+PaymentResponse.prototype.payerName = null;
+
+/**
+ * If the requestPayerEmail flag was set to true in the window.PaymentOptions
+ * passed to the PaymentRequest constructor, this will be the email
+ * address chosen by the user.
+ * @type {?string}
+ */
+PaymentResponse.prototype.payerEmail = null;
+
+/**
+ * If the requestPayerPhone flag was set to true in the window.PaymentOptions
+ * passed to the PaymentRequest constructor, this will be the phone
+ * number chosen by the user.
+ * @type {?string}
+ */
+PaymentResponse.prototype.payerPhone = null;
+
+/**
  * Contains the possible values for the string argument accepted by
- * window.PaymentResponse.prototype.complete.
+ * PaymentResponse.prototype.complete.
  * @enum {string}
  */
 var PaymentComplete = {
@@ -884,7 +928,7 @@ var PaymentComplete = {
  * @return {!Promise} A promise to notify the caller when the user interface has
  *     been closed.
  */
-window.PaymentResponse.prototype.complete = function(opt_result) {
+PaymentResponse.prototype.complete = function(opt_result) {
   if (opt_result != PaymentComplete.UNKNOWN &&
       opt_result != PaymentComplete.SUCCESS &&
       opt_result != PaymentComplete.FAIL) {
