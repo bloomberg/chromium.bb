@@ -151,7 +151,7 @@ deps = {
     Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6d0d04458d9c345bc7d77681996d89d6e5fc742c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e081cbe5aae6b131955b6c3bd7308d95d650948f',
 
   'src/third_party/googletest/src':
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '42bc671f47b122fad36db5eccbc06868afdf7862',
