@@ -181,13 +181,6 @@ class GFX_EXPORT Image {
   void SetSourceColorSpace(CGColorSpaceRef color_space);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-  // Turns off thread checking on this Image (and all Images sharing its backing
-  // store). This should be used to mark code that is not currently thread-safe
-  // and any usage of this method should be considered a bug and accompanied by
-  // a TODO.
-  // TODO(mgiuca): Remove this method after all uses of Image are thread-safe.
-  void DisableThreadChecking();
-
  private:
   // Returns the type of the default representation.
   RepresentationType DefaultRepresentationType() const;
