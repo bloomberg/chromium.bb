@@ -14,7 +14,6 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/gpu_memory_buffer_tracing.h"
 
 namespace viz {
 
@@ -164,11 +163,8 @@ bool ServerGpuMemoryBufferManager::OnMemoryDump(
       uint64_t client_tracing_process_id = ClientIdToTracingId(client_id);
 
       if (buffer_info.type == gfx::SHARED_MEMORY_BUFFER) {
-        auto shared_buffer_guid = gfx::GetSharedMemoryGUIDForTracing(
-            client_tracing_process_id, buffer_id);
-        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_buffer_guid,
-                                             buffer_info.shared_memory_guid,
-                                             0 /* importance */);
+        pmd->CreateSharedMemoryOwnershipEdge(
+            dump->guid(), buffer_info.shared_memory_guid, 0 /* importance */);
       } else {
         auto shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
             client_tracing_process_id, buffer_id);

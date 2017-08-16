@@ -2109,8 +2109,8 @@ bool ResourceProvider::OnMemoryDump(
 
     const int kImportance = 2;
     if (!shared_memory_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid,
-                                           shared_memory_guid, kImportance);
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                           kImportance);
     } else {
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);

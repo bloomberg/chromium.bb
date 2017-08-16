@@ -499,15 +499,15 @@ bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
         dump->AddScalar("free_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         frame_resources->is_used() ? 0 : buffer_size_in_bytes);
-        auto shared_buffer_guid =
-            plane_resource.gpu_memory_buffer->GetGUIDForTracing(
-                tracing_process_id);
         auto shared_memory_guid =
             plane_resource.gpu_memory_buffer->GetHandle().handle.GetGUID();
         if (!shared_memory_guid.is_empty()) {
-          pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_buffer_guid,
-                                               shared_memory_guid, kImportance);
+          pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                               kImportance);
         } else {
+          auto shared_buffer_guid =
+              plane_resource.gpu_memory_buffer->GetGUIDForTracing(
+                  tracing_process_id);
           pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
           pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid, kImportance);
         }

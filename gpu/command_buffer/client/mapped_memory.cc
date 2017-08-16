@@ -186,15 +186,14 @@ bool MappedMemoryManager::OnMemoryDump(
     dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
                     chunk->GetFreeSize());
 
-    auto guid = GetBufferGUIDForTracing(tracing_process_id, chunk->shm_id());
-
     auto shared_memory_guid =
         chunk->shared_memory()->backing()->shared_memory_handle().GetGUID();
     const int kImportance = 2;
     if (!shared_memory_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid,
-                                           shared_memory_guid, kImportance);
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                           kImportance);
     } else {
+      auto guid = GetBufferGUIDForTracing(tracing_process_id, chunk->shm_id());
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
     }
