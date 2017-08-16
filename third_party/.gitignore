@@ -16,6 +16,7 @@
 /angle
 /angle_dx11
 /apache-portable-runtime/src
+/apache_velocity/lib/*.jar
 /apache-win32/bin/*.exe
 /apache-win32/bin/*.dll
 /apache-win32/bin/iconv/*.so
