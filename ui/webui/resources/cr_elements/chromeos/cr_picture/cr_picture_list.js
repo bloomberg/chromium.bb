@@ -227,6 +227,15 @@ Polymer({
   },
 
   /**
+   * @param {!Event} event
+   * @private
+   */
+  onSelectedItemChanged_: function(event) {
+    if (event.target.selectedItem)
+      event.target.selectedItem.scrollIntoViewIfNeeded(false);
+  },
+
+  /**
    * Returns the image to use for 'src'.
    * @param {string} url
    * @return {string}

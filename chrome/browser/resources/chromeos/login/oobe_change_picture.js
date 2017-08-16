@@ -81,6 +81,11 @@ Polymer({
         /** @type {CrPictureListElement} */ (this.$.pictureList);
   },
 
+  /** Called when the screen is shown. */
+  focus: function() {
+    this.$.pictureList.setFocus();
+  },
+
   /**
    * @return {string}
    * @private
