@@ -1,8 +1,26 @@
 Test that console.timeStamp generates Performance.metrics event
 title: test1
-metrics: PageDocumentCount, AudioHandlerCount, DocumentCount, FrameCount, JSEventListenerCount, LayoutObjectCount, MediaKeySessionCount, MediaKeysCount, NodeCount, ResourceCount, ScriptPromiseCount, SuspendableObjectCount, V8PerContextDataCount, WorkerGlobalScopeCount
+	DocumentCount
+	FrameCount
+	JSEventListenerCount
+	NodeCount
+	ResourceCount
+	FirstMeaningfulPaint
+	DomContentLoaded
 title: test1
-metrics: PageDocumentCount, AudioHandlerCount, DocumentCount, FrameCount, JSEventListenerCount, LayoutObjectCount, MediaKeySessionCount, MediaKeysCount, NodeCount, ResourceCount, ScriptPromiseCount, SuspendableObjectCount, V8PerContextDataCount, WorkerGlobalScopeCount
+	DocumentCount
+	FrameCount
+	JSEventListenerCount
+	NodeCount
+	ResourceCount
+	FirstMeaningfulPaint
+	DomContentLoaded
 title: 
-metrics: PageDocumentCount, AudioHandlerCount, DocumentCount, FrameCount, JSEventListenerCount, LayoutObjectCount, MediaKeySessionCount, MediaKeysCount, NodeCount, ResourceCount, ScriptPromiseCount, SuspendableObjectCount, V8PerContextDataCount, WorkerGlobalScopeCount
+	DocumentCount
+	FrameCount
+	JSEventListenerCount
+	NodeCount
+	ResourceCount
+	FirstMeaningfulPaint
+	DomContentLoaded
 

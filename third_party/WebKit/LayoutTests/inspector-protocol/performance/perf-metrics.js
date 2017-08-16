@@ -11,10 +11,11 @@
 
   async function dumpMetrics() {
     const {result:{metrics}} = await dp.Performance.getMetrics();
-    testRunner.log(JSON.stringify(metrics.map(metric => metric.name)));
+    testRunner.log('Received metrics:');
+    for (const metric of metrics)
+      testRunner.log(`\t${metric.name}`);
     checkMetric('DocumentCount');
     checkMetric('NodeCount');
-    checkMetric('PageDocumentCount');
 
     function checkMetric(name) {
       const metric = metrics.find(metric => metric.name === name);
