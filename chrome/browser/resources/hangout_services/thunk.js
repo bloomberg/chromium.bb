@@ -12,7 +12,7 @@ chrome.runtime.onMessageExternal.addListener(function(
       error['message'] = errorString;
     }
 
-    var errorMessage = error || chrome.extension.lastError;
+    var errorMessage = error || chrome.runtime.lastError;
     sendResponse({'value': value, 'error': errorMessage});
   }
 
@@ -118,7 +118,7 @@ chrome.runtime.onMessageExternal.addListener(function(
                               var errorMessage = null;
                               // If upload fails, report all previous errors.
                               // Otherwise, throw them away.
-                              if (chrome.extension.lastError !== undefined) {
+                              if (chrome.runtime.lastError !== undefined) {
                                 appendLastErrorMessage(errors);
                                 errorMessage = errors.join('; ');
                               }
@@ -302,8 +302,8 @@ function onProcessCpu(port) {
 }
 
 function appendLastErrorMessage(errors) {
-  if (chrome.extension.lastError !== undefined)
-    errors.push(chrome.extension.lastError.message);
+  if (chrome.runtime.lastError !== undefined)
+    errors.push(chrome.runtime.lastError.message);
 }
 
 chrome.runtime.onConnectExternal.addListener(function(port) {
