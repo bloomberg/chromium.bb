@@ -7,6 +7,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -115,10 +116,35 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 
+  // Simulate several navigations.
+  NavigateToFile("/password/signup_form.html");
+  NavigateToFile("/password/failed.html");
+  NavigateToFile("/password/done.html");
+
+  // The save prompt should be still available.
+  EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
+  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
 
   WaitForPasswordStore();
   CheckThatCredentialsStored(base::string16(), base::ASCIIToUTF16("ORARY"));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ManualFallbackForSaving_HideAfterTimeout) {
+  NavigateToFile("/password/password_form.html");
+  ManagePasswordsUIController::set_save_fallback_timeout_in_seconds(0);
+
+  std::string focus("document.getElementById('password_field').focus();");
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), focus));
+  SimulateUserTypingInField(RenderViewHost(), WebContents(), "password_field");
+  BubbleObserver prompt_observer(WebContents());
+  prompt_observer.WaitForFallbackForSaving();
+
+  // Since the timeout is changed to zero for testing, the save prompt should be
+  // hidden right after show.
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(prompt_observer.IsSavePromptAvailable());
 }
 
 }  // namespace password_manager

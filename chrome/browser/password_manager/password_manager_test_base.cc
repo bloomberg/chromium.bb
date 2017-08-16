@@ -94,6 +94,8 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Should not be used for manual fallback events.
   bool IsTargetStateObserved(
@@ -203,6 +205,16 @@ void CustomManagePasswordsUIController::OnPasswordAutofilled(
   ProcessStateExpectations(password_manager::ui::MANAGE_STATE);
   return ManagePasswordsUIController::OnPasswordAutofilled(
       password_form_map, origin, federated_matches);
+}
+
+void CustomManagePasswordsUIController::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  ManagePasswordsUIController::DidFinishNavigation(navigation_handle);
+  if (GetState() != password_manager::ui::PENDING_PASSWORD_STATE &&
+      GetState() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    // Navigation cleared the state, an automatic prompt disappears.
+    was_prompt_automatically_shown_ = false;
+  }
 }
 
 bool CustomManagePasswordsUIController::IsTargetStateObserved(
