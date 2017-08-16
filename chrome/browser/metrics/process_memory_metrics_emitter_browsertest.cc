@@ -14,6 +14,7 @@
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
@@ -151,6 +152,12 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
     // own TestUkmRecorder instance rather than the default UkmRecorder.
     ukm::UkmRecorder::Set(nullptr);
     test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    ukm::kUkmFeature.name);
   }
 
  protected:
