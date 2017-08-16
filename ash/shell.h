@@ -153,7 +153,6 @@ class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
 class SystemTrayController;
-class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class ToastManager;
@@ -341,9 +340,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
-  }
-  SystemTrayDelegate* system_tray_delegate() {
-    return system_tray_delegate_.get();
   }
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
@@ -629,9 +625,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);
 
-  void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
-  void DeleteSystemTrayDelegate();
-
   // Destroys all child windows including widgets across all roots.
   void CloseAllRootWindowChildWindows();
 
@@ -708,7 +701,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
-  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<TrayAction> tray_action_;

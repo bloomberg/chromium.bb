@@ -52,8 +52,6 @@ source_set("lib") {
     "property_util.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
-    "system_tray_delegate_mus.cc",
-    "system_tray_delegate_mus.h",
     "top_level_window_factory.cc",
     "top_level_window_factory.h",
     "touch_transform_setter_mus.cc",

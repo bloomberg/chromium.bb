@@ -15,7 +15,6 @@
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/network/vpn_list_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_item_style.h"

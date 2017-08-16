@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/wallpaper/test_wallpaper_delegate.h"
@@ -100,8 +99,8 @@ void TestShellDelegate::ShelfInit() {
 
 void TestShellDelegate::ShelfShutdown() {}
 
-SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
-  return new SystemTrayDelegate;
+NetworkingConfigDelegate* TestShellDelegate::GetNetworkingConfigDelegate() {
+  return nullptr;
 }
 
 std::unique_ptr<WallpaperDelegate>

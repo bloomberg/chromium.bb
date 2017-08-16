@@ -14,7 +14,6 @@
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"

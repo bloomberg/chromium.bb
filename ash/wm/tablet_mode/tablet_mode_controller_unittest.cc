@@ -11,7 +11,6 @@
 #include "ash/ash_switches.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"

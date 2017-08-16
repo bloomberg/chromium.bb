@@ -42,7 +42,7 @@ class TestShellDelegate : public ShellDelegate {
   void ShelfInit() override;
   void ShelfShutdown() override;
   void OpenUrlFromArc(const GURL& url) override;
-  SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
