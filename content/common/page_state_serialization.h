@@ -72,6 +72,10 @@ struct CONTENT_EXPORT ExplodedPageState {
 
 CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
                                     ExplodedPageState* exploded);
+// Similar to |DecodePageState()|, but returns an int indicating the original
+// version number of the encoded state. Returns -1 on failure.
+CONTENT_EXPORT int DecodePageStateForTesting(const std::string& encoded,
+                                             ExplodedPageState* exploded);
 CONTENT_EXPORT void EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
 CONTENT_EXPORT void EncodePageStateForTesting(const ExplodedPageState& exploded,

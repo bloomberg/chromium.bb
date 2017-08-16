@@ -227,7 +227,7 @@ class PageStateSerializationTest : public testing::Test {
         kPresetDeviceScaleFactor,
         &output));
 #else
-    EXPECT_TRUE(DecodePageState(encoded, &output));
+    EXPECT_EQ(version, DecodePageStateForTesting(encoded, &output));
 #endif
 
     ExplodedPageState expected;
@@ -363,10 +363,17 @@ TEST_F(PageStateSerializationTest, BadMessagesTest2) {
   EXPECT_FALSE(DecodePageState(s, &output));
 }
 
-TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
-  // Change to #if 1 to enable this code.  Use this code to generate data, based
-  // on the current serialization format, for the BackwardsCompat_vXX tests.
+// Change to #if 1 to enable this code. Run this test to generate data, based on
+// the current serialization format, for the BackwardsCompat_vXX tests. This
+// will generate an expected.dat in the temp directory, which should be moved
+// //content/test/data/page_state/serialization_vXX.dat. A corresponding test
+// case for that version should also then be added below.
+//
+// IMPORTANT: this code dumps the serialization as the *current* version, so if
+// generating a backwards compat test for v23, the tree must be synced to a
+// revision where page_state_serialization.cc:kCurrentVersion == 23.
 #if 0
+TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   ExplodedPageState state;
   PopulatePageStateForBackwardsCompatTest(&state);
 
@@ -392,8 +399,8 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   }
 
   fclose(fp);
-#endif
 }
+#endif
 
 #if !defined(OS_ANDROID)
 // TODO(darin): Re-enable for Android once this test accounts for systems with

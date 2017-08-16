@@ -204,6 +204,9 @@ struct SerializeObject {
 // See ReadPageState.
 //
 const int kMinVersion = 11;
+// NOTE: When changing the version, please add a backwards compatibility test.
+// See PageStateSerializationTest.DumpExpectedPageStateForBackwardsCompat for
+// instructions on how to generate the new test case.
 const int kCurrentVersion = 25;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
@@ -765,7 +768,8 @@ ExplodedPageState::ExplodedPageState() {
 ExplodedPageState::~ExplodedPageState() {
 }
 
-bool DecodePageState(const std::string& encoded, ExplodedPageState* exploded) {
+int DecodePageStateInternal(const std::string& encoded,
+                            ExplodedPageState* exploded) {
   *exploded = ExplodedPageState();
 
   if (encoded.empty())
@@ -773,7 +777,16 @@ bool DecodePageState(const std::string& encoded, ExplodedPageState* exploded) {
 
   SerializeObject obj(encoded.data(), static_cast<int>(encoded.size()));
   ReadPageState(&obj, exploded);
-  return !obj.parse_error;
+  return obj.parse_error ? -1 : obj.version;
+}
+
+bool DecodePageState(const std::string& encoded, ExplodedPageState* exploded) {
+  return DecodePageStateInternal(encoded, exploded) != -1;
+}
+
+int DecodePageStateForTesting(const std::string& encoded,
+                              ExplodedPageState* exploded) {
+  return DecodePageStateInternal(encoded, exploded);
 }
 
 static void EncodePageStateInternal(const ExplodedPageState& exploded,
