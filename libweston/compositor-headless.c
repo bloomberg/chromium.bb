@@ -134,7 +134,7 @@ headless_output_destroy(struct weston_output *base)
 	struct headless_output *output = to_headless_output(base);
 
 	headless_output_disable(&output->base);
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 
 	free(output);
 }

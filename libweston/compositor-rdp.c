@@ -570,7 +570,7 @@ rdp_output_destroy(struct weston_output *base)
 	struct rdp_output *output = to_rdp_output(base);
 
 	rdp_output_disable(&output->base);
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 
 	free(output);
 }
@@ -1360,7 +1360,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 err_listener:
 	freerdp_listener_free(b->listener);
 err_output:
-	weston_output_destroy(&b->output->base);
+	weston_output_release(&b->output->base);
 err_compositor:
 	weston_compositor_shutdown(compositor);
 err_free_strings:

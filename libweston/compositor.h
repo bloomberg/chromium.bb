@@ -1717,7 +1717,7 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 
 void
-weston_output_destroy(struct weston_output *output);
+weston_output_release(struct weston_output *output);
 void
 weston_output_transform_coordinate(struct weston_output *output,
 				   double device_x, double device_y,

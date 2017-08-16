@@ -703,7 +703,7 @@ wayland_output_destroy(struct weston_output *base)
 
 	wayland_output_disable(&output->base);
 
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 
 	if (output->frame_cb)
 		wl_callback_destroy(output->frame_cb);
@@ -1376,7 +1376,7 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	return 0;
 
 out:
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 	free(output->title);
 	free(output);
 
@@ -1424,7 +1424,7 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 err_set_size:
 	wayland_backend_destroy_output_surface(output);
 err_surface:
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 	free(output->title);
 	free(output);
 

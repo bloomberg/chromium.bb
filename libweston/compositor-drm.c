@@ -3272,7 +3272,7 @@ drm_output_destroy(struct weston_output *base)
 	if (output->pageflip_timer)
 		wl_event_source_remove(output->pageflip_timer);
 
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 
 	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
 

@@ -801,7 +801,7 @@ x11_output_destroy(struct weston_output *base)
 	struct x11_output *output = to_x11_output(base);
 
 	x11_output_disable(&output->base);
-	weston_output_destroy(&output->base);
+	weston_output_release(&output->base);
 
 	free(output);
 }

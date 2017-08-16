@@ -4750,7 +4750,7 @@ weston_output_init(struct weston_output *output,
  * Also notifies the compositor that an output is pending for
  * configuration.
  *
- * The opposite of this operation is built into weston_output_destroy().
+ * The opposite of this operation is built into weston_output_release().
  *
  * \memberof weston_output
  * \internal
@@ -4931,7 +4931,7 @@ weston_pending_output_coldplug(struct weston_compositor *compositor)
  * \internal
  */
 WL_EXPORT void
-weston_output_destroy(struct weston_output *output)
+weston_output_release(struct weston_output *output)
 {
 	output->destroying = 1;
 
