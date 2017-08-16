@@ -26,7 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerDelegate;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -113,26 +112,11 @@ public class PrefetchBackgroundTaskTest {
         }
     }
 
-    private static class NoopBackgroundTaskSchedulerDelegate
-            implements BackgroundTaskSchedulerDelegate {
-        @Override
-        public boolean schedule(Context context, TaskInfo taskInfo) {
-            return true;
-        }
-
-        @Override
-        public void cancel(Context context, int taskId) {}
-    }
-
-    private static class TestBackgroundTaskScheduler extends BackgroundTaskScheduler {
+    private static class TestBackgroundTaskScheduler implements BackgroundTaskScheduler {
         private HashMap<Integer, TestPrefetchBackgroundTask> mTasks = new HashMap<>();
         private Semaphore mStartSemaphore = new Semaphore(0);
         private int mAddCount = 0;
         private int mRemoveCount = 0;
-
-        public TestBackgroundTaskScheduler() {
-            super(new NoopBackgroundTaskSchedulerDelegate());
-        }
 
         @Override
         public boolean schedule(final Context context, final TaskInfo taskInfo) {
@@ -158,6 +142,12 @@ public class PrefetchBackgroundTaskTest {
         public void cancel(Context context, int taskId) {
             removeTask(taskId);
         }
+
+        @Override
+        public void checkForOSUpgrade(Context context) {}
+
+        @Override
+        public void reschedule(Context context) {}
 
         public void waitForTaskStarted() throws Exception {
             assertTrue(mStartSemaphore.tryAcquire(SEMAPHORE_TIMEOUT_MS, TimeUnit.MILLISECONDS));

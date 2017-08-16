@@ -49,7 +49,7 @@ public class BackgroundTaskGcmTaskServiceTest {
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
-                new BackgroundTaskScheduler(mDelegate));
+                new BackgroundTaskSchedulerImpl(mDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         sReturnThroughCallback = false;
         sNeedsRescheduling = false;

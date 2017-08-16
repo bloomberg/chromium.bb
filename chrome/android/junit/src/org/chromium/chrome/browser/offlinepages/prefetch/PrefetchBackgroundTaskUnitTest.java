@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages.prefetch;
 
-import android.content.Context;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -18,7 +16,8 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.After;
+import android.content.Context;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +29,6 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.library_loader.ProcessInitException;
@@ -52,27 +48,30 @@ import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = {PrefetchBackgroundTaskUnitTest.ShadowBackgroundTaskScheduler.class,
-                ShadowMultiDex.class})
+@Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
 public class PrefetchBackgroundTaskUnitTest {
     /**
-     * Shadow of BackgroundTaskScheduler system service.
+     * Fake of BackgroundTaskScheduler system service.
      */
-    @Implements(BackgroundTaskScheduler.class)
-    public static class ShadowBackgroundTaskScheduler {
+    public static class FakeBackgroundTaskScheduler implements BackgroundTaskScheduler {
         private HashMap<Integer, TaskInfo> mTaskInfos = new HashMap<>();
 
-        @Implementation
+        @Override
         public boolean schedule(Context context, TaskInfo taskInfo) {
             mTaskInfos.put(taskInfo.getTaskId(), taskInfo);
             return true;
         }
 
-        @Implementation
+        @Override
         public void cancel(Context context, int taskId) {
             mTaskInfos.remove(taskId);
         }
+
+        @Override
+        public void checkForOSUpgrade(Context context) {}
+
+        @Override
+        public void reschedule(Context context) {}
 
         public TaskInfo getTaskInfo(int taskId) {
             return mTaskInfos.get(taskId);
@@ -89,7 +88,7 @@ public class PrefetchBackgroundTaskUnitTest {
     private ChromeBrowserInitializer mChromeBrowserInitializer;
     @Captor
     ArgumentCaptor<BrowserParts> mBrowserParts;
-    private ShadowBackgroundTaskScheduler mShadowTaskScheduler;
+    private FakeBackgroundTaskScheduler mFakeTaskScheduler;
 
     @Before
     public void setUp() {
@@ -122,13 +121,8 @@ public class PrefetchBackgroundTaskUnitTest {
         doReturn(true).when(mPrefetchBackgroundTask).nativeOnStopTask(1);
         doReturn(null).when(mPrefetchBackgroundTask).getProfile();
 
-        mShadowTaskScheduler = (ShadowBackgroundTaskScheduler) ShadowExtractor.extract(
-                BackgroundTaskSchedulerFactory.getScheduler());
-    }
-
-    @After
-    public void tearDown() {
-        mShadowTaskScheduler.clear();
+        mFakeTaskScheduler = new FakeBackgroundTaskScheduler();
+        BackgroundTaskSchedulerFactory.setSchedulerForTesting(mFakeTaskScheduler);
     }
 
     @Test
@@ -136,7 +130,7 @@ public class PrefetchBackgroundTaskUnitTest {
         final int additionalDelaySeconds = 15;
         PrefetchBackgroundTask.scheduleTask(additionalDelaySeconds, true);
         TaskInfo scheduledTask =
-                mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
         assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS
                              + additionalDelaySeconds),
@@ -148,17 +142,17 @@ public class PrefetchBackgroundTaskUnitTest {
     @Test
     public void cancelTask() {
         TaskInfo scheduledTask =
-                mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
 
         PrefetchBackgroundTask.scheduleTask(0, true);
-        scheduledTask = mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+        scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
         assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
 
         PrefetchBackgroundTask.cancelTask();
-        scheduledTask = mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+        scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
     }
 
