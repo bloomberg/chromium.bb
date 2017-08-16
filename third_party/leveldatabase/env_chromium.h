@@ -72,6 +72,18 @@ struct Options : public leveldb::Options {
   Options();
 };
 
+enum class SharedReadCache {
+  // Use for databases whose access pattern is dictated by browser code.
+  Default,
+  // Use for databases whose access pattern is directly influenced by Web APIs,
+  // like Indexed DB, etc.
+  Web,
+};
+
+// Return the shared leveldb block cache for web APIs. The caller *does not*
+// own the returned instance.
+extern leveldb::Cache* SharedWebBlockCache();
+
 const char* MethodIDToString(MethodID method);
 
 leveldb::Status MakeIOError(leveldb::Slice filename,

@@ -63,18 +63,23 @@ void LevelDBServiceImpl::OpenWithOptions(
   std::unique_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));
   options.env = env_mojo.get();
 
-  std::unique_ptr<leveldb::Cache> cache(
-      leveldb::NewLRUCache(open_options->block_cache_size));
-  options.block_cache = cache.get();
+  switch (open_options->shared_block_read_cache) {
+    case leveldb::mojom::SharedReadCache::Web:
+      options.block_cache = leveldb_env::SharedWebBlockCache();
+      break;
+    case leveldb::mojom::SharedReadCache::Default:
+      // fallthrough
+      break;
+  }
 
   std::unique_ptr<leveldb::DB> db;
   leveldb::Status s = leveldb_env::OpenDB(options, dbname, &db);
 
   if (s.ok()) {
-    mojo::MakeStrongAssociatedBinding(base::MakeUnique<LevelDBDatabaseImpl>(
-                                          std::move(env_mojo), std::move(db),
-                                          std::move(cache), memory_dump_id),
-                                      std::move(database));
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<LevelDBDatabaseImpl>(
+            std::move(env_mojo), std::move(db), nullptr, memory_dump_id),
+        std::move(database));
   }
 
   std::move(callback).Run(LeveldbStatusToError(s));

@@ -12,6 +12,7 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
+using leveldb_env::SharedReadCache;
 using leveldb_proto::ProtoDatabaseImpl;
 
 namespace {
@@ -24,9 +25,6 @@ const char kImageDatabaseUMAClientName[] = "NTPSnippetImages";
 
 const char kSnippetDatabaseFolder[] = "snippets";
 const char kImageDatabaseFolder[] = "images";
-
-const size_t kSuggestionDatabaseReadCacheSizeBytes = 512 << 10;
-const size_t kImageDatabaseReadCacheSizeBytes = 2 << 20;
 
 const size_t kDatabaseWriteBufferSizeBytes = 512 << 10;
 }  // namespace
@@ -49,16 +47,16 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
   base::FilePath snippet_dir = database_dir.AppendASCII(kSnippetDatabaseFolder);
   database_->InitWithOptions(
       kDatabaseUMAClientName,
-      leveldb_proto::Options(snippet_dir, kDatabaseWriteBufferSizeBytes,
-                             kSuggestionDatabaseReadCacheSizeBytes),
+      leveldb_proto::Options(snippet_dir, SharedReadCache::Default,
+                             kDatabaseWriteBufferSizeBytes),
       base::Bind(&RemoteSuggestionsDatabase::OnDatabaseInited,
                  weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath image_dir = database_dir.AppendASCII(kImageDatabaseFolder);
   image_database_->InitWithOptions(
       kImageDatabaseUMAClientName,
-      leveldb_proto::Options(image_dir, kDatabaseWriteBufferSizeBytes,
-                             kImageDatabaseReadCacheSizeBytes),
+      leveldb_proto::Options(image_dir, SharedReadCache::Default,
+                             kDatabaseWriteBufferSizeBytes),
       base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
                  weak_ptr_factory_.GetWeakPtr()));
 }

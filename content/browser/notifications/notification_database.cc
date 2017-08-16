@@ -126,6 +126,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   options.create_if_missing = create_if_missing;
   options.paranoid_checks = true;
   options.filter_policy = filter_policy_.get();
+  options.block_cache = leveldb_env::SharedWebBlockCache();
   if (IsInMemoryDatabase()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();

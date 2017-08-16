@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -32,6 +33,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/leveldatabase/chromium_logger.h"
+#include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -362,7 +364,33 @@ Status ChromiumWritableFile::Sync() {
 
 base::LazyInstance<ChromiumEnv>::Leaky default_env = LAZY_INSTANCE_INITIALIZER;
 
+size_t DefaultBlockCacheSize() {
+  if (base::SysInfo::IsLowEndDevice())
+    return 1 << 20;  // 1MB
+  else
+    return 8 << 20;  // 8MB
+}
+
+leveldb::Cache* GetDefaultBlockCache() {
+  static leveldb::Cache* cache = leveldb::NewLRUCache(DefaultBlockCacheSize());
+  return cache;
+}
+
 }  // unnamed namespace
+
+// Returns a separate (from the default) block cache for use by web APIs.
+// This must be used when opening the databases accessible to Web-exposed APIs,
+// so rogue pages can't mount a denial of service attack by hammering the block
+// cache. Without separate caches, such an attack might slow down Chrome's UI to
+// the point where the user can't close the offending page's tabs.
+leveldb::Cache* SharedWebBlockCache() {
+  if (base::SysInfo::IsLowEndDevice())
+    return GetDefaultBlockCache();
+
+  const int block_cache_size = 8 << 20;  // 8MB
+  static leveldb::Cache* cache = leveldb::NewLRUCache(block_cache_size);
+  return cache;
+}
 
 Options::Options() {
 // Note: Ensure that these default values correspond to those in
@@ -380,6 +408,10 @@ Options::Options() {
 #else
   reuse_logs = true;
 #endif
+  // By default use a single shared block cache to conserve memory. The owner of
+  // this object can create their own, or set to NULL to have leveldb create a
+  // new db-specific block cache.
+  block_cache = GetDefaultBlockCache();
 }
 
 const char* MethodIDToString(MethodID method) {

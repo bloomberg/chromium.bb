@@ -57,16 +57,6 @@ const int64_t kCurrentSchemaVersion = 1;
 // database.
 const int kCommitErrorThreshold = 8;
 
-// Use a smaller block cache on android. Because of the extra caching done in
-// LevelDBWrapperImpl the block cache isn't particularly useful, but it still
-// provides some benefit with speeding up compaction. And since this is a once
-// per profile overhead, the overhead should be fairly minimal on desktop.
-#if defined(OS_ANDROID)
-const size_t kMaxBlockCacheSize = 100 * 1024;
-#else
-const size_t kMaxBlockCacheSize = 2 * 1024 * 1024;
-#endif
-
 // Limits on the cache size and number of areas in memory, over which the areas
 // are purged.
 #if defined(OS_ANDROID)
@@ -621,10 +611,7 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // Default write_buffer_size is 4 MB but that might leave a 3.999
   // memory allocation in RAM from a log file recovery.
   options->write_buffer_size = 64 * 1024;
-  // Default block_cache_size is 8 MB, but we don't really want to cache that
-  // much data, so instead set it to a lower value. LevelDBWrapperImpl takes
-  // care of almost all the actual block caching we care about.
-  options->block_cache_size = kMaxBlockCacheSize;
+  options->shared_block_read_cache = leveldb::mojom::SharedReadCache::Web;
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
       memory_dump_id_, MakeRequest(&database_),

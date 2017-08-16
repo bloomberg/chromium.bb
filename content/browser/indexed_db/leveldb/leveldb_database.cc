@@ -34,7 +34,6 @@
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
@@ -104,13 +103,6 @@ class ComparatorAdapter : public leveldb::Comparator {
   const LevelDBComparator* comparator_;
 };
 
-size_t DefaultBlockCacheSize() {
-  if (base::SysInfo::IsLowEndDevice())
-    return 512 * 1024;  // 512KB
-  else
-    return 8 * 1024 * 1024;  // 8MB
-}
-
 leveldb::Status OpenDB(
     leveldb::Comparator* comparator,
     leveldb::Env* env,
@@ -131,14 +123,7 @@ leveldb::Status OpenDB(
   // https://code.google.com/p/chromium/issues/detail?id=227313#c11
   options.max_open_files = 80;
   options.env = env;
-
-  // A shared block cache for all IndexedDB instances across all renderers.
-  // See also components/leveldb_proto/leveldb_database.cc, which has
-  // its own block cache for a different (internal use-cases) set of LevelDB
-  // instances.
-  static leveldb::Cache* default_block_cache =
-      leveldb::NewLRUCache(DefaultBlockCacheSize());
-  options.block_cache = default_block_cache;
+  options.block_cache = leveldb_env::SharedWebBlockCache();
 
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
   return leveldb_env::OpenDB(options, path.AsUTF8Unsafe(), db);

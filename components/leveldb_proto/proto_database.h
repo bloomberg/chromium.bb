@@ -45,7 +45,10 @@ class ProtoDatabase {
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             InitCallback callback) {
-    InitWithOptions(client_name, Options(database_dir), std::move(callback));
+    InitWithOptions(
+        client_name,
+        Options(database_dir, leveldb_env::SharedReadCache::Default),
+        std::move(callback));
   }
 
   // Similar to Init, but takes additional options.
