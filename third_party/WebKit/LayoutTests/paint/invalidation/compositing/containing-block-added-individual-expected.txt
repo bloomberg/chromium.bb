@@ -1,0 +1,65 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+          "rect": [50, 50, 75, 75],
+          "reason": "subtree"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='container'",
+      "position": [200, 100],
+      "transformOrigin": [50, 50],
+      "bounds": [125, 125],
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [0, 0, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+          "rect": [50, 50, 75, 75],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='container'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+      "reason": "style change"
+    }
+  ]
+}
+

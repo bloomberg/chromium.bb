@@ -802,6 +802,9 @@ bool ComputedStyle::HasWillChangeCompositingHint() const {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
+      case CSSPropertyTranslate:
+      case CSSPropertyScale:
+      case CSSPropertyRotate:
       case CSSPropertyTop:
       case CSSPropertyLeft:
       case CSSPropertyBottom:

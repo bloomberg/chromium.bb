@@ -1,0 +1,37 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutInline (relative positioned) SPAN",
+      "position": [108, 108],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
+      "position": [-50, -50],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
+      "reason": "style change"
+    }
+  ]
+}
+
