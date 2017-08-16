@@ -41,7 +41,7 @@ public class AwActivityTestRule
     private final AwTestCommon mTestCommon;
 
     public AwActivityTestRule() {
-        super(AwTestRunnerActivity.class);
+        super(AwTestRunnerActivity.class, /* initialTouchMode */ false, /* launchActivity */ false);
         mTestCommon = new AwTestCommon(this);
     }
 
@@ -59,6 +59,14 @@ public class AwActivityTestRule
 
     public void setUp() throws Exception {
         mTestCommon.setUp();
+    }
+
+    @Override
+    public AwTestRunnerActivity launchActivity() {
+        if (getActivity() == null) {
+            return launchActivity(null);
+        }
+        return getActivity();
     }
 
     @Override

@@ -71,7 +71,7 @@ final class AwTestCommon {
         if (mBrowserContext != null) {
             throw new AndroidRuntimeException("There should only be one browser context.");
         }
-        mCallback.getActivity(); // The Activity must be launched in order to load native code
+        mCallback.launchActivity(); // The Activity must be launched in order to load native code
         final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
         final Context appContext =
                 mCallback.getInstrumentation().getTargetContext().getApplicationContext();
@@ -86,7 +86,7 @@ final class AwTestCommon {
 
     void startBrowserProcess() throws Exception {
         // The Activity must be launched in order for proper webview statics to be setup.
-        mCallback.getActivity();
+        mCallback.launchActivity();
         mCallback.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -559,6 +559,7 @@ final class AwTestCommon {
     interface AwTestCommonCallback {
         Instrumentation getInstrumentation();
         AwTestRunnerActivity getActivity();
+        AwTestRunnerActivity launchActivity();
         void runOnUiThread(Runnable runnable) throws Throwable;
         boolean testMethodHasAnnotation(Class<? extends Annotation> clazz);
         AwBrowserContext createAwBrowserContextOnUiThread(
