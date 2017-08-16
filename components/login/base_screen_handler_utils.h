@@ -9,11 +9,11 @@
 
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "base/tuple.h"
 #include "base/values.h"
 #include "components/login/login_export.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -86,7 +86,7 @@ typename UnwrapConstRef<Arg>::Type ParseArg(const base::ListValue* args) {
 template <typename... Args, size_t... Ns>
 inline void DispatchToCallback(const base::Callback<void(Args...)>& callback,
                                const base::ListValue* args,
-                               base::IndexSequence<Ns...> indexes) {
+                               std::index_sequence<Ns...> indexes) {
   DCHECK(args);
   DCHECK_EQ(sizeof...(Args), args->GetSize());
 
@@ -96,8 +96,7 @@ inline void DispatchToCallback(const base::Callback<void(Args...)>& callback,
 template <typename... Args>
 void CallbackWrapper(const base::Callback<void(Args...)>& callback,
                      const base::ListValue* args) {
-  DispatchToCallback(callback, args,
-                     base::MakeIndexSequence<sizeof...(Args)>());
+  DispatchToCallback(callback, args, std::index_sequence_for<Args...>());
 }
 
 
