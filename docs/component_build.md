@@ -126,19 +126,6 @@ class YOURCOMPONENT_EXPORT YourClass { ... };
 YOURCOMPONENT_EXPORT void SomeFunction();
 ```
 
-Sometimes you have an internal helper class used as the base for an exported
-class. Visual C++ will complain if the base class is not exported:
-
-    warning C4275: non dll-interface class 'YourClass' used as base for dll-interface class 'Base'
-
-If you don’t use the base class outside of the component, Chrome supplies the
-`NON_EXPORTED_BASE` macro in `base/compiler_specific.h` to disable the warning.
-For example:
-
-```c++
-class YourClass : public Base { ... };
-```
-
 ## Creating components from multiple targets
 
 ### Static library symbol export issues

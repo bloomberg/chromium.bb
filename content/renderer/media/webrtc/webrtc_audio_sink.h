@@ -64,9 +64,7 @@ class CONTENT_EXPORT WebRtcAudioSink : public MediaStreamAudioSink {
   // Private implementation of the webrtc::AudioTrackInterface whose control
   // methods are all called on the WebRTC signaling thread. This class is
   // ref-counted, per the requirements of webrtc::AudioTrackInterface.
-  class Adapter
-      : NON_EXPORTED_BASE(
-            public webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>) {
+  class Adapter : public webrtc::MediaStreamTrack<webrtc::AudioTrackInterface> {
    public:
     Adapter(const std::string& label,
             scoped_refptr<webrtc::AudioSourceInterface> source,

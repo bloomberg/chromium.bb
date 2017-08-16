@@ -33,8 +33,7 @@ enum class MediaContentType;
 class CONTENT_EXPORT RendererWebMediaPlayerDelegate
     : public content::RenderFrameObserver,
       public WebMediaPlayerDelegate,
-      public NON_EXPORTED_BASE(
-          base::SupportsWeakPtr<RendererWebMediaPlayerDelegate>) {
+      public base::SupportsWeakPtr<RendererWebMediaPlayerDelegate> {
  public:
   explicit RendererWebMediaPlayerDelegate(content::RenderFrame* render_frame);
   ~RendererWebMediaPlayerDelegate() override;

@@ -68,8 +68,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
   void RecordMessageSent(size_t num_bytes);
 
   class CONTENT_EXPORT Observer
-      : public NON_EXPORTED_BASE(
-            base::RefCountedThreadSafe<RtcDataChannelHandler::Observer>),
+      : public base::RefCountedThreadSafe<RtcDataChannelHandler::Observer>,
         public webrtc::DataChannelObserver {
    public:
     Observer(RtcDataChannelHandler* handler,
