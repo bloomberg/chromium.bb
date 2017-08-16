@@ -199,6 +199,19 @@ TEST_F(HostScanSchedulerTest, ScanRequested) {
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 }
 
+TEST_F(HostScanSchedulerTest, HostScanSchedulerDestroyed) {
+  EXPECT_FALSE(
+      network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
+
+  host_scan_scheduler_->ScheduleScan();
+  EXPECT_TRUE(
+      network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
+
+  host_scan_scheduler_.reset();
+  EXPECT_FALSE(
+      network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
+}
+
 TEST_F(HostScanSchedulerTest, DefaultNetworkChanged) {
   // When no Tether network is present, a scan should start when the default
   // network is disconnected.
