@@ -163,6 +163,30 @@ bool IsPushedSuggestionsNotificationsEnabled() {
       kEnablePushedSuggestionsNotificationsDefault);
 }
 
+// Whether signed-in users should be subscribed for pushed suggestions.
+const bool kEnableSignedInUsersSubscriptionForPushedSuggestionsDefault = true;
+const char kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName[] =
+    "enable_signed_in_users_subscription_for_pushed_suggestions";
+
+bool IsSignedInUsersSubscriptionForPushedSuggestionsEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      ntp_snippets::kBreakingNewsPushFeature,
+      kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName,
+      kEnableSignedInUsersSubscriptionForPushedSuggestionsDefault);
+}
+
+// Whether signed-out users should be subscribed for pushed suggestions.
+const bool kEnableSignedOutUsersSubscriptionForPushedSuggestionsDefault = false;
+const char kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName[] =
+    "enable_signed_out_users_subscription_for_pushed_suggestions";
+
+bool IsSignedOutUsersSubscriptionForPushedSuggestionsEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      ntp_snippets::kBreakingNewsPushFeature,
+      kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName,
+      kEnableSignedOutUsersSubscriptionForPushedSuggestionsDefault);
+}
+
 template <typename SuggestionPtrContainer>
 std::unique_ptr<std::vector<std::string>> GetSuggestionIDVector(
     const SuggestionPtrContainer& suggestions) {
@@ -1134,13 +1158,6 @@ void RemoteSuggestionsProviderImpl::EnterStateReady() {
       UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
     }
   }
-
-  if (breaking_news_raw_data_provider_) {
-    DCHECK(!breaking_news_raw_data_provider_->IsListening());
-    breaking_news_raw_data_provider_->StartListening(
-        base::Bind(&RemoteSuggestionsProviderImpl::PrependArticleSuggestion,
-                   base::Unretained(this)));
-  }
 }
 
 void RemoteSuggestionsProviderImpl::EnterStateDisabled() {
@@ -1153,6 +1170,43 @@ void RemoteSuggestionsProviderImpl::EnterStateDisabled() {
 
 void RemoteSuggestionsProviderImpl::EnterStateError() {
   status_service_.reset();
+}
+
+void RemoteSuggestionsProviderImpl::
+    UpdatePushedSuggestionsSubscriptionDueToStatusChange(
+        RemoteSuggestionsStatus new_status) {
+  if (!breaking_news_raw_data_provider_) {
+    return;
+  }
+
+  bool should_be_subscribed = false;
+  switch (new_status) {
+    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN:
+      should_be_subscribed =
+          IsSignedInUsersSubscriptionForPushedSuggestionsEnabled();
+      break;
+
+    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT:
+      should_be_subscribed =
+          IsSignedOutUsersSubscriptionForPushedSuggestionsEnabled();
+      break;
+
+    case RemoteSuggestionsStatus::EXPLICITLY_DISABLED:
+      should_be_subscribed = false;
+      break;
+  }
+
+  if (should_be_subscribed) {
+    if (!breaking_news_raw_data_provider_->IsListening()) {
+      breaking_news_raw_data_provider_->StartListening(
+          base::Bind(&RemoteSuggestionsProviderImpl::PrependArticleSuggestion,
+                     base::Unretained(this)));
+    }
+  } else {
+    if (breaking_news_raw_data_provider_->IsListening()) {
+      breaking_news_raw_data_provider_->StopListening();
+    }
+  }
 }
 
 void RemoteSuggestionsProviderImpl::FinishInitialization() {
@@ -1214,6 +1268,8 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
       UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
   }
+
+  UpdatePushedSuggestionsSubscriptionDueToStatusChange(new_status);
 }
 
 void RemoteSuggestionsProviderImpl::EnterState(State state) {

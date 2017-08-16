@@ -349,6 +349,11 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Do not call directly, use |EnterState| instead.
   void EnterStateError();
 
+  // Subscribes or unsubcribes from pushed suggestions depending on the new
+  // status.
+  void UpdatePushedSuggestionsSubscriptionDueToStatusChange(
+      RemoteSuggestionsStatus new_status);
+
   // Converts the cached suggestions in the given |category| to content
   // suggestions and notifies the observer.
   void NotifyNewSuggestions(Category category, const CategoryContent& content);
