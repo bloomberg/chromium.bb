@@ -324,6 +324,7 @@ class AccessibilityManager
   void PostSwitchChromeVoxProfile();
   void ReloadChromeVoxPanel();
 
+  void UpdateAlwaysShowMenuFromPref();
   void UpdateLargeCursorFromPref();
   void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();

@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   // Confirms that the icon is invisible just after login.
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling spoken feedback changes the visibillity of the icon.
+  // Toggling spoken feedback changes the visibility of the icon.
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(IsTrayIconVisible());
@@ -391,19 +391,19 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
       false, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling high contrast the visibillity of the icon.
+  // Toggling high contrast changes the visibility of the icon.
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling magnifier the visibility of the icon.
+  // Toggling magnifier changes the visibility of the icon.
   SetMagnifierEnabled(true);
   EXPECT_TRUE(IsTrayIconVisible());
   SetMagnifierEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling automatic clicks changes the visibility of the icon
+  // Toggling automatic clicks changes the visibility of the icon.
   AccessibilityManager::Get()->EnableAutoclick(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableAutoclick(false);
@@ -416,43 +416,43 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the higlight large cursor changes the visibility of the icon
+  // Toggling large cursor changes the visibility of the icon.
   AccessibilityManager::Get()->EnableLargeCursor(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableLargeCursor(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the mono audio changes the visibility of the icon
+  // Toggling mono audio changes the visibility of the icon.
   AccessibilityManager::Get()->EnableMonoAudio(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableMonoAudio(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the caret highlight changes the visibility of the icon
+  // Toggling caret highlight changes the visibility of the icon.
   AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the highlight mouse cursor changes the visibility of the icon
+  // Toggling highlight mouse cursor changes the visibility of the icon.
   AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the highlight keyboard focus changes the visibility of the icon
+  // Toggling highlight keyboard focus changes the visibility of the icon.
   AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the sticky keys changes the visibility of the icon.
+  // Toggling sticky keys changes the visibility of the icon.
   AccessibilityManager::Get()->EnableStickyKeys(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableStickyKeys(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Toggling the tap dragging changes the visibility of the icon.
+  // Toggling tap dragging changes the visibility of the icon.
   AccessibilityManager::Get()->EnableTapDragging(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableTapDragging(false);
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   // Confirms that the menu is hidden.
   EXPECT_FALSE(CanCreateMenuItem());
 
-  // Toggling spoken feedback changes the visibillity of the menu.
+  // Toggling spoken feedback changes the visibility of the menu.
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
       false, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(CanCreateMenuItem());
 
-  // Toggling high contrast changes the visibillity of the menu.
+  // Toggling high contrast changes the visibility of the menu.
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableHighContrast(false);

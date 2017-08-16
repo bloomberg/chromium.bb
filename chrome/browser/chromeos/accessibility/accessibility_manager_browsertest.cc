@@ -183,6 +183,10 @@ void StartUserSession(const AccountId& account_id) {
   session_manager::SessionManager::Get()->SessionStarted();
 }
 
+void SetAlwaysShowMenuEnabled(bool enabled) {
+  GetPrefs()->SetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu, enabled);
+}
+
 void SetLargeCursorEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
 }
@@ -779,6 +783,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   EXPECT_FALSE(ShouldShowAccessibilityMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
   EXPECT_FALSE(IsMonoAudioEnabled());
+
+  // Check "should always show menu" pref.
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+  SetAlwaysShowMenuEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetAlwaysShowMenuEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
 
   // Check large cursor.
   SetLargeCursorEnabled(true);
