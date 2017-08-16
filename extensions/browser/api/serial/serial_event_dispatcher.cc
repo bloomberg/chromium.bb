@@ -93,12 +93,12 @@ void SerialEventDispatcher::StartReceive(const ReceiveParams& params) {
   if (connection->paused())
     return;
 
-  connection->Receive(base::Bind(&ReceiveCallback, params));
+  connection->Receive(base::BindOnce(&ReceiveCallback, params));
 }
 
 // static
 void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
-                                            const std::vector<char>& data,
+                                            std::vector<char> data,
                                             serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
@@ -107,7 +107,7 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
   if (data.size() > 0) {
     serial::ReceiveInfo receive_info;
     receive_info.connection_id = params.connection_id;
-    receive_info.data = data;
+    receive_info.data = std::move(data);
     std::unique_ptr<base::ListValue> args =
         serial::OnReceive::Create(receive_info);
     std::unique_ptr<extensions::Event> event(

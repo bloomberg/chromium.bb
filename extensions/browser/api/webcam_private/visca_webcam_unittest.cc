@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -18,7 +19,9 @@ namespace {
 
 class TestSerialConnection : public SerialConnection {
  public:
-  TestSerialConnection() : SerialConnection("dummy_path", "dummy_id") {}
+  TestSerialConnection(device::mojom::SerialIoHandlerPtrInfo io_handler_info)
+      : SerialConnection("dummy_path", "dummy_id", std::move(io_handler_info)) {
+  }
   ~TestSerialConnection() override {}
 
   void SetReceiveBuffer(const std::vector<char>& receive_buffer) {
@@ -33,20 +36,21 @@ class TestSerialConnection : public SerialConnection {
  private:
   // SerialConnection:
   void Open(const api::serial::ConnectionOptions& options,
-            const OpenCompleteCallback& callback) override {
+            OpenCompleteCallback callback) override {
     NOTREACHED();
   }
 
-  bool Receive(const ReceiveCompleteCallback& callback) override {
-    callback.Run(receive_buffer_, api::serial::RECEIVE_ERROR_NONE);
+  bool Receive(ReceiveCompleteCallback callback) override {
+    std::move(callback).Run(std::move(receive_buffer_),
+                            api::serial::RECEIVE_ERROR_NONE);
     receive_buffer_.clear();
     return true;
   }
 
   bool Send(const std::vector<char>& data,
-            const SendCompleteCallback& callback) override {
+            SendCompleteCallback callback) override {
     send_buffer_.insert(send_buffer_.end(), data.begin(), data.end());
-    callback.Run(data.size(), api::serial::SEND_ERROR_NONE);
+    std::move(callback).Run(data.size(), api::serial::SEND_ERROR_NONE);
     return true;
   }
 
@@ -99,8 +103,11 @@ class SetPTZExpectations {
 class ViscaWebcamTest : public testing::Test {
  protected:
   ViscaWebcamTest() {
+    device::mojom::SerialIoHandlerPtrInfo io_handler_info;
+    mojo::MakeRequest(&io_handler_info);
     webcam_ = new ViscaWebcam;
-    webcam_->OpenForTesting(base::WrapUnique(new TestSerialConnection));
+    webcam_->OpenForTesting(
+        base::MakeUnique<TestSerialConnection>(std::move(io_handler_info)));
   }
   ~ViscaWebcamTest() override {}
 

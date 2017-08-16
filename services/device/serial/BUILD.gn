@@ -14,6 +14,8 @@ if (is_win || (is_linux && use_udev) || is_mac) {
     sources = [
       "serial_device_enumerator_impl.cc",
       "serial_device_enumerator_impl.h",
+      "serial_io_handler_impl.cc",
+      "serial_io_handler_impl.h",
     ]
 
     public_deps = [

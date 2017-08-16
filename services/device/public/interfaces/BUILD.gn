@@ -22,9 +22,6 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-  ]
-
-  deps = [
     "//device/serial:serial_mojo",
   ]
 

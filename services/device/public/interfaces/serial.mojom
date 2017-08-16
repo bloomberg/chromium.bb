@@ -10,3 +10,52 @@ import "device/serial/serial.mojom";
 interface SerialDeviceEnumerator {
   GetDevices() => (array<SerialDeviceInfo> devices);
 };
+
+// Performs asynchronous I/O on serial devices.
+interface SerialIoHandler {
+  // Initiates an Open of the device then returns result.
+  Open(string port, SerialConnectionOptions options) => (bool success);
+
+  // Performs a Read operation then returns retrieved data and the
+  // result. Note that the Read may succeed partially, means that even if
+  // |error| indicates an error other than NONE, |data| may still contain
+  // some retrieved data with the max size |bytes|. Behavior is undefined if
+  // this is called while a Read is already pending.
+  Read(uint32 bytes) => (array<uint8> data, SerialReceiveError error);
+
+  // Performs a Write operation then returns written data and the result.
+  // Note that the Write may succeed partially, means that even if |error|
+  // indicates an error other than NONE, |bytes_written| bytes have already been
+  // written although it may be <= size of |data|. Behavior is undefined if this
+  // is called while a Write is already pending.
+  Write(array<uint8> data) => (uint32 bytes_written, SerialSendError error);
+
+  // Attempts to cancel a pending read operation.
+  CancelRead(SerialReceiveError reason);
+
+  // Attempts to cancel a pending write operation.
+  CancelWrite(SerialSendError reason);
+
+  // Flushes input and output buffers.
+  Flush() => (bool success);
+
+  // Reads current control signals (DCD, CTS, etc.).
+  GetControlSignals() => (SerialDeviceControlSignals signals);
+
+  // Sets one or more control signals (DTR and/or RTS) and returns result.
+  SetControlSignals(SerialHostControlSignals signals) => (bool success);
+
+  // Performs platform-specific port configuration and returns result.
+  ConfigurePort(SerialConnectionOptions options) => (bool success);
+
+  // Performs a platform-specific port configuration query and returns got info.
+  GetPortInfo() => (SerialConnectionInfo info);
+
+  // Initiates a BREAK signal. Places the transmission line in a break state
+  // until the |ClearBreak| is called.
+  SetBreak() => (bool success);
+
+  // Terminates the BREAK signal. Places the transmission line in a nonbreak
+  // state.
+  ClearBreak() => (bool success);
+};
