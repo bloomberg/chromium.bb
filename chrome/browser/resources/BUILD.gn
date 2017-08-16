@@ -123,18 +123,6 @@ if (!is_android) {
   }
 }
 
-if (is_chromeos) {
-  grit("options_resources") {
-    source = "options_resources.grd"
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/options_resources.h",
-      "options_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-}
-
 if (enable_extensions) {
   grit("sync_file_system_internals_resources") {
     source = "sync_file_system_internals_resources.grd"

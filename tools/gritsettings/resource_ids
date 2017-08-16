@@ -93,10 +93,6 @@
   "chrome/browser/resources/net_internals_resources.grd": {
     "includes": [11960],
   },
-  "chrome/browser/resources/options_resources.grd": {
-    "includes": [11970],
-    "structures": [11980],
-  },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
     "includes": [12040],
   },

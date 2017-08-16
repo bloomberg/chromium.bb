@@ -733,9 +733,6 @@ void PeopleHandler::OnStateChanged(syncer::SyncService* sync) {
 
 std::unique_ptr<base::DictionaryValue>
 PeopleHandler::GetSyncStatusDictionary() {
-  // The items which are to be written into |sync_status| are also described in
-  // chrome/browser/resources/options/browser_options.js in @typedef
-  // for SyncStatus. Please update it whenever you add or remove any keys here.
   std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos

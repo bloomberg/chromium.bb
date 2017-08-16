@@ -48,7 +48,6 @@ struct LanguageCodePair {
 // are different to be exact.
 //
 // If this table is updated, please sync this with the synonym table in
-// chrome/browser/resources/options/language_options.js and
 // chrome/browser/resources/settings/languages_page/languages.js.
 const LanguageCodePair kLanguageCodeSimilitudes[] = {
   {"no", "nb"},
@@ -59,7 +58,6 @@ const LanguageCodePair kLanguageCodeSimilitudes[] = {
 // codes are used, so we must see them as synonyms.
 //
 // If this table is updated, please sync this with the synonym table in
-// chrome/browser/resources/options/language_options.js and
 // chrome/browser/resources/settings/languages_page/languages.js.
 const LanguageCodePair kLanguageCodeSynonyms[] = {
   {"iw", "he"},
@@ -70,7 +68,6 @@ const LanguageCodePair kLanguageCodeSynonyms[] = {
 // Translate.
 //
 // If this table is updated, please sync this with the synonym table in
-// chrome/browser/resources/options/language_options.js and
 // chrome/browser/resources/settings/languages_page/languages.js.
 const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
   {"zh-TW", "zh-HK"},
