@@ -125,7 +125,7 @@ void NavigationSimulator::Start() {
 
   if (IsBrowserSideNavigationEnabled()) {
     BeginNavigationParams begin_params(
-        std::string(), net::LOAD_NORMAL, true /* has_user_gesture */,
+        std::string(), net::LOAD_NORMAL, has_user_gesture_,
         false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
         blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
@@ -156,7 +156,7 @@ void NavigationSimulator::Start() {
     DCHECK_EQ(handle_, render_frame_host_->navigation_handle());
     handle_->WillStartRequest(
         "GET", scoped_refptr<content::ResourceRequestBody>(), referrer_,
-        true /* user_gesture */, transition_, false /* is_external_protocol */,
+        has_user_gesture_, transition_, false /* is_external_protocol */,
         REQUEST_CONTEXT_TYPE_LOCATION,
         blink::WebMixedContentContextType::kNotMixedContent,
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
@@ -338,7 +338,8 @@ void NavigationSimulator::Commit() {
   params.should_update_history = true;
   params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
       transition_, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  params.gesture = NavigationGestureUser;
+  params.gesture =
+      has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params.contents_mime_type = "text/html";
   params.method = "GET";
   params.http_status_code = 200;
@@ -485,7 +486,8 @@ void NavigationSimulator::CommitSameDocument() {
   params.transition = transition_;
   params.should_update_history = true;
   params.did_create_new_entry = false;
-  params.gesture = NavigationGestureUser;
+  params.gesture =
+      has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params.contents_mime_type = "text/html";
   params.method = "GET";
   params.http_status_code = 200;
@@ -514,6 +516,12 @@ void NavigationSimulator::SetTransition(ui::PageTransition transition) {
   CHECK_EQ(INITIALIZATION, state_)
       << "The transition cannot be set after the navigation has started";
   transition_ = transition;
+}
+
+void NavigationSimulator::SetHasUserGesture(bool has_user_gesture) {
+  CHECK_EQ(INITIALIZATION, state_) << "The has_user_gesture parameter cannot "
+                                      "be set after the navigation has started";
+  has_user_gesture_ = has_user_gesture;
 }
 
 void NavigationSimulator::SetReferrer(const Referrer& referrer) {
