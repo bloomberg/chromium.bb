@@ -5,10 +5,15 @@
 package org.chromium.android_webview.test;
 
 import android.support.test.filters.SmallTest;
-import android.test.UiThreadTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwViewAndroidDelegate;
 import org.chromium.base.test.util.Feature;
@@ -18,166 +23,189 @@ import org.chromium.ui.display.DisplayAndroid;
 /**
  * Tests anchor views are correctly added/removed when their container view is updated.
  */
-public class AwContentsAnchorViewTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsAnchorViewTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private FrameLayout mContainerView;
     private AwViewAndroidDelegate mViewDelegate;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mContainerView = new FrameLayout(getActivity());
+        mContainerView = new FrameLayout(mActivityTestRule.getActivity());
         mViewDelegate = new AwViewAndroidDelegate(mContainerView, null, new RenderCoordinates());
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
-    public void testAddAndRemoveAnchorViews() {
-        // Add 2 anchor views
-        View anchorView1 = addAnchorView();
-        View anchorView2 = addAnchorView();
+    public void testAddAndRemoveAnchorViews() throws Throwable {
+        mActivityTestRule.runOnUiThread(() -> {
+            // Add 2 anchor views
+            View anchorView1 = addAnchorView();
+            View anchorView2 = addAnchorView();
 
-        // Remove anchorView1
-        removeAnchorView(anchorView1);
+            // Remove anchorView1
+            removeAnchorView(anchorView1);
 
-        // Try to remove anchorView1 again; no-op.
-        removeAnchorView(anchorView1);
+            // Try to remove anchorView1 again; no-op.
+            removeAnchorView(anchorView1);
 
-        // Remove anchorView2
-        removeAnchorView(anchorView2);
+            // Remove anchorView2
+            removeAnchorView(anchorView2);
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
-    public void testAddAndMoveAnchorView() {
-        // Add anchorView and set layout params
-        View anchorView = addAnchorView();
-        LayoutParams originalLayoutParams = setLayoutParams(anchorView, 0, 0);
+    public void testAddAndMoveAnchorView() throws Throwable {
+        mActivityTestRule.runOnUiThread(() -> {
+            // Add anchorView and set layout params
+            View anchorView = addAnchorView();
+            LayoutParams originalLayoutParams = setLayoutParams(anchorView, 0, 0);
 
-        // Move it
-        LayoutParams updatedLayoutParams = setLayoutParams(anchorView, 1, 2);
-        assertFalse(areEqual(originalLayoutParams, updatedLayoutParams));
+            // Move it
+            LayoutParams updatedLayoutParams = setLayoutParams(anchorView, 1, 2);
+            Assert.assertFalse(areEqual(originalLayoutParams, updatedLayoutParams));
 
-        // Move it back to the original position
-        updatedLayoutParams = setLayoutParams(anchorView, 0, 0);
-        assertTrue(areEqual(originalLayoutParams, updatedLayoutParams));
+            // Move it back to the original position
+            updatedLayoutParams = setLayoutParams(anchorView, 0, 0);
+            Assert.assertTrue(areEqual(originalLayoutParams, updatedLayoutParams));
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testMovedAndRemovedAnchorViewIsNotTransferred() throws Throwable {
-        // Add, move and remove anchorView
-        View anchorView = addAnchorView();
-        setLayoutParams(anchorView, 1, 2);
-        removeAnchorView(anchorView);
+        mActivityTestRule.runOnUiThread(() -> {
+            // Add, move and remove anchorView
+            View anchorView = addAnchorView();
+            setLayoutParams(anchorView, 1, 2);
+            removeAnchorView(anchorView);
 
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
+            // Replace container view
+            FrameLayout updatedContainerView = updateContainerView();
 
-        // Verify that no anchor view is transferred between containerViews
-        assertFalse(isViewInContainer(mContainerView, anchorView));
-        assertFalse(isViewInContainer(updatedContainerView, anchorView));
+            // Verify that no anchor view is transferred between containerViews
+            Assert.assertFalse(isViewInContainer(mContainerView, anchorView));
+            Assert.assertFalse(isViewInContainer(updatedContainerView, anchorView));
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testTransferAnchorView() throws Throwable {
-        // Add anchor view
-        View anchorView = addAnchorView();
-        LayoutParams layoutParams = anchorView.getLayoutParams();
+        mActivityTestRule.runOnUiThread(() -> {
 
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
-        verifyAnchorViewCorrectlyTransferred(
-                mContainerView, anchorView, updatedContainerView, layoutParams);
+            // Add anchor view
+            View anchorView = addAnchorView();
+            LayoutParams layoutParams = anchorView.getLayoutParams();
+
+            // Replace container view
+            FrameLayout updatedContainerView = updateContainerView();
+            verifyAnchorViewCorrectlyTransferred(
+                    mContainerView, anchorView, updatedContainerView, layoutParams);
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testTransferMovedAnchorView() throws Throwable {
-        // Add anchor view and move it
-        View anchorView = addAnchorView();
-        LayoutParams layoutParams = setLayoutParams(anchorView, 1, 2);
+        mActivityTestRule.runOnUiThread(() -> {
 
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
+            // Add anchor view and move it
+            View anchorView = addAnchorView();
+            LayoutParams layoutParams = setLayoutParams(anchorView, 1, 2);
 
-        verifyAnchorViewCorrectlyTransferred(
-                mContainerView, anchorView, updatedContainerView, layoutParams);
+            // Replace container view
+            FrameLayout updatedContainerView = updateContainerView();
+
+            verifyAnchorViewCorrectlyTransferred(
+                    mContainerView, anchorView, updatedContainerView, layoutParams);
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testRemoveTransferedAnchorView() throws Throwable {
-        // Add anchor view
-        View anchorView = addAnchorView();
+        mActivityTestRule.runOnUiThread(() -> {
 
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
+            // Add anchor view
+            View anchorView = addAnchorView();
 
-        verifyAnchorViewCorrectlyTransferred(mContainerView, anchorView, updatedContainerView);
+            // Replace container view
+            FrameLayout updatedContainerView = updateContainerView();
 
-        // Remove transferred anchor view
-        removeAnchorView(anchorView);
+            verifyAnchorViewCorrectlyTransferred(mContainerView, anchorView, updatedContainerView);
+
+            // Remove transferred anchor view
+            removeAnchorView(anchorView);
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testMoveTransferedAnchorView() throws Throwable {
-        // Add anchor view
-        View anchorView = addAnchorView();
-        LayoutParams layoutParams = anchorView.getLayoutParams();
+        mActivityTestRule.runOnUiThread(() -> {
 
-        // Replace container view
-        FrameLayout updatedContainerView = updateContainerView();
+            // Add anchor view
+            View anchorView = addAnchorView();
+            LayoutParams layoutParams = anchorView.getLayoutParams();
 
-        verifyAnchorViewCorrectlyTransferred(
-                mContainerView, anchorView, updatedContainerView, layoutParams);
+            // Replace container view
+            FrameLayout updatedContainerView = updateContainerView();
 
-        // Move transferred anchor view
-        assertFalse(areEqual(layoutParams, setLayoutParams(anchorView, 1, 2)));
+            verifyAnchorViewCorrectlyTransferred(
+                    mContainerView, anchorView, updatedContainerView, layoutParams);
+
+            // Move transferred anchor view
+            Assert.assertFalse(areEqual(layoutParams, setLayoutParams(anchorView, 1, 2)));
+        });
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @UiThreadTest
     public void testTransferMultipleMovedAnchorViews() throws Throwable {
-        // Add and move anchorView1
-        View anchorView1 = addAnchorView();
-        LayoutParams layoutParams1 = setLayoutParams(anchorView1, 1, 2);
+        mActivityTestRule.runOnUiThread(() -> {
 
-        // Add and move anchorView2
-        View anchorView2 = addAnchorView();
-        LayoutParams layoutParams2 = setLayoutParams(anchorView2, 2, 4);
+            // Add and move anchorView1
+            View anchorView1 = addAnchorView();
+            LayoutParams layoutParams1 = setLayoutParams(anchorView1, 1, 2);
 
-        // Replace containerView
-        FrameLayout updatedContainerView = updateContainerView();
+            // Add and move anchorView2
+            View anchorView2 = addAnchorView();
+            LayoutParams layoutParams2 = setLayoutParams(anchorView2, 2, 4);
 
-        // Verify that anchor views are transfered with the same layout params.
-        assertFalse(isViewInContainer(mContainerView, anchorView1));
-        assertFalse(isViewInContainer(mContainerView, anchorView2));
-        assertTrue(isViewInContainer(updatedContainerView, anchorView1));
-        assertTrue(isViewInContainer(updatedContainerView, anchorView2));
-        assertTrue(areEqual(layoutParams1, anchorView1.getLayoutParams()));
-        assertTrue(areEqual(layoutParams2, anchorView2.getLayoutParams()));
+            // Replace containerView
+            FrameLayout updatedContainerView = updateContainerView();
+
+            // Verify that anchor views are transfered with the same layout params.
+            Assert.assertFalse(isViewInContainer(mContainerView, anchorView1));
+            Assert.assertFalse(isViewInContainer(mContainerView, anchorView2));
+            Assert.assertTrue(isViewInContainer(updatedContainerView, anchorView1));
+            Assert.assertTrue(isViewInContainer(updatedContainerView, anchorView2));
+            Assert.assertTrue(areEqual(layoutParams1, anchorView1.getLayoutParams()));
+            Assert.assertTrue(areEqual(layoutParams2, anchorView2.getLayoutParams()));
+        });
     }
 
     private View addAnchorView() {
         View anchorView = mViewDelegate.acquireView();
-        assertTrue(isViewInContainer(mContainerView, anchorView));
+        Assert.assertTrue(isViewInContainer(mContainerView, anchorView));
         return anchorView;
     }
 
     private void removeAnchorView(View anchorView) {
         mViewDelegate.removeView(anchorView);
-        assertFalse(isViewInContainer(mContainerView, anchorView));
+        Assert.assertFalse(isViewInContainer(mContainerView, anchorView));
     }
 
     private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
@@ -187,9 +215,9 @@ public class AwContentsAnchorViewTest extends AwTestBase {
         return anchorView.getLayoutParams();
     }
 
-    private FrameLayout updateContainerView() throws InterruptedException {
-        FrameLayout containerView  = new FrameLayout(getActivity());
-        getActivity().addView(containerView);
+    private FrameLayout updateContainerView() {
+        FrameLayout containerView = new FrameLayout(mActivityTestRule.getActivity());
+        mActivityTestRule.getActivity().addView(containerView);
         mViewDelegate.updateCurrentContainerView(containerView,
                 DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()));
         return containerView;
@@ -197,15 +225,15 @@ public class AwContentsAnchorViewTest extends AwTestBase {
 
     private static void verifyAnchorViewCorrectlyTransferred(FrameLayout containerView,
             View anchorView, FrameLayout updatedContainerView, LayoutParams expectedParams) {
-        assertTrue(areEqual(expectedParams, anchorView.getLayoutParams()));
+        Assert.assertTrue(areEqual(expectedParams, anchorView.getLayoutParams()));
         verifyAnchorViewCorrectlyTransferred(containerView, anchorView, updatedContainerView);
     }
 
     private static void verifyAnchorViewCorrectlyTransferred(FrameLayout containerView,
             View anchorView, FrameLayout updatedContainerView) {
-        assertFalse(isViewInContainer(containerView, anchorView));
-        assertTrue(isViewInContainer(updatedContainerView, anchorView));
-        assertSame(anchorView, updatedContainerView.getChildAt(0));
+        Assert.assertFalse(isViewInContainer(containerView, anchorView));
+        Assert.assertTrue(isViewInContainer(updatedContainerView, anchorView));
+        Assert.assertSame(anchorView, updatedContainerView.getChildAt(0));
     }
 
     private static boolean areEqual(LayoutParams params1, LayoutParams params2) {

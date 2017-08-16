@@ -4,19 +4,32 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.android_webview.AwFormDatabase;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 /** AwFormDatabaseTest. */
-public class AwFormDatabaseTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwFormDatabaseTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
+    @Test
     @SmallTest
     public void testSmoke() throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 AwFormDatabase.clearFormData();
-                assertFalse(AwFormDatabase.hasFormData());
+                Assert.assertFalse(AwFormDatabase.hasFormData());
             }
         });
     }

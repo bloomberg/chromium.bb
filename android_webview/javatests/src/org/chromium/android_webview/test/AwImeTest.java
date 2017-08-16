@@ -11,6 +11,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.JavascriptInterface;
 import android.widget.EditText;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -21,7 +26,10 @@ import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 /**
  * Tests for IME (input method editor) on Android WebView.
  */
-public class AwImeTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwImeTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private static class TestJavascriptInterface {
         private final CallbackHelper mFocusCallbackHelper = new CallbackHelper();
@@ -42,18 +50,18 @@ public class AwImeTest extends AwTestBase {
     private final TestJavascriptInterface mTestJavascriptInterface = new TestJavascriptInterface();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mContentsClient = new TestAwContentsClient();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 // Use detached container view to avoid focus request.
-                mTestContainerView = createDetachedAwTestContainerView(mContentsClient);
-                mEditText = new EditText(getActivity());
-                getActivity().addView(mEditText);
-                getActivity().addView(mTestContainerView);
+                mTestContainerView =
+                        mActivityTestRule.createDetachedAwTestContainerView(mContentsClient);
+                mEditText = new EditText(mActivityTestRule.getActivity());
+                mActivityTestRule.getActivity().addView(mEditText);
+                mActivityTestRule.getActivity().addView(mTestContainerView);
                 mTestContainerView.getAwContents().addJavascriptInterface(
                         mTestJavascriptInterface, "test");
                 // Let's not test against real input method.
@@ -70,7 +78,8 @@ public class AwImeTest extends AwTestBase {
         final String htmlDocument = "<html><body contenteditable id='editor'></body></html>";
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
 
-        loadDataSync(mTestContainerView.getAwContents(), loadHelper, htmlDocument, mime, false);
+        mActivityTestRule.loadDataSync(
+                mTestContainerView.getAwContents(), loadHelper, htmlDocument, mime, false);
     }
 
     private void focusOnEditTextAndShowKeyboard() {
@@ -78,8 +87,9 @@ public class AwImeTest extends AwTestBase {
             @Override
             public void run() {
                 mEditText.requestFocus();
-                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm =
+                        (InputMethodManager) mActivityTestRule.getActivity().getSystemService(
+                                Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(mEditText, 0);
             }
         });
@@ -93,21 +103,22 @@ public class AwImeTest extends AwTestBase {
             }
         });
 
-        enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         // View focus may not have been propagated to the renderer process yet. If document is not
         // yet focused, and focusing on an element is an invalid operation. See crbug.com/622151
         // for details.
-        executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(), mContentsClient,
+        mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
+                mContentsClient,
                 "function onDocumentFocused() {\n"
-                + "  document.getElementById('editor').focus();\n"
-                + "  test.onEditorFocused();\n"
-                + "}\n"
-                + "(function() {\n"
-                + "if (document.hasFocus()) {\n"
-                + "  onDocumentFocused();"
-                + "} else {\n"
-                + "  window.addEventListener('focus', onDocumentFocused);\n"
-                + "}})();");
+                        + "  document.getElementById('editor').focus();\n"
+                        + "  test.onEditorFocused();\n"
+                        + "}\n"
+                        + "(function() {\n"
+                        + "if (document.hasFocus()) {\n"
+                        + "  onDocumentFocused();"
+                        + "} else {\n"
+                        + "  window.addEventListener('focus', onDocumentFocused);\n"
+                        + "}})();");
         mTestJavascriptInterface.getFocusCallbackHelper().waitForCallback(0);
     }
 
@@ -126,6 +137,7 @@ public class AwImeTest extends AwTestBase {
      * Tests that moving from EditText to WebView keeps the keyboard showing.
      */
     // https://crbug.com/569556
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "TextInput"})
     public void testPressNextFromEditTextAndType() throws Throwable {

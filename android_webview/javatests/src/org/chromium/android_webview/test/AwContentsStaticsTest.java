@@ -4,16 +4,26 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 
 /**
  * AwContentsStatics tests.
  */
-public class AwContentsStaticsTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsStaticsTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private static class ClearClientCertCallbackHelper extends CallbackHelper
             implements Runnable {
@@ -23,12 +33,13 @@ public class AwContentsStaticsTest extends AwTestBase {
         }
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testClearClientCertPreferences() throws Throwable {
         final ClearClientCertCallbackHelper callbackHelper = new ClearClientCertCallbackHelper();
         int currentCallCount = callbackHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Make sure calling clearClientCertPreferences with null callback does not
