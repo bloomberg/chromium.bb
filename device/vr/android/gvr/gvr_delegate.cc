@@ -6,7 +6,6 @@
 
 #include "base/trace_event/trace_event.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
