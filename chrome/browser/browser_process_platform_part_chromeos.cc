@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/embedded_ui_service_info_factory.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -34,14 +35,11 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/discardable_shared_memory_manager.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/common/image_cursors_set.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/service.h"
 
 #if defined(USE_OZONE)
 #include "content/public/common/service_manager_connection.h"
@@ -50,21 +48,6 @@
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #endif
-
-namespace {
-
-std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr,
-    discardable_memory::DiscardableSharedMemoryManager* memory_manager) {
-  ui::Service::InProcessConfig config;
-  config.resource_runner = task_runner;
-  config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
-  config.memory_manager = memory_manager;
-  return base::MakeUnique<ui::Service>(&config);
-}
-
-}  // namespace
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {}
@@ -205,15 +188,9 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
   }
 
   if (chromeos::GetAshConfig() == ash::Config::MUS) {
-    service_manager::EmbeddedServiceInfo info;
     image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
-    info.factory = base::Bind(&CreateEmbeddedUIService,
-                              base::ThreadTaskRunnerHandle::Get(),
-                              image_cursors_set_->GetWeakPtr(),
-                              content::GetDiscardableSharedMemoryManager());
-    info.use_own_thread = true;
-    info.message_loop_type = base::MessageLoop::TYPE_UI;
-    info.thread_priority = base::ThreadPriority::DISPLAY;
+    service_manager::EmbeddedServiceInfo info =
+        CreateEmbeddedUIServiceInfo(image_cursors_set_->GetWeakPtr());
     services->insert(std::make_pair(ui::mojom::kServiceName, info));
   }
 }
