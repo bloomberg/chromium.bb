@@ -50,7 +50,6 @@
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -683,10 +682,6 @@ bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
 
 blink::WebCrypto* BlinkPlatformImpl::Crypto() {
   return &web_crypto_;
-}
-
-const char* BlinkPlatformImpl::GetBrowserServiceName() const {
-  return mojom::kBrowserServiceName;
 }
 
 blink::WebNotificationManager* BlinkPlatformImpl::GetNotificationManager() {

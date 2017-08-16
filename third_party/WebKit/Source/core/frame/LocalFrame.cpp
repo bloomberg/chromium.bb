@@ -85,7 +85,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
 #include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -226,6 +225,7 @@ DEFINE_TRACE(LocalFrame) {
   visitor->Trace(event_handler_);
   visitor->Trace(console_);
   visitor->Trace(input_method_controller_);
+  visitor->Trace(frame_resource_coordinator_);
   visitor->Trace(text_suggestion_controller_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
@@ -1001,16 +1001,16 @@ ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
 }
 
 FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
-  if (!BlinkResourceCoordinatorBase::IsEnabled())
+  if (!FrameResourceCoordinator::IsEnabled())
     return nullptr;
   if (!frame_resource_coordinator_) {
     auto local_frame_client = Client();
     if (!local_frame_client)
       return nullptr;
-    frame_resource_coordinator_.reset(FrameResourceCoordinator::Create(
-        local_frame_client->GetInterfaceProvider()));
+    frame_resource_coordinator_ = FrameResourceCoordinator::Create(
+        local_frame_client->GetInterfaceProvider());
   }
-  return frame_resource_coordinator_.get();
+  return frame_resource_coordinator_;
 }
 
 PluginData* LocalFrame::GetPluginData() const {
