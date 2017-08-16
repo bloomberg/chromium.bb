@@ -8,6 +8,12 @@ import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -22,8 +28,12 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the WebViewClient.onUnhandledKeyEvent() method.
  */
+@RunWith(AwJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
-public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
+public class AwContentsClientOnUnhandledKeyEventTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
     private KeyEventTestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
 
@@ -54,12 +64,11 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mContentsClient = new KeyEventTestAwContentsClient();
         mHelper = new UnhandledKeyEventHelper();
-        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
+        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
     }
 
     /*
@@ -74,15 +83,16 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
      * adding this new test as @DisabledTest to provide a tool for further
      * work.
     */
+    @Test
     @DisabledTest
     public void testTextboxConsumesKeyEvents() throws Throwable {
-        enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         final String data = "<html><head></head><body><textarea id='textarea0'></textarea></body>"
                 + "</html>";
-        loadDataSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                data, "text/html", false);
-        executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(), mContentsClient,
-                "document.getElementById('textarea0').select();");
+        mActivityTestRule.loadDataSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), data, "text/html", false);
+        mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
+                mContentsClient, "document.getElementById('textarea0').select();");
 
         int callCount;
 
@@ -102,13 +112,14 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
         assertUnhandledDownAndUp(KeyEvent.KEYCODE_ALT_LEFT);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "TextInput"})
     public void testUnconsumedKeyEvents() throws Throwable {
         final String data = "<html><head></head><body>Plain page</body>"
                 + "</html>";
-        loadDataSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                data, "text/html", false);
+        mActivityTestRule.loadDataSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), data, "text/html", false);
 
         int callCount;
 
@@ -129,7 +140,7 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
     }
 
     private boolean dispatchKeyEvent(final KeyEvent event) throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+        return mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mTestContainerView.dispatchKeyEvent(event);
@@ -144,11 +155,12 @@ public class AwContentsClientOnUnhandledKeyEventTest extends AwTestBase {
 
     private void assertUnhandledDownAndUp(final int code) throws Throwable {
         List<KeyEvent> list = mHelper.getUnhandledKeyEventList();
-        assertEquals("KeyEvent list: " + Arrays.deepToString(list.toArray()), 2, list.size());
-        assertEquals(KeyEvent.ACTION_DOWN, list.get(0).getAction());
-        assertEquals(code, list.get(0).getKeyCode());
-        assertEquals(KeyEvent.ACTION_UP, list.get(1).getAction());
-        assertEquals(code, list.get(1).getKeyCode());
+        Assert.assertEquals(
+                "KeyEvent list: " + Arrays.deepToString(list.toArray()), 2, list.size());
+        Assert.assertEquals(KeyEvent.ACTION_DOWN, list.get(0).getAction());
+        Assert.assertEquals(code, list.get(0).getKeyCode());
+        Assert.assertEquals(KeyEvent.ACTION_UP, list.get(1).getAction());
+        Assert.assertEquals(code, list.get(1).getKeyCode());
 
         mHelper.clearUnhandledKeyEventList();
     }

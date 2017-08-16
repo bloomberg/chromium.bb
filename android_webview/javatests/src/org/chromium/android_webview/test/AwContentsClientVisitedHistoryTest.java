@@ -7,6 +7,11 @@ package org.chromium.android_webview.test;
 import android.support.test.filters.SmallTest;
 import android.webkit.ValueCallback;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
 import org.chromium.base.test.util.CallbackHelper;
@@ -17,7 +22,11 @@ import org.chromium.net.test.util.TestWebServer;
 /**
  * Tests for AwContentsClient.getVisitedHistory and AwContents.doUpdateVisitedHistory callbacks.
  */
-public class AwContentsClientVisitedHistoryTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsClientVisitedHistoryTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
     private static class GetVisitedHistoryHelper extends CallbackHelper {
         private ValueCallback<String[]> mCallback;
         private boolean mSaveCallback;
@@ -61,10 +70,12 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     private VisitedHistoryTestAwContentsClient mContentsClient =
             new VisitedHistoryTestAwContentsClient();
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testUpdateVisitedHistoryCallback() throws Throwable {
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
         // Load a page with an iframe to make sure the callback only happens for the main frame URL.
@@ -77,23 +88,24 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
             final DoUpdateVisitedHistoryHelper doUpdateVisitedHistoryHelper =
                     mContentsClient.getDoUpdateVisitedHistoryHelper();
             int callCount = doUpdateVisitedHistoryHelper.getCallCount();
-            loadUrlAsync(awContents, pageUrl);
+            mActivityTestRule.loadUrlAsync(awContents, pageUrl);
             doUpdateVisitedHistoryHelper.waitForCallback(callCount);
-            assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
-            assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
-            assertEquals(callCount + 1, doUpdateVisitedHistoryHelper.getCallCount());
+            Assert.assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
+            Assert.assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+            Assert.assertEquals(callCount + 1, doUpdateVisitedHistoryHelper.getCallCount());
 
             // Reload
-            loadUrlAsync(awContents, pageUrl);
+            mActivityTestRule.loadUrlAsync(awContents, pageUrl);
             doUpdateVisitedHistoryHelper.waitForCallback(callCount + 1);
-            assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
-            assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
-            assertEquals(callCount + 2, doUpdateVisitedHistoryHelper.getCallCount());
+            Assert.assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
+            Assert.assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
+            Assert.assertEquals(callCount + 2, doUpdateVisitedHistoryHelper.getCallCount());
         } finally {
             webServer.shutdown();
         }
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testGetVisitedHistoryExerciseCodePath() throws Throwable {
@@ -105,7 +117,8 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         final int callCount = visitedHistoryHelper.getCallCount();
         visitedHistoryHelper.setSaveCallback(true);
 
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
         final String path = "/testGetVisitedHistoryExerciseCodePath.html";
@@ -115,19 +128,22 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         TestWebServer webServer = TestWebServer.start();
         try {
             final String pageUrl = webServer.setResponse(path, html, null);
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
             visitedHistoryHelper.waitForCallback(callCount);
-            assertNotNull(visitedHistoryHelper.getCallback());
+            Assert.assertNotNull(visitedHistoryHelper.getCallback());
 
             visitedHistoryHelper.getCallback().onReceiveValue(visitedLinks);
             visitedHistoryHelper.getCallback().onReceiveValue(null);
 
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         } finally {
             webServer.shutdown();
         }
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testGetVisitedHistoryCallbackAfterDestroy() throws Throwable {
@@ -135,13 +151,14 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
                 mContentsClient.getGetVisitedHistoryHelper();
         visitedHistoryHelper.setSaveCallback(true);
         final int callCount = visitedHistoryHelper.getCallCount();
-        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-        loadUrlAsync(awContents, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        mActivityTestRule.loadUrlAsync(awContents, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         visitedHistoryHelper.waitForCallback(callCount);
-        assertNotNull(visitedHistoryHelper.getCallback());
+        Assert.assertNotNull(visitedHistoryHelper.getCallback());
 
-        destroyAwContentsOnMainSync(awContents);
+        mActivityTestRule.destroyAwContentsOnMainSync(awContents);
         visitedHistoryHelper.getCallback().onReceiveValue(new String[] {"abc.def"});
         visitedHistoryHelper.getCallback().onReceiveValue(null);
     }

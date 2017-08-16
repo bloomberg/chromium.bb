@@ -6,14 +6,21 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertNotEquals;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwLayoutSizer;
+import org.chromium.android_webview.test.AwTestBase.TestDependencyFactory;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -25,7 +32,22 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests for certain edge cases related to integrating with the Android view system.
  */
-public class AndroidViewIntegrationTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AndroidViewIntegrationTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule =
+            new AwActivityTestRule() {
+                @Override
+                public TestDependencyFactory createTestDependencyFactory() {
+                    return new TestDependencyFactory() {
+                        @Override
+                        public AwLayoutSizer createLayoutSizer() {
+                            return new TestAwLayoutSizer();
+                        }
+                    };
+                }
+            };
+
     private static final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
 
     private static class OnContentSizeChangedHelper extends CallbackHelper {
@@ -71,16 +93,6 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         }
     }
 
-    @Override
-    public TestDependencyFactory createTestDependencyFactory() {
-        return new TestDependencyFactory() {
-            @Override
-            public AwLayoutSizer createLayoutSizer() {
-                return new TestAwLayoutSizer();
-            }
-        };
-    }
-
     final LinearLayout.LayoutParams mWrapContentLayoutParams =
             new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
@@ -88,10 +100,11 @@ public class AndroidViewIntegrationTest extends AwTestBase {
             final AwContentsClient awContentsClient, final int visibility) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createAwTestContainerView(awContentsClient));
+                testContainerView.set(
+                        mActivityTestRule.createAwTestContainerView(awContentsClient));
                 testContainerView.get().setLayoutParams(mWrapContentLayoutParams);
                 testContainerView.get().setVisibility(visibility);
             }
@@ -103,10 +116,11 @@ public class AndroidViewIntegrationTest extends AwTestBase {
             final AwContentsClient awContentsClient) {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createDetachedAwTestContainerView(awContentsClient));
+                testContainerView.set(
+                        mActivityTestRule.createDetachedAwTestContainerView(awContentsClient));
             }
         });
         return testContainerView.get();
@@ -114,20 +128,20 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
     private void assertZeroHeight(final AwTestContainerView testContainerView) throws Throwable {
         // Make sure the test isn't broken by the view having a non-zero height.
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                assertEquals(0, testContainerView.getHeight());
+                Assert.assertEquals(0, testContainerView.getHeight());
             }
         });
     }
 
     private int getRootLayoutWidthOnMainThread() throws Exception {
         final AtomicReference<Integer> width = new AtomicReference<>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                width.set(Integer.valueOf(getActivity().getRootLayoutWidth()));
+                width.set(Integer.valueOf(mActivityTestRule.getActivity().getRootLayoutWidth()));
             }
         });
         return width.get();
@@ -143,6 +157,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
      * Such behavior is unacceptable for the WebView and this test is to ensure that such behavior
      * is not re-introduced.
      */
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testZeroByZeroViewLoadsContent() throws Throwable {
@@ -152,10 +167,10 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        loadDataAsync(
+        mActivityTestRule.loadDataAsync(
                 testContainerView.getAwContents(), CommonResources.ABOUT_HTML, "text/html", false);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
-        assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+        Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
 
     /**
@@ -164,6 +179,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
      * This makes sure that any optimizations related to the view's visibility don't inhibit
      * the ability to load pages. Many applications keep the WebView hidden when it's loading.
      */
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testInvisibleViewLoadsContent() throws Throwable {
@@ -173,15 +189,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        loadDataAsync(
+        mActivityTestRule.loadDataAsync(
                 testContainerView.getAwContents(), CommonResources.ABOUT_HTML, "text/html", false);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
-        assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+        Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
 
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                assertEquals(View.INVISIBLE, testContainerView.getVisibility());
+                Assert.assertEquals(View.INVISIBLE, testContainerView.getVisibility());
             }
         });
     }
@@ -189,6 +205,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     /**
      * Check that a content size change notification is sent even if the WebView is off screen.
      */
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDisconnectedViewLoadsContent() throws Throwable {
@@ -199,11 +216,11 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
         final int pageScaleChangeCallCount = mOnPageScaleChangedHelper.getCallCount();
-        loadDataAsync(
+        mActivityTestRule.loadDataAsync(
                 testContainerView.getAwContents(), CommonResources.ABOUT_HTML, "text/html", false);
         mOnPageScaleChangedHelper.waitForCallback(pageScaleChangeCallCount);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
-        assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+        Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
 
     private String makeHtmlPageOfSize(int widthCss, int heightCss, boolean heightPercent) {
@@ -245,11 +262,12 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
         final String htmlData = makeHtmlPageOfSize(widthCss, heightCss, heightPercent);
         final int contentSizeChangeCallCount = helper.getCallCount();
-        loadDataAsync(awContents, htmlData, "text/html", false);
+        mActivityTestRule.loadDataAsync(awContents, htmlData, "text/html", false);
 
         waitForContentSizeToChangeTo(helper, contentSizeChangeCallCount, widthCss, heightCss);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSizeUpdateWhenDetached() throws Throwable {
@@ -273,6 +291,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         Thread.sleep(CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testAbsolutePositionContributesToContentSize() throws Throwable {
@@ -295,12 +314,14 @@ public class AndroidViewIntegrationTest extends AwTestBase {
                 + "</style>", "<div>a</div>");
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        loadDataAsync(testContainerView.getAwContents(), htmlData, "text/html", false);
+        mActivityTestRule.loadDataAsync(
+                testContainerView.getAwContents(), htmlData, "text/html", false);
 
         waitForContentSizeToChangeTo(mOnContentSizeChangedHelper, contentSizeChangeCallCount,
                 widthCss, heightCss);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testViewIsNotBlankInWrapContentsMode() throws Throwable {
@@ -312,7 +333,6 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
 
-        final int contentWidthCss = 142;
         final int contentHeightCss = 180;
 
         // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
@@ -328,6 +348,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
                 testContainerView.getAwContents(), 0xFF227788);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testViewSizedCorrectlyInWrapContentMode() throws Throwable {
@@ -352,10 +373,11 @@ public class AndroidViewIntegrationTest extends AwTestBase {
                 mOnContentSizeChangedHelper, expectedWidthCss, expectedHeightCss, false);
 
         waitForNoLayoutsPending();
-        assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
-        assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
+        Assert.assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
+        Assert.assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testViewSizedCorrectlyInWrapContentModeWithDynamicContents() throws Throwable {
@@ -378,10 +400,11 @@ public class AndroidViewIntegrationTest extends AwTestBase {
                 mOnContentSizeChangedHelper, expectedWidthCss, contentHeightCss, true);
 
         waitForNoLayoutsPending();
-        assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
-        assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
+        Assert.assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
+        Assert.assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testReceivingSizeAfterLoadUpdatesLayout() throws Throwable {
@@ -406,7 +429,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         htmlBuilder.append("</body></html>");
 
         int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        loadDataAsync(awContents, htmlBuilder.toString(), "text/html", false);
+        mActivityTestRule.loadDataAsync(awContents, htmlBuilder.toString(), "text/html", false);
         // Because we're loading the contents into a detached WebView its layout size is 0x0 and as
         // a result of that the paragraph will be formated such that each word is on a separate
         // line.
@@ -416,7 +439,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int narrowLayoutHeight = mOnContentSizeChangedHelper.getHeight();
 
         contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 testContainerView.onSizeChanged(physicalWidth, 0, 0, 0);
@@ -427,8 +450,8 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         // As a result of calling the onSizeChanged method the layout size should be updated to
         // match the width of the webview and the text we previously loaded should reflow making the
         // contents width match the WebView width.
-        assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
-        assertTrue(mOnContentSizeChangedHelper.getHeight() < narrowLayoutHeight);
-        assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+        Assert.assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
+        Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() < narrowLayoutHeight);
+        Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
     }
 }

@@ -4,11 +4,18 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.test.filters.SmallTest;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -21,7 +28,10 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the Favicon and TouchIcon related APIs.
  */
-public class AwContentsClientFaviconTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsClientFaviconTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private static final String FAVICON1_URL = "/favicon1.png";
     private static final String FAVICON1_PAGE_URL = "/favicon1.html";
@@ -48,23 +58,22 @@ public class AwContentsClientFaviconTest extends AwTestBase {
     private AwContents mAwContents;
     private TestWebServer mWebServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         AwContents.setShouldDownloadFavicons();
         mContentsClient = new TestAwContentsClient();
         AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
         mWebServer = TestWebServer.start();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         if (mWebServer != null) mWebServer.shutdown();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     public void testReceiveBasicFavicon() throws Throwable {
         int callCount = mContentsClient.getFaviconHelper().getCallCount();
@@ -74,31 +83,34 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
                 CommonResources.getTextHtmlHeaders(true));
 
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
         mContentsClient.getFaviconHelper().waitForCallback(callCount);
-        assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
+        Assert.assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
         Object originalFaviconSource = (new URL(faviconUrl)).getContent();
         Bitmap originalFavicon = BitmapFactory.decodeStream((InputStream) originalFaviconSource);
-        assertNotNull(originalFavicon);
-        assertNotNull(mContentsClient.getFaviconHelper().getIcon());
-        assertTrue(mContentsClient.getFaviconHelper().getIcon().sameAs(originalFavicon));
+        Assert.assertNotNull(originalFavicon);
+        Assert.assertNotNull(mContentsClient.getFaviconHelper().getIcon());
+        Assert.assertTrue(mContentsClient.getFaviconHelper().getIcon().sameAs(originalFavicon));
 
         // Make sure the request counter for favicon is incremented when the page is loaded again
         // successfully.
-        loadUrlAsync(mAwContents, pageUrl);
+        mActivityTestRule.loadUrlAsync(mAwContents, pageUrl);
         mContentsClient.getFaviconHelper().waitForCallback(callCount);
-        assertEquals(2, mWebServer.getRequestCount(FAVICON1_URL));
+        Assert.assertEquals(2, mWebServer.getRequestCount(FAVICON1_URL));
     }
 
+    @Test
     @SmallTest
     public void testDoNotMakeRequestForFaviconAfter404() throws Throwable {
         mWebServer.setResponseWithNotFoundStatus(FAVICON1_URL);
         final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
                 CommonResources.getTextHtmlHeaders(true));
 
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        pollInstrumentationThread(new Callable<Boolean>() {
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mWebServer.getRequestCount(FAVICON1_URL) == 1;
@@ -106,12 +118,14 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         });
 
         // Make sure the request counter for favicon is not incremented, since we already got 404.
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         // If a request hasn't been done within this time period, we assume it won't be done.
         Thread.sleep(MAX_REQUEST_WAITING_LIMIT_MS);
-        assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
+        Assert.assertEquals(1, mWebServer.getRequestCount(FAVICON1_URL));
     }
 
+    @Test
     @SmallTest
     public void testReceiveBasicTouchIconLinkRel() throws Throwable {
         int callCount = mContentsClient.getFaviconHelper().getCallCount();
@@ -119,13 +133,14 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         final String pageUrl = mWebServer.setResponse(TOUCHICON_REL_URL, TOUCHICON_REL_PAGE_HTML,
                 CommonResources.getTextHtmlHeaders(true));
 
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
         mContentsClient.getTouchIconHelper().waitForCallback(callCount, 2);
-        assertEquals(2, mContentsClient.getTouchIconHelper().getTouchIconsCount());
-        assertFalse(mContentsClient.getTouchIconHelper().hasTouchIcon(
-                        mWebServer.getBaseUrl() + TOUCHICON_REL_LINK));
-        assertFalse(mContentsClient.getTouchIconHelper().hasTouchIcon(
-                        mWebServer.getBaseUrl() + TOUCHICON_REL_LINK_72));
+        Assert.assertEquals(2, mContentsClient.getTouchIconHelper().getTouchIconsCount());
+        Assert.assertFalse(mContentsClient.getTouchIconHelper().hasTouchIcon(
+                mWebServer.getBaseUrl() + TOUCHICON_REL_LINK));
+        Assert.assertFalse(mContentsClient.getTouchIconHelper().hasTouchIcon(
+                mWebServer.getBaseUrl() + TOUCHICON_REL_LINK_72));
     }
 }
