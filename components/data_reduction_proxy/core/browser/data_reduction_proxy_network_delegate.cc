@@ -56,6 +56,8 @@ enum AcceptTransformEvent {
   COMPRESSED_VIDEO_REQUESTED = 5,
   IDENTITY_TRANSFORM_REQUESTED = 6,
   IDENTITY_TRANSFORM_RECEIVED = 7,
+  COMPRESSED_VIDEO_RECEIVED = 8,
+  UNKNOWN_TRANSFORM_RECEIVED = 9,
   ACCEPT_TRANSFORM_EVENT_BOUNDARY
 };
 
@@ -206,6 +208,7 @@ void RecordAcceptTransformSentUMA(
     case TRANSFORM_NONE:
       break;
     case TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
+    case TRANSFORM_UNKNOWN:
       NOTREACHED();
       break;
   }
@@ -218,6 +221,9 @@ void RecordAcceptTransformReceivedUMA(const net::URLRequest& request) {
   }
 
   switch (ParseResponseTransform(*response_headers)) {
+    case TRANSFORM_UNKNOWN:
+      RecordAcceptTransformEvent(UNKNOWN_TRANSFORM_RECEIVED);
+      break;
     case TRANSFORM_LITE_PAGE:
       RecordAcceptTransformEvent(LITE_PAGE_TRANSFORM_RECEIVED);
       break;
@@ -230,11 +236,10 @@ void RecordAcceptTransformReceivedUMA(const net::URLRequest& request) {
     case TRANSFORM_IDENTITY:
       RecordAcceptTransformEvent(IDENTITY_TRANSFORM_RECEIVED);
       break;
-    case TRANSFORM_NONE:
-      break;
     case TRANSFORM_COMPRESSED_VIDEO:
-      // Compressed video response would instead be a redirect to resource.
-      NOTREACHED();
+      RecordAcceptTransformEvent(COMPRESSED_VIDEO_RECEIVED);
+      break;
+    case TRANSFORM_NONE:
       break;
   }
 }
