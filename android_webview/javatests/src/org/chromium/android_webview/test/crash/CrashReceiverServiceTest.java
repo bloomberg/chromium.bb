@@ -5,11 +5,17 @@
 package org.chromium.android_webview.test.crash;
 
 import android.os.ParcelFileDescriptor;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.crash.CrashReceiverService;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,40 +23,46 @@ import java.io.IOException;
 /**
  * Instrumentation tests for CrashReceiverService.
  */
-public class CrashReceiverServiceTest extends InstrumentationTestCase {
-    protected void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(
-                getInstrumentation().getTargetContext().getApplicationContext());
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CrashReceiverServiceTest {
+    @Before
+    public void setUp() throws Exception {
+        ContextUtils.initApplicationContextForTests(InstrumentationRegistry.getInstrumentation()
+                                                            .getTargetContext()
+                                                            .getApplicationContext());
     }
 
     /**
      * Ensure that the minidump copying doesn't trigger when we pass it invalid file descriptors.
      */
+    @Test
     @MediumTest
     public void testCopyingAbortsForInvalidFds() throws IOException {
-        assertFalse(CrashReceiverService.copyMinidumps(0 /* uid */, null));
-        assertFalse(CrashReceiverService.copyMinidumps(
+        Assert.assertFalse(CrashReceiverService.copyMinidumps(0 /* uid */, null));
+        Assert.assertFalse(CrashReceiverService.copyMinidumps(
                 0 /* uid */, new ParcelFileDescriptor[] {null, null}));
-        assertFalse(CrashReceiverService.copyMinidumps(0 /* uid */, new ParcelFileDescriptor[0]));
+        Assert.assertFalse(
+                CrashReceiverService.copyMinidumps(0 /* uid */, new ParcelFileDescriptor[0]));
     }
 
     /**
      * Ensure deleting temporary files used when copying minidumps works correctly.
      */
+    @Test
     @MediumTest
     public void testDeleteFilesInDir() throws IOException {
         File webviewTmpDir = CrashReceiverService.getWebViewTmpCrashDir();
         if (!webviewTmpDir.isDirectory()) {
-            assertTrue(webviewTmpDir.mkdir());
+            Assert.assertTrue(webviewTmpDir.mkdir());
         }
         File testFile1 = new File(webviewTmpDir, "testFile1");
         File testFile2 = new File(webviewTmpDir, "testFile2");
-        assertTrue(testFile1.createNewFile());
-        assertTrue(testFile2.createNewFile());
-        assertTrue(testFile1.exists());
-        assertTrue(testFile2.exists());
+        Assert.assertTrue(testFile1.createNewFile());
+        Assert.assertTrue(testFile2.createNewFile());
+        Assert.assertTrue(testFile1.exists());
+        Assert.assertTrue(testFile2.exists());
         CrashReceiverService.deleteFilesInWebViewTmpDirIfExists();
-        assertFalse(testFile1.exists());
-        assertFalse(testFile2.exists());
+        Assert.assertFalse(testFile1.exists());
+        Assert.assertFalse(testFile2.exists());
     }
 }

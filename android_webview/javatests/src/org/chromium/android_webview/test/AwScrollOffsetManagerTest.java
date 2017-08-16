@@ -6,15 +6,20 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Rect;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwScrollOffsetManager;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 /**
  * Integration tests for ScrollOffsetManager.
  */
-public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class AwScrollOffsetManagerTest {
     private static class TestScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
         private int mOverScrollDeltaX;
         private int mOverScrollDeltaY;
@@ -106,22 +111,23 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         int callCount = delegate.getOverScrollCallCount();
         offsetManager.scrollContainerViewTo(scrollX, scrollY);
         // The manager then asks the delegate to overscroll the view.
-        assertEquals(callCount + 1, delegate.getOverScrollCallCount());
-        assertEquals(scrollX, delegate.getOverScrollDeltaX() + delegate.getScrollX());
-        assertEquals(scrollY, delegate.getOverScrollDeltaY() + delegate.getScrollY());
+        Assert.assertEquals(callCount + 1, delegate.getOverScrollCallCount());
+        Assert.assertEquals(scrollX, delegate.getOverScrollDeltaX() + delegate.getScrollX());
+        Assert.assertEquals(scrollY, delegate.getOverScrollDeltaY() + delegate.getScrollY());
         // As a response to that the menager expects the view to call back with the new scroll.
         offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
     }
 
     private void simlateOverScrollPropagation(AwScrollOffsetManager offsetManager,
             TestScrollOffsetManagerDelegate delegate) {
-        assertTrue(delegate.getOverScrollCallCount() > 0);
+        Assert.assertTrue(delegate.getOverScrollCallCount() > 0);
 
         offsetManager.onContainerViewOverScrolled(
                 delegate.getOverScrollDeltaX() + delegate.getScrollX(),
                 delegate.getOverScrollDeltaY() + delegate.getScrollY(), false, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testWhenContentSizeMatchesView() {
@@ -136,35 +142,35 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setMaxScrollOffset(0, 0);
         offsetManager.setContainerViewSize(width, height);
 
-        assertEquals(width, offsetManager.computeHorizontalScrollRange());
-        assertEquals(height, offsetManager.computeVerticalScrollRange());
+        Assert.assertEquals(width, offsetManager.computeHorizontalScrollRange());
+        Assert.assertEquals(height, offsetManager.computeVerticalScrollRange());
 
         // Since the view size and contents size are equal no scrolling should be possible.
-        assertEquals(0, offsetManager.computeMaximumHorizontalScrollOffset());
-        assertEquals(0, offsetManager.computeMaximumVerticalScrollOffset());
+        Assert.assertEquals(0, offsetManager.computeMaximumHorizontalScrollOffset());
+        Assert.assertEquals(0, offsetManager.computeMaximumVerticalScrollOffset());
 
         // Scrolling should generate overscroll but not update the scroll offset.
         simulateScrolling(offsetManager, delegate, scrollX, scrollY);
-        assertEquals(scrollX, delegate.getOverScrollDeltaX());
-        assertEquals(scrollY, delegate.getOverScrollDeltaY());
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(scrollX, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(scrollY, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
 
         // Scrolling to 0,0 should result in no deltas.
         simulateScrolling(offsetManager, delegate, 0, 0);
-        assertEquals(0, delegate.getOverScrollDeltaX());
-        assertEquals(0, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaY());
 
         // Negative scrolling should result in negative deltas but no scroll offset update.
         simulateScrolling(offsetManager, delegate, -scrollX, -scrollY);
-        assertEquals(-scrollX, delegate.getOverScrollDeltaX());
-        assertEquals(-scrollY, delegate.getOverScrollDeltaY());
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(-scrollX, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(-scrollY, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
     }
 
     private static final int VIEW_WIDTH = 211;
@@ -174,6 +180,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     private static final int CONTENT_WIDTH = VIEW_WIDTH + MAX_HORIZONTAL_OFFSET;
     private static final int CONTENT_HEIGHT = VIEW_HEIGHT + MAX_VERTICAL_OFFSET;
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testScrollRangeAndMaxOffset() {
@@ -183,41 +190,44 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
-        assertEquals(CONTENT_WIDTH, offsetManager.computeHorizontalScrollRange());
-        assertEquals(CONTENT_HEIGHT, offsetManager.computeVerticalScrollRange());
+        Assert.assertEquals(CONTENT_WIDTH, offsetManager.computeHorizontalScrollRange());
+        Assert.assertEquals(CONTENT_HEIGHT, offsetManager.computeVerticalScrollRange());
 
-        assertEquals(MAX_HORIZONTAL_OFFSET, offsetManager.computeMaximumHorizontalScrollOffset());
-        assertEquals(MAX_VERTICAL_OFFSET, offsetManager.computeMaximumVerticalScrollOffset());
+        Assert.assertEquals(
+                MAX_HORIZONTAL_OFFSET, offsetManager.computeMaximumHorizontalScrollOffset());
+        Assert.assertEquals(
+                MAX_VERTICAL_OFFSET, offsetManager.computeMaximumVerticalScrollOffset());
 
         // Scrolling beyond the maximum should be clamped.
         final int scrollX = MAX_HORIZONTAL_OFFSET + 10;
         final int scrollY = MAX_VERTICAL_OFFSET + 11;
 
         simulateScrolling(offsetManager, delegate, scrollX, scrollY);
-        assertEquals(scrollX, delegate.getOverScrollDeltaX());
-        assertEquals(scrollY, delegate.getOverScrollDeltaY());
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
+        Assert.assertEquals(scrollX, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(scrollY, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
 
         // Scrolling to negative coordinates should be clamped back to 0,0.
         simulateScrolling(offsetManager, delegate, -scrollX, -scrollY);
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
 
         // The onScrollChanged method is callable by third party code and should also be clamped
         offsetManager.onContainerViewScrollChanged(scrollX, scrollY);
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
 
         offsetManager.onContainerViewScrollChanged(-scrollX, -scrollY);
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDelegateCanOverrideScroll() {
@@ -241,10 +251,11 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.onContainerViewOverScrolled(0, 0, false, false);
-        assertEquals(overrideScrollX, delegate.getNativeScrollX());
-        assertEquals(overrideScrollY, delegate.getNativeScrollY());
+        Assert.assertEquals(overrideScrollX, delegate.getNativeScrollX());
+        Assert.assertEquals(overrideScrollY, delegate.getNativeScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDelegateOverridenScrollsDontExceedBounds() {
@@ -267,10 +278,11 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.onContainerViewOverScrolled(0, 0, false, false);
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getNativeScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getNativeScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testScrollContainerViewTo() {
@@ -283,16 +295,17 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
-        assertEquals(0, delegate.getOverScrollDeltaX());
-        assertEquals(0, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaY());
         int callCount = delegate.getOverScrollCallCount();
 
         offsetManager.scrollContainerViewTo(scrollX, scrollY);
-        assertEquals(callCount + 1, delegate.getOverScrollCallCount());
-        assertEquals(scrollX, delegate.getOverScrollDeltaX());
-        assertEquals(scrollY, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(callCount + 1, delegate.getOverScrollCallCount());
+        Assert.assertEquals(scrollX, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(scrollY, delegate.getOverScrollDeltaY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnContainerViewOverScrolled() {
@@ -305,18 +318,19 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
 
         offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
-        assertEquals(scrollX, delegate.getScrollX());
-        assertEquals(scrollY, delegate.getScrollY());
-        assertEquals(scrollX, delegate.getNativeScrollX());
-        assertEquals(scrollY, delegate.getNativeScrollY());
+        Assert.assertEquals(scrollX, delegate.getScrollX());
+        Assert.assertEquals(scrollY, delegate.getScrollY());
+        Assert.assertEquals(scrollX, delegate.getNativeScrollX());
+        Assert.assertEquals(scrollY, delegate.getNativeScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDefersScrollUntilTouchEnd() {
@@ -331,18 +345,19 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
 
         offsetManager.setProcessingTouchEvent(true);
         offsetManager.onContainerViewOverScrolled(scrollX, scrollY, false, false);
-        assertEquals(scrollX, delegate.getScrollX());
-        assertEquals(scrollY, delegate.getScrollY());
-        assertEquals(0, delegate.getNativeScrollX());
-        assertEquals(0, delegate.getNativeScrollY());
+        Assert.assertEquals(scrollX, delegate.getScrollX());
+        Assert.assertEquals(scrollY, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getNativeScrollX());
+        Assert.assertEquals(0, delegate.getNativeScrollY());
 
         offsetManager.setProcessingTouchEvent(false);
-        assertEquals(scrollX, delegate.getScrollX());
-        assertEquals(scrollY, delegate.getScrollY());
-        assertEquals(scrollX, delegate.getNativeScrollX());
-        assertEquals(scrollY, delegate.getNativeScrollY());
+        Assert.assertEquals(scrollX, delegate.getScrollX());
+        Assert.assertEquals(scrollY, delegate.getScrollY());
+        Assert.assertEquals(scrollX, delegate.getNativeScrollX());
+        Assert.assertEquals(scrollY, delegate.getNativeScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenDontScrollIfAlreadyThere() {
@@ -354,19 +369,20 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
 
         offsetManager.requestChildRectangleOnScreen(0, 0,
                 new Rect(0, 0, VIEW_WIDTH / 4, VIEW_HEIGHT / 4), true);
-        assertEquals(0, delegate.getOverScrollDeltaX());
-        assertEquals(0, delegate.getOverScrollDeltaY());
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
 
         offsetManager.requestChildRectangleOnScreen(3 * VIEW_WIDTH / 4, 3 * VIEW_HEIGHT / 4,
                 new Rect(0, 0, VIEW_WIDTH / 4, VIEW_HEIGHT / 4), true);
-        assertEquals(0, delegate.getOverScrollDeltaX());
-        assertEquals(0, delegate.getOverScrollDeltaY());
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollY());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(0, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToBottom() {
@@ -382,12 +398,14 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.requestChildRectangleOnScreen(CONTENT_WIDTH - rectWidth,
                 CONTENT_HEIGHT - rectHeight, new Rect(0, 0, rectWidth, rectHeight), true);
         simlateOverScrollPropagation(offsetManager, delegate);
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getOverScrollDeltaX());
-        assertEquals(CONTENT_HEIGHT - rectHeight - VIEW_HEIGHT / 3, delegate.getOverScrollDeltaY());
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(
+                CONTENT_HEIGHT - rectHeight - VIEW_HEIGHT / 3, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToBottomLargeRect() {
@@ -403,12 +421,13 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.requestChildRectangleOnScreen(CONTENT_WIDTH - rectWidth,
                 CONTENT_HEIGHT - rectHeight, new Rect(0, 0, rectWidth, rectHeight), true);
         simlateOverScrollPropagation(offsetManager, delegate);
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getOverScrollDeltaX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getOverScrollDeltaY());
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
+        Assert.assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testRequestChildRectangleOnScreenScrollToTop() {
@@ -426,9 +445,9 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         offsetManager.requestChildRectangleOnScreen(0, 0,
                 new Rect(0, 0, rectWidth, rectHeight), true);
         simlateOverScrollPropagation(offsetManager, delegate);
-        assertEquals(-CONTENT_WIDTH + VIEW_WIDTH, delegate.getOverScrollDeltaX());
-        assertEquals(-CONTENT_HEIGHT + VIEW_HEIGHT, delegate.getOverScrollDeltaY());
-        assertEquals(0, delegate.getScrollX());
-        assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(-CONTENT_WIDTH + VIEW_WIDTH, delegate.getOverScrollDeltaX());
+        Assert.assertEquals(-CONTENT_HEIGHT + VIEW_HEIGHT, delegate.getOverScrollDeltaY());
+        Assert.assertEquals(0, delegate.getScrollX());
+        Assert.assertEquals(0, delegate.getScrollX());
     }
 }

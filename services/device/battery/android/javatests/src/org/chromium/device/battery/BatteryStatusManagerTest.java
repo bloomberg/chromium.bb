@@ -7,15 +7,22 @@ package org.chromium.device.battery;
 import android.content.Intent;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.AndroidTestCase;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.device.mojom.BatteryStatus;
 
 /**
  * Test suite for BatteryStatusManager.
  */
-public class BatteryStatusManagerTest extends AndroidTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class BatteryStatusManagerTest {
     // Values reported in the most recent callback from |mManager|.
     private boolean mCharging = false;
     private double mChargingTime = 0;
@@ -37,10 +44,10 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
     private void verifyValues(
             boolean charging, double chargingTime, double dischargingTime, double level) {
-        assertEquals(charging, mCharging);
-        assertEquals(chargingTime, mChargingTime);
-        assertEquals(dischargingTime, mDischargingTime);
-        assertEquals(level, mLevel);
+        Assert.assertEquals(charging, mCharging);
+        Assert.assertEquals(chargingTime, mChargingTime);
+        Assert.assertEquals(dischargingTime, mDischargingTime);
+        Assert.assertEquals(level, mLevel);
     }
 
     private static class FakeAndroidBatteryManager
@@ -63,7 +70,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
                 case BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE:
                     return mAverageCurrent;
             }
-            fail();
+            Assert.fail();
             return 0;
         }
 
@@ -79,22 +86,22 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
                     mAverageCurrent = value;
                     return this;
             }
-            fail();
+            Assert.fail();
             return this;
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         initializeBatteryManager(null);
     }
 
     public void initializeBatteryManager(FakeAndroidBatteryManager managerForTesting) {
         mManager = BatteryStatusManager.createBatteryStatusManagerForTesting(
-                getContext(), mCallback, managerForTesting);
+                InstrumentationRegistry.getContext(), mCallback, managerForTesting);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveBatteryNotPluggedIn() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -108,6 +115,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(false, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.1);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveBatteryPluggedInACCharging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -121,6 +129,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.5);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveBatteryPluggedInACNotCharging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -134,6 +143,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0.5);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveBatteryPluggedInUSBFull() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -147,6 +157,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveNoBattery() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -157,6 +168,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
+    @Test
     @SmallTest
     public void testOnReceiveNoPluggedStatus() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
@@ -166,12 +178,14 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
     }
 
+    @Test
     @SmallTest
     public void testStartStopSucceeds() {
-        assertTrue(mManager.start());
+        Assert.assertTrue(mManager.start());
         mManager.stop();
     }
 
+    @Test
     @SmallTest
     public void testLollipopChargingTimeEstimate() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
@@ -192,6 +206,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(true, 0.5 * 10 * 3600, Double.POSITIVE_INFINITY, 0.5);
     }
 
+    @Test
     @SmallTest
     public void testLollipopDischargingTimeEstimate() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
@@ -213,6 +228,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         verifyValues(false, Double.POSITIVE_INFINITY, 0.6 * 10 * 3600, 0.6);
     }
 
+    @Test
     @SmallTest
     public void testLollipopDischargingTimeEstimateRounding() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
