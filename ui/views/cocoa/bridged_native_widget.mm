@@ -126,6 +126,20 @@ bool PositionWindowInScreenCoordinates(views::Widget* widget,
   return widget && widget->is_top_level();
 }
 
+// Returns true if the content_view is reparented.
+bool PositionWindowInNativeViewParent(NSView* content_view) {
+  return [[content_view window] contentView] != content_view;
+}
+
+// Return the offset of the parent native view from the window.
+gfx::Vector2d GetNativeViewParentOffset(NSView* content_view) {
+  NSWindow* window = [content_view window];
+  NSView* parent_view = [content_view superview];
+  NSPoint p = NSMakePoint(0, NSHeight([parent_view frame]));
+  p = [parent_view convertPoint:p toView:nil];
+  return gfx::Vector2d(p.x, NSHeight([window frame]) - p.y);
+}
+
 // Return the content size for a minimum or maximum widget size.
 gfx::Size GetClientSizeForWindowSize(NSWindow* window,
                                      const gfx::Size& window_size) {
@@ -519,6 +533,9 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
 
   if (parent_ && !PositionWindowInScreenCoordinates(widget, widget_type_))
     actual_new_bounds.Offset(parent_->GetChildWindowOffset());
+
+  if (PositionWindowInNativeViewParent(bridged_view_))
+    actual_new_bounds.Offset(GetNativeViewParentOffset(bridged_view_));
 
   [window_ setFrame:gfx::ScreenRectToNSRect(actual_new_bounds)
             display:YES

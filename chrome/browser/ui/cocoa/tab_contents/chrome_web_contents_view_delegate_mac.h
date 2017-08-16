@@ -44,6 +44,9 @@ class ChromeWebContentsViewDelegateMac
       const content::ContextMenuParams& params) override;
   void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) override;
 
+ protected:
+  content::WebContents* web_contents() { return web_contents_; }
+
  private:
   content::RenderWidgetHostView* GetActiveRenderWidgetHostView();
 

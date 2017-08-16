@@ -2395,16 +2395,9 @@ class ToplevelWidgetObserverView : public View {
   DISALLOW_COPY_AND_ASSIGN(ToplevelWidgetObserverView);
 };
 
-// No ReparentNativeView on Mac. See http://crbug.com/514920.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-#define MAYBE_NativeViewHierarchyChanged DISABLED_NativeViewHierarchyChanged
-#else
-#define MAYBE_NativeViewHierarchyChanged NativeViewHierarchyChanged
-#endif
-
 // Test that a view can track the current top level widget by overriding
 // View::ViewHierarchyChanged() and View::NativeViewHierarchyChanged().
-TEST_F(ViewTest, MAYBE_NativeViewHierarchyChanged) {
+TEST_F(ViewTest, NativeViewHierarchyChanged) {
   std::unique_ptr<Widget> toplevel1(new Widget);
   Widget::InitParams toplevel1_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
