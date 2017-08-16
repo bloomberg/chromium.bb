@@ -999,7 +999,6 @@ class Port(object):
 
         Ports may legitimately return absolute paths here if no relative path
         makes sense.
-        TODO(qyearsley): De-duplicate this and PathFinder.layout_test_name.
         """
         # Ports that run on windows need to override this method to deal with
         # filenames with backslashes in them.

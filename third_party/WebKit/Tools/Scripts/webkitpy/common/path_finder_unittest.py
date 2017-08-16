@@ -48,17 +48,6 @@ class TestPathFinder(unittest.TestCase):
             finder.path_from_layout_tests('external', 'wpt'),
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt')
 
-    def test_layout_test_name(self):
-        finder = PathFinder(MockFileSystem())
-        self.assertEqual(
-            finder.layout_test_name('third_party/WebKit/LayoutTests/test/name.html'),
-            'test/name.html')
-
-    def test_layout_test_name_not_in_layout_tests_dir(self):
-        finder = PathFinder(MockFileSystem())
-        self.assertIsNone(
-            finder.layout_test_name('some/other/path/file.html'))
-
     def test_depot_tools_base_not_found(self):
         finder = PathFinder(MockFileSystem(), sys_path=['/foo'], env_path=['/bar'])
         self.assertIsNone(finder.depot_tools_base())

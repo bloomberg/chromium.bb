@@ -37,14 +37,15 @@ class DirectoryOwnersExtractor(object):
         """
         email_map = collections.defaultdict(set)
         for relpath in changed_files:
-            if self.finder.layout_test_name(relpath) is None:
+            absolute_path = self.finder.path_from_chromium_base(relpath)
+            if not absolute_path.startswith(self.finder.layout_tests_dir()):
                 continue
             owners_file, owners = self.find_and_extract_owners(self.filesystem.dirname(relpath))
             if not owners_file:
                 continue
-            owners_file_relpath = self.filesystem.relpath(owners_file, self.finder.chromium_base())
-            owned_directory = self.finder.layout_test_name(self.filesystem.dirname(owners_file_relpath))
-            email_map[tuple(owners)].add(owned_directory)
+            owned_directory = self.filesystem.dirname(owners_file)
+            owned_directory_relpath = self.filesystem.relpath(owned_directory, self.finder.layout_tests_dir())
+            email_map[tuple(owners)].add(owned_directory_relpath)
         return {owners: sorted(owned_directories) for owners, owned_directories in email_map.iteritems()}
 
     def find_and_extract_owners(self, start_directory):
