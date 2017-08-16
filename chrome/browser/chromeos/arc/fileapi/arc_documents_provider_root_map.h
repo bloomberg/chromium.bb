@@ -12,6 +12,13 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
+
+class Profile;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace storage {
 class FileSystemURL;
@@ -23,12 +30,22 @@ class ArcDocumentsProviderRoot;
 
 // Container of ArcDocumentsProviderRoot instances.
 //
-// This class is thread-safe, but ArcDocumentsProviderRoot must be accessed
-// only on the IO thread anyway.
-class ArcDocumentsProviderRootMap {
+// All member function must be called on the UI thread.
+class ArcDocumentsProviderRootMap : public KeyedService {
  public:
-  ArcDocumentsProviderRootMap();
-  ~ArcDocumentsProviderRootMap();
+  ~ArcDocumentsProviderRootMap() override;
+
+  // Returns an instance for the given browser context, or nullptr if ARC is not
+  // allowed for the browser context.
+  static ArcDocumentsProviderRootMap* GetForBrowserContext(
+      content::BrowserContext* context);
+
+  // Returns an instance for the browser context associated with ARC, or nullptr
+  // if ARC is not allowed.
+  // TODO(nya): Remove this function when we support multi-user ARC. For now,
+  // it is okay to call this function only from chromeos::FileSystemBackend and
+  // its delegates.
+  static ArcDocumentsProviderRootMap* GetForArcBrowserContext();
 
   // Looks up a root corresponding to |url|.
   // |path| is set to the remaining path part of |url|.
@@ -36,7 +53,14 @@ class ArcDocumentsProviderRootMap {
   ArcDocumentsProviderRoot* ParseAndLookup(const storage::FileSystemURL& url,
                                            base::FilePath* path) const;
 
+  // KeyedService overrides:
+  void Shutdown() override;
+
  private:
+  friend class ArcDocumentsProviderRootMapFactory;
+
+  explicit ArcDocumentsProviderRootMap(Profile* profile);
+
   // Key is (authority, root_document_id).
   using Key = std::pair<std::string, std::string>;
   std::map<Key, std::unique_ptr<ArcDocumentsProviderRoot>> map_;

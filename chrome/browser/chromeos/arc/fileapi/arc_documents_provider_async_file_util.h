@@ -13,15 +13,12 @@
 
 namespace arc {
 
-class ArcDocumentsProviderRootMap;
-
 // The implementation of storage::AsyncFileUtil for media view.
 //
 // All of the methods must be called on the IO thread.
 class ArcDocumentsProviderAsyncFileUtil : public storage::AsyncFileUtil {
  public:
-  explicit ArcDocumentsProviderAsyncFileUtil(
-      ArcDocumentsProviderRootMap* roots);
+  ArcDocumentsProviderAsyncFileUtil();
   ~ArcDocumentsProviderAsyncFileUtil() override;
 
   // storage::AsyncFileUtil overrides.
@@ -92,9 +89,6 @@ class ArcDocumentsProviderAsyncFileUtil : public storage::AsyncFileUtil {
       const CreateSnapshotFileCallback& callback) override;
 
  private:
-  // Owned by ArcDocumentsProviderBackendDelegate.
-  ArcDocumentsProviderRootMap* const roots_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderAsyncFileUtil);
 };
 

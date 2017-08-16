@@ -352,6 +352,8 @@ source_set("chromeos") {
     "arc/fileapi/arc_documents_provider_root.h",
     "arc/fileapi/arc_documents_provider_root_map.cc",
     "arc/fileapi/arc_documents_provider_root_map.h",
+    "arc/fileapi/arc_documents_provider_root_map_factory.cc",
+    "arc/fileapi/arc_documents_provider_root_map_factory.h",
     "arc/fileapi/arc_documents_provider_util.cc",
     "arc/fileapi/arc_documents_provider_util.h",
     "arc/fileapi/arc_documents_provider_watcher_manager.cc",

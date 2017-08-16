@@ -23,17 +23,13 @@ class FileSystemURL;
 
 namespace arc {
 
-class ArcDocumentsProviderRootMap;
-
 // FileStreamReader implementation for ARC documents provider file system.
 // It actually delegates operations to ArcContentFileSystemFileStreamReader.
 // TODO(crbug.com/678886): Write unit tests.
 class ArcDocumentsProviderFileStreamReader : public storage::FileStreamReader {
  public:
-  // |roots| can be released soon after the constructor returns.
   ArcDocumentsProviderFileStreamReader(const storage::FileSystemURL& url,
-                                       int64_t offset,
-                                       ArcDocumentsProviderRootMap* roots);
+                                       int64_t offset);
   ~ArcDocumentsProviderFileStreamReader() override;
 
   // storage::FileStreamReader override:

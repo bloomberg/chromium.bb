@@ -136,8 +136,9 @@ class ArcDocumentsProviderRootTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_file_system_.InitCalled());
 
-    root_ = base::MakeUnique<ArcDocumentsProviderRoot>(kAuthority,
-                                                       kRootSpec.document_id);
+    root_ = base::MakeUnique<ArcDocumentsProviderRoot>(
+        ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
+        kAuthority, kRootSpec.document_id);
   }
 
   void TearDown() override {

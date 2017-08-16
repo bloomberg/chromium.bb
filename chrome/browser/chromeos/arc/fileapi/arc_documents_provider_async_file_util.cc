@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -21,9 +22,80 @@ using content::BrowserThread;
 
 namespace arc {
 
-ArcDocumentsProviderAsyncFileUtil::ArcDocumentsProviderAsyncFileUtil(
-    ArcDocumentsProviderRootMap* roots)
-    : roots_(roots) {}
+namespace {
+
+void OnGetFileInfoOnUIThread(
+    const ArcDocumentsProviderRoot::GetFileInfoCallback& callback,
+    base::File::Error result,
+    const base::File::Info& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, result, info));
+}
+
+void OnReadDirectoryOnUIThread(
+    const ArcDocumentsProviderRoot::ReadDirectoryCallback& callback,
+    base::File::Error result,
+    const storage::AsyncFileUtil::EntryList& entries,
+    bool has_more) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(callback, result, entries, has_more));
+}
+
+void GetFileInfoOnUIThread(
+    const storage::FileSystemURL& url,
+    int fields,
+    const ArcDocumentsProviderRoot::GetFileInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ArcDocumentsProviderRootMap* roots =
+      ArcDocumentsProviderRootMap::GetForArcBrowserContext();
+  if (!roots) {
+    OnGetFileInfoOnUIThread(callback, base::File::FILE_ERROR_SECURITY,
+                            base::File::Info());
+    return;
+  }
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
+  if (!root) {
+    OnGetFileInfoOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND,
+                            base::File::Info());
+    return;
+  }
+
+  root->GetFileInfo(path, base::Bind(&OnGetFileInfoOnUIThread, callback));
+}
+
+void ReadDirectoryOnUIThread(
+    const storage::FileSystemURL& url,
+    const ArcDocumentsProviderRoot::ReadDirectoryCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ArcDocumentsProviderRootMap* roots =
+      ArcDocumentsProviderRootMap::GetForArcBrowserContext();
+  if (!roots) {
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_SECURITY,
+                              storage::AsyncFileUtil::EntryList(), false);
+    return;
+  }
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
+  if (!root) {
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND,
+                              storage::AsyncFileUtil::EntryList(), false);
+    return;
+  }
+
+  root->ReadDirectory(path, base::Bind(&OnReadDirectoryOnUIThread, callback));
+}
+
+}  // namespace
+
+ArcDocumentsProviderAsyncFileUtil::ArcDocumentsProviderAsyncFileUtil() =
+    default;
 
 ArcDocumentsProviderAsyncFileUtil::~ArcDocumentsProviderAsyncFileUtil() =
     default;
@@ -68,14 +140,9 @@ void ArcDocumentsProviderAsyncFileUtil::GetFileInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
 
-  base::FilePath path;
-  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
-  if (!root) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
-    return;
-  }
-
-  root->GetFileInfo(path, callback);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GetFileInfoOnUIThread, url, fields, callback));
 }
 
 void ArcDocumentsProviderAsyncFileUtil::ReadDirectory(
@@ -85,14 +152,9 @@ void ArcDocumentsProviderAsyncFileUtil::ReadDirectory(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
 
-  base::FilePath path;
-  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
-  if (!root) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(), false);
-    return;
-  }
-
-  root->ReadDirectory(path, callback);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ReadDirectoryOnUIThread, url, callback));
 }
 
 void ArcDocumentsProviderAsyncFileUtil::Touch(
