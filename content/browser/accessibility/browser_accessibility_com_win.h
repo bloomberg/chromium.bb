@@ -67,9 +67,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   COM_INTERFACE_ENTRY(IAccessibleHyperlink)
   COM_INTERFACE_ENTRY(IAccessibleHypertext)
   COM_INTERFACE_ENTRY(IAccessibleImage)
-  COM_INTERFACE_ENTRY(IAccessibleTable)
-  COM_INTERFACE_ENTRY(IAccessibleTable2)
-  COM_INTERFACE_ENTRY(IAccessibleTableCell)
   COM_INTERFACE_ENTRY(IAccessibleValue)
   COM_INTERFACE_ENTRY(IRawElementProviderSimple)
   COM_INTERFACE_ENTRY(ISimpleDOMDocument)
@@ -99,19 +96,8 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   CONTENT_EXPORT void UpdateStep3FireEvents(bool is_subtree_creation);
 
   //
-  // IAccessible methods.
-  //
-
-  // Retrieves a string that describes the object's default action.
-  CONTENT_EXPORT STDMETHODIMP
-  get_accDefaultAction(VARIANT var_id, BSTR* default_action) override;
-
-  //
   // IAccessible2 methods.
   //
-
-  // Returns the state bitmask from a larger set of possible states.
-  CONTENT_EXPORT STDMETHODIMP get_states(AccessibleStates* states) override;
 
   // Returns the attributes specific to this IAccessible2 object,
   // such as a cell's formula.
@@ -127,14 +113,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Get this object's index in its parent object.
   CONTENT_EXPORT STDMETHODIMP get_indexInParent(LONG* index_in_parent) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nRelations(LONG* n_relations) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_relation(LONG relation_index, IAccessibleRelation** relation) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_relations(LONG max_relations,
-                                            IAccessibleRelation** relations,
-                                            LONG* n_relations) override;
 
   CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
 
@@ -174,156 +152,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                     LONG* y) override;
 
   CONTENT_EXPORT STDMETHODIMP get_imageSize(LONG* height, LONG* width) override;
-
-  //
-  // IAccessibleTable methods.
-  //
-
-  // get_description - also used by IAccessibleImage
-
-  CONTENT_EXPORT STDMETHODIMP get_accessibleAt(long row,
-                                               long column,
-                                               IUnknown** accessible) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_caption(IUnknown** accessible) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_childIndex(long row_index,
-                                             long column_index,
-                                             long* cell_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_columnDescription(long column,
-                                                    BSTR* description) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_columnExtentAt(long row, long column, long* n_columns_spanned) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_columnHeader(IAccessibleTable** accessible_table,
-                   long* starting_row_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_columnIndex(long cell_index,
-                                              long* column_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nColumns(long* column_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nRows(long* row_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedChildren(long* cell_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedColumns(long* column_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedRows(long* row_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_rowDescription(long row,
-                                                 BSTR* description) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_rowExtentAt(long row,
-                                              long column,
-                                              long* n_rows_spanned) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_rowHeader(IAccessibleTable** accessible_table,
-                long* starting_column_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_rowIndex(long cell_index,
-                                           long* row_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_selectedChildren(long max_children,
-                                                   long** children,
-                                                   long* n_children) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_selectedColumns(long max_columns,
-                                                  long** columns,
-                                                  long* n_columns) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_selectedRows(long max_rows,
-                                               long** rows,
-                                               long* n_rows) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_summary(IUnknown** accessible) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_isColumnSelected(long column, boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_isRowSelected(long row,
-                                                boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_isSelected(long row,
-                                             long column,
-                                             boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_rowColumnExtentsAtIndex(long index,
-                              long* row,
-                              long* column,
-                              long* row_extents,
-                              long* column_extents,
-                              boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP selectRow(long row) override;
-
-  CONTENT_EXPORT STDMETHODIMP selectColumn(long column) override;
-
-  CONTENT_EXPORT STDMETHODIMP unselectRow(long row) override;
-
-  CONTENT_EXPORT STDMETHODIMP unselectColumn(long column) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_modelChange(IA2TableModelChange* model_change) override;
-
-  //
-  // IAccessibleTable2 methods.
-  //
-  // (Most of these are duplicates of IAccessibleTable methods, only the
-  // unique ones are included here.)
-  //
-
-  CONTENT_EXPORT STDMETHODIMP get_cellAt(long row,
-                                         long column,
-                                         IUnknown** cell) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedCells(long* cell_count) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_selectedCells(IUnknown*** cells, long* n_selected_cells) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_selectedColumns(long** columns,
-                                                  long* n_columns) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_selectedRows(long** rows,
-                                               long* n_rows) override;
-
-  //
-  // IAccessibleTableCell methods.
-  //
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_columnExtent(long* n_columns_spanned) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_columnHeaderCells(IUnknown*** cell_accessibles,
-                        long* n_column_header_cells) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_columnIndex(long* column_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_rowExtent(long* n_rows_spanned) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_rowHeaderCells(IUnknown*** cell_accessibles,
-                     long* n_row_header_cells) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_rowIndex(long* row_index) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_isSelected(boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_rowColumnExtents(long* row,
-                       long* column,
-                       long* row_extents,
-                       long* column_extents,
-                       boolean* is_selected) override;
-
-  CONTENT_EXPORT STDMETHODIMP get_table(IUnknown** table) override;
 
   //
   // IAccessibleText methods.
