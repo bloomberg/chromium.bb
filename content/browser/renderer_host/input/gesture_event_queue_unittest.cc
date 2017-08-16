@@ -1247,6 +1247,39 @@ TEST_F(GestureEventQueueTest, CoalescesSyntheticScrollBeginEndEvents) {
 }
 
 TEST_F(GestureEventQueueWithCompositorEventQueueTest,
+       PreserveOrderWithOutOfOrderAck) {
+  // Simulate a scroll sequence, events should be ACKed in original order.
+  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
+                       blink::kWebGestureDeviceTouchscreen);
+  SimulateGestureScrollUpdateEvent(8, -4, 1);
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchscreen);
+
+  // All events should have been sent.
+  EXPECT_EQ(3U, GetAndResetSentGestureEventCount());
+
+  // Simulate GSB ACK.
+  SendInputEventACK(WebInputEvent::kGestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::kGestureScrollBegin, last_acked_event().GetType());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  // Simulate GSE ACK first since it's usually dispatched non-blocking.
+  SendInputEventACK(WebInputEvent::kGestureScrollEnd,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  // GSE ACK will be cached in GestureEventQueue since we haven't ACKed GSU yet.
+  EXPECT_EQ(WebInputEvent::kGestureScrollBegin, last_acked_event().GetType());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  // Simulate GSU ACK.
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  // Both ACKs should be released in order.
+  EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_acked_event().GetType());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+}
+
+TEST_F(GestureEventQueueWithCompositorEventQueueTest,
        MultipleGesturesInFlight) {
   // Simulate a pinch sequence, events should be forwarded immediately.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,

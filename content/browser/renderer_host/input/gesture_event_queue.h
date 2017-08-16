@@ -115,6 +115,17 @@ class CONTENT_EXPORT GestureEventQueue {
   friend class GestureEventQueueTest;
   friend class MockRenderWidgetHost;
 
+  class GestureEventWithLatencyInfoAndAckState
+      : public GestureEventWithLatencyInfo {
+   public:
+    GestureEventWithLatencyInfoAndAckState(const GestureEventWithLatencyInfo&);
+    InputEventAckState ack_state() const { return ack_state_; }
+    void set_ack_state(InputEventAckState state) { ack_state_ = state; }
+
+   private:
+    InputEventAckState ack_state_ = INPUT_EVENT_ACK_STATE_UNKNOWN;
+  };
+
   bool OnScrollBegin(const GestureEventWithLatencyInfo& gesture_event);
 
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
@@ -153,6 +164,18 @@ class CONTENT_EXPORT GestureEventQueue {
   void QueueScrollOrPinchAndForwardIfNecessary(
       const GestureEventWithLatencyInfo& gesture_event);
 
+  // ACK completed events in order until we have reached an incomplete event.
+  // Will preserve the FIFO order as events originally arrived.
+  void AckCompletedEvents();
+  void AckGestureEventToClient(const GestureEventWithLatencyInfo&,
+                               InputEventAckState);
+
+  // Used when |allow_multiple_inflight_events_| is false. Will only send next
+  // event after receiving ACK for the previous one.
+  void LegacyProcessGestureAck(InputEventAckState,
+                               blink::WebInputEvent::Type,
+                               const ui::LatencyInfo&);
+
   // The number of sent events for which we're awaiting an ack.  These events
   // remain at the head of the queue until ack'ed.
   size_t EventsInFlightCount() const;
@@ -176,6 +199,8 @@ class CONTENT_EXPORT GestureEventQueue {
   // ack).
   bool allow_multiple_inflight_events_;
 
+  bool processing_acks_ = false;
+
   // An object tracking the state of touchpad on the delivery of mouse events to
   // the renderer to filter mouse immediately after a touchpad fling canceling
   // tap.
@@ -189,14 +214,19 @@ class CONTENT_EXPORT GestureEventQueue {
   TouchscreenTapSuppressionController touchscreen_tap_suppression_controller_;
 
   typedef std::deque<GestureEventWithLatencyInfo> GestureQueue;
+  typedef std::deque<GestureEventWithLatencyInfoAndAckState>
+      GestureQueueWithAckState;
 
-  // Queue of coalesced gesture events not yet sent to the renderer. If
-  // |ignore_next_ack_| is false, then the event at the front of the queue has
-  // been sent and is awaiting an ACK, and all other events have yet to be sent.
-  // If |ignore_next_ack_| is true, then the two events at the front of the
-  // queue have been sent, and the second is awaiting an ACK. All other events
-  // have yet to be sent.
-  GestureQueue coalesced_gesture_events_;
+  // If |allow_multiple_inflight_events_|, |coalesced_gesture_events_| stores
+  // outstanding events that have been sent to the renderer but not yet been
+  // ACKed.
+  // Otherwise it stores coalesced gesture events not yet sent to the renderer.
+  // If |ignore_next_ack_| is false, then the event at the front of the queue
+  // has been sent and is awaiting an ACK, and all other events have yet to be
+  // sent. If |ignore_next_ack_| is true, then the two events at the front of
+  // the queue have been sent, and the second is awaiting an ACK. All other
+  // events have yet to be sent.
+  GestureQueueWithAckState coalesced_gesture_events_;
 
   // Timer to release a previously deferred gesture event.
   base::OneShotTimer debounce_deferring_timer_;
