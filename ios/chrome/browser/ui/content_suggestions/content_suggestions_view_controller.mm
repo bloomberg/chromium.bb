@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -39,7 +40,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 }
 }
 
-@interface ContentSuggestionsViewController ()
+@interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate>
 
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
@@ -190,7 +191,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
                   action:@selector(handleLongPress:)];
-  longPressRecognizer.numberOfTouchesRequired = 1;
+  longPressRecognizer.delegate = self;
   [self.collectionView addGestureRecognizer:longPressRecognizer];
 
   if (!IsIPadIdiom()) {
@@ -453,6 +454,16 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       scrollViewWillEndDragging:scrollView
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+       shouldReceiveTouch:(UITouch*)touch {
+  return touch.view.accessibilityIdentifier !=
+             ntp_home::FakeOmniboxAccessibilityID() &&
+         touch.view.superview.accessibilityIdentifier !=
+             ntp_home::FakeOmniboxAccessibilityID();
 }
 
 #pragma mark - Private
