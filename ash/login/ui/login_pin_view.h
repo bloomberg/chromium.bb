@@ -16,6 +16,8 @@ namespace ash {
 // by the embedder. The PIN keyboard, while displaying letters, only emits
 // numbers.
 //
+// The view is always rendered via layers.
+//
 // The UI looks a little like this:
 //    _______    _______    _______
 //   |   1   |  |   2   |  |   3   |

@@ -10,15 +10,14 @@ LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view) {
   return LockContentsView::TestApi(view);
 }
 
-LoginAuthUserView::TestApi MakeLoginAuthUserViewTestApi(
-    LockContentsView* view) {
+LoginAuthUserView::TestApi MakeLoginPrimaryAuthTestApi(LockContentsView* view) {
   return LoginAuthUserView::TestApi(
-      MakeLockContentsViewTestApi(view).auth_user_view());
+      MakeLockContentsViewTestApi(view).primary_auth());
 }
 
 LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view) {
   return LoginPasswordView::TestApi(
-      MakeLoginAuthUserViewTestApi(view).password_view());
+      MakeLoginPrimaryAuthTestApi(view).password_view());
 }
 
 }  // namespace ash

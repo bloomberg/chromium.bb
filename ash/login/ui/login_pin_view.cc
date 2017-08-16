@@ -163,6 +163,12 @@ class DigitPinButton : public BasePinButton {
         -3, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
     AddChildView(label);
     AddChildView(sub_label);
+
+    // Layer rendering.
+    label->SetPaintToLayer();
+    label->layer()->SetFillsBoundsOpaquely(false);
+    sub_label->SetPaintToLayer();
+    sub_label->layer()->SetFillsBoundsOpaquely(false);
   }
 
   ~DigitPinButton() override = default;
@@ -179,6 +185,11 @@ class BackspacePinButton : public BasePinButton {
     // TODO: Change icon color when enabled/disabled.
     image->SetImage(
         gfx::CreateVectorIcon(kLockScreenBackspaceIcon, SK_ColorWHITE));
+
+    // Layer rendering.
+    image->SetPaintToLayer();
+    image->layer()->SetFillsBoundsOpaquely(false);
+
     AddChildView(image);
   }
 
@@ -212,6 +223,9 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
     : on_key_(on_key), on_backspace_(on_backspace) {
   DCHECK(on_key_);
   DCHECK(on_backspace_);
+
+  // Layer rendering.
+  SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {

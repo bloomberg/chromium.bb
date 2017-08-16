@@ -26,6 +26,11 @@ constexpr int kTranslucentColorDarkenAlpha = 128;
 // The blur sigma for login/lock screen.
 constexpr float kBlurSigma = 30.0f;
 
+// How long should animations that change the layout of the user run for? For
+// example, this includes the user switch animation as well as the PIN keyboard
+// show/hide animation.
+constexpr int kChangeUserAnimationDurationMs = 300;
+
 }  // namespace login_constants
 }  // namespace ash
 

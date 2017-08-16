@@ -96,7 +96,8 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
   row->AddChildView(submit_button_);
 
   // Separator on bottom.
-  AddChildView(new views::Separator());
+  auto* separator = new views::Separator();
+  AddChildView(separator);
 
   // Make sure the textfield always starts with focus.
   textfield_->RequestFocus();
