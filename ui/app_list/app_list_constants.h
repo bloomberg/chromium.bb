@@ -141,6 +141,8 @@ enum AppListFolderOpened {
   kMaxFolderOpened = 2,
 };
 
+APP_LIST_EXPORT extern const char kAppListAppLaunched[];
+APP_LIST_EXPORT extern const char kAppListAppLaunchedFullscreen[];
 APP_LIST_EXPORT extern const char kAppListFolderOpenedHistogram[];
 APP_LIST_EXPORT extern const char kAppListPeekingToFullscreenHistogram[];
 APP_LIST_EXPORT extern const char kAppListToggleMethodHistogram[];

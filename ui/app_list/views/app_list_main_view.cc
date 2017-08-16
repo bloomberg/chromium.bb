@@ -188,6 +188,10 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
                               kMaxFolderOpened);
   } else {
     item->Activate(event_flags);
+    UMA_HISTOGRAM_BOOLEAN(features::IsFullscreenAppListEnabled()
+                              ? kAppListAppLaunchedFullscreen
+                              : kAppListAppLaunched,
+                          false /*not a suggested app*/);
   }
 }
 

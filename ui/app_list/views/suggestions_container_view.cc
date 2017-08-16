@@ -145,7 +145,7 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   search_result_tile_views_.reserve(apps_num);
   for (; i < apps_num; ++i) {
     SearchResultTileItemView* tile_item =
-        new SearchResultTileItemView(this, view_delegate_);
+        new SearchResultTileItemView(this, view_delegate_, true);
     if (i % kNumTilesCols == 0)
       tiles_layout_manager->StartRow(0, 0);
     tiles_layout_manager->AddView(tile_item);
