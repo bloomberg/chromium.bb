@@ -89,7 +89,7 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
     const SelectionInDOMTree& new_selection = builder.Build();
     if (new_selection.IsNone())
       return;
-    SetEndingSelection(new_selection);
+    SetEndingSelection(SelectionForUndoStep::From(new_selection));
   }
 
   VisibleSelection selection =
@@ -117,12 +117,12 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
     VisiblePosition start(VisiblePositionForIndex(start_index, start_scope));
     VisiblePosition end(VisiblePositionForIndex(end_index, end_scope));
     if (start.IsNotNull() && end.IsNotNull()) {
-      SetEndingSelection(
+      SetEndingSelection(SelectionForUndoStep::From(
           SelectionInDOMTree::Builder()
               .Collapse(start.ToPositionWithAffinity())
               .Extend(end.DeepEquivalent())
               .SetIsDirectional(EndingSelection().IsDirectional())
-              .Build());
+              .Build()));
     }
   }
 }
@@ -150,10 +150,11 @@ void ApplyBlockElementCommand::FormatSelection(
     AppendNode(placeholder, blockquote, editing_state);
     if (editing_state->IsAborted())
       return;
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(*placeholder))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(SelectionForUndoStep::From(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::BeforeNode(*placeholder))
+            .SetIsDirectional(EndingSelection().IsDirectional())
+            .Build()));
     return;
   }
 
