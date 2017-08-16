@@ -85,8 +85,6 @@ class PreferenceCheckbox {
 
     this.checkbox_ = container.querySelector('.checkbox-option');
     this.label_ = container.querySelector('.checkbox-text');
-    this.label_.addEventListener(
-        'click', () => this.onLabelClicked(this.label_));
 
     var learnMoreLink = this.label_.querySelector(learnMoreLinkId);
     if (learnMoreLink) {
@@ -139,16 +137,6 @@ class PreferenceCheckbox {
     showTextOverlay(this.learnMoreContent_);
     event.stopPropagation();
   }
-
-  /**
-   * Called when preference label is clicked. Toggle the sibling checkbox.
-   */
-  onLabelClicked(label) {
-    var checkbox = label.previousElementSibling;
-    if (checkbox && !checkbox.hidden) {
-      checkbox.checked = !checkbox.checked;
-    }
-  }
 }
 
 /**
@@ -165,6 +153,7 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // So pass |null| intentionally.
     super(container, learnMoreContent, null, null);
 
+    this.textLabel_ = container.querySelector('.content-text');
     this.learnMoreLinkId_ = learnMoreLinkId;
     this.isOwner_ = isOwner;
 
@@ -183,9 +172,11 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // Hide the checkbox if it is not allowed to (re-)enable.
     var canEnable = !isEnabled && !isManaged;
     this.checkbox_.hidden = !canEnable;
+    this.textLabel_.hidden = canEnable;
+    var label = canEnable ? this.label_ : this.textLabel_;
 
-    // Update the label.
-    this.label_.innerHTML = this.texts_[isManaged ? 1 : 0][isEnabled ? 1 : 0];
+    // Update label text.
+    label.innerHTML = this.texts_[isManaged ? 1 : 0][isEnabled ? 1 : 0];
 
     // Work around for the current translation text.
     // The translation text has tags for following links, although those
@@ -193,10 +184,10 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // the translation target).
     // So, meanwhile, we set the link everytime we update the text.
     // TODO: fix the translation text, and main html.
-    var learnMoreLink = this.label_.querySelector(this.learnMoreLinkId_);
+    var learnMoreLink = label.querySelector(this.learnMoreLinkId_);
     learnMoreLink.addEventListener(
         'click', (event) => this.onLearnMoreLinkClicked(event));
-    var settingsLink = this.label_.querySelector('#settings-link');
+    var settingsLink = label.querySelector('#settings-link');
     settingsLink.addEventListener(
         'click', (event) => this.onSettingsLinkClicked(event));
   }
@@ -839,7 +830,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
     appWindow = createdWindow;
     appWindow.contentWindow.onload = onAppContentLoad;
     appWindow.onClosed.addListener(onWindowClosed);
-
     setWindowBounds();
   };
 
