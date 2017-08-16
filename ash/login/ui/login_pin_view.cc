@@ -157,6 +157,8 @@ class DigitPinButton : public BasePinButton {
         SkColorSetA(SK_ColorWHITE, kButtonSubLabelAlpha));
     label->SetAutoColorReadabilityEnabled(false);
     sub_label->SetAutoColorReadabilityEnabled(false);
+    label->SetSubpixelRenderingEnabled(false);
+    sub_label->SetSubpixelRenderingEnabled(false);
     label->SetFontList(base_font_list.Derive(8, gfx::Font::FontStyle::NORMAL,
                                              gfx::Font::Weight::LIGHT));
     sub_label->SetFontList(base_font_list.Derive(
