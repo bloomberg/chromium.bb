@@ -153,17 +153,19 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
   dest_gl->DeleteTextures(1, &source_texture_id);
 }
 
-void AcceleratedStaticBitmapImage::PopulateImageForCurrentFrame(
-    PaintImageBuilder& builder) {
+PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/672306
   CheckThread();
   if (!IsValid()) {
-    builder.set_image(nullptr);
-    return;
+    return PaintImage();
   }
   CreateImageFromMailboxIfNeeded();
+
+  PaintImageBuilder builder;
+  InitPaintImageBuilder(builder);
   builder.set_image(texture_holder_->GetSkImage());
+  return builder.TakePaintImage();
 }
 
 void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,

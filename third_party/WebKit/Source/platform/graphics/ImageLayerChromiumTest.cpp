@@ -64,6 +64,13 @@ class TestImage : public Image {
     // Image pure virtual stub.
   }
 
+  PaintImage PaintImageForCurrentFrame() override {
+    PaintImageBuilder builder;
+    InitPaintImageBuilder(builder);
+    builder.set_image(image_);
+    return builder.TakePaintImage();
+  }
+
  private:
   TestImage(IntSize size, bool opaque) : Image(0), size_(size) {
     sk_sp<SkSurface> surface = CreateSkSurface(size, opaque);
@@ -78,10 +85,6 @@ class TestImage : public Image {
     return SkSurface::MakeRaster(SkImageInfo::MakeN32(
         size.Width(), size.Height(),
         opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
-  }
-
-  void PopulateImageForCurrentFrame(PaintImageBuilder& builder) override {
-    builder.set_image(image_);
   }
 
   IntSize size_;

@@ -90,6 +90,8 @@ class SVGImageForContainer final : public Image {
     return false;
   }
 
+  PaintImage PaintImageForCurrentFrame() override;
+
  protected:
   void DrawPattern(GraphicsContext&,
                    const FloatRect&,
@@ -98,8 +100,6 @@ class SVGImageForContainer final : public Image {
                    SkBlendMode,
                    const FloatRect&,
                    const FloatSize& repeat_spacing) override;
-
-  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
 
  private:
   SVGImageForContainer(SVGImage* image,

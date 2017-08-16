@@ -82,11 +82,14 @@ class TestImage : public Image {
     // Image pure virtual stub.
   }
 
- private:
-  void PopulateImageForCurrentFrame(PaintImageBuilder& builder) override {
+  PaintImage PaintImageForCurrentFrame() override {
+    PaintImageBuilder builder;
+    InitPaintImageBuilder(builder);
     builder.set_image(image_);
+    return builder.TakePaintImage();
   }
 
+ private:
   explicit TestImage(sk_sp<SkImage> image) : image_(image) {}
 
   explicit TestImage(IntSize size) : image_(nullptr) {

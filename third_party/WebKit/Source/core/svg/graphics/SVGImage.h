@@ -104,8 +104,7 @@ class CORE_EXPORT SVGImage final : public Image {
                                              const IntRect& draw_dst_rect,
                                              bool flip_y) override;
 
- protected:
-  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
+  PaintImage PaintImageForCurrentFrame() override;
 
  private:
   // Accesses m_page.

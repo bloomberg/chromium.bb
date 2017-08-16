@@ -257,6 +257,66 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
   EXPECT_EQ(0, LastDecodedSizeChange());
 }
 
+TEST_F(BitmapImageTest, ConstantSkImageIdForPartiallyLoadedImages) {
+  RefPtr<SharedBuffer> image_data =
+      ReadFile("/LayoutTests/images/resources/green.jpg");
+  ASSERT_TRUE(image_data.Get());
+
+  // Create a new buffer to partially supply the data.
+  RefPtr<SharedBuffer> partial_buffer = SharedBuffer::Create();
+  partial_buffer->Append(image_data->Data(), image_data->size() - 4);
+
+  // First partial load. Repeated calls for a PaintImage should have the same
+  // image until the data changes or the decoded data is destroyed.
+  ASSERT_EQ(image_->SetData(partial_buffer, false), Image::kSizeAvailable);
+  auto sk_image1 = image_->PaintImageForCurrentFrame().GetSkImage();
+  auto sk_image2 = image_->PaintImageForCurrentFrame().GetSkImage();
+  EXPECT_EQ(sk_image1, sk_image2);
+
+  // Destroy the decoded data. This generates a new id since we don't cache
+  // image ids for partial decodes.
+  DestroyDecodedData();
+  auto sk_image3 = image_->PaintImageForCurrentFrame().GetSkImage();
+  EXPECT_NE(sk_image1, sk_image3);
+  EXPECT_NE(sk_image1->uniqueID(), sk_image3->uniqueID());
+
+  // Load complete. This should generate a new image id.
+  image_->SetData(image_data, true);
+  auto complete_image = image_->PaintImageForCurrentFrame().GetSkImage();
+  EXPECT_NE(sk_image3, complete_image);
+  EXPECT_NE(sk_image3->uniqueID(), complete_image->uniqueID());
+
+  // Destroy the decoded data and re-create the PaintImage. The SkImage id used
+  // should remain consistent, even if a new image is created.
+  DestroyDecodedData();
+  auto new_complete_image = image_->PaintImageForCurrentFrame().GetSkImage();
+  EXPECT_NE(new_complete_image, complete_image);
+  EXPECT_EQ(new_complete_image->uniqueID(), complete_image->uniqueID());
+}
+
+TEST_F(BitmapImageTest, ImageForDefaultFrame_MultiFrame) {
+  LoadImage("/LayoutTests/images/resources/anim_none.gif", false);
+
+  // Multi-frame images create new StaticBitmapImages for each call.
+  auto default_image1 = image_->ImageForDefaultFrame();
+  auto default_image2 = image_->ImageForDefaultFrame();
+  EXPECT_NE(default_image1, default_image2);
+
+  // But the PaintImage should be the same.
+  auto paint_image1 = default_image1->PaintImageForCurrentFrame();
+  auto paint_image2 = default_image2->PaintImageForCurrentFrame();
+  EXPECT_EQ(paint_image1, paint_image2);
+  EXPECT_EQ(paint_image1.GetSkImage()->uniqueID(),
+            paint_image2.GetSkImage()->uniqueID());
+}
+
+TEST_F(BitmapImageTest, ImageForDefaultFrame_SingleFrame) {
+  LoadImage("/LayoutTests/images/resources/green.jpg");
+
+  // Default frame images for single-frame cases is the image itself.
+  EXPECT_EQ(image_->ImageForDefaultFrame(), image_);
+}
+
 template <typename HistogramEnumType>
 struct HistogramTestParams {
   const char* filename;

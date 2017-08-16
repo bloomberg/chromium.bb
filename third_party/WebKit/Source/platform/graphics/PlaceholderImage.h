@@ -42,11 +42,12 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   void DestroyDecodedData() override;
 
+  PaintImage PaintImageForCurrentFrame() override;
+
  private:
   PlaceholderImage(ImageObserver*, const IntSize&);
 
   bool CurrentFrameHasSingleSecurityOrigin() const override { return true; }
-  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
 
   bool CurrentFrameKnownToBeOpaque(
       MetadataMode = kUseCurrentMetadata) override {

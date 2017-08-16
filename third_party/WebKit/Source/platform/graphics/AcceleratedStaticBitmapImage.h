@@ -77,8 +77,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // was a snapshot of an SkSurface that may be rendered to after
   void RetainOriginalSkImageForCopyOnWrite();
 
- protected:
-  void PopulateImageForCurrentFrame(PaintImageBuilder&) override;
+  PaintImage PaintImageForCurrentFrame() override;
 
  private:
   AcceleratedStaticBitmapImage(sk_sp<SkImage>,
