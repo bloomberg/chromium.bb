@@ -429,7 +429,7 @@ std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
         double value;
         CHECK(it.ReadDouble(&value));
         if (cur_dict) {
-          cur_dict->SetDoubleWithoutPathExpansion(ReadKeyName(it), value);
+          cur_dict->SetKey(ReadKeyName(it), Value(value));
         } else {
           cur_list->AppendDouble(value);
         }

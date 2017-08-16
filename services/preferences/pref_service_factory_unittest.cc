@@ -406,7 +406,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
         EXPECT_EQ(3, out);
       },
       [](ScopedDictionaryPrefUpdate* update) {
-        (*update)->SetDoubleWithoutPathExpansion("key.for.double", 4);
+        (*update)->SetKey("key.for.double", base::Value(4.0));
         double out = 0;
         ASSERT_TRUE(
             (*update)->GetDoubleWithoutPathExpansion("key.for.double", &out));

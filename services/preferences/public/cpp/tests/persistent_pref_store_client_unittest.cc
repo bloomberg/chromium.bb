@@ -185,7 +185,7 @@ TEST_F(PersistentPrefStoreClientTest,
 TEST_F(PersistentPrefStoreClientTest, SubPrefUpdates_MultipleUpdates) {
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
-    update->SetDoubleWithoutPathExpansion("a.double", 1);
+    update->SetKey("a.double", base::Value(1.0));
   }
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);

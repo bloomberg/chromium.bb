@@ -100,7 +100,7 @@ TEST(IPCMessageUtilsTest, StackVector) {
 TEST(IPCMessageUtilsTest, ValueSize) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetKey("foo", base::Value(42));
-  value->SetDoubleWithoutPathExpansion("bar", 3.14);
+  value->SetKey("bar", base::Value(3.14));
   value->SetStringWithoutPathExpansion("baz", "hello");
   value->SetWithoutPathExpansion("qux", base::MakeUnique<base::Value>());
 

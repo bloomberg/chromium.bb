@@ -602,7 +602,7 @@ struct FuzzTraits<base::DictionaryValue> {
         case base::Value::Type::DOUBLE: {
           double tmp;
           fuzzer->FuzzDouble(&tmp);
-          p->SetDoubleWithoutPathExpansion(property, tmp);
+          p->SetKey(property, base::Value(tmp));
           break;
         }
         case base::Value::Type::STRING: {

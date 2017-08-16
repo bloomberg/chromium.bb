@@ -345,8 +345,6 @@ class BASE_EXPORT DictionaryValue : public Value {
                                  std::unique_ptr<Value> in_value);
 
   // Convenience forms of SetWithoutPathExpansion().
-  // DEPRECATED, use Value::SetKey(path, Value(double)) instead.
-  Value* SetDoubleWithoutPathExpansion(StringPiece path, double in_value);
   // DEPRECATED, use Value::SetKey(path, Value(string)) instead.
   Value* SetStringWithoutPathExpansion(StringPiece path, StringPiece in_value);
   // DEPRECATED, use Value::SetKey(path, Value(string16)) instead.
