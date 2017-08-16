@@ -219,7 +219,7 @@ NSString* const kDoneTouchBarId = @"DONE";
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
@@ -267,6 +267,9 @@ NSString* const kDoneTouchBarId = @"DONE";
 
 // Delegate method: see |NSWindowDelegate| protocol.
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
+    return nil;
+
   if (obj != nameTextField_)
     return nil;
 

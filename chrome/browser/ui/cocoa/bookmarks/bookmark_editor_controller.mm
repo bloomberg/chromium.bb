@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/dialog_text_field_editor.h"
+#include "chrome/common/chrome_features.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_formatter/url_fixer.h"
@@ -90,6 +91,9 @@ using bookmarks::BookmarkNode;
 }
 
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
+    return nil;
+
   if (obj == urlField_ || obj == nameTextField_)
     return touchBarFieldEditor_.get();
 
