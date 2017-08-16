@@ -187,7 +187,6 @@ class ProfileHelper
   friend class PrinterDetectorAppSearchEnabledTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
-  friend class SystemTrayDelegateChromeOSTest;
   friend class ash::MultiUserWindowManagerChromeOSTest;
   friend class arc::ArcSessionManagerTest;
   friend class arc::ArcAuthServiceTest;
