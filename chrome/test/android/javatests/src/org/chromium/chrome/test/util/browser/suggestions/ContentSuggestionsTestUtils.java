@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,12 +46,6 @@ public final class ContentSuggestionsTestUtils {
         return createDummySuggestions(count, category, "");
     }
 
-    /** Registers an empty category according to the provided category info. */
-    public static void registerCategory(
-            FakeSuggestionsSource suggestionsSource, @CategoryInt int category) {
-        registerCategory(suggestionsSource, category, 0);
-    }
-
     /**
      * Registers a category according to the provided category info.
      * @return the suggestions added to the newly registered category.
@@ -79,8 +72,6 @@ public final class ContentSuggestionsTestUtils {
         suggestionsSource.setStatusForCategory(
                 categoryInfo.getCategory(), CategoryStatus.AVAILABLE);
         suggestionsSource.setInfoForCategory(categoryInfo.getCategory(), categoryInfo);
-
-        if (suggestionCount == 0) return Collections.emptyList();
 
         List<SnippetArticle> suggestions =
                 createDummySuggestions(suggestionCount, categoryInfo.getCategory());
