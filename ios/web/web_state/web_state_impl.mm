@@ -375,7 +375,6 @@ void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
   // Reset the state.
   http_response_headers_ = NULL;
   mime_type_.clear();
-  content_language_header_.clear();
 
   // Discard all the response headers except the ones for |main_page_url|.
   auto it = response_headers_map_.find(GURLByRemovingRefFromGURL(url));
@@ -390,16 +389,6 @@ void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
   std::string mime_type;
   http_response_headers_->GetMimeType(&mime_type);
   mime_type_ = mime_type;
-
-  // Content-Language
-  std::string content_language;
-  http_response_headers_->GetNormalizedHeader("content-language",
-                                              &content_language);
-  // Remove everything after the comma ',' if any.
-  size_t comma_index = content_language.find_first_of(',');
-  if (comma_index != std::string::npos)
-    content_language.resize(comma_index);
-  content_language_header_ = content_language;
 }
 
 void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
@@ -641,10 +630,6 @@ void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
 
 void WebStateImpl::ExecuteUserJavaScript(NSString* javaScript) {
   [web_controller_ executeUserJavaScript:javaScript completionHandler:nil];
-}
-
-const std::string& WebStateImpl::GetContentLanguageHeader() const {
-  return content_language_header_;
 }
 
 const std::string& WebStateImpl::GetContentsMimeType() const {

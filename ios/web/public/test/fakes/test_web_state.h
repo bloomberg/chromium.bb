@@ -50,7 +50,6 @@ class TestWebState : public WebState {
                          const JavaScriptResultCallback& callback) override;
   void ExecuteUserJavaScript(NSString* javaScript) override;
   const std::string& GetContentsMimeType() const override;
-  const std::string& GetContentLanguageHeader() const override;
   bool ContentIsHTML() const override;
   const base::string16& GetTitle() const override;
   bool IsLoading() const override;
@@ -100,6 +99,7 @@ class TestWebState : public WebState {
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
   void OnNavigationStarted(NavigationContext* navigation_context);
+  void OnNavigationFinished(NavigationContext* navigation_context);
   void OnRenderProcessGone();
 
  private:
@@ -112,7 +112,6 @@ class TestWebState : public WebState {
   URLVerificationTrustLevel trust_level_;
   bool content_is_html_;
   std::string mime_type_;
-  std::string content_language_;
   std::unique_ptr<NavigationManager> navigation_manager_;
   UIView* view_;
 

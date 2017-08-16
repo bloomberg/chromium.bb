@@ -173,9 +173,6 @@ class WebState : public base::SupportsUserData {
   // Gets the contents MIME type.
   virtual const std::string& GetContentsMimeType() const = 0;
 
-  // Gets the value of the "Content-Language" HTTP header.
-  virtual const std::string& GetContentLanguageHeader() const = 0;
-
   // Returns true if the current page is a web view with HTML.
   virtual bool ContentIsHTML() const = 0;
 

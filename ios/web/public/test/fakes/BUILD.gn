@@ -21,6 +21,8 @@ source_set("fakes") {
     "crw_test_js_injection_receiver.mm",
     "crw_test_web_state_observer.h",
     "crw_test_web_state_observer.mm",
+    "fake_navigation_context.h",
+    "fake_navigation_context.mm",
     "test_browser_state.cc",
     "test_browser_state.h",
     "test_java_script_dialog_presenter.h",
