@@ -58,7 +58,7 @@
 
   function dumpError(message) {
     if (message.error)
-      testRunner.log('Error: ' + message.error.message);
+      testRunner.fail(message.error.message);
   }
 
   dumpError(await dp.Input.dispatchKeyEvent({
@@ -85,7 +85,6 @@
     x: 100,
     y: 200
   }));
-
   testRunner.log(await session.evaluateAsync('verifyTimestampsPromise'));
   testRunner.completeTest();
 })

@@ -54,7 +54,6 @@
 #include "core/inspector/InspectorDOMSnapshotAgent.h"
 #include "core/inspector/InspectorEmulationAgent.h"
 #include "core/inspector/InspectorIOAgent.h"
-#include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
@@ -351,8 +350,6 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
 
   session->Append(
       new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session()));
-
-  session->Append(InspectorInputAgent::Create(inspected_frames_.Get()));
 
   InspectorPageAgent* page_agent = InspectorPageAgent::Create(
       inspected_frames_.Get(), this, resource_content_loader_.Get(),

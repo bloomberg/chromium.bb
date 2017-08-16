@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
+#include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -43,6 +44,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 
@@ -1551,8 +1553,9 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   simulated_event_time_delta_seconds_ = 0.1;
   // Immediately ack all touches instead of sending them to the renderer.
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-  host_->SetTouchEventEmulationEnabled(
-      true, ui::GestureProviderConfigType::GENERIC_MOBILE);
+  host_->GetTouchEmulator()->Enable(
+      TouchEmulator::Mode::kEmulatingTouchFromMouse,
+      ui::GestureProviderConfigType::GENERIC_MOBILE);
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 400, 200));
   view_->Show();
@@ -1655,8 +1658,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Turn off emulation during a pinch.
-  host_->SetTouchEventEmulationEnabled(
-      false, ui::GestureProviderConfigType::GENERIC_MOBILE);
+  host_->GetTouchEmulator()->Disable();
   EXPECT_EQ(WebInputEvent::kTouchCancel, host_->acked_touch_event_type());
   EXPECT_EQ("GesturePinchEnd GestureScrollEnd",
             GetInputMessageTypes(process_));
@@ -1670,8 +1672,9 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Turn on emulation.
-  host_->SetTouchEventEmulationEnabled(
-      true, ui::GestureProviderConfigType::GENERIC_MOBILE);
+  host_->GetTouchEmulator()->Enable(
+      TouchEmulator::Mode::kEmulatingTouchFromMouse,
+      ui::GestureProviderConfigType::GENERIC_MOBILE);
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Another touch.
@@ -1692,8 +1695,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Turn off emulation during a scroll.
-  host_->SetTouchEventEmulationEnabled(
-      false, ui::GestureProviderConfigType::GENERIC_MOBILE);
+  host_->GetTouchEmulator()->Disable();
   EXPECT_EQ(WebInputEvent::kTouchCancel, host_->acked_touch_event_type());
 
   EXPECT_EQ("GestureScrollEnd", GetInputMessageTypes(process_));

@@ -56,7 +56,6 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/latency/latency_info.h"
 
@@ -385,9 +384,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& latency);  // Virtual for testing.
 
-  // Enables/disables touch emulation using mouse event. See TouchEmulator.
-  void SetTouchEventEmulationEnabled(
-      bool enabled, ui::GestureProviderConfigType config_type);
+  // Returns an emulator for this widget. See TouchEmulator for more details.
+  TouchEmulator* GetTouchEmulator();
 
   // TouchEmulatorClient implementation.
   void ForwardEmulatedGestureEvent(

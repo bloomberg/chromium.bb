@@ -1,4 +1,18 @@
 Tests Input.dispatchTouchEvent method.
+
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 200
+        }
+    ]
+    type : touchStart
+}
 -----Event-----
 type: touchstart
 ----Touches----
@@ -9,19 +23,72 @@ radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 200
+            y : 100
+        }
+    ]
+    type : touchMove
+}
 -----Event-----
 type: touchmove
 ----Touches----
 id: 0
-pageX: 100
-pageY: 200
+pageX: 200
+pageY: 100
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
 -----Event-----
 type: touchend
 ----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    modifiers : 8
+    touchPoints : [
+        [0] : {
+            id : 0
+            x : 20
+            y : 30
+        }
+        [1] : {
+            force : 0
+            id : 1
+            radiusX : 5
+            radiusY : 6
+            rotationAngle : 1
+            x : 100
+            y : 200
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+shiftKey
+----Touches----
+id: 0
+pageX: 20
+pageY: 30
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchstart
 shiftKey
@@ -40,7 +107,418 @@ radiusX: 5
 radiusY: 6
 rotationAngle: 1
 force: 0
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
 -----Event-----
 type: touchend
+shiftKey
+----Touches----
+id: 0
+pageX: 100
+pageY: 200
+radiusX: 5
+radiusY: 6
+rotationAngle: 1
+force: 0
+-----Event-----
+type: touchend
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 0
+            x : 20
+            y : 30
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 20
+pageY: 30
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 0
+            x : 20
+            y : 30
+        }
+        [1] : {
+            id : 1
+            x : 100
+            y : 200
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 20
+pageY: 30
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 100
+pageY: 200
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 0
+            x : 120
+            y : 130
+        }
+        [1] : {
+            id : 1
+            x : 200
+            y : 100
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 120
+pageY: 130
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 100
+pageY: 200
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 120
+pageY: 130
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 200
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 1
+            x : 200
+            y : 300
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 120
+pageY: 130
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 200
+pageY: 300
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchend
+----Touches----
+id: 0
+pageX: 200
+pageY: 300
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
+-----Event-----
+type: touchend
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
+{
+    error : {
+        code : -32602
+        message : Must send a TouchStart first to start a new touch.
+    }
+    id : <messageId>
+}
+
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchStart
+}
+{
+    error : {
+        code : -32602
+        message : TouchStart and TouchMove must have at least one touch point.
+    }
+    id : <messageId>
+}
+
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchEnd
+}
+{
+    error : {
+        code : -32602
+        message : TouchEnd and TouchCancel must not have any touch points.
+    }
+    id : <messageId>
+}
+
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchCancel
+}
+{
+    error : {
+        code : -32602
+        message : TouchEnd and TouchCancel must not have any touch points.
+    }
+    id : <messageId>
+}
+
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchCancel
+}
+-----Event-----
+type: touchcancel
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchMove
+}
+
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchMove
+}
+
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchEnd
+}
+-----Event-----
+type: touchend
+----Touches----
+
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 1
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : 2
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchend
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+    ]
+    type : touchCancel
+}
+-----Event-----
+type: touchcancel
 ----Touches----
 
