@@ -1306,21 +1306,14 @@ Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
 void LayerTreeHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type,
                                     Layer* layer) {
-  if (layer->element_id()) {
-    element_layers_map_[layer->element_id()] = layer;
-  }
-
+  element_layers_map_[element_id] = layer;
   mutator_host_->RegisterElement(element_id, list_type);
 }
 
 void LayerTreeHost::UnregisterElement(ElementId element_id,
-                                      ElementListType list_type,
-                                      Layer* layer) {
+                                      ElementListType list_type) {
   mutator_host_->UnregisterElement(element_id, list_type);
-
-  if (layer->element_id()) {
-    element_layers_map_.erase(layer->element_id());
-  }
+  element_layers_map_.erase(element_id);
 }
 
 static void SetElementIdForTesting(Layer* layer) {

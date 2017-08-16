@@ -400,9 +400,7 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   void RegisterElement(ElementId element_id,
                        ElementListType list_type,
                        Layer* layer);
-  void UnregisterElement(ElementId element_id,
-                         ElementListType list_type,
-                         Layer* layer);
+  void UnregisterElement(ElementId element_id, ElementListType list_type);
   void SetElementIdsForTesting();
 
   void BuildPropertyTreesForTesting();

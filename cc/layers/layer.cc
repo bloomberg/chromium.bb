@@ -130,7 +130,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     if (!layer_tree_host_->GetSettings().use_layer_lists &&
         inputs_.element_id) {
       layer_tree_host_->UnregisterElement(inputs_.element_id,
-                                          ElementListType::ACTIVE, this);
+                                          ElementListType::ACTIVE);
     }
   }
   if (host) {
@@ -1439,7 +1439,7 @@ void Layer::SetElementId(ElementId id) {
                "Layer::SetElementId", "element", id.AsValue().release());
   if (inputs_.element_id && layer_tree_host()) {
     layer_tree_host_->UnregisterElement(inputs_.element_id,
-                                        ElementListType::ACTIVE, this);
+                                        ElementListType::ACTIVE);
   }
 
   inputs_.element_id = id;
