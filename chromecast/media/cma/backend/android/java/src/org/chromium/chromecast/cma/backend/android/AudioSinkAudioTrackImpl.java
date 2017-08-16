@@ -91,7 +91,7 @@ class AudioSinkAudioTrackImpl {
     private static AudioManager sAudioManager = null;
 
     private static int sSessionIdMedia = AudioManager.ERROR;
-    private static int sSessionIdNonMedia = AudioManager.ERROR;
+    private static int sSessionIdCommunication = AudioManager.ERROR;
 
     private final long mNativeAudioSinkAudioTrackImpl;
 
@@ -148,16 +148,16 @@ class AudioSinkAudioTrackImpl {
     }
 
     @CalledByNative
-    public static int getSessionIdNonMedia() {
-        if (sSessionIdNonMedia == AudioManager.ERROR) {
-            sSessionIdNonMedia = getAudioManager().generateAudioSessionId();
-            if (sSessionIdNonMedia == AudioManager.ERROR) {
-                Log.e(TAG, "Cannot generate session-id for non-media tracks!");
+    public static int getSessionIdCommunication() {
+        if (sSessionIdCommunication == AudioManager.ERROR) {
+            sSessionIdCommunication = getAudioManager().generateAudioSessionId();
+            if (sSessionIdCommunication == AudioManager.ERROR) {
+                Log.e(TAG, "Cannot generate session-id for communication tracks!");
             } else {
-                Log.i(TAG, "Session-id for non-media tracks is " + sSessionIdNonMedia);
+                Log.i(TAG, "Session-id for communication tracks is " + sSessionIdCommunication);
             }
         }
-        return sSessionIdNonMedia;
+        return sSessionIdCommunication;
     }
 
     /** Construction */
@@ -206,8 +206,15 @@ class AudioSinkAudioTrackImpl {
 
         int usageType = CAST_TYPE_TO_ANDROID_USAGE_TYPE_MAP.get(castContentType);
         int contentType = CAST_TYPE_TO_ANDROID_CONTENT_TYPE_MAP.get(castContentType);
-        int sessionId = (usageType == AudioAttributes.USAGE_MEDIA) ? getSessionIdMedia()
-                                                                   : getSessionIdNonMedia();
+
+        int sessionId = AudioManager.ERROR;
+        if (castContentType == AudioContentType.MEDIA) {
+            sessionId = getSessionIdMedia();
+        } else if (castContentType == AudioContentType.COMMUNICATION) {
+            sessionId = getSessionIdCommunication();
+        }
+        // AudioContentType.ALARM doesn't get a sessionId.
+
         int bufferSizeInBytes = MIN_BUFFER_SIZE_MULTIPLIER
                 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
         int bufferSizeInMs = 1000 * bufferSizeInBytes / (BYTES_PER_FRAME * mSampleRateInHz);

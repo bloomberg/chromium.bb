@@ -46,7 +46,7 @@ namespace media {
 
 // static
 bool AudioSinkAndroidAudioTrackImpl::GetSessionIds(int* media_id,
-                                                   int* non_media_id) {
+                                                   int* communication_id) {
   bool is_valid = true;
   if (media_id) {
     *media_id = Java_AudioSinkAudioTrackImpl_getSessionIdMedia(
@@ -54,10 +54,10 @@ bool AudioSinkAndroidAudioTrackImpl::GetSessionIds(int* media_id,
     if (*media_id == -1)
       is_valid = false;
   }
-  if (non_media_id) {
-    *non_media_id = Java_AudioSinkAudioTrackImpl_getSessionIdNonMedia(
+  if (communication_id) {
+    *communication_id = Java_AudioSinkAudioTrackImpl_getSessionIdCommunication(
         base::android::AttachCurrentThread());
-    if (*non_media_id == -1)
+    if (*communication_id == -1)
       is_valid = false;
   }
   return is_valid;

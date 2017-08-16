@@ -23,10 +23,11 @@ class AudioSinkManager {
   static AudioSinkManager* Get();
   static AudioSinkAndroid::SinkType GetDefaultSinkType();
 
-  // Gets the Android audio session ids used for media and non-media tracks.
+  // Gets the Android audio session ids used for media and communication (TTS)
+  // tracks.
   // Set a return value pointer to null if that id is not needed.
   // Returns true if the ids populated are valid.
-  static bool GetSessionIds(int* media_id, int* non_media_id);
+  static bool GetSessionIds(int* media_id, int* communication_id);
 
   // Adds the given sink instance to the vector.
   void Add(AudioSinkAndroid* sink);
