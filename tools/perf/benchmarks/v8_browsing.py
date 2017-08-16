@@ -71,6 +71,8 @@ class _V8BrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
       # which enables memory-infra V8 code stats in V8 code size benchmarks
       # only (to not slow down detailed memory dumps in other benchmarks).
       'disabled-by-default-memory-infra.v8.code_stats',
+      # Blink categories.
+      'blink_gc',
     ]
     options = timeline_based_measurement.Options(
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -81,7 +83,7 @@ class _V8BrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
     memory_dump_config.AddTrigger('light', 1000)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
     options.SetTimelineBasedMetrics([
-      'expectedQueueingTimeMetric', 'v8AndMemoryMetrics'])
+      'expectedQueueingTimeMetric', 'v8AndMemoryMetrics', 'blinkGcMetric'])
     return options
 
   @classmethod
@@ -126,6 +128,8 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
       'v8',
       'webkit.console',
       'disabled-by-default-v8.runtime_stats',
+      # Blink categories.
+      'blink_gc',
     ]
     options = timeline_based_measurement.Options(
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -137,7 +141,8 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
 
     options.SetTimelineBasedMetrics([
-      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric'])
+      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric',
+      'blinkGcMetric'])
     return options
 
 
