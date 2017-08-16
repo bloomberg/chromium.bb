@@ -40,23 +40,7 @@
 namespace discardable_memory {
 namespace {
 
-const char kSingleProcess[] = "single-process";
-
 const int kInvalidUniqueClientID = -1;
-
-const uint64_t kBrowserTracingProcessId = std::numeric_limits<uint64_t>::max();
-
-uint64_t ClientProcessUniqueIdToTracingProcessId(int client_id) {
-  // TODO(penghuang): Move this function to right place.
-  // https://crbug.com/661257
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcess))
-    return kBrowserTracingProcessId;
-  // The hash value is incremented so that the tracing id is never equal to
-  // MemoryDumpManager::kInvalidTracingProcessId.
-  return static_cast<uint64_t>(base::Hash(
-             reinterpret_cast<const char*>(&client_id), sizeof(client_id))) +
-         1;
-}
 
 // mojom::DiscardableSharedMemoryManager implementation. It contains the
 // |client_id_| which is not visible to client. We associate allocations with a
@@ -319,20 +303,9 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
           segment->memory()->IsMemoryLocked() ? segment->memory()->mapped_size()
                                               : 0u);
 
-      // Create the cross-process ownership edge. If the client creates a
-      // corresponding dump for the same segment, this will avoid to
-      // double-count them in tracing. If, instead, no other process will emit a
-      // dump with the same guid, the segment will be accounted to the browser.
-      const uint64_t client_tracing_id =
-          ClientProcessUniqueIdToTracingProcessId(client_id);
-      base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
-          DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(
-              client_tracing_id, segment_id);
-
       auto shared_memory_guid = segment->memory()->mapped_id();
       dump->AddString("id", "hash", shared_memory_guid.ToString());
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_segment_guid,
-                                           shared_memory_guid,
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                            0 /* importance */);
     }
   }

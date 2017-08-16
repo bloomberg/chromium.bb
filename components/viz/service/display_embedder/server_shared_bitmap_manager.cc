@@ -139,17 +139,17 @@ bool ServerSharedBitmapManager::OnMemoryDump(
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     bitmap.second->buffer_size);
 
-    // Generate a global GUID used to share this allocation with renderer
-    // processes.
-    auto guid = GetSharedBitmapGUIDForTracing(bitmap.first);
-    base::UnguessableToken shared_memory_guid;
     if (bitmap.second->memory) {
-      shared_memory_guid = bitmap.second->memory->mapped_id();
+      base::UnguessableToken shared_memory_guid =
+          bitmap.second->memory->mapped_id();
       if (!shared_memory_guid.is_empty()) {
-        pmd->CreateSharedMemoryOwnershipEdge(
-            dump->guid(), guid, shared_memory_guid, 0 /* importance*/);
+        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                             0 /* importance*/);
       }
     } else {
+      // Generate a global GUID used to share this allocation with renderer
+      // processes.
+      auto guid = GetSharedBitmapGUIDForTracing(bitmap.first);
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid);
     }

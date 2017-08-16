@@ -737,17 +737,17 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(buffer->size()));
 
-    auto guid = gl::GetGLBufferGUIDForTracing(share_group_tracing_guid,
-                                              client_buffer_id);
     auto* mapped_range = buffer->GetMappedRange();
     if (!mapped_range)
       continue;
     auto shared_memory_guid =
         mapped_range->shm->backing()->shared_memory_handle().GetGUID();
     if (!shared_memory_guid.is_empty()) {
-      pmd->CreateSharedMemoryOwnershipEdge(
-          dump->guid(), guid, shared_memory_guid, 0 /* importance */);
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                           0 /* importance */);
     } else {
+      auto guid = gl::GetGLBufferGUIDForTracing(share_group_tracing_guid,
+                                                client_buffer_id);
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid);
     }

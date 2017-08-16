@@ -536,8 +536,6 @@ source_set("memory_buffer_sources") {
     sources += [
       "gpu_memory_buffer.cc",
       "gpu_memory_buffer.h",
-      "gpu_memory_buffer_tracing.cc",
-      "gpu_memory_buffer_tracing.h",
     ]
   }
 

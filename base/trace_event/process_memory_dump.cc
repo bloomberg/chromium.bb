@@ -391,27 +391,23 @@ void ProcessMemoryDump::AddOverridableOwnershipEdge(
 
 void ProcessMemoryDump::CreateSharedMemoryOwnershipEdge(
     const MemoryAllocatorDumpGuid& client_local_dump_guid,
-    const MemoryAllocatorDumpGuid& client_global_dump_guid,
     const UnguessableToken& shared_memory_guid,
     int importance) {
-  CreateSharedMemoryOwnershipEdgeInternal(
-      client_local_dump_guid, client_global_dump_guid, shared_memory_guid,
-      importance, false /*is_weak*/);
+  CreateSharedMemoryOwnershipEdgeInternal(client_local_dump_guid,
+                                          shared_memory_guid, importance,
+                                          false /*is_weak*/);
 }
 
 void ProcessMemoryDump::CreateWeakSharedMemoryOwnershipEdge(
     const MemoryAllocatorDumpGuid& client_local_dump_guid,
-    const MemoryAllocatorDumpGuid& client_global_dump_guid,
     const UnguessableToken& shared_memory_guid,
     int importance) {
   CreateSharedMemoryOwnershipEdgeInternal(
-      client_local_dump_guid, client_global_dump_guid, shared_memory_guid,
-      importance, true /*is_weak*/);
+      client_local_dump_guid, shared_memory_guid, importance, true /*is_weak*/);
 }
 
 void ProcessMemoryDump::CreateSharedMemoryOwnershipEdgeInternal(
     const MemoryAllocatorDumpGuid& client_local_dump_guid,
-    const MemoryAllocatorDumpGuid& client_global_dump_guid,
     const UnguessableToken& shared_memory_guid,
     int importance,
     bool is_weak) {
