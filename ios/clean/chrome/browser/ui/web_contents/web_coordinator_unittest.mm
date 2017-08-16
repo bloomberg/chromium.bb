@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
-#import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -21,8 +21,7 @@ namespace {
 class WebCoordinatorTest : public PlatformTest {
  public:
   WebCoordinatorTest() {
-    auto navigation_manager = base::MakeUnique<TabNavigationManager>();
-    navigation_manager->SetItemCount(0);
+    auto navigation_manager = base::MakeUnique<web::TestNavigationManager>();
     test_web_state_.SetView([[UIView alloc] init]);
     test_web_state_.SetNavigationManager(std::move(navigation_manager));
 
