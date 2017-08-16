@@ -89,6 +89,8 @@ class MediaAndroidToughVideoCases(perf_benchmark.PerfBenchmark):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story.expectations.ALL_DESKTOP], 'Android Benchmark')
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ANDROID_WEBVIEW], 'Needs tabs')
     return StoryExpectations()
 
 
@@ -167,6 +169,8 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story.expectations.ALL_DESKTOP], 'Android Benchmark')
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ANDROID_WEBVIEW], 'Needs tabs')
     return StoryExpectations()
 
   def SetExtraBrowserOptions(self, options):
