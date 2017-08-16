@@ -52,12 +52,14 @@ void RegisterContentSchemes(bool lock_schemes) {
     url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
 
   schemes.secure_schemes.push_back(kChromeUIScheme);
+  schemes.secure_schemes.push_back(kChromeErrorScheme);
   for (auto& scheme : schemes.secure_schemes)
     url::AddSecureScheme(scheme.c_str());
 
   for (auto& scheme : schemes.local_schemes)
     url::AddLocalScheme(scheme.c_str());
 
+  schemes.no_access_schemes.push_back(kChromeErrorScheme);
   for (auto& scheme : schemes.no_access_schemes)
     url::AddNoAccessScheme(scheme.c_str());
 
@@ -65,6 +67,8 @@ void RegisterContentSchemes(bool lock_schemes) {
   for (auto& scheme : schemes.cors_enabled_schemes)
     url::AddCORSEnabledScheme(scheme.c_str());
 
+  // TODO(mkwst): Investigate whether chrome-error should be included in
+  // csp_bypassing_schemes.
   for (auto& scheme : schemes.csp_bypassing_schemes)
     url::AddCSPBypassingScheme(scheme.c_str());
 

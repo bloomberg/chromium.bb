@@ -37,7 +37,12 @@
 
 namespace {
 
-static const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+// The error page URL was renamed in
+// https://chromium-review.googlesource.com/c/580169, but because ChromeDriver
+// needs to be backward-compatible with older versions of Chrome, it is
+// necessary to compare against both the old and new error URL.
+static const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
+const char kDeprecatedUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
 // Defaults to 20 years into the future when adding a cookie.
 const double kDefaultCookieExpiryTime = 20*365*24*60*60;
@@ -490,7 +495,8 @@ Status ExecuteGetCurrentUrl(Session* session,
   Status status = GetUrl(web_view, std::string(), &url);
   if (status.IsError())
     return status;
-  if (url == kUnreachableWebDataURL) {
+  if (url == kUnreachableWebDataURL ||
+      url == kDeprecatedUnreachableWebDataURL) {
     // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272
     const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
     bool is_kitkat_webview = browser_info->browser_name == "webview" &&

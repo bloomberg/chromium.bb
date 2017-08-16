@@ -207,6 +207,8 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, GURL("chrome://foo/bar")));
   EXPECT_FALSE(p->CanSetAsOriginHeader(
       kRendererID, GURL("view-source:http://www.google.com/")));
+  EXPECT_FALSE(p->CanRedirectToURL(GURL(kUnreachableWebDataURL)));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL(kUnreachableWebDataURL)));
 
   p->Remove(kRendererID);
 }

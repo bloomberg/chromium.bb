@@ -280,9 +280,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
       newtab, "domAutomationController.send(document.body.innerText.trim());",
       &document_body));
 
-  // Currently, in this test, the error page is blocked by CSP. This is
-  // https://crbug.com/703801.
-  EXPECT_EQ("", document_body);
+  EXPECT_TRUE(base::StartsWith(document_body,
+                               "thisissurelynotavalidextensionid is blocked",
+                               base::CompareCase::SENSITIVE));
 }
 
 // Tests that calling window.open from the newtab page to an extension URL

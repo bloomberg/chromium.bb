@@ -771,13 +771,11 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Do a same page navigation.
-  content::TestNavigationObserver nav_observer1(web_contents, 1);
+  // Do a same-document navigation on the error page, which should not result
+  // in a new navigation.
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.location='#';"));
-  // The same page navigation counts as a single navigation as far as the
-  // TestNavigationObserver is concerned.
-  nav_observer1.Wait();
+  content::WaitForLoadStop(web_contents);
   // Page being displayed should not change.
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   // No new requests should have been issued.
@@ -1170,14 +1168,12 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(web_contents, 1);
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.location='#';"));
-  // The same page navigation counts as a navigation as far as the
-  // TestNavigationObserver is concerned.
-  observer.Wait();
+  content::WaitForLoadStop(web_contents);
 
-  // No new requests should have been issued.
+  // Same-document navigation on an error page should not have resulted in a
+  // new navigation, so no new requests should have been issued.
   EXPECT_EQ(2, interceptor()->failures());
   EXPECT_EQ(2, interceptor()->requests());
 

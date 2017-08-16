@@ -2304,6 +2304,10 @@ void RenderFrameHostImpl::OnBeginNavigation(
     return;
   }
 
+  // Renderer processes shouldn't request error page URLs directly.
+  if (validated_params.url.SchemeIs(kChromeErrorScheme))
+    return;
+
   if (waiting_for_init_) {
     pendinging_navigate_ = base::MakeUnique<PendingNavigation>(
         validated_params, validated_begin_params);

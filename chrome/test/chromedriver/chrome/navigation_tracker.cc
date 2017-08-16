@@ -15,7 +15,14 @@ namespace {
 
 const char kDummyFrameName[] = "chromedriver dummy frame";
 const char kDummyFrameUrl[] = "about:blank";
-const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+
+// The error page URL was renamed in
+// https://chromium-review.googlesource.com/c/580169, but because ChromeDriver
+// needs to be backward-compatible with older versions of Chrome, it is
+// necessary to compare against both the old and new error URL.
+const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
+const char kDeprecatedUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+
 const char kAutomationExtensionBackgroundPage[] =
     "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
     "_generated_background_page.html";
@@ -317,7 +324,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
         std::string frame_url;
         if (!params.GetString("frame.url", &frame_url))
           return Status(kUnknownError, "missing or invalid 'frame.url'");
-        if (frame_url == kUnreachableWebDataURL)
+        if (frame_url == kUnreachableWebDataURL ||
+            frame_url == kDeprecatedUnreachableWebDataURL)
           pending_frame_set_.clear();
       }
     } else {
