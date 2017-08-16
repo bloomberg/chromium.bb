@@ -54,6 +54,8 @@ source_set("ntp") {
 source_set("ntp_ui") {
   sources = [
     "ntp_consumer.h",
+    "ntp_home_header_consumer.h",
+    "ntp_home_header_provider.h",
     "ntp_home_header_view_controller.h",
     "ntp_home_header_view_controller.mm",
     "ntp_view_controller.h",
