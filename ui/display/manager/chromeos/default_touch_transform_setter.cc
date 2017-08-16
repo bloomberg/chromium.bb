@@ -14,10 +14,8 @@ DefaultTouchTransformSetter::DefaultTouchTransformSetter() = default;
 DefaultTouchTransformSetter::~DefaultTouchTransformSetter() = default;
 
 void DefaultTouchTransformSetter::ConfigureTouchDevices(
-    const std::map<int32_t, double>& scales,
     const std::vector<ui::TouchDeviceTransform>& transforms) {
-  ui::DeviceDataManager::GetInstance()->ConfigureTouchDevices(scales,
-                                                              transforms);
+  ui::DeviceDataManager::GetInstance()->ConfigureTouchDevices(transforms);
 }
 
 }  // namespace display

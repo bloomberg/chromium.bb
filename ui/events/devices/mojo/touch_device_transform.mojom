@@ -10,4 +10,5 @@ struct TouchDeviceTransform {
   int64 display_id;
   int32 device_id;
   gfx.mojom.Transform transform;
+  double radius_scale;
 };

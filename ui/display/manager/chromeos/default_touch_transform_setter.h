@@ -18,7 +18,6 @@ class DISPLAY_MANAGER_EXPORT DefaultTouchTransformSetter
 
   // TouchTransformSetter:
   void ConfigureTouchDevices(
-      const std::map<int32_t, double>& scales,
       const std::vector<ui::TouchDeviceTransform>& transforms) override;
 
  private:

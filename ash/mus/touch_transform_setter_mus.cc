@@ -21,14 +21,11 @@ TouchTransformSetterMus::TouchTransformSetterMus(
 TouchTransformSetterMus::~TouchTransformSetterMus() {}
 
 void TouchTransformSetterMus::ConfigureTouchDevices(
-    const std::map<int32_t, double>& scales,
     const std::vector<ui::TouchDeviceTransform>& transforms) {
   if (!touch_device_server_)
     return;  // May be null in tests.
 
-  std::unordered_map<int32_t, double> scales_transport(scales.begin(),
-                                                       scales.end());
-  touch_device_server_->ConfigureTouchDevices(scales_transport, transforms);
+  touch_device_server_->ConfigureTouchDevices(transforms);
 }
 
 }  // namespace ash

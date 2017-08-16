@@ -26,6 +26,9 @@ struct StructTraits<ui::mojom::TouchDeviceTransformDataView,
   static const gfx::Transform& transform(const ui::TouchDeviceTransform& r) {
     return r.transform;
   }
+  static double radius_scale(const ui::TouchDeviceTransform& r) {
+    return r.radius_scale;
+  }
 
   static bool Read(ui::mojom::TouchDeviceTransformDataView data,
                    ui::TouchDeviceTransform* out) {
@@ -33,6 +36,7 @@ struct StructTraits<ui::mojom::TouchDeviceTransformDataView,
     out->device_id = data.device_id();
     if (!data.ReadTransform(&(out->transform)))
       return false;
+    out->radius_scale = data.radius_scale();
     return true;
   }
 };

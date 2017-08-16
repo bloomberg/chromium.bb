@@ -7,7 +7,6 @@ module ui.mojom;
 import "ui/events/devices/mojo/touch_device_transform.mojom";
 
 interface TouchDeviceServer {
-  // Reset the touch configuration. |scales| maps from touch_id to the scale.
-  ConfigureTouchDevices(map<int32, double> scales,
-                        array<ui.mojom.TouchDeviceTransform> transforms);
+  // Reset the touch configuration.
+  ConfigureTouchDevices(array<ui.mojom.TouchDeviceTransform> transforms);
 };
