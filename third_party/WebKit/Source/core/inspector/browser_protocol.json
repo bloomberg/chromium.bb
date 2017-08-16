@@ -4106,13 +4106,15 @@
             {
                 "name": "dispatchMouseEvent",
                 "parameters": [
-                    { "name": "type", "type": "string", "enum": ["mousePressed", "mouseReleased", "mouseMoved"], "description": "Type of the mouse event." },
+                    { "name": "type", "type": "string", "enum": ["mousePressed", "mouseReleased", "mouseMoved", "mouseWheel"], "description": "Type of the mouse event." },
                     { "name": "x", "type": "number", "description": "X coordinate of the event relative to the main frame's viewport in CSS pixels."},
                     { "name": "y", "type": "number", "description": "Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport."},
                     { "name": "modifiers", "type": "integer", "optional": true, "description": "Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0)." },
                     { "name": "timestamp", "$ref": "TimeSinceEpoch", "optional": true, "description": "Time at which the event occurred." },
                     { "name": "button", "type": "string", "enum": ["none", "left", "middle", "right"], "optional": true, "description": "Mouse button (default: \"none\")." },
-                    { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
+                    { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." },
+                    { "name": "deltaX", "type": "number", "optional": true, "description": "X delta in CSS pixels for mouse wheel event (default: 0)."},
+                    { "name": "deltaY", "type": "number", "optional": true, "description": "Y delta in CSS pixels for mouse wheel event (default: 0)."}
                 ],
                 "description": "Dispatches a mouse event to the page."
             },
