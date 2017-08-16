@@ -210,8 +210,10 @@ void ScreenOrientationController::UnlockAll() {
   lock_info_map_.clear();
   Shell::Get()->activation_client()->RemoveObserver(this);
   SetRotationLockedInternal(false);
-  if (user_rotation_ != current_rotation_)
-    SetDisplayRotation(user_rotation_, display::Display::ROTATION_SOURCE_USER);
+  if (user_rotation_ != current_rotation_) {
+    SetDisplayRotation(user_rotation_,
+                       display::Display::ROTATION_SOURCE_ACCELEROMETER);
+  }
 }
 
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
@@ -341,8 +343,10 @@ void ScreenOrientationController::OnTabletModeEnding() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   if (!display::Display::HasInternalDisplay())
     return;
-  if (current_rotation_ != user_rotation_)
-    SetDisplayRotation(user_rotation_, display::Display::ROTATION_SOURCE_USER);
+  if (current_rotation_ != user_rotation_) {
+    SetDisplayRotation(user_rotation_,
+                       display::Display::ROTATION_SOURCE_ACCELEROMETER);
+  }
   for (auto& observer : observers_)
     observer.OnUserRotationLockChanged();
 }
