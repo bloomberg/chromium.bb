@@ -19,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -228,10 +229,21 @@ const int64_t kLastUsedFolderNone = -1;
       bookmarkControllerWithBrowserState:_currentBrowserState
                                   loader:_loader];
   self.bookmarkBrowser.homeDelegate = self;
-  self.bookmarkBrowser.modalPresentationStyle = UIModalPresentationFormSheet;
-  [_parentController presentViewController:self.bookmarkBrowser
-                                  animated:YES
-                                completion:nil];
+
+  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+    UINavigationController* navController = [[UINavigationController alloc]
+        initWithRootViewController:self.bookmarkBrowser];
+    [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
+    [navController setModalPresentationStyle:UIModalPresentationFormSheet];
+    [_parentController presentViewController:navController
+                                    animated:YES
+                                  completion:nil];
+  } else {
+    self.bookmarkBrowser.modalPresentationStyle = UIModalPresentationFormSheet;
+    [_parentController presentViewController:self.bookmarkBrowser
+                                    animated:YES
+                                  completion:nil];
+  }
 }
 
 - (void)dismissBookmarkBrowserAnimated:(BOOL)animated {

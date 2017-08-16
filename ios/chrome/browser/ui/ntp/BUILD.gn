@@ -267,6 +267,7 @@ source_set("eg_tests") {
     ":ntp_internal",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/test/app:test_support",

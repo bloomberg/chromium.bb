@@ -502,6 +502,9 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // new tab. Ensures that the sign in screen is correctly dismissed.
 // Regression test for crbug.com/596029.
 - (void)testSignInCancelFromBookmarks {
+  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with old Bookmarks UI.");
+  }
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);

@@ -57,6 +57,8 @@ source_set("bookmarks") {
     "bookmark_promo_controller.mm",
     "bookmark_signin_promo_cell.h",
     "bookmark_signin_promo_cell.mm",
+    "bookmark_table_view.h",
+    "bookmark_table_view.mm",
     "bookmark_utils_ios.h",
     "bookmark_utils_ios.mm",
     "undo_manager_bridge_observer.h",
