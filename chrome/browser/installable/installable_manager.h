@@ -278,11 +278,46 @@ class InstallableManager
   const content::Manifest& manifest() const;
   bool is_installable() const;
 
-  // The list of <params, callback> pairs that have come from a call to GetData.
-  std::vector<Task> tasks_;
+  // TaskQueue keeps track of pending tasks.
+  class TaskQueue {
+   public:
+    TaskQueue();
+    ~TaskQueue();
 
-  // Tasks which are waiting indefinitely for a service worker to be detected.
-  std::vector<Task> paused_tasks_;
+    // Adds task to the end of the active list of tasks to be processed.
+    void Insert(Task task);
+
+    // Moves the current task from the main to the paused list.
+    void PauseCurrent();
+
+    // Reports whether there are any tasks in the paused list.
+    bool HasPaused() const;
+
+    // Moves all paused tasks to the main list.
+    void UnpauseAll();
+
+    // Returns the currently active task.
+    Task& Current();
+
+    // Advances to the next task.
+    void Next();
+
+    // Clears all tasks from the main and paused list.
+    void Reset();
+
+    // Reports whether the main list is empty.
+    bool IsEmpty() const;
+
+   private:
+    // The list of <params, callback> pairs that have come from a call to
+    // InstallableManager::GetData.
+    std::vector<Task> tasks_;
+
+    // Tasks which are waiting indefinitely for a service worker to be detected.
+    std::vector<Task> paused_tasks_;
+  };
+
+  TaskQueue task_queue_;
 
   // Installable properties cached on this object.
   std::unique_ptr<ManifestProperty> manifest_;
