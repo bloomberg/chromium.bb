@@ -111,21 +111,30 @@ enum class PrefetchItemErrorCode {
   // prefetching. Explicitly setting to 0 as that is the default value for the
   // respective SQLite column.
   SUCCESS = 0,
-  EXPIRED = 100,
   // Got too many URLs from suggestions, canceled this one. See kMaxUrlsToSend
   // defined in GeneratePageBundleTask.
-  TOO_MANY_NEW_URLS = 200,
+  TOO_MANY_NEW_URLS = 100,
   // An error happened while attempting to download the archive file.
-  DOWNLOAD_ERROR = 300,
+  DOWNLOAD_ERROR = 200,
   // An error happened while importing the downloaded archive file int the
   // Offline Pages system.
-  IMPORT_ERROR = 400,
+  IMPORT_ERROR = 300,
   // Got a failure result from GetOperation (or the GeneratePageBundle
   // metadata).
-  ARCHIVING_FAILED = 500,
+  ARCHIVING_FAILED = 400,
   // Got a failure result from GetOperation or GeneratePageBundle that a
   // server-side limit on the page was exceeded.
-  ARCHIVING_LIMIT_EXCEEDED = 600,
+  ARCHIVING_LIMIT_EXCEEDED = 500,
+  // These next STALE_AT_* values identify entries that stayed for too long in
+  // the same pipeline bucket so that their "freshness date" was considered too
+  // old for what was allowed for that bucket. See StaleEntryFinalizerTask for
+  // more details.
+  STALE_AT_NEW_REQUEST = 600,
+  STALE_AT_AWAITING_GCM = 700,
+  STALE_AT_RECEIVED_GCM = 800,
+  STALE_AT_RECEIVED_BUNDLE = 900,
+  STALE_AT_DOWNLOADING = 1000,
+  STALE_AT_UNKNOWN = 1100,
 };
 
 // Callback invoked upon completion of a prefetch request.
