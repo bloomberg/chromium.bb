@@ -13,6 +13,13 @@ namespace blink {
 
 class InspectedFrames;
 
+namespace probe {
+class CallFunction;
+class ExecuteScript;
+class RecalculateStyle;
+class UpdateLayout;
+}  // namespace probe
+
 class CORE_EXPORT InspectorPerformanceAgent final
     : public InspectorBaseAgent<protocol::Performance::Metainfo> {
   WTF_MAKE_NONCOPYABLE(InspectorPerformanceAgent);
@@ -34,12 +41,27 @@ class CORE_EXPORT InspectorPerformanceAgent final
 
   // PerformanceMetrics probes implementation.
   void ConsoleTimeStamp(const String& title);
+  void Will(const probe::CallFunction&);
+  void Did(const probe::CallFunction&);
+  void Will(const probe::ExecuteScript&);
+  void Did(const probe::ExecuteScript&);
+  void Will(const probe::RecalculateStyle&);
+  void Did(const probe::RecalculateStyle&);
+  void Will(const probe::UpdateLayout&);
+  void Did(const probe::UpdateLayout&);
 
  private:
   InspectorPerformanceAgent(InspectedFrames*);
 
   Member<InspectedFrames> inspected_frames_;
   bool enabled_ = false;
+  double layout_duration_ = 0;
+  double recalc_style_duration_ = 0;
+  double script_duration_ = 0;
+  unsigned long long layout_count_ = 0;
+  unsigned long long recalc_style_count_ = 0;
+  int script_call_depth_ = 0;
+  int layout_depth_ = 0;
 };
 
 }  // namespace blink

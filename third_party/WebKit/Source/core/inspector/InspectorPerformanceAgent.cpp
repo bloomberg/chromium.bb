@@ -7,6 +7,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/paint/PaintTiming.h"
+#include "core/probe/CoreProbes.h"
 #include "platform/InstanceCounters.h"
 #include "platform/wtf/dtoa/utils.h"
 
@@ -68,6 +69,12 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(
       result.get(), "ResourceCount",
       InstanceCounters::CounterValue(InstanceCounters::kResourceCounter));
+  AppendMetric(result.get(), "LayoutCount", static_cast<double>(layout_count_));
+  AppendMetric(result.get(), "RecalcStyleCount",
+               static_cast<double>(recalc_style_count_));
+  AppendMetric(result.get(), "LayoutDuration", layout_duration_);
+  AppendMetric(result.get(), "RecalcStyleDuration", recalc_style_duration_);
+  AppendMetric(result.get(), "ScriptDuration", script_duration_);
 
   // Performance timings.
   Document* document = inspected_frames_->Root()->GetDocument();
@@ -90,6 +97,47 @@ void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> metrics;
   getMetrics(&metrics);
   GetFrontend()->metrics(std::move(metrics), title);
+}
+
+void InspectorPerformanceAgent::Will(const probe::CallFunction& probe) {
+  if (!script_call_depth_++)
+    probe.CaptureStartTime();
+}
+
+void InspectorPerformanceAgent::Did(const probe::CallFunction& probe) {
+  if (!--script_call_depth_)
+    script_duration_ += probe.Duration();
+}
+
+void InspectorPerformanceAgent::Will(const probe::ExecuteScript& probe) {
+  if (!script_call_depth_++)
+    probe.CaptureStartTime();
+}
+
+void InspectorPerformanceAgent::Did(const probe::ExecuteScript& probe) {
+  if (!--script_call_depth_)
+    script_duration_ += probe.Duration();
+}
+
+void InspectorPerformanceAgent::Will(const probe::RecalculateStyle& probe) {
+  probe.CaptureStartTime();
+}
+
+void InspectorPerformanceAgent::Did(const probe::RecalculateStyle& probe) {
+  recalc_style_duration_ += probe.Duration();
+  recalc_style_count_++;
+}
+
+void InspectorPerformanceAgent::Will(const probe::UpdateLayout& probe) {
+  if (!layout_depth_++)
+    probe.CaptureStartTime();
+}
+
+void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
+  if (--layout_depth_)
+    return;
+  layout_duration_ += probe.Duration();
+  layout_count_++;
 }
 
 DEFINE_TRACE(InspectorPerformanceAgent) {

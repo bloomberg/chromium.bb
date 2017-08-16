@@ -6,6 +6,11 @@ Received metrics:
 	JSEventListenerCount
 	NodeCount
 	ResourceCount
+	LayoutCount
+	RecalcStyleCount
+	LayoutDuration
+	RecalcStyleDuration
+	ScriptDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 Received metrics:
@@ -14,6 +19,11 @@ Received metrics:
 	JSEventListenerCount
 	NodeCount
 	ResourceCount
+	LayoutCount
+	RecalcStyleCount
+	LayoutDuration
+	RecalcStyleDuration
+	ScriptDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 Received metrics:

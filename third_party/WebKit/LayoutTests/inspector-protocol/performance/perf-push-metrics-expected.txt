@@ -5,6 +5,11 @@ title: test1
 	JSEventListenerCount
 	NodeCount
 	ResourceCount
+	LayoutCount
+	RecalcStyleCount
+	LayoutDuration
+	RecalcStyleDuration
+	ScriptDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 title: test1
@@ -13,6 +18,11 @@ title: test1
 	JSEventListenerCount
 	NodeCount
 	ResourceCount
+	LayoutCount
+	RecalcStyleCount
+	LayoutDuration
+	RecalcStyleDuration
+	ScriptDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 title: 
@@ -21,6 +31,11 @@ title:
 	JSEventListenerCount
 	NodeCount
 	ResourceCount
+	LayoutCount
+	RecalcStyleCount
+	LayoutDuration
+	RecalcStyleDuration
+	ScriptDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 
