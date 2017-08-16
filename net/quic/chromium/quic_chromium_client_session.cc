@@ -200,7 +200,8 @@ QuicChromiumClientSession::Handle::Handle(
       port_migration_detected_(false),
       server_id_(session_->server_id()),
       quic_version_(session->connection()->version()),
-      push_handle_(nullptr) {
+      push_handle_(nullptr),
+      was_ever_used_(false) {
   DCHECK(session_);
   session_->AddHandle(this);
 }
@@ -224,13 +225,15 @@ void QuicChromiumClientSession::Handle::OnSessionClosed(
     QuicVersion quic_version,
     int error,
     bool port_migration_detected,
-    LoadTimingInfo::ConnectTiming connect_timing) {
+    LoadTimingInfo::ConnectTiming connect_timing,
+    bool was_ever_used) {
   session_ = nullptr;
   port_migration_detected_ = port_migration_detected;
   error_ = error;
   quic_version_ = quic_version;
   connect_timing_ = connect_timing;
   push_handle_ = nullptr;
+  was_ever_used_ = was_ever_used;
 }
 
 bool QuicChromiumClientSession::Handle::IsConnected() const {
@@ -387,6 +390,22 @@ int QuicChromiumClientSession::Handle::GetPeerAddress(
 
   *address = session_->peer_address().impl().socket_address();
   return OK;
+}
+
+int QuicChromiumClientSession::Handle::GetSelfAddress(
+    IPEndPoint* address) const {
+  if (!session_)
+    return ERR_CONNECTION_CLOSED;
+
+  *address = session_->self_address().impl().socket_address();
+  return OK;
+}
+
+bool QuicChromiumClientSession::Handle::WasEverUsed() const {
+  if (!session_)
+    return was_ever_used_;
+
+  return session_->WasConnectionEverUsed();
 }
 
 bool QuicChromiumClientSession::Handle::CheckVary(
@@ -785,9 +804,8 @@ void QuicChromiumClientSession::AddHandle(Handle* handle) {
   if (going_away_) {
     RecordUnexpectedObservers(ADD_OBSERVER);
     handle->OnSessionClosed(connection()->version(), ERR_UNEXPECTED,
-                            port_migration_detected_,
-
-                            GetConnectTiming());
+                            port_migration_detected_, GetConnectTiming(),
+                            WasConnectionEverUsed());
     return;
   }
 
@@ -875,6 +893,11 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingDynamicStream() {
     return false;
   }
   return true;
+}
+
+bool QuicChromiumClientSession::WasConnectionEverUsed() {
+  const QuicConnectionStats& stats = connection()->GetStats();
+  return stats.bytes_sent > 0 || stats.bytes_received > 0;
 }
 
 QuicChromiumClientStream*
@@ -1587,7 +1610,8 @@ void QuicChromiumClientSession::CloseAllHandles(int net_error) {
     Handle* handle = *handles_.begin();
     handles_.erase(handle);
     handle->OnSessionClosed(connection()->version(), net_error,
-                            port_migration_detected_, GetConnectTiming());
+                            port_migration_detected_, GetConnectTiming(),
+                            WasConnectionEverUsed());
   }
 }
 
