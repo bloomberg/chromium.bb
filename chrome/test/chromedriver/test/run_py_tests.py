@@ -238,6 +238,10 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testCookiePath',
         'ChromeDriverTest.testGetHttpOnlyCookie',
         'ChromeDriverTest.testGetNamedCookie',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1941
+        'ChromeDriverTest.testTouchDownMoveUpElement',
+        'ChromeDriverTest.testTouchFlickElement',
+        'ChromeDriverTest.testTouchSingleTapElement',
     ]
 )
 
