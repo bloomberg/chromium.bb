@@ -126,10 +126,20 @@ HttpHandler::HttpHandler(
                                    base::Bind(&ExecuteAlertCommand,
                                               base::Bind(&ExecuteGetAlert)))),
       CommandMapping(
+          kPost, "session/:sessionId/alert/dismiss",
+          WrapToCommand("DismissAlert",
+                        base::Bind(&ExecuteAlertCommand,
+                                   base::Bind(&ExecuteDismissAlert)))),
+      CommandMapping(
           kPost, "session/:sessionId/dismiss_alert",
           WrapToCommand("DismissAlert",
                         base::Bind(&ExecuteAlertCommand,
                                    base::Bind(&ExecuteDismissAlert)))),
+      CommandMapping(
+          kPost, "session/:sessionId/alert/accept",
+          WrapToCommand("AcceptAlert",
+                        base::Bind(&ExecuteAlertCommand,
+                                   base::Bind(&ExecuteAcceptAlert)))),
       CommandMapping(
           kPost, "session/:sessionId/accept_alert",
           WrapToCommand("AcceptAlert",
