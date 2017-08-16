@@ -21,8 +21,7 @@ class RGBA;
 }  // namespace protocol
 
 class CORE_EXPORT InspectorEmulationAgent final
-    : public NON_EXPORTED_BASE(
-          InspectorBaseAgent<protocol::Emulation::Metainfo>) {
+    : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
   WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 
  public:

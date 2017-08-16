@@ -37,8 +37,7 @@ class PLATFORM_EXPORT SurfaceLayerBridgeObserver {
 };
 
 class PLATFORM_EXPORT SurfaceLayerBridge
-    : public NON_EXPORTED_BASE(
-          blink::mojom::blink::OffscreenCanvasSurfaceClient),
+    : public blink::mojom::blink::OffscreenCanvasSurfaceClient,
       public WebSurfaceLayerBridge {
  public:
   SurfaceLayerBridge(SurfaceLayerBridgeObserver*, WebLayerTreeView*);
