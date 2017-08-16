@@ -264,8 +264,6 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
                                      ->surface_manager();
   viz::Surface* surface = manager->GetSurfaceForId(id);
   EXPECT_TRUE(surface);
-  // There should be a SurfaceSequence created by the RWHVGuest.
-  EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
 #endif
   // Surface ID should have been passed to BrowserPluginGuest to
   // be sent to the embedding renderer.
@@ -286,9 +284,6 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #if !defined(OS_ANDROID)
   surface = manager->GetSurfaceForId(id);
   EXPECT_TRUE(surface);
-  // Another SurfaceSequence should be created by the RWHVGuest when sending
-  // SurfaceInfo to the embedder.
-  EXPECT_EQ(2u, surface->GetDestructionDependencyCount());
 #endif
   // Surface ID should have been passed to BrowserPluginGuest to
   // be sent to the embedding renderer.
