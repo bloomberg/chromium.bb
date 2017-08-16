@@ -67,9 +67,6 @@ class BufferViewBase {
 
   // Element access
 
-  // Returns a BufferRegion describing the full view.
-  BufferRegion region() const { return BufferRegion{0, size()}; }
-
   // Returns the raw value at specified location |pos|.
   // If |pos| is not within the range of the buffer, the process is terminated.
   reference operator[](size_type pos) const {
@@ -100,6 +97,14 @@ class BufferViewBase {
 
   bool empty() const { return first_ == last_; }
   size_type size() const { return last_ - first_; }
+
+  // Returns a BufferRegion describing the full view.
+  BufferRegion region() const { return BufferRegion{0, size()}; }
+
+  // Returns true iff the object is large enough to entirely cover |region|.
+  bool covers(const BufferRegion& region) const {
+    return region.offset < size() && size() - region.offset >= region.size;
+  }
 
   // Modifiers
 
