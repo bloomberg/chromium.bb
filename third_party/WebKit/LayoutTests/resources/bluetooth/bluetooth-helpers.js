@@ -655,6 +655,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
           resolve();
         } else {
           console.log(messageEvent.data);
+          resolve();
         }
       }
       window.addEventListener('message', messageHandler);
