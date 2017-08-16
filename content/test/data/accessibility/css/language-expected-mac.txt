@@ -1,0 +1,4 @@
+AXWebArea
+++AXGroup AXLanguage='en-US'
+++++AXStaticText AXValue='How are you?'
+++AXStaticText AXValue='Comment allez-vous?' AXLanguage='fr-FR'
