@@ -43,6 +43,25 @@ index 737ed50f62..1bc9e858f5 100644
    } else {
      buttonValueMap[bot.events.EventType.CLICK] = [0, 1, 2, null];
      buttonValueMap[bot.events.EventType.CONTEXTMENU] = [null, null, 2, null];
+diff --git a/javascript/chrome-driver/atoms.js b/javascript/chrome-driver/atoms.js
+index 5cf4416460..3ae27d2b11 100644
+--- a/javascript/chrome-driver/atoms.js
++++ b/javascript/chrome-driver/atoms.js
+@@ -142,7 +142,13 @@ webdriver.chrome.scrollIntoView_ = function(elem, region, center) {
+ 
+   offset = goog.style.getClientPosition(elem);
+   var windowSize = goog.dom.getDomHelper(elem).getViewportSize();
+-  scrollHelper(doc.body, windowSize, offset, region, center);
++  var scrollable;
++  if (goog.userAgent.product.isVersion(61) && doc.compatMode != "BackCompat") {
++    scrollable = doc.documentElement;
++  } else {
++    scrollable = doc.body;
++  }
++  scrollHelper(scrollable, windowSize, offset, region, center);
+ };
+ 
+ 
 diff --git a/rake-tasks/crazy_fun/mappings/javascript.rb b/rake-tasks/crazy_fun/mappings/javascript.rb
 index 982d36314e..ae0c3e460b 100644
 --- a/rake-tasks/crazy_fun/mappings/javascript.rb
