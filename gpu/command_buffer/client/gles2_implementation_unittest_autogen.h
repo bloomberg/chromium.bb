@@ -2717,11 +2717,11 @@ TEST_F(GLES2ImplementationTest, CopyTextureCHROMIUM) {
     cmds::CopyTextureCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4, 5, GL_ALPHA, GL_UNSIGNED_BYTE, true, true,
-                    true);
+  expected.cmd.Init(1, 2, GL_TEXTURE_2D, 4, 5, GL_ALPHA, GL_UNSIGNED_BYTE, true,
+                    true, true);
 
-  gl_->CopyTextureCHROMIUM(1, 2, 3, 4, 5, GL_ALPHA, GL_UNSIGNED_BYTE, true,
-                           true, true);
+  gl_->CopyTextureCHROMIUM(1, 2, GL_TEXTURE_2D, 4, 5, GL_ALPHA,
+                           GL_UNSIGNED_BYTE, true, true, true);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -2730,10 +2730,11 @@ TEST_F(GLES2ImplementationTest, CopySubTextureCHROMIUM) {
     cmds::CopySubTextureCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, true, true, true);
+  expected.cmd.Init(1, 2, GL_TEXTURE_2D, 4, 5, 6, 7, 8, 9, 10, 11, true, true,
+                    true);
 
-  gl_->CopySubTextureCHROMIUM(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, true, true,
-                              true);
+  gl_->CopySubTextureCHROMIUM(1, 2, GL_TEXTURE_2D, 4, 5, 6, 7, 8, 9, 10, 11,
+                              true, true, true);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -2786,9 +2787,9 @@ TEST_F(GLES2ImplementationTest, BindTexImage2DWithInternalformatCHROMIUM) {
     cmds::BindTexImage2DWithInternalformatCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, 2, 3);
+  expected.cmd.Init(GL_TEXTURE_2D, GL_ALPHA, 3);
 
-  gl_->BindTexImage2DWithInternalformatCHROMIUM(GL_TEXTURE_2D, 2, 3);
+  gl_->BindTexImage2DWithInternalformatCHROMIUM(GL_TEXTURE_2D, GL_ALPHA, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
