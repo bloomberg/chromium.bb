@@ -65,6 +65,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
@@ -94,13 +95,16 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Gets and sets a list of ContentSettingTypes for an origin.
   // TODO(https://crbug.com/739241): Investigate replacing the
-  // '*CategoryPermissionForOrigin' equivalents below with these methods.
+  // '*CategoryPermissionForPattern' equivalents below with these methods.
   void HandleGetOriginPermissions(const base::ListValue* args);
   void HandleSetOriginPermissions(const base::ListValue* args);
 
   // Handles setting and resetting an origin permission.
   void HandleResetCategoryPermissionForPattern(const base::ListValue* args);
   void HandleSetCategoryPermissionForPattern(const base::ListValue* args);
+
+  // Returns whether a given string is a valid origin.
+  void HandleIsOriginValid(const base::ListValue* args);
 
   // Returns whether a given pattern is valid.
   void HandleIsPatternValid(const base::ListValue* args);

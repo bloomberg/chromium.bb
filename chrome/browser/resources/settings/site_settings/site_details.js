@@ -90,10 +90,17 @@ Polymer({
    * @private
    */
   onOriginChanged_: function() {
-    if (this.enableSiteSettings_)
-      this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
+    this.browserProxy.isOriginValid(this.origin).then((valid) => {
+      if (!valid) {
+        settings.navigateToPreviousRoute();
+      } else {
+        if (this.enableSiteSettings_)
+          this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
 
-    this.updatePermissions_(this.getCategoryList_());
+        this.updatePermissions_(this.getCategoryList_());
+      }
+    });
+
   },
 
   /**

@@ -472,6 +472,41 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
                  site_settings::SiteSettingSource::kDefault, 4U);
 }
 
+TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
+  const std::string origin("arbitrary string");
+  EXPECT_FALSE(GURL(origin).is_valid());
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  get_args.AppendString(origin);
+  {
+    auto category_list = base::MakeUnique<base::ListValue>();
+    category_list->AppendString(kNotifications);
+    get_args.Append(std::move(category_list));
+  }
+  handler()->HandleGetOriginPermissions(&get_args);
+  // Verify that it'll just return defaults. Note the display string will be
+  // blank since it's an invalid url.
+  ValidateOrigin(origin, origin, "", CONTENT_SETTING_ASK,
+                 site_settings::SiteSettingSource::kDefault, 1U);
+
+  // Make sure setting a permission on an invalid origin doesn't crash.
+  base::ListValue set_args;
+  set_args.AppendString(origin);
+  {
+    auto category_list = base::MakeUnique<base::ListValue>();
+    category_list->AppendString(kNotifications);
+    set_args.Append(std::move(category_list));
+  }
+  set_args.AppendString(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleSetOriginPermissions(&set_args);
+
+  // Also make sure the content setting for |origin| wasn't actually changed.
+  handler()->HandleGetOriginPermissions(&get_args);
+  ValidateOrigin(origin, origin, "", CONTENT_SETTING_ASK,
+                 site_settings::SiteSettingSource::kDefault, 2U);
+}
+
 TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]google.com");
