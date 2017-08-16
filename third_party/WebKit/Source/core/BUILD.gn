@@ -1309,6 +1309,7 @@ jumbo_source_set("unit_tests") {
     "css/invalidation/StyleInvalidatorTest.cpp",
     "css/parser/CSSLazyParsingTest.cpp",
     "css/parser/CSSParserFastPathsTest.cpp",
+    "css/parser/CSSParserTokenStreamTest.cpp",
     "css/parser/CSSParserTokenTest.cpp",
     "css/parser/CSSPropertyParserTest.cpp",
     "css/parser/CSSSelectorParserTest.cpp",
