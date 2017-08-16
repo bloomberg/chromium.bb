@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -189,6 +190,13 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // on the page to verify that context menu can be properly triggered in the
 // current screen view.
 - (void)testContextMenuOpenInNewTabFromTallPage {
+// TODO(crbug.com/755888): Reenable this test.
+#if !TARGET_IPHONE_SIMULATOR
+  if (!IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Failing constently on iPhone devices.");
+  }
+#endif
+
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
