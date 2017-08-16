@@ -97,8 +97,6 @@ blink_core_sources("loader") {
     "modulescript/ModuleTreeReachedUrlSet.h",
     "modulescript/WorkletModuleScriptFetcher.cpp",
     "modulescript/WorkletModuleScriptFetcher.h",
-    "private/CrossOriginPreflightResultCache.cpp",
-    "private/CrossOriginPreflightResultCache.h",
     "private/FrameClientHintsPreferencesContext.cpp",
     "private/FrameClientHintsPreferencesContext.h",
     "private/PrerenderHandle.cpp",
