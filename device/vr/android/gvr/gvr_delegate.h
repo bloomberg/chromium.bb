@@ -9,7 +9,6 @@
 
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -45,19 +44,6 @@ class DEVICE_VR_EXPORT GvrDelegate {
   static mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
                                                      gfx::Size recommended_size,
                                                      uint32_t device_id);
-
-  virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
-  virtual void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
-                                   base::TimeDelta vsync_interval) = 0;
-  virtual void CreateVRDisplayInfo(
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
-      uint32_t device_id) = 0;
-  virtual void ConnectPresentingService(
-      device::mojom::VRSubmitFrameClientPtr submit_client,
-      device::mojom::VRPresentationProviderRequest request) = 0;
-
- protected:
-  virtual ~GvrDelegate() {}
 };
 
 }  // namespace device

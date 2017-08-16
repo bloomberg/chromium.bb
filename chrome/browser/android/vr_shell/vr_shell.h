@@ -21,7 +21,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
-#include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -66,8 +65,7 @@ class VrMetricsHelper;
 
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
-class VrShell : public device::GvrDelegate,
-                device::GvrGamepadDataProvider,
+class VrShell : device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider,
                 public ChromeToolbarModelDelegate {
  public:
@@ -185,6 +183,16 @@ class VrShell : public device::GvrDelegate,
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
+  void SetWebVRSecureOrigin(bool secure_origin);
+  void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
+                           base::TimeDelta vsync_interval);
+  void CreateVRDisplayInfo(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      uint32_t device_id);
+  void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request);
+
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;
   void RegisterGvrGamepadDataFetcher(device::GvrGamepadDataFetcher*) override;
@@ -203,17 +211,6 @@ class VrShell : public device::GvrDelegate,
   void PostToGlThread(const tracked_objects::Location& from_here,
                       const base::Closure& task);
   void SetUiState();
-
-  // device::GvrDelegate implementation.
-  void SetWebVRSecureOrigin(bool secure_origin) override;
-  void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
-                           base::TimeDelta vsync_interval) override;
-  void CreateVRDisplayInfo(
-      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-      uint32_t device_id) override;
-  void ConnectPresentingService(
-      device::mojom::VRSubmitFrameClientPtr submit_client,
-      device::mojom::VRPresentationProviderRequest request) override;
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
