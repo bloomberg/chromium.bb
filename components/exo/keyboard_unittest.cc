@@ -482,5 +482,70 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpired) {
   keyboard.reset();
 }
 
+// Test for crbug.com/753539. If action for an accelerator moves the focus to
+// another window, it causes clearing the map of pending key acks in Keyboard.
+// We can't assume that an iterator of the map is valid after processing an
+// accelerator.
+class TestShellSurfaceWithMovingFocusAccelerator : public ShellSurface {
+ public:
+  explicit TestShellSurfaceWithMovingFocusAccelerator(Surface* surface)
+      : ShellSurface(surface) {}
+
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+    aura::client::FocusClient* focus_client =
+        aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+    focus_client->FocusWindow(nullptr);
+    return true;
+  }
+};
+
+TEST_F(KeyboardTest, AckKeyboardKeyExpiredWithMovingFocusAccelerator) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      base::MakeUnique<TestShellSurfaceWithMovingFocusAccelerator>(
+          surface.get());
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+
+  MockKeyboardDelegate delegate;
+  std::unique_ptr<Keyboard> keyboard(new Keyboard(&delegate));
+
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(delegate, OnKeyboardModifiers(0));
+  EXPECT_CALL(delegate,
+              OnKeyboardEnter(surface.get(), std::vector<ui::DomCode>()));
+  focus_client->FocusWindow(surface->window());
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  keyboard->SetNeedKeyboardKeyAcks(true);
+
+  // Press KEY_W with Ctrl.
+  EXPECT_CALL(delegate, OnKeyboardModifiers(4));
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_W, true))
+      .WillOnce(testing::Return(1));
+  generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+
+  // Wait until |ProcessExpiredPendingKeyAcks| is fired.
+  // |ProcessExpiredPendingKeyAcks| will call |AcceleratorPressed| and focus
+  // will be moved from the surface.
+  EXPECT_CALL(delegate, OnKeyboardLeave(surface.get()));
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(1000));
+  run_loop.Run();
+  RunAllPendingInMessageLoop();
+
+  keyboard.reset();
+}
+
 }  // namespace
 }  // namespace exo
