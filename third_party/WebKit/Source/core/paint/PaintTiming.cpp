@@ -38,6 +38,7 @@ Performance* GetPerformanceInstance(LocalFrame* frame) {
 
 static const char kSupplementName[] = "PaintTiming";
 
+// static
 PaintTiming& PaintTiming::From(Document& document) {
   PaintTiming* timing = static_cast<PaintTiming*>(
       Supplement<Document>::From(document, kSupplementName));

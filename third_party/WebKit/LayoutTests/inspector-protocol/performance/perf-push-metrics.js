@@ -7,7 +7,8 @@
     dp.Performance.onMetrics(response => {
       const params = response.params;
       testRunner.log(`title: ${params.title}`);
-      testRunner.log(`metrics: ${params.metrics.map(metric => metric.name).join(', ')}`);
+      for (const metric of params.metrics)
+        testRunner.log(`\t${metric.name}`);
       if (!--count)
         resolve();
     });

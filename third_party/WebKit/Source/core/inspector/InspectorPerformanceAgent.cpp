@@ -6,6 +6,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/paint/PaintTiming.h"
 #include "platform/InstanceCounters.h"
 #include "platform/wtf/dtoa/utils.h"
 
@@ -13,17 +14,9 @@ namespace blink {
 
 using protocol::Response;
 
-#define DEFINE_PERF_METRIC_NAME(name) #name "Count",
-const char* InspectorPerformanceAgent::page_metric_names_[] = {
-    PERF_METRICS_LIST(DEFINE_PERF_METRIC_NAME)};
-
-const char* InspectorPerformanceAgent::instance_metric_names_[] = {
-    INSTANCE_COUNTERS_LIST(DEFINE_PERF_METRIC_NAME)};
-#undef DEFINE_PERF_METRIC_NAME
-
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
-    : performance_monitor_(inspected_frames->Root()->GetPerformanceMonitor()) {}
+    : inspected_frames_(inspected_frames) {}
 
 InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
@@ -39,6 +32,17 @@ protocol::Response InspectorPerformanceAgent::disable() {
   return Response::OK();
 }
 
+namespace {
+void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
+                  const String& name,
+                  double value) {
+  container->addItem(protocol::Performance::Metric::create()
+                         .setName(name)
+                         .setValue(value)
+                         .build());
+}
+}  // namespace
+
 Response InspectorPerformanceAgent::getMetrics(
     std::unique_ptr<protocol::Array<protocol::Performance::Metric>>*
         out_result) {
@@ -46,24 +50,36 @@ Response InspectorPerformanceAgent::getMetrics(
     *out_result = protocol::Array<protocol::Performance::Metric>::create();
     return Response::OK();
   }
+
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
-  for (size_t i = 0; i < ARRAY_SIZE(page_metric_names_); ++i) {
-    double value = performance_monitor_->PerfMetricValue(
-        static_cast<PerformanceMonitor::MetricsType>(i));
-    result->addItem(protocol::Performance::Metric::create()
-                        .setName(page_metric_names_[i])
-                        .setValue(value)
-                        .build());
+
+  // Renderer counters.
+  AppendMetric(
+      result.get(), "DocumentCount",
+      InstanceCounters::CounterValue(InstanceCounters::kDocumentCounter));
+  AppendMetric(result.get(), "FrameCount",
+               InstanceCounters::CounterValue(InstanceCounters::kFrameCounter));
+  AppendMetric(result.get(), "JSEventListenerCount",
+               InstanceCounters::CounterValue(
+                   InstanceCounters::kJSEventListenerCounter));
+  AppendMetric(result.get(), "NodeCount",
+               InstanceCounters::CounterValue(InstanceCounters::kNodeCounter));
+  AppendMetric(
+      result.get(), "ResourceCount",
+      InstanceCounters::CounterValue(InstanceCounters::kResourceCounter));
+
+  // Performance timings.
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (document) {
+    const PaintTiming& paint_timing = PaintTiming::From(*document);
+    AppendMetric(result.get(), "FirstMeaningfulPaint",
+                 paint_timing.FirstMeaningfulPaint());
+    const DocumentTiming& document_timing = document->GetTiming();
+    AppendMetric(result.get(), "DomContentLoaded",
+                 document_timing.DomContentLoadedEventStart());
   }
-  for (size_t i = 0; i < InstanceCounters::kCounterTypeLength; ++i) {
-    int value = InstanceCounters::CounterValue(
-        static_cast<InstanceCounters::CounterType>(i));
-    result->addItem(protocol::Performance::Metric::create()
-                        .setName(instance_metric_names_[i])
-                        .setValue(value)
-                        .build());
-  }
+
   *out_result = std::move(result);
   return Response::OK();
 }
@@ -77,7 +93,7 @@ void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
 }
 
 DEFINE_TRACE(InspectorPerformanceAgent) {
-  visitor->Trace(performance_monitor_);
+  visitor->Trace(inspected_frames_);
   InspectorBaseAgent<protocol::Performance::Metainfo>::Trace(visitor);
 }
 

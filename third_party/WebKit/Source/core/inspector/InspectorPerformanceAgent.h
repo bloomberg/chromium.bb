@@ -6,7 +6,6 @@
 #define InspectorPerformanceAgent_h
 
 #include "core/CoreExport.h"
-#include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Performance.h"
 
@@ -39,10 +38,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
  private:
   InspectorPerformanceAgent(InspectedFrames*);
 
-  Member<PerformanceMonitor> performance_monitor_;
+  Member<InspectedFrames> inspected_frames_;
   bool enabled_ = false;
-  static const char* page_metric_names_[];
-  static const char* instance_metric_names_[];
 };
 
 }  // namespace blink
