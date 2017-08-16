@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
+#include "chrome/browser/chromeos/fileapi/recent_download_source.h"
 #include "chrome/browser/chromeos/fileapi/recent_model_factory.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +32,7 @@ constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(10);
 std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
     Profile* profile) {
   std::vector<std::unique_ptr<RecentSource>> sources;
-  // TODO(nya): Add source implementations.
+  sources.emplace_back(base::MakeUnique<RecentDownloadSource>(profile));
   return sources;
 }
 
