@@ -128,10 +128,12 @@ class CC_PAINT_EXPORT PaintOp {
   // if valid.  nullptr is returned if the deserialization fails.
   // |output_size| must be at least LargestPaintOp + serialized->skip,
   // to fit all ops.  The caller is responsible for destroying these ops.
+  // After reading, it returns the number of bytes read in |read_bytes|.
   static PaintOp* Deserialize(const volatile void* input,
                               size_t input_size,
                               void* output,
-                              size_t output_size);
+                              size_t output_size,
+                              size_t* read_bytes);
 
   // For draw ops, returns true if a conservative bounding rect can be provided
   // for the op.
