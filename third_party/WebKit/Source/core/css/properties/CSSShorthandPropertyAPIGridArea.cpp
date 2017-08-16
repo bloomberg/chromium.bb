@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIGridArea::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(gridAreaShorthand().length(), 4u);

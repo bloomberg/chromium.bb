@@ -14,7 +14,7 @@ bool CSSShorthandPropertyAPIGridTemplate::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValue* template_rows = nullptr;
   CSSValue* template_columns = nullptr;

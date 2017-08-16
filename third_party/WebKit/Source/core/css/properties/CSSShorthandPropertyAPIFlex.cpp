@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIFlex::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   static const double kUnsetValue = -1;
   double flex_grow = kUnsetValue;

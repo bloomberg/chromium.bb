@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIOverflow::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValueID id = range.ConsumeIncludingWhitespace().Id();
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(CSSPropertyOverflowY,

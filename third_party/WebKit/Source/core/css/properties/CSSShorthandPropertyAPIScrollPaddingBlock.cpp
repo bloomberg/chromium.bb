@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIScrollPaddingBlock::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2LonghandAPIs(
       scrollPaddingBlockShorthand(), important, context, range, properties);

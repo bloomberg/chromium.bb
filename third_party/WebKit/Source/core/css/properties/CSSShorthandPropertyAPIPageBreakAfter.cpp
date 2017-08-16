@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIPageBreakAfter::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValueID value;
   if (!CSSPropertyLegacyBreakUtils::ConsumeFromPageBreakBetween(range, value)) {

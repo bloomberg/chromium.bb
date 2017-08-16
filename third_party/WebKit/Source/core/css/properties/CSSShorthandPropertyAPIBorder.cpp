@@ -14,7 +14,7 @@ bool CSSShorthandPropertyAPIBorder::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValue* width = nullptr;
   const CSSValue* style = nullptr;
