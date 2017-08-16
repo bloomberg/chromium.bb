@@ -33,13 +33,4 @@ TEST(HostAttributesTest, NoDuplicateKeys) {
   }
 }
 
-#if defined(OS_WIN)
-TEST(HostAttributesTest, D3DInfoAreIncluded) {
-  std::string result = GetHostAttributes();
-  if (result.find("MinD3D") == std::string::npos) {
-    ASSERT_NE(result.find("No-DirectX-Capturer"), std::string::npos);
-  }
-}
-#endif
-
 }  // namespace remoting

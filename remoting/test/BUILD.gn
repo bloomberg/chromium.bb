@@ -210,6 +210,20 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
       ]
     }
   }
+
+  # A binary with a specific version of EvaluateCapabilityLocally() for test
+  # purpose only.
+  executable("capability_test_stub") {
+    testonly = true
+    sources = [
+      "capability_test_stub_main.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+    ]
+  }
 }
 
 source_set("unit_tests") {

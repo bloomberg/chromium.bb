@@ -543,20 +543,7 @@ source_set("unit_tests") {
 
   if (enable_me2me_host) {
     sources += [ "evaluate_capability_unittest.cc" ]
-
-    if (is_win) {
-      data_deps = [
-        "//remoting/host/win:remoting_me2me_host",
-      ]
-    } else if (is_mac) {
-      data_deps = [
-        "//remoting/host/mac:remoting_me2me_host",
-      ]
-    } else {
-      data_deps = [
-        ":remoting_me2me_host",
-      ]
-    }
+    data_deps = [ "//remoting/test:capability_test_stub" ]
   }
 }
 

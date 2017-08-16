@@ -37,13 +37,6 @@ extern const char kProcessTypeEvaluateCapability[];
 extern const char kEvaluateCapabilitySwitchName[];
 
 // Values for kEvaluateCapabilitySwitchName.
-// Executes EvaluateTest() function, this is for test purpose only.
-extern const char kEvaluateTest[];
-// Executes EvaluateCrash() function, this is for test purpose only.
-extern const char kEvaluateCrash[];
-// Executes EvaluateForward() function, this is for test purpose only.
-extern const char kEvaluateForward[];
-
 #if defined(OS_WIN)
 // Executes EvaluateD3D() function.
 extern const char kEvaluateD3D[];
