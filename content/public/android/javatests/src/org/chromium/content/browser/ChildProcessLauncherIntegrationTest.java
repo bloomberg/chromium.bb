@@ -84,14 +84,6 @@ public class ChildProcessLauncherIntegrationTest {
         }
 
         @Override
-        public void dropOomBindings() {
-            super.dropOomBindings();
-            if (mRemovedBothInitialAndStrongBinding == null) {
-                mRemovedBothInitialAndStrongBinding = new RuntimeException("dropOomBindings");
-            }
-        }
-
-        @Override
         public void removeStrongBinding() {
             super.removeStrongBinding();
             if (mRemovedBothInitialAndStrongBinding == null && !isInitialBindingBound()) {
