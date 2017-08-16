@@ -12,7 +12,7 @@ bool CSSShorthandPropertyAPIMarker::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   bool needs_legacy_parsing = false;
   const CSSValue* marker = CSSPropertyParserHelpers::ParseLonghandViaAPI(

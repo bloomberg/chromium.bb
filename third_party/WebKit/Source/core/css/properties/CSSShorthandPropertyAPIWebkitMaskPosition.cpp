@@ -14,7 +14,7 @@ bool CSSShorthandPropertyAPIWebkitMaskPosition::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;

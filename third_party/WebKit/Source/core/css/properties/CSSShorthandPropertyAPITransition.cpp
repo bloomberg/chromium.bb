@@ -45,7 +45,7 @@ bool CSSShorthandPropertyAPITransition::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool use_legacy_parsing,
+    const CSSParserLocalContext& local_context,
     HeapVector<CSSProperty, 256>& properties) {
   const StylePropertyShorthand shorthand = transitionShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
@@ -54,7 +54,7 @@ bool CSSShorthandPropertyAPITransition::ParseShorthand(
       longhand_count);
   if (!CSSPropertyAnimationUtils::ConsumeAnimationShorthand(
           shorthand, longhands, ConsumeTransitionValue, range, context,
-          use_legacy_parsing)) {
+          local_context.UseAliasParsing())) {
     return false;
   }
 

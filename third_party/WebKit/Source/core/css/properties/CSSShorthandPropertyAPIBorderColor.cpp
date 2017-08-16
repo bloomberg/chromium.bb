@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIBorderColor::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4LonghandAPIs(
       borderColorShorthand(), important, context, range, properties);

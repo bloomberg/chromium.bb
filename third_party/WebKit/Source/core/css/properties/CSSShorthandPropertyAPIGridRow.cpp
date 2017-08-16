@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIGridRow::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   const StylePropertyShorthand& shorthand =
       shorthandForProperty(CSSPropertyGridRow);

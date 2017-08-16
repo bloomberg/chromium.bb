@@ -12,7 +12,7 @@ bool CSSShorthandPropertyAPIBorderTop::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
       borderTopShorthand(), important, context, range, properties);

@@ -19,7 +19,7 @@ bool CSSShorthandPropertyAPIOffset::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   const CSSValue* offset_position =
       CSSPropertyAPIOffsetPosition::ParseSingleValue(range, context,

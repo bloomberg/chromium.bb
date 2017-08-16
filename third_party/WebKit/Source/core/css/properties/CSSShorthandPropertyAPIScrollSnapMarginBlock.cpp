@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIScrollSnapMarginBlock::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2LonghandAPIs(
       scrollSnapMarginBlockShorthand(), important, context, range, properties);

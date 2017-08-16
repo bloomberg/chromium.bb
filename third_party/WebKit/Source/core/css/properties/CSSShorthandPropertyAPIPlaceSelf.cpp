@@ -16,7 +16,7 @@ bool CSSShorthandPropertyAPIPlaceSelf::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceSelf).length(), 2u);

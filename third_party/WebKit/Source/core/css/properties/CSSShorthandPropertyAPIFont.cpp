@@ -217,7 +217,7 @@ bool CSSShorthandPropertyAPIFont::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    bool,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   const CSSParserToken& token = range.Peek();
   if (token.Id() >= CSSValueCaption && token.Id() <= CSSValueStatusBar)
