@@ -12,6 +12,7 @@
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gfx/transform.h"
 
 namespace blink {
 class WebInputEvent;
@@ -42,6 +43,7 @@ class GlBrowserInterface {
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
   virtual void OnGlInitialized(unsigned int content_texture_id) = 0;
   virtual void OnWebVrFrameAvailable() = 0;
+  virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
 };
 
 }  // namespace vr_shell

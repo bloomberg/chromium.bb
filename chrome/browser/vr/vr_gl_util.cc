@@ -4,7 +4,9 @@
 
 #include "chrome/browser/vr/vr_gl_util.h"
 
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
@@ -90,6 +92,30 @@ GLuint CreateAndLinkProgram(GLuint vertext_shader_handle,
   }
 
   return program_handle;
+}
+
+gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
+                               const gfx::Transform& model_matrix,
+                               const gfx::SizeF& size) {
+  // View matrix is the identity, thus, not needed in the calculation.
+  gfx::Transform scale_transform;
+  scale_transform.Scale(size.width(), size.height());
+
+  gfx::Transform model_view_proj_matrix =
+      proj_matrix * model_matrix * scale_transform;
+
+  gfx::Point3F projected_upper_right_corner(0.5f, 0.5f, 0.0f);
+  model_view_proj_matrix.TransformPoint(&projected_upper_right_corner);
+  gfx::Point3F projected_lower_left_corner(-0.5f, -0.5f, 0.0f);
+  model_view_proj_matrix.TransformPoint(&projected_lower_left_corner);
+
+  // Calculate and return the normalized size in screen space.
+  return gfx::SizeF((std::abs(projected_upper_right_corner.x()) +
+                     std::abs(projected_lower_left_corner.x())) /
+                        2.0f,
+                    (std::abs(projected_upper_right_corner.y()) +
+                     std::abs(projected_lower_left_corner.y())) /
+                        2.0f);
 }
 
 }  // namespace vr

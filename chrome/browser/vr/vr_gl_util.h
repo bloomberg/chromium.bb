@@ -14,6 +14,7 @@
 namespace gfx {
 class RectF;
 class Size;
+class SizeF;
 class Transform;
 }  // namespace gfx
 
@@ -33,6 +34,12 @@ GLuint CompileShader(GLenum shader_type,
 GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
                             GLuint fragment_shader_handle,
                             std::string& error);
+
+// Returns the normalized size of the element projected into screen space.
+// If (1, 1) the element fills the entire buffer.
+gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
+                               const gfx::Transform& model_matrix,
+                               const gfx::SizeF& size);
 
 }  // namespace vr
 

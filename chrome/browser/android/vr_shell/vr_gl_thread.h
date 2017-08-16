@@ -60,6 +60,7 @@ class VrGLThread : public base::Thread,
   void ToggleCardboardGamepad(bool enabled) override;
   void OnGlInitialized(unsigned int content_texture_id) override;
   void OnWebVrFrameAvailable() override;
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
@@ -69,6 +70,7 @@ class VrGLThread : public base::Thread,
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice) override;
+  void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
 
   // vr::UiInterface implementation (VrShell and GL calling to the UI).
   void SetFullscreen(bool enabled) override;

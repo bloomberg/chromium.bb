@@ -856,6 +856,10 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
                  render_info_primary_.surface_texture_size,
                  &render_info_primary_);
+
+  // Measure projected content size and bubble up if delta exceeds threshold.
+  browser_->OnProjMatrixChanged(render_info_primary_.left_eye_info.proj_matrix);
+
   ui_renderer_->Draw(render_info_primary_, controller_info_, ShouldDrawWebVr());
 
   frame.Unbind();

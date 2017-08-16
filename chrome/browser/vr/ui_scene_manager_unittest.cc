@@ -7,10 +7,12 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "cc/base/math_util.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/animation_utils.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -40,6 +42,16 @@ std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
     kBackgroundFront, kBackgroundLeft,     kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom,   kCeiling,        kFloor,
     kExitPrompt,      kExitPromptBackplane};
+
+static constexpr float kTolerance = 1e-5;
+
+MATCHER_P2(SizeFsAreApproximatelyEqual, other, tolerance, "") {
+  return cc::MathUtil::ApproximatelyEqual(arg.width(), other.width(),
+                                          tolerance) &&
+         cc::MathUtil::ApproximatelyEqual(arg.height(), other.height(),
+                                          tolerance);
+}
+
 }  // namespace
 
 TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
@@ -489,6 +501,53 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   manager_->SetLocationAccessIndicator(false);
   manager_->SetBluetoothConnectedIndicator(false);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
+}
+
+TEST_F(UiSceneManagerTest, PropagateContentBoundsOnStart) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  // Calculate the inheritable transforms.
+  AnimateBy(MsToDelta(0));
+
+  gfx::SizeF expected_bounds(0.495922f, 0.330614f);
+  EXPECT_CALL(*browser_,
+              OnContentScreenBoundsChanged(
+                  SizeFsAreApproximatelyEqual(expected_bounds, kTolerance)));
+
+  manager_->OnProjMatrixChanged(kProjMatrix);
+}
+
+TEST_F(UiSceneManagerTest, PropagateContentBoundsOnFullscreen) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  AnimateBy(MsToDelta(0));
+  manager_->OnProjMatrixChanged(kProjMatrix);
+  manager_->SetFullscreen(true);
+  AnimateBy(MsToDelta(0));
+
+  gfx::SizeF expected_bounds(0.705449f, 0.396737f);
+  EXPECT_CALL(*browser_,
+              OnContentScreenBoundsChanged(
+                  SizeFsAreApproximatelyEqual(expected_bounds, kTolerance)));
+
+  manager_->OnProjMatrixChanged(kProjMatrix);
+}
+
+TEST_F(UiSceneManagerTest, DontPropagateContentBoundsOnNegligibleChange) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  AnimateBy(MsToDelta(0));
+  manager_->OnProjMatrixChanged(kProjMatrix);
+
+  UiElement* content_quad = scene_->GetUiElementByDebugId(kContentQuad);
+  gfx::SizeF content_quad_size = content_quad->size();
+  content_quad_size.Scale(1.2f);
+  content_quad->SetSize(content_quad_size.width(), content_quad_size.height());
+  AnimateBy(MsToDelta(0));
+
+  EXPECT_CALL(*browser_, OnContentScreenBoundsChanged(testing::_)).Times(0);
+
+  manager_->OnProjMatrixChanged(kProjMatrix);
 }
 
 }  // namespace vr

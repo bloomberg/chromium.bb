@@ -154,6 +154,7 @@ test("vr_common_unittests") {
     "run_all_unittests.cc",
     "test/animation_utils.cc",
     "test/animation_utils.h",
+    "test/constants.h",
     "test/mock_browser_interface.cc",
     "test/mock_browser_interface.h",
     "test/mock_content_input_delegate.cc",
@@ -165,6 +166,7 @@ test("vr_common_unittests") {
     "ui_input_manager_unittest.cc",
     "ui_scene_manager_unittest.cc",
     "ui_scene_unittest.cc",
+    "vr_gl_util_unittest.cc",
   ]
 
   deps = [

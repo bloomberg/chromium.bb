@@ -135,11 +135,12 @@ public class VrShellTransitionTest {
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         mVrTestRule.loadUrlAndAwaitInitialization(
                 mVrTestRule.getHtmlTestFile("test_navigation_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        VrShellImpl vrShellImpl = (VrShellImpl) VrShellDelegate.getVrShellForTesting();
+        float expectedWidth = vrShellImpl.getContentWidthForTesting();
+        float expectedHeight = vrShellImpl.getContentHeightForTesting();
         VrTransitionUtils.enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
         // Validate our size is what we expect while in VR.
-        float expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
-        float expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
         String javascript = "Math.abs(screen.width - " + expectedWidth + ") <= 1 && "
                 + "Math.abs(screen.height - " + expectedHeight + ") <= 1";
         Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
