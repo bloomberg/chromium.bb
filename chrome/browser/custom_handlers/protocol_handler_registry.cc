@@ -879,8 +879,10 @@ void ProtocolHandlerRegistry::EraseHandler(const ProtocolHandler& handler,
 void ProtocolHandlerRegistry::OnSetAsDefaultProtocolClientFinished(
     const std::string& protocol,
     shell_integration::DefaultWebClientState state) {
+  // Clear if the default protocol client isn't this installation.
   if (ShouldRemoveHandlersNotInOS() &&
-      state == shell_integration::NOT_DEFAULT) {
+      (state == shell_integration::NOT_DEFAULT ||
+       state == shell_integration::OTHER_MODE_IS_DEFAULT)) {
     ClearDefault(protocol);
   }
 }

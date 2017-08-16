@@ -64,7 +64,7 @@ const InstallConstants kInstallModes[] = {
         L"beta",                                    // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
-        false,  // Does not support in-product set as default browser UX.
+        true,   // Supports in-product set as default browser UX.
         true,   // Supports retention experiments.
         false,  // Did not support multi-install.
         icon_resources::kBetaApplicationIndex,  // App icon resource index.
@@ -87,7 +87,7 @@ const InstallConstants kInstallModes[] = {
         L"dev",                                     // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
-        false,  // Does not support in-product set as default browser UX.
+        true,   // Supports in-product set as default browser UX.
         true,   // Supports retention experiments.
         false,  // Did not support multi-install.
         icon_resources::kDevApplicationIndex,  // App icon resource index.

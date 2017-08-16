@@ -52,16 +52,19 @@ namespace {
 
 const char kSetAsDefaultBrowserHistogram[] = "DefaultBrowser.InteractionResult";
 
-// The enum permits registering in UMA the three possible outcomes (do not
+// The enum permits registering in UMA the four possible outcomes (do not
 // reorder these).
 // ACCEPTED: user pressed Next and made Chrome default.
 // DECLINED: user simply closed the dialog without making Chrome default.
-// REGRETTED: user pressed Next but then elected a different default browser.
+// REGRETTED: user pressed Next but then selected a different default browser.
+// ACCEPTED_OTHER_MODE: user selected a different side-by-side install of
+//                      Chrome.
 enum MakeChromeDefaultResult {
   MAKE_CHROME_DEFAULT_ACCEPTED = 0,
   MAKE_CHROME_DEFAULT_DECLINED = 1,
   MAKE_CHROME_DEFAULT_REGRETTED = 2,
   // MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE = 3,  // Deprecated.
+  MAKE_CHROME_DEFAULT_ACCEPTED_OTHER_MODE = 4,
   MAKE_CHROME_DEFAULT_MAX
 };
 
@@ -166,12 +169,25 @@ void SetAsDefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
     shell_integration::DefaultWebClientState state) {
   // The callback is expected to be invoked once the procedure has completed.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (state == shell_integration::NOT_DEFAULT) {
-    // The operation concluded, but Chrome is still not the default. This
-    // suggests the user has decided not to make Chrome the default.
-    ConcludeInteraction(MAKE_CHROME_DEFAULT_REGRETTED);
-  } else if (state == shell_integration::IS_DEFAULT) {
-    ConcludeInteraction(MAKE_CHROME_DEFAULT_ACCEPTED);
+  switch (state) {
+    case shell_integration::NOT_DEFAULT:
+      // The operation concluded, but Chrome is still not the default. This
+      // suggests the user has decided not to make Chrome the default.
+      ConcludeInteraction(MAKE_CHROME_DEFAULT_REGRETTED);
+      break;
+    case shell_integration::IS_DEFAULT:
+      ConcludeInteraction(MAKE_CHROME_DEFAULT_ACCEPTED);
+      break;
+    case shell_integration::UNKNOWN_DEFAULT:
+      break;
+    case shell_integration::OTHER_MODE_IS_DEFAULT:
+      // Interestingly, the user picked a different install mode of this browser
+      // (e.g., stable Chrome rather than Chrome Beta).
+      ConcludeInteraction(MAKE_CHROME_DEFAULT_ACCEPTED_OTHER_MODE);
+      break;
+    case shell_integration::NUM_DEFAULT_STATES:
+      NOTREACHED();
+      break;
   }
 
   // Otherwise, keep the dialog open since the user probably didn't make a
@@ -298,8 +314,10 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
 
   // Suppress showing the default browser infobar if the user explicitly elected
   // *not to* make Chrome default.
-  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED)
+  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED ||
+      dialog_interaction_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_OTHER_MODE) {
     chrome::DefaultBrowserPromptDeclined(profile_);
+  }
 
   // Carry on with a normal chrome session. For the purpose of surfacing this
   // dialog the actual browser window had to remain hidden. Now it's time to

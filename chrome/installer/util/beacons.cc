@@ -21,14 +21,15 @@ void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe) {
 void UpdateDefaultBrowserBeaconWithState(
     ShellUtil::DefaultState default_state) {
   switch (default_state) {
+    case ShellUtil::UNKNOWN_DEFAULT:
+      break;
     case ShellUtil::NOT_DEFAULT:
       installer_util::MakeFirstNotDefaultBeacon()->Update();
       break;
     case ShellUtil::IS_DEFAULT:
+    case ShellUtil::OTHER_MODE_IS_DEFAULT:
       installer_util::MakeLastWasDefaultBeacon()->Update();
       installer_util::MakeFirstNotDefaultBeacon()->Remove();
-      break;
-    case ShellUtil::UNKNOWN_DEFAULT:
       break;
   }
 }

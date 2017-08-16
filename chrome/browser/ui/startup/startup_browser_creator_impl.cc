@@ -1231,9 +1231,12 @@ void StartupBrowserCreatorImpl::InitializeWelcomeRunType(
     if (net::NetworkChangeNotifier::IsOffline())
       return;
 
-    // Do not welcome if Chrome was the default browser at startup.
-    if (g_browser_process->CachedDefaultWebClientState() ==
-        shell_integration::IS_DEFAULT) {
+    // Do not welcome if this Chrome or another side-by-side install was the
+    // default browser at startup.
+    const shell_integration::DefaultWebClientState web_client_state =
+        g_browser_process->CachedDefaultWebClientState();
+    if (web_client_state == shell_integration::IS_DEFAULT ||
+        web_client_state == shell_integration::OTHER_MODE_IS_DEFAULT) {
       return;
     }
 
