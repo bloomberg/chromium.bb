@@ -15,7 +15,7 @@ class ObjectPaintProperties;
 
 // Represents the data for a particular fragment of a LayoutObject.
 // Only LayoutObjects with a self-painting PaintLayer may have more than one
-// FragmentDeta, and even then only when they are inside of multicol.
+// FragmentData, and even then only when they are inside of multicol.
 // See README.md.
 class CORE_EXPORT FragmentData {
  public:
@@ -29,9 +29,9 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties();
   void ClearPaintProperties();
 
-  // The complete set of property nodes that should be used as a starting point
-  // to paint this fragment. See also the comment for
-  // RarePaintData::local_border_box_properties_.
+  // The complete set of property nodes that should be used as a
+  // starting point to paint this fragment. See also the comment for
+  // |local_border_box_properties_|.
   PropertyTreeState* LocalBorderBoxProperties() const {
     return local_border_box_properties_.get();
   }
@@ -39,10 +39,10 @@ class CORE_EXPORT FragmentData {
   void ClearLocalBorderBoxProperties();
   void SetLocalBorderBoxProperties(PropertyTreeState&);
 
-  // This is the complete set of property nodes that can be used to paint the
-  // contents of this fragment. It is similar to local_border_box_properties_
-  // but includes properties (e.g., overflow clip, scroll translation) that
-  // apply to contents.
+  // This is the complete set of property nodes that can be used to
+  // paint the contents of this fragment. It is similar to
+  // |local_border_box_properties_| but includes properties (e.g.,
+  // overflow clip, scroll translation) that apply to contents.
   PropertyTreeState ContentsProperties() const;
 
   FragmentData* NextFragment() { return next_fragment_.get(); }
