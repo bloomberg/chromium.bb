@@ -15,7 +15,8 @@
 @protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsHeaderViewControllerCommandHandler;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
-@class NTPHomeHeaderViewController;
+@protocol NTPHomeHeaderConsumer;
+@protocol NTPHomeHeaderProvider;
 
 // TODO(crbug.com/740793): Remove this protocol once no item is using it.
 @protocol NTPHomeHeaderMediatorAlerter
@@ -37,7 +38,8 @@
     collectionSynchronizer;
 @property(nonatomic, weak) id<NTPHomeHeaderMediatorAlerter> alerter;
 
-@property(nonatomic, weak) NTPHomeHeaderViewController* headerViewController;
+@property(nonatomic, weak) id<NTPHomeHeaderConsumer> headerConsumer;
+@property(nonatomic, weak) id<NTPHomeHeaderProvider> headerProvider;
 
 // |YES| if its view is visible.  When set to |NO| various UI updates are
 // ignored.

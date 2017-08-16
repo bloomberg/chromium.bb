@@ -30,8 +30,9 @@
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
-@synthesize headerViewController = _headerViewController;
 @synthesize alerter = _alerter;
+@synthesize headerProvider = _headerProvider;
+@synthesize headerConsumer = _headerConsumer;
 
 @synthesize isShowing = _isShowing;
 @synthesize omniboxFocused = _omniboxFocused;
@@ -40,17 +41,17 @@
 #pragma mark - ContentSuggestionsHeaderProvider
 
 - (UIView*)headerForWidth:(CGFloat)width {
-  return [self.headerViewController headerForWidth:width];
+  return [self.headerProvider headerForWidth:width];
 }
 
 #pragma mark - ContentSuggestionsHeaderControlling
 
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset width:(CGFloat)width {
-  [self.headerViewController updateFakeOmniboxForOffset:offset];
+  [self.headerConsumer updateFakeOmniboxForOffset:offset];
 }
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
-  [self.headerViewController updateFakeOmniboxForWidth:width];
+  [self.headerConsumer updateFakeOmniboxForWidth:width];
 }
 
 - (void)unfocusOmnibox {
@@ -63,24 +64,24 @@
 }
 
 - (void)layoutHeader {
-  [self.headerViewController.view layoutIfNeeded];
+  [self.headerConsumer layoutHeader];
 }
 
 #pragma mark - GoogleLandingConsumer
 
 - (void)setLogoIsShowing:(BOOL)logoIsShowing {
-  if (self.headerViewController.logoVendor.showingLogo != logoIsShowing) {
-    [self.headerViewController setLogoIsShowing:logoIsShowing];
+  if (self.headerProvider.logoVendor.showingLogo != logoIsShowing) {
+    [self.headerConsumer setLogoIsShowing:logoIsShowing];
     [self.collectionSynchronizer invalidateLayout];
   }
 }
 
 - (void)setLogoVendor:(id<LogoVendor>)logoVendor {
-  self.headerViewController.logoVendor = logoVendor;
+  self.headerProvider.logoVendor = logoVendor;
 }
 
 - (void)setVoiceSearchIsEnabled:(BOOL)voiceSearchIsEnabled {
-  [self.headerViewController setVoiceSearchIsEnabled:voiceSearchIsEnabled];
+  [self.headerConsumer setVoiceSearchIsEnabled:voiceSearchIsEnabled];
 }
 
 - (void)setMaximumMostVisitedSitesShown:
@@ -140,7 +141,7 @@
 
 - (CGFloat)pinnedOffsetY {
   CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.headerViewController.logoVendor.showingLogo, self.promoCanShow, NO);
+      self.headerProvider.logoVendor.showingLogo, self.promoCanShow, NO);
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())
@@ -151,14 +152,14 @@
 
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
-      self.headerViewController.logoVendor.showingLogo, self.promoCanShow, NO);
+      self.headerProvider.logoVendor.showingLogo, self.promoCanShow, NO);
 }
 
 #pragma mark - Private
 
 - (void)shiftCollectionDown {
   if (!IsIPadIdiom()) {
-    [self.headerViewController collectionWillShiftDown];
+    [self.headerConsumer collectionWillShiftDown];
     // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
     [self.alerter showAlert:@"Omnibox unfocused"];
   }
@@ -173,7 +174,7 @@
     if (!IsIPadIdiom()) {
       // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
       [self.alerter showAlert:@"Omnibox animation completed"];
-      [self.headerViewController collectionDidShiftUp];
+      [self.headerConsumer collectionDidShiftUp];
     }
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
