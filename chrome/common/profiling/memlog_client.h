@@ -6,6 +6,7 @@
 #define CHROME_COMMON_PROFILING_MEMLOG_CLIENT_H_
 
 #include "chrome/common/profiling/memlog_client.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace content {
@@ -33,8 +34,8 @@ class MemlogClient : public mojom::MemlogClient {
   void BindToInterface(profiling::mojom::MemlogClientRequest request);
 
  private:
-  // The most recent MemlogClientRequest is kept alive.
-  mojom::MemlogClientRequest binding_;
+  // The most recent MemlogClientRequest is bound and kept alive.
+  std::unique_ptr<mojo::Binding<mojom::MemlogClient>> binding_;
 
   std::unique_ptr<MemlogSenderPipe> memlog_sender_pipe_;
 
