@@ -5,8 +5,6 @@
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -27,10 +25,9 @@ ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {}
 void ThreadedWorkletObjectProxy::EvaluateScript(const String& source,
                                                 const KURL& script_url,
                                                 WorkerThread* worker_thread) {
-  ThreadedWorkletGlobalScope* global_scope =
-      ToThreadedWorkletGlobalScope(worker_thread->GlobalScope());
-  global_scope->ScriptController()->Evaluate(
-      ScriptSourceCode(source, script_url));
+  worker_thread->GlobalScope()->EvaluateClassicScript(
+      script_url, source, nullptr /* cached_meta_data */,
+      kV8CacheOptionsDefault);
 }
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(

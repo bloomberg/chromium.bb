@@ -80,6 +80,10 @@ class CORE_EXPORT WorkerGlobalScope
   KURL CompleteURL(const String&) const;
 
   // WorkerOrWorkletGlobalScope
+  void EvaluateClassicScript(const KURL& script_url,
+                             String source_code,
+                             std::unique_ptr<Vector<char>> cached_meta_data,
+                             V8CacheOptions) final;
   bool IsClosing() const final { return closing_; }
   virtual void Dispose();
   void ReportFeature(WebFeature) final;

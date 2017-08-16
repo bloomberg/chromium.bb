@@ -5,6 +5,7 @@
 #include "core/workers/WorkletGlobalScope.h"
 
 #include <memory>
+#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Modulator.h"
@@ -30,7 +31,25 @@ WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
   SetSecurityOrigin(std::move(security_origin));
 }
 
-WorkletGlobalScope::~WorkletGlobalScope() {}
+WorkletGlobalScope::~WorkletGlobalScope() = default;
+
+void WorkletGlobalScope::EvaluateClassicScript(
+    const KURL& script_url,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data,
+    V8CacheOptions v8_cache_options) {
+  if (source_code.IsNull()) {
+    // |source_code| is null when this is called during worker thread startup.
+    // Worklet will evaluate the script later via Worklet.addModule().
+    // TODO(nhiroki): Add NOTREACHED() once threaded worklet supports module
+    // loading.
+    return;
+  }
+  DCHECK(!cached_meta_data);
+  ScriptController()->Evaluate(ScriptSourceCode(source_code, script_url),
+                               nullptr /* error_event */,
+                               nullptr /* cache_handler */, v8_cache_options);
+}
 
 v8::Local<v8::Object> WorkletGlobalScope::Wrap(
     v8::Isolate*,

@@ -236,14 +236,16 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // the main thread.
   void EnsureScriptExecutionTerminates(ExitCode);
 
+  // These are called in this order during worker thread startup.
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const WTF::Optional<WorkerBackingThreadStartupData>&);
+
+  // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread();
   void PerformShutdownOnWorkerThread();
-  template <WTF::FunctionThreadAffinity threadAffinity>
-  void PerformTaskOnWorkerThread(Function<void(), threadAffinity> task);
+
   void PerformDebuggerTaskOnWorkerThread(CrossThreadClosure);
   void PerformDebuggerTaskDontWaitOnWorkerThread();
 

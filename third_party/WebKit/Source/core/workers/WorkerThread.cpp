@@ -501,21 +501,11 @@ void WorkerThread::InitializeOnWorkerThread(
     return;
   }
 
-  if (!GlobalScope()->IsWorkerGlobalScope())
-    return;
-  DCHECK(!source_code.IsNull());
-
-  WorkerGlobalScope* worker_global_scope = ToWorkerGlobalScope(GlobalScope());
-  CachedMetadataHandler* handler =
-      worker_global_scope->CreateWorkerScriptCachedMetadataHandler(
-          script_url, cached_meta_data.get());
-  worker_reporting_proxy_.WillEvaluateWorkerScript(
-      source_code.length(),
-      cached_meta_data.get() ? cached_meta_data->size() : 0);
-  bool success = worker_global_scope->ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, script_url), nullptr, handler,
-      v8_cache_options);
-  worker_reporting_proxy_.DidEvaluateWorkerScript(success);
+  // TODO(nhiroki): Start module loading for workers here.
+  // (https://crbug.com/680046)
+  GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
+                                       std::move(cached_meta_data),
+                                       v8_cache_options);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

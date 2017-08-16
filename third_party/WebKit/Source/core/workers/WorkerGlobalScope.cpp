@@ -88,8 +88,26 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
   return KURL(url_, url);
 }
 
+void WorkerGlobalScope::EvaluateClassicScript(
+    const KURL& script_url,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data,
+    V8CacheOptions v8_cache_options) {
+  DCHECK(IsContextThread());
+  CachedMetadataHandler* handler = CreateWorkerScriptCachedMetadataHandler(
+      script_url, cached_meta_data.get());
+  DCHECK(!source_code.IsNull());
+  GetThread()->GetWorkerReportingProxy().WillEvaluateWorkerScript(
+      source_code.length(),
+      cached_meta_data.get() ? cached_meta_data->size() : 0);
+  bool success = ScriptController()->Evaluate(
+      ScriptSourceCode(source_code, script_url), nullptr /* error_event */,
+      handler, v8_cache_options);
+  GetThread()->GetWorkerReportingProxy().DidEvaluateWorkerScript(success);
+}
+
 void WorkerGlobalScope::Dispose() {
-  DCHECK(GetThread()->IsCurrentThread());
+  DCHECK(IsContextThread());
 
   // Event listeners would keep DOMWrapperWorld objects alive for too long.
   // Also, they have references to JS objects, which become dangling once Heap
