@@ -10,6 +10,7 @@ namespace content {
 // Before adding new chrome schemes please check with security@chromium.org.
 // There are security implications associated with introducing new schemes.
 const char kChromeDevToolsScheme[] = "chrome-devtools";
+const char kChromeErrorScheme[] = "chrome-error";
 const char kChromeUIScheme[] = "chrome";
 const char kGuestScheme[] = "chrome-guest";
 const char kViewSourceScheme[] = "view-source";
@@ -60,7 +61,7 @@ const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
-const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
 
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";

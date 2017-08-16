@@ -2,55 +2,55 @@ Tests console execution context selector.
 
 Console context selector:
 * top 
-  ____myframe (data:text/html,chro…) 
+  ____myframe (chromewebdata/) 
   ____⚙ worker-pause.js 
 
 Selected worker
 Console context selector:
   top 
-  ____myframe (data:text/html,chro…) 
+  ____myframe (chromewebdata/) 
 * ____⚙ worker-pause.js 
 
 Selected iframe
 Console context selector:
   top 
-* ____myframe (data:text/html,chro…) 
+* ____myframe (chromewebdata/) 
   ____⚙ worker-pause.js 
 
 Paused in main
 Console context selector:
 * top 
-  ____myframe (data:text/html,chro…) [disabled]
+  ____myframe (chromewebdata/) [disabled]
   ____⚙ worker-pause.js 
 
 Resumed
 Console context selector:
 * top 
-  ____myframe (data:text/html,chro…) 
+  ____myframe (chromewebdata/) 
   ____⚙ worker-pause.js 
 
 Paused in worker
 Console context selector:
   top 
-  ____myframe (data:text/html,chro…) 
+  ____myframe (chromewebdata/) 
 * ____⚙ worker-pause.js 
 
 Resumed
 Console context selector:
   top 
-  ____myframe (data:text/html,chro…) 
+  ____myframe (chromewebdata/) 
 * ____⚙ worker-pause.js 
 
 Paused in iframe
 Console context selector:
   top [disabled]
-* ____myframe (data:text/html,chro…) 
+* ____myframe (chromewebdata/) 
   ____⚙ worker-pause.js 
 
 Resumed
 Console context selector:
   top 
-* ____myframe (data:text/html,chro…) 
+* ____myframe (chromewebdata/) 
   ____⚙ worker-pause.js 
 
 Destroyed iframe

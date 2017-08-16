@@ -677,6 +677,10 @@ bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {
 
   const std::string& scheme = url.scheme();
 
+  // Can't redirect to error pages.
+  if (scheme == kChromeErrorScheme)
+    return false;
+
   if (IsPseudoScheme(scheme)) {
     // Redirects to a pseudo scheme (about, javascript, view-source, ...) are
     // not allowed. An exception is made for <about:blank> and its variations.

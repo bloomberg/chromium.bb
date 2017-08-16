@@ -1475,7 +1475,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         self._driver.GetNamedCookie, 'foo')
 
   def testGetUrlOnInvalidUrl(self):
-    # Make sure we don't return 'data:text/html,chromewebdata' (see
+    # Make sure we don't return 'chrome-error://chromewebdata/' (see
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761
     # requires domain registrars to keep 'invalid.' unregistered (see
     # https://tools.ietf.org/html/rfc6761#section-6.4).

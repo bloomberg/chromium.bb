@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -21,11 +22,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -441,6 +444,127 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_TRUE(navigation_observer.has_committed());
   EXPECT_FALSE(navigation_observer.was_same_document());
   EXPECT_FALSE(navigation_observer.was_renderer_initiated());
+}
+
+// Check that if a page has an iframe that loads an error page, that error page
+// does not inherit the Content Security Policy from the parent frame.  See
+// https://crbug.com/703801.  This test is in chrome/ because error page
+// behavior is only fully defined in chrome/.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       ErrorPageDoesNotInheritCSP) {
+  GURL url(
+      embedded_test_server()->GetURL("/page_with_csp_and_error_iframe.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a page that disallows scripts via CSP and has an iframe that
+  // tries to load an invalid URL, which results in an error page.
+  GURL error_url("http://invalid.foo/");
+  content::NavigationHandleObserver observer(web_contents, error_url);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(observer.has_committed());
+  EXPECT_TRUE(observer.is_error());
+
+  // The error page should not inherit the CSP directive that blocks all
+  // scripts from the parent frame, so this script should be allowed to
+  // execute.  Since ExecuteScript will execute the passed-in script regardless
+  // of CSP, use a javascript: URL which does go through the CSP checks.
+  content::RenderFrameHost* error_host =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  std::string location;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      error_host,
+      "location='javascript:domAutomationController.send(location.href)';",
+      &location));
+  EXPECT_EQ(location, content::kUnreachableWebDataURL);
+
+  // The error page should have a unique origin.
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      error_host, "domAutomationController.send(document.origin);", &origin));
+  EXPECT_EQ("null", origin);
+}
+
+// Test that web pages can't navigate to an error page URL, either directly or
+// via a redirect, and that web pages can't embed error pages in iframes.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       NavigationToErrorURLIsDisallowed) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+
+  // Try navigating to the error page URL and make sure it is canceled and the
+  // old URL remains the last committed one.
+  GURL error_url(content::kUnreachableWebDataURL);
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "location.href = '" + error_url.spec() + "';"));
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+
+  // Now try navigating to a URL that tries to redirect to the error page URL,
+  // and make sure the redirect is blocked.  Note that DidStopLoading will
+  // still fire after the redirect is canceled, so TestNavigationObserver can
+  // be used to wait for it.
+  GURL redirect_to_error_url(
+      embedded_test_server()->GetURL("/server-redirect?" + error_url.spec()));
+  content::TestNavigationObserver observer(web_contents);
+  EXPECT_TRUE(ExecuteScript(
+      web_contents, "location.href = '" + redirect_to_error_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+
+  // Also ensure that a page can't embed an iframe for an error page URL.
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "var frame = document.createElement('iframe');\n"
+                            "frame.src = '" + error_url.spec() + "';\n"
+                            "document.body.appendChild(frame);"));
+  content::WaitForLoadStop(web_contents);
+  content::RenderFrameHost* subframe_host =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  // The new subframe should remain blank without a committed URL.
+  EXPECT_TRUE(subframe_host->GetLastCommittedURL().is_empty());
+}
+
+// This test ensures that navigating to a page that returns an error code and
+// an empty document still shows Chrome's helpful error page instead of the
+// empty document.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       EmptyDocumentWithErrorCode) {
+  GURL url(embedded_test_server()->GetURL("/empty_with_404.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the navigation to complete.  The empty document should trigger
+  // loading of the 404 error page, so check that the last committed entry was
+  // indeed for the error page.
+  content::TestNavigationObserver observer(web_contents);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents, "location.href = '" + url.spec() + "';"));
+  observer.Wait();
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+  EXPECT_TRUE(
+      IsLastCommittedEntryOfPageType(web_contents, content::PAGE_TYPE_ERROR));
+
+  // Verify that the error page has correct content.  This needs to wait for
+  // the error page content to be populated asynchronously by scripts after
+  // DidFinishLoad.
+  while (true) {
+    std::string content;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        web_contents,
+        "domAutomationController.send("
+        "    document.body ? document.body.innerText : '');",
+        &content));
+    if (content.find("HTTP ERROR 404") != std::string::npos)
+      break;
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
 }
 
 class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
