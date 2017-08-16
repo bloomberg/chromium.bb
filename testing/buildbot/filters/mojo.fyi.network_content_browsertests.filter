@@ -55,6 +55,7 @@
 -DataUrlNavigationBrowserTest.UnknownMimeType_Navigation_Download
 -DataUrlNavigationBrowserTest.UnknownMimeType_WindowOpen_Download
 -DevToolsProtocolTest.CertificateError
+-DevToolsProtocolTest.CertificateExplanations
 -DevToolsProtocolTest.ControlNavigationsMainFrame
 -DevToolsProtocolTest.SubresourceWithCertificateError
 -GenericSensorBrowserTest.AmbientLightSensorTest
