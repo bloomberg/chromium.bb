@@ -39,6 +39,11 @@ WebRtcMediaStreamAdapterMap::AdapterRef::~AdapterRef() {
   }
 }
 
+std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
+WebRtcMediaStreamAdapterMap::AdapterRef::Copy() const {
+  return base::WrapUnique(new AdapterRef(map_, it_));
+}
+
 WebRtcMediaStreamAdapterMap::WebRtcMediaStreamAdapterMap(
     PeerConnectionDependencyFactory* const factory,
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map)

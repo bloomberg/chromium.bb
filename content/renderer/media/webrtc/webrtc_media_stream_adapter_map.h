@@ -48,6 +48,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapterMap
     // adapter it will be disposed and removed from the map.
     ~AdapterRef();
 
+    std::unique_ptr<AdapterRef> Copy() const;
     const WebRtcMediaStreamAdapter& adapter() const {
       return *it_->second.adapter;
     }

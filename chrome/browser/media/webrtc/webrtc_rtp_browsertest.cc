@@ -69,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, GetReceivers) {
   VerifyRtpReceivers(right_tab_, 6);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
-                       DISABLED_AddAndRemoveTracksWithoutStream) {
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
@@ -151,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
-                       DISABLED_AddAndRemoveTracksWithSharedStream) {
+                       AddAndRemoveTracksWithSharedStream) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
@@ -232,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
-                       DISABLED_AddAndRemoveTracksWithIndividualStreams) {
+                       AddAndRemoveTracksWithIndividualStreams) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
