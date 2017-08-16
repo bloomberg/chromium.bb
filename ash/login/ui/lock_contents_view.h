@@ -126,7 +126,6 @@ class ASH_EXPORT LockContentsView : public views::View,
   // in this list.
   std::vector<LoginUserView*> user_views_;
   views::ScrollView* scroller_;
-  views::View* background_;
   views::BoxLayout* root_layout_;
 
   // Actions that should be executed when rotation changes. A full layout pass

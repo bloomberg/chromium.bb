@@ -137,7 +137,6 @@ void LockContentsView::Layout() {
   View::Layout();
   if (scroller_)
     scroller_->ClipHeightTo(size().height(), size().height());
-  background_->SetSize(size());
 }
 
 void LockContentsView::AddedToWidget() {
@@ -161,12 +160,6 @@ void LockContentsView::OnUsersChanged(
     users_.push_back(UserState{user->account_id});
 
   // Build view hierarchy.
-  background_ = new views::View();
-  // TODO(jdufault): Set background color based on wallpaper color.
-  background_->SetBackground(
-      views::CreateSolidBackground(SkColorSetARGB(80, 0, 0, 0)));
-  AddChildView(background_);
-
   root_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal);
   root_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
