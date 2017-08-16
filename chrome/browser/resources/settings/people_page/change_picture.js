@@ -215,19 +215,9 @@ Polymer({
     announceAccessibleMessage(loadTimeData.getString(flipMessageId));
   },
 
-  /**
-   * Discard currently selected image. Selects the first default icon.
-   * Returns to the camera stream if the user had just taken a picture.
-   * @private
-   */
+  /** @private */
   onDiscardImage_: function() {
     this.pictureList_.setOldImageUrl('');
-
-    // If the user has not chosen an image since opening the subpage and
-    // discards the current photo, select the first default image.
-    assert(this.defaultImages_.length > 0);
-    this.browserProxy_.selectDefaultImage(this.defaultImages_[0].url);
-
     announceAccessibleMessage(this.i18n('photoDiscardAccessibleText'));
   },
 
