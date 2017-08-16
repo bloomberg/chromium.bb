@@ -159,7 +159,11 @@
     PerformanceMetrics: {
       class: "InspectorPerformanceAgent",
       probes: [
-        "consoleTimeStamp"
+        "consoleTimeStamp",
+        "CallFunction",
+        "ExecuteScript",
+        "RecalculateStyle",
+        "UpdateLayout",
       ]
     },
     TraceEvents: {
