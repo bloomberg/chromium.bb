@@ -491,7 +491,7 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate) {
-  return base::MakeUnique<NativeStackSamplerMac>(thread_id, annotator,
+  return std::make_unique<NativeStackSamplerMac>(thread_id, annotator,
                                                  test_delegate);
 }
 

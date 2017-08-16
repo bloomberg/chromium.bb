@@ -68,7 +68,7 @@ class BASE_EXPORT Value {
   // For situations where you want to keep ownership of your buffer, this
   // factory method creates a new BinaryValue by copying the contents of the
   // buffer that's passed in.
-  // DEPRECATED, use MakeUnique<Value>(const BlobStorage&) instead.
+  // DEPRECATED, use std::make_unique<Value>(const BlobStorage&) instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   static std::unique_ptr<Value> CreateWithCopiedBuffer(const char* buffer,
                                                        size_t size);

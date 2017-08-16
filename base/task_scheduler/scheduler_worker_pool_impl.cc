@@ -62,7 +62,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
                        TimeDelta delay) override {
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
-        MakeUnique<Task>(from_here, std::move(closure), traits_, delay),
+        std::make_unique<Task>(from_here, std::move(closure), traits_, delay),
         make_scoped_refptr(new Sequence));
   }
 
@@ -616,7 +616,7 @@ SchedulerWorkerPoolImpl::CreateRegisterAndStartSchedulerWorker() {
   // because in WakeUpOneWorker, |lock_| is first acquired and then
   // the thread lock is acquired when WakeUp is called on the worker.
   scoped_refptr<SchedulerWorker> worker = MakeRefCounted<SchedulerWorker>(
-      priority_hint_, MakeUnique<SchedulerWorkerDelegateImpl>(this),
+      priority_hint_, std::make_unique<SchedulerWorkerDelegateImpl>(this),
       task_tracker_, &lock_, backward_compatibility_);
 
   if (!worker->Start())

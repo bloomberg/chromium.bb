@@ -845,10 +845,10 @@ bool TestLauncher::Init() {
     // redirection experiment concludes https://crbug.com/622400.
     SequencedWorkerPool::EnableForProcess();
 
-    worker_pool_owner_ = MakeUnique<SequencedWorkerPoolOwner>(
+    worker_pool_owner_ = std::make_unique<SequencedWorkerPoolOwner>(
         parallel_jobs_, "test_launcher");
   } else {
-    worker_thread_ = MakeUnique<Thread>("test_launcher");
+    worker_thread_ = std::make_unique<Thread>("test_launcher");
     worker_thread_->Start();
   }
 

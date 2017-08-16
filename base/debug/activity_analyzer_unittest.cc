@@ -63,7 +63,7 @@ class ActivityAnalyzerTest : public testing::Test {
 
   std::unique_ptr<ThreadActivityTracker> CreateActivityTracker() {
     std::unique_ptr<char[]> memory(new char[kStackSize]);
-    return MakeUnique<TestActivityTracker>(std::move(memory), kStackSize);
+    return std::make_unique<TestActivityTracker>(std::move(memory), kStackSize);
   }
 
   template <typename Function>
@@ -74,7 +74,7 @@ class ActivityAnalyzerTest : public testing::Test {
 
     PersistentMemoryAllocator* old_allocator = old_global->allocator();
     std::unique_ptr<PersistentMemoryAllocator> new_allocator(
-        MakeUnique<PersistentMemoryAllocator>(
+        std::make_unique<PersistentMemoryAllocator>(
             const_cast<void*>(old_allocator->data()), old_allocator->size(), 0,
             0, "", false));
     GlobalActivityTracker::CreateWithAllocator(std::move(new_allocator), 3,
@@ -168,7 +168,7 @@ TEST_F(ActivityAnalyzerTest, GlobalAnalyzerConstruction) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer analyzer(MakeUnique<PersistentMemoryAllocator>(
+  GlobalActivityAnalyzer analyzer(std::make_unique<PersistentMemoryAllocator>(
       const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
 
   // The only thread at this point is the test thread of this process.
@@ -227,8 +227,10 @@ TEST_F(ActivityAnalyzerTest, UserDataSnapshotTest) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer global_analyzer(MakeUnique<PersistentMemoryAllocator>(
-      const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
+  GlobalActivityAnalyzer global_analyzer(
+      std::make_unique<PersistentMemoryAllocator>(
+          const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "",
+          true));
 
   ThreadActivityTracker* tracker =
       GlobalActivityTracker::Get()->GetOrCreateTrackerForCurrentThread();
@@ -326,8 +328,10 @@ TEST_F(ActivityAnalyzerTest, GlobalUserDataTest) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer global_analyzer(MakeUnique<PersistentMemoryAllocator>(
-      const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
+  GlobalActivityAnalyzer global_analyzer(
+      std::make_unique<PersistentMemoryAllocator>(
+          const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "",
+          true));
 
   ActivityUserData& process_data = GlobalActivityTracker::Get()->process_data();
   ASSERT_NE(0U, process_data.id());
@@ -369,8 +373,10 @@ TEST_F(ActivityAnalyzerTest, GlobalModulesTest) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer global_analyzer(MakeUnique<PersistentMemoryAllocator>(
-      const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
+  GlobalActivityAnalyzer global_analyzer(
+      std::make_unique<PersistentMemoryAllocator>(
+          const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "",
+          true));
 
   GlobalActivityTracker::ModuleInfo info1;
   info1.is_loaded = true;
@@ -445,7 +451,7 @@ TEST_F(ActivityAnalyzerTest, GlobalLogMessages) {
 
   PersistentMemoryAllocator* allocator =
       GlobalActivityTracker::Get()->allocator();
-  GlobalActivityAnalyzer analyzer(MakeUnique<PersistentMemoryAllocator>(
+  GlobalActivityAnalyzer analyzer(std::make_unique<PersistentMemoryAllocator>(
       const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
 
   GlobalActivityTracker::Get()->RecordLogMessage("hello world");
@@ -473,7 +479,7 @@ TEST_F(ActivityAnalyzerTest, GlobalMultiProcess) {
   GlobalActivityTracker::Get()->process_data().SetInt("pid",
                                                       global->process_id());
 
-  GlobalActivityAnalyzer analyzer(MakeUnique<PersistentMemoryAllocator>(
+  GlobalActivityAnalyzer analyzer(std::make_unique<PersistentMemoryAllocator>(
       const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "", true));
 
   AsOtherProcess(2002, [&global]() {

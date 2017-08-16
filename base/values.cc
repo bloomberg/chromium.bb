@@ -39,7 +39,8 @@ std::unique_ptr<Value> CopyListWithoutEmptyChildren(const Value& list) {
     if (child_copy)
       copy.GetList().push_back(std::move(*child_copy));
   }
-  return copy.GetList().empty() ? nullptr : MakeUnique<Value>(std::move(copy));
+  return copy.GetList().empty() ? nullptr
+                                : std::make_unique<Value>(std::move(copy));
 }
 
 std::unique_ptr<DictionaryValue> CopyDictionaryWithoutEmptyChildren(
@@ -49,7 +50,7 @@ std::unique_ptr<DictionaryValue> CopyDictionaryWithoutEmptyChildren(
     std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(it.value());
     if (child_copy) {
       if (!copy)
-        copy = MakeUnique<DictionaryValue>();
+        copy = std::make_unique<DictionaryValue>();
       copy->SetWithoutPathExpansion(it.key(), std::move(child_copy));
     }
   }
@@ -66,7 +67,7 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
           static_cast<const DictionaryValue&>(node));
 
     default:
-      return MakeUnique<Value>(node);
+      return std::make_unique<Value>(node);
   }
 }
 
@@ -75,7 +76,7 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 // static
 std::unique_ptr<Value> Value::CreateWithCopiedBuffer(const char* buffer,
                                                      size_t size) {
-  return MakeUnique<Value>(BlobStorage(buffer, buffer + size));
+  return std::make_unique<Value>(BlobStorage(buffer, buffer + size));
 }
 
 Value::Value(const Value& that) {
@@ -280,7 +281,7 @@ Value::dict_iterator Value::SetKey(StringPiece key, Value value) {
   }
 
   return dict_iterator(
-      dict_->emplace(key.as_string(), MakeUnique<Value>(std::move(value)))
+      dict_->emplace(key.as_string(), std::make_unique<Value>(std::move(value)))
           .first);
 }
 
@@ -293,7 +294,7 @@ Value::dict_iterator Value::SetKey(std::string&& key, Value value) {
   }
 
   return dict_iterator(
-      dict_->emplace(std::move(key), MakeUnique<Value>(std::move(value)))
+      dict_->emplace(std::move(key), std::make_unique<Value>(std::move(value)))
           .first);
 }
 
@@ -350,7 +351,7 @@ Value* Value::SetPath(std::initializer_list<const char*> path, Value value) {
     if (found == cur->dict_->end() || found->first != path_component) {
       // No key found, insert one.
       auto inserted = cur->dict_->emplace_hint(
-          found, path_component, MakeUnique<Value>(Type::DICTIONARY));
+          found, path_component, std::make_unique<Value>(Type::DICTIONARY));
       cur = inserted->second.get();
     } else {
       cur = found->second.get();
@@ -480,7 +481,7 @@ Value* Value::DeepCopy() const {
 }
 
 std::unique_ptr<Value> Value::CreateDeepCopy() const {
-  return MakeUnique<Value>(*this);
+  return std::make_unique<Value>(*this);
 }
 
 bool operator==(const Value& lhs, const Value& rhs) {
@@ -622,7 +623,7 @@ void Value::InternalCopyConstructFrom(const Value& that) {
       dict_.Init();
       for (const auto& it : *that.dict_) {
         dict_->emplace_hint(dict_->end(), it.first,
-                            MakeUnique<Value>(*it.second));
+                            std::make_unique<Value>(*it.second));
       }
       return;
     case Type::LIST:
@@ -755,7 +756,7 @@ Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
     DictionaryValue* child_dictionary = nullptr;
     if (!current_dictionary->GetDictionary(key, &child_dictionary)) {
       child_dictionary = current_dictionary->SetDictionaryWithoutPathExpansion(
-          key, MakeUnique<DictionaryValue>());
+          key, std::make_unique<DictionaryValue>());
     }
 
     current_dictionary = child_dictionary;
@@ -767,23 +768,23 @@ Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
 }
 
 Value* DictionaryValue::SetBoolean(StringPiece path, bool in_value) {
-  return Set(path, MakeUnique<Value>(in_value));
+  return Set(path, std::make_unique<Value>(in_value));
 }
 
 Value* DictionaryValue::SetInteger(StringPiece path, int in_value) {
-  return Set(path, MakeUnique<Value>(in_value));
+  return Set(path, std::make_unique<Value>(in_value));
 }
 
 Value* DictionaryValue::SetDouble(StringPiece path, double in_value) {
-  return Set(path, MakeUnique<Value>(in_value));
+  return Set(path, std::make_unique<Value>(in_value));
 }
 
 Value* DictionaryValue::SetString(StringPiece path, StringPiece in_value) {
-  return Set(path, MakeUnique<Value>(in_value));
+  return Set(path, std::make_unique<Value>(in_value));
 }
 
 Value* DictionaryValue::SetString(StringPiece path, const string16& in_value) {
-  return Set(path, MakeUnique<Value>(in_value));
+  return Set(path, std::make_unique<Value>(in_value));
 }
 
 DictionaryValue* DictionaryValue::SetDictionary(
@@ -805,13 +806,13 @@ Value* DictionaryValue::SetWithoutPathExpansion(
 
 Value* DictionaryValue::SetStringWithoutPathExpansion(StringPiece path,
                                                       StringPiece in_value) {
-  return SetWithoutPathExpansion(path, MakeUnique<Value>(in_value));
+  return SetWithoutPathExpansion(path, std::make_unique<Value>(in_value));
 }
 
 Value* DictionaryValue::SetStringWithoutPathExpansion(
     StringPiece path,
     const string16& in_value) {
-  return SetWithoutPathExpansion(path, MakeUnique<Value>(in_value));
+  return SetWithoutPathExpansion(path, std::make_unique<Value>(in_value));
 }
 
 DictionaryValue* DictionaryValue::SetDictionaryWithoutPathExpansion(
@@ -1135,7 +1136,7 @@ std::unique_ptr<DictionaryValue> DictionaryValue::DeepCopyWithoutEmptyChildren()
   std::unique_ptr<DictionaryValue> copy =
       CopyDictionaryWithoutEmptyChildren(*this);
   if (!copy)
-    copy = MakeUnique<DictionaryValue>();
+    copy = std::make_unique<DictionaryValue>();
   return copy;
 }
 
@@ -1153,7 +1154,7 @@ void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
       }
     }
     // All other cases: Make a copy and hook it up.
-    SetWithoutPathExpansion(it.key(), MakeUnique<Value>(*merge_value));
+    SetWithoutPathExpansion(it.key(), std::make_unique<Value>(*merge_value));
   }
 }
 
@@ -1174,7 +1175,7 @@ DictionaryValue* DictionaryValue::DeepCopy() const {
 }
 
 std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
-  return MakeUnique<DictionaryValue>(*this);
+  return std::make_unique<DictionaryValue>(*this);
 }
 
 ///////////////////// ListValue ////////////////////
@@ -1330,7 +1331,7 @@ bool ListValue::Remove(size_t index, std::unique_ptr<Value>* out_value) {
     return false;
 
   if (out_value)
-    *out_value = MakeUnique<Value>(std::move((*list_)[index]));
+    *out_value = std::make_unique<Value>(std::move((*list_)[index]));
 
   list_->erase(list_->begin() + index);
   return true;
@@ -1352,7 +1353,7 @@ bool ListValue::Remove(const Value& value, size_t* index) {
 ListValue::iterator ListValue::Erase(iterator iter,
                                      std::unique_ptr<Value>* out_value) {
   if (out_value)
-    *out_value = MakeUnique<Value>(std::move(*iter));
+    *out_value = std::make_unique<Value>(std::move(*iter));
 
   return list_->erase(iter);
 }
@@ -1425,7 +1426,7 @@ ListValue* ListValue::DeepCopy() const {
 }
 
 std::unique_ptr<ListValue> ListValue::CreateDeepCopy() const {
-  return MakeUnique<ListValue>(*this);
+  return std::make_unique<ListValue>(*this);
 }
 
 ValueSerializer::~ValueSerializer() {

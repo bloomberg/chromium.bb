@@ -314,9 +314,9 @@ void MessageLoop::BindToCurrentThread() {
   SetThreadTaskRunnerHandle();
   thread_id_ = PlatformThread::CurrentId();
 
-  scoped_set_sequence_local_storage_map_for_current_thread_ =
-      MakeUnique<internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
-          &sequence_local_storage_map_);
+  scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
+      internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
+      &sequence_local_storage_map_);
 
   run_loop_client_ = RunLoop::RegisterDelegateForCurrentThread(this);
 }

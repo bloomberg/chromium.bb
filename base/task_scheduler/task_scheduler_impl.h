@@ -55,7 +55,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // TaskTracker is used.
   explicit TaskSchedulerImpl(StringPiece name,
                              std::unique_ptr<TaskTrackerImpl> task_tracker =
-                                 MakeUnique<TaskTrackerImpl>());
+                                 std::make_unique<TaskTrackerImpl>());
   ~TaskSchedulerImpl() override;
 
   // TaskScheduler:
