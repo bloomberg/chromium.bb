@@ -39,6 +39,7 @@ static_library("browser") {
     "cookie_settings.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
+    "user_modifiable_provider.h",
     "website_settings_info.cc",
     "website_settings_info.h",
     "website_settings_registry.cc",
