@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -72,48 +73,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 }
 
 }  // namespace
-
-// Singleton allowing to register the provider in the +setup and still access it
-// from inside the tests.
-@interface ContentSuggestionsTestSingleton : NSObject
-
-// Shared instance of this singleton.
-+ (instancetype)sharedInstance;
-
-// Returns the provider registered.
-- (MockContentSuggestionsProvider*)provider;
-// Registers a provider in the |service|.
-- (void)registerArticleProvider:(ContentSuggestionsService*)service;
-
-@end
-
-@implementation ContentSuggestionsTestSingleton {
-  MockContentSuggestionsProvider* _provider;
-}
-
-+ (instancetype)sharedInstance {
-  static ContentSuggestionsTestSingleton* sharedInstance = nil;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    sharedInstance = [[self alloc] init];
-  });
-  return sharedInstance;
-}
-
-- (MockContentSuggestionsProvider*)provider {
-  return _provider;
-}
-
-- (void)registerArticleProvider:(ContentSuggestionsService*)service {
-  Category articles = Category::FromKnownCategory(KnownCategories::ARTICLES);
-  std::unique_ptr<MockContentSuggestionsProvider> provider =
-      base::MakeUnique<MockContentSuggestionsProvider>(
-          service, std::vector<Category>{articles});
-  _provider = provider.get();
-  service->RegisterProvider(std::move(provider));
-}
-
-@end
 
 #pragma mark - TestCase
 

@@ -163,14 +163,16 @@ initWithCollectionController:
 
   if (self.shouldAnimateHeader) {
     [self.headerController
-        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y];
+        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
+                             width:0];
   }
 }
 
 - (void)updateFakeOmniboxOnNewWidth:(CGFloat)width {
   if (self.shouldAnimateHeader && !IsIPadIdiom()) {
     [self.headerController
-        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y];
+        updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
+                             width:width];
   } else {
     [self.headerController updateFakeOmniboxForWidth:width];
   }

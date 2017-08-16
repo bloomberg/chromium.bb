@@ -496,7 +496,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                             topMargin:_searchFieldTopMarginConstraint
                    subviewConstraints:constraints
                         logoIsShowing:self.logoIsShowing
-                            forOffset:[_mostVisitedView contentOffset].y];
+                            forOffset:[_mostVisitedView contentOffset].y
+                                width:0];
 }
 
 - (void)addOverscrollActions {

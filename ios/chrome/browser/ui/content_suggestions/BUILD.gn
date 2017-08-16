@@ -50,6 +50,8 @@ source_set("content_suggestions_util") {
   sources = [
     "content_suggestions_collection_utils.h",
     "content_suggestions_collection_utils.mm",
+    "ntp_home_constant.h",
+    "ntp_home_constant.mm",
   ]
   deps = [
     "//base",
@@ -93,9 +95,13 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "content_suggestions_egtest.mm",
+    "ntp_home_egtest.mm",
+    "ntp_home_provider_test_singleton.h",
+    "ntp_home_provider_test_singleton.mm",
   ]
   deps = [
     ":content_suggestions",
+    ":content_suggestions_util",
     "//base",
     "//base/test:test_support",
     "//components/keyed_service/ios",
