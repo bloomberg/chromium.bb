@@ -200,7 +200,7 @@ GURL GoogleNewAppendQueryparamsToLogoURL(bool gray_background,
 
   query += "async=";
 
-  std::vector<base::StringPiece> params;
+  std::vector<std::string> params;
   params.push_back("ntp:1");
   if (gray_background) {
     params.push_back("graybg:1");

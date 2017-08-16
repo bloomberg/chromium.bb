@@ -15,9 +15,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using testing::Eq;
-
 namespace search_provider_logos {
+
+TEST(GoogleNewLogoApiTest, AppendsQueryParams) {
+  const GURL logo_url("https://base.doo/target");
+
+  EXPECT_EQ(
+      GURL("https://base.doo/target?async=ntp:1"),
+      GoogleNewAppendQueryparamsToLogoURL(false, logo_url, std::string()));
+  EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1,graybg:1"),
+            GoogleNewAppendQueryparamsToLogoURL(true, logo_url, std::string()));
+  EXPECT_EQ(
+      GURL("https://base.doo/target?async=ntp:1,es_dfp:fingerprint"),
+      GoogleNewAppendQueryparamsToLogoURL(false, logo_url, "fingerprint"));
+  EXPECT_EQ(
+      GURL("https://base.doo/target?async=ntp:1,graybg:1,es_dfp:fingerprint"),
+      GoogleNewAppendQueryparamsToLogoURL(true, logo_url, "fingerprint"));
+}
 
 TEST(GoogleNewLogoApiTest, ResolvesRelativeUrl) {
   const GURL base_url("https://base.doo/");
