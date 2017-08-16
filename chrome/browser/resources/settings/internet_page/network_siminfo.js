@@ -310,10 +310,10 @@ Polymer({
     else
       return 'UNKNOWN ERROR';
     var retriesLeft =
-        this.get(
-            'Cellular.SIMLockStatus.RetriesLeft', this.networkProperties) ||
-        0;
-    msg += ' Retries left: ' + retriesLeft.toString();
+        this.get('Cellular.SIMLockStatus.RetriesLeft', this.networkProperties);
+    if (retriesLeft) {
+      msg += ' Retries left: ' + retriesLeft.toString();
+    }
     return msg;
   },
 
