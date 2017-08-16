@@ -1,78 +1,37 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
+<!DOCTYPE HTML>
+<title>Tests MediaStreamTrack callbacks.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Tests MediaStreamTrack callbacks.");
+  async_test(test => {
+    navigator.mediaDevices.getUserMedia({audio:true, video: true})
+      .then(test.step_func(stream => {
+        // |track| may be any of the audio or video tracks.
+        var track = stream.getTracks()[0];
+        assert_equals(track.readyState, "live");
 
-// Note that the below behaviour doesn't reflect how it works outside of LayoutTests.
-// The underlying mock is modified to trigger the events when certain functions are called.
-// This modified behaviour allows us to test the MediaStreamTrack class properly.
+        track.onmute = test.step_func(() => {
+          assert_equals(track.readyState, "live");
+          assert_true(track.muted);
 
-var track;
+          track.onunmute = test.step_func(() => {
+            assert_equals(track.readyState, "live");
+            assert_false(track.muted);
+            track.stop();
+            assert_equals(track.readyState, "ended");
 
-function error() {
-    testFailed('Stream generation failed.');
-    finishJSTest();
-}
+            // Use a timeout to detect a misfire of the ended event.
+            test.step_timeout(test.step_func_done(() => {
+              assert_equals(track.readyState, "ended");
+            }));
+          });
 
-function getUserMedia(constraints, callback) {
-    try {
-        navigator.webkitGetUserMedia(constraints, callback, error);
-    } catch (e) {
-        testFailed('webkitGetUserMedia threw exception :' + e);
-        finishJSTest();
-    }
-}
+          track.enabled = true;
+        });
 
-function onTrackEnded() {
-    testPassed('Track onended callback succeeded.');
-
-    shouldBeEqualToString('track.readyState', 'ended');
-
-    finishJSTest();
-}
-
-function onTrackUnmute() {
-    testPassed('Track onunmute callback succeeded.');
-
-    shouldBeEqualToString('track.readyState', 'live');
-    shouldBeFalse('track.muted');
-
-    track.stop();
-}
-
-function onTrackMute() {
-    testPassed('Track onmute callback succeeded.');
-
-    shouldBeEqualToString('track.readyState', 'live');
-    shouldBeTrue('track.muted');
-
-    track.enabled = true;
-}
-
-function gotStream(stream) {
-    testPassed('getUserMedia succeeded.');
-
-    track = stream.getVideoTracks()[0];
-
-    shouldBeEqualToString('track.readyState', 'live');
-
-    track.onunmute = onTrackUnmute;
-    track.onmute = onTrackMute;
-    track.onended = onTrackEnded;
-
-    track.enabled = false;
-}
-
-getUserMedia({audio:true, video:true}, gotStream);
-
-window.jsTestIsAsync = true;
-window.successfullyParsed = true;
+        track.onended = test.unreached_func("ended event should not be fired.");
+        track.enabled = false;
+      }))
+      .catch(test.unreached_func("getUserMedia failed"));
+  });
 </script>
-</body>
-</html>

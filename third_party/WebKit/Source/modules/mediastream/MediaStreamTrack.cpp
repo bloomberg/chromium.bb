@@ -207,7 +207,6 @@ void MediaStreamTrack::stopTrack(ExceptionState& exception_state) {
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
   MediaStreamCenter::Instance().DidStopMediaStreamTrack(Component());
-  DispatchEvent(Event::Create(EventTypeNames::ended));
   PropagateTrackEnded();
 }
 
