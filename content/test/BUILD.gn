@@ -1608,7 +1608,6 @@ test("content_unittests") {
     "//ppapi/features",
     "//printing",
     "//services/catalog:lib",
-    "//services/device/public/cpp/generic_sensor",
     "//services/file:lib",
     "//services/file/public/interfaces",
     "//services/metrics/public/interfaces",

@@ -67,7 +67,6 @@ source_set("generic_sensor") {
   deps = [
     "//base",
     "//device/base/synchronization",
-    "//services/device/public/cpp:device_features",
   ]
 
   public_deps = [
