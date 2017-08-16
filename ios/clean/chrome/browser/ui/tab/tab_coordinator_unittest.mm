@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
-#import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,8 +32,7 @@ class TabCoordinatorTest : public BrowserCoordinatorTest {
         objectForKey:@"EnableBottomToolbar"];
 
     // Initialize the web state.
-    auto navigation_manager = base::MakeUnique<TabNavigationManager>();
-    navigation_manager->SetItemCount(0);
+    auto navigation_manager = base::MakeUnique<web::TestNavigationManager>();
     web_state_.SetNavigationManager(std::move(navigation_manager));
 
     // Initialize the coordinator.

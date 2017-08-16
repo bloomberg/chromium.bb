@@ -68,8 +68,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/coordinators:test_support",
     "//ios/chrome/browser/ui/toolbar/test",
-    "//ios/shared/chrome/browser/ui/tab:test_support",
     "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
 }

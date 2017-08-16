@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
-#import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -34,25 +34,25 @@ namespace {
 class WebContentsMediatorTest : public PlatformTest {
  public:
   WebContentsMediatorTest() {
-    auto navigation_manager = base::MakeUnique<TabNavigationManager>();
-    navigation_manager->SetItemCount(0);
+    auto navigation_manager = base::MakeUnique<web::TestNavigationManager>();
     test_web_state_.SetView([[UIView alloc] init]);
     test_web_state_.SetNavigationManager(std::move(navigation_manager));
 
-    auto new_navigation_manager = base::MakeUnique<TabNavigationManager>();
+    auto new_navigation_manager =
+        base::MakeUnique<web::TestNavigationManager>();
     new_test_web_state_.SetView([[UIView alloc] init]);
     new_test_web_state_.SetNavigationManager(std::move(new_navigation_manager));
 
     mediator_ = [[WebContentsMediator alloc] init];
   }
 
-  TabNavigationManager* navigation_manager() {
-    return static_cast<TabNavigationManager*>(
+  web::TestNavigationManager* navigation_manager() {
+    return static_cast<web::TestNavigationManager*>(
         test_web_state_.GetNavigationManager());
   }
 
-  TabNavigationManager* new_navigation_manager() {
-    return static_cast<TabNavigationManager*>(
+  web::TestNavigationManager* new_navigation_manager() {
+    return static_cast<web::TestNavigationManager*>(
         new_test_web_state_.GetNavigationManager());
   }
 
@@ -66,18 +66,18 @@ class WebContentsMediatorTest : public PlatformTest {
 // items.
 TEST_F(WebContentsMediatorTest, TestURLHasLoaded) {
   mediator_.webState = &test_web_state_;
-  new_navigation_manager()->SetItemCount(0);
   mediator_.webState = &new_test_web_state_;
-  EXPECT_TRUE(navigation_manager()->GetHasLoadedUrl());
+  EXPECT_TRUE(navigation_manager()->LoadURLWithParamsWasCalled());
 }
 
 // Tests that a URL is not loaded if the new active web state has some
 // navigation items.
 TEST_F(WebContentsMediatorTest, TestNoLoadURL) {
   mediator_.webState = &test_web_state_;
-  new_navigation_manager()->SetItemCount(2);
+  new_navigation_manager()->AddItem(GURL("http://foo.com"),
+                                    ui::PAGE_TRANSITION_LINK);
   mediator_.webState = &new_test_web_state_;
-  EXPECT_FALSE(new_navigation_manager()->GetHasLoadedUrl());
+  EXPECT_FALSE(new_navigation_manager()->LoadURLWithParamsWasCalled());
 }
 
 // Tests that the consumer is updated immediately once both consumer and
