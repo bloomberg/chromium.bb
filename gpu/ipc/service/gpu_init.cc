@@ -10,6 +10,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -87,8 +88,12 @@ void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
 
 #if !defined(OS_MACOSX)
 void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com/707031): Implement this.
+  NOTIMPLEMENTED();
+  return;
+#else
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
-
   gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
   switch (result) {
     case gpu::kCollectInfoFatalFailure:
@@ -114,6 +119,7 @@ void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
     gpu_info.hdr = true;
   }
 #endif  // defined(OS_WIN)
+#endif  // defined(OS_FUCHSIA)
 }
 #endif  // defined(OS_MACOSX)
 
