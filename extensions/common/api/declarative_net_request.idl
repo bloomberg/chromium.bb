@@ -33,9 +33,8 @@ namespace declarativeNetRequest {
 
   // Describes the kind of action to take if a given RuleCondition matches.
   enum RuleActionType {
-    // TODO(crbug.com/696822): Rename to blacklist.
     // Block the network request.
-    block,
+    blacklist,
     // Redirect the network request.
     redirect,
     // Whitelist the network request. The request won't be blocked even if there
@@ -61,7 +60,7 @@ namespace declarativeNetRequest {
     DOMString? urlFilter;
 
     // Whether the |urlFilter| is case sensitive. Default is false.
-    boolean? IsUrlFilterCaseSensitive;
+    boolean? isUrlFilterCaseSensitive;
 
     // The rule will only match network requests originating from the list of
     // |domains|. If the list is omitted, the rule is applied to requests from

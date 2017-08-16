@@ -29,7 +29,7 @@ std::unique_ptr<dnr_api::Rule> CreateGenericParsedRule() {
   auto rule = base::MakeUnique<dnr_api::Rule>();
   rule->id = kMinValidID;
   rule->condition.url_filter = base::MakeUnique<std::string>("filter");
-  rule->action.type = dnr_api::RULE_ACTION_TYPE_BLOCK;
+  rule->action.type = dnr_api::RULE_ACTION_TYPE_BLACKLIST;
   return rule;
 }
 
@@ -120,7 +120,7 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
     std::unique_ptr<bool> is_url_filter_case_sensitive;
     const uint8_t expected_options;
   } cases[] = {
-      {dnr_api::DOMAIN_TYPE_NONE, dnr_api::RULE_ACTION_TYPE_BLOCK, nullptr,
+      {dnr_api::DOMAIN_TYPE_NONE, dnr_api::RULE_ACTION_TYPE_BLACKLIST, nullptr,
        flat_rule::OptionFlag_APPLIES_TO_THIRD_PARTY |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_WHITELIST,
