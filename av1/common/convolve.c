@@ -361,7 +361,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
   }
 }
@@ -416,7 +419,10 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
     src_vert++;
   }
@@ -475,7 +481,10 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
   }
 }
@@ -536,7 +545,10 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
     src_vert++;
   }
@@ -669,7 +681,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
   }
 }
@@ -725,7 +740,10 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
       }
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
     src_vert++;
   }
@@ -778,7 +796,10 @@ void av1_highbd_convolve_2d_c(const uint16_t *src, int src_stride,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
   }
 }
@@ -838,7 +859,10 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
-      dst[y * dst_stride + x] += res;
+      if (conv_params->do_average)
+        dst[y * dst_stride + x] += res;
+      else
+        dst[y * dst_stride + x] = res;
     }
     src_vert++;
   }

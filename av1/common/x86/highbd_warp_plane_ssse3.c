@@ -320,21 +320,20 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           __m128i *const p =
               (__m128i *)&conv_params
                   ->dst[(i + k + 4) * conv_params->dst_stride + j];
-          const __m128i orig_lo = _mm_loadu_si128(p);
           const __m128i round_const = _mm_set1_epi32(
               -(1 << (bd + 2 * FILTER_BITS - conv_params->round_0 - 1)) +
               ((1 << (conv_params->round_1)) >> 1));
           res_lo = _mm_add_epi32(res_lo, round_const);
-          res_lo = _mm_add_epi32(
-              orig_lo,
-              _mm_srl_epi16(res_lo, _mm_cvtsi32_si128(conv_params->round_1)));
+          res_lo =
+              _mm_srl_epi16(res_lo, _mm_cvtsi32_si128(conv_params->round_1));
+          if (comp_avg) res_lo = _mm_add_epi32(_mm_loadu_si128(p), res_lo);
           _mm_storeu_si128(p, res_lo);
           if (p_width > 4) {
-            const __m128i orig_hi = _mm_loadu_si128(p + 1);
             res_hi = _mm_add_epi32(res_hi, round_const);
-            res_hi = _mm_add_epi32(
-                orig_hi,
-                _mm_srl_epi16(res_hi, _mm_cvtsi32_si128(conv_params->round_1)));
+            res_hi =
+                _mm_srl_epi16(res_hi, _mm_cvtsi32_si128(conv_params->round_1));
+            if (comp_avg)
+              res_hi = _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi);
             _mm_storeu_si128(p + 1, res_hi);
           }
         } else {

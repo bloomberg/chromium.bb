@@ -56,10 +56,11 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
           av1_get_interp_filter_params((InterpFilter)hfilter);
       InterpFilterParams filter_params_y =
           av1_get_interp_filter_params((InterpFilter)vfilter);
+      const int do_average = rnd_.Rand8() & 1;
       ConvolveParams conv_params1 =
-          get_conv_params_no_round(0, 0, 0, output, MAX_SB_SIZE);
+          get_conv_params_no_round(0, do_average, 0, output, MAX_SB_SIZE);
       ConvolveParams conv_params2 =
-          get_conv_params_no_round(0, 0, 0, output2, MAX_SB_SIZE);
+          get_conv_params_no_round(0, do_average, 0, output2, MAX_SB_SIZE);
 
       for (subx = 0; subx < 16; ++subx)
         for (suby = 0; suby < 16; ++suby) {

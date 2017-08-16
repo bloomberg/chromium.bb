@@ -1050,7 +1050,10 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                   (1 << (offset_bits_horiz + FILTER_BITS -
                          conv_params->round_0 - conv_params->round_1)) -
                   (1 << (offset_bits_vert - conv_params->round_1));
-            *p += sum;
+            if (conv_params->do_average)
+              *p += sum;
+            else
+              *p = sum;
           } else {
 #else
           {
@@ -1395,7 +1398,10 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                   (1 << (offset_bits_horiz + FILTER_BITS -
                          conv_params->round_0 - conv_params->round_1)) -
                   (1 << (offset_bits_vert - conv_params->round_1));
-            *p += sum;
+            if (conv_params->do_average)
+              *p += sum;
+            else
+              *p = sum;
           } else {
 #else
           {

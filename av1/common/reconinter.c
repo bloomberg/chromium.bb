@@ -975,7 +975,6 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_HIGHBITDEPTH
 #if CONFIG_CONVOLVE_ROUND
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
-  memset(tmp_dst2, 0, sizeof(tmp_dst2));
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
@@ -1310,7 +1309,6 @@ static INLINE void build_inter_predictors(
         is_compound = has_second_ref(this_mbmi);
 #if CONFIG_CONVOLVE_ROUND
         DECLARE_ALIGNED(16, int32_t, tmp_dst[8 * 8]);
-        av1_zero(tmp_dst);
         int tmp_dst_stride = 8;
         assert(w <= 8 && h <= 8);
 #endif  // CONFIG_CONVOLVE_ROUND
@@ -1489,7 +1487,6 @@ static INLINE void build_inter_predictors(
     SubpelParams subpel_params[2];
 #if CONFIG_CONVOLVE_ROUND
     DECLARE_ALIGNED(16, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
-    av1_zero(tmp_dst);
 #endif  // CONFIG_CONVOLVE_ROUND
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
