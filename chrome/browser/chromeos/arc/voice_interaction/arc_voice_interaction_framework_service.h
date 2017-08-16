@@ -107,6 +107,8 @@ class ArcVoiceInteractionFrameworkService
  private:
   void CallAndResetMetalayerCallback();
 
+  void NotifyMetalayerStatusChanged(bool visible);
+
   bool InitiateUserInteraction();
 
   content::BrowserContext* context_;
