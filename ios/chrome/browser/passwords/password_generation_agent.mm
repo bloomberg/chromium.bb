@@ -287,10 +287,8 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
   // If the form origin hasn't been cleared by both the autofill and the
   // password manager, wait.
   GURL origin = _possibleAccountCreationForm->origin;
-  if (!experimental_flags::UseOnlyLocalHeuristicsForPasswordGeneration()) {
-    if (!base::ContainsValue(_allowedGenerationFormOrigins, origin))
-      return;
-  }
+  if (!base::ContainsValue(_allowedGenerationFormOrigins, origin))
+    return;
 
   // Use the first password field in the form as the generation field.
   _passwordGenerationField.reset(

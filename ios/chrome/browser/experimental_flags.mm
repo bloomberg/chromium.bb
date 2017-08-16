@@ -185,12 +185,6 @@ bool IsViewCopyPasswordsEnabled() {
   return ![viewCopyPasswordFlag isEqualToString:@"Disabled"];
 }
 
-bool UseOnlyLocalHeuristicsForPasswordGeneration() {
-  // TODO(crbug.com/752077): Remove this function and its associated code.
-  // Either by replacing it with a base::Feature or by removing all its uses.
-  return false;
-}
-
 bool IsSuggestionsUIEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
