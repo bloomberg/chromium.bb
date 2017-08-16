@@ -107,12 +107,11 @@ mitigated by introducing randomness in the execution time of the affected API.
 
 Bugs in Incognito mode are tracked as privacy bugs, not security bugs.
 
-The [Help
-Center](https://support.google.com/chrome/answer/95464?hl=en&p=cpn_incognito)
-explains what privacy protections Incognito mode attempts to enforce. In
-particular, please note that Incognito is not a “do not track” mode, and it does
-not hide aspects of your identity from web sites. Chrome does offer a way to
-send Do Not Track request to servers; see chrome://settings/?search=do+not+track
+The [Help Center](https://support.google.com/chrome/?p=cpn_incognito) explains
+what privacy protections Incognito mode attempts to enforce. In particular,
+please note that Incognito is not a “do not track” mode, and it does not hide
+aspects of your identity from web sites. Chrome does offer a way to send Do Not
+Track request to servers; see chrome://settings/?search=do+not+track
 
 When in Incognito mode, Chrome does not store any new history, cookies, or other
 state in non-volatile storage. However, Incognito windows will be able to access
