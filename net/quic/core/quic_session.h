@@ -197,6 +197,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   const QuicSocketAddress& peer_address() const {
     return connection_->peer_address();
   }
+  const QuicSocketAddress& self_address() const {
+    return connection_->self_address();
+  }
   QuicConnectionId connection_id() const {
     return connection_->connection_id();
   }
