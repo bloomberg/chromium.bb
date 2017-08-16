@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SuggestionsCarousel;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
@@ -112,7 +113,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(mSiteSection);
         }
 
-        mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
+        if (SuggestionsConfig.useModern()) {
+            mRoot.addChildren(mSigninPromo, mSections, mAllDismissed, mFooter);
+        } else {
+            mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
+        }
+
         if (mAboveTheFoldView == null
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
             mBottomSpacer = null;
@@ -328,7 +334,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @VisibleForTesting
-    int getFirstPositionForType(@ItemViewType int viewType) {
+    public int getFirstPositionForType(@ItemViewType int viewType) {
         int count = getItemCount();
         for (int i = 0; i < count; i++) {
             if (getItemViewType(i) == viewType) return i;
