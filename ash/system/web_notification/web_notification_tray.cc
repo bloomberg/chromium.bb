@@ -29,9 +29,9 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
-#include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -81,7 +81,7 @@ class WebNotificationBubbleWrapper {
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
   WebNotificationBubbleWrapper(WebNotificationTray* tray,
                                TrayBackgroundView* anchor_tray,
-                               message_center::MessageBubbleBase* bubble) {
+                               message_center::MessageCenterBubble* bubble) {
     bubble_.reset(bubble);
     views::TrayBubbleView::InitParams init_params;
     init_params.delegate = tray;
@@ -101,13 +101,13 @@ class WebNotificationBubbleWrapper {
     bubble->InitializeContents(bubble_view);
   }
 
-  message_center::MessageBubbleBase* bubble() const { return bubble_.get(); }
+  message_center::MessageCenterBubble* bubble() const { return bubble_.get(); }
 
   // Convenience accessors.
   views::TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
 
  private:
-  std::unique_ptr<message_center::MessageBubbleBase> bubble_;
+  std::unique_ptr<message_center::MessageCenterBubble> bubble_;
   std::unique_ptr<TrayBubbleWrapper> bubble_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
