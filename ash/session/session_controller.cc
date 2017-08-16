@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
@@ -19,8 +20,12 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using session_manager::SessionState;
@@ -48,8 +53,10 @@ SessionState GetDefaultSessionState() {
 
 }  // namespace
 
-SessionController::SessionController()
-    : state_(GetDefaultSessionState()), weak_ptr_factory_(this) {}
+SessionController::SessionController(service_manager::Connector* connector)
+    : state_(GetDefaultSessionState()),
+      connector_(connector),
+      weak_ptr_factory_(this) {}
 
 SessionController::~SessionController() {
   // Abort pending start lock request.
@@ -189,6 +196,19 @@ void SessionController::ShowMultiProfileLogin() {
     client_->ShowMultiProfileLogin();
 }
 
+PrefService* SessionController::GetUserPrefServiceForUser(
+    const AccountId& account_id) {
+  auto it = per_user_prefs_.find(account_id);
+  if (it != per_user_prefs_.end())
+    return it->second.get();
+
+  return nullptr;
+}
+
+PrefService* SessionController::GetLastActiveUserPrefService() {
+  return last_active_user_prefs_;
+}
+
 void SessionController::AddObserver(SessionObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -252,9 +272,20 @@ void SessionController::SetUserSessionOrder(
   if (user_sessions_[0]->session_id != active_session_id_) {
     active_session_id_ = user_sessions_[0]->session_id;
 
+    // When switching to a user for whose PrefService is not ready,
+    // |last_active_user_prefs_| continues to point to the PrefService of the
+    // most-recently active user with a loaded PrefService.
+    auto it = per_user_prefs_.find(user_sessions_[0]->user_info->account_id);
+    if (it != per_user_prefs_.end())
+      last_active_user_prefs_ = it->second.get();
+
     for (auto& observer : observers_) {
       observer.OnActiveUserSessionChanged(
           user_sessions_[0]->user_info->account_id);
+    }
+    if (it != per_user_prefs_.end()) {
+      for (auto& observer : observers_)
+        observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
     }
 
     UpdateLoginStatus();
@@ -318,6 +349,7 @@ void SessionController::SetSessionLengthLimit(base::TimeDelta length_limit,
 
 void SessionController::ClearUserSessionsForTest() {
   user_sessions_.clear();
+  last_active_user_prefs_ = nullptr;
 }
 
 void SessionController::FlushMojoForTest() {
@@ -327,6 +359,12 @@ void SessionController::FlushMojoForTest() {
 void SessionController::LockScreenAndFlushForTest() {
   LockScreen();
   FlushMojoForTest();
+}
+
+void SessionController::ProvideUserPrefServiceForTest(
+    const AccountId& account_id,
+    std::unique_ptr<PrefService> pref_service) {
+  OnProfilePrefServiceInitialized(account_id, std::move(pref_service));
 }
 
 void SessionController::SetSessionState(SessionState state) {
@@ -354,6 +392,22 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
   const AccountId account_id(user_session->user_info->account_id);
 
   user_sessions_.push_back(std::move(user_session));
+
+  if (connector_) {
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    Shell::RegisterProfilePrefs(pref_registry.get());
+    ash::mojom::PrefConnectorPtr pref_connector_connector;
+    connector_->BindInterface(mojom::kPrefConnectorServiceName,
+                              &pref_connector_connector);
+    prefs::mojom::PrefStoreConnectorPtr pref_connector;
+    pref_connector_connector->GetPrefStoreConnectorForUser(
+        account_id, mojo::MakeRequest(&pref_connector));
+
+    prefs::ConnectToPrefService(
+        std::move(pref_connector), std::move(pref_registry),
+        base::Bind(&SessionController::OnProfilePrefServiceInitialized,
+                   weak_ptr_factory_.GetWeakPtr(), account_id));
+  }
 
   for (auto& observer : observers_)
     observer.OnUserSessionAdded(account_id);
@@ -430,6 +484,25 @@ void SessionController::UpdateLoginStatus() {
 void SessionController::OnLockAnimationFinished() {
   if (!start_lock_callback_.is_null())
     std::move(start_lock_callback_).Run(true /* locked */);
+}
+
+void SessionController::OnProfilePrefServiceInitialized(
+    const AccountId& account_id,
+    std::unique_ptr<PrefService> pref_service) {
+  // |pref_service| can be null when running standalone without chrome.
+  if (!pref_service)
+    return;
+
+  PrefService* pref_service_ptr = pref_service.get();
+  bool inserted =
+      per_user_prefs_.emplace(account_id, std::move(pref_service)).second;
+  DCHECK(inserted);
+  DCHECK(!user_sessions_.empty());
+  if (account_id == user_sessions_[0]->user_info->account_id) {
+    last_active_user_prefs_ = pref_service_ptr;
+    for (auto& observer : observers_)
+      observer.OnActiveUserPrefServiceChanged(pref_service_ptr);
+  }
 }
 
 }  // namespace ash

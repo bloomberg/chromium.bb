@@ -84,14 +84,6 @@ class ASH_EXPORT ShellObserver {
   // amount of time after Shell initialization. Only called once.
   virtual void OnLocalStatePrefServiceInitialized(PrefService* pref_service) {}
 
-  // Called when the user profile pref service is available. Also called after
-  // multiprofile user switch. Never called with the login screen profile.
-  // May be called with null in tests.
-  // TODO(jamescook): Either maintain pref service connections for all multiuser
-  // profiles or make the pref service switch atomic with active user switch.
-  // http://crbug.com/705347
-  virtual void OnActiveUserPrefServiceChanged(PrefService* pref_service) {}
-
  protected:
   virtual ~ShellObserver() {}
 };

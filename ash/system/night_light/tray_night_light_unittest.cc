@@ -36,17 +36,11 @@ class TrayNightLightTest : public AshTestBase {
     AshTestBase::SetUp();
     GetSessionControllerClient()->Reset();
     GetSessionControllerClient()->AddUserSession(kFakeUserEmail);
-    Shell::RegisterProfilePrefs(pref_service_.registry());
-
-    ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
-        &pref_service_);
     GetSessionControllerClient()->SwitchActiveUser(
         AccountId::FromUserEmail(kFakeUserEmail));
   }
 
  private:
-  TestingPrefServiceSimple pref_service_;
-
   DISALLOW_COPY_AND_ASSIGN(TrayNightLightTest);
 };
 

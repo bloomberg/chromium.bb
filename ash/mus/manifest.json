@@ -33,7 +33,7 @@
       },
       "requires": {
         "*": [ "accessibility", "app" ],
-        "preferences_forwarder": [ "pref_client" ],
+        "ash_pref_connector": [ "pref_connector" ],
         "local_state": [ "pref_client" ],
         "ui": [ "display_test", "window_manager" ],
         "touch_hud": [ "mash:launchable" ]

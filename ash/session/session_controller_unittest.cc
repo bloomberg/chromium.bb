@@ -13,9 +13,13 @@
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
+#include "ash/session/test_session_controller_client.h"
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +44,10 @@ class TestSessionObserver : public SessionObserver {
 
   void OnSessionStateChanged(SessionState state) override { state_ = state; }
 
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override {
+    last_user_pref_service_ = pref_service;
+  }
+
   std::string GetUserSessionEmails() const {
     std::string emails;
     for (const auto& account_id : user_session_account_ids_) {
@@ -53,11 +61,16 @@ class TestSessionObserver : public SessionObserver {
   const std::vector<AccountId>& user_session_account_ids() const {
     return user_session_account_ids_;
   }
+  PrefService* last_user_pref_service() const {
+    return last_user_pref_service_;
+  }
+  void clear_last_user_pref_service() { last_user_pref_service_ = nullptr; }
 
  private:
   SessionState state_ = SessionState::UNKNOWN;
   AccountId active_account_id_;
   std::vector<AccountId> user_session_account_ids_;
+  PrefService* last_user_pref_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionObserver);
 };
@@ -77,7 +90,7 @@ class SessionControllerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    controller_ = base::MakeUnique<SessionController>();
+    controller_ = base::MakeUnique<SessionController>(nullptr);
     controller_->AddObserver(&observer_);
   }
 
@@ -379,6 +392,76 @@ TEST_F(SessionControllerTest, IsUserChild) {
 
   // Child accounts are supervised.
   EXPECT_TRUE(controller()->IsUserSupervised());
+}
+
+using SessionControllerPrefsTest = NoSessionAshTestBase;
+
+// Verifies that ShellObserver is notified for PrefService changes.
+TEST_F(SessionControllerPrefsTest, Observer) {
+  constexpr char kUser1[] = "user1@test.com";
+  constexpr char kUser2[] = "user2@test.com";
+  const AccountId kUserAccount1 = AccountId::FromUserEmail(kUser1);
+  const AccountId kUserAccount2 = AccountId::FromUserEmail(kUser2);
+
+  TestSessionObserver observer;
+  SessionController* controller = Shell::Get()->session_controller();
+  controller->AddObserver(&observer);
+
+  // Setup 2 users.
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  // Disable auto-provision of PrefService for each user.
+  constexpr bool kEnableSettings = true;
+  constexpr bool kProvidePrefService = false;
+  session->AddUserSession(kUser1, user_manager::USER_TYPE_REGULAR,
+                          kEnableSettings, kProvidePrefService);
+  session->AddUserSession(kUser2, user_manager::USER_TYPE_REGULAR,
+                          kEnableSettings, kProvidePrefService);
+
+  // The observer is not notified because the PrefService for kUser1 is not yet
+  // ready.
+  session->SwitchActiveUser(kUserAccount1);
+  EXPECT_EQ(nullptr, observer.last_user_pref_service());
+
+  auto pref_service = base::MakeUnique<TestingPrefServiceSimple>();
+  Shell::RegisterProfilePrefs(pref_service->registry());
+  controller->ProvideUserPrefServiceForTest(kUserAccount1,
+                                            std::move(pref_service));
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
+            observer.last_user_pref_service());
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
+            controller->GetLastActiveUserPrefService());
+
+  observer.clear_last_user_pref_service();
+
+  // Switching to a user for which prefs are not ready does not notify and
+  // GetLastActiveUserPrefService() returns the old PrefService.
+  session->SwitchActiveUser(AccountId::FromUserEmail(kUser2));
+  EXPECT_EQ(nullptr, observer.last_user_pref_service());
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
+            controller->GetLastActiveUserPrefService());
+
+  session->SwitchActiveUser(AccountId::FromUserEmail(kUser1));
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
+            observer.last_user_pref_service());
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
+            controller->GetLastActiveUserPrefService());
+
+  // There should be no notification about a PrefService for an inactive user
+  // becoming initialized.
+  observer.clear_last_user_pref_service();
+  pref_service = base::MakeUnique<TestingPrefServiceSimple>();
+  Shell::RegisterProfilePrefs(pref_service->registry());
+  controller->ProvideUserPrefServiceForTest(kUserAccount2,
+                                            std::move(pref_service));
+  EXPECT_EQ(nullptr, observer.last_user_pref_service());
+
+  session->SwitchActiveUser(AccountId::FromUserEmail(kUser2));
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount2),
+            observer.last_user_pref_service());
+  EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount2),
+            controller->GetLastActiveUserPrefService());
+
+  controller->RemoveObserver(&observer);
 }
 
 }  // namespace

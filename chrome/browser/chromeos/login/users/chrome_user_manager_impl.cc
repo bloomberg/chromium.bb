@@ -507,7 +507,7 @@ void ChromeUserManagerImpl::Observe(
       user_manager::User* user =
           ProfileHelper::Get()->GetUserByProfile(profile);
       if (user != NULL) {
-        user->set_profile_is_created();
+        user->SetProfileIsCreated();
 
         if (user->HasGaiaAccount())
           GetUserImageManager(user->GetAccountId())->UserProfileCreated();

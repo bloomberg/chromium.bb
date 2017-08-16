@@ -8,6 +8,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -49,8 +50,9 @@ bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
-  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
-  if (!prefs)  // Null during startup, user switch and tests.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  if (!prefs)  // Null during startup.
     return;
 
   int64_t display_id =

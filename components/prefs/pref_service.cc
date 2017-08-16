@@ -252,6 +252,14 @@ PrefService::PrefInitializationStatus PrefService::GetInitializationStatus()
   }
 }
 
+PrefService::PrefInitializationStatus
+PrefService::GetAllPrefStoresInitializationStatus() const {
+  if (!pref_value_store_->IsInitializationComplete())
+    return INITIALIZATION_STATUS_WAITING;
+
+  return GetInitializationStatus();
+}
+
 bool PrefService::IsManagedPreference(const std::string& pref_name) const {
   const Preference* pref = FindPreference(pref_name);
   return pref && pref->IsManaged();

@@ -429,16 +429,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
 
-  // Gets the current active user pref service.
-  // In classic ash, it will be null if there's no active user.
-  // In the case of mash, it can be null if it failed to or hasn't yet
-  // connected to the pref service.
-  //
-  // NOTE: Code that uses PrefChangeRegistrar or otherwise observes the
-  // PrefService must use ShellObserver::OnActiveUserPrefServiceChanged() to
-  // reset its observers on user switch.
-  PrefService* GetActiveUserPrefService() const;
-
   // Gets the local state pref service. It can be null in mash if connecting to
   // local state pref service has not completed successfully.
   PrefService* GetLocalStatePrefService() const;
@@ -660,7 +650,6 @@ class ASH_EXPORT Shell : public SessionObserver,
                          aura::Window* lost_active) override;
 
   // SessionObserver:
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
@@ -669,12 +658,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   // the profile is available.
   void InitializeShelf();
 
-  // Registers preferences owned by other services (e.g. chrome). Used in mash.
-  static void RegisterForeignPrefs(PrefRegistrySimple* registry);
-
-  // Callbacks for prefs::ConnectToPrefService.
-  void OnProfilePrefServiceInitialized(
-      std::unique_ptr<::PrefService> pref_service);
+  // Callback for prefs::ConnectToPrefService.
   void OnLocalStatePrefServiceInitialized(
       std::unique_ptr<::PrefService> pref_service);
 
@@ -737,11 +721,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
-
-  // Only initialized for mash. Can be null in ash_standalone (when chrome is
-  // not running) or when reconnecting to the mojo pref service after
-  // multiuser profile switch.
-  std::unique_ptr<PrefService> profile_pref_service_mash_;
 
   // Used in non-mash. Owned by chrome.
   PrefService* local_state_non_mash_ = nullptr;

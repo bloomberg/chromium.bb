@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 
 class GURL;
-class PrefService;
 
 namespace aura {
 class Window;
@@ -121,9 +120,6 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
-
-  // Not used in mash because ash owns the PrefService.
-  virtual PrefService* GetActiveUserPrefService() const = 0;
 
   // If |use_local_state| is true, returns the touchscreen status from local
   // state, otherwise from user prefs.

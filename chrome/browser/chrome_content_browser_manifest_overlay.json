@@ -31,13 +31,14 @@
         "accessibility_autoclick": [ "ash:autoclick" ],
         "ash": [ "ash", "display" ],
         // Only used in classic ash case.
+        "ash_pref_connector": [ "pref_connector" ],
+        // Only used in classic ash case.
         "chrome": [ "input_device_controller" ],
         "device": [ "device:fingerprint" ],
         "identity": [ "identity_manager" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "profiling": [ "memlog" ],
-        "preferences_forwarder": [ "pref_client" ],
         "preferences": [ "pref_client", "pref_control" ],
         "ui": [
           "display_controller",

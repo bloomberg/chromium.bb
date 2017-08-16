@@ -399,7 +399,7 @@ if (enable_oop_heap_profiling) {
 
 if (is_chromeos) {
   chrome_packaged_services +=
-      [ "//chrome/browser:preferences_forwarder_manifest" ]
+      [ "//chrome/browser/chromeos:ash_pref_connector_manifest" ]
 }
 
 service_manifest("chrome_manifest") {

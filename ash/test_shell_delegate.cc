@@ -135,10 +135,6 @@ gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
-PrefService* TestShellDelegate::GetActiveUserPrefService() const {
-  return active_user_pref_service_;
-}
-
 bool TestShellDelegate::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return use_local_state ? touchscreen_enabled_in_local_pref_ : true;

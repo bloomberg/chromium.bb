@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -223,8 +224,20 @@ bool User::is_active() const {
   return is_active_;
 }
 
+void User::AddProfileCreatedObserver(base::OnceClosure on_profile_created) {
+  DCHECK(!profile_is_created_);
+  on_profile_created_observers_.push_back(std::move(on_profile_created));
+}
+
 bool User::IsAffiliated() const {
   return is_affiliated_;
+}
+
+void User::SetProfileIsCreated() {
+  profile_is_created_ = true;
+  for (auto& callback : on_profile_created_observers_)
+    std::move(callback).Run();
+  on_profile_created_observers_.clear();
 }
 
 void User::SetAffiliation(bool is_affiliated) {

@@ -147,10 +147,6 @@ gfx::Image ShellDelegateImpl::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
-PrefService* ShellDelegateImpl::GetActiveUserPrefService() const {
-  return nullptr;
-}
-
 bool ShellDelegateImpl::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return true;

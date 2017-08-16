@@ -95,7 +95,7 @@ void FakeUserManager::UserLoggedIn(const AccountId& account_id,
        it != users_.end(); ++it) {
     if ((*it)->username_hash() == username_hash) {
       (*it)->set_is_logged_in(true);
-      (*it)->set_profile_is_created();
+      (*it)->SetProfileIsCreated();
       logged_in_users_.push_back(*it);
 
       if (!primary_user_)

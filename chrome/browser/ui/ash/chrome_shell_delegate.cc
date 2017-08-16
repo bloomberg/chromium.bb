@@ -550,17 +550,6 @@ gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {
       IDR_BLUETOOTH_KEYBOARD);
 }
 
-PrefService* ChromeShellDelegate::GetActiveUserPrefService() const {
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  if (!user)
-    return nullptr;
-
-  // The user's profile might not be ready yet, so we must check for that too.
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  return profile ? profile->GetPrefs() : nullptr;
-}
-
 bool ChromeShellDelegate::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return chromeos::system::InputDeviceSettings::Get()
