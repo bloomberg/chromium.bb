@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 116 tests; 72 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 73 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
@@ -115,7 +115,7 @@ FAIL RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidate, VoidF
 PASS RTCPeerConnection interface: pc must inherit property "getStats(MediaStreamTrack, RTCStatsCallback, RTCPeerConnectionErrorCallback)" with the proper type 
 PASS RTCPeerConnection interface: calling getStats(MediaStreamTrack, RTCStatsCallback, RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "generateCertificate(AlgorithmIdentifier)" with the proper type 
-FAIL RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifier) on pc with too few arguments must throw TypeError assert_unreached: Throws "TypeError: Cannot read property 'apply' of undefined" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifier) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "getSenders()" with the proper type 
 PASS RTCPeerConnection interface: pc must inherit property "getReceivers()" with the proper type 
 PASS RTCPeerConnection interface: pc must inherit property "addTrack(MediaStreamTrack, MediaStream)" with the proper type 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 498 tests; 194 PASS, 304 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 498 tests; 195 PASS, 303 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Main test driver 
 PASS Test driver for asyncInitCertificate 
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: OperationError: TEST_ERROR Reached unreachable code
@@ -121,7 +121,7 @@ PASS RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescrip
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addIceCandidate([object Object],[object Object], VoidFunction, RTCPeerConnectionErrorCallback)" with the proper type 
 PASS RTCPeerConnection interface: calling addIceCandidate([object Object],[object Object], VoidFunction, RTCPeerConnectionErrorCallback) on new RTCPeerConnection() with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "generateCertificate(AlgorithmIdentifier)" with the proper type 
-FAIL RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifier) on new RTCPeerConnection() with too few arguments must throw TypeError assert_unreached: Throws "TypeError: Cannot read property 'apply' of undefined" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifier) on new RTCPeerConnection() with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getSenders()" with the proper type 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getReceivers()" with the proper type 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getTransceivers()" with the proper type assert_inherits: property "getTransceivers" not found in prototype chain
