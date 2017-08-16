@@ -180,6 +180,12 @@ bool FillLayer::operator==(const FillLayer& o) const {
          ((next_ && o.next_) ? *next_ == *o.next_ : next_ == o.next_);
 }
 
+bool FillLayer::VisuallyEqual(const FillLayer& o) const {
+  if (!image_ && !o.image_ && clip_ == o.clip_)
+    return true;
+  return *this == o;
+}
+
 void FillLayer::FillUnsetProperties() {
   FillLayer* curr;
   for (curr = this; curr && curr->IsXPositionSet(); curr = curr->Next()) {

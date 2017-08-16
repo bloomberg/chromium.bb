@@ -1741,6 +1741,11 @@ class ComputedStyle : public ComputedStyleBase,
     return BorderImage().Outset() == o.BorderImage().Outset();
   }
 
+  bool BackgroundVisuallyEqual(const ComputedStyle& o) const {
+    return BackgroundColorInternal() == o.BackgroundColorInternal() &&
+           BackgroundInternal().VisuallyEqual(o.BackgroundInternal());
+  }
+
   void ResetBorder() {
     ResetBorderImage();
     ResetBorderTop();
