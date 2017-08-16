@@ -72,6 +72,3 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
-
-    # TODO(xing.xu): remove these after new reference images are generated.
-    self.Fail('Pixel_WebGLPreserved_After_Tab_Switch', bug=736969)
