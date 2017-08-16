@@ -20,7 +20,13 @@ Session::~Session() {}
 
 void Session::OnStart() {
   StartWindowManager();
-  StartQuickLaunch();
+  // TODO(jonross): Re-enable when QuickLaunch for all builds once it no longer
+  // deadlocks with ServiceManager shutdown in mash_browser_tests.
+  // (crbug.com/594852)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          quick_launch::mojom::kServiceName)) {
+    StartQuickLaunch();
+  }
 }
 
 void Session::StartWindowManager() {
