@@ -1454,19 +1454,12 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
                      new_profile_name, new_avatar_url, std::string());
 }
 
-void ProfileManager::FinishDeletingProfile(
+void ProfileManager::OnLoadProfileForProfileDeletion(
     const base::FilePath& profile_dir,
-    const base::FilePath& new_active_profile_dir) {
-  // Update the last used profile pref before closing browser windows. This
-  // way the correct last used profile is set for any notification observers.
-  profiles::SetLastUsedProfile(
-      new_active_profile_dir.BaseName().MaybeAsASCII());
-
+    Profile* profile) {
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
-  Profile* profile = GetProfileByPath(profile_dir);
-
   if (profile) {
     // TODO: Migrate additional code in this block to observe this notification
     // instead of being implemented here.
@@ -1498,8 +1491,9 @@ void ProfileManager::FinishDeletingProfile(
     ProfileMetrics::LogProfileDelete(entry->IsAuthenticated());
     // Some platforms store passwords in keychains. They should be removed.
     scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS).get();
+        PasswordStoreFactory::GetForProfile(profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS)
+            .get();
     if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(
           base::Time(), base::Time::Max(), base::Closure());
@@ -1508,17 +1502,36 @@ void ProfileManager::FinishDeletingProfile(
     // The Profile Data doesn't get wiped until Chrome closes. Since we promised
     // that the user's data would be removed, do so immediately.
     profiles::RemoveBrowsingDataForProfile(profile_dir);
+
+    // Clean-up pref data that won't be cleaned up by deleting the profile dir.
+    profile->GetPrefs()->OnStoreDeletionFromDisk();
   } else {
-    // It is safe to delete a not yet loaded Profile from disk.
+    // We failed to load the profile, but it's safe to delete a not yet loaded
+    // Profile from disk.
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::BindOnce(&NukeProfileFromDisk, profile_dir));
   }
 
-  // Queue even a profile that was nuked so it will be MarkedForDeletion and so
-  // CreateProfileAsync can't create it.
-  MarkProfileDirectoryForDeletion(profile_dir);
   storage.RemoveProfile(profile_dir);
   ProfileMetrics::UpdateReportedProfilesStatistics(this);
+}
+
+void ProfileManager::FinishDeletingProfile(
+    const base::FilePath& profile_dir,
+    const base::FilePath& new_active_profile_dir) {
+  // Update the last used profile pref before closing browser windows. This
+  // way the correct last used profile is set for any notification observers.
+  profiles::SetLastUsedProfile(
+      new_active_profile_dir.BaseName().MaybeAsASCII());
+
+  // Attempt to load the profile before deleting it to properly clean up
+  // profile-specific data stored outside the profile directory.
+  LoadProfileByPath(profile_dir, false,
+                    base::Bind(&ProfileManager::OnLoadProfileForProfileDeletion,
+                               base::Unretained(this), profile_dir));
+
+  // Prevents CreateProfileAsync from re-creating the profile.
+  MarkProfileDirectoryForDeletion(profile_dir);
 }
 #endif  // !defined(OS_ANDROID)
 

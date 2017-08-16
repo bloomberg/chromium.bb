@@ -71,6 +71,7 @@ class TestingPrefStore : public PersistentPrefStore {
   void SetBlockAsyncRead(bool block_async_read);
 
   void ClearMutableValues() override;
+  void OnStoreDeletionFromDisk() override;
 
   // Getter and Setter methods for setting and getting the state of the
   // |TestingPrefStore|.

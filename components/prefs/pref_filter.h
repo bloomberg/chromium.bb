@@ -58,6 +58,9 @@ class COMPONENTS_PREFS_EXPORT PrefFilter {
   // must not be bound to thread-unsafe member state).
   virtual OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) = 0;
+
+  // Cleans preference data that may have been saved outside of the store.
+  virtual void OnStoreDeletionFromDisk() = 0;
 };
 
 #endif  // COMPONENTS_PREFS_PREF_FILTER_H_

@@ -322,6 +322,8 @@ class ProfileManager : public content::NotificationObserver,
   // and marks the new profile as active.
   void FinishDeletingProfile(const base::FilePath& profile_dir,
                              const base::FilePath& new_active_profile_dir);
+  void OnLoadProfileForProfileDeletion(const base::FilePath& profile_dir,
+                                       Profile* profile);
 #endif
 
   // Registers profile with given info. Returns pointer to created ProfileInfo

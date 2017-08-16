@@ -201,6 +201,17 @@ PrefFilter::OnWriteCallbackPair PrefHashFilter::FilterSerializeData(
   return callback_pair;
 }
 
+void PrefHashFilter::OnStoreDeletionFromDisk() {
+  if (external_validation_hash_store_pair_) {
+    external_validation_hash_store_pair_->second.get()->Reset();
+
+    // The PrefStore will attempt to write preferences even if it's marked for
+    // deletion. Clear the external store pair to avoid re-writing to the
+    // external store.
+    external_validation_hash_store_pair_.reset();
+  }
+}
+
 void PrefHashFilter::FinalizeFilterOnLoad(
     const PostFilterOnLoadCallback& post_filter_on_load_callback,
     std::unique_ptr<base::DictionaryValue> pref_store_contents,

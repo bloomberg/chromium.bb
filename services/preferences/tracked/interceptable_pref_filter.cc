@@ -37,3 +37,5 @@ void InterceptablePrefFilter::InterceptNextFilterOnLoad(
   DCHECK(filter_on_load_interceptor_.is_null());
   filter_on_load_interceptor_ = filter_on_load_interceptor;
 }
+
+void InterceptablePrefFilter::OnStoreDeletionFromDisk() {}

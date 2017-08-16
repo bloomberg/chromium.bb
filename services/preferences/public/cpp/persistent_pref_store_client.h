@@ -56,6 +56,7 @@ class PersistentPrefStoreClient
   void CommitPendingWrite(base::OnceClosure done_callback) override;
   void SchedulePendingLossyWrites() override;
   void ClearMutableValues() override;
+  void OnStoreDeletionFromDisk() override;
 
  protected:
   // base::RefCounted<PrefStore>:

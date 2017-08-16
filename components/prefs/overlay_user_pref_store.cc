@@ -197,6 +197,10 @@ void OverlayUserPrefStore::ClearMutableValues() {
   }
 }
 
+void OverlayUserPrefStore::OnStoreDeletionFromDisk() {
+  underlay_->OnStoreDeletionFromDisk();
+}
+
 OverlayUserPrefStore::~OverlayUserPrefStore() {
   overlay_->RemoveObserver(overlay_observer_.get());
   underlay_->RemoveObserver(underlay_observer_.get());

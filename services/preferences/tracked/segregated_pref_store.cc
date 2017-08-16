@@ -178,6 +178,11 @@ void SegregatedPrefStore::ClearMutableValues() {
   NOTIMPLEMENTED();
 }
 
+void SegregatedPrefStore::OnStoreDeletionFromDisk() {
+  default_pref_store_->OnStoreDeletionFromDisk();
+  selected_pref_store_->OnStoreDeletionFromDisk();
+}
+
 SegregatedPrefStore::~SegregatedPrefStore() {
   default_pref_store_->RemoveObserver(&aggregating_observer_);
   selected_pref_store_->RemoveObserver(&aggregating_observer_);

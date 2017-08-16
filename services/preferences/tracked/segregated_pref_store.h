@@ -74,8 +74,8 @@ class SegregatedPrefStore : public PersistentPrefStore {
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite(base::OnceClosure done_callback) override;
   void SchedulePendingLossyWrites() override;
-
   void ClearMutableValues() override;
+  void OnStoreDeletionFromDisk() override;
 
  private:
   // Aggregates events from the underlying stores and synthesizes external

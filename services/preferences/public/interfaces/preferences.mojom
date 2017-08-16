@@ -136,6 +136,7 @@ interface PersistentPrefStore {
   CommitPendingWrite() => ();
   SchedulePendingLossyWrites();
   ClearMutableValues();
+  OnStoreDeletionFromDisk();
 };
 
 // A registry of all prefs registered by a single client.

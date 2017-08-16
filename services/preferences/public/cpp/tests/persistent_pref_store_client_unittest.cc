@@ -99,6 +99,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
 
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
+  void OnStoreDeletionFromDisk() override {}
 
   base::MessageLoop message_loop_;
 

@@ -44,6 +44,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
   void CommitPendingWrite(base::OnceClosure done_callback);
   void SchedulePendingLossyWrites();
   void ClearMutableValues();
+  void OnStoreDeletionFromDisk();
 
   // PrefStore::Observer:
   void OnPrefValueChanged(const std::string& key) override;
