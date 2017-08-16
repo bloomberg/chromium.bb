@@ -9,6 +9,6 @@
 0. Upload the roll CL, making sure to include the `fuchsia` trybot. Tag the roll
    with `Bug: 707030`.
 
-(Old revisions of this document have the old manual steps for building a Fuchsia
-SDK if for some reason you want to do that locally. They'll probably
-increasingly go out of date as the steps for building the SDK changes though.)
+If you would like to build an SDK locally, `tools/fuchsia/local-sdk.py` tries to
+do this (so you can iterate on ToT Fuchsia against your Chromium build), however
+it's simply a copy of the steps run on the bot above, and so may be out of date.
