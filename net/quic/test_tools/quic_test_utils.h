@@ -471,9 +471,6 @@ class MockQuicSession : public QuicSession {
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream, QuicStream*(SpdyPriority priority));
-  MOCK_METHOD1(MaybeCreateIncomingDynamicStream, QuicStream*(QuicStreamId id));
-  MOCK_METHOD1(MaybeCreateOutgoingDynamicStream,
-               QuicStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream2, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream2, bool());
   MOCK_METHOD6(
@@ -497,7 +494,6 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
-  MOCK_METHOD1(CreateStream, std::unique_ptr<QuicStream>(QuicStreamId id));
 
   using QuicSession::ActivateStream;
 
@@ -555,7 +551,6 @@ class MockQuicSpdySession : public QuicSpdySession {
                QuicSpdyStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-  MOCK_METHOD1(CreateStream, std::unique_ptr<QuicStream>(QuicStreamId id));
   MOCK_METHOD6(
       WritevData,
       QuicConsumedData(
@@ -615,24 +610,6 @@ class MockQuicSpdySession : public QuicSpdySession {
       OnStreamFrameData,
       void(QuicStreamId stream_id, const char* data, size_t len, bool fin));
 
-  QuicSpdyStream* QuicSpdySessionMaybeCreateIncomingDynamicStream(
-      QuicStreamId id) {
-    return QuicSpdySession::MaybeCreateIncomingDynamicStream(id);
-  }
-
-  bool QuicSpdySessionShouldCreateIncomingDynamicStream2(QuicStreamId id) {
-    return QuicSpdySession::ShouldCreateIncomingDynamicStream2(id);
-  }
-
-  QuicSpdyStream* QuicSpdySessionMaybeCreateOutgoingDynamicStream(
-      SpdyPriority priority) {
-    return QuicSpdySession::MaybeCreateOutgoingDynamicStream(priority);
-  }
-
-  bool QuicSpdySessionShouldCreateOutgoingDynamicStream2() {
-    return QuicSpdySession::ShouldCreateOutgoingDynamicStream2();
-  }
-
   using QuicSession::ActivateStream;
 
  private:
@@ -654,7 +631,6 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
-  MOCK_METHOD1(CreateStream, std::unique_ptr<QuicStream>(QuicStreamId id));
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
@@ -716,8 +692,6 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
                QuicSpdyStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-
-  MOCK_METHOD1(CreateStream, std::unique_ptr<QuicStream>(QuicStreamId id));
 
   QuicCryptoClientStream* GetMutableCryptoStream() override;
   const QuicCryptoClientStream* GetCryptoStream() const override;
