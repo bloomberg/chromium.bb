@@ -34,6 +34,11 @@ struct KeyValue {
   array<uint8> value;
 };
 
+enum SharedReadCache {
+  Default,
+  Web,
+};
+
 // Options which control the behavior of a database. (This struct corresponds
 // with the struct in leveldb's options.h.)
 struct OpenOptions {
@@ -60,8 +65,7 @@ struct OpenOptions {
   // details.)
   int32 max_open_files = 80;
 
-  // Default size is 8 megabytes.
-  uint64 block_cache_size = 8388608;
+  SharedReadCache shared_block_read_cache = SharedReadCache.Default;
 };
 
 // Service which hands out databases.

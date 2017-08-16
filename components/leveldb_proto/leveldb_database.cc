@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
-#include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -68,32 +67,20 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
   return false;
 }
 
-static size_t DefaultBlockCacheSize() {
-  if (base::SysInfo::IsLowEndDevice())
-    return 512 * 1024;  // 512KB
-  else
-    return 8 * 1024 * 1024;  // 8MB
-}
-
 bool LevelDB::Init(const leveldb_proto::Options& options) {
   leveldb_env::Options leveldb_options;
   leveldb_options.create_if_missing = true;
   leveldb_options.max_open_files = 0;  // Use minimum.
 
-  static leveldb::Cache* default_block_cache =
-      leveldb::NewLRUCache(DefaultBlockCacheSize());
-
   if (options.write_buffer_size != 0)
     leveldb_options.write_buffer_size = options.write_buffer_size;
-  if (options.read_cache_size != 0) {
-    custom_block_cache_.reset(leveldb::NewLRUCache(options.read_cache_size));
-    leveldb_options.block_cache = custom_block_cache_.get();
-  } else {
-    // By default, allocate a single block cache to be shared across
-    // all LevelDB instances created via this method.
-    // See also content/browser/indexed_db/leveldb/leveldb_database.cc,
-    // which has its own shared block cache for IndexedDB databases.
-    leveldb_options.block_cache = default_block_cache;
+  switch (options.shared_cache) {
+    case leveldb_env::SharedReadCache::Web:
+      leveldb_options.block_cache = leveldb_env::SharedWebBlockCache();
+      break;
+    case leveldb_env::SharedReadCache::Default:
+      // fallthrough
+      break;
   }
   if (options.database_dir.empty()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));

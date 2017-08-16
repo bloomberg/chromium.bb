@@ -6,25 +6,21 @@
 #define COMPONENTS_LEVELDB_PROTO_OPTIONS_H_
 
 #include "base/files/file_path.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb_proto {
 
 struct Options {
-  // If read_cache_size is specified, a segregated block cache will be
-  // created for this LevelDB instance. Otherwise a shared block cache
-  // will be used.
-  Options(const base::FilePath& database_dir)
-      : database_dir(database_dir), write_buffer_size(0), read_cache_size(0) {}
   Options(const base::FilePath& database_dir,
-          size_t write_buffer_size,
-          size_t read_cache_size)
+          leveldb_env::SharedReadCache shared_cache,
+          size_t write_buffer_size = 0)
       : database_dir(database_dir),
-        write_buffer_size(write_buffer_size),
-        read_cache_size(read_cache_size) {}
+        shared_cache(shared_cache),
+        write_buffer_size(write_buffer_size) {}
 
   base::FilePath database_dir;
+  leveldb_env::SharedReadCache shared_cache;
   size_t write_buffer_size;
-  size_t read_cache_size;
 };
 
 }  // namespace leveldb_proto
