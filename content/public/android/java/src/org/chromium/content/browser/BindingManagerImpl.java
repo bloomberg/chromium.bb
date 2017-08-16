@@ -100,12 +100,9 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void addConnection(ManagedConnection managedConnection) {
+            assert !mConnections.contains(managedConnection);
             managedConnection.addModerateBinding();
-            if (managedConnection.mConnection.isModerateBindingBound()) {
-                addConnectionImpl(managedConnection);
-            } else {
-                removeConnectionImpl(managedConnection);
-            }
+            addConnectionImpl(managedConnection);
         }
 
         void removeConnection(ManagedConnection managedConnection) {

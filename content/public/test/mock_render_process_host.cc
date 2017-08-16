@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "content/browser/child_process_importance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -251,6 +252,10 @@ void MockRenderProcessHost::AddWidget(RenderWidgetHost* widget) {
 
 void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
 }
+
+void MockRenderProcessHost::UpdateWidgetImportance(
+    ChildProcessImportance old_value,
+    ChildProcessImportance new_value) {}
 
 void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {
 }

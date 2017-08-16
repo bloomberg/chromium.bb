@@ -48,6 +48,7 @@ class RenderProcessHostObserver;
 class RenderWidgetHost;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
+enum class ChildProcessImportance;
 struct GlobalRequestID;
 
 namespace mojom {
@@ -227,6 +228,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Adds and removes the widgets owned by this process.
   virtual void AddWidget(RenderWidgetHost* widget) = 0;
   virtual void RemoveWidget(RenderWidgetHost* widget) = 0;
+
+  // Called by an already added widget when its importance changes.
+  virtual void UpdateWidgetImportance(ChildProcessImportance old_value,
+                                      ChildProcessImportance new_value) = 0;
 
   // Sets a flag indicating that the process can be abnormally terminated.
   virtual void SetSuddenTerminationAllowed(bool allowed) = 0;

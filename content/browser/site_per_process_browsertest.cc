@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/child_process_importance.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -10982,6 +10983,98 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                 ->child_at(0)
                 ->current_frame_host()
                 ->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
+  web_contents()->SetImportance(ChildProcessImportance::MODERATE);
+
+  // Construct root page with one child in different domain.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Importance should survive initial navigation.
+  EXPECT_EQ(ChildProcessImportance::MODERATE,
+            static_cast<RenderProcessHostImpl*>(
+                root->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(ChildProcessImportance::MODERATE,
+            static_cast<RenderProcessHostImpl*>(
+                child->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+
+  // Check setting importance.
+  web_contents()->SetImportance(ChildProcessImportance::NORMAL);
+  EXPECT_EQ(ChildProcessImportance::NORMAL,
+            static_cast<RenderProcessHostImpl*>(
+                root->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(ChildProcessImportance::NORMAL,
+            static_cast<RenderProcessHostImpl*>(
+                child->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+  web_contents()->SetImportance(ChildProcessImportance::IMPORTANT);
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            static_cast<RenderProcessHostImpl*>(
+                root->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            static_cast<RenderProcessHostImpl*>(
+                child->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+
+  // Check importance is maintained if child navigates to new domain.
+  int old_child_process_id = child->current_frame_host()->GetProcess()->GetID();
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  {
+    RenderFrameDeletedObserver deleted_observer(child->current_frame_host());
+    NavigateFrameToURL(root->child_at(0), url);
+    deleted_observer.WaitUntilDeleted();
+  }
+  int new_child_process_id = child->current_frame_host()->GetProcess()->GetID();
+  EXPECT_NE(old_child_process_id, new_child_process_id);
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            static_cast<RenderProcessHostImpl*>(
+                child->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+
+  // Check importance is maintained if root navigates to new domain.
+  int old_root_process_id = root->current_frame_host()->GetProcess()->GetID();
+  child = nullptr;  // Going to navigate root to page without any child.
+  {
+    RenderFrameDeletedObserver deleted_observer(root->current_frame_host());
+    NavigateFrameToURL(root, url);
+    deleted_observer.WaitUntilDeleted();
+  }
+  EXPECT_EQ(0u, root->child_count());
+  int new_root_process_id = root->current_frame_host()->GetProcess()->GetID();
+  EXPECT_NE(old_root_process_id, new_root_process_id);
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            static_cast<RenderProcessHostImpl*>(
+                root->current_frame_host()->GetProcess())
+                ->GetWidgetImportanceForTesting());
+
+  // Check interstitial maintains importance.
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      contents_impl, contents_impl, true, interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(contents_impl);
+  RenderProcessHostImpl* interstitial_process =
+      static_cast<RenderProcessHostImpl*>(
+          interstitial->GetMainFrame()->GetProcess());
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            interstitial_process->GetWidgetImportanceForTesting());
+
+  web_contents()->SetImportance(ChildProcessImportance::MODERATE);
+  EXPECT_EQ(ChildProcessImportance::MODERATE,
+            interstitial_process->GetWidgetImportanceForTesting());
 }
 
 #if defined(OS_ANDROID)
