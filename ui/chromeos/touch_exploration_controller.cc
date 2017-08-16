@@ -675,8 +675,11 @@ void TouchExplorationController::SendSimulatedTap() {
 void TouchExplorationController::MaybeSendSimulatedTapInLiftActivationBounds(
     const ui::TouchEvent& event) {
   gfx::Point location = event.location();
+  gfx::Point anchor_location(anchor_point_.x(), anchor_point_.y());
   root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
-  if (lift_activation_bounds_.Contains(anchor_point_.x(), anchor_point_.y()) &&
+  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&anchor_location);
+  if (lift_activation_bounds_.Contains(anchor_location.x(),
+                                       anchor_location.y()) &&
       lift_activation_bounds_.Contains(location)) {
     SendSimulatedTap();
   }
