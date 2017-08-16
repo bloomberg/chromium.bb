@@ -8,7 +8,8 @@
 #if defined(OS_FUCHSIA)
 #include <magenta/status.h>
 #include <magenta/syscalls.h>
-#elif defined(OS_POSIX)
+#endif
+#if defined(OS_POSIX)
 #include <unistd.h>
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -26,10 +27,17 @@ void PlatformHandle::CloseIfNecessary() {
     return;
 
 #if defined(OS_FUCHSIA)
-  mx_status_t result = mx_handle_close(handle);
-  DCHECK_EQ(MX_OK, result) << "CloseIfNecessary(mx_handle_close): "
-                           << mx_status_get_string(result);
-  handle = MX_HANDLE_INVALID;
+  if (handle != MX_HANDLE_INVALID) {
+    mx_status_t result = mx_handle_close(handle);
+    DCHECK_EQ(MX_OK, result) << "CloseIfNecessary(mx_handle_close): "
+                             << mx_status_get_string(result);
+    handle = MX_HANDLE_INVALID;
+  }
+  if (fd >= 0) {
+    bool success = (close(fd) == 0);
+    DPCHECK(success);
+    fd = -1;
+  }
 #elif defined(OS_POSIX)
   if (type == Type::POSIX) {
     bool success = (close(handle) == 0);

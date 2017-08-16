@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -109,6 +110,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     };
     static_assert(sizeof(MachPortsExtraHeader) == 2,
                   "sizeof(MachPortsExtraHeader) must be 2 bytes");
+#elif defined(OS_FUCHSIA)
+    struct HandleInfoEntry {
+      // The MXIO metadata for each handle, or zero of the handle is not part
+      // of an MXIO file-descriptor.
+      uint32_t info;
+    };
+    static_assert(sizeof(HandleInfoEntry) == 4,
+                  "sizeof(HandleInfoEntry) must be 4 bytes");
 #elif defined(OS_WIN)
     struct HandleEntry {
       // The windows HANDLE. HANDLEs are guaranteed to fit inside 32-bits.

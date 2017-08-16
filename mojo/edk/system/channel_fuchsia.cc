@@ -4,7 +4,9 @@
 
 #include "mojo/edk/system/channel.h"
 
+#include <magenta/status.h>
 #include <magenta/syscalls.h>
+#include <mxio/util.h>
 #include <algorithm>
 #include <deque>
 
@@ -23,6 +25,21 @@ namespace edk {
 namespace {
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
+
+uint32_t UnwrapPlatformHandle(PlatformHandle* handle) {
+  if (!handle->is_valid_fd())
+    return 0;
+
+  // Each MXIO file descriptor is implemented using one or more native resources
+  // and can be un-wrapped into a set of |handle| and |info| pairs, with |info|
+  // consisting of an MXIO-defined type & arguments (see magenta/processargs.h).
+  mx_handle_t handles[3] = {};
+  uint32_t info[3] = {};
+  mx_status_t result = mxio_transfer_fd(handle->as_fd(), 0, handles, info);
+  CHECK_EQ(result, 1) << "mxio_transfer_fd: " << mx_status_get_string(result);
+  *handle = PlatformHandle::ForHandle(handles[0]);
+  return info[0];
+}
 
 // A view over a Channel::Message object. The write queue uses these since
 // large messages may need to be sent in chunks.
@@ -59,11 +76,19 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  ScopedPlatformHandleVectorPtr TakeHandles() { return std::move(handles_); }
-  Channel::MessagePtr TakeMessage() { return std::move(message_); }
-
-  void SetHandles(ScopedPlatformHandleVectorPtr handles) {
-    handles_ = std::move(handles);
+  ScopedPlatformHandleVectorPtr TakeHandles() {
+    if (handles_) {
+      // We can only pass Fuchsia handles via IPC, so unwrap any MXIO file-
+      // descriptors in |handles_| into the underlying handles, and serialize
+      // the metadata, if any, into the extra header.
+      auto* handles_info = reinterpret_cast<Channel::Message::HandleInfoEntry*>(
+          message_->mutable_extra_header());
+      memset(handles_info, 0, message_->extra_header_size());
+      for (size_t i = 0; i < handles_->size(); i++) {
+        handles_info[i].info = UnwrapPlatformHandle(&(*handles_)[i]);
+      }
+    }
+    return std::move(handles_);
   }
 
  private:
@@ -133,15 +158,35 @@ class ChannelFuchsia : public Channel,
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
-    if (incoming_platform_handles_.size() < num_handles) {
-      handles->reset();
+
+    // Locate the handle info and verify there is enough of it.
+    if (!extra_header)
+      return false;
+    const auto* handles_info =
+        reinterpret_cast<const Channel::Message::HandleInfoEntry*>(
+            extra_header);
+    size_t handles_info_size = sizeof(handles_info[0]) * num_handles;
+    if (handles_info_size > extra_header_size)
+      return false;
+
+    // Verify there are as many handles as expected.
+    if (incoming_handles_.size() < num_handles)
       return true;
-    }
 
     handles->reset(new PlatformHandleVector(num_handles));
     for (size_t i = 0; i < num_handles; ++i) {
-      (*handles)->at(i) = incoming_platform_handles_.front();
-      incoming_platform_handles_.pop_front();
+      mx_handle_t handle = incoming_handles_.front().release();
+      if (handles_info[i].info) {
+        int out_fd = -1;
+        mx_status_t result = mxio_create_fd(
+            &handle, const_cast<uint32_t*>(&handles_info[i].info), 1, &out_fd);
+        if (result != MX_OK)
+          return false;
+        (*handles)->at(i) = PlatformHandle::ForFd(out_fd);
+      } else {
+        (*handles)->at(i) = PlatformHandle::ForHandle(handle);
+      }
+      incoming_handles_.pop_front();
     }
 
     return true;
@@ -150,8 +195,6 @@ class ChannelFuchsia : public Channel,
  private:
   ~ChannelFuchsia() override {
     DCHECK(!read_watch_);
-    for (auto handle : incoming_platform_handles_)
-      handle.CloseIfNecessary();
   }
 
   void StartOnIOThread() {
@@ -213,8 +256,7 @@ class ChannelFuchsia : public Channel,
           arraysize(handles), &bytes_read, &handles_read);
       if (read_result == MX_OK) {
         for (size_t i = 0; i < handles_read; ++i) {
-          incoming_platform_handles_.push_back(
-              PlatformHandle::ForHandle(handles[i]));
+          incoming_handles_.push_back(base::ScopedMxHandle(handles[i]));
         }
         total_bytes_read += bytes_read;
         if (!OnReadComplete(bytes_read, &next_read_size)) {
@@ -260,8 +302,10 @@ class ChannelFuchsia : public Channel,
         DCHECK_LE(outgoing_handles->size(), arraysize(handles));
 
         handles_count = outgoing_handles->size();
-        for (size_t i = 0; i < outgoing_handles->size(); ++i)
+        for (size_t i = 0; i < handles_count; ++i) {
+          DCHECK(outgoing_handles->data()[i].is_valid_handle());
           handles[i] = outgoing_handles->data()[i].as_handle();
+        }
       }
 
       write_bytes = std::min(message_view.data_num_bytes(),
@@ -298,7 +342,7 @@ class ChannelFuchsia : public Channel,
 
   // These members are only used on the IO thread.
   std::unique_ptr<base::MessageLoopForIO::MxHandleWatchController> read_watch_;
-  std::deque<PlatformHandle> incoming_platform_handles_;
+  std::deque<base::ScopedMxHandle> incoming_handles_;
   bool leak_handle_ = false;
 
   base::Lock write_lock_;
