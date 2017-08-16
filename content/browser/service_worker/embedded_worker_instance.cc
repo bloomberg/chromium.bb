@@ -195,32 +195,30 @@ class EmbeddedWorkerInstance::DevToolsProxy {
 
   ~DevToolsProxy() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(NotifyWorkerDestroyedOnUI,
-                   process_id_, agent_route_id_));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(NotifyWorkerDestroyedOnUI,
+                                           process_id_, agent_route_id_));
   }
 
   void NotifyWorkerReadyForInspection() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(NotifyWorkerReadyForInspectionOnUI,
-                                       process_id_, agent_route_id_));
+                            base::BindOnce(NotifyWorkerReadyForInspectionOnUI,
+                                           process_id_, agent_route_id_));
   }
 
   void NotifyWorkerVersionInstalled() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(NotifyWorkerVersionInstalledOnUI,
-                                       process_id_, agent_route_id_));
+                            base::BindOnce(NotifyWorkerVersionInstalledOnUI,
+                                           process_id_, agent_route_id_));
   }
 
   void NotifyWorkerVersionDoomed() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(NotifyWorkerVersionDoomedOnUI,
-                                       process_id_, agent_route_id_));
+                            base::BindOnce(NotifyWorkerVersionDoomedOnUI,
+                                           process_id_, agent_route_id_));
   }
 
   bool ShouldNotifyWorkerStopIgnored() const {
@@ -514,7 +512,7 @@ void EmbeddedWorkerInstance::Start(
   mojom::EmbeddedWorkerInstanceClientRequest request =
       mojo::MakeRequest(&client_);
   client_.set_connection_error_handler(
-      base::Bind(&CallDetach, base::Unretained(this)));
+      base::BindOnce(&CallDetach, base::Unretained(this)));
   pending_dispatcher_request_ = std::move(dispatcher_request);
   pending_installed_scripts_info_ = std::move(installed_scripts_info);
 

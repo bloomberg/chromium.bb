@@ -25,7 +25,7 @@ ServiceWorkerDataPipeReader::ServiceWorkerDataPipeReader(
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "ServiceWorkerDataPipeReader", this,
                            "Url", owner->request()->url().spec());
   streaming_version_->AddStreamingURLRequestJob(owner_);
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerDataPipeReader::OnAborted, base::Unretained(this)));
 }
 

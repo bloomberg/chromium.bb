@@ -120,7 +120,7 @@ class WebServiceWorkerInstalledScriptsManagerImplTest : public testing::Test {
                                                        bool* out_installed) {
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             [](blink::WebServiceWorkerInstalledScriptsManager*
                    installed_scripts_manager,
                const blink::WebURL& script_url, bool* out_installed,
@@ -139,7 +139,7 @@ class WebServiceWorkerInstalledScriptsManagerImplTest : public testing::Test {
       std::unique_ptr<RawScriptData>* out_data) {
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             [](blink::WebServiceWorkerInstalledScriptsManager*
                    installed_scripts_manager,
                const blink::WebURL& script_url,

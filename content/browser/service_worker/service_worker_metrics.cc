@@ -483,7 +483,8 @@ void ServiceWorkerMetrics::CountControlledPageLoad(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RecordURLMetricOnUI, "ServiceWorker.ControlledPageUrl", url));
+      base::BindOnce(&RecordURLMetricOnUI, "ServiceWorker.ControlledPageUrl",
+                     url));
 }
 
 void ServiceWorkerMetrics::RecordStartWorkerStatus(
@@ -1067,10 +1068,10 @@ void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
 void ServiceWorkerMetrics::RecordUninstalledScriptImport(const GURL& url) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RecordURLMetricOnUI,
-                 "ServiceWorker.ContextRequestHandlerStatus."
-                 "UninstalledScriptImport",
-                 url));
+      base::BindOnce(&RecordURLMetricOnUI,
+                     "ServiceWorker.ContextRequestHandlerStatus."
+                     "UninstalledScriptImport",
+                     url));
 }
 
 void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(

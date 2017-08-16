@@ -256,9 +256,9 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
-      .Run(base::Bind(&ServiceWorkerURLLoaderJob::StartResponse,
-                      weak_factory_.GetWeakPtr(), response,
-                      base::Passed(std::move(body_as_stream))));
+      .Run(base::BindOnce(&ServiceWorkerURLLoaderJob::StartResponse,
+                          weak_factory_.GetWeakPtr(), response,
+                          base::Passed(std::move(body_as_stream))));
 }
 
 void ServiceWorkerURLLoaderJob::StartResponse(
@@ -268,8 +268,8 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     mojom::URLLoaderClientPtr client) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
-      base::Bind(&ServiceWorkerURLLoaderJob::Cancel, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &ServiceWorkerURLLoaderJob::Cancel, base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
   SaveResponseInfo(response);

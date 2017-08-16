@@ -353,8 +353,8 @@ class ServiceWorkerURLRequestJobTest
     // it might respond synchronously, and the TestDelegate would complain that
     // the message loop isn't being run.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ServiceWorkerVersion::SetStatus, version_,
-                              ServiceWorkerVersion::REDUNDANT));
+        FROM_HERE, base::BindOnce(&ServiceWorkerVersion::SetStatus, version_,
+                                  ServiceWorkerVersion::REDUNDANT));
     base::RunLoop().RunUntilIdle();
   }
 

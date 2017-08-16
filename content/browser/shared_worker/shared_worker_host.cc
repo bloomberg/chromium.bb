@@ -26,11 +26,9 @@ namespace {
 void NotifyWorkerReadyForInspection(int worker_process_id,
                                     int worker_route_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(NotifyWorkerReadyForInspection,
-                                       worker_process_id,
-                                       worker_route_id));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(NotifyWorkerReadyForInspection,
+                                           worker_process_id, worker_route_id));
     return;
   }
   SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
@@ -39,10 +37,9 @@ void NotifyWorkerReadyForInspection(int worker_process_id,
 
 void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(NotifyWorkerDestroyed, worker_process_id, worker_route_id));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(NotifyWorkerDestroyed,
+                                           worker_process_id, worker_route_id));
     return;
   }
   SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(

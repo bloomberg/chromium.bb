@@ -510,8 +510,8 @@ void ServiceWorkerURLRequestJob::MaybeStartRequest() {
   if (is_started_ && response_type_ != NOT_DETERMINED) {
     // Start asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ServiceWorkerURLRequestJob::StartRequest,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ServiceWorkerURLRequestJob::StartRequest,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 

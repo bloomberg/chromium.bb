@@ -105,12 +105,10 @@ void ServiceWorkerProcessManager::AddProcessReferenceToPattern(
     const GURL& pattern, int process_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ServiceWorkerProcessManager::AddProcessReferenceToPattern,
-                   weak_this_,
-                   pattern,
-                   process_id));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &ServiceWorkerProcessManager::AddProcessReferenceToPattern,
+            weak_this_, pattern, process_id));
     return;
   }
 
@@ -122,13 +120,10 @@ void ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern(
     const GURL& pattern, int process_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-          &ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern,
-          weak_this_,
-          pattern,
-          process_id));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &ServiceWorkerProcessManager::RemoveProcessReferenceFromPattern,
+            weak_this_, pattern, process_id));
     return;
   }
 

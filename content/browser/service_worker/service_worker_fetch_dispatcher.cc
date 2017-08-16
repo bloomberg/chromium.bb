@@ -63,7 +63,7 @@ class DelegatingURLLoader final : public mojom::URLLoader {
     // This unretained pointer is safe, because |binding_| is owned by |this|
     // and the callback will never be called after |this| is destroyed.
     binding_.set_connection_error_handler(
-        base::Bind(&DelegatingURLLoader::Cancel, base::Unretained(this)));
+        base::BindOnce(&DelegatingURLLoader::Cancel, base::Unretained(this)));
     return loader;
   }
 
@@ -208,9 +208,10 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     if (!worker_id_)
       return;
     while (!devtools_callbacks.empty()) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(std::move(devtools_callbacks.front()),
-                                         *worker_id_, devtools_request_id_));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(std::move(devtools_callbacks.front()), *worker_id_,
+                         devtools_request_id_));
       devtools_callbacks.pop();
     }
   }
@@ -537,9 +538,9 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   version_->event_dispatcher()->DispatchFetchEvent(
       fetch_event_id, *request_, std::move(preload_handle_),
       std::move(response_callback_ptr),
-      base::Bind(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
-                 base::Unretained(version_.get()), event_finish_id,
-                 url_loader_assets_));
+      base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
+                     base::Unretained(version_.get()), event_finish_id,
+                     url_loader_assets_));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(

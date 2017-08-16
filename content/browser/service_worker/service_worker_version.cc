@@ -1110,9 +1110,9 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id,
   if (!url.is_valid()) {
     DVLOG(1) << "Received unexpected invalid URL from renderer process.";
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&KillEmbeddedWorkerProcess,
-                                       embedded_worker_->process_id(),
-                                       RESULT_CODE_KILLED_BAD_MESSAGE));
+                            base::BindOnce(&KillEmbeddedWorkerProcess,
+                                           embedded_worker_->process_id(),
+                                           RESULT_CODE_KILLED_BAD_MESSAGE));
     return;
   }
 
@@ -1273,10 +1273,10 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
 
   if (!url.is_valid() || !base::IsValidGUID(client_uuid)) {
     DVLOG(1) << "Received unexpected invalid URL/UUID from renderer process.";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
-                   RESULT_CODE_KILLED_BAD_MESSAGE));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&KillEmbeddedWorkerProcess,
+                                           embedded_worker_->process_id(),
+                                           RESULT_CODE_KILLED_BAD_MESSAGE));
     return;
   }
 
@@ -1388,20 +1388,20 @@ void ServiceWorkerVersion::RegisterForeignFetchScopes(
         !base::StartsWith(url.path(), scope_path,
                           base::CompareCase::SENSITIVE)) {
       DVLOG(1) << "Received unexpected invalid URL from renderer process.";
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
-                     RESULT_CODE_KILLED_BAD_MESSAGE));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::BindOnce(&KillEmbeddedWorkerProcess,
+                                             embedded_worker_->process_id(),
+                                             RESULT_CODE_KILLED_BAD_MESSAGE));
       return;
     }
   }
   for (const url::Origin& url : origins) {
     if (url.unique()) {
       DVLOG(1) << "Received unexpected unique origin from renderer process.";
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&KillEmbeddedWorkerProcess, embedded_worker_->process_id(),
-                     RESULT_CODE_KILLED_BAD_MESSAGE));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::BindOnce(&KillEmbeddedWorkerProcess,
+                                             embedded_worker_->process_id(),
+                                             RESULT_CODE_KILLED_BAD_MESSAGE));
       return;
     }
   }
@@ -1525,7 +1525,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       mojo::MakeRequest(&event_dispatcher_), std::move(installed_scripts_info),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                  weak_factory_.GetWeakPtr()));
-  event_dispatcher_.set_connection_error_handler(base::Bind(
+  event_dispatcher_.set_connection_error_handler(base::BindOnce(
       &OnEventDispatcherConnectionError, embedded_worker_->AsWeakPtr()));
 }
 
@@ -1666,8 +1666,8 @@ void ServiceWorkerVersion::PingWorker() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
   // base::Unretained here is safe because event_dispatcher is owned by |this|.
-  event_dispatcher()->Ping(base::Bind(&ServiceWorkerVersion::OnPongFromWorker,
-                                      base::Unretained(this)));
+  event_dispatcher()->Ping(base::BindOnce(
+      &ServiceWorkerVersion::OnPongFromWorker, base::Unretained(this)));
 }
 
 void ServiceWorkerVersion::OnPingTimeout() {
