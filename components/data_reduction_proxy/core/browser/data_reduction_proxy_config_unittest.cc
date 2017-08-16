@@ -401,7 +401,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     // Set the connection type to 4G so that warm up URL is fetched even if
     // the test device does not have connectivity.
-    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         net::NetworkChangeNotifier::CONNECTION_4G);
     RunUntilIdle();
 
@@ -417,7 +417,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     // Warm up URL should not be fetched since the device does not have
     // connectivity.
-    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         net::NetworkChangeNotifier::CONNECTION_NONE);
     RunUntilIdle();
 
@@ -1070,8 +1070,6 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
 }
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
-  DataReductionProxyConfig config(task_runner(), nullptr, nullptr,
-                                  configurator(), event_creator());
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> variation_params;
   std::map<std::string, std::string> variation_params_flag;
@@ -1096,12 +1094,6 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
                                          "Enabled");
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFlagFieldTrialName(),
                                          "Enabled");
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(task_runner());
-  config.InitializeOnIOThread(request_context_getter.get(),
-                              request_context_getter.get());
-
   const struct {
     bool lofi_flag_group;
 
@@ -1115,6 +1107,13 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    DataReductionProxyConfig config(task_runner(), nullptr, nullptr,
+                                    configurator(), event_creator());
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+        new net::TestURLRequestContextGetter(task_runner());
+    config.InitializeOnIOThread(request_context_getter.get(),
+                                request_context_getter.get());
+
     net::EffectiveConnectionType expected_effective_connection_type =
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
     int expected_hysteresis_sec = 360;
@@ -1128,52 +1127,52 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
       expected_hysteresis_sec = 361;
     }
 
-  config.PopulateAutoLoFiParams();
+    config.PopulateAutoLoFiParams();
 
-  EXPECT_EQ(expected_effective_connection_type,
-            config.lofi_effective_connection_type_threshold_);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(expected_hysteresis_sec),
-            config.auto_lofi_hysteresis_);
+    EXPECT_EQ(expected_effective_connection_type,
+              config.lofi_effective_connection_type_threshold_);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(expected_hysteresis_sec),
+              config.auto_lofi_hysteresis_);
 
-  net::TestNetworkQualityEstimator test_network_quality_estimator;
+    net::TestNetworkQualityEstimator test_network_quality_estimator;
 
-  // Network is slow.
-  test_network_quality_estimator.set_effective_connection_type(
-      expected_effective_connection_type);
-  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
-      &test_network_quality_estimator));
+    // Network is slow.
+    test_network_quality_estimator.set_effective_connection_type(
+        expected_effective_connection_type);
+    EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+        &test_network_quality_estimator));
 
-  // Network quality improved. However, network should still be marked as slow
-  // because of hysteresis.
-  test_network_quality_estimator.set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_4G);
-  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
-      &test_network_quality_estimator));
+    // Network quality improved. However, network should still be marked as slow
+    // because of hysteresis.
+    test_network_quality_estimator.set_effective_connection_type(
+        net::EFFECTIVE_CONNECTION_TYPE_4G);
+    EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+        &test_network_quality_estimator));
 
-  // Change the last update time to be older than the hysteresis duration.
-  // Checking network quality afterwards should show that network is no longer
-  // slow.
-  config.network_quality_last_checked_ =
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromSeconds(expected_hysteresis_sec + 1);
-  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
-      &test_network_quality_estimator));
+    // Change the last update time to be older than the hysteresis duration.
+    // Checking network quality afterwards should show that network is no longer
+    // slow.
+    config.network_quality_last_checked_ =
+        base::TimeTicks::Now() -
+        base::TimeDelta::FromSeconds(expected_hysteresis_sec + 1);
+    EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+        &test_network_quality_estimator));
 
-  // Changing the network quality has no effect because of hysteresis.
-  test_network_quality_estimator.set_effective_connection_type(
-      expected_effective_connection_type);
-  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
-      &test_network_quality_estimator));
+    // Changing the network quality has no effect because of hysteresis.
+    test_network_quality_estimator.set_effective_connection_type(
+        expected_effective_connection_type);
+    EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+        &test_network_quality_estimator));
 
-  // Change in connection type changes the network quality despite hysteresis.
-  EXPECT_FALSE(config.connection_type_changed_);
-  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
-  RunUntilIdle();
+    // Change in connection type changes the network quality despite hysteresis.
+    EXPECT_FALSE(config.connection_type_changed_);
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_WIFI);
+    RunUntilIdle();
 
-  EXPECT_TRUE(config.connection_type_changed_);
-  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
-      &test_network_quality_estimator));
+    EXPECT_TRUE(config.connection_type_changed_);
+    EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+        &test_network_quality_estimator));
   }
 }
 
@@ -1254,7 +1253,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
 
   // Change in connection type changes the network quality despite hysteresis.
   EXPECT_FALSE(config.connection_type_changed_);
-  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   RunUntilIdle();
 

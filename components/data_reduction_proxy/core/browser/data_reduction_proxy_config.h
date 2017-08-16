@@ -90,7 +90,7 @@ enum SecureProxyCheckFetchResult {
 // called from there.
 class DataReductionProxyConfig
     : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
@@ -255,9 +255,11 @@ class DataReductionProxyConfig
     NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW
   };
 
-  // NetworkChangeNotifier::IPAddressObserver:
+  // NetworkChangeNotifier::IPAddressObserver implementation:
   void OnIPAddressChanged() override;
-  void OnConnectionTypeChanged(
+
+  // NetworkChangeNotifier::NetworkChangeObserver implementation:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Populates the parameters for the Lo-Fi field trial if the session is part
