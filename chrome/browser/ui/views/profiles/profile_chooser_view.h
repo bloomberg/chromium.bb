@@ -131,7 +131,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
       const AvatarMenu::Item& avatar_item,
       bool is_guest);
   views::View* CreateGuestProfileView();
-  views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
   views::View* CreateOptionsView(bool display_lock, AvatarMenu* avatar_menu);
   views::View* CreateSupervisedUserDisclaimerView();
 
