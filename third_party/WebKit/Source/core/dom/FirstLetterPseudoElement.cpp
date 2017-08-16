@@ -57,6 +57,14 @@ static inline bool IsSpaceForFirstLetter(UChar c) {
   return IsSpaceOrNewline(c) || c == kNoBreakSpaceCharacter;
 }
 
+static inline bool IsBetweenSurrogatePair(const String& text, unsigned offset) {
+  if (offset == 0u || offset >= text.length())
+    return false;
+  if (text.Is8Bit())
+    return false;
+  return U16_IS_LEAD(text[offset - 1]) && U16_IS_TRAIL(text[offset]);
+}
+
 unsigned FirstLetterPseudoElement::FirstLetterLength(const String& text) {
   unsigned length = 0;
   unsigned text_length = text.length();
@@ -82,7 +90,8 @@ unsigned FirstLetterPseudoElement::FirstLetterLength(const String& text) {
   // Keep looking for allowed punctuation for the :first-letter.
   for (; length < text_length; ++length) {
     UChar c = text[length];
-    if (!IsPunctuationForFirstLetter(c))
+    if (!IsPunctuationForFirstLetter(c) &&
+        !IsBetweenSurrogatePair(text, length))
       break;
   }
   return length;

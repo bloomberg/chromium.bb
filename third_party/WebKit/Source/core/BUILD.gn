@@ -1332,6 +1332,7 @@ jumbo_source_set("unit_tests") {
     "dom/DocumentTest.cpp",
     "dom/ElementTest.cpp",
     "dom/ElementVisibilityObserverTest.cpp",
+    "dom/FirstLetterPseudoElementTest.cpp",
     "dom/FlatTreeTraversalTest.cpp",
     "dom/IdleDeadlineTest.cpp",
     "dom/LayoutTreeBuilderTraversalTest.cpp",
