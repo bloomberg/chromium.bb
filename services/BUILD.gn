@@ -155,6 +155,7 @@ if (is_android) {
       "//services/shape_detection/public/interfaces:interfaces_java",
       "//skia/public/interfaces:interfaces_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/junit",
       "//ui/gfx/geometry/mojo:mojo_java",
     ]
     data = [
