@@ -10,11 +10,11 @@ source_set("root") {
   deps = [
     ":root_ui",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators",
     "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tab_grid",
-    "//ios/shared/chrome/browser/ui/commands",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

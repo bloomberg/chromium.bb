@@ -12,6 +12,8 @@ source_set("commands") {
     "browser_commands.h",
     "clear_browsing_data_command.h",
     "clear_browsing_data_command.mm",
+    "command_dispatcher.h",
+    "command_dispatcher.mm",
     "generic_chrome_command.h",
     "generic_chrome_command.mm",
     "history_popup_commands.h",
@@ -34,9 +36,23 @@ source_set("commands") {
     "//base",
     "//components/browsing_data/core",
     "//components/signin/core/browser",
-    "//ios/shared/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/metrics",
     "//ios/web",
     "//net",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "command_dispatcher_unittest.mm",
+  ]
+  deps = [
+    ":commands",
+    "//base",
+    "//ios/chrome/browser/ui/metrics",
+    "//testing/gtest",
   ]
 }

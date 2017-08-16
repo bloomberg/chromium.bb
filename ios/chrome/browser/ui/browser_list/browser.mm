@@ -8,9 +8,9 @@
 #include "base/memory/ptr_util.h"
 
 #import "ios/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

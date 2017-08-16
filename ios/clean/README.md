@@ -108,7 +108,7 @@ The inventory of service objects includes:
 * **BrowserState:** The [ChromeBrowserState](/ios/chrome/browser/chrome_browser/state/)
   object as used in the old architecture.
   
-* **[Dispatcher:](/ios/shared/chrome/browser/ui/commands/)** A decoupled
+* **[Dispatcher:](/ios/chrome/browser/ui/commands/)** A decoupled
   interface over which application-level method calls may be made; see below.
   
 * **[Broadcaster:](/ios/shared/chrome/browser/ui/broadcaster)** A decoupled

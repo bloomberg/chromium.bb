@@ -5,12 +5,12 @@
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
 
 #import "ios/chrome/browser/ui/browser_list/browser.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_view_controller.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

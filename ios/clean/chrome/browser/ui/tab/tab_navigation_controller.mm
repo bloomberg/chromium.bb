@@ -4,8 +4,8 @@
 
 #import "ios/clean/chrome/browser/ui/tab/tab_navigation_controller.h"
 
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
-#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 

@@ -170,6 +170,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/bubble:unit_tests",
     "//ios/chrome/browser/ui/collection_view:unit_tests",
     "//ios/chrome/browser/ui/collection_view/cells:unit_tests",
+    "//ios/chrome/browser/ui/commands:unit_tests",
     "//ios/chrome/browser/ui/content_suggestions:unit_tests",
     "//ios/chrome/browser/ui/content_suggestions/cells:unit_tests",
     "//ios/chrome/browser/ui/content_suggestions/identifier:unit_tests",
@@ -217,7 +218,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/search_widget_extension:unit_tests",
     "//ios/chrome/test/base:unit_tests",
     "//ios/shared/chrome/browser/ui/broadcaster:unit_tests",
-    "//ios/shared/chrome/browser/ui/commands:unit_tests",
     "//ios/shared/chrome/browser/ui/dialogs:unit_tests",
     "//ios/testing:http_server_bundle_data",
   ]

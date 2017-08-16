@@ -29,10 +29,10 @@ source_set("browser_list") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/ssl",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web_state_list",
     "//ios/shared/chrome/browser/ui/broadcaster",
-    "//ios/shared/chrome/browser/ui/commands",
     "//ios/web",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

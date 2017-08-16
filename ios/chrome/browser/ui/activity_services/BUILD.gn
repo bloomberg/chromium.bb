@@ -37,7 +37,6 @@ source_set("activity_services") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/shared/chrome/browser/ui/commands",
     "//net",
     "//ui/base",
     "//url",
@@ -61,7 +60,6 @@ source_set("coordinator") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/shared/chrome/browser/ui/commands",
   ]
 }
 

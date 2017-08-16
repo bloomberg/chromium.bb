@@ -51,7 +51,6 @@ source_set("coordinator") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
-    "//ios/shared/chrome/browser/ui/commands",
   ]
 }
 
