@@ -547,7 +547,7 @@ if (is_win) {
   }
   copy("copy_first_run") {
     sources = [
-      "app/firstRun",
+      "app/FirstRun",
     ]
     outputs = [
       "$root_out_dir/First Run",
