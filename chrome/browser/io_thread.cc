@@ -833,12 +833,6 @@ void IOThread::ConstructSystemRequestContext() {
   SetUpProxyConfigService(builder.get(),
                           std::move(system_proxy_config_service_));
 
-  builder->set_data_enabled(true);
-  builder->set_file_enabled(true);
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  builder->set_ftp_enabled(true);
-#endif
-
   globals_->network_service = content::NetworkService::Create();
   if (!is_quic_allowed_on_init_)
     globals_->network_service->DisableQuic();
