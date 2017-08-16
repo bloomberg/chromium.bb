@@ -46,6 +46,8 @@ RendererSettings CreateRendererSettings(
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
+  renderer_settings.use_skia_renderer =
+      command_line->HasSwitch(switches::kUseSkiaRenderer);
 
   return renderer_settings;
 }
