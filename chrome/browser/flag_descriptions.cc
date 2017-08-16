@@ -2783,6 +2783,9 @@ extern const char kMacRTLDescription[] =
 extern const char kMacTouchBarName[] = "Hardware Touch Bar";
 extern const char kMacTouchBarDescription[] =
     "Control the use of the Touch Bar.";
+extern const char kDialogTouchBarName[] = "Dialog Touch Bar";
+extern const char kDialogTouchBarDescription[] =
+    "Shows Dialog buttons on the Touch Bar.";
 extern const char kCreditCardAutofillTouchBarName[] =
     "Credit Card Autofill Touch Bar";
 extern const char kCreditCardAutofillTouchBarDescription[] =

@@ -98,6 +98,10 @@ const base::Feature kBrowserHangFixesExperiment{
 const base::Feature kBrowserTouchBar{"BrowserTouchBar",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables touch bar support for dialogs.
+const base::Feature kDialogTouchBar{"DialogTouchBar",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables keyboard focus for the tab strip.
 const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
