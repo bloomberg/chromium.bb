@@ -163,6 +163,9 @@ void SiteSettingsHandler::RegisterMessages() {
       base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForPattern,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "isOriginValid", base::Bind(&SiteSettingsHandler::HandleIsOriginValid,
+                                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "isPatternValid",
       base::Bind(&SiteSettingsHandler::HandleIsPatternValid,
                  base::Unretained(this)));
@@ -523,6 +526,9 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
   CHECK(args->GetString(2, &value));
 
   const GURL origin(origin_string);
+  if (!origin.is_valid())
+    return;
+
   ContentSetting setting;
   CHECK(content_settings::ContentSettingFromString(value, &setting));
   for (size_t i = 0; i < types->GetSize(); ++i) {
@@ -655,6 +661,18 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
                                     content_type, "", setting);
 
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
+}
+
+void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  std::string origin_string;
+  CHECK(args->GetString(1, &origin_string));
+
+  ResolveJavascriptCallback(*callback_id,
+                            base::Value(GURL(origin_string).is_valid()));
 }
 
 void SiteSettingsHandler::HandleIsPatternValid(

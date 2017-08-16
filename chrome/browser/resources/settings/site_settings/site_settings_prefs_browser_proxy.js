@@ -173,8 +173,15 @@ cr.define('settings', function() {
         primaryPattern, secondaryPattern, contentType, value, incognito) {}
 
     /**
+     * Checks whether an origin is valid.
+     * @param {string} origin The origin to check.
+     * @return {!Promise<boolean>} True if the origin is valid.
+     */
+    isOriginValid(origin) {}
+
+    /**
      * Checks whether a pattern is valid.
-     * @param {string} pattern The pattern to check
+     * @param {string} pattern The pattern to check.
      * @return {!Promise<boolean>} True if the pattern is valid.
      */
     isPatternValid(pattern) {}
@@ -348,6 +355,11 @@ cr.define('settings', function() {
       chrome.send(
           'setCategoryPermissionForPattern',
           [primaryPattern, '', contentType, value, incognito]);
+    }
+
+    /** @override */
+    isOriginValid(origin) {
+      return cr.sendWithPromise('isOriginValid', origin);
     }
 
     /** @override */

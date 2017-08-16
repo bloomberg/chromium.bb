@@ -67,6 +67,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'getDefaultValueForContentType',
       'getExceptionList',
       'getOriginPermissions',
+      'isOriginValid',
       'isPatternValid',
       'observeProtocolHandlers',
       'observeProtocolHandlersEnabledState',
@@ -100,6 +101,9 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {?CookieList} */
     this.cookieDetails_ = null;
+
+    /** @private {boolean} */
+    this.isOriginValid_ = true;
 
     /** @private {boolean} */
     this.isPatternValid_ = true;
@@ -316,6 +320,19 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     }
 
     return Promise.resolve(pref);
+  }
+
+  /** @override */
+  isOriginValid(origin) {
+    this.methodCalled('isOriginValid', origin);
+    return Promise.resolve(this.isOriginValid_);
+  }
+
+  /**
+   * Specify whether isOriginValid should succeed or fail.
+   */
+  setIsOriginValid(isValid) {
+    this.isOriginValid_ = isValid;
   }
 
   /** @override */
