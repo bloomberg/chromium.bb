@@ -65,6 +65,11 @@ public class AwTestBase extends BaseActivityInstrumentationTestCase<AwTestRunner
     }
 
     @Override
+    public AwTestRunnerActivity launchActivity() {
+        return getActivity();
+    }
+
+    @Override
     public AwBrowserContext createAwBrowserContextOnUiThread(
             InMemorySharedPreferences prefs, Context appContext) {
         return new AwBrowserContext(prefs, appContext);
