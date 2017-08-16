@@ -33,8 +33,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
       VideoCaptureFormats* supported_formats) override;
 
  private:
-  std::string GetDeviceModelId(const std::string& device_id);
-
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryLinux);
 };
