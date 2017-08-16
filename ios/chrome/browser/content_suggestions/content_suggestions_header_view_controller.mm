@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -127,7 +128,7 @@ const CGFloat kHintLabelSidePadding = 12;
 
 #pragma mark - ContentSuggestionsHeaderControlling
 
-- (void)updateFakeOmniboxForOffset:(CGFloat)offset {
+- (void)updateFakeOmniboxForOffset:(CGFloat)offset width:(CGFloat)width {
   NSArray* constraints =
       @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
 
@@ -136,7 +137,8 @@ const CGFloat kHintLabelSidePadding = 12;
                                 topMargin:self.fakeOmniboxTopMarginConstraint
                        subviewConstraints:constraints
                             logoIsShowing:self.logoIsShowing
-                                forOffset:offset];
+                                forOffset:offset
+                                    width:width];
 }
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
@@ -215,6 +217,8 @@ const CGFloat kHintLabelSidePadding = 12;
       setAccessibilityLabel:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
   [self.fakeOmnibox setIsAccessibilityElement:NO];
+  self.fakeOmnibox.accessibilityIdentifier =
+      ntp_home::FakeOmniboxAccessibilityID();
 
   // Set up fakebox hint label.
   UILabel* searchHintLabel = [[UILabel alloc] init];

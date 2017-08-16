@@ -67,7 +67,8 @@ TEST_F(ContentSuggestionsHeaderSynchronizerTest, updateFakeOmnibox) {
   // Setup.
   id headerController = HeaderController();
   OCMExpect([[[headerController stub] ignoringNonObjectArgs]
-      updateFakeOmniboxForOffset:10]);
+      updateFakeOmniboxForOffset:10
+                           width:0]);
   SetAsIPhone();
 
   // Action.
