@@ -1511,6 +1511,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
           device_info.device.input.frames_per_buffer());
       params.set_effects(device_info.device.input.effects());
       params.set_mic_positions(device_info.device.input.mic_positions());
+      DCHECK(params.IsValid());
       device_info.device.input = params;
     }
 

@@ -66,8 +66,10 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
       input(media::AudioParameters::AUDIO_FAKE,
             static_cast<media::ChannelLayout>(channel_layout),
             sample_rate,
-            0,
-            frames_per_buffer) {}
+            16,
+            frames_per_buffer) {
+  DCHECK(input.IsValid());
+}
 
 MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) = default;
 
