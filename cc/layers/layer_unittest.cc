@@ -994,6 +994,8 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForTransform) {
   test_layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_TRUE(impl_layer->LayerPropertyChangedNotFromPropertyTrees());
 }
 
 TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
@@ -1011,6 +1013,8 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
   test_layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_TRUE(impl_layer->LayerPropertyChangedNotFromPropertyTrees());
 }
 
 TEST_F(LayerTest, MaskHasParent) {

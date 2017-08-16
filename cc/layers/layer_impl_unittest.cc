@@ -25,19 +25,6 @@
 namespace cc {
 namespace {
 
-#define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)                    \
-  root->layer_tree_impl()->ResetAllChangeTracking();                        \
-  code_to_test;                                                             \
-  EXPECT_TRUE(                                                              \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
-  EXPECT_FALSE(                                                             \
-      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));  \
-  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
-      grand_child));                                                        \
-  EXPECT_TRUE(root->LayerPropertyChanged());                                \
-  EXPECT_TRUE(child->LayerPropertyChanged());                               \
-  EXPECT_TRUE(grand_child->LayerPropertyChanged());
-
 #define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)             \
   root->layer_tree_impl()->ResetAllChangeTracking();                        \
   code_to_test;                                                             \
@@ -76,8 +63,14 @@ namespace {
   EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
       grand_child));                                                        \
   EXPECT_TRUE(root->LayerPropertyChanged());                                \
+  EXPECT_TRUE(root->LayerPropertyChangedFromPropertyTrees());               \
+  EXPECT_FALSE(root->LayerPropertyChangedNotFromPropertyTrees());           \
   EXPECT_TRUE(child->LayerPropertyChanged());                               \
-  EXPECT_TRUE(grand_child->LayerPropertyChanged());
+  EXPECT_TRUE(child->LayerPropertyChangedFromPropertyTrees());              \
+  EXPECT_FALSE(child->LayerPropertyChangedNotFromPropertyTrees());          \
+  EXPECT_TRUE(grand_child->LayerPropertyChanged());                         \
+  EXPECT_TRUE(grand_child->LayerPropertyChangedFromPropertyTrees());        \
+  EXPECT_FALSE(grand_child->LayerPropertyChangedNotFromPropertyTrees());
 
 #define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                 \
   root->layer_tree_impl()->ResetAllChangeTracking();                        \
@@ -90,6 +83,8 @@ namespace {
   EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
       grand_child));                                                        \
   EXPECT_TRUE(root->LayerPropertyChanged());                                \
+  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());              \
+  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());            \
   EXPECT_FALSE(child->LayerPropertyChanged());                              \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
@@ -243,6 +238,8 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   // SetViewportBoundsDelta changes subtree only when masks_to_bounds is true.
   root->SetViewportBoundsDelta(gfx::Vector2d(222, 333));
   EXPECT_TRUE(root->LayerPropertyChanged());
+  EXPECT_TRUE(root->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_FALSE(root->LayerPropertyChangedNotFromPropertyTrees());
   EXPECT_TRUE(host_impl.active_tree()->property_trees()->full_tree_damaged);
 
   root->SetMasksToBounds(false);
@@ -253,6 +250,8 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   // SetViewportBoundsDelta does not change the subtree without masks_to_bounds.
   root->SetViewportBoundsDelta(gfx::Vector2d(333, 444));
   EXPECT_TRUE(root->LayerPropertyChanged());
+  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());
   EXPECT_FALSE(host_impl.active_tree()->property_trees()->full_tree_damaged);
 
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
@@ -278,6 +277,8 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   root->ScrollBy(gfx::Vector2d(7, 9));
   EXPECT_TRUE(transform_tree.needs_update());
   EXPECT_TRUE(root->LayerPropertyChanged());
+  EXPECT_TRUE(root->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_FALSE(root->LayerPropertyChangedNotFromPropertyTrees());
   EXPECT_FALSE(host_impl.active_tree()->property_trees()->full_tree_damaged);
 }
 

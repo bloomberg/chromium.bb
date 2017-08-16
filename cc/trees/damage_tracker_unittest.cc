@@ -597,8 +597,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   EXPECT_TRUE(GetRenderSurface(root)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
-  // Layer's layer_property_changed_ should be considered as damage to render
-  // surface.
+  // Layer's layer_property_changed_not_from_property_trees_ should be
+  // considered as damage to render surface.
   EXPECT_TRUE(GetRenderSurface(child)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
