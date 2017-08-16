@@ -36,6 +36,7 @@
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -134,8 +135,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
+    content::RenderProcessHost::SetMaxRendererProcessCount(1u);
     cl->AppendSwitch(switches::kInProcessGPU);
-    cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
     cl->AppendSwitch(switches::kDisableRendererPriorityManagement);
   }
 
