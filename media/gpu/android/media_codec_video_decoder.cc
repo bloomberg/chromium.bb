@@ -19,6 +19,10 @@
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/content_video_view_overlay.h"
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/base/android/extract_sps_and_pps.h"
+#endif
+
 namespace media {
 namespace {
 
@@ -166,7 +170,14 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   codec_config_->initial_expected_coded_size = config.coded_size();
-  // TODO(watk): Parse config.extra_data().
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // We pass the SPS and PPS because it makes MediaCodec initialization
+  // more reliable (http://crbug.com/649185).
+  if (config.codec() == kCodecH264) {
+    ExtractSpsAndPps(config.extra_data(), &codec_config_->csd0,
+                     &codec_config_->csd1);
+  }
+#endif
 
   // We defer initialization of the Surface and MediaCodec until we
   // receive a Decode() call to avoid consuming those resources in cases where

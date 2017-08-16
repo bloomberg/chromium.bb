@@ -73,6 +73,12 @@ if (is_android) {
       "//ui/gl",
       "//url",
     ]
+    if (proprietary_codecs) {
+      sources += [
+        "extract_sps_and_pps.cc",
+        "extract_sps_and_pps.h",
+      ]
+    }
   }
 
   source_set("unit_tests") {
