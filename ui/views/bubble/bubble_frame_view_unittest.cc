@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,6 +26,10 @@ namespace views {
 typedef ViewsTestBase BubbleFrameViewTest;
 
 namespace {
+
+bool UseMd() {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+}
 
 const BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
 const SkColor kColor = SK_ColorRED;
@@ -359,15 +364,25 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsDontTryMirror) {
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
   TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
+  // Bubbles have a thicker shadow on the bottom in MD.
+  // Match definition of kLargeShadowVerticalOffset in bubble_border.cc.
+  const int kLargeShadowVerticalOffset = UseMd() ? 2 : 0;
+
+  // Some of these tests may go away once --secondary-ui-md becomes the
+  // default. Under Material Design mode, the BubbleBorder doesn't support all
+  // "arrow" positions. If this changes, then the tests should be updated or
+  // added for MD mode.
 
   // Test that the bubble displays normally when it fits.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(500, 100, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.x() + window_bounds.width() / 2, 525);
+  if (!UseMd()) {  // TOP_CENTER isn't supported by the bubble_border() in MD.
+    frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(500, 100, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.x() + window_bounds.width() / 2, 525);
+  }
 
   frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
@@ -383,7 +398,8 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
       gfx::Size(500, 500),          // |client_size|
       true);                        // |adjust_if_offscreen|
   EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2, 425);
+  EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2,
+            425 + kLargeShadowVerticalOffset);
 
   frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
@@ -391,18 +407,22 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
       gfx::Size(500, 500),          // |client_size|
       true);                        // |adjust_if_offscreen|
   EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2, 425);
+  EXPECT_EQ(window_bounds.y() + window_bounds.height() / 2,
+            425 + kLargeShadowVerticalOffset);
 
   // Test bubble not fitting left screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(100, 100, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.x(), 0);
-  EXPECT_EQ(window_bounds.x() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 125);
+  if (!UseMd()) {  // TOP_CENTER isn't supported by the bubble_border() in MD.
+    frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(100, 100, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.x(), 0);
+    EXPECT_EQ(window_bounds.x() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              125);
+  }
 
   frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
@@ -411,19 +431,25 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
       true);                        // |adjust_if_offscreen|
   EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
   EXPECT_EQ(window_bounds.x(), 0);
-  EXPECT_EQ(window_bounds.x() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 125);
+  if (!UseMd()) {  // There is no arrow offset in MD mode.
+    EXPECT_EQ(window_bounds.x() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              125);
+  }
 
   // Test bubble not fitting right screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(900, 100, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.right(), 1000);
-  EXPECT_EQ(window_bounds.x() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 925);
+  if (!UseMd()) {  // TOP_CENTER isn't supported by the bubble_border() in MD.
+    frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(900, 100, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::TOP_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.right(), 1000);
+    EXPECT_EQ(window_bounds.x() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              925);
+  }
 
   frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
   window_bounds = frame.GetUpdatedWindowBounds(
@@ -432,50 +458,60 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
       true);                        // |adjust_if_offscreen|
   EXPECT_EQ(BubbleBorder::BOTTOM_CENTER, frame.bubble_border()->arrow());
   EXPECT_EQ(window_bounds.right(), 1000);
-  EXPECT_EQ(window_bounds.x() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 925);
+  if (!UseMd()) {  // There is no arrow offset in MD mode.
+    EXPECT_EQ(window_bounds.x() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              925);
+  }
 
   // Test bubble not fitting top screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(100, 100, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.y(), 0);
-  EXPECT_EQ(window_bounds.y() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 125);
+  if (!UseMd()) {  // Moving the bubble by setting the arrow offset doesn't work
+                   // in MD mode since there is no arrow displayed.
+    frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(100, 100, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.y(), 0);
+    EXPECT_EQ(window_bounds.y() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              125);
 
-  frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(900, 100, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.y(), 0);
-  EXPECT_EQ(window_bounds.y() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 125);
+    frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(900, 100, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.y(), 0);
+    EXPECT_EQ(window_bounds.y() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              125);
 
-  // Test bubble not fitting bottom screen edge.
-  frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(100, 900, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.bottom(), 1000);
-  EXPECT_EQ(window_bounds.y() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 925);
+    // Test bubble not fitting bottom screen edge.
+    frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(100, 900, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::LEFT_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.bottom(), 1000);
+    EXPECT_EQ(window_bounds.y() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              925);
 
-  frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
-      gfx::Rect(900, 900, 50, 50),  // |anchor_rect|
-      gfx::Size(500, 500),          // |client_size|
-      true);                        // |adjust_if_offscreen|
-  EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
-  EXPECT_EQ(window_bounds.bottom(), 1000);
-  EXPECT_EQ(window_bounds.y() +
-            frame.bubble_border()->GetArrowOffset(window_bounds.size()), 925);
+    frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
+    window_bounds = frame.GetUpdatedWindowBounds(
+        gfx::Rect(900, 900, 50, 50),  // |anchor_rect|
+        gfx::Size(500, 500),          // |client_size|
+        true);                        // |adjust_if_offscreen|
+    EXPECT_EQ(BubbleBorder::RIGHT_CENTER, frame.bubble_border()->arrow());
+    EXPECT_EQ(window_bounds.bottom(), 1000);
+    EXPECT_EQ(window_bounds.y() +
+                  frame.bubble_border()->GetArrowOffset(window_bounds.size()),
+              925);
+  }
 }
 
 TEST_F(BubbleFrameViewTest, GetPreferredSize) {
