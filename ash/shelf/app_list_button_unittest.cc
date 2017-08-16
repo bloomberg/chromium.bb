@@ -74,19 +74,13 @@ class AppListButtonTest : public AshTestBase {
 
   const AppListButton* app_list_button() const { return app_list_button_; }
 
-  void ChangeActiveUserSession() {
-    UpdateSession(1u, "user1@test.com");
-    UpdateSession(2u, "user2@test.com");
-
-    std::vector<uint32_t> order = {1u, 2u};
-    controller_->SetUserSessionOrder(order);
-  }
+ protected:
+  std::unique_ptr<SessionController> controller_;
 
  private:
   AppListButton* app_list_button_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  std::unique_ptr<SessionController> controller_;
   std::unique_ptr<user_manager::FakeUserManager> user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
@@ -96,6 +90,12 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   app_list::test::TestAppListPresenter test_app_list_presenter;
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  UpdateSession(1u, "user1@test.com");
+  UpdateSession(2u, "user2@test.com");
+  std::vector<uint32_t> order = {1u, 2u};
+  controller_->SetUserSessionOrder(order);
+
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
@@ -120,16 +120,40 @@ TEST_F(VoiceInteractionAppListButtonTest,
   app_list::test::TestAppListPresenter test_app_list_presenter;
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
-  ChangeActiveUserSession();
 
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
+
+  UpdateSession(1u, "user1@test.com");
+  UpdateSession(2u, "user2@test.com");
+  std::vector<uint32_t> order = {1u, 2u};
+  controller_->SetUserSessionOrder(order);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+}
+
+TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableVoiceInteraction));
+
+  UpdateSession(1u, "user1@test.com");
+  UpdateSession(2u, "user2@test.com");
+  std::vector<uint32_t> order = {2u, 1u};
+  controller_->SetUserSessionOrder(order);
+
+  ui::GestureEvent long_press =
+      CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  SendGestureEvent(&long_press);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
 
 namespace {
