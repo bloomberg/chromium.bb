@@ -231,6 +231,7 @@ void StartServerOnHandlerThread(
         "\nDevTools listening on ws://%s%s\n", ip_address->ToString().c_str(),
         browser_guid.c_str());
     fprintf(stderr, "%s", message.c_str());
+    fflush(stderr);
 
     // Write this port to a well-known file in the profile directory
     // so Telemetry can pick it up.
