@@ -240,9 +240,8 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_auth_handler_factory_ =
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
 
-  // TODO(lcwu): http://crbug.com/392352. For performance reasons,
-  // a persistent (on-disk) HttpServerProperties might be desirable
-  // in the future.
+  // Use in-memory HttpServerProperties. Disk-based can improve performance
+  // but benefit seems small (only helps 1st request to a server).
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   DCHECK(proxy_config_service_);
