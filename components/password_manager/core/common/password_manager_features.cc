@@ -24,8 +24,13 @@ const base::Feature kDropSyncCredential = {"drop-sync-credential",
 // view all saved passwords.
 // TODO(melandory): Re-enable once crbug.com/754326 has been fixed.
 const base::Feature kEnableManualFallbacksFilling = {
-    "EnableManualFallbacksFilling", base::FEATURE_DISABLED_BY_DEFAULT};
-
+    "EnableManualFallbacksFilling",
+#if defined(OS_CHROMEOS)
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const base::Feature kEnablePasswordForceSaving = {
