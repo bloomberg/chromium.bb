@@ -11,10 +11,10 @@
  * VP9
  */
 
+#include "vpx/vpx_integer.h"
 #include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_enums.h"
 #include "vp9/common/vp9_filter.h"
-#include "vpx/vpx_integer.h"
 
 struct macroblockd;
 
@@ -440,34 +440,6 @@ RTCD_EXTERN void (*vp9_scale_and_extend_frame)(
     INTERP_FILTER filter_type,
     int phase_scaler);
 
-void vp9_temporal_filter_apply_c(const uint8_t* frame1,
-                                 unsigned int stride,
-                                 const uint8_t* frame2,
-                                 unsigned int block_width,
-                                 unsigned int block_height,
-                                 int strength,
-                                 int filter_weight,
-                                 uint32_t* accumulator,
-                                 uint16_t* count);
-void vp9_temporal_filter_apply_sse4_1(const uint8_t* frame1,
-                                      unsigned int stride,
-                                      const uint8_t* frame2,
-                                      unsigned int block_width,
-                                      unsigned int block_height,
-                                      int strength,
-                                      int filter_weight,
-                                      uint32_t* accumulator,
-                                      uint16_t* count);
-RTCD_EXTERN void (*vp9_temporal_filter_apply)(const uint8_t* frame1,
-                                              unsigned int stride,
-                                              const uint8_t* frame2,
-                                              unsigned int block_width,
-                                              unsigned int block_height,
-                                              int strength,
-                                              int filter_weight,
-                                              uint32_t* accumulator,
-                                              uint16_t* count);
-
 void vp9_rtcd(void);
 
 #ifdef RTCD_C
@@ -495,9 +467,6 @@ static void setup_rtcd_internal(void) {
   vp9_scale_and_extend_frame = vp9_scale_and_extend_frame_c;
   if (flags & HAS_SSSE3)
     vp9_scale_and_extend_frame = vp9_scale_and_extend_frame_ssse3;
-  vp9_temporal_filter_apply = vp9_temporal_filter_apply_c;
-  if (flags & HAS_SSE4_1)
-    vp9_temporal_filter_apply = vp9_temporal_filter_apply_sse4_1;
 }
 #endif
 
