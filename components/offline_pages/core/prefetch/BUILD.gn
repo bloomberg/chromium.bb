@@ -11,6 +11,8 @@ static_library("prefetch") {
   sources = [
     "add_unique_urls_task.cc",
     "add_unique_urls_task.h",
+    "download_archives_task.cc",
+    "download_archives_task.h",
     "download_completed_task.cc",
     "download_completed_task.h",
     "generate_page_bundle_request.cc",
@@ -106,6 +108,8 @@ static_library("test_support") {
     "test_offline_metrics_collector.h",
     "test_prefetch_dispatcher.cc",
     "test_prefetch_dispatcher.h",
+    "test_prefetch_downloader.cc",
+    "test_prefetch_downloader.h",
     "test_prefetch_gcm_handler.cc",
     "test_prefetch_gcm_handler.h",
     "test_prefetch_importer.h",
@@ -116,6 +120,7 @@ static_library("test_support") {
   deps = [
     ":prefetch",
     "//base",
+    "//components/download/public",
     "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
@@ -140,6 +145,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "add_unique_urls_task_unittest.cc",
+    "download_archives_task_unittest.cc",
     "download_completed_task_unittest.cc",
     "generate_page_bundle_request_unittest.cc",
     "generate_page_bundle_task_unittest.cc",
