@@ -40,6 +40,8 @@ CSSTokenizer::CSSTokenizer(const String& string,
   if (string.IsEmpty())
     return;
 
+  // TODO(shend): Do not tokenize all in one go. We should be tokenizing on the
+  // fly.
   unsigned offset = 0;
   while (true) {
     CSSParserToken token = NextToken();
