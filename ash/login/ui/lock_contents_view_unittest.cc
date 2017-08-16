@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unordered_set>
+
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_display_style.h"
@@ -12,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
@@ -25,14 +28,20 @@ TEST_F(LockContentsViewUnitTest, DisplayMode) {
   SetUserCount(1);
   ShowWidgetWithContent(contents);
 
-  // Check that there are no extra user views shown.
+  // Verify user list and secondary auth are not shown for one user.
   LockContentsView::TestApi test_api(contents);
   EXPECT_EQ(0u, test_api.user_views().size());
+  EXPECT_FALSE(test_api.opt_secondary_auth());
 
-  // Verify user names and pod style is set correctly for 2-25 users. This also
+  // Verify user list is not shown for two users, but secondary auth is.
+  SetUserCount(2);
+  EXPECT_EQ(0u, test_api.user_views().size());
+  EXPECT_TRUE(test_api.opt_secondary_auth());
+
+  // Verify user names and pod style is set correctly for 3-25 users. This also
   // sanity checks that LockContentsView can respond to a multiple user change
   // events fired from the data dispatcher, which is needed for the debug UI.
-  for (size_t user_count = 2; user_count < 25; ++user_count) {
+  for (size_t user_count = 3; user_count < 25; ++user_count) {
     SetUserCount(user_count);
     EXPECT_EQ(user_count - 1, test_api.user_views().size());
 
@@ -63,7 +72,7 @@ TEST_F(LockContentsViewUnitTest, SingleUserCentered) {
   ShowWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
-  LoginAuthUserView* auth_view = test_api.auth_user_view();
+  LoginAuthUserView* auth_view = test_api.primary_auth();
   gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
   int expected_margin =
       (widget_bounds.width() - auth_view->GetPreferredSize().width()) / 2;
@@ -87,8 +96,12 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
 
   // Returns the distance between the auth user view and the user view.
   auto calculate_distance = [&]() {
+    if (test_api.opt_secondary_auth()) {
+      return test_api.opt_secondary_auth()->GetBoundsInScreen().x() -
+             test_api.primary_auth()->GetBoundsInScreen().x();
+    }
     return test_api.user_views()[0]->GetBoundsInScreen().x() -
-           test_api.auth_user_view()->GetBoundsInScreen().x();
+           test_api.primary_auth()->GetBoundsInScreen().x();
   };
 
   const display::Display& display =
@@ -118,6 +131,80 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
     int distance_180deg = calculate_distance();
     EXPECT_EQ(distance_0deg, distance_180deg);
     EXPECT_NE(distance_0deg, distance_90deg);
+  }
+}
+
+// Ensures that when swapping between two users, only auth method display swaps.
+TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
+  // Build lock screen with two users.
+  auto* contents = new LockContentsView(data_dispatcher());
+  LockContentsView::TestApi test_api(contents);
+  SetUserCount(2);
+  ShowWidgetWithContent(contents);
+
+  // Capture user info to validate it did not change during the swap.
+  AccountId primary_user = test_api.primary_auth()->current_user()->account_id;
+  AccountId secondary_user =
+      test_api.opt_secondary_auth()->current_user()->account_id;
+  EXPECT_NE(primary_user, secondary_user);
+
+  auto has_auth = [](LoginAuthUserView* view) -> bool {
+    return view->auth_methods() != LoginAuthUserView::AUTH_NONE;
+  };
+
+  // Primary user starts with auth. Secondary user does not have any auth.
+  EXPECT_TRUE(has_auth(test_api.primary_auth()));
+  EXPECT_FALSE(has_auth(test_api.opt_secondary_auth()));
+
+  // Send event to swap users.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  LoginAuthUserView::TestApi secondary_test_api(test_api.opt_secondary_auth());
+  generator.MoveMouseTo(
+      secondary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+
+  // User info is not swapped.
+  EXPECT_EQ(primary_user, test_api.primary_auth()->current_user()->account_id);
+  EXPECT_EQ(secondary_user,
+            test_api.opt_secondary_auth()->current_user()->account_id);
+
+  // Active auth user (ie, which user is showing password) is swapped.
+  EXPECT_FALSE(has_auth(test_api.primary_auth()));
+  EXPECT_TRUE(has_auth(test_api.opt_secondary_auth()));
+}
+
+// Ensures that when swapping from a user list, the entire user info is swapped.
+TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
+  // Build lock screen with five users.
+  auto* contents = new LockContentsView(data_dispatcher());
+  LockContentsView::TestApi test_api(contents);
+  SetUserCount(5);
+  EXPECT_EQ(users().size() - 1, test_api.user_views().size());
+  ShowWidgetWithContent(contents);
+
+  LoginAuthUserView* auth_view = test_api.primary_auth();
+
+  for (const LoginUserView* const list_user_view : test_api.user_views()) {
+    // Capture user info to validate it did not change during the swap.
+    AccountId auth_id = auth_view->current_user()->account_id;
+    AccountId list_user_id = list_user_view->current_user()->account_id;
+    EXPECT_NE(auth_id, list_user_id);
+
+    // Send event to swap users.
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    generator.MoveMouseTo(list_user_view->GetBoundsInScreen().CenterPoint());
+    generator.ClickLeftButton();
+
+    // User info is swapped.
+    EXPECT_EQ(list_user_id, auth_view->current_user()->account_id);
+    EXPECT_EQ(auth_id, list_user_view->current_user()->account_id);
+
+    // Validate that every user is still unique.
+    std::unordered_set<std::string> emails;
+    for (const LoginUserView* const view : test_api.user_views()) {
+      std::string email = view->current_user()->account_id.GetUserEmail();
+      EXPECT_TRUE(emails.insert(email).second);
+    }
   }
 }
 

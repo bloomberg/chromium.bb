@@ -13,7 +13,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -51,10 +50,6 @@ constexpr int kHighDensityHorizontalPaddingRightOfUserListPortraitDp = 12;
 
 // The vertical padding between each entry in the extra-small user row
 constexpr int kHighDensityVerticalDistanceBetweenUsersDp = 32;
-
-// Duration (in milliseconds) of the auth user view animation, ie, when enabling
-// or disabling the PIN keyboard.
-constexpr int kAuthUserViewAnimationDurationMs = 100;
 
 // A view which stores two preferred sizes. The embedder can control which one
 // is used.
@@ -112,8 +107,12 @@ LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
 
 LockContentsView::TestApi::~TestApi() = default;
 
-LoginAuthUserView* LockContentsView::TestApi::auth_user_view() const {
-  return view_->auth_user_view_;
+LoginAuthUserView* LockContentsView::TestApi::primary_auth() const {
+  return view_->primary_auth_;
+}
+
+LoginAuthUserView* LockContentsView::TestApi::opt_secondary_auth() const {
+  return view_->opt_secondary_auth_;
 }
 
 const std::vector<LoginUserView*>& LockContentsView::TestApi::user_views()
@@ -151,6 +150,7 @@ void LockContentsView::OnUsersChanged(
   // invalidate any child references.
   RemoveAllChildViews(true /*delete_children*/);
   user_views_.clear();
+  opt_secondary_auth_ = nullptr;
   scroller_ = nullptr;
   root_layout_ = nullptr;
   rotation_actions_.clear();
@@ -175,17 +175,12 @@ void LockContentsView::OnUsersChanged(
   SetLayoutManager(root_layout_);
 
   // Add auth user.
-  auth_user_view_ =
-      new LoginAuthUserView(users[0], base::Bind([](bool auth_success) {
-                              if (auth_success)
-                                ash::LockScreen::Get()->Destroy();
-                            }));
-  AddChildView(auth_user_view_);
-  auth_user_view_animator_ =
-      base::MakeUnique<views::BoundsAnimator>(auth_user_view_->parent());
-  auth_user_view_animator_->SetAnimationDuration(
-      kAuthUserViewAnimationDurationMs);
-  UpdateAuthMethodsForAuthUser(false /*animate*/);
+  primary_auth_ = new LoginAuthUserView(
+      users[0],
+      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
+      base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
+                 base::Unretained(this), true /*is_primary*/));
+  AddChildView(primary_auth_);
 
   // Build layout for additional users.
   if (users.size() == 2)
@@ -194,6 +189,8 @@ void LockContentsView::OnUsersChanged(
     CreateMediumDensityLayout(users);
   else if (users.size() >= 7)
     CreateHighDensityLayout(users);
+
+  LayoutAuth(primary_auth_, opt_secondary_auth_, false /*animate*/);
 
   // Force layout.
   PreferredSizeChanged();
@@ -209,7 +206,19 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
   }
 
   state->show_pin = enabled;
-  UpdateAuthMethodsForAuthUser(true /*animate*/);
+
+  // We need to update the auth display if |user| is currently shown in either
+  // |primary_auth_| or |opt_secondary_auth_|.
+  if (primary_auth_->current_user()->account_id == state->account_id &&
+      primary_auth_->auth_methods() != LoginAuthUserView::AUTH_NONE) {
+    LayoutAuth(primary_auth_, nullptr, true /*animate*/);
+  } else if (opt_secondary_auth_ &&
+             opt_secondary_auth_->current_user()->account_id ==
+                 state->account_id &&
+             opt_secondary_auth_->auth_methods() !=
+                 LoginAuthUserView::AUTH_NONE) {
+    LayoutAuth(opt_secondary_auth_, nullptr, true /*animate*/);
+  }
 }
 
 void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
@@ -223,16 +232,21 @@ void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
 
 void LockContentsView::CreateLowDensityLayout(
     const std::vector<ash::mojom::UserInfoPtr>& users) {
+  DCHECK_EQ(users.size(), 2u);
+
   // Space between auth user and alternative user.
   AddChildView(MakeOrientationViewWithWidths(
       kLowDensityDistanceBetweenUsersInLandscapeDp,
       kLowDensityDistanceBetweenUsersInPortraitDp));
-  // TODO(jdufault): When alt_user_view is clicked we should show auth methods.
-  auto* alt_user_view =
-      new LoginUserView(LoginDisplayStyle::kLarge, false /*show_dropdown*/);
-  alt_user_view->UpdateForUser(users[1]);
-  user_views_.push_back(alt_user_view);
-  AddChildView(alt_user_view);
+
+  // Build auth user.
+  opt_secondary_auth_ = new LoginAuthUserView(
+      users[1],
+      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
+      base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
+                 base::Unretained(this), false /*is_primary*/));
+  opt_secondary_auth_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
+  AddChildView(opt_secondary_auth_);
 }
 
 void LockContentsView::CreateMediumDensityLayout(
@@ -256,9 +270,11 @@ void LockContentsView::CreateMediumDensityLayout(
   row->SetLayoutManager(layout);
   for (std::size_t i = 1u; i < users.size(); ++i) {
     auto* view =
-        new LoginUserView(LoginDisplayStyle::kSmall, false /*show_dropdown*/);
+        new LoginUserView(LoginDisplayStyle::kSmall, false /*show_dropdown*/,
+                          base::Bind(&LockContentsView::SwapToAuthUser,
+                                     base::Unretained(this), i - 1) /*on_tap*/);
     user_views_.push_back(view);
-    view->UpdateForUser(users[i]);
+    view->UpdateForUser(users[i], false /*animate*/);
     row->AddChildView(view);
   }
 
@@ -309,10 +325,12 @@ void LockContentsView::CreateHighDensityLayout(
       LoginUserView::WidthForLayoutStyle(LoginDisplayStyle::kExtraSmall));
   row->SetLayoutManager(row_layout);
   for (std::size_t i = 1u; i < users.size(); ++i) {
-    auto* view = new LoginUserView(LoginDisplayStyle::kExtraSmall,
-                                   false /*show_dropdown*/);
+    auto* view = new LoginUserView(
+        LoginDisplayStyle::kExtraSmall, false /*show_dropdown*/,
+        base::Bind(&LockContentsView::SwapToAuthUser, base::Unretained(this),
+                   i - 1) /*on_tap*/);
     user_views_.push_back(view);
-    view->UpdateForUser(users[i]);
+    view->UpdateForUser(users[i], false /*animate*/);
     row->AddChildView(view);
   }
   scroller_ = new views::ScrollView();
@@ -353,6 +371,22 @@ void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
   rotation_actions_.push_back(on_rotate);
 }
 
+void LockContentsView::SwapPrimaryAndSecondaryAuth(bool is_primary) {
+  if (is_primary &&
+      primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE) {
+    LayoutAuth(primary_auth_, opt_secondary_auth_, true /*animate*/);
+  } else if (!is_primary && opt_secondary_auth_ &&
+             opt_secondary_auth_->auth_methods() ==
+                 LoginAuthUserView::AUTH_NONE) {
+    LayoutAuth(opt_secondary_auth_, primary_auth_, true /*animate*/);
+  }
+}
+
+void LockContentsView::OnAuthenticate(bool auth_success) {
+  if (auth_success)
+    ash::LockScreen::Get()->Destroy();
+}
+
 LockContentsView::UserState* LockContentsView::FindStateForUser(
     const AccountId& user) {
   for (UserState& state : users_) {
@@ -363,25 +397,43 @@ LockContentsView::UserState* LockContentsView::FindStateForUser(
   return nullptr;
 }
 
-void LockContentsView::UpdateAuthMethodsForAuthUser(bool animate) {
-  LockContentsView::UserState* state =
-      FindStateForUser(auth_user_view_->current_user());
-  DCHECK(state);
+void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
+                                  LoginAuthUserView* opt_to_hide,
+                                  bool animate) {
+  // Capture animation metadata before we changing state.
+  if (animate) {
+    to_update->CaptureStateForAnimationPreLayout();
+    if (opt_to_hide)
+      opt_to_hide->CaptureStateForAnimationPreLayout();
+  }
 
-  uint32_t auth_methods = LoginAuthUserView::AUTH_NONE;
-  if (state->show_pin)
-    auth_methods |= LoginAuthUserView::AUTH_PIN;
+  // Update auth methods for |to_update|. Disable auth on |opt_to_hide|.
+  uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
+  if (FindStateForUser(to_update->current_user()->account_id)->show_pin)
+    to_update_auth |= LoginAuthUserView::AUTH_PIN;
+  to_update->SetAuthMethods(to_update_auth);
+  if (opt_to_hide)
+    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
 
-  // Update to the new layout. Capture existing size so we are able to animate.
-  gfx::Rect existing_bounds = auth_user_view_->bounds();
-  auth_user_view_->SetAuthMethods(auth_methods);
   Layout();
 
+  // Apply animations.
   if (animate) {
-    gfx::Rect new_bounds = auth_user_view_->bounds();
-    auth_user_view_->SetBoundsRect(existing_bounds);
-    auth_user_view_animator_->AnimateViewTo(auth_user_view_, new_bounds);
+    to_update->ApplyAnimationPostLayout();
+    if (opt_to_hide)
+      opt_to_hide->ApplyAnimationPostLayout();
   }
+}
+
+void LockContentsView::SwapToAuthUser(int user_index) {
+  auto* view = user_views_[user_index];
+  mojom::UserInfoPtr previous_auth_user =
+      primary_auth_->current_user()->Clone();
+  mojom::UserInfoPtr new_auth_user = view->current_user()->Clone();
+
+  view->UpdateForUser(previous_auth_user, true /*animate*/);
+  primary_auth_->UpdateForUser(new_auth_user);
+  LayoutAuth(primary_auth_, nullptr, true /*animate*/);
 }
 
 }  // namespace ash

@@ -20,6 +20,8 @@ namespace ash {
 // Contains a textfield instance with a submit button. The user can type a
 // password into the textfield and hit enter to submit.
 //
+// This view is always rendered via layers.
+//
 // The password view looks like this:
 //
 //   * * * * * *   =>

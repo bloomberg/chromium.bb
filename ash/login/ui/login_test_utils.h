@@ -13,7 +13,7 @@ namespace ash {
 
 // Helpers for constructing TestApi instances.
 LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view);
-LoginAuthUserView::TestApi MakeLoginAuthUserViewTestApi(LockContentsView* view);
+LoginAuthUserView::TestApi MakeLoginPrimaryAuthTestApi(LockContentsView* view);
 LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view);
 
 }  // namespace ash

@@ -59,7 +59,7 @@ mojom::UserInfoPtr LoginTestBase::CreateUser(const std::string& name) const {
 void LoginTestBase::SetUserCount(size_t count) {
   // Add missing users, then remove extra users.
   while (users_.size() < count)
-    users_.push_back(CreateUser(std::to_string(count)));
+    users_.push_back(CreateUser(std::to_string(users_.size())));
   users_.erase(users_.begin() + count, users_.end());
 
   // Notify any listeners that the user count has changed.

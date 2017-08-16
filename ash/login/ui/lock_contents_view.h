@@ -8,13 +8,13 @@
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/views/view.h"
 
 namespace views {
-class BoundsAnimator;
 class BoxLayout;
 class ScrollView;
 }  // namespace views
@@ -38,7 +38,8 @@ class ASH_EXPORT LockContentsView : public views::View,
     explicit TestApi(LockContentsView* view);
     ~TestApi();
 
-    LoginAuthUserView* auth_user_view() const;
+    LoginAuthUserView* primary_auth() const;
+    LoginAuthUserView* opt_secondary_auth() const;
     const std::vector<LoginUserView*>& user_views() const;
 
    private:
@@ -96,20 +97,33 @@ class ASH_EXPORT LockContentsView : public views::View,
   // the current rotation.
   void AddRotationAction(const OnRotate& on_rotate);
 
+  void SwapPrimaryAndSecondaryAuth(bool is_primary);
+  void OnAuthenticate(bool auth_success);
+
   // Tries to lookup the stored state for |user|. Returns an unowned pointer
   // that is invalidated whenver |users_| changes.
   UserState* FindStateForUser(const AccountId& user);
 
-  void UpdateAuthMethodsForAuthUser(bool animate);
+  // Updates the auth methods for |to_update| and |to_hide|, if passed.
+  // |to_hide| will be set to LoginAuthUserView::AUTH_NONE. At minimum,
+  // |to_update| will show a password prompt.
+  void LayoutAuth(LoginAuthUserView* to_update,
+                  LoginAuthUserView* opt_to_hide,
+                  bool animate);
+
+  // Make the user at |user_index| the auth user. We pass in the index because
+  // the actual user may change.
+  void SwapToAuthUser(int user_index);
 
   std::vector<UserState> users_;
 
   LoginDataDispatcher* const data_dispatcher_;  // Unowned.
 
-  std::unique_ptr<views::BoundsAnimator> auth_user_view_animator_;
+  LoginAuthUserView* primary_auth_ = nullptr;
+  LoginAuthUserView* opt_secondary_auth_ = nullptr;
 
-  LoginAuthUserView* auth_user_view_;
-  // All non-auth users; |auth_user_view_| is not contained in this list.
+  // All non-auth users; |primary_auth_| and |secondary_auth_| are not contained
+  // in this list.
   std::vector<LoginUserView*> user_views_;
   views::ScrollView* scroller_;
   views::View* background_;
