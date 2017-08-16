@@ -33,7 +33,7 @@ TaskSchedulerImpl::TaskSchedulerImpl(
 
   for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
        ++environment_type) {
-    worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
+    worker_pools_[environment_type] = std::make_unique<SchedulerWorkerPoolImpl>(
         name_ + kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint, task_tracker_.get(),
         &delayed_task_manager_);
@@ -91,7 +91,7 @@ void TaskSchedulerImpl::PostDelayedTaskWithTraits(
     TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
   GetWorkerPoolForTraits(traits)->PostTaskWithSequence(
-      MakeUnique<Task>(from_here, std::move(task), traits, delay),
+      std::make_unique<Task>(from_here, std::move(task), traits, delay),
       make_scoped_refptr(new Sequence));
 }
 

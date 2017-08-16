@@ -167,7 +167,7 @@ using UniquePtrSet = base::flat_set<std::unique_ptr<T>, UniquePtrComparator>;
 std::vector<std::unique_ptr<int>> ptr_vec;
 ptr_vec.reserve(5);
 std::generate_n(std::back_inserter(ptr_vec), 5, []{
-  return base::MakeUnique<int>(0);
+  return std::make_unique<int>(0);
 });
 
 // Construct a set.

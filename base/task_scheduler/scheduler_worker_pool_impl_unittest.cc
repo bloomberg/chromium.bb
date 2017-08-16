@@ -78,9 +78,9 @@ class TaskSchedulerWorkerPoolImplTest
     ASSERT_FALSE(worker_pool_);
     service_thread_.Start();
     delayed_task_manager_.Start(service_thread_.task_runner());
-    worker_pool_ = MakeUnique<SchedulerWorkerPoolImpl>(
-        "TestWorkerPool", ThreadPriority::NORMAL,
-        &task_tracker_, &delayed_task_manager_);
+    worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
+        "TestWorkerPool", ThreadPriority::NORMAL, &task_tracker_,
+        &delayed_task_manager_);
     ASSERT_TRUE(worker_pool_);
   }
 
@@ -188,7 +188,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasks) {
   // Create threads to post tasks.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
+    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
         PostNestedTask::NO));
     threads_posting_tasks.back()->Start();
@@ -211,7 +211,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllWorkersIdle) {
   // posting a new task.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
+    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(),
         WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE, PostNestedTask::NO));
     threads_posting_tasks.back()->Start();
@@ -233,7 +233,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, NestedPostTasks) {
   // another task when it runs.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(MakeUnique<ThreadPostingTasks>(
+    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
         worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
         PostNestedTask::YES));
     threads_posting_tasks.back()->Start();
@@ -258,7 +258,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWithOneAvailableWorker) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kNumWorkersInWorkerPool - 1); ++i) {
-    blocked_task_factories.push_back(MakeUnique<test::TestTaskFactory>(
+    blocked_task_factories.push_back(std::make_unique<test::TestTaskFactory>(
         CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam()),
         GetParam()));
     EXPECT_TRUE(blocked_task_factories.back()->PostTask(
@@ -292,7 +292,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, Saturate) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    factories.push_back(MakeUnique<test::TestTaskFactory>(
+    factories.push_back(std::make_unique<test::TestTaskFactory>(
         CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam()),
         GetParam()));
     EXPECT_TRUE(factories.back()->PostTask(
@@ -508,7 +508,7 @@ TEST_F(TaskSchedulerWorkerPoolCheckTlsReuse, CheckCleanupWorkers) {
   // Saturate the workers and mark each worker's thread with a magic TLS value.
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    factories.push_back(MakeUnique<test::TestTaskFactory>(
+    factories.push_back(std::make_unique<test::TestTaskFactory>(
         worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()}),
         test::ExecutionMode::PARALLEL));
     ASSERT_TRUE(factories.back()->PostTask(
@@ -632,9 +632,9 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithCleanup) {
   // Post tasks to saturate the pool.
   std::vector<std::unique_ptr<WaitableEvent>> task_started_events;
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    task_started_events.push_back(
-        MakeUnique<WaitableEvent>(WaitableEvent::ResetPolicy::MANUAL,
-                                  WaitableEvent::InitialState::NOT_SIGNALED));
+    task_started_events.push_back(std::make_unique<WaitableEvent>(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED));
     task_runner->PostTask(FROM_HERE,
                           BindOnce(&SignalAndWaitEvent,
                                    Unretained(task_started_events.back().get()),
@@ -655,9 +655,9 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithCleanup) {
   tasks_can_exit_event.Reset();
   task_started_events.clear();
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    task_started_events.push_back(
-        MakeUnique<WaitableEvent>(WaitableEvent::ResetPolicy::MANUAL,
-                                  WaitableEvent::InitialState::NOT_SIGNALED));
+    task_started_events.push_back(std::make_unique<WaitableEvent>(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED));
     task_runner->PostTask(FROM_HERE,
                           BindOnce(&SignalAndWaitEvent,
                                    Unretained(task_started_events.back().get()),
@@ -798,7 +798,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
   TaskTracker task_tracker;
   DelayedTaskManager delayed_task_manager;
   delayed_task_manager.Start(make_scoped_refptr(new TestSimpleTaskRunner));
-  auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
+  auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
       "OnePolicyWorkerPool", ThreadPriority::NORMAL, &task_tracker,
       &delayed_task_manager);
   worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()));
@@ -815,7 +815,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   TaskTracker task_tracker;
   DelayedTaskManager delayed_task_manager;
   delayed_task_manager.Start(MakeRefCounted<TestSimpleTaskRunner>());
-  auto worker_pool = MakeUnique<SchedulerWorkerPoolImpl>(
+  auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
       "StandbyThreadWorkerPool", ThreadPriority::NORMAL, &task_tracker,
       &delayed_task_manager);
   worker_pool->Start(

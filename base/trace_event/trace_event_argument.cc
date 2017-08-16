@@ -364,7 +364,7 @@ std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
     DCHECK((cur_dict && !cur_list) || (cur_list && !cur_dict));
     switch (*type) {
       case kTypeStartDict: {
-        auto new_dict = base::MakeUnique<DictionaryValue>();
+        auto new_dict = std::make_unique<DictionaryValue>();
         if (cur_dict) {
           stack.push_back(cur_dict);
           cur_dict = cur_dict->SetDictionaryWithoutPathExpansion(
@@ -390,7 +390,7 @@ std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
       } break;
 
       case kTypeStartArray: {
-        auto new_list = base::MakeUnique<ListValue>();
+        auto new_list = std::make_unique<ListValue>();
         if (cur_dict) {
           stack.push_back(cur_dict);
           cur_list = cur_dict->SetListWithoutPathExpansion(ReadKeyName(it),

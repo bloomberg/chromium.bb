@@ -197,14 +197,14 @@ ProcessMemoryDump::~ProcessMemoryDump() {}
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name) {
   return AddAllocatorDumpInternal(
-      MakeUnique<MemoryAllocatorDump>(absolute_name, this));
+      std::make_unique<MemoryAllocatorDump>(absolute_name, this));
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name,
     const MemoryAllocatorDumpGuid& guid) {
   return AddAllocatorDumpInternal(
-      MakeUnique<MemoryAllocatorDump>(absolute_name, this, guid));
+      std::make_unique<MemoryAllocatorDump>(absolute_name, this, guid));
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::AddAllocatorDumpInternal(

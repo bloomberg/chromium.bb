@@ -853,12 +853,12 @@ std::unique_ptr<ActivityUserData> ThreadActivityTracker::GetUserData(
   // Don't allow user data for lock acquisition as recursion may occur.
   if (stack_[id].activity_type == Activity::ACT_LOCK_ACQUIRE) {
     NOTREACHED();
-    return MakeUnique<ActivityUserData>();
+    return std::make_unique<ActivityUserData>();
   }
 
   // User-data is only stored for activities actually held in the stack.
   if (id >= stack_slots_)
-    return MakeUnique<ActivityUserData>();
+    return std::make_unique<ActivityUserData>();
 
   // Create and return a real UserData object.
   return CreateUserDataForActivity(&stack_[id], allocator);
@@ -1052,14 +1052,14 @@ ThreadActivityTracker::CreateUserDataForActivity(
   void* memory = allocator->GetAsArray<char>(ref, kUserDataSize);
   if (memory) {
     std::unique_ptr<ActivityUserData> user_data =
-        MakeUnique<ActivityUserData>(memory, kUserDataSize);
+        std::make_unique<ActivityUserData>(memory, kUserDataSize);
     activity->user_data_ref = ref;
     activity->user_data_id = user_data->id();
     return user_data;
   }
 
   // Return a dummy object that will still accept (but ignore) Set() calls.
-  return MakeUnique<ActivityUserData>();
+  return std::make_unique<ActivityUserData>();
 }
 
 // The instantiation of the GlobalActivityTracker object.
@@ -1215,7 +1215,7 @@ ActivityUserData& GlobalActivityTracker::ScopedThreadActivity::user_data() {
       user_data_ =
           tracker_->GetUserData(activity_id_, &global->user_data_allocator_);
     } else {
-      user_data_ = MakeUnique<ActivityUserData>();
+      user_data_ = std::make_unique<ActivityUserData>();
     }
   }
   return *user_data_;
@@ -1282,7 +1282,7 @@ void GlobalActivityTracker::CreateWithFile(const FilePath& file_path,
                               {0, static_cast<int64_t>(size)},
                               MemoryMappedFile::READ_WRITE_EXTEND);
   DCHECK(success);
-  CreateWithAllocator(MakeUnique<FilePersistentMemoryAllocator>(
+  CreateWithAllocator(std::make_unique<FilePersistentMemoryAllocator>(
                           std::move(mapped_file), size, id, name, false),
                       stack_depth, 0);
 }
@@ -1295,8 +1295,8 @@ void GlobalActivityTracker::CreateWithLocalMemory(size_t size,
                                                   int stack_depth,
                                                   int64_t process_id) {
   CreateWithAllocator(
-      MakeUnique<LocalPersistentMemoryAllocator>(size, id, name), stack_depth,
-      process_id);
+      std::make_unique<LocalPersistentMemoryAllocator>(size, id, name),
+      stack_depth, process_id);
 }
 
 // static

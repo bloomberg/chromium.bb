@@ -425,7 +425,7 @@ MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
   if (dump_thread_)
     return dump_thread_->task_runner();
 
-  dump_thread_ = MakeUnique<Thread>("MemoryInfra");
+  dump_thread_ = std::make_unique<Thread>("MemoryInfra");
   bool started = dump_thread_->Start();
   CHECK(started);
 
@@ -694,14 +694,14 @@ void MemoryDumpManager::SetupForTracing(
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
         "stackFrames",
-        MakeUnique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
+        std::make_unique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
             heap_profiler_serialization_state,
             &HeapProfilerSerializationState::stack_frame_deduplicator));
 
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
         "typeNames",
-        MakeUnique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
+        std::make_unique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
             heap_profiler_serialization_state,
             &HeapProfilerSerializationState::type_name_deduplicator));
   }

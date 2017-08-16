@@ -167,7 +167,7 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDeleteInCallback) {
 
   TestHandler handler;
   handler.watcher_to_delete_ =
-      base::MakeUnique<MessageLoopForIO::FileDescriptorWatcher>(FROM_HERE);
+      std::make_unique<MessageLoopForIO::FileDescriptorWatcher>(FROM_HERE);
 
   message_loop.WatchFileDescriptor(write_fd_.get(), true,
                                    MessageLoopForIO::WATCH_WRITE,
