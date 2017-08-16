@@ -78,7 +78,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 // Test case for the ContentSuggestion UI.
 @interface ContentSuggestionsTestCase : ChromeTestCase {
-  base::test::ScopedCommandLine _scopedCommandLine;
+  std::unique_ptr<base::test::ScopedCommandLine> _scopedCommandLine;
 }
 
 // Current non-incognito browser state.
@@ -130,7 +130,8 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)setUp {
   // The command line is set up before [super setUp] in order to have the NTP
   // opened with the command line already setup.
-  base::CommandLine* commandLine = _scopedCommandLine.GetProcessCommandLine();
+  _scopedCommandLine = base::MakeUnique<base::test::ScopedCommandLine>();
+  base::CommandLine* commandLine = _scopedCommandLine->GetProcessCommandLine();
   commandLine->AppendSwitch(switches::kEnableSuggestionsUI);
   self.provider->FireCategoryStatusChanged(self.category,
                                            CategoryStatus::AVAILABLE);
@@ -144,6 +145,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)tearDown {
   self.provider->FireCategoryStatusChanged(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
+  _scopedCommandLine.reset();
   [super tearDown];
 }
 
