@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
@@ -130,6 +131,11 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
   // The margins between the content and the inside of the border.
   gfx::Insets margins_;
+
+  // The time the dialog is created.
+  base::TimeTicks creation_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()

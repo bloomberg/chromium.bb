@@ -13218,6 +13218,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Dialog.DialogDelegate.Duration" units="ms">
+  <owner>pdyson@chromium.org</owner>
+  <summary>
+    How long dialog boxes are open, for dialog boxes created using the parent
+    class DialogDelegate. This will include bubbles that use
+    BubbleDialogDelegateView as a parent class, and dialogs that use
+    DialogDelegateView as a parent class. This is logged on delegate
+    destruction.
+  </summary>
+</histogram>
+
 <histogram name="DirectWrite.Fonts.BuildCache.File.Size" units="KB">
   <owner>shrikant@chromium.org</owner>
   <summary>
