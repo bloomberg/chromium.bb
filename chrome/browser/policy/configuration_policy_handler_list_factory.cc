@@ -625,6 +625,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrintPreviewUseSystemDefaultPrinter,
     prefs::kPrintPreviewUseSystemDefaultPrinter,
     base::Value::Type::BOOLEAN },
+  { key::kCloudPolicyOverridesMachinePolicy,
+    prefs::kCloudPolicyOverridesMachinePolicy,
+    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
   { key::kForceBrowserSignin,

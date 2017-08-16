@@ -66,7 +66,8 @@ const char* kInsecurePolicies[] = {
     key::kMetricsReportingEnabled, key::kDefaultSearchProviderEnabled,
     key::kHomepageIsNewTabPage,    key::kHomepageLocation,
     key::kNewTabPageLocation,      key::kRestoreOnStartup,
-    key::kRestoreOnStartupURLs,    key::kSafeBrowsingForTrustedSourcesEnabled};
+    key::kRestoreOnStartupURLs,    key::kSafeBrowsingForTrustedSourcesEnabled,
+    key::kCloudPolicyOverridesMachinePolicy};
 
 #pragma warning(push)
 #pragma warning(disable : 4068)  // unknown pragmas

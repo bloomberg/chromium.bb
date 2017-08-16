@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/policy_helpers.h"
 
 #include "build/build_config.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "extensions/features/features.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -58,6 +60,13 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
 
   return url.path_piece() == kServiceLoginAuth;
 #endif
+}
+
+void RegisterPrefs(PrefRegistrySimple* registry) {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kCloudPolicyOverridesMachinePolicy,
+                                false);
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 }
 
 }  // namespace policy

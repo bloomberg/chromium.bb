@@ -839,6 +839,8 @@ extern const char kRecoveryComponentNeedsElevation[];
 
 extern const char kRegisteredSupervisedUserWhitelists[];
 
+extern const char kCloudPolicyOverridesMachinePolicy[];
+
 #if BUILDFLAG(ENABLE_BACKGROUND)
 extern const char kRestartInBackground[];
 #endif
