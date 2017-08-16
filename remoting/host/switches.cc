@@ -23,10 +23,6 @@ const char kProcessTypeEvaluateCapability[] = "evaluate_capability";
 
 const char kEvaluateCapabilitySwitchName[] = "evaluate-type";
 
-const char kEvaluateTest[] = "test";
-const char kEvaluateCrash[] = "crash";
-const char kEvaluateForward[] = "forward";
-
 #if defined(OS_WIN)
 const char kEvaluateD3D[] = "d3d-support";
 #endif

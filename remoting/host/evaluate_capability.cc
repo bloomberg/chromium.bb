@@ -26,43 +26,30 @@ namespace remoting {
 
 namespace {
 
-// TODO(zijiehe): Move these test specific handlers into test binary.
-// This function is for test purpose only. It writes some random texts to both
-// stdout and stderr, and returns a random value 234.
-int EvaluateTest() {
-  std::cout << "In EvaluateTest(): Line 1\n"
-               "In EvaluateTest(): Line 2";
-  std::cerr << "In EvaluateTest(): Error Line 1\n"
-               "In EvaluateTest(): Error Line 2";
-  return 234;
-}
-
-// This function is for test purpose only. It triggers an assertion failure.
-int EvaluateCrash() {
-  NOTREACHED();
-  return 0;
-}
-
-// This function is for test purpose only. It forwards the evaluation request to
-// a new process and returns what it returns.
-int EvaluateForward() {
-  std::string output;
-  int result = EvaluateCapability(kEvaluateTest, &output);
-  std::cout << output;
-  return result;
-}
-
 // Returns the full path of the binary file we should use to evaluate the
 // capability. According to the platform and executing environment, return of
 // this function may vary. But in one process, the return value is guaranteed to
 // be the same.
-// This function tries to use current binary if supported, otherwise it falls
-// back to use the default binary.
+// This function uses capability_test_stub in unittest, or tries to use current
+// binary if supported, otherwise it falls back to use the default binary.
 base::FilePath BuildHostBinaryPath() {
-#if defined(OS_LINUX)
   base::FilePath path;
   bool result = base::PathService::Get(base::FILE_EXE, &path);
   DCHECK(result);
+  base::FilePath directory;
+  result = base::PathService::Get(base::DIR_EXE, &directory);
+  DCHECK(result);
+#if defined(OS_WIN)
+  if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_unittests.exe")) {
+    return directory.Append(FILE_PATH_LITERAL("capability_test_stub.exe"));
+  }
+#else
+  if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_unittests")) {
+    return directory.Append(FILE_PATH_LITERAL("capability_test_stub"));
+  }
+#endif
+
+#if defined(OS_LINUX)
   if (path.BaseName().value() ==
       FILE_PATH_LITERAL("chrome-remote-desktop-host")) {
     return path;
@@ -71,25 +58,15 @@ base::FilePath BuildHostBinaryPath() {
     return path;
   }
 
-  result = base::PathService::Get(base::DIR_EXE, &path);
-  DCHECK(result);
-  return path.Append(FILE_PATH_LITERAL("remoting_me2me_host"));
+  return directory.Append(FILE_PATH_LITERAL("remoting_me2me_host"));
 #elif defined(OS_MACOSX)
-  base::FilePath path;
-  bool result = base::PathService::Get(base::FILE_EXE, &path);
-  DCHECK(result);
   if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_me2me_host")) {
     return path;
   }
 
-  result = base::PathService::Get(base::DIR_EXE, &path);
-  DCHECK(result);
-  return path.Append(FILE_PATH_LITERAL(
+  return directory.Append(FILE_PATH_LITERAL(
       "remoting_me2me_host.app/Contents/MacOS/remoting_me2me_host"));
 #elif defined(OS_WIN)
-  base::FilePath path;
-  bool result = base::PathService::Get(base::FILE_EXE, &path);
-  DCHECK(result);
   if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_console.exe")) {
     return path;
   }
@@ -100,9 +77,7 @@ base::FilePath BuildHostBinaryPath() {
     return path;
   }
 
-  result = base::PathService::Get(base::DIR_EXE, &path);
-  DCHECK(result);
-  return path.Append(FILE_PATH_LITERAL("remoting_host.exe"));
+  return directory.Append(FILE_PATH_LITERAL("remoting_host.exe"));
 #else
   #error "BuildHostBinaryPath is not implemented for current platform."
 #endif
@@ -111,16 +86,6 @@ base::FilePath BuildHostBinaryPath() {
 }  // namespace
 
 int EvaluateCapabilityLocally(const std::string& type) {
-  // TODO(zijiehe): Move these test specific handlers into test binary.
-  if (type == kEvaluateTest) {
-    return EvaluateTest();
-  }
-  if (type == kEvaluateCrash) {
-    return EvaluateCrash();
-  }
-  if (type == kEvaluateForward) {
-    return EvaluateForward();
-  }
 #if defined(OS_WIN)
   if (type == kEvaluateD3D) {
     return EvaluateD3D();
@@ -143,10 +108,24 @@ int EvaluateCapability(const std::string& type,
     output = &dummy_output;
   }
 
-  // base::GetAppOutputWithExitCode() usually returns false when receiving
-  // "unknown" exit code. But we forward the |exit_code| through return value,
-  // so the return of base::GetAppOutputWithExitCode() should be ignored.
-  base::GetAppOutputWithExitCode(command, output, &exit_code);
+  bool result = base::GetAppOutputWithExitCode(command, output, &exit_code);
+#if defined(OS_WIN)
+  // On Windows, base::GetAppOutputWithExitCode() usually returns false when
+  // receiving "unknown" exit code. See
+  // https://cs.chromium.org/chromium/src/base/process/launch_win.cc?rcl=39ec40095376e8d977decbdc5d7ca28ba7d39cf2&l=130
+  // But we forward the |exit_code| through return value, so the return value of
+  // base::GetAppOutputWithExitCode() should be ignored.
+  result = true;
+#endif
+  if (!result) {
+    LOG(ERROR) << "Failed to execute process "
+               << command.GetCommandLineString()
+               << ", exit code "
+               << exit_code;
+    // This should not happen.
+    NOTREACHED();
+  }
+
   return exit_code;
 }
 
