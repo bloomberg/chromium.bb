@@ -5,6 +5,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
@@ -145,6 +146,17 @@ id<GREYMatcher> ContactInfoCellMatcher(autofill::AutofillProfile* profile) {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
+// Tests accessibility on the Payment Request add address page.
+- (void)testAccessibilityOnPaymentRequestAddAddressPage {
+  [[EarlGrey selectElementWithMatcher:ShippingAddressCellMatcher(&_profile)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_PAYMENTS_ADD_ADDRESS)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
 // Tests accessibility on the Payment Request delivery method page.
 - (void)testAccessibilityOnPaymentRequestDeliveryMethodPage {
   [[EarlGrey selectElementWithMatcher:ShippingOptionCellMatcher(
@@ -164,6 +176,21 @@ id<GREYMatcher> ContactInfoCellMatcher(autofill::AutofillProfile* profile) {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
+// Tests accessibility on the Payment Request add card page.
+- (void)testAccessibilityOnPaymentRequestAddCardPage {
+  [[[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(&_creditCard1)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollDisplacement)
+      onElementWithMatcher:grey_accessibilityID(
+                               kPaymentRequestCollectionViewID)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_PAYMENTS_ADD_CARD)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
 // Tests accessibility on the Payment Request contact info page.
 - (void)testAccessibilityOnPaymentRequestContactInfoPage {
   [[[EarlGrey selectElementWithMatcher:ContactInfoCellMatcher(&_profile)]
@@ -171,6 +198,21 @@ id<GREYMatcher> ContactInfoCellMatcher(autofill::AutofillProfile* profile) {
                                                   kScrollDisplacement)
       onElementWithMatcher:grey_accessibilityID(
                                kPaymentRequestCollectionViewID)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests accessibility on the Payment Request add contact info page.
+- (void)testAccessibilityOnPaymentRequestAddContactInfoPage {
+  [[[EarlGrey selectElementWithMatcher:ContactInfoCellMatcher(&_profile)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollDisplacement)
+      onElementWithMatcher:grey_accessibilityID(
+                               kPaymentRequestCollectionViewID)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL)]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
