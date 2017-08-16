@@ -168,14 +168,12 @@ STDMETHODIMP BrowserAccessibilityComWin::get_indexInParent(
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_nRelations(LONG* n_relations) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_RELATIONS);
   return AXPlatformNodeWin::get_nRelations(n_relations);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_relation(
     LONG relation_index,
     IAccessibleRelation** relation) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATION);
   return AXPlatformNodeWin::get_relation(relation_index, relation);
 }
 
@@ -183,7 +181,6 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relations(
     LONG max_relations,
     IAccessibleRelation** relations,
     LONG* n_relations) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATIONS);
   return AXPlatformNodeWin::get_relations(max_relations, relations,
                                           n_relations);
 }
