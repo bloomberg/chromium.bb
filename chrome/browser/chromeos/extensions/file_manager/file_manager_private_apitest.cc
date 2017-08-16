@@ -445,3 +445,21 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath downloads_dir = temp_dir.GetPath();
+
+  ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
+                  ->RegisterDownloadsDirectoryForTesting(downloads_dir));
+
+  // Create an empty file.
+  {
+    base::File file(downloads_dir.Append("all-justice.jpg"),
+                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(file.IsValid());
+  }
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/recent_test"));
+}
