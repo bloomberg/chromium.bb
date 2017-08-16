@@ -4,13 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
@@ -22,10 +16,7 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Tests for a wanted clearHistory method.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class ClearHistoryTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class ClearHistoryTest extends AwTestBase {
 
     private static final String[] URLS = new String[3];
     {
@@ -35,36 +26,29 @@ public class ClearHistoryTest {
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"History", "Main"})
     public void testClearHistory() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final WebContents webContents = awContents.getWebContents();
         OnPageFinishedHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
         for (int i = 0; i < 3; i++) {
-            mActivityTestRule.loadUrlSync(awContents, onPageFinishedHelper, URLS[i]);
+            loadUrlSync(awContents, onPageFinishedHelper, URLS[i]);
         }
 
-        HistoryUtils.goBackSync(
-                InstrumentationRegistry.getInstrumentation(), webContents, onPageFinishedHelper);
-        Assert.assertTrue("Should be able to go back",
-                HistoryUtils.canGoBackOnUiThread(
-                        InstrumentationRegistry.getInstrumentation(), webContents));
-        Assert.assertTrue("Should be able to go forward",
-                HistoryUtils.canGoForwardOnUiThread(
-                        InstrumentationRegistry.getInstrumentation(), webContents));
+        HistoryUtils.goBackSync(getInstrumentation(), webContents, onPageFinishedHelper);
+        assertTrue("Should be able to go back",
+                   HistoryUtils.canGoBackOnUiThread(getInstrumentation(), webContents));
+        assertTrue("Should be able to go forward",
+                   HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), webContents));
 
-        HistoryUtils.clearHistoryOnUiThread(
-                InstrumentationRegistry.getInstrumentation(), webContents);
-        Assert.assertFalse("Should not be able to go back",
-                HistoryUtils.canGoBackOnUiThread(
-                        InstrumentationRegistry.getInstrumentation(), webContents));
-        Assert.assertFalse("Should not be able to go forward",
-                HistoryUtils.canGoForwardOnUiThread(
-                        InstrumentationRegistry.getInstrumentation(), webContents));
+        HistoryUtils.clearHistoryOnUiThread(getInstrumentation(), webContents);
+        assertFalse("Should not be able to go back",
+                    HistoryUtils.canGoBackOnUiThread(getInstrumentation(), webContents));
+        assertFalse("Should not be able to go forward",
+                    HistoryUtils.canGoForwardOnUiThread(getInstrumentation(), webContents));
     }
 }

@@ -7,16 +7,8 @@ package org.chromium.android_webview.test;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.Message;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Base64;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
@@ -29,10 +21,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests if resubmission of post data is handled properly.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsClientOnFormResubmissionTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
 
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {
@@ -74,55 +63,54 @@ public class AwContentsClientOnFormResubmissionTest {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
-    @Before
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mServer = TestWebServer.start();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+                createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
     }
 
-    @After
+    @Override
     public void tearDown() throws Exception {
         mServer.shutdown();
+        super.tearDown();
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
     public void testResend() throws Throwable {
         mContentsClient.setResubmit(true);
         doReload();
-        Assert.assertEquals(1, mContentsClient.getResubmissions());
-        Assert.assertEquals("Reload", mActivityTestRule.getTitleOnUiThread(mAwContents));
+        assertEquals(1, mContentsClient.getResubmissions());
+        assertEquals("Reload", getTitleOnUiThread(mAwContents));
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
     public void testDontResend() throws Throwable {
         mContentsClient.setResubmit(false);
         doReload();
-        Assert.assertEquals(1, mContentsClient.getResubmissions());
-        Assert.assertEquals("Load", mActivityTestRule.getTitleOnUiThread(mAwContents));
+        assertEquals(1, mContentsClient.getResubmissions());
+        assertEquals("Load", getTitleOnUiThread(mAwContents));
     }
 
     protected void doReload() throws Throwable {
         String url = mServer.setResponse("/form", LOAD_RESPONSE, null);
         String postData = "content=blabla";
         byte[] data = Base64.encode(postData.getBytes("UTF-8"), Base64.DEFAULT);
-        mActivityTestRule.postUrlSync(
-                mAwContents, mContentsClient.getOnPageFinishedHelper(), url, data);
-        Assert.assertEquals(0, mContentsClient.getResubmissions());
-        Assert.assertEquals("Load", mActivityTestRule.getTitleOnUiThread(mAwContents));
+        postUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url, data);
+        assertEquals(0, mContentsClient.getResubmissions());
+        assertEquals("Load", getTitleOnUiThread(mAwContents));
         // Verify reload works as expected.
         mServer.setResponse("/form", RELOAD_RESPONSE, null);
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
         int callCount = onPageFinishedHelper.getCallCount();
         // Run reload on UI thread.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mAwContents.getNavigationController().reload(true);

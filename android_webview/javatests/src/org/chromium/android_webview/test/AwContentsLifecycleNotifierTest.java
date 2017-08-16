@@ -4,13 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContentsLifecycleNotifier;
 import org.chromium.base.test.util.CallbackHelper;
@@ -19,10 +13,7 @@ import org.chromium.base.test.util.Feature;
 /**
  * AwContentsLifecycleNotifier tests.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsLifecycleNotifierTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class AwContentsLifecycleNotifierTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
@@ -41,27 +32,26 @@ public class AwContentsLifecycleNotifierTest {
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNotifierCreate() throws Throwable {
         LifecycleObserver observer = new LifecycleObserver();
         AwContentsLifecycleNotifier.addObserver(observer);
-        Assert.assertFalse(AwContentsLifecycleNotifier.hasWebViewInstances());
+        assertFalse(AwContentsLifecycleNotifier.hasWebViewInstances());
 
         AwTestContainerView awTestContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+                createAwTestContainerViewOnMainSync(mContentsClient);
         observer.mFirstWebViewCreatedCallback.waitForCallback(0, 1);
-        Assert.assertTrue(AwContentsLifecycleNotifier.hasWebViewInstances());
+        assertTrue(AwContentsLifecycleNotifier.hasWebViewInstances());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getActivity().removeAllViews();
+                getActivity().removeAllViews();
             }
         });
-        mActivityTestRule.destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
         observer.mLastWebViewDestroyedCallback.waitForCallback(0, 1);
-        Assert.assertFalse(AwContentsLifecycleNotifier.hasWebViewInstances());
+        assertFalse(AwContentsLifecycleNotifier.hasWebViewInstances());
     }
 }

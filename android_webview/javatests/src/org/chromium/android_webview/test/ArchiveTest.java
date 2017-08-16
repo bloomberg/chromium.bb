@@ -4,16 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.support.test.filters.SmallTest;
 import android.webkit.ValueCallback;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
@@ -29,10 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Test suite for the WebView.saveWebArchive feature.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class ArchiveTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+public class ArchiveTest extends AwTestBase {
 
     private static final long TEST_TIMEOUT = scaleTimeout(20000L);
 
@@ -42,15 +33,16 @@ public class ArchiveTest {
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
     private AwTestContainerView mTestContainerView;
 
-    @Before
-    public void setUp() throws Exception {
-        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
     }
 
     private void deleteFile(String path) {
         File file = new File(path);
-        if (file.exists()) Assert.assertTrue(file.delete());
-        Assert.assertFalse(file.exists());
+        if (file.exists()) assertTrue(file.delete());
+        assertFalse(file.exists());
     }
 
     private void doArchiveTest(final AwContents contents, final String path,
@@ -77,43 +69,40 @@ public class ArchiveTest {
                 contents.saveWebArchive(path, autoName, callback);
             }
         });
-        Assert.assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
+        assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
 
-        Assert.assertEquals(expectedPath, msgPath.get());
+        assertEquals(expectedPath, msgPath.get());
         if (expectedPath != null) {
             File file = new File(expectedPath);
-            Assert.assertTrue(file.exists());
-            Assert.assertTrue(file.length() > 0);
+            assertTrue(file.exists());
+            assertTrue(file.length() > 0);
         } else {
             // A path was provided, but the expected path was null. This means the save should have
             // failed, and so there shouldn't be a file path path.
             if (path != null) {
-                Assert.assertFalse(new File(path).exists());
+                assertFalse(new File(path).exists());
             }
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testExplicitGoodPath() throws Throwable {
-        final String path = new File(mActivityTestRule.getActivity().getFilesDir(), "test.mht")
-                                    .getAbsolutePath();
+        final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
         deleteFile(path);
 
-        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, path);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testAutoGoodPath() throws Throwable {
-        final String path = mActivityTestRule.getActivity().getFilesDir().getAbsolutePath() + "/";
+        final String path = getActivity().getFilesDir().getAbsolutePath() + "/";
 
-        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         // Create the first archive
@@ -129,7 +118,6 @@ public class ArchiveTest {
         }
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -137,13 +125,12 @@ public class ArchiveTest {
         final String path = new File("/foo/bar/baz.mht").getAbsolutePath();
         deleteFile(path);
 
-        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, null);
     }
 
-    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -151,7 +138,7 @@ public class ArchiveTest {
         final String path = new File("/foo/bar/").getAbsolutePath();
         deleteFile(path);
 
-        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, true, null);

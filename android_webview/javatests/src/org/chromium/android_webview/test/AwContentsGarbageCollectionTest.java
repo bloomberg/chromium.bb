@@ -4,25 +4,16 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.android_webview.test.AwActivityTestRule.CHECK_INTERVAL;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.ResultReceiver;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwGLFunctor;
-import org.chromium.android_webview.test.AwTestBase.TestDependencyFactory;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
@@ -37,29 +28,26 @@ import java.util.concurrent.Callable;
  * accidentally prevents AwContents from garbage collected, leading to leaks.
  * See crbug.com/544098 for why @DisableHardwareAccelerationForTest is needed.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsGarbageCollectionTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
-        @Override
-        public TestDependencyFactory createTestDependencyFactory() {
-            if (mOverridenFactory == null) {
-                return new TestDependencyFactory();
-            } else {
-                return mOverridenFactory;
-            }
-        }
-    };
-
+public class AwContentsGarbageCollectionTest extends AwTestBase {
     // The system retains a strong ref to the last focused view (in InputMethodManager)
     // so allow for 1 'leaked' instance.
     private static final int MAX_IDLE_INSTANCES = 1;
 
     private TestDependencyFactory mOverridenFactory;
 
-    @After
+    @Override
     public void tearDown() throws Exception {
         mOverridenFactory = null;
+        super.tearDown();
+    }
+
+    @Override
+    public TestDependencyFactory createTestDependencyFactory() {
+        if (mOverridenFactory == null) {
+            return new TestDependencyFactory();
+        } else {
+            return mOverridenFactory;
+        }
     }
 
     @SuppressFBWarnings("URF_UNREAD_FIELD")
@@ -84,7 +72,7 @@ public class AwContentsGarbageCollectionTest {
         @Override
         public AwTestContainerView createAwTestContainerView(
                 AwTestRunnerActivity activity, boolean allowHardwareAcceleration) {
-            if (activity != mContext.getBaseContext()) Assert.fail();
+            if (activity != mContext.getBaseContext()) fail();
             return new AwTestContainerView(mContext, allowHardwareAcceleration);
         }
     }
@@ -97,7 +85,6 @@ public class AwContentsGarbageCollectionTest {
         }
     }
 
-    @Test
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -107,8 +94,8 @@ public class AwContentsGarbageCollectionTest {
         TestAwContentsClient client = new TestAwContentsClient();
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
-            containerViews[i] = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
-            mActivityTestRule.loadUrlAsync(
+            containerViews[i] = createAwTestContainerViewOnMainSync(client);
+            loadUrlAsync(
                     containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
@@ -120,7 +107,6 @@ public class AwContentsGarbageCollectionTest {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @Test
     @DisableHardwareAccelerationForTest
     @SuppressFBWarnings("UC_USELESS_OBJECT")
     @SmallTest
@@ -132,10 +118,9 @@ public class AwContentsGarbageCollectionTest {
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
         ResultReceiver resultReceivers[] = new ResultReceiver[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
-            final AwTestContainerView containerView =
-                    mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+            final AwTestContainerView containerView = createAwTestContainerViewOnMainSync(client);
             containerViews[i] = containerView;
-            mActivityTestRule.loadUrlAsync(
+            loadUrlAsync(
                     containerView.getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             // When we call showSoftInput(), we pass a ResultReceiver object as a parameter.
             // Android framework will hold the object reference until the matching
@@ -144,15 +129,14 @@ public class AwContentsGarbageCollectionTest {
             // It is difficult to show keyboard and wait until input method window shows up.
             // Instead, we simply emulate Android's behavior by keeping strong references.
             // See crbug.com/595613 for details.
-            resultReceivers[i] =
-                    mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<ResultReceiver>() {
-                        @Override
-                        public ResultReceiver call() throws Exception {
-                            return containerView.getContentViewCore()
-                                    .getImeAdapterForTest()
-                                    .getNewShowKeyboardReceiver();
-                        }
-                    });
+            resultReceivers[i] = runTestOnUiThreadAndGetResult(new Callable<ResultReceiver>() {
+                @Override
+                public ResultReceiver call() throws Exception {
+                    return containerView.getContentViewCore()
+                            .getImeAdapterForTest()
+                            .getNewShowKeyboardReceiver();
+                }
+            });
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -163,7 +147,6 @@ public class AwContentsGarbageCollectionTest {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @Test
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -173,8 +156,8 @@ public class AwContentsGarbageCollectionTest {
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
             StrongRefTestAwContentsClient client = new StrongRefTestAwContentsClient();
-            containerViews[i] = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
-            mActivityTestRule.loadUrlAsync(
+            containerViews[i] = createAwTestContainerViewOnMainSync(client);
+            loadUrlAsync(
                     containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
@@ -186,7 +169,6 @@ public class AwContentsGarbageCollectionTest {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @Test
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -196,12 +178,11 @@ public class AwContentsGarbageCollectionTest {
         TestAwContentsClient client = new TestAwContentsClient();
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
-            StrongRefTestContext context =
-                    new StrongRefTestContext(mActivityTestRule.getActivity());
+            StrongRefTestContext context = new StrongRefTestContext(getActivity());
             mOverridenFactory = new GcTestDependencyFactory(context);
-            containerViews[i] = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+            containerViews[i] = createAwTestContainerViewOnMainSync(client);
             mOverridenFactory = null;
-            mActivityTestRule.loadUrlAsync(
+            loadUrlAsync(
                     containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         }
 
@@ -213,7 +194,6 @@ public class AwContentsGarbageCollectionTest {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    @Test
     @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView"})
@@ -226,11 +206,9 @@ public class AwContentsGarbageCollectionTest {
         for (int i = 0; i < repetitions; ++i) {
             for (int j = 0; j < concurrentInstances; ++j) {
                 StrongRefTestAwContentsClient client = new StrongRefTestAwContentsClient();
-                StrongRefTestContext context =
-                        new StrongRefTestContext(mActivityTestRule.getActivity());
+                StrongRefTestContext context = new StrongRefTestContext(getActivity());
                 mOverridenFactory = new GcTestDependencyFactory(context);
-                AwTestContainerView view =
-                        mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+                AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
                 mOverridenFactory = null;
                 // Embedding app can hold onto a strong ref to the WebView from either
                 // WebViewClient or WebChromeClient. That should not prevent WebView from
@@ -238,11 +216,10 @@ public class AwContentsGarbageCollectionTest {
                 // have AwContentsClient hold a strong ref to the AwContents object.
                 client.setAwContentsStrongRef(view.getAwContents());
                 context.setAwContentsStrongRef(view.getAwContents());
-                mActivityTestRule.loadUrlAsync(
-                        view.getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+                loadUrlAsync(view.getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
             }
-            Assert.assertTrue(AwContents.getNativeInstanceCount() >= concurrentInstances);
-            Assert.assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * concurrentInstances);
+            assertTrue(AwContents.getNativeInstanceCount() >= concurrentInstances);
+            assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * concurrentInstances);
             removeAllViews();
         }
 
@@ -250,10 +227,10 @@ public class AwContentsGarbageCollectionTest {
     }
 
     private void removeAllViews() throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getActivity().removeAllViews();
+                getActivity().removeAllViews();
             }
         });
     }
@@ -265,7 +242,7 @@ public class AwContentsGarbageCollectionTest {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+                    return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
                         @Override
                         public Boolean call() {
                             int count_aw_contents = AwContents.getNativeInstanceCount();
@@ -295,6 +272,6 @@ public class AwContentsGarbageCollectionTest {
             }
         }
 
-        Assert.assertTrue(criteria.isSatisfied());
+        assertTrue(criteria.isSatisfied());
     }
 }

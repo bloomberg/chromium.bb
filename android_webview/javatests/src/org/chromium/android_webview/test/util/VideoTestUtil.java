@@ -24,8 +24,9 @@ public class VideoTestUtil {
      * @throws Throwable throw exception if timeout.
      */
     public static boolean runVideoTest(final Instrumentation instr,
-            final AwActivityTestRule testRule, final boolean requiredUserGesture, long waitTime)
-            throws Throwable {
+            final AwActivityTestRule testRule,
+            final boolean requiredUserGesture,
+            long waitTime) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         TestAwContentsClient client = new TestAwContentsClient();
         final AwContents awContents =

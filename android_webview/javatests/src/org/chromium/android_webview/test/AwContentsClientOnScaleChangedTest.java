@@ -6,12 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
@@ -21,27 +15,23 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 /**
  * Tests for the WebViewClient.onScaleChanged.
  */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwContentsClientOnScaleChangedTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
+public class AwContentsClientOnScaleChangedTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mContentsClient = new TestAwContentsClient();
         AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+                createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
     }
 
-    @Test
     @SmallTest
     public void testScaleUp() throws Throwable {
-        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
-        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageFrom(
                         "<meta name=\"viewport\" content=\"initial-scale=1.0, "
                                 + " minimum-scale=0.5, maximum-scale=2, user-scalable=yes\" />",
@@ -57,12 +47,11 @@ public class AwContentsClientOnScaleChangedTest {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(mAwContents.zoomIn());
+                assertTrue(mAwContents.zoomIn());
             }
         });
         mContentsClient.getOnScaleChangedHelper().waitForCallback(callCount);
-        Assert.assertTrue(
-                "Scale ratio:" + mContentsClient.getOnScaleChangedHelper().getLastScaleRatio(),
+        assertTrue("Scale ratio:" + mContentsClient.getOnScaleChangedHelper().getLastScaleRatio(),
                 mContentsClient.getOnScaleChangedHelper().getLastScaleRatio() > 1);
     }
 }
