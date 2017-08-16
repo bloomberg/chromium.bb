@@ -141,8 +141,12 @@ Polymer({
       this.selectedImageUrl_ = imageUrl;
     } else if (this.cameraSelected_) {
       this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
-    } else if (this.fallbackImage_) {
+    } else if (
+        this.fallbackImage_ &&
+        this.fallbackImage_.dataset.type != CrPicture.SelectionTypes.OLD) {
       this.selectImage_(this.fallbackImage_, true /* activate */);
+    } else {
+      this.selectImage_(this.$.profileImage, true /* activate */);
     }
   },
 
