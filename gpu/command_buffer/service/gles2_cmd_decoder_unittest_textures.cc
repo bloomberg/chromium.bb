@@ -2222,7 +2222,43 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, CopyTextureCHROMIUMBadTarget) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
 
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kNewClientId);
+
+  const GLenum kBadTarget = GL_RGB;
+  CopyTextureCHROMIUM cmd;
+  cmd.Init(client_texture_id_, 0, kBadTarget, kNewClientId, 0, GL_RGBA,
+           GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, CopySubTextureCHROMIUMBadTarget) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+
+  const GLenum kBadTarget = GL_RGB;
+  CopySubTextureCHROMIUM cmd;
+  cmd.Init(client_texture_id_, 0, kBadTarget, kNewClientId, 0, 1, 1, 2, 2, 3, 3,
+           GL_FALSE, GL_FALSE, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
 
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitState init;
@@ -3601,6 +3637,18 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
 
   BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
   bind_tex_image_2d_cmd.Init(GL_TEXTURE_CUBE_MAP, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest,
+       BindTexImage2DWithInternalformatCHROMIUMBadInternalFormat) {
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
+  GetImageManagerForTest()->AddImage(image.get(), 1);
+  DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
+
+  BindTexImage2DWithInternalformatCHROMIUM bind_tex_image_2d_cmd;
+  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, GL_BACK, 1);  // Invalid enum
   EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }

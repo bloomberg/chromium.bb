@@ -4571,6 +4571,11 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
       static_cast<GLboolean>(c.unpack_premultiply_alpha);
   GLboolean unpack_unmultiply_alpha =
       static_cast<GLboolean>(c.unpack_unmultiply_alpha);
+  if (!validators_->texture_target.IsValid(dest_target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCopyTextureCHROMIUM", dest_target,
+                                    "dest_target");
+    return error::kNoError;
+  }
   if (!validators_->texture_internal_format.IsValid(internalformat)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyTextureCHROMIUM",
                        "internalformat GL_INVALID_VALUE");
@@ -4609,6 +4614,11 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
       static_cast<GLboolean>(c.unpack_premultiply_alpha);
   GLboolean unpack_unmultiply_alpha =
       static_cast<GLboolean>(c.unpack_unmultiply_alpha);
+  if (!validators_->texture_target.IsValid(dest_target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCopySubTextureCHROMIUM", dest_target,
+                                    "dest_target");
+    return error::kNoError;
+  }
   if (width < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
                        "width < 0");
@@ -4780,6 +4790,12 @@ error::Error GLES2DecoderImpl::HandleBindTexImage2DWithInternalformatCHROMIUM(
   if (!validators_->texture_bind_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
         "glBindTexImage2DWithInternalformatCHROMIUM", target, "target");
+    return error::kNoError;
+  }
+  if (!validators_->texture_internal_format.IsValid(internalformat)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glBindTexImage2DWithInternalformatCHROMIUM", internalformat,
+        "internalformat");
     return error::kNoError;
   }
   DoBindTexImage2DWithInternalformatCHROMIUM(target, internalformat, imageId);
