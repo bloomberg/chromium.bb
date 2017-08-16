@@ -289,6 +289,7 @@ void NotificationView::Layout() {
   // Top views.
   int top_height = top_view_->GetHeightForWidth(content_width);
   top_view_->SetBounds(insets.left(), insets.top(), content_width, top_height);
+  ShrinkTopmostLabel();
 
   // Icon.
   icon_view_->SetBounds(insets.left(), insets.top(), kNotificationIconSize,
@@ -716,6 +717,20 @@ int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
 int NotificationView::GetMessageHeight(int width, int limit) const {
   return message_view_ ?
          message_view_->GetSizeForWidthAndLines(width, limit).height() : 0;
+}
+
+void NotificationView::ShrinkTopmostLabel() {
+// Reduce width of the topmost label not to be covered by the control buttons
+// only on non Chrome OS platform.
+#if !defined(OS_CHROMEOS)
+  const int content_width = width() - GetInsets().width();
+  const int buttons_width = control_buttons_view_->GetPreferredSize().width();
+  if (top_view_->child_count() > 0) {
+    gfx::Rect bounds = top_view_->child_at(0)->bounds();
+    bounds.set_width(content_width - buttons_width);
+    top_view_->child_at(0)->SetBoundsRect(bounds);
+  }
+#endif
 }
 
 }  // namespace message_center

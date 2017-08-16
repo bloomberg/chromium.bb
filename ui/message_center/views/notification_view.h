@@ -98,6 +98,9 @@ class MESSAGE_CENTER_EXPORT NotificationView
   // notification.
   base::string16 FormatContextMessage(const Notification& notification) const;
 
+  // Shrink the topmost label not to be covered by the control button.
+  void ShrinkTopmostLabel();
+
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
 
