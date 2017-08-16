@@ -4434,7 +4434,7 @@ weston_head_from_resource(struct wl_resource *resource)
  * \memberof weston_head
  * \internal
  */
-static void
+WL_EXPORT void
 weston_head_init(struct weston_head *head, const char *name)
 {
 	/* Add some (in)sane defaults which can be used
@@ -4490,7 +4490,7 @@ weston_compositor_schedule_heads_changed(struct weston_compositor *compositor)
  * \memberof weston_compositor
  * \internal
  */
-static void
+WL_EXPORT void
 weston_compositor_add_head(struct weston_compositor *compositor,
 			   struct weston_head *head)
 {
@@ -4571,6 +4571,52 @@ weston_compositor_iterate_heads(struct weston_compositor *compositor,
 	return container_of(node, struct weston_head, compositor_link);
 }
 
+/** Iterate over attached heads
+ *
+ * \param output The output whose heads to iterate.
+ * \param item The iterator, or NULL for start.
+ * \return The next attached head in the list.
+ *
+ * Returns all heads currently attached to the output.
+ *
+ * You can iterate over all heads as follows:
+ * \code
+ * struct weston_head *head = NULL;
+ *
+ * while ((head = weston_output_iterate_heads(output, head))) {
+ * 	...
+ * }
+ * \endcode
+ *
+ *  If you cause \c iter to be removed from the list, you cannot use it to
+ * continue iterating. Removing any other item is safe.
+ *
+ * \memberof weston_compositor
+ */
+WL_EXPORT struct weston_head *
+weston_output_iterate_heads(struct weston_output *output,
+			    struct weston_head *iter)
+{
+	struct wl_list *list = &output->head_list;
+	struct wl_list *node;
+
+	assert(output);
+	assert(!iter || iter->output == output);
+
+	if (iter)
+		node = iter->output_link.next;
+	else
+		node = list->next;
+
+	assert(node);
+	assert(!iter || node != &iter->output_link);
+
+	if (node == list)
+		return NULL;
+
+	return container_of(node, struct weston_head, output_link);
+}
+
 /** Attach a head to an inactive output
  *
  * \param output The output to attach to.
@@ -4590,7 +4636,7 @@ weston_compositor_iterate_heads(struct weston_compositor *compositor,
  *
  * \memberof weston_output
  */
-static int
+WL_EXPORT int
 weston_output_attach_head(struct weston_output *output,
 			  struct weston_head *head)
 {
@@ -4600,9 +4646,13 @@ weston_output_attach_head(struct weston_output *output,
 	if (!wl_list_empty(&head->output_link))
 		return -1;
 
-	/* XXX: no support for multi-head yet */
-	if (!wl_list_empty(&output->head_list))
+	if (output->attach_head) {
+		if (output->attach_head(output, head) < 0)
+			return -1;
+	} else if (!wl_list_empty(&output->head_list)) {
+		/* No support for clones in the legacy path. */
 		return -1;
+	}
 
 	head->output = output;
 	wl_list_insert(output->head_list.prev, &head->output_link);
@@ -4616,14 +4666,33 @@ weston_output_attach_head(struct weston_output *output,
  *
  * It is safe to detach a non-attached head.
  *
+ * If the head is attached to an enabled output and the output will be left
+ * with no heads, the output will be disabled.
+ *
  * \memberof weston_head
+ * \sa weston_output_disable
  */
-static void
+WL_EXPORT void
 weston_head_detach(struct weston_head *head)
 {
+	struct weston_output *output = head->output;
+
 	wl_list_remove(&head->output_link);
 	wl_list_init(&head->output_link);
 	head->output = NULL;
+
+	if (!output)
+		return;
+
+	if (output->detach_head)
+		output->detach_head(output, head);
+
+	if (output->enabled) {
+		weston_head_remove_global(head);
+
+		if (wl_list_empty(&output->head_list))
+			weston_output_disable(output);
+	}
 }
 
 /** Destroy a head
@@ -4636,7 +4705,7 @@ weston_head_detach(struct weston_head *head)
  * \memberof weston_head
  * \internal
  */
-static void
+WL_EXPORT void
 weston_head_release(struct weston_head *head)
 {
 	weston_head_detach(head);
@@ -4804,6 +4873,31 @@ weston_head_is_enabled(struct weston_head *head)
 		return false;
 
 	return head->output->enabled;
+}
+
+/** Get the name of a head
+ *
+ * \param head The head to query.
+ * \return The head's name, not NULL.
+ *
+ * The name depends on the backend. The DRM backend uses connector names,
+ * other backends may use hardcoded names or user-given names.
+ */
+WL_EXPORT const char *
+weston_head_get_name(struct weston_head *head)
+{
+	return head->name;
+}
+
+/** Get the output the head is attached to
+ *
+ * \param head The head to query.
+ * \return The output the head is attached to, or NULL if detached.
+ */
+WL_EXPORT struct weston_output *
+weston_head_get_output(struct weston_head *head)
+{
+	return head->output;
 }
 
 /* Move other outputs when one is resized so the space remains contiguous. */
@@ -5225,8 +5319,11 @@ weston_output_init(struct weston_output *output,
 	wl_list_init(&output->head_list);
 
 	weston_head_init(&output->head, name);
-	weston_head_set_connection_status(&output->head, true);
-	weston_compositor_add_head(compositor, &output->head);
+	output->head.allocator_output = output;
+	if (!compositor->backend->create_output) {
+		weston_head_set_connection_status(&output->head, true);
+		weston_compositor_add_head(compositor, &output->head);
+	}
 
 	/* Add some (in)sane defaults which can be used
 	 * for checking if an output was properly configured
@@ -5463,6 +5560,78 @@ weston_output_release(struct weston_output *output)
 	weston_head_release(&output->head);
 
 	free(output->name);
+}
+
+/** Create an output for an unused head
+ *
+ * \param compositor The compositor.
+ * \param head The head to attach to the output.
+ * \return A new \c weston_output, or NULL on failure.
+ *
+ * This creates a new weston_output that starts with the given head attached.
+ * The output inherits the name of the head. The head must not be already
+ * attached to another output.
+ *
+ * An output must be configured before it can be enabled.
+ *
+ * \memberof weston_compositor
+ */
+WL_EXPORT struct weston_output *
+weston_compositor_create_output_with_head(struct weston_compositor *compositor,
+					  struct weston_head *head)
+{
+	struct weston_output *output;
+
+	if (head->allocator_output) {
+		/* XXX: compatibility path to be removed after all converted */
+		output = head->allocator_output;
+	} else {
+		assert(compositor->backend->create_output);
+		output = compositor->backend->create_output(compositor,
+							    head->name);
+	}
+
+	if (!output)
+		return NULL;
+
+	if (weston_output_attach_head(output, head) < 0) {
+		if (!head->allocator_output)
+			output->destroy(output);
+
+		return NULL;
+	}
+
+	return output;
+}
+
+/** Destroy an output
+ *
+ * \param output The output to destroy.
+ *
+ * The heads attached to the given output are detached and become unused again.
+ *
+ * It is not necessary to explicitly destroy all outputs at compositor exit.
+ * weston_compositor_destroy() will automatically destroy any remaining
+ * outputs.
+ *
+ * \memberof weston_output
+ */
+WL_EXPORT void
+weston_output_destroy(struct weston_output *output)
+{
+	struct weston_head *head;
+
+	/* XXX: compatibility path to be removed after all converted */
+	head = weston_output_get_first_head(output);
+	if (head->allocator_output) {
+		/* The old design: backend is responsible for destroying the
+		 * output, so just undo create_output_with_head()
+		 */
+		weston_head_detach(head);
+		return;
+	}
+
+	output->destroy(output);
 }
 
 /** When you need a head...
