@@ -86,8 +86,9 @@ void AppendBackgroundColorSpan(JNIEnv*,
   std::vector<ui::ImeTextSpan>* ime_text_spans =
       reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
   ime_text_spans->push_back(ui::ImeTextSpan(
-      static_cast<unsigned>(start), static_cast<unsigned>(end),
-      SK_ColorTRANSPARENT, false, static_cast<unsigned>(background_color)));
+      ui::ImeTextSpan::Type::kComposition, static_cast<unsigned>(start),
+      static_cast<unsigned>(end), SK_ColorTRANSPARENT, false,
+      static_cast<unsigned>(background_color)));
 }
 
 // Callback from Java to convert UnderlineSpan data to a
@@ -101,9 +102,9 @@ void AppendUnderlineSpan(JNIEnv*,
   DCHECK_GE(end, 0);
   std::vector<ui::ImeTextSpan>* ime_text_spans =
       reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
-  ime_text_spans->push_back(
-      ui::ImeTextSpan(static_cast<unsigned>(start), static_cast<unsigned>(end),
-                      SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+  ime_text_spans->push_back(ui::ImeTextSpan(
+      ui::ImeTextSpan::Type::kComposition, static_cast<unsigned>(start),
+      static_cast<unsigned>(end), SK_ColorBLACK, false, SK_ColorTRANSPARENT));
 }
 
 ImeAdapterAndroid::ImeAdapterAndroid(JNIEnv* env,
@@ -215,8 +216,9 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
 
   // Default to plain underline if we didn't find any span that we care about.
   if (ime_text_spans.empty()) {
-    ime_text_spans.push_back(ui::ImeTextSpan(0, text16.length(), SK_ColorBLACK,
-                                             false, SK_ColorTRANSPARENT));
+    ime_text_spans.push_back(
+        ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, text16.length(),
+                        SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   }
 
   // relative_cursor_pos is as described in the Android API for
@@ -337,7 +339,8 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,
     return;
 
   std::vector<ui::ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ui::ImeTextSpan(0, end - start, SK_ColorBLACK, false,
+  ime_text_spans.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition,
+                                           0, end - start, SK_ColorBLACK, false,
                                            SK_ColorTRANSPARENT));
 
   rfh->GetFrameInputHandler()->SetCompositionFromExistingText(start, end,
@@ -424,8 +427,10 @@ std::vector<ui::ImeTextSpan> ImeAdapterAndroid::GetImeTextSpansFromJava(
   Java_ImeAdapter_populateImeTextSpansFromJava(
       env, obj, text, reinterpret_cast<jlong>(&ime_text_spans));
 
-  // Sort spans by |.startOffset|.
-  std::sort(ime_text_spans.begin(), ime_text_spans.end());
+  std::sort(ime_text_spans.begin(), ime_text_spans.end(),
+            [](const ui::ImeTextSpan& span1, const ui::ImeTextSpan& span2) {
+              return span1.start_offset < span2.start_offset;
+            });
 
   return ime_text_spans;
 }

@@ -75,7 +75,8 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
 
       if (background_attr || underline_attr) {
         // Use a black thin underline by default.
-        ImeTextSpan ime_text_span(char16_offsets[start], char16_offsets[end],
+        ImeTextSpan ime_text_span(ImeTextSpan::Type::kComposition,
+                                  char16_offsets[start], char16_offsets[end],
                                   SK_ColorBLACK, false, SK_ColorTRANSPARENT);
 
         // Always use thick underline for a range with background color, which
@@ -109,7 +110,8 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
   // Use a black thin underline by default.
   if (composition->ime_text_spans.empty()) {
     composition->ime_text_spans.push_back(
-        ImeTextSpan(0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+        ImeTextSpan(ImeTextSpan::Type::kComposition, 0, length, SK_ColorBLACK,
+                    false, SK_ColorTRANSPARENT));
   }
 }
 

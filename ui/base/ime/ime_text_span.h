@@ -7,57 +7,69 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
 // Intentionally keep sync with blink::WebImeTextSpan defined in:
 // third_party/WebKit/public/web/WebImeTextSpan.h
-struct ImeTextSpan {
-  ImeTextSpan()
-      : start_offset(0),
-        end_offset(0),
-        underline_color(SK_ColorTRANSPARENT),
-        thick(false),
-        background_color(SK_ColorTRANSPARENT) {}
 
+struct UI_BASE_IME_EXPORT ImeTextSpan {
+  enum class Type {
+    // Creates a composition marker.
+    kComposition,
+    // Creates a suggestion marker that isn't cleared after the user picks a
+    // replacement.
+    kSuggestion,
+  };
+
+  // The default constructor is used by generated Mojo code.
+  ImeTextSpan();
   // TODO(huangs): remove this constructor.
-  ImeTextSpan(uint32_t s, uint32_t e, SkColor uc, bool t)
-      : start_offset(s),
-        end_offset(e),
-        underline_color(uc),
-        thick(t),
-        background_color(SK_ColorTRANSPARENT) {}
+  ImeTextSpan(uint32_t start_offset,
+              uint32_t end_offset,
+              SkColor underline_color,
+              bool thick);
+  ImeTextSpan(
+      Type type,
+      uint32_t start_offset,
+      uint32_t end_offset,
+      SkColor underline_color,
+      bool thick,
+      SkColor background_color,
+      SkColor suggestion_highlight_color = SK_ColorTRANSPARENT,
+      const std::vector<std::string>& suggestions = std::vector<std::string>());
 
-  ImeTextSpan(uint32_t s, uint32_t e, SkColor uc, bool t, SkColor bc)
-      : start_offset(s),
-        end_offset(e),
-        underline_color(uc),
-        thick(t),
-        background_color(bc) {}
+  ImeTextSpan(const ImeTextSpan& rhs);
 
-  bool operator<(const ImeTextSpan& rhs) const {
-    return std::tie(start_offset, end_offset) <
-           std::tie(rhs.start_offset, rhs.end_offset);
-  }
+  ~ImeTextSpan();
 
   bool operator==(const ImeTextSpan& rhs) const {
-    return (this->start_offset == rhs.start_offset) &&
+    return (this->type == rhs.type) &&
+           (this->start_offset == rhs.start_offset) &&
            (this->end_offset == rhs.end_offset) &&
            (this->underline_color == rhs.underline_color) &&
            (this->thick == rhs.thick) &&
-           (this->background_color == rhs.background_color);
+           (this->background_color == rhs.background_color) &&
+           (this->suggestion_highlight_color ==
+            rhs.suggestion_highlight_color) &&
+           (this->suggestions == rhs.suggestions);
   }
 
   bool operator!=(const ImeTextSpan& rhs) const { return !(*this == rhs); }
 
+  Type type;
   uint32_t start_offset;
   uint32_t end_offset;
   SkColor underline_color;
   bool thick;
   SkColor background_color;
+  SkColor suggestion_highlight_color;
+  std::vector<std::string> suggestions;
 };
 
 typedef std::vector<ImeTextSpan> ImeTextSpans;
