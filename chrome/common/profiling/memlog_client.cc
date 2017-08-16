@@ -36,7 +36,8 @@ void MemlogClient::OnServiceManagerConnected(
 }
 
 void MemlogClient::BindToInterface(mojom::MemlogClientRequest request) {
-  binding_ = std::move(request);
+  binding_.reset(
+      new mojo::Binding<mojom::MemlogClient>(this, std::move(request)));
 }
 
 void MemlogClient::StartProfiling(mojo::ScopedHandle sender_pipe) {

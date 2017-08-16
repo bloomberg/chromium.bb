@@ -60,7 +60,7 @@ void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
       mojo::MakeRequest(&memlog_client);
   BindInterface(host->GetHost(), std::move(request));
   base::ProcessId pid = base::GetProcId(data.handle);
-  StartProfilingForClient(std::move(memlog_client), pid);
+  SendPipeToProfilingService(std::move(memlog_client), pid);
 }
 
 void ProfilingProcessHost::Observe(
@@ -87,10 +87,10 @@ void ProfilingProcessHost::Observe(
   content::BindInterface(host, std::move(request));
   base::ProcessId pid = base::GetProcId(host->GetHandle());
 
-  StartProfilingForClient(std::move(memlog_client), pid);
+  SendPipeToProfilingService(std::move(memlog_client), pid);
 }
 
-void ProfilingProcessHost::StartProfilingForClient(
+void ProfilingProcessHost::SendPipeToProfilingService(
     profiling::mojom::MemlogClientPtr memlog_client,
     base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -100,9 +100,16 @@ void ProfilingProcessHost::StartProfilingForClient(
   memlog_->AddSender(
       pid,
       mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
-      base::OnceCallback<void()>());
-  memlog_client->StartProfiling(
-      mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle));
+      base::BindOnce(&ProfilingProcessHost::SendPipeToClientProcess,
+                     base::Unretained(this), std::move(memlog_client),
+                     mojo::WrapPlatformFile(
+                         data_channel.PassClientHandle().release().handle)));
+}
+
+void ProfilingProcessHost::SendPipeToClientProcess(
+    profiling::mojom::MemlogClientPtr memlog_client,
+    mojo::ScopedHandle handle) {
+  memlog_client->StartProfiling(std::move(handle));
 }
 
 // static

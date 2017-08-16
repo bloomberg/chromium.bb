@@ -79,8 +79,15 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Starts the profiling process.
   void LaunchAsService();
-  void StartProfilingForClient(profiling::mojom::MemlogClientPtr memlog_client,
-                               base::ProcessId pid);
+
+  // Sends the receiving end of the data pipe to the profiling service.
+  void SendPipeToProfilingService(
+      profiling::mojom::MemlogClientPtr memlog_client,
+      base::ProcessId pid);
+  // Sends the sending end of the data pipe to the client process.
+  void SendPipeToClientProcess(profiling::mojom::MemlogClientPtr memlog_client,
+                               mojo::ScopedHandle handle);
+
   void GetOutputFileOnBlockingThread(base::ProcessId pid);
   void HandleDumpProcessOnIOThread(base::ProcessId pid, base::File file);
 
