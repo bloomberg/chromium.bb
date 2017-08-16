@@ -162,6 +162,10 @@ template("lipo_binary") {
 #       entitlements (must generate a single file as output); cannot be
 #       defined if entitlements_path is set.
 #
+#   xcode_test_application_name:
+#       (optional) string, name of the test application for Xcode unit or ui
+#       test target.
+#
 template("create_signed_bundle") {
   assert(defined(invoker.product_type),
          "product_type must be defined for $target_name")
@@ -171,6 +175,13 @@ template("create_signed_bundle") {
       defined(invoker.bundle_binary_target) !=
           defined(invoker.bundle_binary_path),
       "Only one of bundle_binary_target or bundle_binary_path may be specified in " + target_name)
+
+  if (defined(invoker.xcode_test_application_name)) {
+    assert(
+        invoker.product_type == "com.apple.product-type.bundle.unit-test" ||
+            invoker.product_type == "com.apple.product-type.bundle.ui-testing",
+        "xcode_test_application_name can be only defined for Xcode unit or ui test target.")
+  }
 
   _target_name = target_name
   _output_name = target_name
@@ -225,6 +236,7 @@ template("create_signed_bundle") {
                              "public_deps",
                              "testonly",
                              "visibility",
+                             "xcode_test_application_name",
                            ])
 
     bundle_root_dir = _bundle_root_dir
@@ -1365,6 +1377,9 @@ set_defaults("ios_framework_bundle") {
 #       string, name of the target that depends on the generated bundle, this
 #       value is used to restrict visibilities.
 #
+#   xcode_test_application_name:
+#       string, name of the test application for Xcode unit or ui test target.
+#
 #   output_name
 #       (optional) string, name of the generated application, if omitted,
 #       defaults to the target_name.
@@ -1382,16 +1397,15 @@ template("ios_xctest_bundle") {
          "product_type defined for $target_name is invalid.")
   assert(defined(invoker.host_target),
          "host_target must be defined for $target_name")
+  assert(defined(invoker.xcode_test_application_name),
+         "xcode_test_application_name must be defined for $target_name")
 
   # Silence "assignment had no effect" error for non-default toolchains as
-  # host_target is only used in the expansion of the template for the default
-  # toolchain.
-  assert(invoker.host_target != target_name)
-
-  # Silence "assignment had no effect" error for non-default toolchains as
-  # configs is only used in the expansion of the template for the default
-  # toolchain.
+  # following variables are only used in the expansion of the template for the
+  # default toolchain.
   assert(invoker.configs != [])
+  assert(invoker.host_target != target_name)
+  assert(invoker.xcode_test_application_name != target_name)
 
   _target_name = target_name
   _output_name = target_name
@@ -1492,6 +1506,7 @@ template("ios_xctest_bundle") {
                              [
                                "enable_code_signing",
                                "product_type",
+                               "xcode_test_application_name",
                              ])
 
       testonly = true
@@ -1561,6 +1576,7 @@ template("ios_xctest_test") {
     output_name = _xctest_output
     product_type = "com.apple.product-type.bundle.unit-test"
     host_target = _host_target
+    xcode_test_application_name = _host_output
 
     deps = [
       ":$_xctest_shell_source_target",
