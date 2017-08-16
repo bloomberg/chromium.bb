@@ -3703,6 +3703,10 @@ static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
 
 static void dec_setup_across_tile_boundary_info(
     const AV1_COMMON *const cm, const TileInfo *const tile_info) {
+  if (tile_info->mi_row_start >= tile_info->mi_row_end ||
+      tile_info->mi_col_start >= tile_info->mi_col_end)
+    return;
+
   if (cm->width != cm->last_width || cm->height != cm->last_height ||
       cm->tile_cols != cm->last_tile_cols ||
       cm->tile_rows != cm->last_tile_rows) {

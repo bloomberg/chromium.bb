@@ -113,6 +113,7 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     const int mi_row = tile_info->mi_row_start;
     const int mi_col = tile_info->mi_col_start;
     MODE_INFO *const mi_start = cm->mi + mi_row * cm->mi_stride + mi_col;
+    assert(mi_start < cm->mip + cm->mi_alloc_size);
     MODE_INFO *mi = 0;
     const int row_diff = tile_info->mi_row_end - tile_info->mi_row_start;
     const int col_diff = tile_info->mi_col_end - tile_info->mi_col_start;
