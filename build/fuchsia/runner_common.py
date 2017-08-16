@@ -161,7 +161,11 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
     autorun_file.write('export CHROME_HEADLESS=1\n')
   autorun_file.write('echo Executing ' + os.path.basename(bin_name) + ' ' +
                      ' '.join(child_args) + '\n')
-  autorun_file.write('/system/' + os.path.basename(bin_name))
+
+  # Due to Fuchsia's object name length limit being small, we cd into /system
+  # and set PATH to "." to reduce the length of the main executable path.
+  autorun_file.write('cd /system\n')
+  autorun_file.write('PATH=. ' + os.path.basename(bin_name))
   for arg in child_args:
     autorun_file.write(' "%s"' % arg);
   autorun_file.write('\n')
@@ -215,6 +219,7 @@ def _SymbolizeEntry(entry):
   filename_re = re.compile(r'at ([-._a-zA-Z0-9/+]+):(\d+)')
   raw, frame_id = entry['raw'], entry['frame_id']
   prefix = '#%s: ' % frame_id
+
   if entry.has_key('debug_binary') and entry.has_key('pc_offset'):
     # Invoke addr2line on the host-side binary to resolve the symbol.
     addr2line_output = subprocess.check_output(
@@ -252,8 +257,9 @@ def _FindDebugBinary(entry, file_mapping):
   if binary.startswith(app_prefix):
     binary = binary[len(app_prefix):]
 
-  # Names in |file_mapping| are all relative to "/system/".
-  path_prefix = '/system/'
+  # We change directory into /system/ before running the target executable, so
+  # all paths are relative to "/system/", and will typically start with "./".
+  path_prefix = './'
   if not binary.startswith(path_prefix):
     return None
   binary = binary[len(path_prefix):]
