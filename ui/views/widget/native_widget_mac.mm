@@ -742,14 +742,37 @@ void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
-  BridgedNativeWidget* bridge =
-      NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
-  if (bridge && bridge->parent() &&
-      bridge->parent()->GetNSWindow() == [new_parent window])
-    return;  // Nothing to do.
+  DCHECK_NE(native_view, new_parent);
+  if (!new_parent) {
+    NOTREACHED();
+    return;
+  }
 
-  // Not supported. See http://crbug.com/514920.
-  NOTREACHED();
+  if ([native_view superview] == new_parent)
+    return;
+
+  Widget::Widgets widgets;
+  GetAllChildWidgets(native_view, &widgets);
+
+  // First notify all the widgets that they are being disassociated
+  // from their previous parent.
+  for (auto* child : widgets)
+    child->NotifyNativeViewHierarchyWillChange();
+
+  // Make native_view be a child of new_parent by adding it as a subview.
+  // The window of the native_view must remain visible because it controls the
+  // bounds and visibility of the ui::Layer. So just hide it by setting alpha
+  // value to zero.
+  // It is assumed that native_view is BridgedContentView and BridgedContentView
+  // handles the reparented behavior.
+  NSWindow* native_window = [native_view window];
+  [new_parent addSubview:native_view];
+  [native_window setAlphaValue:0];
+  [native_window setIgnoresMouseEvents:YES];
+
+  // And now, notify them that they have a brand new parent.
+  for (auto* child : widgets)
+    child->NotifyNativeViewHierarchyChanged();
 }
 
 // static

@@ -677,6 +677,9 @@ void WebContentsViewMac::CloseTab() {
 - (void)setFrameSize:(NSSize)newSize {
   [super setFrameSize:newSize];
 
+  if (webContentsView_ && webContentsView_->delegate())
+    webContentsView_->delegate()->SizeChanged(gfx::Size(newSize));
+
   // Perform manual layout of subviews, e.g., when the window size changes.
   for (NSView* subview in [self subviews])
     [subview setFrame:[self bounds]];
