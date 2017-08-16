@@ -360,8 +360,8 @@ void CSSParserImpl::ParseDeclarationListForInspector(
   CSSTokenizer tokenizer(declaration, wrapper);
   observer.StartRuleHeader(StyleRule::kStyle, 0);
   observer.EndRuleHeader(1);
-  // TODO(shend): Use streams instead of ranges
-  parser.ConsumeDeclarationList(tokenizer.TokenRange(), StyleRule::kStyle);
+  CSSParserTokenStream stream(tokenizer);
+  parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
 }
 
 void CSSParserImpl::ParseStyleSheetForInspector(const String& string,
@@ -852,7 +852,11 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
 
   bool use_observer = observer_wrapper_ && (rule_type == StyleRule::kStyle ||
                                             rule_type == StyleRule::kKeyframe);
-  DCHECK(!use_observer);  // TODO(shend): Implement streaming with observers.
+  if (use_observer) {
+    observer_wrapper_->Observer().StartRuleBody(
+        observer_wrapper_->PreviousTokenStartOffset(stream));
+    observer_wrapper_->SkipCommentsBefore(stream, true);
+  }
 
   while (!stream.AtEnd()) {
     switch (stream.UncheckedPeek().GetType()) {
@@ -861,6 +865,9 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
         stream.UncheckedConsume();
         break;
       case kIdentToken: {
+        if (use_observer)
+          observer_wrapper_->YieldCommentsBefore(stream);
+
         // TODO(shend): Use streams instead of ranges
         auto range = stream.MakeRangeToEOF();
 
@@ -872,6 +879,9 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
                            rule_type);
 
         stream.UpdatePositionFromRange(range);
+
+        if (use_observer)
+          observer_wrapper_->SkipCommentsBefore(stream, false);
         break;
       }
       case kAtKeywordToken: {
@@ -894,6 +904,13 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
           stream.UncheckedConsumeComponentValue();
         break;
     }
+  }
+
+  // Yield remaining comments
+  if (use_observer) {
+    observer_wrapper_->YieldCommentsBefore(stream);
+    observer_wrapper_->Observer().EndRuleBody(
+        observer_wrapper_->EndOffset(stream));
   }
 }
 

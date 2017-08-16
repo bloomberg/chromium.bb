@@ -6,6 +6,7 @@
 #define CSSParserObserverWrapper_h
 
 #include "core/css/parser/CSSParserObserver.h"
+#include "core/css/parser/CSSParserTokenStream.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -13,6 +14,8 @@ namespace blink {
 class CSSParserToken;
 class CSSParserTokenRange;
 
+// TODO(shend): Remove this class once we can use stream parsing directly
+// with CSSParserObserver.
 class CSSParserObserverWrapper {
   STACK_ALLOCATED();
 
@@ -27,6 +30,25 @@ class CSSParserObserverWrapper {
   void SkipCommentsBefore(const CSSParserTokenRange&,
                           bool leave_directly_before);
   void YieldCommentsBefore(const CSSParserTokenRange&);
+
+  // Overloads that work with streams
+  unsigned StartOffset(CSSParserTokenStream& stream) {
+    return StartOffset(stream.MakeRangeToEOF());
+  }
+  unsigned PreviousTokenStartOffset(CSSParserTokenStream& stream) {
+    return PreviousTokenStartOffset(stream.MakeRangeToEOF());
+  }
+  unsigned EndOffset(CSSParserTokenStream& stream) {
+    return EndOffset(stream.MakeRangeToEOF());
+  }
+
+  void SkipCommentsBefore(CSSParserTokenStream& stream,
+                          bool leave_directly_before) {
+    return SkipCommentsBefore(stream.MakeRangeToEOF(), leave_directly_before);
+  }
+  void YieldCommentsBefore(CSSParserTokenStream& stream) {
+    return YieldCommentsBefore(stream.MakeRangeToEOF());
+  }
 
   CSSParserObserver& Observer() { return observer_; }
   void AddComment(unsigned start_offset,
