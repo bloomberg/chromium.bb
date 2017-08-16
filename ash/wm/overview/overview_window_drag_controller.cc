@@ -60,7 +60,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
 
-  UpdatePhantomWindow(location_in_screen);
+  UpdatePhantomWindowAndWindowGrid(location_in_screen);
 }
 
 void OverviewWindowDragController::CompleteDrag() {
@@ -90,10 +90,20 @@ void OverviewWindowDragController::CompleteDrag() {
   }
 }
 
-void OverviewWindowDragController::UpdatePhantomWindow(
+void OverviewWindowDragController::UpdatePhantomWindowAndWindowGrid(
     const gfx::Point& location_in_screen) {
   SplitViewController::SnapPosition last_snap_position = snap_position_;
   snap_position_ = GetSnapPosition(location_in_screen);
+
+  // If there is no current snapped window, update the window grid size if the
+  // dragged window can be snapped if dropped.
+  if (split_view_controller_->state() == SplitViewController::NO_SNAP &&
+      snap_position_ != last_snap_position) {
+    // Do not reposition the item that is currently being dragged.
+    window_selector_->SetBoundsForWindowGridsInScreenIgnoringWindow(
+        GetGridBounds(snap_position_), item_);
+  }
+
   if (snap_position_ == SplitViewController::NONE ||
       snap_position_ != last_snap_position) {
     phantom_window_controller_.reset();
@@ -133,6 +143,25 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   if (location_in_screen.x() >= area.right() - 1)
     return SplitViewController::RIGHT;
   return SplitViewController::NONE;
+}
+
+gfx::Rect OverviewWindowDragController::GetGridBounds(
+    SplitViewController::SnapPosition snap_position) {
+  aura::Window* pending_snapped_window = item_->GetWindow();
+  switch (snap_position) {
+    case SplitViewController::NONE:
+      return gfx::Rect(split_view_controller_->GetDisplayWorkAreaBoundsInParent(
+          pending_snapped_window));
+    case SplitViewController::LEFT:
+      return split_view_controller_->GetSnappedWindowBoundsInScreen(
+          pending_snapped_window, SplitViewController::RIGHT);
+    case SplitViewController::RIGHT:
+      return split_view_controller_->GetSnappedWindowBoundsInScreen(
+          pending_snapped_window, SplitViewController::LEFT);
+  }
+
+  NOTREACHED();
+  return gfx::Rect();
 }
 
 void OverviewWindowDragController::SnapWindow(
