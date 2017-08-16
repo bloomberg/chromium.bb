@@ -105,6 +105,8 @@ Polymer({
         ipv4: this.getIPConfigUIProperties_(ipv4),
         ipv6: this.getIPConfigUIProperties_(ipv6)
       };
+    } else {
+      this.ipConfig_ = null;
     }
   },
 
