@@ -29,8 +29,6 @@ component("wm") {
     "core/focus_controller.cc",
     "core/focus_controller.h",
     "core/focus_rules.h",
-    "core/masked_window_targeter.cc",
-    "core/masked_window_targeter.h",
     "core/native_cursor_manager.h",
     "core/native_cursor_manager_delegate.h",
     "core/shadow.cc",
