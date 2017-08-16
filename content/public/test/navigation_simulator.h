@@ -144,6 +144,7 @@ class NavigationSimulator : public WebContentsObserver {
   // The following parameters are constant during the navigation and may only be
   // specified before calling |Start|.
   virtual void SetTransition(ui::PageTransition transition);
+  virtual void SetHasUserGesture(bool has_user_gesture);
 
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
@@ -236,6 +237,7 @@ class NavigationSimulator : public WebContentsObserver {
   net::HostPortPair socket_address_;
   Referrer referrer_;
   ui::PageTransition transition_ = ui::PAGE_TRANSITION_LINK;
+  bool has_user_gesture_ = true;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.
