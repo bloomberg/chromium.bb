@@ -51,7 +51,7 @@ rtc_static_library("rtc_xmllite") {
   public_deps = [
     "//third_party/expat",
   ]
-  configs += [ ":libjingle_xmpp_common_config" ]
+  all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 }
 
 config("rtc_xmpp_warnings_config") {
@@ -103,10 +103,8 @@ rtc_static_library("rtc_xmpp") {
     ":rtc_task_runner",
     "//third_party/expat",
   ]
-  configs += [
-    ":rtc_xmpp_warnings_config",
-    ":libjingle_xmpp_common_config",
-  ]
+  configs += [ ":rtc_xmpp_warnings_config" ]
+  all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
