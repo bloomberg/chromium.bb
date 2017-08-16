@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -327,6 +328,61 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
   EXPECT_EQ("Underworld", selected_shipping_address()->organization);
   EXPECT_EQ("John H. Doe", selected_shipping_address()->recipient);
   EXPECT_EQ("16502111111", selected_shipping_address()->phone);
+}
+
+TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateStateWithOptions(std::move(options));
+
+  // Make the normalization not be instantaneous.
+  test_payment_request_delegate()
+      ->test_address_normalizer()
+      ->DelayNormalization();
+
+  EXPECT_EQ(0, num_on_selected_information_changed_called());
+
+  // Select an address, nothing should happen until the normalization is
+  // completed and the merchant has validated the address.
+  autofill::AutofillProfile profile(base::GenerateGUID(),
+                                    "https://example.com");
+  autofill::test::SetProfileInfo(&profile, "Jon", "V.", "Doe",
+                                 "jon.doe@exampl.com", "Example Inc",
+                                 "Roppongi", "6 Chrome-10-1", "Tokyo", "",
+                                 "106-6126", "JP", "+81363849000");
+  profile.set_language_code("ja-Latn");
+
+  state()->SetSelectedShippingProfile(&profile);
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Complete the normalization.
+  test_payment_request_delegate()
+      ->test_address_normalizer()
+      ->CompleteAddressNormalization();
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Simulate that the merchant has validated the shipping address change.
+  spec()->UpdateWith(CreateDefaultDetails());
+  EXPECT_EQ(2, num_on_selected_information_changed_called());
+  // Not ready to pay because there's no selected shipping option.
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Check that all the expected values were set for the shipping address.
+  EXPECT_EQ("JP", selected_shipping_address()->country);
+  EXPECT_EQ("Roppongi", selected_shipping_address()->address_line[0]);
+  EXPECT_EQ("6 Chrome-10-1", selected_shipping_address()->address_line[1]);
+  EXPECT_EQ("", selected_shipping_address()->region);
+  EXPECT_EQ("Tokyo", selected_shipping_address()->city);
+  EXPECT_EQ("", selected_shipping_address()->dependent_locality);
+  EXPECT_EQ("106-6126", selected_shipping_address()->postal_code);
+  EXPECT_EQ("", selected_shipping_address()->sorting_code);
+  EXPECT_EQ("ja", selected_shipping_address()->language_code);
+  EXPECT_EQ("Latn", selected_shipping_address()->script_code);
+  EXPECT_EQ("Example Inc", selected_shipping_address()->organization);
+  EXPECT_EQ("Jon V. Doe", selected_shipping_address()->recipient);
+  EXPECT_EQ("+81363849000", selected_shipping_address()->phone);
 }
 
 }  // namespace payments

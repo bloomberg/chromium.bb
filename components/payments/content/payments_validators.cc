@@ -8,11 +8,15 @@
 #include "url/gurl.h"
 
 namespace payments {
+namespace {
 
 // We limit the maximum length of string to 2048 bytes for security reasons.
-static const int maximumStringLength = 2048;
+static const size_t maximumStringLength = 2048;
 
-bool PaymentsValidators::isValidCurrencyCodeFormat(
+}  // namespace
+
+// static
+bool PaymentsValidators::IsValidCurrencyCodeFormat(
     const std::string& code,
     const std::string& system,
     std::string* optional_error_message) {
@@ -43,7 +47,8 @@ bool PaymentsValidators::isValidCurrencyCodeFormat(
   return true;
 }
 
-bool PaymentsValidators::isValidAmountFormat(
+// static
+bool PaymentsValidators::IsValidAmountFormat(
     const std::string& amount,
     std::string* optional_error_message) {
   if (RE2::FullMatch(amount, "-?[0-9]+(\\.[0-9]+)?"))
@@ -55,7 +60,8 @@ bool PaymentsValidators::isValidAmountFormat(
   return false;
 }
 
-bool PaymentsValidators::isValidCountryCodeFormat(
+// static
+bool PaymentsValidators::IsValidCountryCodeFormat(
     const std::string& code,
     std::string* optional_error_message) {
   if (RE2::FullMatch(code, "[A-Z]{2}"))
@@ -69,7 +75,8 @@ bool PaymentsValidators::isValidCountryCodeFormat(
   return false;
 }
 
-bool PaymentsValidators::isValidLanguageCodeFormat(
+// static
+bool PaymentsValidators::IsValidLanguageCodeFormat(
     const std::string& code,
     std::string* optional_error_message) {
   if (RE2::FullMatch(code, "([a-z]{2,3})?"))
@@ -84,7 +91,8 @@ bool PaymentsValidators::isValidLanguageCodeFormat(
   return false;
 }
 
-bool PaymentsValidators::isValidScriptCodeFormat(
+// static
+bool PaymentsValidators::IsValidScriptCodeFormat(
     const std::string& code,
     std::string* optional_error_message) {
   if (RE2::FullMatch(code, "([A-Z][a-z]{3})?"))
@@ -100,17 +108,26 @@ bool PaymentsValidators::isValidScriptCodeFormat(
   return false;
 }
 
-bool PaymentsValidators::isValidShippingAddress(
+// static
+void PaymentsValidators::SplitLanguageTag(const std::string& tag,
+                                          std::string* language_code,
+                                          std::string* script_code) {
+  RE2::FullMatch(tag, "^([a-z]{2})(-([A-Z][a-z]{3}))?(-[A-Za-z]+)*$",
+                 language_code, (void*)nullptr, script_code);
+}
+
+// static
+bool PaymentsValidators::IsValidShippingAddress(
     const mojom::PaymentAddressPtr& address,
     std::string* optional_error_message) {
-  if (!isValidCountryCodeFormat(address->country, optional_error_message))
+  if (!IsValidCountryCodeFormat(address->country, optional_error_message))
     return false;
 
-  if (!isValidLanguageCodeFormat(address->language_code,
+  if (!IsValidLanguageCodeFormat(address->language_code,
                                  optional_error_message))
     return false;
 
-  if (!isValidScriptCodeFormat(address->script_code, optional_error_message))
+  if (!IsValidScriptCodeFormat(address->script_code, optional_error_message))
     return false;
 
   if (address->language_code.empty() && !address->script_code.empty()) {
@@ -124,7 +141,8 @@ bool PaymentsValidators::isValidShippingAddress(
   return true;
 }
 
-bool PaymentsValidators::isValidErrorMsgFormat(
+// static
+bool PaymentsValidators::IsValidErrorMsgFormat(
     const std::string& error,
     std::string* optional_error_message) {
   if (error.length() <= maximumStringLength)
