@@ -83,6 +83,10 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const std::vector<ClientId>& client_ids,
       const MultipleOfflinePageItemCallback& callback) override;
 
+  void GetPagesByRequestOrigin(
+      const std::string& request_origin,
+      const MultipleOfflinePageItemCallback& callback) override;
+
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;

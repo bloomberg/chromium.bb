@@ -154,6 +154,11 @@ class OfflinePageModel : public base::SupportsUserData {
       const std::vector<ClientId>& client_ids,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
+  // Retrieves all pages associated with the |request_origin|.
+  virtual void GetPagesByRequestOrigin(
+      const std::string& request_origin,
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
   // Deletes cached offline pages matching the URL predicate.
   virtual void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,

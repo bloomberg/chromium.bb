@@ -48,6 +48,9 @@ void StubOfflinePageModel::GetPagesByURL(
     const GURL& url,
     URLSearchMode url_search_mode,
     const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::GetPagesByRequestOrigin(
+    const std::string& origin,
+    const MultipleOfflinePageItemCallback& callback) {}
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;
 }

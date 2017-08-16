@@ -131,6 +131,8 @@ class OfflinePageModelImplTest
   MultipleOfflinePageItemResult GetAllPages();
   MultipleOfflinePageItemResult GetPagesByClientIds(
       const std::vector<ClientId>& client_ids);
+  MultipleOfflinePageItemResult GetPagesByRequestOrigin(
+      const std::string& origin);
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids);
 
   // Saves the page without waiting for it to finish.
@@ -457,6 +459,17 @@ MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByClientIds(
   return result;
 }
 
+MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByRequestOrigin(
+    const std::string& origin) {
+  MultipleOfflinePageItemResult result;
+  model()->GetPagesByRequestOrigin(
+      origin,
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
+                 AsWeakPtr(), base::Unretained(&result)));
+  PumpLoop();
+  return result;
+}
+
 void OfflinePageModelImplTest::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids) {
   model()->DeletePagesByClientIds(
@@ -696,8 +709,8 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineCreationStoreWriteFailure) {
 TEST_F(OfflinePageModelImplTest, SavePageLocalFileFailed) {
   // Don't create archiver since it will not be needed for pages that are not
   // going to be saved.
-  SavePageWithArchiver(
-      kFileUrl, kTestClientId1, std::unique_ptr<OfflinePageTestArchiver>());
+  SavePageWithArchiver(kFileUrl, kTestClientId1,
+                       std::unique_ptr<OfflinePageTestArchiver>());
   EXPECT_EQ(SavePageResult::SKIPPED, last_save_result());
 }
 
@@ -1067,8 +1080,8 @@ TEST_F(OfflinePageModelImplTest, DetectThatHeadlessPageIsDeleted) {
 
   EXPECT_TRUE(base::PathExists(path));
   // Since we've manually changed the store, we have to reload the model to
-  // actually refresh the in-memory copy in model. Otherwise GetAllPages() would
-  // still have the page we saved above.
+  // actually refresh the in-memory copy in model. Otherwise GetAllPages()
+  // would still have the page we saved above.
   ResetModel();
   PumpLoop();
 
@@ -1334,6 +1347,30 @@ TEST_F(OfflinePageModelImplTest, GetPagesByClientIds) {
   EXPECT_EQ(kTestUrl2, item.url);
 }
 
+TEST_F(OfflinePageModelImplTest, GetPagesByRequestOrigin) {
+  // We will save 3 pages.
+  std::string origin1("abc.xyz");
+  std::string origin2("abc");
+  std::pair<SavePageResult, int64_t> save_pages[3];
+  save_pages[0] = SavePage(kTestUrl, kTestClientId1, origin1);
+  save_pages[1] = SavePage(kTestUrl2, kTestClientId2, origin2);
+  save_pages[2] = SavePage(kTestUrl3, kTestClientId3, origin1);
+
+  for (const auto& save_result : save_pages) {
+    ASSERT_EQ(OfflinePageModel::SavePageResult::SUCCESS,
+              std::get<0>(save_result));
+  }
+
+  std::vector<OfflinePageItem> offline_pages = GetPagesByRequestOrigin(origin2);
+  EXPECT_EQ(1U, offline_pages.size());
+
+  const OfflinePageItem& item = offline_pages[0];
+  EXPECT_EQ(kTestUrl2, item.url);
+  EXPECT_EQ(origin2, item.request_origin);
+  EXPECT_EQ(kTestClientId2.name_space, item.client_id.name_space);
+  EXPECT_EQ(kTestClientId2.id, item.client_id.id);
+}
+
 TEST_F(OfflinePageModelImplTest, DeletePagesByClientIds) {
   // We will save 3 pages.
   std::pair<SavePageResult, int64_t> saved_pages[3];
@@ -1402,8 +1439,8 @@ TEST_F(OfflinePageModelImplTest, StoreLoadFailurePersists) {
   // Should record failure to load.
   histograms().ExpectBucketCount("OfflinePages.Model.FinalLoadSuccessful",
                                  false, 1);
-  // Should show the previous count since no attempts are recorded for failure.
-  // In case of failure, all attempts are assumed spent.
+  // Should show the previous count since no attempts are recorded for
+  // failure. In case of failure, all attempts are assumed spent.
   histograms().ExpectUniqueSample("OfflinePages.Model.InitAttemptsSpent", 1, 1);
 
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
