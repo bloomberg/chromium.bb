@@ -12,8 +12,8 @@ internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
 shouldBe('connection.type', 'newConnectionType');
 shouldBe('connection.downlinkMax', 'newDownlinkMax');
 shouldBe('connection.effectiveType', 'newEffectiveType');
-shouldBe('connection.rtt', 'newRtt');
-shouldBe('connection.downlink', 'newDownlink');
+shouldBe('connection.rtt', 'newRtt', false, newRttMaxNoise);
+shouldBe('connection.downlink', 'newDownlink', false, newDownlinkMaxNoise);
 
 finishJSTest();
 </script>

@@ -4,7 +4,7 @@
 
 #include "modules/netinfo/NetworkInformation.h"
 
-#include <limits>
+#include <algorithm>
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -57,37 +57,6 @@ String EffectiveConnectionTypeToString(WebEffectiveConnectionType type) {
   }
   NOTREACHED();
   return "4g";
-}
-
-// Rounds |rtt_msec| to the nearest 25 milliseconds as per the NetInfo spec.
-unsigned long RoundRtt(const Optional<TimeDelta>& rtt) {
-  if (!rtt.has_value()) {
-    // RTT is unavailable. So, return the fastest value.
-    return 0;
-  }
-
-  int rtt_msec = rtt.value().InMilliseconds();
-  if (rtt.value().InMilliseconds() > std::numeric_limits<int>::max())
-    rtt_msec = std::numeric_limits<int>::max();
-
-  DCHECK_LE(0, rtt_msec);
-  return std::round(static_cast<double>(rtt_msec) / 25) * 25;
-}
-
-// Rounds |downlink_mbps| to the nearest 25 kbps as per the NetInfo spec. The
-// returned value is in Mbps.
-double RoundMbps(const Optional<double>& downlink_mbps) {
-  double downlink_kbps = 0;
-  if (!downlink_mbps.has_value()) {
-    // Throughput is unavailable. So, return the fastest value.
-    downlink_kbps = (std::numeric_limits<double>::max());
-  } else {
-    downlink_kbps = downlink_mbps.value() * 1000;
-  }
-
-  DCHECK_LE(0, downlink_kbps);
-  double downlink_kbps_rounded = std::round(downlink_kbps / 25) * 25;
-  return downlink_kbps_rounded / 1000;
 }
 
 }  // namespace
@@ -254,11 +223,78 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
       downlink_mbps_(
           RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps())),
       observing_(false),
-      context_stopped_(false) {}
+      context_stopped_(false) {
+  DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
+  DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
+}
 
 DEFINE_TRACE(NetworkInformation) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+double NetworkInformation::GetRandomMultiplier() const {
+  // The random number should be a function of the hostname to reduce
+  // cross-origin fingerprinting. The random number should also be a function
+  // of randomized salt which is known only to the device. This prevents
+  // origin from removing noise from the estimates.
+  unsigned hash = StringHash::GetHash(GetExecutionContext()->Url().Host()) +
+                  GetNetworkStateNotifier().RandomizationSalt();
+  double random_multiplier = 0.9 + static_cast<double>((hash % 21)) * 0.01;
+  DCHECK_LE(0.90, random_multiplier);
+  DCHECK_GE(1.10, random_multiplier);
+  return random_multiplier;
+}
+
+unsigned long NetworkInformation::RoundRtt(
+    const Optional<TimeDelta>& rtt) const {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kBucketSize = 50;
+  static const double kMaxRttMsec = 3.0 * 1000;
+
+  if (!rtt.has_value() || !GetExecutionContext()) {
+    // RTT is unavailable. So, return the fastest value.
+    return 0;
+  }
+
+  double rtt_msec = static_cast<double>(rtt.value().InMilliseconds());
+  rtt_msec *= GetRandomMultiplier();
+  rtt_msec = std::min(rtt_msec, kMaxRttMsec);
+
+  DCHECK_LE(0, rtt_msec);
+  DCHECK_GE(kMaxRttMsec, rtt_msec);
+
+  // Round down to the nearest kBucketSize msec value.
+  return std::round(rtt_msec / kBucketSize) * kBucketSize;
+}
+
+double NetworkInformation::RoundMbps(
+    const Optional<double>& downlink_mbps) const {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kBucketSize = 50;
+  static const double kMaxDownlinkKbps = 10.0 * 1000;
+
+  double downlink_kbps = 0;
+  if (!downlink_mbps.has_value()) {
+    // Throughput is unavailable. So, return the fastest value.
+    downlink_kbps = kMaxDownlinkKbps;
+  } else {
+    downlink_kbps = downlink_mbps.value() * 1000;
+  }
+  downlink_kbps *= GetRandomMultiplier();
+
+  downlink_kbps = std::min(downlink_kbps, kMaxDownlinkKbps);
+
+  DCHECK_LE(0, downlink_kbps);
+  DCHECK_GE(kMaxDownlinkKbps, downlink_kbps);
+  // Round down to the nearest kBucketSize kbps value.
+  double downlink_kbps_rounded =
+      std::round(downlink_kbps / kBucketSize) * kBucketSize;
+
+  // Convert from Kbps to Mbps.
+  return downlink_kbps_rounded / 1000;
 }
 
 }  // namespace blink

@@ -17,19 +17,16 @@ var msg_count = 0;
 
 worker.addEventListener('message', function(e) {
     if (msg_count == 0) {
-        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + connection.effectiveType + ',' + connection.rtt + ',' + connection.downlink) {
-            testFailed("Worker type disagrees with main frame.");
-        }
+        verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
+            connection.effectiveType, connection.rtt, connection.downlink);
        internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
     } else if (msg_count == 1) {
-        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + newEffectiveType + ',' + newRtt + ',' + newDownlink) {
-            testFailed("Worker switched to wrong quality estimate.");
-        }
+        verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
+            newEffectiveType, connection.rtt, connection.downlink);
         internals.setNetworkQualityInfoOverride(initialEffectiveType, initialRtt, initialDownlink);
     } else if (msg_count == 2) {
-        if (e.data != connection.type + ',' + connection.downlinkMax + ',' + initialEffectiveType + ',' + initialRtt + ',' + initialDownlink) {
-            testFailed("Worker did not revert back to initial quality estimate.");
-        }
+        verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
+            initialEffectiveType, connection.rtt, connection.downlink);
         finishJSTest();
     }
     msg_count += 1;
