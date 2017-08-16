@@ -146,12 +146,10 @@
     'autofill': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill/|'\
                   'chrome/browser/autofill/|'\
-                  'chrome/browser/resources/options/autofill_|'\
                   'chrome/browser/ui/android/autofill/|'\
                   'chrome/browser/ui/autofill/|'\
                   'chrome/browser/ui/cocoa/autofill/|'\
                   'chrome/browser/ui/views/autofill/|'\
-                  'chrome/browser/ui/webui/options/autofill_|'\
                   'chrome/renderer/autofill/|'\
                   'chrome/test/data/autofill/|'\
                   'components/autofill/|'\
@@ -1221,10 +1219,6 @@
                   'components/omnibox/|'\
                   'ios/chrome/browser/ui/omnibox/'
     },
-    'options': {
-      'filepath': 'chrome/browser/resources/options/|'\
-          'chrome/browser/ui/webui/options/',
-    },
     'origin_trials': {
       'filepath': 'origin_trials'\
                   '|OriginTrial'\
@@ -1488,10 +1482,7 @@
                   '|chrome/browser/chromeos/status/input_method'\
                   '|chrome/browser/extensions/extension_input_'\
                   '|chrome/browser/resources/keyboard'\
-                  '|chrome/browser/resources/options/language'\
-                  '|chrome/browser/ui/webui/options/'\
                   'chromeos/.*(language|keyboard)'\
-                  '|chrome/browser/ui/webui/options/language'\
                   '|chromeos/ime/*'
     },
     'timers': {
@@ -2156,7 +2147,6 @@
                       'petewil+watch@chromium.org',
                       'romax+watch@chromium.org'],
     'omnibox': ['jdonnelly+watch@chromium.org'],
-    'options': ['michaelpg+watch-options@chromium.org'],
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com',

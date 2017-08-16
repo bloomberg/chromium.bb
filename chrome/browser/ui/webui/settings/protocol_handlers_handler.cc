@@ -88,9 +88,6 @@ void ProtocolHandlersHandler::GetHandlersForProtocol(
     const std::string& protocol,
     base::DictionaryValue* handlers_value) {
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
-  // The items which are to be written into |handlers_value| are also described
-  // in chrome/browser/resources/options/handler_options.js in @typedef
-  // for Handlers. Please update them whenever you add or remove any keys here.
   handlers_value->SetString("protocol", protocol);
   handlers_value->SetInteger("default_handler",
       registry->GetHandlerIndex(protocol));

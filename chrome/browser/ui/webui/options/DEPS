@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/user_manager",
-  "+third_party/libaddressinput", # for third_party/libaddressinput/messages.h
-]

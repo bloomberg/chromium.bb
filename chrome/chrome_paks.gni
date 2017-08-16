@@ -148,12 +148,10 @@ template("chrome_extra_paks") {
     }
     if (is_chromeos) {
       sources += [
-        "$root_gen_dir/chrome/options_resources.pak",
         "$root_gen_dir/components/chrome_apps/chrome_apps_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
       ]
       deps += [
-        "//chrome/browser/resources:options_resources",
         "//components/chrome_apps:resources",
         "//ui/file_manager:resources",
       ]

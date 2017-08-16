@@ -1,6 +1,0 @@
-# This UI is deprecated. See chrome/browser/ui/webui/settings/ instead.
-michaelpg@chromium.org
-stevenjb@chromium.org
-
-per-file sync_setup_handler*=atwilson@chromium.org
-per-file sync_setup_handler*=rogerta@chromium.org

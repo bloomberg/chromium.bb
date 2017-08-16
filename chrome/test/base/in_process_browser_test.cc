@@ -85,7 +85,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/ui/webui/options/browser_options_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
@@ -253,9 +252,6 @@ void InProcessBrowserTest::SetUp() {
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
 #if defined(OS_CHROMEOS)
-  // Polymer Elements are used for quick unlock configuration in options page,
-  // which is chromeos specific feature.
-  options::BrowserOptionsHandler::DisablePolymerPreloadForTesting();
   // On Chrome OS, access to files via file: scheme is restricted. Enable
   // access to all files here since browser_tests and interactive_ui_tests
   // rely on the ability to open any files via file: scheme.
