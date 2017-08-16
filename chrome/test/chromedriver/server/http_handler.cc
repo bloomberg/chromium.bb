@@ -111,9 +111,15 @@ HttpHandler::HttpHandler(
       CommandMapping(kDelete, "session/:sessionId",
                      base::Bind(&ExecuteSessionCommand, &session_thread_map_,
                                 "Quit", base::Bind(&ExecuteQuit, false), true)),
+      CommandMapping(kGet, "session/:sessionId/window",
+                     WrapToCommand("GetWindow",
+                                   base::Bind(&ExecuteGetCurrentWindowHandle))),
       CommandMapping(kGet, "session/:sessionId/window_handle",
                      WrapToCommand("GetWindow",
                                    base::Bind(&ExecuteGetCurrentWindowHandle))),
+      CommandMapping(
+          kGet, "session/:sessionId/window/handles",
+          WrapToCommand("GetWindows", base::Bind(&ExecuteGetWindowHandles))),
       CommandMapping(
           kGet, "session/:sessionId/window_handles",
           WrapToCommand("GetWindows", base::Bind(&ExecuteGetWindowHandles))),
