@@ -134,6 +134,8 @@ blink::WebInputEvent::Type GetMouseEventType(const std::string& type) {
     return blink::WebInputEvent::kMouseUp;
   if (type == Input::DispatchMouseEvent::TypeEnum::MouseMoved)
     return blink::WebInputEvent::kMouseMove;
+  if (type == Input::DispatchMouseEvent::TypeEnum::MouseWheel)
+    return blink::WebInputEvent::kMouseWheel;
   return blink::WebInputEvent::kUndefined;
 }
 
@@ -236,10 +238,14 @@ void InputHandler::OnInputEventAck(const blink::WebInputEvent& event) {
       !pending_key_callbacks_.empty()) {
     pending_key_callbacks_.front()->sendSuccess();
     pending_key_callbacks_.pop_front();
-  } else if (blink::WebInputEvent::IsMouseEventType(event.GetType()) &&
-             !pending_mouse_callbacks_.empty()) {
+    return;
+  }
+  if ((blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+       event.GetType() == blink::WebInputEvent::kMouseWheel) &&
+      !pending_mouse_callbacks_.empty()) {
     pending_mouse_callbacks_.front()->sendSuccess();
     pending_mouse_callbacks_.pop_front();
+    return;
   }
 }
 
@@ -353,49 +359,76 @@ void InputHandler::DispatchKeyEvent(
 }
 
 void InputHandler::DispatchMouseEvent(
-    const std::string& type,
+    const std::string& event_type,
     double x,
     double y,
-    Maybe<int> modifiers,
-    Maybe<double> timestamp,
-    Maybe<std::string> button,
+    Maybe<int> maybe_modifiers,
+    Maybe<double> maybe_timestamp,
+    Maybe<std::string> maybe_button,
     Maybe<int> click_count,
+    Maybe<double> delta_x,
+    Maybe<double> delta_y,
     std::unique_ptr<DispatchMouseEventCallback> callback) {
-  blink::WebInputEvent::Type event_type = GetMouseEventType(type);
-  if (event_type == blink::WebInputEvent::kUndefined) {
+  blink::WebInputEvent::Type type = GetMouseEventType(event_type);
+  if (type == blink::WebInputEvent::kUndefined) {
     callback->sendFailure(Response::InvalidParams(
-        base::StringPrintf("Unexpected event type '%s'", type.c_str())));
+        base::StringPrintf("Unexpected event type '%s'", event_type.c_str())));
     return;
   }
-  blink::WebPointerProperties::Button event_button =
+
+  blink::WebPointerProperties::Button button =
       blink::WebPointerProperties::Button::kNoButton;
   int button_modifiers = 0;
-  if (!GetMouseEventButton(button.fromMaybe(""), &event_button,
+  if (!GetMouseEventButton(maybe_button.fromMaybe(""), &button,
                            &button_modifiers)) {
     callback->sendFailure(Response::InvalidParams("Invalid mouse button"));
     return;
   }
 
-  blink::WebMouseEvent event(
-      event_type,
-      GetEventModifiers(modifiers.fromMaybe(blink::WebInputEvent::kNoModifiers),
-                        false, false) |
-          button_modifiers,
-      GetEventTimestamp(std::move(timestamp)));
+  int modifiers = GetEventModifiers(
+      maybe_modifiers.fromMaybe(blink::WebInputEvent::kNoModifiers), false,
+      false);
+  modifiers |= button_modifiers;
+  double timestamp = GetEventTimestamp(std::move(maybe_timestamp));
 
-  event.button = event_button;
-  event.SetPositionInWidget(x * page_scale_factor_, y * page_scale_factor_);
-  event.SetPositionInScreen(x * page_scale_factor_, y * page_scale_factor_);
-  event.click_count = click_count.fromMaybe(0);
-  event.pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  std::unique_ptr<blink::WebMouseEvent, ui::WebInputEventDeleter> mouse_event;
+  blink::WebMouseWheelEvent* wheel_event = nullptr;
 
-  if (!host_ || !host_->GetRenderWidgetHost())
+  if (type == blink::WebInputEvent::kMouseWheel) {
+    wheel_event = new blink::WebMouseWheelEvent(type, modifiers, timestamp);
+    mouse_event.reset(wheel_event);
+    if (!delta_x.isJust() || !delta_y.isJust()) {
+      callback->sendFailure(Response::InvalidParams(
+          "'deltaX' and 'deltaY' are expected for mouseWheel event"));
+      return;
+    }
+    wheel_event->delta_x = static_cast<float>(-delta_x.fromJust());
+    wheel_event->delta_y = static_cast<float>(-delta_y.fromJust());
+    wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
+  } else {
+    mouse_event.reset(new blink::WebMouseEvent(type, modifiers, timestamp));
+  }
+
+  mouse_event->button = button;
+  mouse_event->SetPositionInWidget(x * page_scale_factor_,
+                                   y * page_scale_factor_);
+  mouse_event->SetPositionInScreen(x * page_scale_factor_,
+                                   y * page_scale_factor_);
+  mouse_event->click_count = click_count.fromMaybe(0);
+  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+
+  if (!host_ || !host_->GetRenderWidgetHost()) {
     callback->sendFailure(Response::InternalError());
+    return;
+  }
 
   host_->GetRenderWidgetHost()->Focus();
   input_queued_ = false;
   pending_mouse_callbacks_.push_back(std::move(callback));
-  host_->GetRenderWidgetHost()->ForwardMouseEvent(event);
+  if (wheel_event)
+    host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
+  else
+    host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
   if (!input_queued_) {
     pending_mouse_callbacks_.back()->sendSuccess();
     pending_mouse_callbacks_.pop_back();

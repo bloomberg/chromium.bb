@@ -30,4 +30,11 @@ type: contextmenu
 button: 2
 x: 100
 y: 200
+-----Event-----
+type: mousewheel
+button: 0
+x: 100
+y: 200
+deltaX: 50
+deltaY: 70
 

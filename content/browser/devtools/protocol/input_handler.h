@@ -63,6 +63,8 @@ class InputHandler : public DevToolsDomainHandler,
       Maybe<double> timestamp,
       Maybe<std::string> button,
       Maybe<int> click_count,
+      Maybe<double> delta_x,
+      Maybe<double> delta_y,
       std::unique_ptr<DispatchMouseEventCallback> callback) override;
 
   Response EmulateTouchFromMouseEvent(const std::string& type,

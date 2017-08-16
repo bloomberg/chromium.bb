@@ -15,6 +15,10 @@
         log('shiftKey');
       log('x: ' + event.x);
       log('y: ' + event.y);
+      if (event.type === 'mousewheel') {
+        log('deltaX: ' + event.deltaX);
+        log('deltaY: ' + event.deltaY);
+      }
       event.preventDefault();
     }
 
@@ -22,6 +26,7 @@
     window.addEventListener('mouseup', logEvent);
     window.addEventListener('mousemove', logEvent);
     window.addEventListener('contextmenu', logEvent);
+    window.addEventListener('mousewheel', logEvent);
   `);
 
   function dumpError(message) {
@@ -62,6 +67,13 @@
     clickCount: 1,
     x: 100,
     y: 200
+  }));
+  dumpError(await dp.Input.dispatchMouseEvent({
+    type: 'mouseWheel',
+    x: 100,
+    y: 200,
+    deltaX: 50,
+    deltaY: 70
   }));
 
   testRunner.log(await session.evaluate(`window.logs.join('\\n')`));
