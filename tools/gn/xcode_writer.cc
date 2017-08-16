@@ -520,18 +520,6 @@ void XcodeWriter::CreateProductsProject(
         PBXAttributes xcode_extra_attributes =
             target->bundle_data().xcode_extra_attributes();
 
-        // TODO(crbug.com/740800): Remove the following comment and code once
-        // the bug is fixed and gn has rolled past it.
-        // Test files need to be known to Xcode for proper indexing and for
-        // discovery of tests function for XCTest, but the compilation is done
-        // via ninja and thus must prevent Xcode from linking object files via
-        // this hack.
-        if (IsXCTestModuleTarget(target)) {
-          xcode_extra_attributes["OTHER_LDFLAGS"] = "-help";
-          xcode_extra_attributes["ONLY_ACTIVE_ARCH"] = "YES";
-          xcode_extra_attributes["DEBUG_INFORMATION_FORMAT"] = "dwarf";
-        }
-
         const std::string& target_output_name =
             RebasePath(target->bundle_data()
                            .GetBundleRootDirOutput(target->settings())
