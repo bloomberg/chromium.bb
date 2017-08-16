@@ -30,10 +30,10 @@ class ArcPlayStoreSearchResult : public SearchResult,
 
   // app_list::SearchResult overrides:
   std::unique_ptr<SearchResult> Duplicate() const override;
-
-  // app_list::AppContextMenuDelegate overrides:
   ui::MenuModel* GetContextMenuModel() override;
   void Open(int event_flags) override;
+
+  // app_list::AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
 
   // Disables async safe decoding requests when unit tests are executed.

@@ -213,7 +213,9 @@ void ArcPlayStoreSearchResult::Open(int event_flags) {
 ui::MenuModel* ArcPlayStoreSearchResult::GetContextMenuModel() {
   context_menu_ = base::MakeUnique<ArcPlayStoreAppContextMenu>(
       this, profile_, list_controller_);
-  return context_menu_->GetMenuModel();
+  // TODO(755701): Enable context menu once Play Store API starts returning both
+  // install and launch intents.
+  return nullptr;
 }
 
 void ArcPlayStoreSearchResult::ExecuteLaunchCommand(int event_flags) {
