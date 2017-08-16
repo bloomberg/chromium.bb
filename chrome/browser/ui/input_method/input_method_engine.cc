@@ -139,9 +139,9 @@ void InputMethodEngine::UpdateComposition(
 
   // Use a black thin underline by default.
   if (composition_.ime_text_spans.empty()) {
-    composition_.ime_text_spans.push_back(
-        ui::ImeTextSpan(0, composition_.text.length(), SK_ColorBLACK,
-                        false /* thick */, SK_ColorTRANSPARENT));
+    composition_.ime_text_spans.push_back(ui::ImeTextSpan(
+        ui::ImeTextSpan::Type::kComposition, 0, composition_.text.length(),
+        SK_ColorBLACK, false /* thick */, SK_ColorTRANSPARENT));
   }
 
   ui::IMEInputContextHandlerInterface* input_context =

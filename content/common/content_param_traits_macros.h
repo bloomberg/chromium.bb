@@ -51,13 +51,18 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
                           blink::kWebPageVisibilityStateLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
+                          blink::WebImeTextSpan::Type::kSuggestion)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
+  IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
   IPC_STRUCT_TRAITS_MEMBER(end_offset)
   IPC_STRUCT_TRAITS_MEMBER(underline_color)
   IPC_STRUCT_TRAITS_MEMBER(thick)
   IPC_STRUCT_TRAITS_MEMBER(background_color)
+  IPC_STRUCT_TRAITS_MEMBER(suggestion_highlight_color)
+  IPC_STRUCT_TRAITS_MEMBER(suggestions)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RenderWidgetSurfaceProperties)

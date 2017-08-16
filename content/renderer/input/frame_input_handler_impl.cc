@@ -18,6 +18,23 @@
 
 namespace content {
 
+namespace {
+
+blink::WebImeTextSpan::Type ConvertUiImeTextSpanTypeToBlinkType(
+    ui::ImeTextSpan::Type type) {
+  switch (type) {
+    case ui::ImeTextSpan::Type::kComposition:
+      return blink::WebImeTextSpan::Type::kComposition;
+    case ui::ImeTextSpan::Type::kSuggestion:
+      return blink::WebImeTextSpan::Type::kSuggestion;
+  }
+
+  NOTREACHED();
+  return blink::WebImeTextSpan::Type::kComposition;
+}
+
+}  // namespace
+
 FrameInputHandlerImpl::FrameInputHandlerImpl(
     base::WeakPtr<RenderFrameImpl> render_frame,
     mojom::FrameInputHandlerRequest request)
@@ -81,9 +98,11 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
   std::vector<blink::WebImeTextSpan> ime_text_spans;
   for (const auto& ime_text_span : ui_ime_text_spans) {
     blink::WebImeTextSpan blink_ime_text_span(
+        ConvertUiImeTextSpanTypeToBlinkType(ime_text_span.type),
         ime_text_span.start_offset, ime_text_span.end_offset,
         ime_text_span.underline_color, ime_text_span.thick,
-        ime_text_span.background_color);
+        ime_text_span.background_color,
+        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions);
     ime_text_spans.push_back(blink_ime_text_span);
   }
 

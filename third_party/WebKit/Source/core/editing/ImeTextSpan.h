@@ -29,6 +29,8 @@
 #include "core/CoreExport.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -38,26 +40,39 @@ class CORE_EXPORT ImeTextSpan {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  ImeTextSpan(unsigned start_offset,
+  enum class Type { kComposition, kSuggestion };
+
+  ImeTextSpan(Type,
+              unsigned start_offset,
               unsigned end_offset,
               const Color& underline_color,
               bool thick,
-              const Color& background_color);
+              const Color& background_color,
+              const Color& suggestion_highlight_color = Color::kTransparent,
+              const Vector<String>& suggestions = Vector<String>());
 
   ImeTextSpan(const WebImeTextSpan&);
 
+  Type GetType() const { return type_; }
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   const Color& UnderlineColor() const { return underline_color_; }
   bool Thick() const { return thick_; }
   const Color& BackgroundColor() const { return background_color_; }
+  const Color& SuggestionHighlightColor() const {
+    return suggestion_highlight_color_;
+  }
+  const Vector<String>& Suggestions() const { return suggestions_; }
 
  private:
+  Type type_;
   unsigned start_offset_;
   unsigned end_offset_;
   Color underline_color_;
   bool thick_;
   Color background_color_;
+  Color suggestion_highlight_color_;
+  Vector<String> suggestions_;
 };
 
 }  // namespace blink
