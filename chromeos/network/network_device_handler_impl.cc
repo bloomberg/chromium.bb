@@ -530,11 +530,7 @@ void NetworkDeviceHandlerImpl::DeviceListChanged() {
 }
 
 NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl()
-    : network_state_handler_(NULL),
-      cellular_allow_roaming_(false),
-      mac_addr_randomization_supported_(true),
-      mac_addr_randomization_enabled_(false),
-      weak_ptr_factory_(this) {}
+    : weak_ptr_factory_(this) {}
 
 void NetworkDeviceHandlerImpl::Init(
     NetworkStateHandler* network_state_handler) {
@@ -574,28 +570,61 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
 }
 
 void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
-  if (!mac_addr_randomization_supported_)
-    return;
-
   const DeviceState* device_state =
       GetWifiDeviceState(network_handler::ErrorCallback());
-  if (!device_state)
+  if (!device_state) {
+    // We'll need to ask if this is supported when we find a Wi-Fi
+    // device.
+    mac_addr_randomization_supported_ =
+        MACAddressRandomizationSupport::NOT_REQUESTED;
     return;
+  }
 
-  SetDevicePropertyInternal(
-      device_state->path(), shill::kMACAddressRandomizationProperty,
-      base::Value(mac_addr_randomization_enabled_),
-      base::Bind(&base::DoNothing),
-      base::Bind(
-          &NetworkDeviceHandlerImpl::SetMACAddressRandomizationErrorCallback,
-          weak_ptr_factory_.GetWeakPtr()));
+  switch (mac_addr_randomization_supported_) {
+    case MACAddressRandomizationSupport::NOT_REQUESTED:
+      GetDeviceProperties(
+          device_state->path(),
+          base::Bind(&NetworkDeviceHandlerImpl::HandleMACAddressRandomization,
+                     weak_ptr_factory_.GetWeakPtr()),
+          network_handler::ErrorCallback());
+      return;
+    case MACAddressRandomizationSupport::SUPPORTED:
+      SetDevicePropertyInternal(
+          device_state->path(), shill::kMACAddressRandomizationEnabledProperty,
+          base::Value(mac_addr_randomization_enabled_),
+          base::Bind(&base::DoNothing), network_handler::ErrorCallback());
+      return;
+    case MACAddressRandomizationSupport::UNSUPPORTED:
+      return;
+  }
 }
 
-void NetworkDeviceHandlerImpl::SetMACAddressRandomizationErrorCallback(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  if (error_name == NetworkDeviceHandler::kErrorNotSupported)
-    mac_addr_randomization_supported_ = false;
+void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
+    const std::string& device_path,
+    const base::DictionaryValue& properties) {
+  bool supported;
+  if (!properties.GetBooleanWithoutPathExpansion(
+          shill::kMACAddressRandomizationSupportedProperty, &supported)) {
+    NET_LOG(ERROR) << "Failed to determine if device " << device_path
+                   << " supports MAC address randomization";
+    network_handler::ShillErrorCallbackFunction(
+        "Failed to determine if device supports MAC address randomization",
+        device_path, network_handler::ErrorCallback(),
+        std::string("Missing ") +
+            shill::kMACAddressRandomizationSupportedProperty,
+        "");
+    return;
+  }
+
+  // Try to set MAC address randomization if it's supported.
+  if (supported) {
+    mac_addr_randomization_supported_ =
+        MACAddressRandomizationSupport::SUPPORTED;
+    ApplyMACAddressRandomizationToShill();
+  } else {
+    mac_addr_randomization_supported_ =
+        MACAddressRandomizationSupport::UNSUPPORTED;
+  }
 }
 
 const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
