@@ -249,6 +249,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // should be resent in case of a socket reuse/close race.
   bool ShouldResendRequest() const;
 
+  // Returns true if there have already been |kMaxRetryAttempts| retries for
+  // HTTP2 or QUIC network errors, and no further retries should be attempted.
+  bool HasExceededMaxRetries() const;
+
   // Resets the connection and the request headers for resend.  Called when
   // ShouldResendRequest() is true.
   void ResetConnectionAndRequestForResend();
@@ -401,6 +405,15 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Communicate lifetime of transaction to the throttler, and
   // throttled state to the transaction.
   std::unique_ptr<NetworkThrottleManager::Throttle> throttle_;
+
+  // Number of retries made for network errors like ERR_SPDY_PING_FAILED,
+  // ERR_SPDY_SERVER_REFUSED_STREAM, ERR_QUIC_HANDSHAKE_FAILED and
+  // ERR_QUIC_PROTOCOL_ERROR. Currently we stop after 3 tries
+  // (including the initial request) and fail the request.
+  // This count excludes retries on reused sockets since a well
+  // behaved server may time those out and thus the number
+  // of times we can retry a request on reused sockets is limited.
+  size_t retry_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };
