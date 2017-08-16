@@ -598,7 +598,6 @@ class LocalDeviceInstrumentationTestRun(
         test_package = self._test_instance.test_package
         extras = {}
         extras['log'] = 'true'
-        extras['package'] = '.'.join(test_package.split('.')[:2])
         extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
         target = '%s/%s' % (test_package, junit4_runner_class)
         test_list_run_output = dev.StartInstrumentation(
