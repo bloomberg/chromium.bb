@@ -11,10 +11,10 @@
  * VP9
  */
 
+#include "vpx/vpx_integer.h"
 #include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_enums.h"
 #include "vp9/common/vp9_filter.h"
-#include "vpx/vpx_integer.h"
 
 struct macroblockd;
 
@@ -162,17 +162,6 @@ void vp9_scale_and_extend_frame_c(const struct yv12_buffer_config* src,
                                   INTERP_FILTER filter_type,
                                   int phase_scaler);
 #define vp9_scale_and_extend_frame vp9_scale_and_extend_frame_c
-
-void vp9_temporal_filter_apply_c(const uint8_t* frame1,
-                                 unsigned int stride,
-                                 const uint8_t* frame2,
-                                 unsigned int block_width,
-                                 unsigned int block_height,
-                                 int strength,
-                                 int filter_weight,
-                                 uint32_t* accumulator,
-                                 uint16_t* count);
-#define vp9_temporal_filter_apply vp9_temporal_filter_apply_c
 
 void vp9_rtcd(void);
 

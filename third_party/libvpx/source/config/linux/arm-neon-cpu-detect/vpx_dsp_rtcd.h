@@ -1430,7 +1430,32 @@ void vpx_quantize_b_32x32_c(const tran_low_t* coeff_ptr,
                             uint16_t* eob_ptr,
                             const int16_t* scan,
                             const int16_t* iscan);
-#define vpx_quantize_b_32x32 vpx_quantize_b_32x32_c
+void vpx_quantize_b_32x32_neon(const tran_low_t* coeff_ptr,
+                               intptr_t n_coeffs,
+                               int skip_block,
+                               const int16_t* zbin_ptr,
+                               const int16_t* round_ptr,
+                               const int16_t* quant_ptr,
+                               const int16_t* quant_shift_ptr,
+                               tran_low_t* qcoeff_ptr,
+                               tran_low_t* dqcoeff_ptr,
+                               const int16_t* dequant_ptr,
+                               uint16_t* eob_ptr,
+                               const int16_t* scan,
+                               const int16_t* iscan);
+RTCD_EXTERN void (*vpx_quantize_b_32x32)(const tran_low_t* coeff_ptr,
+                                         intptr_t n_coeffs,
+                                         int skip_block,
+                                         const int16_t* zbin_ptr,
+                                         const int16_t* round_ptr,
+                                         const int16_t* quant_ptr,
+                                         const int16_t* quant_shift_ptr,
+                                         tran_low_t* qcoeff_ptr,
+                                         tran_low_t* dqcoeff_ptr,
+                                         const int16_t* dequant_ptr,
+                                         uint16_t* eob_ptr,
+                                         const int16_t* scan,
+                                         const int16_t* iscan);
 
 unsigned int vpx_sad16x16_c(const uint8_t* src_ptr,
                             int src_stride,
@@ -3409,6 +3434,9 @@ static void setup_rtcd_internal(void) {
   vpx_quantize_b = vpx_quantize_b_c;
   if (flags & HAS_NEON)
     vpx_quantize_b = vpx_quantize_b_neon;
+  vpx_quantize_b_32x32 = vpx_quantize_b_32x32_c;
+  if (flags & HAS_NEON)
+    vpx_quantize_b_32x32 = vpx_quantize_b_32x32_neon;
   vpx_sad16x16 = vpx_sad16x16_c;
   if (flags & HAS_NEON)
     vpx_sad16x16 = vpx_sad16x16_neon;
