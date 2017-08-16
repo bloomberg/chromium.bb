@@ -59,9 +59,6 @@ typedef struct {
   // Block level DC_PRED for each chromatic plane
   int dc_pred[CFL_PRED_PLANES];
 
-  // The rate associated with each alpha codeword
-  int costs[CFL_JOINT_SIGNS][CFL_PRED_PLANES][CFL_ALPHABET_SIZE];
-
   int mi_row, mi_col;
 } CFL_CTX;
 

@@ -133,6 +133,27 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     }
   }
 
+#if CONFIG_CFL
+  int sign_cost[CFL_JOINT_SIGNS];
+  av1_cost_tokens_from_cdf(sign_cost, fc->cfl_sign_cdf, NULL);
+  for (int joint_sign = 0; joint_sign < CFL_JOINT_SIGNS; joint_sign++) {
+    const aom_cdf_prob *cdf_u = fc->cfl_alpha_cdf[CFL_CONTEXT_U(joint_sign)];
+    const aom_cdf_prob *cdf_v = fc->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
+    int *cost_u = x->cfl_cost[joint_sign][CFL_PRED_U];
+    int *cost_v = x->cfl_cost[joint_sign][CFL_PRED_V];
+    if (CFL_SIGN_U(joint_sign) == CFL_SIGN_ZERO)
+      memset(cost_u, 0, CFL_ALPHABET_SIZE * sizeof(*cost_u));
+    else
+      av1_cost_tokens_from_cdf(cost_u, cdf_u, NULL);
+    if (CFL_SIGN_V(joint_sign) == CFL_SIGN_ZERO)
+      memset(cost_v, 0, CFL_ALPHABET_SIZE * sizeof(*cost_v));
+    else
+      av1_cost_tokens_from_cdf(cost_v, cdf_v, NULL);
+    for (int u = 0; u < CFL_ALPHABET_SIZE; u++)
+      cost_u[u] += sign_cost[joint_sign];
+  }
+#endif  // CONFIG_CFL
+
   for (i = 0; i < MAX_TX_DEPTH; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)
       av1_cost_tokens_from_cdf(x->tx_size_cost[i][j], fc->tx_size_cdf[i][j],

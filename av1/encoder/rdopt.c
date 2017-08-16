@@ -5894,29 +5894,6 @@ static int64_t cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
   return dist;
 }
 
-static inline void cfl_update_costs(CFL_CTX *cfl, FRAME_CONTEXT *ec_ctx) {
-  int sign_cost[CFL_JOINT_SIGNS];
-  av1_cost_tokens_from_cdf(sign_cost, ec_ctx->cfl_sign_cdf, NULL);
-  for (int joint_sign = 0; joint_sign < CFL_JOINT_SIGNS; joint_sign++) {
-    const aom_cdf_prob *cdf_u =
-        ec_ctx->cfl_alpha_cdf[CFL_CONTEXT_U(joint_sign)];
-    const aom_cdf_prob *cdf_v =
-        ec_ctx->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
-    int *cost_u = cfl->costs[joint_sign][CFL_PRED_U];
-    int *cost_v = cfl->costs[joint_sign][CFL_PRED_V];
-    if (CFL_SIGN_U(joint_sign) == CFL_SIGN_ZERO)
-      memset(cost_u, 0, CFL_ALPHABET_SIZE * sizeof(*cost_u));
-    else
-      av1_cost_tokens_from_cdf(cost_u, cdf_u, NULL);
-    if (CFL_SIGN_V(joint_sign) == CFL_SIGN_ZERO)
-      memset(cost_v, 0, CFL_ALPHABET_SIZE * sizeof(*cost_v));
-    else
-      av1_cost_tokens_from_cdf(cost_v, cdf_v, NULL);
-    for (int u = 0; u < CFL_ALPHABET_SIZE; u++)
-      cost_u[u] += sign_cost[joint_sign];
-  }
-}
-
 static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
   const struct macroblock_plane *const p_u = &x->plane[AOM_PLANE_U];
   const struct macroblock_plane *const p_v = &x->plane[AOM_PLANE_V];
@@ -5926,7 +5903,6 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
   const int src_stride_v = p_v->src.stride;
 
   MACROBLOCKD *const xd = &x->e_mbd;
-  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   CFL_CTX *const cfl = xd->cfl;
@@ -5937,8 +5913,6 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
   const int dc_pred_v = cfl->dc_pred[CFL_PRED_V];
   const int *y_averages_q3 = cfl->y_averages_q3;
   const uint8_t *y_pix = cfl->y_down_pix;
-
-  cfl_update_costs(cfl, ec_ctx);
 
   int64_t sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
@@ -5980,8 +5954,8 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
         dist = sse[CFL_PRED_U][idx_u + (sign_u == CFL_SIGN_NEG)] +
                sse[CFL_PRED_V][idx_v + (sign_v == CFL_SIGN_NEG)];
         dist *= 16;
-        const int rate = cfl->costs[joint_sign][CFL_PRED_U][u] +
-                         cfl->costs[joint_sign][CFL_PRED_V][v];
+        const int rate = x->cfl_cost[joint_sign][CFL_PRED_U][u] +
+                         x->cfl_cost[joint_sign][CFL_PRED_V][v];
         cost = RDCOST(x->rdmult, rate, dist);
         if (cost < best_cost) {
           best_cost = cost;

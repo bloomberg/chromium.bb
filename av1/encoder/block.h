@@ -226,6 +226,10 @@ struct macroblock {
                           [PALETTE_COLORS];
   int palette_uv_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                            [PALETTE_COLORS];
+#if CONFIG_CFL
+  // The rate associated with each alpha codeword
+  int cfl_cost[CFL_JOINT_SIGNS][CFL_PRED_PLANES][CFL_ALPHABET_SIZE];
+#endif  // CONFIG_CFL
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
 #if CONFIG_EXT_TX
   int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
