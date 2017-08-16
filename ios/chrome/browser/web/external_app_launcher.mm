@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/web/external_app_launcher.h"
 
+#include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -11,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/open_url_util.h"
+#include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -168,8 +170,10 @@ NSString* PromptActionString(NSString* scheme) {
     }
   }
 
-  // Replaces |URL| with a rewritten URL if it is of mailto: scheme.
-  if (gURL.SchemeIs(url::kMailToScheme)) {
+  // If feature mailto: URL rewriting is enabled, replaces |URL| with a
+  // rewritten URL if it is of mailto: scheme.
+  if (base::FeatureList::IsEnabled(kMailtoUrlRewriting) &&
+      gURL.SchemeIs(url::kMailToScheme)) {
     MailtoURLRewriter* rewriter =
         [[MailtoURLRewriter alloc] initWithStandardHandlers];
     NSString* launchURL = [rewriter rewriteMailtoURL:gURL];

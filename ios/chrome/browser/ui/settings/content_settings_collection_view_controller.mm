@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -22,6 +23,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -130,8 +132,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self translateItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  [model addItem:[self composeEmailItem]
-      toSectionWithIdentifier:SectionIdentifierSettings];
+  // Show Compose Email setting if mailto: URL rewriting feature is enabled.
+  if (base::FeatureList::IsEnabled(kMailtoUrlRewriting)) {
+    [model addItem:[self composeEmailItem]
+        toSectionWithIdentifier:SectionIdentifierSettings];
+  }
 }
 
 - (CollectionViewItem*)blockPopupsItem {
