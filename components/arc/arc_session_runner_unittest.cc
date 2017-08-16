@@ -196,7 +196,9 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
 }
 
 // Does the same with the mini instance for login screen.
-TEST_F(ArcSessionRunnerTest, BootFailureForLoginScreen) {
+// TODO(yusukes): Enable the test once EmitLoginPromptVisibleCalled() is fully
+// enabled.
+TEST_F(ArcSessionRunnerTest, DISABLED_BootFailureForLoginScreen) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
                  ArcStopReason::CRASH));
@@ -219,7 +221,9 @@ TEST_F(ArcSessionRunnerTest, BootFailureForLoginScreen) {
 
 // Tests that RequestStart() works even after EmitLoginPromptVisibleCalled()
 // is called.
-TEST_F(ArcSessionRunnerTest, StartWithLoginScreenInstance) {
+// TODO(yusukes): Enable the test once EmitLoginPromptVisibleCalled() is fully
+// enabled.
+TEST_F(ArcSessionRunnerTest, DISABLED_StartWithLoginScreenInstance) {
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 
   chromeos::DBusThreadManager::Get()
