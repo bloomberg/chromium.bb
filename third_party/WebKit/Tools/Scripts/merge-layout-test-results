@@ -18,6 +18,19 @@ from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.layout_tests import merge_results
 
+
+# The output JSON has the following arguments overwritten with a value from
+# build properties. This occurs when '--build-properties' argument is provided
+# and is mainly used when merging on build bots to provide better information
+# about the build to the test results server.
+# Format is a list of ('result json key', 'build property key').
+RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY = [
+    ("build_number", "buildnumber"),
+    ("builder_name", "buildername"),
+    ("chromium_revision", "got_revision_cp"),
+]
+
+
 # ------------------------------------------------------------------------
 def ensure_empty_dir(fs, directory, allow_existing, remove_existing):
     """Ensure an empty directory exists.
@@ -134,21 +147,17 @@ directory. The script will be given the arguments plus
         logging_level = logging.INFO
     configure_logging(logging_level=logging_level)
 
-    results_json_value_overrides = {}
-
     # Map the isolate arguments back to our output / input arguments.
     if args.output_json:
         logging.info('Running with isolated arguments')
         assert args.positional
 
+        # TODO(tansell): Once removed everywhere, these lines can be removed.
+        # For now we just check nobody is supply arguments we didn't expect.
         if args.results_json_override_with_build_property:
-            if not args.build_properties:
-                parser.error(
-                    '--results-json-override-with-build-property given'
-                    ' but --build-properties was not.')
-            build_properties = json.loads(args.build_properties)
             for result_key, build_prop_key in args.results_json_override_with_build_property:
-                results_json_value_overrides[result_key] = build_properties[build_prop_key]
+                assert (result_key, build_prop_key) in RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY, (
+                    "%s not in %s" % (result_key, RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY))
 
         if not args.output_directory:
             args.output_directory = os.getcwd()
@@ -170,13 +179,16 @@ directory. The script will be given the arguments plus
     assert args.output_directory
     assert args.input_directories
 
-    for k, v in args.results_json_override_value:
-        assert k not in results_json_value_overrides
-        try:
-            results_json_value_overrides[k] = eval(v)
-        except NameError:
-            results_json_value_overrides[k] = v
-    logging.debug('results_json_value_overrides: %r', results_json_value_overrides)
+    results_json_value_overrides = {}
+    if args.build_properties:
+        build_properties = json.loads(args.build_properties)
+
+        for result_key, build_prop_key in RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY:
+            if build_prop_key not in build_properties:
+                logging.warn('Required build property key "%s" was not found!', build_prop_key)
+                continue
+            results_json_value_overrides[result_key] = build_properties[build_prop_key]
+        logging.debug('results_json_value_overrides: %r', results_json_value_overrides)
 
     merger = merge_results.LayoutTestDirMerger(
         results_json_value_overrides=results_json_value_overrides,
