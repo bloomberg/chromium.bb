@@ -2151,6 +2151,39 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsSavesStateOnCurrentItem) {
   EXPECT_FALSE(pending_item->HasPostData());
 }
 
+TEST_P(NavigationManagerTest, UpdatePendingItemWithoutPendingItem) {
+  navigation_manager()->UpdatePendingItemUrl(GURL("http://another.url.com"));
+  EXPECT_FALSE(navigation_manager()->GetPendingItem());
+}
+
+TEST_P(NavigationManagerTest, UpdatePendingItemWithPendingItem) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->UpdatePendingItemUrl(GURL("http://another.url.com"));
+
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ("http://another.url.com/",
+            navigation_manager()->GetPendingItem()->GetURL().spec());
+}
+
+TEST_P(NavigationManagerTest,
+       UpdatePendingItemWithPendingItemAlreadyCommitted) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com"];
+  navigation_manager()->CommitPendingItem();
+  navigation_manager()->UpdatePendingItemUrl(GURL("http://another.url.com"));
+
+  ASSERT_EQ(1, navigation_manager()->GetItemCount());
+  EXPECT_EQ("http://www.url.com/",
+            navigation_manager()->GetItemAtIndex(0)->GetURL().spec());
+}
+
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,
