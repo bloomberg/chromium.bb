@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map_factory.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
@@ -47,12 +46,14 @@ ArcDocumentsProviderRootMap::GetForArcBrowserContext() {
 
 ArcDocumentsProviderRootMap::ArcDocumentsProviderRootMap(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(IsArcAllowedForProfile(profile));  // Already checked in the factory.
 
   ArcFileSystemOperationRunner* runner =
       ArcFileSystemOperationRunner::GetForBrowserContext(profile);
+  // ArcDocumentsProviderRootMap is created only for the profile with ARC
+  // in ArcDocumentsProviderRootMapFactory.
+  DCHECK(runner);
 
-  for (auto spec : kDocumentsProviderWhitelist) {
+  for (const auto& spec : kDocumentsProviderWhitelist) {
     map_[Key(spec.authority, spec.root_document_id)] =
         base::MakeUnique<ArcDocumentsProviderRoot>(runner, spec.authority,
                                                    spec.root_document_id);
