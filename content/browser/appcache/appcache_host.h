@@ -54,7 +54,7 @@ class AppCacheUpdateJobTest;
 
 typedef base::OnceCallback<void(AppCacheStatus, void*)> GetStatusCallback;
 typedef base::OnceCallback<void(bool, void*)> StartUpdateCallback;
-typedef base::Callback<void(bool, void*)> SwapCacheCallback;
+typedef base::OnceCallback<void(bool, void*)> SwapCacheCallback;
 
 // Server-side representation of an application cache host.
 class CONTENT_EXPORT AppCacheHost
@@ -95,8 +95,7 @@ class CONTENT_EXPORT AppCacheHost
   void GetStatusWithCallback(GetStatusCallback callback, void* callback_param);
   void StartUpdateWithCallback(StartUpdateCallback callback,
                                void* callback_param);
-  void SwapCacheWithCallback(const SwapCacheCallback& callback,
-                             void* callback_param);
+  void SwapCacheWithCallback(SwapCacheCallback callback, void* callback_param);
 
   // Called prior to the main resource load. When the system contains multiple
   // candidates for a main resource load, the appcache preferred by the host

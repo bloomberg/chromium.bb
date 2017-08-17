@@ -66,7 +66,6 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
 
-  content::SwapCacheCallback swap_cache_callback_;
   std::unique_ptr<IPC::Message> pending_reply_msg_;
 
   // The corresponding ChildProcessHost object's id().

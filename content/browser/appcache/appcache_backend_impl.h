@@ -50,7 +50,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   bool StartUpdateWithCallback(int host_id,
                                StartUpdateCallback callback,
                                void* callback_param);
-  bool SwapCacheWithCallback(int host_id, const SwapCacheCallback& callback,
+  bool SwapCacheWithCallback(int host_id,
+                             SwapCacheCallback callback,
                              void* callback_param);
 
   // Returns a pointer to a registered host. The backend retains ownership.
