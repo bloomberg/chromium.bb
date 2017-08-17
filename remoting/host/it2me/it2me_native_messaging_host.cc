@@ -186,6 +186,8 @@ void It2MeNativeMessagingHost::ProcessHello(
     std::unique_ptr<base::DictionaryValue> response) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
+  // No need to forward to the elevated process since no internal state is set.
+
   response->SetString("version", STRINGIZE(VERSION));
 
   // This list will be populated when new features are added.
@@ -380,6 +382,19 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
 void It2MeNativeMessagingHost::ProcessIncomingIq(
     std::unique_ptr<base::DictionaryValue> message,
     std::unique_ptr<base::DictionaryValue> response) {
+  if (needs_elevation_) {
+    // Attempt to pass the current message to the elevated process.  This method
+    // will spin up the elevated process if it is not already running.  On
+    // success, the elevated process will process the message and respond.
+    // If the process cannot be started or message passing fails, then return an
+    // error to the message sender.
+    if (!DelegateToElevatedHost(std::move(message))) {
+      LOG(ERROR) << "Failed to send message to elevated host.";
+      SendErrorAndExit(std::move(response), ErrorCode::ELEVATION_ERROR);
+    }
+    return;
+  }
+
   std::string iq;
   if (!message->GetString("iq", &iq)) {
     LOG(ERROR) << "Invalid incomingIq() data.";
