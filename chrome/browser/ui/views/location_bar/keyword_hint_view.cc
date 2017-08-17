@@ -29,7 +29,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
                                  const gfx::FontList& bubble_font_list,
                                  SkColor text_color,
                                  SkColor background_color)
-    : CustomButton(listener),
+    : Button(listener),
       profile_(profile),
       leading_label_(nullptr),
       chip_container_(new views::View()),

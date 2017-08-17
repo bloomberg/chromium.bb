@@ -494,11 +494,9 @@ class MenuControllerTest : public ViewsTestBase {
 
   void DestroyMenuItem() { menu_item_.reset(); }
 
-  CustomButton* GetHotButton() {
-    return menu_controller_->hot_button_;
-  }
+  Button* GetHotButton() { return menu_controller_->hot_button_; }
 
-  void SetHotTrackedButton(CustomButton* hot_button) {
+  void SetHotTrackedButton(Button* hot_button) {
     menu_controller_->SetHotTrackedButton(hot_button);
   }
 
@@ -775,14 +773,11 @@ TEST_F(MenuControllerTest, SelectChildButtonView) {
   AddButtonMenuItems();
   View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
   ASSERT_NE(nullptr, buttons_view);
-  CustomButton* button1 =
-      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  Button* button1 = Button::AsButton(buttons_view->child_at(0));
   ASSERT_NE(nullptr, button1);
-  CustomButton* button2 =
-      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  Button* button2 = Button::AsButton(buttons_view->child_at(1));
   ASSERT_NE(nullptr, button2);
-  CustomButton* button3 =
-      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  Button* button3 = Button::AsButton(buttons_view->child_at(2));
   ASSERT_NE(nullptr, button2);
 
   // Handle searching for 'f'; should find "Four".
@@ -848,14 +843,11 @@ TEST_F(MenuControllerTest, DeleteChildButtonView) {
 
   View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
   ASSERT_NE(nullptr, buttons_view);
-  CustomButton* button1 =
-      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  Button* button1 = Button::AsButton(buttons_view->child_at(0));
   ASSERT_NE(nullptr, button1);
-  CustomButton* button2 =
-      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  Button* button2 = Button::AsButton(buttons_view->child_at(1));
   ASSERT_NE(nullptr, button2);
-  CustomButton* button3 =
-      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  Button* button3 = Button::AsButton(buttons_view->child_at(2));
   ASSERT_NE(nullptr, button2);
   EXPECT_FALSE(button1->IsHotTracked());
   EXPECT_FALSE(button2->IsHotTracked());
@@ -882,7 +874,7 @@ TEST_F(MenuControllerTest, DeleteChildButtonView) {
   EXPECT_FALSE(button3->IsHotTracked());
 }
 
-// Creates a menu with CustomButton child views, simulates running a nested
+// Creates a menu with Button child views, simulates running a nested
 // menu and tests that existing the nested run restores hot-tracked child view.
 TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
   AddButtonMenuItems();
@@ -893,14 +885,11 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
 
   View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
   ASSERT_NE(nullptr, buttons_view);
-  CustomButton* button1 =
-      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  Button* button1 = Button::AsButton(buttons_view->child_at(0));
   ASSERT_NE(nullptr, button1);
-  CustomButton* button2 =
-      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  Button* button2 = Button::AsButton(buttons_view->child_at(1));
   ASSERT_NE(nullptr, button2);
-  CustomButton* button3 =
-      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  Button* button3 = Button::AsButton(buttons_view->child_at(2));
   ASSERT_NE(nullptr, button2);
   EXPECT_FALSE(button1->IsHotTracked());
   EXPECT_FALSE(button2->IsHotTracked());

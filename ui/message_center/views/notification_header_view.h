@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class ImageView;
@@ -18,7 +18,7 @@ namespace message_center {
 
 class NotificationControlButtonsView;
 
-class NotificationHeaderView : public views::CustomButton {
+class NotificationHeaderView : public views::Button {
  public:
   NotificationHeaderView(NotificationControlButtonsView* control_buttons_view,
                          views::ButtonListener* listener);
@@ -41,7 +41,7 @@ class NotificationHeaderView : public views::CustomButton {
   void ClearTimestamp();
   bool IsExpandButtonEnabled();
 
-  // CustomButton override:
+  // Button override:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()

@@ -26,7 +26,7 @@ const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
 ActionableView::ActionableView(SystemTrayItem* owner,
                                TrayPopupInkDropStyle ink_drop_style)
-    : views::CustomButton(this),
+    : views::Button(this),
       destroyed_(nullptr),
       owner_(owner),
       ink_drop_style_(ink_drop_style) {
@@ -59,7 +59,7 @@ bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
     NotifyClick(event);
     return true;
   }
-  return CustomButton::OnKeyPressed(event);
+  return Button::OnKeyPressed(event);
 }
 
 void ActionableView::SetAccessibleName(const base::string16& name) {

@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_ROW_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace payments {
 
 // This class implements a clickable row of the Payment Request dialog that
 // darkens on hover and displays a horizontal ruler on its lower bound.
-class PaymentRequestRowView : public views::CustomButton {
+class PaymentRequestRowView : public views::Button {
  public:
   // Creates a row view. If |clickable| is true, the row will be shaded on hover
   // and handle click events. |insets| are used as padding around the content.
@@ -43,7 +43,7 @@ class PaymentRequestRowView : public views::CustomButton {
   // colored background color.
   void SetIsHighlighted(bool highlighted);
 
-  // views::CustomButton:
+  // views::Button:
   void StateChanged(ButtonState old_state) override;
 
   // views::View:

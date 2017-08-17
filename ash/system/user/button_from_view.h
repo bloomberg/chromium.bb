@@ -9,7 +9,7 @@
 
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "base/macros.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class InkDropContainerView;
@@ -19,7 +19,7 @@ namespace ash {
 namespace tray {
 
 // This view is used to wrap it's content and transform it into button.
-class ButtonFromView : public views::CustomButton {
+class ButtonFromView : public views::Button {
  public:
   // The |content| is the content which is shown within the button. The
   // |button_listener| will be informed - if provided - when a button was
@@ -39,7 +39,7 @@ class ButtonFromView : public views::CustomButton {
   bool is_hovered_for_test() { return button_hovered_; }
 
  protected:
-  // views::CustomButton:
+  // views::Button:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;

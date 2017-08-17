@@ -9,7 +9,7 @@
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 class SystemTrayItem;
@@ -22,9 +22,9 @@ class SystemTrayItem;
 // Exported for SystemTray.
 //
 // TODO(bruthig): Consider removing ActionableView and make clients use
-// CustomButtons instead. (See crbug.com/614453)
+// Buttons instead. (See crbug.com/614453)
 class ASH_EXPORT ActionableView : public views::ButtonListener,
-                                  public views::CustomButton {
+                                  public views::Button {
  public:
   static const char kViewClassName[];
 
@@ -56,7 +56,7 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   virtual void HandlePerformActionResult(bool action_performed,
                                          const ui::Event& event);
 
-  // Overridden from views::CustomButton.
+  // Overridden from views::Button.
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

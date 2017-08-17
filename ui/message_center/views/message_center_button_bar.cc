@@ -44,11 +44,11 @@ views::ToggleImageButton* CreateNotificationCenterButton(
     int text_id) {
   auto* button = new views::ToggleImageButton(listener);
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  button->SetImage(views::CustomButton::STATE_NORMAL,
+  button->SetImage(views::Button::STATE_NORMAL,
                    *resource_bundle.GetImageSkiaNamed(normal_id));
-  button->SetImage(views::CustomButton::STATE_HOVERED,
+  button->SetImage(views::Button::STATE_HOVERED,
                    *resource_bundle.GetImageSkiaNamed(hover_id));
-  button->SetImage(views::CustomButton::STATE_PRESSED,
+  button->SetImage(views::Button::STATE_PRESSED,
                    *resource_bundle.GetImageSkiaNamed(pressed_id));
   button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                             views::ImageButton::ALIGN_MIDDLE);

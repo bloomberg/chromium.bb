@@ -29,7 +29,7 @@ const char ImageButton::kViewClassName[] = "ImageButton";
 // ImageButton, public:
 
 ImageButton::ImageButton(ButtonListener* listener)
-    : CustomButton(listener),
+    : Button(listener),
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
       draw_image_mirrored_(false) {

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
@@ -19,7 +19,7 @@ class Label;
 namespace message_center {
 
 // NotificationButtons render the action buttons of notifications.
-class NotificationButton : public views::CustomButton {
+class NotificationButton : public views::Button {
  public:
   NotificationButton(views::ButtonListener* listener);
   ~NotificationButton() override;
@@ -34,7 +34,7 @@ class NotificationButton : public views::CustomButton {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  // Overridden from views::CustomButton:
+  // Overridden from views::Button:
   void StateChanged(ButtonState old_state) override;
 
  private:

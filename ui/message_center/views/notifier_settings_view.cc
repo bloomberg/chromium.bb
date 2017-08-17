@@ -234,7 +234,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     NotifierSettingsProvider* provider,
     std::unique_ptr<Notifier> notifier,
     views::ButtonListener* listener)
-    : views::CustomButton(listener),
+    : views::Button(listener),
       provider_(provider),
       notifier_(std::move(notifier)),
       icon_view_(new views::ImageView()),
@@ -337,7 +337,7 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
     // the state on NotifierSettingsView::ButtonPressed() too, so here change
     // back to the previous state.
     checkbox_->SetChecked(!checkbox_->checked());
-    CustomButton::NotifyClick(event);
+    Button::NotifyClick(event);
   } else if (button == learn_more_) {
     DCHECK(provider_);
     provider_->OnNotifierAdvancedSettingsRequested(notifier_->notifier_id,

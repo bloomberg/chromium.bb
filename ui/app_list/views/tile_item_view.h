@@ -13,7 +13,6 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/image_shadow_animator.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/custom_button.h"
 
 namespace gfx {
 class ImageSkia;
@@ -29,7 +28,7 @@ namespace app_list {
 // The view for a tile in the app list on the start/search page.
 // TODO(warx): Merge this class to its subclass SearchResultTileItemView once
 // bubble launcher deprecates.
-class APP_LIST_EXPORT TileItemView : public views::CustomButton,
+class APP_LIST_EXPORT TileItemView : public views::Button,
                                      public views::ButtonListener,
                                      public ImageShadowAnimator::Delegate {
  public:
@@ -52,7 +51,7 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   // Sets the behavior of the tile item on mouse hover.
   void SetHoverStyle(HoverStyle hover_style);
 
-  // Overridden from views::CustomButton:
+  // Overridden from views::Button:
   void StateChanged(ButtonState old_state) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 

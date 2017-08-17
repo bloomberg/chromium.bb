@@ -49,11 +49,11 @@ void ImeWindowFrameView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+  close_button_->SetImage(views::Button::STATE_NORMAL,
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE));
-  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+  close_button_->SetImage(views::Button::STATE_HOVERED,
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE_H));
-  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+  close_button_->SetImage(views::Button::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE_C));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);

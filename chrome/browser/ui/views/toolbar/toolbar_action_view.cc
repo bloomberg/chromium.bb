@@ -112,7 +112,7 @@ bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
 
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
-      CustomButton::CreateDefaultInkDropImpl();
+      Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
   ink_drop->SetShowHighlightOnFocus(true);
   return std::move(ink_drop);
@@ -129,9 +129,9 @@ void ToolbarActionView::UpdateState() {
 
   if (!view_controller_->IsEnabled(web_contents) &&
       !view_controller_->DisabledClickOpensMenu()) {
-      SetState(views::CustomButton::STATE_DISABLED);
-  } else if (state() == views::CustomButton::STATE_DISABLED) {
-    SetState(views::CustomButton::STATE_NORMAL);
+    SetState(views::Button::STATE_DISABLED);
+  } else if (state() == views::Button::STATE_DISABLED) {
+    SetState(views::Button::STATE_NORMAL);
   }
 
   wants_to_run_ = view_controller_->WantsToRun(web_contents);

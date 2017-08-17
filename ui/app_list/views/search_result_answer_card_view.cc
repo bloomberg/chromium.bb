@@ -9,7 +9,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result_observer.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -22,12 +22,12 @@ constexpr int kHorizontalPadding = 16;
 
 // Container of the search answer view.
 class SearchResultAnswerCardView::SearchAnswerContainerView
-    : public views::CustomButton,
+    : public views::Button,
       public views::ButtonListener,
       public SearchResultObserver {
  public:
   explicit SearchAnswerContainerView(AppListViewDelegate* view_delegate)
-      : CustomButton(this), view_delegate_(view_delegate) {
+      : Button(this), view_delegate_(view_delegate) {
     // Center the card horizontally in the container.
     views::BoxLayout* answer_container_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -72,7 +72,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     }
   }
 
-  // views::CustomButton overrides:
+  // views::Button overrides:
   const char* GetClassName() const override {
     return "SearchAnswerContainerView";
   }
@@ -85,7 +85,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       return false;
     }
 
-    return CustomButton::OnKeyPressed(event);
+    return Button::OnKeyPressed(event);
   }
 
   // views::ButtonListener overrides:

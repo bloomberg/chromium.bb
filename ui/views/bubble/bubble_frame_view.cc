@@ -138,13 +138,13 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   } else {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     close_button = new ImageButton(listener);
-    close_button->SetImage(CustomButton::STATE_NORMAL,
+    close_button->SetImage(Button::STATE_NORMAL,
                            *rb->GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
     close_button->SetImage(
-        CustomButton::STATE_HOVERED,
+        Button::STATE_HOVERED,
         *rb->GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
     close_button->SetImage(
-        CustomButton::STATE_PRESSED,
+        Button::STATE_PRESSED,
         *rb->GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
   }
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));

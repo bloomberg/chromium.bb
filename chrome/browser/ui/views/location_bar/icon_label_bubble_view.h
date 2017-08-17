@@ -14,7 +14,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_observer.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -32,7 +32,7 @@ class InkDropContainerView;
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
-                            public views::CustomButton,
+                            public views::Button,
                             public views::WidgetObserver {
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
@@ -100,7 +100,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
 
-  // views::CustomButton:
+  // views::Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
   void NotifyClick(const ui::Event& event) override;

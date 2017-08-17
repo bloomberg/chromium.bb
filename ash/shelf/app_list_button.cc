@@ -83,7 +83,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   SetSize(gfx::Size(kShelfSize, kShelfSize));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
-  set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+  set_notify_action(Button::NOTIFY_ON_PRESS);
 
   // Disable canvas flipping for this view, otherwise there will be a lot of
   // edge cases with ink drops, events, etc. in tablet mode where we have two
@@ -271,7 +271,7 @@ bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
 
 std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
-      CustomButton::CreateDefaultInkDropImpl();
+      Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   return std::move(ink_drop);
 }

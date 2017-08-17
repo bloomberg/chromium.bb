@@ -282,14 +282,14 @@ bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
-  // Override CustomButton's implementation, which presses the button when
+  // Override Button's implementation, which presses the button when
   // you press space and clicks it when you release space.  For a MenuButton
   // we always activate the menu on key press.
   return false;
 }
 
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  CustomButton::GetAccessibleNodeData(node_data);
+  Button::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
   node_data->AddState(ui::AX_STATE_HASPOPUP);
   if (enabled()) {

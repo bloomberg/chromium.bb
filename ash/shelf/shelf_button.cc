@@ -206,7 +206,7 @@ class ShelfButton::AppStatusIndicatorView
 const char ShelfButton::kViewClassName[] = "ash/ShelfButton";
 
 ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
-    : CustomButton(nullptr),
+    : Button(nullptr),
       listener_(listener),
       shelf_view_(shelf_view),
       icon_view_(new views::ImageView()),
@@ -313,7 +313,7 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
   bool destroyed = false;
   destroyed_flag_ = &destroyed;
 
-  CustomButton::ShowContextMenu(p, source_type);
+  Button::ShowContextMenu(p, source_type);
 
   if (!destroyed) {
     destroyed_flag_ = nullptr;
@@ -333,24 +333,24 @@ const char* ShelfButton::GetClassName() const {
 }
 
 bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
-  CustomButton::OnMousePressed(event);
+  Button::OnMousePressed(event);
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
   return true;
 }
 
 void ShelfButton::OnMouseReleased(const ui::MouseEvent& event) {
-  CustomButton::OnMouseReleased(event);
+  Button::OnMouseReleased(event);
   shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
 }
 
 void ShelfButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
   shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
-  CustomButton::OnMouseCaptureLost();
+  Button::OnMouseCaptureLost();
 }
 
 bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
-  CustomButton::OnMouseDragged(event);
+  Button::OnMouseDragged(event);
   shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
   return true;
 }
@@ -432,22 +432,22 @@ void ShelfButton::ChildPreferredSizeChanged(views::View* child) {
 
 void ShelfButton::OnFocus() {
   AddState(STATE_FOCUSED);
-  CustomButton::OnFocus();
+  Button::OnFocus();
 }
 
 void ShelfButton::OnBlur() {
   ClearState(STATE_FOCUSED);
-  CustomButton::OnBlur();
+  Button::OnBlur();
 }
 
 void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       AddState(STATE_HOVERED);
-      return CustomButton::OnGestureEvent(event);
+      return Button::OnGestureEvent(event);
     case ui::ET_GESTURE_END:
       ClearState(STATE_HOVERED);
-      return CustomButton::OnGestureEvent(event);
+      return Button::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
       shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
@@ -462,7 +462,7 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       return;
     default:
-      return CustomButton::OnGestureEvent(event);
+      return Button::OnGestureEvent(event);
   }
 }
 
@@ -479,18 +479,18 @@ bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
 
-  return CustomButton::ShouldEnterPushedState(event);
+  return Button::ShouldEnterPushedState(event);
 }
 
 std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
-      CustomButton::CreateDefaultInkDropImpl();
+      Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   return std::move(ink_drop);
 }
 
 void ShelfButton::NotifyClick(const ui::Event& event) {
-  CustomButton::NotifyClick(event);
+  Button::NotifyClick(event);
   if (listener_)
     listener_->ButtonPressed(this, event, GetInkDrop());
 }

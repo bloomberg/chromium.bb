@@ -49,7 +49,7 @@ class FontList;
 }
 
 namespace views {
-class CustomButton;
+class Button;
 class MenuButton;
 class MenuItemView;
 class LabelButton;
@@ -362,7 +362,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Returns the view to throb when a node is removed. |parent| is the parent of
   // the node that was removed, and |old_index| the index of the node that was
   // removed.
-  views::CustomButton* DetermineViewToThrobFromRemove(
+  views::Button* DetermineViewToThrobFromRemove(
       const bookmarks::BookmarkNode* parent,
       int old_index);
 
@@ -453,7 +453,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
   // The visible ancestor is either the |other_bookmarks_button_|,
   // |overflow_button_| or a button on the bar.
-  views::CustomButton* throbbing_view_;
+  views::Button* throbbing_view_;
 
   BookmarkBar::State bookmark_bar_state_;
 

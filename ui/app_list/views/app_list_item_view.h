@@ -16,7 +16,7 @@
 #include "ui/app_list/app_list_item_observer.h"
 #include "ui/app_list/views/image_shadow_animator.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class ImageView;
@@ -30,7 +30,7 @@ namespace app_list {
 class AppListItem;
 class AppsGridView;
 
-class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
+class APP_LIST_EXPORT AppListItemView : public views::Button,
                                         public views::ContextMenuController,
                                         public AppListItemObserver,
                                         public ImageShadowAnimator::Delegate {
@@ -83,7 +83,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // having something dropped onto it, enables subpixel AA for the title.
   void SetTitleSubpixelAA();
 
-  // views::CustomButton overrides:
+  // views::Button overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::View overrides:
@@ -123,7 +123,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // views::CustomButton overrides:
+  // views::Button overrides:
   void StateChanged(ButtonState old_state) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;

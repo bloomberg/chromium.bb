@@ -24,7 +24,7 @@ class BubbleDialogDelegateView;
 }
 
 // Represents an icon on the omnibox that shows a bubble when clicked.
-// TODO(spqchan): Convert this to subclass CustomButton.
+// TODO(spqchan): Convert this to subclass Button.
 class BubbleIconView : public views::InkDropHostView,
                        public views::WidgetObserver {
  public:

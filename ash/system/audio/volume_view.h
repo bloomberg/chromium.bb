@@ -11,7 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
-class CustomButton;
+class Button;
 class ImageView;
 }
 
@@ -54,7 +54,7 @@ class VolumeView : public views::View,
   // The only immediate child view of |this|. All other view elements are added
   // to the |tri_view_| to handle layout.
   TriView* tri_view_;
-  views::CustomButton* more_button_;
+  views::Button* more_button_;
   VolumeButton* icon_;
   views::Slider* slider_;
   views::ImageView* device_type_;

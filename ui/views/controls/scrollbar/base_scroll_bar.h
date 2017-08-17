@@ -139,7 +139,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
   // Called when the state of the thumb track changes (e.g. by the user
   // pressing the mouse button down in it).
-  void SetThumbTrackState(CustomButton::ButtonState state);
+  void SetThumbTrackState(Button::ButtonState state);
 
   BaseScrollBarThumb* thumb_;
 

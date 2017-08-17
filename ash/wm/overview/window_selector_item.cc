@@ -120,10 +120,10 @@ void SetupFadeInAfterLayout(views::Widget* widget) {
 // A Button that has a listener and listens to mouse / gesture events on the
 // visible part of an overview window. Note that the drag events are only
 // handled in maximized mode.
-class ShieldButton : public views::CustomButton {
+class ShieldButton : public views::Button {
  public:
   ShieldButton(views::ButtonListener* listener, const base::string16& name)
-      : views::CustomButton(listener) {
+      : views::Button(listener) {
     SetAccessibleName(name);
   }
   ~ShieldButton() override {}
@@ -135,7 +135,7 @@ class ShieldButton : public views::CustomButton {
   // after the WindowSelectorItem has been destroyed.
   void ResetListener() { listener_ = nullptr; }
 
-  // views::CustomButton:
+  // views::Button:
   bool OnMousePressed(const ui::MouseEvent& event) override {
     if (listener() && SplitViewController::ShouldAllowSplitView()) {
       gfx::Point location(event.location());
@@ -143,7 +143,7 @@ class ShieldButton : public views::CustomButton {
       listener()->HandlePressEvent(location);
       return true;
     }
-    return views::CustomButton::OnMousePressed(event);
+    return views::Button::OnMousePressed(event);
   }
 
   void OnMouseReleased(const ui::MouseEvent& event) override {
@@ -153,7 +153,7 @@ class ShieldButton : public views::CustomButton {
       listener()->HandleReleaseEvent(location);
       return;
     }
-    views::CustomButton::OnMouseReleased(event);
+    views::Button::OnMouseReleased(event);
   }
 
   bool OnMouseDragged(const ui::MouseEvent& event) override {
@@ -163,7 +163,7 @@ class ShieldButton : public views::CustomButton {
       listener()->HandleDragEvent(location);
       return true;
     }
-    return views::CustomButton::OnMouseDragged(event);
+    return views::Button::OnMouseDragged(event);
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -187,7 +187,7 @@ class ShieldButton : public views::CustomButton {
       event->SetHandled();
       return;
     }
-    views::CustomButton::OnGestureEvent(event);
+    views::Button::OnGestureEvent(event);
   }
 
   WindowSelectorItem* listener() {
@@ -207,7 +207,7 @@ class ShieldButton : public views::CustomButton {
 WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
     views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  SetImage(views::CustomButton::STATE_NORMAL,
+  SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kWindowControlCloseIcon, kCloseButtonColor));
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

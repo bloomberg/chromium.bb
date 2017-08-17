@@ -6,14 +6,14 @@
 #define UI_VIEWS_CONTROLS_BUTTON_TOGGLE_BUTTON_H_
 
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 
 // This view presents a button that has two states: on and off. This is similar
 // to a checkbox but has no text and looks more like a two-state horizontal
 // slider.
-class VIEWS_EXPORT ToggleButton : public CustomButton {
+class VIEWS_EXPORT ToggleButton : public Button {
  public:
   static const char kViewClassName[];
 
@@ -54,7 +54,7 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   void OnFocus() override;
   void OnBlur() override;
 
-  // CustomButton:
+  // Button:
   void NotifyClick(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;

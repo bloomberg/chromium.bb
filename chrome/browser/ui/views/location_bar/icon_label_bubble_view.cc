@@ -93,7 +93,7 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
 
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
                                          bool elide_in_middle)
-    : CustomButton(nullptr),
+    : Button(nullptr),
       image_(new views::ImageView()),
       label_(new views::Label(base::string16(), {font_list})),
       ink_drop_container_(new views::InkDropContainerView()),
@@ -218,7 +218,7 @@ void IconLabelBubbleView::Layout() {
 
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   suppress_button_release_ = IsBubbleShowing();
-  return CustomButton::OnMousePressed(event);
+  return Button::OnMousePressed(event);
 }
 
 void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -230,7 +230,7 @@ void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
     GetInkDrop()->SetHovered(false);
   }
-  CustomButton::OnBoundsChanged(previous_bounds);
+  Button::OnBoundsChanged(previous_bounds);
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
@@ -289,12 +289,12 @@ bool IconLabelBubbleView::IsTriggerableEvent(const ui::Event& event) {
 
 bool IconLabelBubbleView::ShouldUpdateInkDropOnClickCanceled() const {
   // The click might be cancelled because the bubble is still opened. In this
-  // case, the ink drop state should not be hidden by CustomButton.
+  // case, the ink drop state should not be hidden by Button.
   return false;
 }
 
 void IconLabelBubbleView::NotifyClick(const ui::Event& event) {
-  CustomButton::NotifyClick(event);
+  Button::NotifyClick(event);
   OnActivate(event);
 }
 

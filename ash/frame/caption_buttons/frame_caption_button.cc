@@ -37,7 +37,7 @@ const char FrameCaptionButton::kViewClassName[] = "FrameCaptionButton";
 
 FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
                                        CaptionButtonIcon icon)
-    : CustomButton(listener),
+    : Button(listener),
       icon_(icon),
       paint_as_active_(false),
       use_light_images_(false),
@@ -102,7 +102,7 @@ const char* FrameCaptionButton::GetClassName() const {
 }
 
 void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
-  // CustomButton does not become pressed when the user drags off and then back
+  // Button does not become pressed when the user drags off and then back
   // onto the button. Make FrameCaptionButton pressed in this case because this
   // behavior is more consistent with AlternateFrameSizeButton.
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
@@ -121,7 +121,7 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
       event->StopPropagation();
     }
   }
-  CustomButton::OnGestureEvent(event);
+  Button::OnGestureEvent(event);
 }
 
 views::PaintInfo::ScaleType FrameCaptionButton::GetPaintScaleType() const {

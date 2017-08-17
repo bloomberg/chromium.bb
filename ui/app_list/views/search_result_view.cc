@@ -89,7 +89,7 @@ gfx::RenderText* CreateRenderText(const base::string16& text,
 const char SearchResultView::kViewClassName[] = "ui/app_list/SearchResultView";
 
 SearchResultView::SearchResultView(SearchResultListView* list_view)
-    : views::CustomButton(this),
+    : views::Button(this),
       list_view_(list_view),
       icon_(new views::ImageView),
       badge_icon_(new views::ImageView),

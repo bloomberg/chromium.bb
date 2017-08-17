@@ -62,13 +62,13 @@ void AppWindowFrameView::Init() {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
     close_button_->SetImage(
-        views::CustomButton::STATE_HOVERED,
+        views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_H).ToImageSkia());
     close_button_->SetImage(
-        views::CustomButton::STATE_PRESSED,
+        views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_P).ToImageSkia());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
@@ -76,33 +76,33 @@ void AppWindowFrameView::Init() {
     // STATE_NORMAL images are set in SetButtonImagesForFrame, not here.
     maximize_button_ = new views::ImageButton(this);
     maximize_button_->SetImage(
-        views::CustomButton::STATE_HOVERED,
+        views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
     maximize_button_->SetImage(
-        views::CustomButton::STATE_PRESSED,
+        views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_P).ToImageSkia());
     maximize_button_->SetImage(
-        views::CustomButton::STATE_DISABLED,
+        views::Button::STATE_DISABLED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_D).ToImageSkia());
     maximize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
     AddChildView(maximize_button_);
     restore_button_ = new views::ImageButton(this);
     restore_button_->SetImage(
-        views::CustomButton::STATE_HOVERED,
+        views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_H).ToImageSkia());
     restore_button_->SetImage(
-        views::CustomButton::STATE_PRESSED,
+        views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_P).ToImageSkia());
     restore_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
     AddChildView(restore_button_);
     minimize_button_ = new views::ImageButton(this);
     minimize_button_->SetImage(
-        views::CustomButton::STATE_HOVERED,
+        views::Button::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_H).ToImageSkia());
     minimize_button_->SetImage(
-        views::CustomButton::STATE_PRESSED,
+        views::Button::STATE_PRESSED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_P).ToImageSkia());
     minimize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
@@ -275,12 +275,12 @@ void AppWindowFrameView::Layout() {
   maximize_button_->SetVisible(!maximized);
   restore_button_->SetVisible(maximized);
   if (maximized)
-    maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
+    maximize_button_->SetState(views::Button::STATE_NORMAL);
   else
-    restore_button_->SetState(views::CustomButton::STATE_NORMAL);
+    restore_button_->SetState(views::Button::STATE_NORMAL);
 
   gfx::Size minimize_size = minimize_button_->GetPreferredSize();
-  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
+  minimize_button_->SetState(views::Button::STATE_NORMAL);
   minimize_button_->SetBounds(
       maximize_button_->x() - kButtonSpacing - minimize_size.width(),
       kButtonOffsetY,
@@ -295,11 +295,11 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
     close_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
   } else {
     close_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_U).ToImageSkia());
   }
 
@@ -380,23 +380,23 @@ void AppWindowFrameView::SetButtonImagesForFrame() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (use_light) {
     maximize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_L).ToImageSkia());
     restore_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_L).ToImageSkia());
     minimize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_L).ToImageSkia());
   } else {
     maximize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE).ToImageSkia());
     restore_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE).ToImageSkia());
     minimize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
+        views::Button::STATE_NORMAL,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
   }
 }

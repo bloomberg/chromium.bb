@@ -115,7 +115,7 @@ void ReloadButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (menu_enabled_)
     ToolbarButton::GetAccessibleNodeData(node_data);
   else
-    CustomButton::GetAccessibleNodeData(node_data);
+    Button::GetAccessibleNodeData(node_data);
 }
 
 bool ReloadButton::ShouldShowMenu() {

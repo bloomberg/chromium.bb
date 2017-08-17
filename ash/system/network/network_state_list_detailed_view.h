@@ -15,7 +15,7 @@
 namespace views {
 class BubbleDialogDelegateView;
 class Button;
-class CustomButton;
+class Button;
 }
 
 namespace ash {
@@ -80,9 +80,9 @@ class NetworkStateListDetailedView
   // Track login state.
   LoginStatus login_;
 
-  views::CustomButton* info_button_;
-  views::CustomButton* settings_button_;
-  views::CustomButton* proxy_settings_button_;
+  views::Button* info_button_;
+  views::Button* settings_button_;
+  views::Button* proxy_settings_button_;
 
   // A small bubble for displaying network info.
   views::BubbleDialogDelegateView* info_bubble_;

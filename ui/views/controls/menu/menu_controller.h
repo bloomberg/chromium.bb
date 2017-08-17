@@ -238,7 +238,7 @@ class VIEWS_EXPORT MenuController
 
     // Used to capture a hot tracked child button when a nested menu is opened
     // and to restore the hot tracked state when exiting a nested menu.
-    CustomButton* hot_button;
+    Button* hot_button;
 
     // If item has a submenu this indicates if the submenu is showing.
     bool submenu_open;
@@ -545,7 +545,7 @@ class VIEWS_EXPORT MenuController
                                 SelectionIncrementDirectionType direction);
 
   // Updates the current |hot_button_| and its hot tracked state.
-  void SetHotTrackedButton(CustomButton* hot_button);
+  void SetHotTrackedButton(Button* hot_button);
 
   // The active instance.
   static MenuController* active_instance_;
@@ -646,7 +646,7 @@ class VIEWS_EXPORT MenuController
   std::unique_ptr<ViewTracker> active_mouse_view_tracker_;
 
   // Current hot tracked child button if any.
-  CustomButton* hot_button_;
+  Button* hot_button_;
 
   internal::MenuControllerDelegate* delegate_;
 

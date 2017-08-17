@@ -195,11 +195,11 @@ TryChromeDialogView::Result TryChromeDialogView::ShowDialog(
   layout->AddView(label);
   // The close button is custom.
   views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::STATE_NORMAL,
+  close_button->SetImage(views::Button::STATE_NORMAL,
                          rb.GetNativeImageNamed(IDR_CLOSE_2).ToImageSkia());
-  close_button->SetImage(views::CustomButton::STATE_HOVERED,
+  close_button->SetImage(views::Button::STATE_HOVERED,
                          rb.GetNativeImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-  close_button->SetImage(views::CustomButton::STATE_PRESSED,
+  close_button->SetImage(views::Button::STATE_PRESSED,
                          rb.GetNativeImageNamed(IDR_CLOSE_2_P).ToImageSkia());
   close_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(close_button);

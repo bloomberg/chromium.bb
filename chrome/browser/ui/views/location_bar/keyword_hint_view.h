@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 class Profile;
 
@@ -31,7 +31,7 @@ class Label;
 //
 // NOTE: This should really be called LocationBarKeywordHintView, but I
 // couldn't bring myself to use such a long name.
-class KeywordHintView : public views::CustomButton {
+class KeywordHintView : public views::Button {
  public:
   KeywordHintView(views::ButtonListener* listener,
                   Profile* profile,

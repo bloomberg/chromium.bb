@@ -39,11 +39,11 @@ class TrayTilesTest : public NoSessionAshTestBase {
     NoSessionAshTestBase::TearDown();
   }
 
-  views::CustomButton* GetSettingsButton() {
+  views::Button* GetSettingsButton() {
     return tray_tiles()->default_view_->settings_button_;
   }
 
-  views::CustomButton* GetHelpButton() {
+  views::Button* GetHelpButton() {
     return tray_tiles()->default_view_->help_button_;
   }
 
@@ -51,11 +51,11 @@ class TrayTilesTest : public NoSessionAshTestBase {
     return tray_tiles()->default_view_->night_light_button_;
   }
 
-  views::CustomButton* GetLockButton() {
+  views::Button* GetLockButton() {
     return tray_tiles()->default_view_->lock_button_;
   }
 
-  views::CustomButton* GetPowerButton() {
+  views::Button* GetPowerButton() {
     return tray_tiles()->default_view_->power_button_;
   }
 

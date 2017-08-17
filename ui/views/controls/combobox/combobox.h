@@ -27,7 +27,7 @@ class ComboboxTestApi;
 }
 
 class ComboboxListener;
-class CustomButton;
+class Button;
 class MenuRunner;
 class Painter;
 class PrefixSelector;
@@ -214,8 +214,8 @@ class VIEWS_EXPORT Combobox : public View,
   // STYLE_NOTIFY_ON_CLICK, a Combobox renders the button images according to
   // these button states.
   // The base View takes the ownerships of these as child views.
-  CustomButton* text_button_;
-  CustomButton* arrow_button_;
+  Button* text_button_;
+  Button* arrow_button_;
 
   // Set while the dropdown is showing. Ensures the menu is closed if |this| is
   // destroyed.

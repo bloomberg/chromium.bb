@@ -297,12 +297,12 @@ class Tab::TabCloseButton : public views::ImageButton,
 
   void OnMouseMoved(const ui::MouseEvent& event) override {
     tab_->controller_->OnMouseEventInTab(this, event);
-    CustomButton::OnMouseMoved(event);
+    Button::OnMouseMoved(event);
   }
 
   void OnMouseReleased(const ui::MouseEvent& event) override {
     tab_->controller_->OnMouseEventInTab(this, event);
-    CustomButton::OnMouseReleased(event);
+    Button::OnMouseReleased(event);
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -483,8 +483,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       kTabCloseHoveredPressedIcon, SkColorSetRGB(0xDB, 0x44, 0x37));
   const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
       kTabCloseHoveredPressedIcon, SkColorSetRGB(0xA8, 0x35, 0x2A));
-  close_button_->SetImage(views::CustomButton::STATE_HOVERED, &hovered);
-  close_button_->SetImage(views::CustomButton::STATE_PRESSED, &pressed);
+  close_button_->SetImage(views::Button::STATE_HOVERED, &hovered);
+  close_button_->SetImage(views::Button::STATE_PRESSED, &pressed);
 
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
@@ -1422,7 +1422,7 @@ void Tab::OnButtonColorMaybeChanged() {
     alert_indicator_button_->OnParentTabButtonColorChanged();
     const gfx::ImageSkia& close_button_normal_image =
         gfx::CreateVectorIcon(kTabCloseNormalIcon, button_color_);
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    close_button_->SetImage(views::Button::STATE_NORMAL,
                             &close_button_normal_image);
   }
 }

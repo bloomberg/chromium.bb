@@ -76,7 +76,7 @@ class AlertIndicatorButton : public views::ImageButton,
   // views::Button:
   void NotifyClick(const ui::Event& event) override;
 
-  // views::CustomButton:
+  // views::Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 

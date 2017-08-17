@@ -110,8 +110,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
 const char ToggleButton::kViewClassName[] = "ToggleButton";
 
 ToggleButton::ToggleButton(ButtonListener* listener)
-    : CustomButton(listener),
-      thumb_view_(new ThumbView()) {
+    : Button(listener), thumb_view_(new ThumbView()) {
   slide_animation_.SetSlideDuration(80 /* ms */);
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
   AddChildView(thumb_view_);
@@ -184,7 +183,7 @@ const char* ToggleButton::GetClassName() const {
 }
 
 bool ToggleButton::CanAcceptEvent(const ui::Event& event) {
-  return accepts_events_ && CustomButton::CanAcceptEvent(event);
+  return accepts_events_ && Button::CanAcceptEvent(event);
 }
 
 void ToggleButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -196,7 +195,7 @@ void ToggleButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  CustomButton::GetAccessibleNodeData(node_data);
+  Button::GetAccessibleNodeData(node_data);
 
   node_data->role = ui::AX_ROLE_SWITCH;
   const ui::AXCheckedState checked_state =
@@ -205,12 +204,12 @@ void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ToggleButton::OnFocus() {
-  CustomButton::OnFocus();
+  Button::OnFocus();
   AnimateInkDrop(views::InkDropState::ACTION_PENDING, nullptr);
 }
 
 void ToggleButton::OnBlur() {
-  CustomButton::OnBlur();
+  Button::OnBlur();
 
   // The ink drop may have already gone away if the user clicked after focusing.
   if (GetInkDrop()->GetTargetInkDropState() ==
@@ -222,7 +221,7 @@ void ToggleButton::OnBlur() {
 void ToggleButton::NotifyClick(const ui::Event& event) {
   SetIsOn(!is_on(), true);
 
-  // Skip over CustomButton::NotifyClick, to customize the ink drop animation.
+  // Skip over Button::NotifyClick, to customize the ink drop animation.
   // Leave the ripple in place when the button is activated via the keyboard.
   if (!event.IsKeyEvent()) {
     AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
@@ -259,8 +258,7 @@ void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
-  std::unique_ptr<InkDropImpl> ink_drop =
-      CustomButton::CreateDefaultInkDropImpl();
+  std::unique_ptr<InkDropImpl> ink_drop = Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   return std::move(ink_drop);
 }
@@ -283,7 +281,7 @@ void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {
     SchedulePaint();
     return;
   }
-  CustomButton::AnimationProgressed(animation);
+  Button::AnimationProgressed(animation);
 }
 
 }  // namespace views

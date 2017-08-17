@@ -56,7 +56,7 @@ class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
 namespace app_list {
 
 TileItemView::TileItemView()
-    : views::CustomButton(this),
+    : views::Button(this),
       parent_background_color_(SK_ColorTRANSPARENT),
       icon_(new views::ImageView),
       badge_(nullptr),

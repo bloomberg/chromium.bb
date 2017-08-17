@@ -138,7 +138,7 @@ class SearchBoxImageButton : public views::ImageButton {
     if (event.key_code() == ui::VKEY_SPACE)
       return false;
 
-    return CustomButton::OnKeyPressed(event);
+    return Button::OnKeyPressed(event);
   }
 
  private:

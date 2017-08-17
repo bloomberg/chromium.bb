@@ -338,22 +338,21 @@ void SimpleWebViewDialog::ExecuteCommandWithDisposition(
 void SimpleWebViewDialog::LoadImages() {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
-  back_->SetImage(views::CustomButton::STATE_NORMAL,
-                  tp->GetImageSkiaNamed(IDR_BACK));
-  back_->SetImage(views::CustomButton::STATE_HOVERED,
+  back_->SetImage(views::Button::STATE_NORMAL, tp->GetImageSkiaNamed(IDR_BACK));
+  back_->SetImage(views::Button::STATE_HOVERED,
                   tp->GetImageSkiaNamed(IDR_BACK_H));
-  back_->SetImage(views::CustomButton::STATE_PRESSED,
+  back_->SetImage(views::Button::STATE_PRESSED,
                   tp->GetImageSkiaNamed(IDR_BACK_P));
-  back_->SetImage(views::CustomButton::STATE_DISABLED,
+  back_->SetImage(views::Button::STATE_DISABLED,
                   tp->GetImageSkiaNamed(IDR_BACK_D));
 
-  forward_->SetImage(views::CustomButton::STATE_NORMAL,
+  forward_->SetImage(views::Button::STATE_NORMAL,
                      tp->GetImageSkiaNamed(IDR_FORWARD));
-  forward_->SetImage(views::CustomButton::STATE_HOVERED,
+  forward_->SetImage(views::Button::STATE_HOVERED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_H));
-  forward_->SetImage(views::CustomButton::STATE_PRESSED,
+  forward_->SetImage(views::Button::STATE_PRESSED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_P));
-  forward_->SetImage(views::CustomButton::STATE_DISABLED,
+  forward_->SetImage(views::Button::STATE_DISABLED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
   reload_->LoadImages();

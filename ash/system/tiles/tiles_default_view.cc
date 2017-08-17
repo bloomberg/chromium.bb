@@ -26,7 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -143,8 +143,7 @@ views::View* TilesDefaultView::GetHelpButtonView() const {
   return help_button_;
 }
 
-const views::CustomButton* TilesDefaultView::GetShutdownButtonViewForTest()
-    const {
+const views::Button* TilesDefaultView::GetShutdownButtonViewForTest() const {
   return power_button_;
 }
 

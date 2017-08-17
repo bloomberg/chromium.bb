@@ -55,7 +55,7 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
   if (show && !close_button_) {
     close_button_ = base::MakeUnique<message_center::PaddedButton>(this);
     close_button_->set_owned_by_client();
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    close_button_->SetImage(views::Button::STATE_NORMAL,
                             message_center::GetCloseIcon());
     close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
@@ -77,7 +77,7 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
   if (show && !settings_button_) {
     settings_button_ = base::MakeUnique<message_center::PaddedButton>(this);
     settings_button_->set_owned_by_client();
-    settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
+    settings_button_->SetImage(views::Button::STATE_NORMAL,
                                message_center::GetSettingsIcon());
     settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
@@ -131,11 +131,11 @@ bool NotificationControlButtonsView::IsSettingsButtonFocused() const {
   return settings_button_ && settings_button_->HasFocus();
 }
 
-views::CustomButton* NotificationControlButtonsView::close_button() const {
+views::Button* NotificationControlButtonsView::close_button() const {
   return close_button_.get();
 }
 
-views::CustomButton* NotificationControlButtonsView::settings_button() const {
+views::Button* NotificationControlButtonsView::settings_button() const {
   return settings_button_.get();
 }
 

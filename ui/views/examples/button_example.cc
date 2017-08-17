@@ -127,7 +127,7 @@ void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
   else if (sender == disabled_button_)
     LabelButtonPressed(disabled_button_, event);
   else if (sender == md_button_ || sender == md_default_button_)
-    static_cast<CustomButton*>(sender)->StartThrobbing(5);
+    static_cast<Button*>(sender)->StartThrobbing(5);
   else
     PrintStatus("Image Button Pressed! count: %d", ++count_);
 }

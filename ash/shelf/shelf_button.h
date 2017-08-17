@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class ImageView;
@@ -19,7 +19,7 @@ class InkDropButtonListener;
 class ShelfView;
 
 // Button used for items on the launcher, except for the AppList.
-class ASH_EXPORT ShelfButton : public views::CustomButton {
+class ASH_EXPORT ShelfButton : public views::Button {
  public:
   static const char kViewClassName[];
 
@@ -61,7 +61,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // Called when user started dragging the shelf button.
   void OnDragStarted(const ui::LocatedEvent* event);
 
-  // Overrides to views::CustomButton:
+  // Overrides to views::Button:
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
 
@@ -83,7 +83,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::CustomButton overrides:
+  // views::Button overrides:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
 
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -22,7 +22,7 @@ namespace views {
 //  down on the button.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT BaseScrollBarButton : public CustomButton {
+class VIEWS_EXPORT BaseScrollBarButton : public Button {
  public:
   explicit BaseScrollBarButton(ButtonListener* listener);
   ~BaseScrollBarButton() override;

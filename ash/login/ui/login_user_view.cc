@@ -187,7 +187,7 @@ int LoginUserView::WidthForLayoutStyle(LoginDisplayStyle style) {
 LoginUserView::LoginUserView(LoginDisplayStyle style,
                              bool show_dropdown,
                              const OnTap& on_tap)
-    : views::CustomButton(this), on_tap_(on_tap), display_style_(style) {
+    : views::Button(this), on_tap_(on_tap), display_style_(style) {
   // show_dropdown can only be true when the user view is rendering in large
   // mode.
   DCHECK(!show_dropdown || style == LoginDisplayStyle::kLarge);

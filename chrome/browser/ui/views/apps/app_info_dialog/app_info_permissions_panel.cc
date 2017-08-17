@@ -53,11 +53,11 @@ class RevokeButton : public views::ImageButton, public views::ButtonListener {
                         base::string16 permission_message)
       : views::ImageButton(this), callback_(callback) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SetImage(views::CustomButton::STATE_NORMAL,
+    SetImage(views::Button::STATE_NORMAL,
              rb.GetImageNamed(IDR_DISABLE).ToImageSkia());
-    SetImage(views::CustomButton::STATE_HOVERED,
+    SetImage(views::Button::STATE_HOVERED,
              rb.GetImageNamed(IDR_DISABLE_H).ToImageSkia());
-    SetImage(views::CustomButton::STATE_PRESSED,
+    SetImage(views::Button::STATE_PRESSED,
              rb.GetImageNamed(IDR_DISABLE_P).ToImageSkia());
     SetBorder(std::unique_ptr<views::Border>());
     SetSize(GetPreferredSize());
