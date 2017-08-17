@@ -13,8 +13,9 @@ using base::TimeTicks;
 namespace gfx {
 
 AnimationContainer::AnimationContainer()
-    : last_tick_time_(base::TimeTicks::Now()), observer_(NULL) {
-}
+    : last_tick_time_(base::TimeTicks::Now()),
+      min_timer_interval_count_(0),
+      observer_(NULL) {}
 
 AnimationContainer::~AnimationContainer() {
   // The animations own us and stop themselves before being deleted. If
@@ -29,8 +30,12 @@ void AnimationContainer::Start(AnimationContainerElement* element) {
   if (elements_.empty()) {
     last_tick_time_ = base::TimeTicks::Now();
     SetMinTimerInterval(element->GetTimerInterval());
+    min_timer_interval_count_ = 1;
   } else if (element->GetTimerInterval() < min_timer_interval_) {
     SetMinTimerInterval(element->GetTimerInterval());
+    min_timer_interval_count_ = 1;
+  } else if (element->GetTimerInterval() == min_timer_interval_) {
+    min_timer_interval_count_++;
   }
 
   element->SetStartTime(last_tick_time_);
@@ -40,16 +45,27 @@ void AnimationContainer::Start(AnimationContainerElement* element) {
 void AnimationContainer::Stop(AnimationContainerElement* element) {
   DCHECK(elements_.count(element) > 0);  // The element must be running.
 
+  base::TimeDelta interval = element->GetTimerInterval();
   elements_.erase(element);
 
   if (elements_.empty()) {
     timer_.Stop();
+    min_timer_interval_count_ = 0;
     if (observer_)
       observer_->AnimationContainerEmpty(this);
-  } else {
-    TimeDelta min_timer_interval = GetMinInterval();
-    if (min_timer_interval > min_timer_interval_)
-      SetMinTimerInterval(min_timer_interval);
+  } else if (interval == min_timer_interval_) {
+    min_timer_interval_count_--;
+
+    // If the last element at the current (minimum) timer interval has been
+    // removed then go find the new minimum and the number of elements at that
+    // same minimum.
+    if (min_timer_interval_count_ == 0) {
+      std::pair<base::TimeDelta, size_t> interval_count =
+          GetMinIntervalAndCount();
+      DCHECK(interval_count.first > min_timer_interval_);
+      SetMinTimerInterval(interval_count.first);
+      min_timer_interval_count_ = interval_count.second;
+    }
   }
 }
 
@@ -87,17 +103,30 @@ void AnimationContainer::SetMinTimerInterval(base::TimeDelta delta) {
   timer_.Start(FROM_HERE, min_timer_interval_, this, &AnimationContainer::Run);
 }
 
-TimeDelta AnimationContainer::GetMinInterval() {
+std::pair<TimeDelta, size_t> AnimationContainer::GetMinIntervalAndCount()
+    const {
   DCHECK(!elements_.empty());
 
+  // Find the minimum interval and the number of elements sharing that same
+  // interval. It is tempting to create a map of intervals -> counts in order to
+  // make this O(log n) instead of O(n). However, profiling shows that this
+  // offers no practical performance gain (the most common case is that all
+  // elements in the set share the same interval).
   TimeDelta min;
+  size_t count = 1;
   Elements::const_iterator i = elements_.begin();
   min = (*i)->GetTimerInterval();
   for (++i; i != elements_.end(); ++i) {
-    if ((*i)->GetTimerInterval() < min)
-      min = (*i)->GetTimerInterval();
+    auto interval = (*i)->GetTimerInterval();
+    if (interval < min) {
+      min = interval;
+      count = 1;
+    } else if (interval == min) {
+      count++;
+    }
   }
-  return min;
+
+  return std::make_pair(min, count);
 }
 
 }  // namespace gfx
