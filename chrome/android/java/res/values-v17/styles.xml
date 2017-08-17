@@ -757,4 +757,10 @@
              level. -->
         <item name="android:layout_marginEnd">-8dp</item>
     </style>
+
+    <!-- Password manager settings page -->
+    <style name="PasswordEntryName" parent="BlueButtonText2">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

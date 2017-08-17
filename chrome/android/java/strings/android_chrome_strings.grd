@@ -428,6 +428,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_EDITOR_PASSWORD" desc='Title preceding password on password entry editor.'>
         Password
       </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_SITE" desc='Content description for the button that copies the stored site.'>
+        Copy URL
+      </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_USERNAME" desc='Content description for the button that copies the stored username.'>
         Copy username
       </message>
