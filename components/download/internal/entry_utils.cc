@@ -9,11 +9,11 @@
 namespace download {
 namespace util {
 
-uint32_t GetNumberOfEntriesForClient(DownloadClient client,
-                                     const std::vector<Entry*>& entries) {
+uint32_t GetNumberOfLiveEntriesForClient(DownloadClient client,
+                                         const std::vector<Entry*>& entries) {
   uint32_t count = 0;
   for (auto* entry : entries)
-    if (entry->client == client)
+    if (entry->client == client && entry->state != Entry::State::COMPLETE)
       count++;
 
   return count;
