@@ -147,7 +147,6 @@ class CC_EXPORT LayerTreeHostImpl
       public BrowserControlsOffsetManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
-      public LayerTreeMutatorClient,
       public MutatorHostClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
@@ -383,9 +382,6 @@ class CC_EXPORT LayerTreeHostImpl
               const gfx::Rect& viewport,
               bool resourceless_software_draw) override;
 
-  // LayerTreeMutatorClient.
-  void SetNeedsMutate() override;
-
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
 
@@ -601,7 +597,6 @@ class CC_EXPORT LayerTreeHostImpl
                              base::TimeDelta delayed_by);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
-  LayerTreeMutator* mutator() { return mutator_.get(); }
 
   LayerImpl* ViewportMainScrollLayer();
 
@@ -875,8 +870,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool has_valid_layer_tree_frame_sink_;
 
   std::unique_ptr<Viewport> viewport_;
-
-  std::unique_ptr<LayerTreeMutator> mutator_;
 
   std::unique_ptr<PendingTreeDurationHistogramTimer>
       pending_tree_duration_timer_;

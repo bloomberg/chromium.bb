@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -43,7 +44,9 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
     : mutator_host_client_(nullptr),
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
-      needs_push_properties_(false) {
+      needs_push_properties_(false),
+      mutator_needs_mutate_(false),
+      mutator_(nullptr) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         base::MakeUnique<ScrollOffsetAnimationsImpl>(this);
@@ -271,11 +274,19 @@ bool AnimationHost::SupportsScrollAnimations() const {
 }
 
 bool AnimationHost::NeedsTickAnimations() const {
+  return NeedsTickAnimationPlayers() || NeedsTickMutator();
+}
+
+bool AnimationHost::NeedsTickMutator() const {
+  return mutator_ && mutator_needs_mutate_;
+}
+
+bool AnimationHost::NeedsTickAnimationPlayers() const {
   return !ticking_players_.empty();
 }
 
 bool AnimationHost::ActivateAnimations() {
-  if (!NeedsTickAnimations())
+  if (!NeedsTickAnimationPlayers())
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
@@ -287,20 +298,43 @@ bool AnimationHost::ActivateAnimations() {
 }
 
 bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time) {
-  if (!NeedsTickAnimations())
-    return false;
-
   TRACE_EVENT0("cc", "AnimationHost::TickAnimations");
-  PlayersList ticking_players_copy = ticking_players_;
-  for (auto& it : ticking_players_copy)
-    it->Tick(monotonic_time);
+  bool did_animate = false;
 
-  return true;
+  if (NeedsTickAnimationPlayers()) {
+    PlayersList ticking_players_copy = ticking_players_;
+    for (auto& it : ticking_players_copy)
+      it->Tick(monotonic_time);
+
+    did_animate = true;
+  }
+  if (NeedsTickMutator()) {
+    // TODO(majidvp): At the moment we call this for both active and pending
+    // trees similar to other animations. However our final goal is to only
+    // call these once ideally after activation.
+    did_animate |= mutator_->Mutate(monotonic_time);
+    mutator_needs_mutate_ = did_animate;
+  }
+
+  return did_animate;
+}
+
+void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time) {
+  // TODO(majidvp) For now the logic simply assumes all AnimationWorklet
+  // animations depend on scroll offset but this is inefficient. We need a more
+  // fine-grained approach based on invalidating individual ScrollTimelines and
+  // then ticking the animation players attached to those timelines. To make
+  // this happen we probably need to move "ticking" players to timeline.
+
+  // TODO(majidvp): We need to return a boolean here so that LTHI knows
+  // whether it needs to schedule another frame.
+  if (mutator_)
+    mutator_->Mutate(monotonic_time);
 }
 
 bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
                                          MutatorEvents* mutator_events) {
-  if (!NeedsTickAnimations())
+  if (!NeedsTickAnimationPlayers())
     return false;
 
   auto* animation_events = static_cast<AnimationEvents*>(mutator_events);
@@ -311,6 +345,13 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
     it->UpdateState(start_ready_animations, animation_events);
 
   return true;
+}
+
+base::Closure AnimationHost::TakeMutations() {
+  if (mutator_)
+    return mutator_->TakeMutations();
+
+  return base::Closure();
 }
 
 std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
@@ -575,6 +616,18 @@ const AnimationHost::PlayersList& AnimationHost::ticking_players_for_testing()
 const AnimationHost::ElementToAnimationsMap&
 AnimationHost::element_animations_for_testing() const {
   return element_to_animations_map_;
+}
+
+void AnimationHost::SetLayerTreeMutator(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  if (mutator == mutator_)
+    return;
+  mutator_ = std::move(mutator);
+  mutator_->SetClient(this);
+}
+
+void AnimationHost::SetNeedsMutate() {
+  mutator_needs_mutate_ = true;
 }
 
 }  // namespace cc

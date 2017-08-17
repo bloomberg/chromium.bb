@@ -25,7 +25,7 @@ class PLATFORM_EXPORT CompositorMutatorClient
   void SetNeedsMutate();
 
   // cc::LayerTreeMutator
-  bool Mutate(base::TimeTicks monotonic_time, cc::LayerTreeImpl*) override;
+  bool Mutate(base::TimeTicks monotonic_time) override;
   void SetClient(cc::LayerTreeMutatorClient*) override;
   base::Closure TakeMutations() override;
 
