@@ -84,8 +84,12 @@ bool ImageFrame::CopyBitmapData(const ImageFrame& other) {
   has_alpha_ = other.has_alpha_;
   bitmap_.reset();
   SkImageInfo info = other.bitmap_.info();
-  return bitmap_.tryAllocPixels(info) &&
-         other.bitmap_.readPixels(info, bitmap_.getPixels(), bitmap_.rowBytes(),
+  if (!bitmap_.tryAllocPixels(info)) {
+    return false;
+  }
+
+  status_ = kFrameAllocated;
+  return other.bitmap_.readPixels(info, bitmap_.getPixels(), bitmap_.rowBytes(),
                                   0, 0);
 }
 
@@ -100,6 +104,7 @@ bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
   bitmap_.reset();
   bitmap_.swap(other->bitmap_);
   other->status_ = kFrameEmpty;
+  status_ = kFrameAllocated;
   return true;
 }
 
@@ -113,7 +118,11 @@ bool ImageFrame::AllocatePixelData(int new_width,
       new_width, new_height,
       premultiply_alpha_ ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       std::move(color_space)));
-  return bitmap_.tryAllocPixels(allocator_);
+  bool allocated = bitmap_.tryAllocPixels(allocator_);
+  if (allocated)
+    status_ = kFrameAllocated;
+
+  return allocated;
 }
 
 bool ImageFrame::HasAlpha() const {

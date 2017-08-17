@@ -45,7 +45,7 @@ class PLATFORM_EXPORT ImageFrame final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum Status { kFrameEmpty, kFramePartial, kFrameComplete };
+  enum Status { kFrameEmpty, kFrameAllocated, kFramePartial, kFrameComplete };
   enum DisposalMethod {
     // If you change the numeric values of these, make sure you audit
     // all users, as some users may cast raw values to/from these
