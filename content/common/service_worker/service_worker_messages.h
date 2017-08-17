@@ -258,14 +258,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
                      int /* handle_id */)
 
-// Returns the response as the result of fetch event. This is used only for blob
-// to keep the IPC ordering. Mojo IPC is used when the response body is a stream
-// or is empty, and for the fallback-to-network response.
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventResponse,
-                    int /* fetch_event_id */,
-                    content::ServiceWorkerResponse,
-                    base::Time /* dispatch_event_time */)
-
 // Asks the browser to retrieve client of the sender ServiceWorker.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClient,
                     int /* request_id */,

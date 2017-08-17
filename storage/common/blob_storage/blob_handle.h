@@ -22,6 +22,7 @@ class STORAGE_COMMON_EXPORT BlobHandle : public base::RefCounted<BlobHandle> {
   mojom::Blob& operator*() const { return *get(); }
 
   mojom::BlobPtr Clone() const;
+  mojom::BlobPtr&& TakeBlobPtr() { return std::move(blob_); }
 
  private:
   friend class base::RefCounted<BlobHandle>;

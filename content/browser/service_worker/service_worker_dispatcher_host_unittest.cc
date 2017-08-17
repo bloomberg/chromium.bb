@@ -849,30 +849,4 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
 }
 
-TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {
-  GURL pattern = GURL("https://www.example.com/");
-  GURL script_url = GURL("https://www.example.com/service_worker.js");
-
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_WINDOW, pattern);
-  SetUpRegistration(pattern, script_url);
-
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  base::RunLoop().RunUntilIdle();
-
-  // Set the worker status to STOPPING.
-  version_->embedded_worker()->Stop();
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-
-  // Receive a response for a timed out request. The bad message count should
-  // not increase.
-  const int kFetchEventId = 91;  // Dummy value
-  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_FetchEventResponse(
-      version_->embedded_worker()->embedded_worker_id(), kFetchEventId,
-      ServiceWorkerResponse(), base::Time::Now()));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, dispatcher_host_->bad_messages_received_count_);
-}
-
 }  // namespace content
