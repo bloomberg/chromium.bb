@@ -205,8 +205,9 @@ class ProcessProxyTest : public testing::Test {
   void EndRegistryTest(base::OnceClosure done_closure) {
     registry_->CloseProcess(terminal_id_);
 
+    int unused_exit_code = 0;
     base::TerminationStatus status =
-        base::GetTerminationStatus(terminal_id_, NULL);
+        base::GetTerminationStatus(terminal_id_, &unused_exit_code);
     EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
     if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
       base::Process process =

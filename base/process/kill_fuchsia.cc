@@ -21,6 +21,8 @@ bool KillProcessGroup(ProcessHandle process_group_id) {
 }
 
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
+  DCHECK(exit_code);
+
   mx_info_process_t process_info;
   mx_status_t status =
       mx_object_get_info(handle, MX_INFO_PROCESS, &process_info,
