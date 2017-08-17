@@ -44,9 +44,19 @@ class CompressedSource {
       height_ = rnd_.PseudoUniform(kHeight - 8) + 8;
     }
 
+    // choose the chroma subsampling
+    {
+      const aom_img_fmt_t fmts[] = {
+        AOM_IMG_FMT_I420, AOM_IMG_FMT_I422, AOM_IMG_FMT_I444,
+      };
+
+      format_ = fmts[rnd_.PseudoUniform(NELEMENTS(fmts))];
+    }
+
     cfg.g_w = width_;
     cfg.g_h = height_;
     cfg.g_lag_in_frames = 0;
+    cfg.g_profile = format_ == AOM_IMG_FMT_I420 ? 0 : 1;
 
     aom_codec_enc_init(&enc_, algo, &cfg, 0);
   }
@@ -54,7 +64,7 @@ class CompressedSource {
   ~CompressedSource() { aom_codec_destroy(&enc_); }
 
   const aom_codec_cx_pkt_t *ReadFrame() {
-    uint8_t buf[kWidth * kHeight * 3 / 2] = { 0 };
+    uint8_t buf[kWidth * kHeight * 3] = { 0 };
 
     // render regular pattern
     const int period = rnd_.Rand8() % 32 + 1;
@@ -67,7 +77,7 @@ class CompressedSource {
       buf[i] = (i + phase) % period < period / 2 ? val_a : val_b;
 
     aom_image_t img;
-    aom_img_wrap(&img, AOM_IMG_FMT_I420, width_, height_, 0, buf);
+    aom_img_wrap(&img, format_, width_, height_, 0, buf);
     aom_codec_encode(&enc_, &img, frame_count_++, 1, 0, 0);
 
     aom_codec_iter_t iter = NULL;
@@ -86,6 +96,7 @@ class CompressedSource {
   static const int kHeight = 128;
 
   ACMRandom rnd_;
+  aom_img_fmt_t format_;
   aom_codec_ctx_t enc_;
   int frame_count_;
   int width_, height_;
