@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -125,18 +126,22 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void ResetManager();
 
   // CacheStorageCacheObserver:
-  void CacheSizeUpdated(const CacheStorageCache* cache, int64_t size) override;
+  void CacheSizeUpdated(const CacheStorageCache* cache) override;
 
  private:
   friend class CacheStorageCacheHandle;
   friend class CacheStorageCache;
   friend class CacheStorageManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(CacheStorageManagerTest, PersistedCacheKeyUsed);
   class CacheLoader;
   class MemoryLoader;
   class SimpleCacheLoader;
   struct CacheMatchResponse;
 
   typedef std::map<std::string, std::unique_ptr<CacheStorageCache>> CacheMap;
+
+  // Generate a new padding key. For testing only and *not thread safe*.
+  static void GenerateNewKeyForTesting();
 
   // Functions for exposing handles to CacheStorageCache to clients.
   std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle(
