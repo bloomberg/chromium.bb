@@ -188,7 +188,73 @@ Further info:
 
 # TreeScope
 
-TODO(hayato): Explain.
+`Document` and `ShadowRoot` are always the root of a node tree.
+Both`Document` and `ShadowRoot` implements `TreeScope`.
+
+`TreeScope` maintains a lot of information about the underlying tree for efficiency.
+For example, TreeScope has a *id-to-element* mapping, as [`TreeOrderedMap`](./TreeOrderedMap.h), so that `querySelector('#foo')` can find an element whose id attribute is "foo" in O(1).
+In other words,  `root.querySelector('#foo')` can be slow if that is used in a node tree whose root is not `TreeScope`.
+
+Each `Node` has `tree_scope_` pointer, which points to:
+
+- The root node: if the node's root is either Document or ShadowRoot.
+- [owner document](https://dom.spec.whatwg.org/#concept-node-documentOwnerDocument), otherwise.
+
+The means `tree_scope_` pointer is always non-null (except for while in a DOM mutation),
+but it doesn't always point to the node's root.
+
+Since each node doesn't have a pointer which *always* points to the root,
+`Node::getRootNode(...)` may take O(N) if the node is neither in a document tree nor in a shadow tree.
+If the node is in TreeScope (`Node#IsInTreeScope()` can tell it), we can get the root in O(1).
+
+Each node has flags, which is updated in DOM mutation, so that we can tell whether the node is in a
+document tree, in a shadow tree, or in none of them, by using
+`Node::IsInDocumentTree()` and/or `Node::IsInShadowTree()`.
+
+If you want to add new features to `Document`, `Document` might be a wrong place to add.
+Instead, please consider to add functionality to `TreeScope`.  We want to treat a document tree and a shadow tree equally as much as possible.
+
+## Example
+
+``` text
+document
+└── a1
+    ├──/shadowRoot1
+    │   └── s1
+    └── a2
+        └── a3
+
+document-fragment
+└── b1
+    ├──/shadowRoot2
+    │   └── t2
+    └── b2
+        └── b3
+```
+
+- Here, there are 4 node trees; The root node of each tree is *document*, *shadowRoot1*, *document-fragment*, and *shadowRoot2*.
+- Suppose that each node is created by `document.createElement(...)` (except for Document and ShadowRoot).
+  That means each node's **owner document** is *document*.
+
+| node              | node's root              | node's `_tree_scope` points to: |
+|-------------------|--------------------------|---------------------------------|
+| document          | document (self)          | document (self)                 |
+| a1                | document                 | document                        |
+| a2                | document                 | document                        |
+| a3                | document                 | document                        |
+| shadowRoot1       | shadowRoot1 (self)       | shadowRoot1 (self)              |
+| s1                | shadowRoot1              | shadowRoot1                     |
+| document-fragment | document-fragment (self) | document                        |
+| b1                | document-fragment        | document                        |
+| b2                | document-fragment        | document                        |
+| b3                | document-fragment        | document                        |
+| shadowRoot2       | shadowRoot2 (self)       | shadowRoot2 (self)              |
+| t1                | shadowRoot2              | shadowRoot2                     |
+
+Further Info:
+
+- [`TreeScope.h`](./TreeScope.h), [`TreeScope.cpp`](./TreeScope.cpp)
+- `Node#GetTreeScope()`, `Node#ContainingTreeScope()`, `Node#IsInTreeScope()`
 
 # Composed Tree (a tree of DOM trees)
 
