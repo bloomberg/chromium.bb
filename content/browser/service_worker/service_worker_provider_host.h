@@ -140,7 +140,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsContextSecureForServiceWorker() const;
 
   bool IsHostToRunningServiceWorker() {
-    return running_hosted_version_.get() != NULL;
+    return running_hosted_version_.get() != nullptr;
   }
 
   // Returns this provider's controller. The controller is typically the same as
@@ -162,18 +162,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
   ServiceWorkerVersion* active_version() const {
-    return associated_registration_.get() ?
-        associated_registration_->active_version() : NULL;
+    return associated_registration_.get()
+               ? associated_registration_->active_version()
+               : nullptr;
   }
 
   ServiceWorkerVersion* waiting_version() const {
-    return associated_registration_.get() ?
-        associated_registration_->waiting_version() : NULL;
+    return associated_registration_.get()
+               ? associated_registration_->waiting_version()
+               : nullptr;
   }
 
   ServiceWorkerVersion* installing_version() const {
-    return associated_registration_.get() ?
-        associated_registration_->installing_version() : NULL;
+    return associated_registration_.get()
+               ? associated_registration_->installing_version()
+               : nullptr;
   }
 
   // Returns the associated registration. The provider host listens to this
@@ -215,7 +218,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Clears the associated registration and stop listening to it.
   void DisassociateRegistration();
 
-  // Returns a handler for a request, the handler may return NULL if
+  // Returns a handler for a request, the handler may return nullptr if
   // the request doesn't require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       FetchRequestMode request_mode,
@@ -329,12 +332,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void BindWorkerFetchContext(
       mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info);
 
- protected:
-  ServiceWorkerProviderHost(int process_id,
-                            ServiceWorkerProviderHostInfo info,
-                            base::WeakPtr<ServiceWorkerContextCore> context,
-                            ServiceWorkerDispatcherHost* dispatcher_host);
-
  private:
   friend class ForeignFetchRequestHandlerTest;
   friend class LinkHeaderServiceWorkerTest;
@@ -365,6 +362,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     ~OneShotGetReadyCallback();
   };
 
+  ServiceWorkerProviderHost(int process_id,
+                            ServiceWorkerProviderHostInfo info,
+                            base::WeakPtr<ServiceWorkerContextCore> context,
+                            ServiceWorkerDispatcherHost* dispatcher_host);
+
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
@@ -375,7 +377,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
-  // Sets the controller version field to |version| or if |version| is NULL,
+  // Sets the controller version field to |version| or if |version| is nullptr,
   // clears the field. If |notify_controllerchange| is true, instructs the
   // renderer to dispatch a 'controller' change event.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version,
@@ -408,8 +410,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // shared) worker, when the connection to the worker is disconnected.
   void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
 
-  std::string client_uuid_;
-  base::TimeTicks create_time_;
+  const std::string client_uuid_;
+  const base::TimeTicks create_time_;
   int render_process_id_;
 
   // For provider hosts that are hosting a running service worker, the id of the
@@ -433,8 +435,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   // Keyed by registration scope URL length.
-  typedef std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>
-      ServiceWorkerRegistrationMap;
+  using ServiceWorkerRegistrationMap =
+      std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
   // Contains all living registrations whose pattern this document's URL
   // starts with. It is empty if IsContextSecureForServiceWorker() is
   // false.
