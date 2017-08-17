@@ -1573,6 +1573,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
     {"searchOkGoogleAudioHistorySubtext",
      IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT},
     {"searchOkGoogleRetrain", IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN},
+#if defined(OS_CHROMEOS)
+    {"searchOkGoogleDisabled", IDS_SETTINGS_SEARCH_OK_GOOGLE_DISABLED},
+#endif
     {"searchEnableGoogleNowLabel", IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
