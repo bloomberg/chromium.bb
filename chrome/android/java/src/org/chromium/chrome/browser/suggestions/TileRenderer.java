@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.support.annotation.LayoutRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.view.LayoutInflater;
@@ -45,15 +46,19 @@ public class TileRenderer {
     private final RoundedIconGenerator mIconGenerator;
 
     @TileView.Style
-    private final int mTileStyle;
+    private final int mStyle;
     private final int mTitleLinesCount;
     private final int mDesiredIconSize;
     private final int mMinIconSize;
 
-    public TileRenderer(Context context, int tileStyle, int titleLines, ImageFetcher imageFetcher) {
+    @LayoutRes
+    private final int mLayout;
+
+    public TileRenderer(
+            Context context, @TileView.Style int style, int titleLines, ImageFetcher imageFetcher) {
         mContext = context;
         mImageFetcher = imageFetcher;
-        mTileStyle = tileStyle;
+        mStyle = style;
         mTitleLinesCount = titleLines;
 
         Resources resources = mContext.getResources();
@@ -65,8 +70,10 @@ public class TileRenderer {
         mMinIconSize = Math.min(mDesiredIconSize,
                 useDecreasedMinSize() ? ICON_DECREASED_MIN_SIZE_PX : ICON_MIN_SIZE_PX);
 
+        mLayout = getLayout();
+
         int cornerRadiusDp;
-        if (tileStyle == TileView.Style.MODERN) {
+        if (style == TileView.Style.MODERN || style == TileView.Style.MODERN_CONDENSED) {
             cornerRadiusDp = desiredIconSizeDp / 2;
         } else {
             cornerRadiusDp = ICON_CORNER_RADIUS_DP;
@@ -124,8 +131,8 @@ public class TileRenderer {
     TileView buildTileView(
             Tile tile, ViewGroup parentView, TileGroup.TileSetupDelegate setupDelegate) {
         TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
-                                    .inflate(R.layout.tile_view, parentView, false);
-        tileView.initialize(tile, mTitleLinesCount, mTileStyle);
+                                    .inflate(mLayout, parentView, false);
+        tileView.initialize(tile, mTitleLinesCount, mStyle);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
@@ -192,5 +199,21 @@ public class TileRenderer {
         tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
         tile.setType(
                 isFallbackColorDefault ? TileVisualType.ICON_DEFAULT : TileVisualType.ICON_COLOR);
+    }
+
+    @LayoutRes
+    private int getLayout() {
+        switch (mStyle) {
+            case TileView.Style.CLASSIC:
+                return R.layout.tile_view_classic;
+            case TileView.Style.CLASSIC_CONDENSED:
+                return R.layout.tile_view_classic_condensed;
+            case TileView.Style.MODERN:
+                return R.layout.tile_view_modern;
+            case TileView.Style.MODERN_CONDENSED:
+                return R.layout.tile_view_modern_condensed;
+        }
+        assert false;
+        return 0;
     }
 }

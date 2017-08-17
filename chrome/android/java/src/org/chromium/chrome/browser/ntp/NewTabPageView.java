@@ -885,7 +885,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
      */
     private int getMaxTileColumns() {
         if (!mUiConfig.getCurrentDisplayStyle().isSmall()
-                && SuggestionsConfig.getTileStyle(mUiConfig) == TileView.Style.CONDENSED) {
+                && SuggestionsConfig.getTileStyle(mUiConfig) == TileView.Style.CLASSIC_CONDENSED) {
             return 5;
         }
         return 4;
