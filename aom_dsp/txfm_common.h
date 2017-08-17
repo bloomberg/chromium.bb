@@ -31,13 +31,13 @@ typedef struct txfm_param {
   int is_inter;
   int stride;
   uint8_t *dst;
+#if CONFIG_LGT
+  int mode;
+#endif
 #if CONFIG_MRC_TX
   int *valid_mask;
 #endif  // CONFIG_MRC_TX
 #endif  // CONFIG_MRC_TX || CONFIG_LGT
-#if CONFIG_LGT
-  int mode;
-#endif
 // for inverse transforms only
 #if CONFIG_ADAPT_SCAN
   const int16_t *eob_threshold;
@@ -97,9 +97,10 @@ static INLINE tran_high_t fdct_round_shift(tran_high_t input) {
 }
 
 #if CONFIG_LGT
-// The Line Graph Transforms (LGTs) matrices are written as follows.
-// Each 2D array is 16384 times an LGT matrix, which is the matrix of
-// eigenvectors of the graph Laplacian matrices for the line graph.
+/* The Line Graph Transforms (LGTs) matrices are defined as follows.
+ * Each 2D array is sqrt(2)*16384 times an LGT matrix, which is the
+ * matrix of eigenvectors of the graph Laplacian matrix of the associated
+ * line graph. */
 
 // LGT4 name: lgt4_140
 // Self loops: 1.400, 0.000, 0.000, 0.000

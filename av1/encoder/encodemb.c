@@ -615,8 +615,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_MRC_TX
 #endif  // CONFIG_MRC_TX || CONFIG_LGT
 #if CONFIG_LGT
-  txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
-#endif
+  txfm_param.mode = mbmi->mode;
+#endif  // CONFIG_LGT
 
 #if !CONFIG_PVQ
   txfm_param.bd = xd->bd;
@@ -746,7 +746,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   TX_TYPE tx_type =
       av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
 #if CONFIG_LGT
-  PREDICTION_MODE mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+  PREDICTION_MODE mode = xd->mi[0]->mbmi.mode;
   av1_inverse_transform_block(xd, dqcoeff, mode, tx_type, tx_size, dst,
                               pd->dst.stride, p->eobs[block]);
 #else
@@ -1063,11 +1063,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
 
-#if CONFIG_LGT
-  const PREDICTION_MODE mode =
-      get_prediction_mode(xd->mi[0], plane, tx_size, block);
-#endif  // CONFIG_LGT
-
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
   const ENTROPY_CONTEXT *a = &args->ta[blk_col];
@@ -1091,7 +1086,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_PVQ
   av1_inverse_transform_block(xd, dqcoeff,
 #if CONFIG_LGT
-                              mode,
+                              xd->mi[0]->mbmi.mode,
 #endif
                               tx_type, tx_size, dst, dst_stride, *eob);
 #if !CONFIG_PVQ

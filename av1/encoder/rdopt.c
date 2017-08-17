@@ -4560,14 +4560,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   const int eob = p->eobs[block];
 
+  av1_inverse_transform_block(xd, dqcoeff,
 #if CONFIG_LGT
-  PREDICTION_MODE mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
-  av1_inverse_transform_block(xd, dqcoeff, mode, tx_type, tx_size, rec_buffer,
-                              MAX_TX_SIZE, eob);
-#else
-  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, rec_buffer,
-                              MAX_TX_SIZE, eob);
+                              xd->mi[0]->mbmi.mode,
 #endif
+                              tx_type, tx_size, rec_buffer, MAX_TX_SIZE, eob);
   if (eob > 0) {
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && plane == 0 && (bw < 8 && bh < 8)) {

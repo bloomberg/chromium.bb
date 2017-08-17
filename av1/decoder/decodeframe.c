@@ -504,13 +504,9 @@ static void predict_and_reconstruct_intra_block(
     if (eob) {
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-#if CONFIG_LGT
-      const PREDICTION_MODE mode =
-          get_prediction_mode(xd->mi[0], plane, tx_size, block_idx);
-#endif  // CONFIG_LGT
       inverse_transform_block(xd, plane,
 #if CONFIG_LGT
-                              mode,
+                              mbmi->mode,
 #endif
                               tx_type, tx_size, dst, pd->dst.stride,
                               max_scan_line, eob);
