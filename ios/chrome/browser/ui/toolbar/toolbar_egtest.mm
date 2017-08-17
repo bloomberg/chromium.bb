@@ -288,12 +288,6 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     EARL_GREY_TEST_DISABLED(@"Disabled on iOS 9.");
   }
 
-  // TODO(crbug.com/755782): Re-enable this test.  It is failing on some iOS 11
-  // configurations.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";
   [self setTearDownHandler:^{
@@ -313,10 +307,11 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
     // Can't access share menu from xctest on iOS 11+, so use the text field
     // callout bar instead.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        performAction:grey_longPress()];
-    [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Select All")]
-        inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
         performAction:grey_tap()];
+    // Tap twice to get the pre-edit label callout bar copy button.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_tap()];
+
     [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Copy")]
         inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
         performAction:grey_tap()];
