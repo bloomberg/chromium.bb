@@ -1306,6 +1306,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
 
   // Only metrics of the initial foreground tab are recorded.
   session_restore_paint_waiter.WaitForForegroundTabs(1);
+  ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
   ExpectFirstPaintMetricsTotalCount(1);
 }
 
@@ -1496,5 +1497,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
 
   session_restore_paint_waiter.WaitForForegroundTabs(1);
+  ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
   ExpectFirstPaintMetricsTotalCount(1);
 }
