@@ -101,6 +101,7 @@ bool WebRtcMediaStreamTrackAdapter::is_initialized() const {
 }
 
 const blink::WebMediaStreamTrack& WebRtcMediaStreamTrackAdapter::web_track() {
+  DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!web_track_.IsNull());
   EnsureTrackIsInitialized();
   return web_track_;
@@ -108,6 +109,7 @@ const blink::WebMediaStreamTrack& WebRtcMediaStreamTrackAdapter::web_track() {
 
 webrtc::MediaStreamTrackInterface*
 WebRtcMediaStreamTrackAdapter::webrtc_track() {
+  DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(webrtc_track_);
   EnsureTrackIsInitialized();
   return webrtc_track_.get();
@@ -115,6 +117,7 @@ WebRtcMediaStreamTrackAdapter::webrtc_track() {
 
 bool WebRtcMediaStreamTrackAdapter::IsEqual(
     const blink::WebMediaStreamTrack& web_track) {
+  DCHECK(main_thread_->BelongsToCurrentThread());
   EnsureTrackIsInitialized();
   return web_track_.GetTrackData() == web_track.GetTrackData();
 }
