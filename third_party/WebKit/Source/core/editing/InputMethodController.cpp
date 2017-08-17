@@ -35,7 +35,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SetSelectionData.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/state_machines/BackwardCodePointStateMachine.h"
@@ -398,7 +398,7 @@ bool InputMethodController::FinishComposingText(
             .SetBaseAndExtent(old_selection_range)
             .Build();
     GetFrame().Selection().SetSelection(
-        selection, SetSelectionData::Builder()
+        selection, SetSelectionOptions::Builder()
                        .SetShouldCloseTyping(true)
                        .SetShouldShowHandle(is_handle_visible)
                        .Build());
@@ -843,7 +843,7 @@ bool InputMethodController::SetSelectionOffsets(
 
   GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetShouldCloseTyping(typing_continuation == TypingContinuation::kEnd)
           .Build());
   return true;

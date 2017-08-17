@@ -39,7 +39,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
-#include "core/editing/SetSelectionData.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
@@ -83,7 +83,7 @@ void DOMSelection::UpdateFrameSelection(const SelectionInDOMTree& selection,
   FrameSelection& frame_selection = GetFrame()->Selection();
   // TODO(tkent): Specify FrameSelection::DoNotSetFocus. crbug.com/690272
   const bool did_set = frame_selection.SetSelectionDeprecated(
-      selection, SetSelectionData::Builder()
+      selection, SetSelectionOptions::Builder()
                      .SetShouldCloseTyping(true)
                      .SetShouldClearTypingStyle(true)
                      .Build());
@@ -91,7 +91,7 @@ void DOMSelection::UpdateFrameSelection(const SelectionInDOMTree& selection,
   if (!did_set)
     return;
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
-  frame_selection.DidSetSelectionDeprecated(SetSelectionData::Builder()
+  frame_selection.DidSetSelectionDeprecated(SetSelectionOptions::Builder()
                                                 .SetShouldCloseTyping(true)
                                                 .SetShouldClearTypingStyle(true)
                                                 .Build());

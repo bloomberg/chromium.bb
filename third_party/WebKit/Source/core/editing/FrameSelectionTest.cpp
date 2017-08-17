@@ -64,7 +64,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 3), Position(text, 6)))
                                .Build(),
-                           SetSelectionData());
+                           SetSelectionOptions());
   sample->setAttribute(HTMLNames::styleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
   UpdateAllLifecyclePhases();
@@ -306,7 +306,7 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
 
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetShouldShowHandle(true)
@@ -336,7 +336,7 @@ TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
 
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetShouldShowHandle(true)
@@ -362,7 +362,7 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 0), Position(text, 12)))
                                .Build(),
-                           SetSelectionData());
+                           SetSelectionOptions());
 
   EXPECT_FALSE(Selection().IsHandleVisible())
       << "After SetSelection on Range, handles shouldn't be present.";
@@ -371,7 +371,7 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
           .Build(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetShouldShowHandle(true)
@@ -381,7 +381,7 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
                                .SetBaseAndExtent(EphemeralRange(
                                    Position(text, 0), Position(text, 12)))
                                .Build(),
-                           SetSelectionData());
+                           SetSelectionOptions());
 
   EXPECT_FALSE(Selection().IsHandleVisible())
       << "After SetSelection on Range, handles shouldn't be present.";

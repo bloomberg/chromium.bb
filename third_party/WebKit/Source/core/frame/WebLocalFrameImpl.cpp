@@ -116,7 +116,7 @@
 #include "core/editing/ImeTextSpanVectorBuilder.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
-#include "core/editing/SetSelectionData.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextFinder.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -1219,7 +1219,7 @@ void WebLocalFrameImpl::SelectRange(
           .SetAffinity(VP_DEFAULT_AFFINITY)
           .SetIsDirectional(false)
           .Build(),
-      SetSelectionData::Builder().SetShouldShowHandle(show_handles).Build());
+      SetSelectionOptions::Builder().SetShouldShowHandle(show_handles).Build());
 }
 
 WebString WebLocalFrameImpl::RangeAsText(const WebRange& web_range) {

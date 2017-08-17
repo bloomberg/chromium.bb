@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SetSelectionData_h
-#define SetSelectionData_h
+#ifndef SetSelectionOptions_h
+#define SetSelectionOptions_h
 
 #include "core/CoreExport.h"
 #include "core/editing/TextGranularity.h"
@@ -15,14 +15,14 @@ enum class CursorAlignOnScroll { kIfNeeded, kAlways };
 enum class SetSelectionBy { kSystem = 0, kUser = 1 };
 
 // This class represents parameters of |FrameSelection::SetSelection()|.
-class CORE_EXPORT SetSelectionData final {
+class CORE_EXPORT SetSelectionOptions final {
   STACK_ALLOCATED();
 
  public:
   class CORE_EXPORT Builder;
 
-  SetSelectionData(const SetSelectionData&);
-  SetSelectionData();
+  SetSelectionOptions(const SetSelectionOptions&);
+  SetSelectionOptions();
 
   CursorAlignOnScroll GetCursorAlignOnScroll() const {
     return cursor_align_on_scroll_;
@@ -47,14 +47,14 @@ class CORE_EXPORT SetSelectionData final {
 };
 
 // This class is used for building |SelectionData| object.
-class CORE_EXPORT SetSelectionData::Builder final {
+class CORE_EXPORT SetSelectionOptions::Builder final {
   STACK_ALLOCATED();
 
  public:
-  explicit Builder(const SetSelectionData&);
+  explicit Builder(const SetSelectionOptions&);
   Builder();
 
-  SetSelectionData Build() const;
+  SetSelectionOptions Build() const;
 
   Builder& SetCursorAlignOnScroll(CursorAlignOnScroll);
   Builder& SetDoNotSetFocus(bool);
@@ -66,11 +66,11 @@ class CORE_EXPORT SetSelectionData::Builder final {
   Builder& SetShouldShowHandle(bool);
 
  private:
-  SetSelectionData data_;
+  SetSelectionOptions data_;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace blink
 
-#endif  // SetSelectionData_h
+#endif  // SetSelectionOptions_h
