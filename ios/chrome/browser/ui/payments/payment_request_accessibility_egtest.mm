@@ -217,4 +217,13 @@ id<GREYMatcher> ContactInfoCellMatcher(autofill::AutofillProfile* profile) {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
+// Tests accessibility on the card unmask prompt.
+- (void)testAccessibilityOnPaymentRequestCardUnmaskPage {
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_PAYMENTS_PAY_BUTTON)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
 @end
