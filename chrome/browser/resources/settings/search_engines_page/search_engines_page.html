@@ -68,7 +68,7 @@
         $i18n{searchNoResults}
       </div>
       <iron-list id="extensions" class="extension-engines fixed-height-list"
-          items="[[matchingExtensions_]]" preserve-focus>
+          items="[[matchingExtensions_]]" preserve-focus risk-selection>
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
               tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
