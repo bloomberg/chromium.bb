@@ -97,6 +97,9 @@ class CORE_EXPORT DocumentMarkerController final
                                  bool);
   bool HasMarkers(Node* node) const { return markers_.Contains(node); }
 
+  // TODO(rlanday): can these methods for retrieving markers be consolidated
+  // without hurting efficiency?
+
   // Returns a marker of one of the specified types that includes the specified
   // Position in its interior (not at an endpoint), if one exists.
   DocumentMarker* MarkerAtPosition(const Position&,
@@ -112,10 +115,18 @@ class CORE_EXPORT DocumentMarkerController final
       unsigned start_offset,
       unsigned end_offset,
       DocumentMarker::MarkerTypes);
+  // Return all markers of the specified types whose interiors have non-empty
+  // overlap with the specified range. Note that the range can be collapsed, in
+  // in which case markers containing the position in their interiors are
+  // returned.
+  HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+  MarkersIntersectingRange(const EphemeralRangeInFlatTree&,
+                           DocumentMarker::MarkerTypes);
   DocumentMarkerVector MarkersFor(
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   DocumentMarkerVector Markers();
+
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Node&);
