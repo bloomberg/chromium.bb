@@ -284,38 +284,37 @@ void CounterNode::InsertAfter(CounterNode* new_child,
   CounterNode* last = new_child->last_child_;
   CounterNode* first = new_child->first_child_;
 
-  if (first) {
-    DCHECK(last);
-    new_child->next_sibling_ = first;
-    if (last_child_ == new_child)
-      last_child_ = last;
+  DCHECK(last);
+  new_child->next_sibling_ = first;
+  if (last_child_ == new_child)
+    last_child_ = last;
 
-    first->previous_sibling_ = new_child;
+  first->previous_sibling_ = new_child;
 
-    // The case when the original next sibling of the inserted node becomes a
-    // child of one of the former children of the inserted node is not handled
-    // as it is believed to be impossible since:
-    // 1. if the increment counter node lost it's root position as a result of
-    //    another counter node being created, it will be inserted as the last
-    //    child so next is null.
-    // 2. if the increment counter node lost it's root position as a result of a
-    //    layoutObject being inserted into the document's layout tree, all its
-    //    former children counters are attached to children of the inserted
-    //    layoutObject and hence cannot be in scope for counter nodes attached
-    // to layoutObjects that were already in the document's layout tree.
-    last->next_sibling_ = next;
-    if (next) {
-      DCHECK_EQ(next->previous_sibling_, new_child);
-      next->previous_sibling_ = last;
-    } else {
-      last_child_ = last;
-    }
-    for (next = first;; next = next->next_sibling_) {
-      next->parent_ = this;
-      if (last == next)
-        break;
-    }
+  // The case when the original next sibling of the inserted node becomes a
+  // child of one of the former children of the inserted node is not handled
+  // as it is believed to be impossible since:
+  // 1. if the increment counter node lost it's root position as a result of
+  //    another counter node being created, it will be inserted as the last
+  //    child so next is null.
+  // 2. if the increment counter node lost it's root position as a result of a
+  //    layoutObject being inserted into the document's layout tree, all its
+  //    former children counters are attached to children of the inserted
+  //    layoutObject and hence cannot be in scope for counter nodes attached
+  // to layoutObjects that were already in the document's layout tree.
+  last->next_sibling_ = next;
+  if (next) {
+    DCHECK_EQ(next->previous_sibling_, new_child);
+    next->previous_sibling_ = last;
+  } else {
+    last_child_ = last;
   }
+  for (next = first;; next = next->next_sibling_) {
+    next->parent_ = this;
+    if (last == next)
+      break;
+  }
+
   new_child->first_child_ = nullptr;
   new_child->last_child_ = nullptr;
   new_child->count_in_parent_ = new_child->ComputeCountInParent();
