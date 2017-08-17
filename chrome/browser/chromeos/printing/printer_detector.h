@@ -56,12 +56,8 @@ class CHROMEOS_EXPORT PrinterDetector {
 
   virtual ~PrinterDetector() = default;
 
-  // Start scanning for printers.  No observer callbacks will be performed
-  // until this is called.
-  virtual void Start() = 0;
-
-  // Observer management.  Observer callbacks will be performed on the
-  // calling sequence.
+  // Observer management.  Observer callbacks will be performed on the calling
+  // sequence.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

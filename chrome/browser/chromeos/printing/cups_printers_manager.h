@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chromeos/printing/printer_configuration.h"
 
 class Profile;
@@ -17,6 +18,7 @@ namespace chromeos {
 
 class PpdProvider;
 class PrinterDetector;
+class PrinterEventTracker;
 class SyncedPrintersManager;
 
 class CupsPrintersManager {
@@ -48,7 +50,8 @@ class CupsPrintersManager {
       SyncedPrintersManager* synced_printers_manager,
       PrinterDetector* usb_printer_detector,
       PrinterDetector* zeroconf_printer_detector,
-      scoped_refptr<PpdProvider> ppd_provider);
+      scoped_refptr<PpdProvider> ppd_provider,
+      PrinterEventTracker* event_tracker);
 
   virtual ~CupsPrintersManager() = default;
 
@@ -87,6 +90,10 @@ class CupsPrintersManager {
   // Look for a printer with the given id in any class.  Returns a copy of the
   // printer if found, null if not found.
   virtual std::unique_ptr<Printer> GetPrinter(const std::string& id) const = 0;
+
+  // Log an event that the user started trying to set up the given printer,
+  // but setup was not completed for some reason.
+  virtual void RecordSetupAbandoned(const Printer& printer) = 0;
 };
 
 }  // namespace chromeos
