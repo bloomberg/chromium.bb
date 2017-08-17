@@ -24,36 +24,19 @@ const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
 const char kClientLoFiFieldTrial[] = "PreviewsClientLoFi";
 const char kEnabled[] = "Enabled";
 
-// Verifies that we can enable offline previews via field trial.
-TEST(PreviewsExperimentsTest, TestFieldTrialOfflinePage) {
-  EXPECT_FALSE(params::IsOfflinePreviewsEnabled());
-
-  base::FieldTrialList field_trial_list(nullptr);
-
-  std::map<std::string, std::string> params;
-  params["show_offline_pages"] = "true";
-  EXPECT_TRUE(base::AssociateFieldTrialParams(kClientSidePreviewsFieldTrial,
-                                              kEnabled, params));
-  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kClientSidePreviewsFieldTrial, kEnabled));
-
-  EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
-  variations::testing::ClearAllVariationParams();
-}
-
 // Verifies that we can enable offline previews via comand line.
 TEST(PreviewsExperimentsTest, TestCommandLineOfflinePage) {
-  EXPECT_FALSE(params::IsOfflinePreviewsEnabled());
+  EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
 
   std::unique_ptr<base::FeatureList> feature_list =
       base::MakeUnique<base::FeatureList>();
 
   // The feature is explicitly enabled on the command-line.
-  feature_list->InitializeFromCommandLine("OfflinePreviews", "");
+  feature_list->InitializeFromCommandLine("", "OfflinePreviews");
   base::FeatureList::ClearInstanceForTesting();
   base::FeatureList::SetInstance(std::move(feature_list));
 
-  EXPECT_TRUE(params::IsOfflinePreviewsEnabled());
+  EXPECT_FALSE(params::IsOfflinePreviewsEnabled());
   base::FeatureList::ClearInstanceForTesting();
 }
 
@@ -65,7 +48,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlackList());
   EXPECT_EQ(100u, params::MaxInMemoryHostsInBlackList());
   EXPECT_EQ(2, params::PerHostBlackListOptOutThreshold());
-  EXPECT_EQ(4, params::HostIndifferentBlackListOptOutThreshold());
+  EXPECT_EQ(6, params::HostIndifferentBlackListOptOutThreshold());
   EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlackListDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(365 * 100),
             params::HostIndifferentBlackListPerHostDuration());
@@ -73,7 +56,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
             params::SingleOptOutDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(7),
             params::OfflinePreviewFreshnessDuration());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::DefaultEffectiveConnectionTypeThreshold());
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
