@@ -13,6 +13,7 @@ source_set("tabs") {
     "tab_strip_view.mm",
     "tab_view.h",
     "tab_view.mm",
+    "tab_view_delegate.h",
     "target_frame_cache.h",
     "target_frame_cache.mm",
   ]
@@ -38,6 +39,7 @@ source_set("tabs") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
