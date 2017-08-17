@@ -30,11 +30,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 // handling the items addition.
 @interface ContentSuggestionsCollectionUpdater : NSObject
 
-// Initialize with the |dataSource| used to get the data.
-- (instancetype)initWithDataSource:(id<ContentSuggestionsDataSource>)dataSource
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
+// Data source for this object.
+@property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
 
 // |collectionViewController| this Updater will update. Needs to be set before
 // adding items.

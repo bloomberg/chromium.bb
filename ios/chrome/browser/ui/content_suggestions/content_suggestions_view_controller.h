@@ -24,7 +24,6 @@
     : CollectionViewController<ContentSuggestionsCollectionControlling>
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-                   dataSource:(id<ContentSuggestionsDataSource>)dataSource
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
@@ -45,6 +44,8 @@
 // Delegate for the overscroll actions.
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
     overscrollDelegate;
+
+- (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource;
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;

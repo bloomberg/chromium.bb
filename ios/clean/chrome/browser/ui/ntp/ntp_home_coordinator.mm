@@ -85,11 +85,23 @@
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
 
+  self.viewController = [[ContentSuggestionsViewController alloc]
+      initWithStyle:CollectionViewControllerStyleDefault];
+
   self.headerCoordinator = [[NTPHomeHeaderCoordinator alloc] init];
   self.headerCoordinator.delegate = self;
   self.headerCoordinator.commandHandler = self;
   [self addChildCoordinator:self.headerCoordinator];
   [self.headerCoordinator start];
+
+  [super start];
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  DCHECK([childCoordinator isKindOfClass:[NTPHomeHeaderCoordinator class]]);
+  ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
+      IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
+          self.browser->browser_state());
 
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
       initWithConsumer:self.headerCoordinator.consumer
@@ -114,9 +126,7 @@
   self.suggestionsMediator.headerProvider =
       self.headerCoordinator.headerProvider;
 
-  self.viewController = [[ContentSuggestionsViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault
-         dataSource:self.suggestionsMediator];
+  [self.viewController setDataSource:self.suggestionsMediator];
   self.viewController.suggestionCommandHandler = self;
   self.viewController.suggestionsDelegate =
       self.headerCoordinator.collectionDelegate;
@@ -137,7 +147,6 @@
   self.headerCoordinator.collectionSynchronizer =
       self.headerCollectionInteractionHandler;
 
-  [super start];
 }
 
 - (void)stop {

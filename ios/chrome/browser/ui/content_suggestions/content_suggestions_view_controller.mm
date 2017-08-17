@@ -64,8 +64,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 #pragma mark - Lifecycle
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-                   dataSource:(id<ContentSuggestionsDataSource>)dataSource {
+- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
   UICollectionViewLayout* layout = nil;
   if (IsIPadIdiom()) {
     layout = [[MDCCollectionViewFlowLayout alloc] init];
@@ -74,8 +73,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
   self = [super initWithLayout:layout style:style];
   if (self) {
-    _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
-        initWithDataSource:dataSource];
+    _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
   }
   return self;
 }
@@ -85,6 +83,10 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 }
 
 #pragma mark - Public
+
+- (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource {
+  self.collectionUpdater.dataSource = dataSource;
+}
 
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath {
   if (!indexPath || ![self.collectionViewModel hasItemAtIndexPath:indexPath]) {

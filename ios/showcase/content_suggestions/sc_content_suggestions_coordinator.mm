@@ -39,8 +39,8 @@
   _dataSource = [[SCContentSuggestionsDataSource alloc] init];
 
   _suggestionViewController = [[ContentSuggestionsViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault
-         dataSource:_dataSource];
+      initWithStyle:CollectionViewControllerStyleDefault];
+  [_suggestionViewController setDataSource:_dataSource];
 
   _suggestionViewController.suggestionCommandHandler =
       reinterpret_cast<id<ContentSuggestionsCommands>>(self.alerter);
