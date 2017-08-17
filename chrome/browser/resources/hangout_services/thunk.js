@@ -273,25 +273,27 @@ function onProcessCpu(port) {
     if (!tabProcess) {
       return;
     }
-    var pluginProcessCpu = 0, browserProcessCpu = 0, gpuProcessCpu = 0;
+
+    var browserProcessCpu, gpuProcessCpu;
     for (var pid in processes) {
       var process = processes[pid];
       if (process.type == 'browser') {
         browserProcessCpu = process.cpu;
       } else if (process.type == 'gpu') {
         gpuProcessCpu = process.cpu;
-      } else if (
-          (process.type == 'plugin' || process.type == 'nacl') &&
-          process.title.toLowerCase().indexOf('hangouts') > 0) {
-        pluginProcessCpu = process.cpu;
       }
+      if (!!browserProcessCpu && !!gpuProcessCpu)
+        break;
     }
 
     port.postMessage({
+      'browserCpuUsage': browserProcessCpu || 0,
+      'gpuCpuUsage': gpuProcessCpu || 0,
       'tabCpuUsage': tabProcess.cpu,
-      'browserCpuUsage': browserProcessCpu,
-      'gpuCpuUsage': gpuProcessCpu,
-      'pluginCpuUsage': pluginProcessCpu
+      'tabNetworkUsage': tabProcess.network,
+      'tabPrivateMemory': tabProcess.privateMemory,
+      'tabJsMemoryAllocated': tabProcess.jsMemoryAllocated,
+      'tabJsMemoryUsed': tabProcess.jsMemoryUsed
     });
   }
 
