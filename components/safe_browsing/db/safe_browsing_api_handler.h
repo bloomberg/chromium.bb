@@ -42,4 +42,4 @@ class SafeBrowsingApiHandler {
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_

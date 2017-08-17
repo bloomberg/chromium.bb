@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
+#include "components/safe_browsing/db/safe_browsing_api_handler_util.h"
 
 #include <stddef.h>
 
@@ -50,9 +50,8 @@ void ReportUmaThreatSubType(SBThreatType threat_type,
 
 // Parse the appropriate "*_pattern_type" key from the metadata.
 // Returns NONE if no pattern type was found.
-ThreatPatternType ParseThreatSubType(
-    const base::DictionaryValue* match,
-    SBThreatType threat_type) {
+ThreatPatternType ParseThreatSubType(const base::DictionaryValue* match,
+                                     SBThreatType threat_type) {
   if (threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER ||
       threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
     return ThreatPatternType::NONE;
@@ -164,7 +163,7 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
                                          SBThreatType* worst_sb_threat_type,
                                          ThreatMetadata* metadata) {
   *worst_sb_threat_type = SB_THREAT_TYPE_SAFE;  // Default to safe.
-  *metadata = ThreatMetadata();  // Default values.
+  *metadata = ThreatMetadata();                 // Default values.
 
   if (metadata_str.empty())
     return UMA_STATUS_JSON_EMPTY;

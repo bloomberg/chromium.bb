@@ -4,8 +4,8 @@
 //
 // Glue to pass Safe Browsing API requests between Chrome and GMSCore
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_BRIDGE_H_
-#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_BRIDGE_H_
+#ifndef COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_BRIDGE_H_
+#define COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_BRIDGE_H_
 
 #include <jni.h>
 
@@ -14,7 +14,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "components/safe_browsing_db/safe_browsing_api_handler.h"
+#include "components/safe_browsing/db/safe_browsing_api_handler.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "url/gurl.h"
 
@@ -44,4 +44,4 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
 };
 
 }  // namespace safe_browsing
-#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_BRIDGE_H_
+#endif  // COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_BRIDGE_H_

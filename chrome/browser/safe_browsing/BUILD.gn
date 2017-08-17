@@ -256,7 +256,7 @@ static_library("safe_browsing") {
         "services_delegate_stub.cc",
         "services_delegate_stub.h",
       ]
-      deps += [ "//components/safe_browsing_db:safe_browsing_db_mobile" ]
+      deps += [ "//components/safe_browsing/db:safe_browsing_mobile" ]
     }
   }
 }

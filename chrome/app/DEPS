@@ -23,7 +23,7 @@ include_rules = [
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
   "+components/policy",
-  "+components/safe_browsing_db",
+  "+components/safe_browsing",
   "+components/startup_metric_utils/browser",
   "+components/upload_list",
   "+components/version_info",

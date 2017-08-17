@@ -1,0 +1,10 @@
+include_rules = [
+  "+base",
+  "+components/safe_browsing_db",
+  "+components/variations",
+  "+content/public/test",
+  "+net",
+  "+testing/gtest",
+  "+url",
+  
+]

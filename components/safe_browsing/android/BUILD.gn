@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+
 android_library("safe_browsing_java") {
   deps = [
     "//base:base_java",
@@ -19,5 +20,5 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/safe_browsing/SafeBrowsingApiBridge.java",
   ]
-  jni_package = "components/safe_browsing_db/android"
+  jni_package = "components/safe_browsing/android"
 }
