@@ -269,7 +269,10 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
 
 void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync() {
   PA_LOG(INFO) << "Restarting discovery session.";
-  connection_.reset();
+  if (connection_) {
+    connection_->RemoveObserver(this);
+    connection_.reset();
+  }
   if (!discovery_session_ || !discovery_session_->IsActive())
     StartDiscoverySession();
 }
