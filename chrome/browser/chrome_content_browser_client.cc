@@ -358,6 +358,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 #include "chrome/browser/plugins/flash_download_interception.h"
+#include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -3239,6 +3240,15 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
           BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(handle);
   if (background_tab_navigation_throttle)
     throttles.push_back(std::move(background_tab_navigation_throttle));
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder)) {
+    std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
+        PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
+    if (pdf_iframe_throttle)
+      throttles.push_back(std::move(pdf_iframe_throttle));
+  }
 #endif
 
   return throttles;

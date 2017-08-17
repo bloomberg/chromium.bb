@@ -4461,6 +4461,7 @@ test("unit_tests") {
       "../browser/plugins/chrome_plugin_service_filter_unittest.cc",
       "../browser/plugins/flash_download_interception_unittest.cc",
       "../browser/plugins/flash_temporary_permission_tracker_unittest.cc",
+      "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
       "../browser/plugins/plugin_finder_unittest.cc",
       "../browser/plugins/plugin_info_message_filter_unittest.cc",
       "../browser/plugins/plugin_installer_unittest.cc",
