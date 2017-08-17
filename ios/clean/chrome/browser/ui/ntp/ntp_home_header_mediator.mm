@@ -56,7 +56,8 @@
 
 - (void)unfocusOmnibox {
   if (self.omniboxFocused) {
-    // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
+    // TODO(crbug.com/740793): Remove alert once the protocol to send commands
+    // to the toolbar is implemented.
     [self.alerter showAlert:@"Cancel omnibox edit"];
   } else {
     [self locationBarResignsFirstResponder];
@@ -158,24 +159,14 @@
 #pragma mark - Private
 
 - (void)shiftCollectionDown {
-  if (!IsIPadIdiom()) {
-    [self.headerConsumer collectionWillShiftDown];
-    // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
-    [self.alerter showAlert:@"Omnibox unfocused"];
-  }
-
+  [self.headerConsumer collectionWillShiftDown];
   [self.collectionSynchronizer shiftTilesDown];
-
   [self.commandHandler dismissModals];
 }
 
 - (void)shiftCollectionUp {
   void (^completionBlock)() = ^{
-    if (!IsIPadIdiom()) {
-      // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
-      [self.alerter showAlert:@"Omnibox animation completed"];
-      [self.headerConsumer collectionDidShiftUp];
-    }
+    [self.headerConsumer collectionDidShiftUp];
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
 }

@@ -69,10 +69,22 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 #pragma mark - NTPHomeHeaderConsumer
 
 - (void)collectionWillShiftDown {
+  if (IsIPadIdiom())
+    return;
+
   self.fakeOmnibox.hidden = NO;
+  // TODO(crbug.com/740793): Remove alert once the protocol to send commands
+  // to the toolbar is implemented.
+  [self showAlert:@"Omnibox unfocused"];
 }
 
 - (void)collectionDidShiftUp {
+  if (IsIPadIdiom())
+    return;
+
+  // TODO(crbug.com/740793): Remove alert once the protocol to send commands
+  // to the toolbar is implemented.
+  [self showAlert:@"Omnibox animation completed"];
   [UIView animateWithDuration:ios::material::kDuration1
                    animations:^{
                      [self.fakeOmniboxShadow setAlpha:0];
@@ -239,7 +251,8 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)fakeOmniboxTapped:(id)sender {
-  // TODO(crbug.com/740793): Remove alert once VoiceSearch is implemented.
+  // TODO(crbug.com/740793): Remove alert once the protocol to send commands to
+  // the toolbar is implemented.
   [self showAlert:@"Focus fakebox"];
 }
 
