@@ -1799,6 +1799,9 @@ class Flattener(object):
     Arguments:
       dep (Dependency): dependency to process
     """
+    if not dep.deps_parsed:
+      dep.ParseDepsFile()
+
     self._allowed_hosts.update(dep.allowed_hosts)
 
     for key, value in dep.get_vars().iteritems():

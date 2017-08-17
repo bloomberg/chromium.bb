@@ -298,7 +298,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 10
+  NB_GIT_REPOS = 12
 
   def populateGit(self):
     # Testing:
@@ -593,10 +593,28 @@ deps = {
   # in recursedeps.
   'src/repo6': '/repo_6',
 }
+deps_os = {
+  'ios': {
+    'src/repo11': '/repo_11',
+  }
+}
 recursedeps = [
   'src/repo9',
+  'src/repo11',
 ]""",
       'origin': 'git/repo_10@1\n',
+    })
+
+    self._commit_git('repo_11', {
+      'DEPS': """
+deps = {
+  'src/repo12': '/repo12',
+}""",
+      'origin': 'git/repo_11@1\n',
+    })
+
+    self._commit_git('repo_12', {
+      'origin': 'git/repo_12@1\n',
     })
 
 

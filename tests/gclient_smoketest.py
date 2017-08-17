@@ -879,7 +879,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertFalse(os.path.exists(output_deps))
 
     self.gclient(['config', self.git_base + 'repo_10', '--name', 'src'])
-    self.gclient(['sync'])
+    self.gclient(['sync', '--process-all-deps'])
     self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
 
     with open(output_deps) as f:
@@ -890,6 +890,11 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src',
         '  "src": {',
         '    "url": "git://127.0.0.1:20000/git/repo_10",',
+        '  },',
+        '',
+        '  # src -> src/repo11 -> src/repo12',
+        '  "src/repo12": {',
+        '    "url": "/repo12",',
         '  },',
         '',
         '  # src -> src/repo6',
@@ -919,6 +924,14 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    # src -> src/repo9 -> src/repo4',
         '    "src/repo4": {',
         '      "url": "/repo_4",',
+        '    },',
+        '',
+        '  },',
+        '',
+        '  "ios": {',
+        '    # src -> src/repo11',
+        '    "src/repo11": {',
+        '      "url": "/repo_11",',
         '    },',
         '',
         '  },',
