@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.download;
 
+import static org.chromium.chrome.browser.notifications.NotificationConstants.DEFAULT_NOTIFICATION_ID;
+
 import android.app.Notification;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
@@ -23,43 +24,9 @@ import java.util.List;
 public class MockDownloadNotificationService extends DownloadNotificationService {
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
     private boolean mPaused = false;
-    private Context mContext;
-    private int mLastNotificationId;
-    private List<String> mResumedDownloads = new ArrayList<>();
+    private int mLastNotificationId = DEFAULT_NOTIFICATION_ID;
 
-    void setContext(Context context) {
-        mContext = context;
-    }
-
-    @Override
-    public void stopForegroundInternal(boolean killNotification) {
-        if (!useForegroundService()) return;
-        if (killNotification) mNotificationIds.clear();
-    }
-
-    @Override
-    public void startForegroundInternal() {}
-
-    @Override
-    public void cancelOffTheRecordDownloads() {
-        super.cancelOffTheRecordDownloads();
-        mPaused = true;
-    }
-
-    @Override
-    boolean hasDownloadNotificationsInternal(int notificationIdToIgnore) {
-        if (!useForegroundService()) return false;
-        // Cancelling notifications here is synchronous, so we don't really have to worry about
-        // {@code notificationIdToIgnore}, but address it properly anyway.
-        if (mNotificationIds.size() == 1 && notificationIdToIgnore != -1) {
-            return !mNotificationIds.contains(notificationIdToIgnore);
-        }
-
-        return !mNotificationIds.isEmpty();
-    }
-
-    @Override
-    void cancelSummaryNotification() {}
+    List<String> mResumedDownloads = new ArrayList<>();
 
     @Override
     void updateNotification(int id, Notification notification) {
@@ -77,19 +44,14 @@ public class MockDownloadNotificationService extends DownloadNotificationService
         return mNotificationIds;
     }
 
-    @Override
-    public void cancelNotification(int notificationId, ContentId id) {
-        super.cancelNotification(notificationId, id);
-        mNotificationIds.remove(Integer.valueOf(notificationId));
-    }
-
-    public int getLastAddedNotificationId() {
+    public int getLastNotificationId() {
         return mLastNotificationId;
     }
 
     @Override
-    public Context getApplicationContext() {
-        return mContext == null ? super.getApplicationContext() : mContext;
+    public void cancelNotification(int notificationId, ContentId id) {
+        super.cancelNotification(notificationId, id);
+        mNotificationIds.remove(Integer.valueOf(notificationId));
     }
 
     @Override
@@ -116,6 +78,15 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
+    void notifyDownloadPaused(ContentId id, String fileName, boolean isResumable,
+            boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon) {
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> MockDownloadNotificationService.super.notifyDownloadPaused(id, fileName,
+                                isResumable, isAutoResumable, isOffTheRecord, isTransient, icon));
+    }
+
+    @Override
     public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon) {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName,
@@ -131,14 +102,6 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     @Override
     void resumeDownload(Intent intent) {
         mResumedDownloads.add(IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_CONTENTID_ID));
-    }
-
-    List<String> getResumedDownloads() {
-        return mResumedDownloads;
-    }
-
-    void clearResumedDownloads() {
-        mResumedDownloads.clear();
     }
 }
 

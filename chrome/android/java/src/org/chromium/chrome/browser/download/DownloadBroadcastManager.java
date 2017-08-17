@@ -13,9 +13,6 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService.A
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_ID;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD;
-import static org.chromium.chrome.browser.download.DownloadNotificationService.MAX_RESUMPTION_ATTEMPT_LEFT;
-import static org.chromium.chrome.browser.download.DownloadNotificationService.getServiceDelegate;
-import static org.chromium.chrome.browser.download.DownloadNotificationService.updateResumptionAttemptLeft;
 
 import android.app.DownloadManager;
 import android.app.Service;
@@ -38,7 +35,6 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -69,6 +65,8 @@ public class DownloadBroadcastManager extends Service {
         mApplicationContext = ContextUtils.getApplicationContext();
     }
 
+    // The service is only explicitly started in the resume case.
+    // TODO(dtrainor): Start DownloadBroadcastManager explicitly in resumption refactor.
     public static void startDownloadBroadcastManager(Context context, Intent source) {
         Intent intent = source != null ? new Intent(source) : new Intent();
         intent.setComponent(new ComponentName(context, DownloadBroadcastManager.class));
@@ -79,11 +77,6 @@ public class DownloadBroadcastManager extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Handle the download operation.
         onNotificationInteraction(intent);
-
-        // Handle resumption tracking logic.
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(mApplicationContext)
-                .cancelTask();
-        updateResumptionAttemptLeft(MAX_RESUMPTION_ATTEMPT_LEFT);
 
         // If Chrome gets killed, do not restart the service.
         return START_NOT_STICKY;
@@ -101,7 +94,7 @@ public class DownloadBroadcastManager extends Service {
 
         // TODO(jming): When DownloadNotificationService is no longer a service, invoke it to
         // propagate immediate notification changes (ie. when pause is clicked, have progress bar be
-        // paused even before there is an update in native). http://crbug.com/755588
+        // paused even before there is an update in native). http://crbug.com/755588.
 
         // Handle the intent and propagate it through the native library.
         loadNativeAndPropagateInteraction(intent);
@@ -140,6 +133,7 @@ public class DownloadBroadcastManager extends Service {
         String action = intent.getAction();
         final ContentId id = getContentIdFromIntent(intent);
 
+        // Handle actions that do not require a specific entry or service delegate.
         switch (action) {
             case ACTION_NOTIFICATION_CLICKED:
                 openDownload(mApplicationContext, intent, id);
@@ -163,6 +157,7 @@ public class DownloadBroadcastManager extends Service {
         Preconditions.checkNotNull(downloadServiceDelegate);
         Preconditions.checkNotNull(id);
 
+        // Handle all remaining actions.
         switch (action) {
             case ACTION_DOWNLOAD_CANCEL:
                 downloadServiceDelegate.cancelDownload(id, isOffTheRecord);
@@ -225,15 +220,27 @@ public class DownloadBroadcastManager extends Service {
     }
 
     /**
+     * Gets appropriate download delegate that can handle interactions with download item referred
+     * to by the entry.
+     * @param id The {@link ContentId} to grab the delegate for.
+     * @return delegate for interactions with the entry
+     */
+    private static DownloadServiceDelegate getServiceDelegate(ContentId id) {
+        if (LegacyHelpers.isLegacyOfflinePage(id)) {
+            return OfflinePageDownloadBridge.getDownloadServiceDelegate();
+        }
+        if (LegacyHelpers.isLegacyDownload(id)) {
+            return DownloadManagerService.getDownloadManagerService();
+        }
+        return OfflineContentAggregatorNotificationBridgeUiFactory.instance();
+    }
+
+    /**
      * Called to open a particular download item.  Falls back to opening Download Home.
      * @param context Context of the receiver.
      * @param intent Intent from the android DownloadManager.
      */
     private void openDownload(Context context, Intent intent, ContentId contentId) {
-        int notificationId = IntentUtils.safeGetIntExtra(
-                intent, NotificationConstants.EXTRA_NOTIFICATION_ID, -1);
-        DownloadNotificationService.hideDanglingSummaryNotification(context, notificationId);
-
         long ids[] =
                 intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
         if (ids == null || ids.length == 0) {

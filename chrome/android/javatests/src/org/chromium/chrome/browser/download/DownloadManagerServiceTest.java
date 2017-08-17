@@ -59,9 +59,6 @@ public class DownloadManagerServiceTest {
      * simple mock object that provides testing support for checking a sequence of calls.
      */
     static class MockDownloadNotifier extends SystemDownloadNotifier {
-        private final Context mContext;
-        private MockDownloadNotificationService mService;
-
         /**
          * The Ids of different methods in this mock object.
          */
@@ -80,21 +77,7 @@ public class DownloadManagerServiceTest {
 
         public MockDownloadNotifier(Context context) {
             super(context);
-            mContext = context;
             expect(MethodID.CLEAR_PENDING_DOWNLOADS, null);
-        }
-
-        /**
-         * Helper method to simulate that the DownloadNotificationService is connected.
-         */
-        public void onServiceConnected() {
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                mService = new MockDownloadNotificationService();
-                mService.setContext(new AdvancedMockContext(
-                        mContext.getApplicationContext()));
-                mService.onCreate();
-            });
-            setDownloadNotificationService(mService);
         }
 
         public MockDownloadNotifier expect(MethodID method, Object param) {
@@ -410,7 +393,6 @@ public class DownloadManagerServiceTest {
         dService.setDownloadSnackbarController(snackbarController);
         // Try calling download completed directly.
         DownloadInfo successful = getDownloadInfo();
-        notifier.onServiceConnected();
         notifier.expect(MethodID.DOWNLOAD_SUCCESSFUL, successful);
 
         dService.onDownloadCompleted(successful);

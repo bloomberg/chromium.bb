@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService.A
 import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_OPEN;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_PAUSE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_RESUME;
-import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_ID;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH;
@@ -175,11 +174,8 @@ public final class DownloadNotificationFactory {
                         downloadUpdate.getContentId(), downloadUpdate.getIsOffTheRecord());
                 cancelIntent = buildActionIntent(context, ACTION_DOWNLOAD_CANCEL,
                         downloadUpdate.getContentId(), downloadUpdate.getIsOffTheRecord());
-
-                PendingIntent deleteIntent = downloadUpdate.getIsTransient()
-                        ? buildPendingIntent(
-                                  context, cancelIntent, downloadUpdate.getNotificationId())
-                        : buildSummaryIconIntent(context, downloadUpdate.getNotificationId());
+                PendingIntent deleteIntent = buildPendingIntent(
+                        context, cancelIntent, downloadUpdate.getNotificationId());
 
                 builder.setAutoCancel(false)
                         .setLargeIcon(downloadUpdate.getIcon())
@@ -196,6 +192,7 @@ public final class DownloadNotificationFactory {
                         .setDeleteIntent(deleteIntent);
 
                 break;
+
             case SUCCESSFUL:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
@@ -237,14 +234,14 @@ public final class DownloadNotificationFactory {
                             PendingIntent.getService(context, downloadUpdate.getNotificationId(),
                                     intent, PendingIntent.FLAG_UPDATE_CURRENT));
                 }
-                builder.setDeleteIntent(
-                        buildSummaryIconIntent(context, downloadUpdate.getNotificationId()));
                 break;
+
             case FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
                 contentText =
                         context.getResources().getString(R.string.download_notification_failed);
                 break;
+
             case SUMMARY:
                 Preconditions.checkArgument(downloadUpdate.getIconId() != -1);
 
@@ -256,6 +253,7 @@ public final class DownloadNotificationFactory {
                         .setSmallIcon(iconId)
                         .setGroupSummary(true);
                 break;
+
             default:
                 iconId = -1;
                 contentText = "";
@@ -293,13 +291,6 @@ public final class DownloadNotificationFactory {
     private static PendingIntent buildPendingIntent(
             Context context, Intent intent, int notificationId) {
         return PendingIntent.getService(
-                context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private static PendingIntent buildSummaryIconIntent(Context context, int notificationId) {
-        Intent intent = new Intent(context, DownloadBroadcastReceiver.class);
-        intent.setAction(ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON);
-        return PendingIntent.getBroadcast(
                 context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 

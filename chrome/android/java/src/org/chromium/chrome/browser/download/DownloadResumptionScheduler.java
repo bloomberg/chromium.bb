@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
@@ -18,13 +17,14 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 
 /**
- * Class for scheduing download resumption tasks.
+ * Class for scheduling download resumption tasks.
  */
 public class DownloadResumptionScheduler {
     public static final String TASK_TAG = "DownloadResumption";
     private static final String TAG = "DownloadScheduler";
     private static final int ONE_DAY_IN_SECONDS = 24 * 60 * 60;
     private final Context mContext;
+    private final DownloadNotificationService mDownloadNotificationService;
     @SuppressLint("StaticFieldLeak")
     private static DownloadResumptionScheduler sDownloadResumptionScheduler;
 
@@ -39,11 +39,12 @@ public class DownloadResumptionScheduler {
 
     protected DownloadResumptionScheduler(Context context) {
         mContext = context;
+        mDownloadNotificationService = new DownloadNotificationService();
     }
 
     /**
      * For tests only: sets the DownloadResumptionScheduler.
-     * @param service An instance of DownloadResumptionScheduler.
+     * @param scheduler An instance of DownloadResumptionScheduler.
      */
     @VisibleForTesting
     public static void setDownloadResumptionScheduler(DownloadResumptionScheduler scheduler) {
@@ -85,9 +86,6 @@ public class DownloadResumptionScheduler {
      * Start browser process and resumes all interrupted downloads.
      */
     public void handleDownloadResumption() {
-        // Fire an intent to the DownloadNotificationService so that it will handle download
-        // resumption.
-        Intent intent = new Intent(DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL);
-        DownloadNotificationService.startDownloadNotificationService(mContext, intent);
+        mDownloadNotificationService.resumeAllPendingDownloads();
     }
 }
