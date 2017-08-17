@@ -1557,10 +1557,20 @@ class ProgressBarTestCase(MockOutputTestCase):
     self._terminal_size.return_value = operation._TerminalSize(width, height)
 
   def AssertProgressBarAllEvents(self, num_events):
-    """Check that the progress bar is correct for all events."""
-    for i in xrange(num_events + 1):
-      self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
+    """Check that the progress bar generates expected events."""
+    skipped = 0
+    for i in xrange(num_events):
+      try:
+        self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
+      except AssertionError:
+        skipped += 1
 
+    # crbug.com/560953 It's normal to skip a few events under heavy CPU load.
+    self.assertLessEqual(skipped, num_events / 2,
+                         'Skipped %s of %s progress updates' %
+                         (skipped, num_events))
+
+    self.AssertOutputContainsLine('100%')
 
 class MockLoggingTestCase(MockTestCase, LoggingTestCase):
   """Convenience class mixing Logging and Mock."""
