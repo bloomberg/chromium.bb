@@ -67,9 +67,11 @@ const struct Resource{
 } kResources[] = {
     {kMainHtmlFilename, kLocalResource, "text/html"},
     {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
+    {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
     {kConfigDataFilename, kLocalResource, "application/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
+    {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
@@ -106,6 +108,27 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   if (is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
               IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+
+    // Voice Search
+    AddString(translated_strings.get(), "listening",
+              IDS_NEW_TAB_VOICE_LISTENING);
+    AddString(translated_strings.get(), "ready", IDS_NEW_TAB_VOICE_READY);
+    AddString(translated_strings.get(), "noTranslation",
+              IDS_NEW_TAB_VOICE_NO_TRANSLATION);
+    AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
+    AddString(translated_strings.get(), "audioError",
+              IDS_NEW_TAB_VOICE_AUDIO_ERROR);
+    AddString(translated_strings.get(), "networkError",
+              IDS_NEW_TAB_VOICE_NETWORK_ERROR);
+    AddString(translated_strings.get(), "languageError",
+              IDS_NEW_TAB_VOICE_LANGUAGE_ERROR);
+    AddString(translated_strings.get(), "noVoice", IDS_NEW_TAB_VOICE_NO_VOICE);
+    AddString(translated_strings.get(), "tryAgain",
+              IDS_NEW_TAB_VOICE_TRY_AGAIN);
+    AddString(translated_strings.get(), "learnMore",
+              IDS_NEW_TAB_VOICE_LEARN_MORE);
+    AddString(translated_strings.get(), "fakeboxSpeechTooltip",
+              IDS_TOOLTIP_MIC_SEARCH);
   }
 
   return translated_strings;
@@ -290,7 +313,8 @@ void LocalNtpSource::StartDataRequest(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
-        stripped_path == "local-ntp.css") {
+        stripped_path == "local-ntp.css" || stripped_path == "voice.js" ||
+        stripped_path == "voice.css") {
       base::ReplaceChars(stripped_path, "-", "_", &stripped_path);
       local_ntp::SendLocalFileResource(stripped_path, callback);
       return;
@@ -312,6 +336,11 @@ void LocalNtpSource::StartDataRequest(
         base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
                                            local_ntp_integrity);
+
+    std::string local_ntp_voice_integrity =
+        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(
+        &html, 0, "{{LOCAL_NTP_VOICE_INTEGRITY}}", local_ntp_voice_integrity);
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
   }
@@ -387,11 +416,11 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   return base::StringPrintf(
-      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s';",
+      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
       GetIntegritySha256Value(
           GetConfigData(default_search_provider_is_google_io_thread_))
           .c_str(),
-      LOCAL_NTP_JS_INTEGRITY);
+      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY);
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
