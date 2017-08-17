@@ -8,11 +8,11 @@ namespace subresource_filter {
 
 ActivationList GetListForThreatTypeAndMetadata(
     safe_browsing::SBThreatType threat_type,
-    safe_browsing::ThreatPatternType threat_type_metadata) {
+    const safe_browsing::ThreatMetadata& threat_type_metadata) {
   bool is_phishing_interstitial =
       (threat_type == safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
   bool is_soc_engineering_ads_interstitial =
-      threat_type_metadata ==
+      threat_type_metadata.threat_pattern_type ==
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
   bool subresource_filter =
       (threat_type == safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
