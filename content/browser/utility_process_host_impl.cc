@@ -90,13 +90,13 @@ class UtilitySandboxedProcessLauncherDelegate
 
 #elif defined(OS_POSIX)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   ZygoteHandle GetZygote() override {
     if (IsUnsandboxedSandboxType(sandbox_type_) || !exposed_dir_.empty())
       return nullptr;
     return GetGenericZygote();
   }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   base::EnvironmentMap GetEnvironment() override { return env_; }
 #endif  // OS_WIN
 
