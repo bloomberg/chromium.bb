@@ -59,17 +59,6 @@ size_t RegisterCastCrashKeys() {
       // gin/:
       {"v8-ignition", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/591478.
-      {"initrf_parent_proxy_exists", ::crash_keys::kSmallSize},
-      {"initrf_render_view_is_live", ::crash_keys::kSmallSize},
-      {"initrf_parent_is_in_same_site_instance", ::crash_keys::kSmallSize},
-      {"initrf_parent_process_is_live", ::crash_keys::kSmallSize},
-      {"initrf_root_is_in_same_site_instance", ::crash_keys::kSmallSize},
-      {"initrf_root_is_in_same_site_instance_as_parent",
-       ::crash_keys::kSmallSize},
-      {"initrf_root_process_is_live", ::crash_keys::kSmallSize},
-      {"initrf_root_proxy_is_live", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/626802.
       {"newframe_routing_id", ::crash_keys::kSmallSize},
       {"newframe_proxy_id", ::crash_keys::kSmallSize},

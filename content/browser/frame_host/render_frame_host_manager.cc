@@ -2027,68 +2027,6 @@ bool RenderFrameHostManager::InitRenderFrame(
       existing_proxy->InitRenderFrameProxy();
   }
 
-  // TODO(alexmos): These crash keys are temporary to track down
-  // https://crbug.com/591478. Verify that the parent routing ID
-  // points to a live RenderFrameProxy when this is not a remote-to-local
-  // navigation (i.e., when there's no |existing_proxy|).
-  if (!existing_proxy && frame_tree_node_->parent()) {
-    RenderFrameProxyHost* parent_proxy = RenderFrameProxyHost::FromID(
-        render_frame_host->GetProcess()->GetID(), parent_routing_id);
-    if (!parent_proxy || !parent_proxy->is_render_frame_proxy_live()) {
-      base::debug::SetCrashKeyValue("initrf_parent_proxy_exists",
-                                    parent_proxy ? "yes" : "no");
-
-      SiteInstance* parent_instance =
-          frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
-      base::debug::SetCrashKeyValue(
-          "initrf_parent_is_in_same_site_instance",
-          site_instance == parent_instance ? "yes" : "no");
-      base::debug::SetCrashKeyValue("initrf_parent_process_is_live",
-                                    frame_tree_node_->parent()
-                                            ->current_frame_host()
-                                            ->GetProcess()
-                                            ->HasConnection()
-                                        ? "yes"
-                                        : "no");
-      base::debug::SetCrashKeyValue(
-          "initrf_render_view_is_live",
-          render_frame_host->render_view_host()->IsRenderViewLive() ? "yes"
-                                                                    : "no");
-
-      // Collect some additional information for root's proxy if it's different
-      // from the parent.
-      FrameTreeNode* root = frame_tree_node_->frame_tree()->root();
-      if (root != frame_tree_node_->parent()) {
-        SiteInstance* root_instance =
-            root->current_frame_host()->GetSiteInstance();
-        base::debug::SetCrashKeyValue(
-            "initrf_root_is_in_same_site_instance",
-            site_instance == root_instance ? "yes" : "no");
-        base::debug::SetCrashKeyValue(
-            "initrf_root_is_in_same_site_instance_as_parent",
-            parent_instance == root_instance ? "yes" : "no");
-        base::debug::SetCrashKeyValue("initrf_root_process_is_live",
-                                      frame_tree_node_->frame_tree()
-                                              ->root()
-                                              ->current_frame_host()
-                                              ->GetProcess()
-                                              ->HasConnection()
-                                          ? "yes"
-                                          : "no");
-
-        RenderFrameProxyHost* top_proxy =
-            root->render_manager()->GetRenderFrameProxyHost(site_instance);
-        if (top_proxy) {
-          base::debug::SetCrashKeyValue(
-              "initrf_root_proxy_is_live",
-              top_proxy->is_render_frame_proxy_live() ? "yes" : "no");
-        }
-      }
-
-      base::debug::DumpWithoutCrashing();
-    }
-  }
-
   return delegate_->CreateRenderFrameForRenderManager(
       render_frame_host, proxy_routing_id, opener_routing_id, parent_routing_id,
       previous_sibling_routing_id);
