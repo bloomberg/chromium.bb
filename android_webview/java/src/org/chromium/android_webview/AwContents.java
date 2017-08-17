@@ -3009,6 +3009,8 @@ public class AwContents implements SmartClipProvider {
 
     private void saveWebArchiveInternal(String path, final ValueCallback<String> callback) {
         if (path == null || isDestroyedOrNoOperation(WARN)) {
+            if (callback == null) return;
+
             ThreadUtils.runOnUiThread(() -> callback.onReceiveValue(null));
         } else {
             nativeGenerateMHTML(mNativeAwContents, path, callback);
