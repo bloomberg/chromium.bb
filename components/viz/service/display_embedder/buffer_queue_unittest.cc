@@ -413,6 +413,7 @@ TEST_F(BufferQueueTest, MultipleBindCalls) {
 
 TEST_F(BufferQueueTest, CheckDoubleBuffering) {
   // Check buffer flow through double buffering path.
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   EXPECT_EQ(0, CountBuffers());
   output_surface_->BindFramebuffer();
   EXPECT_EQ(1, CountBuffers());
@@ -446,6 +447,7 @@ TEST_F(BufferQueueTest, CheckDoubleBuffering) {
 
 TEST_F(BufferQueueTest, CheckTripleBuffering) {
   // Check buffer flow through triple buffering path.
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
 
   // This bit is the same sequence tested in the doublebuffering case.
   output_surface_->BindFramebuffer();
@@ -474,7 +476,23 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
   EXPECT_EQ(1U, available_surfaces().size());
 }
 
+TEST_F(BufferQueueTest, CheckEmptySwap) {
+  // Check empty swap flow, in which the damage is empty.
+  EXPECT_EQ(0, CountBuffers());
+  output_surface_->BindFramebuffer();
+  EXPECT_EQ(1, CountBuffers());
+  EXPECT_NE(0U, current_surface());
+  EXPECT_FALSE(displayed_frame());
+  SwapBuffers();
+  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_EQ(nullptr, in_flight_surfaces().front());
+  output_surface_->PageFlipComplete();
+  EXPECT_EQ(0U, in_flight_surfaces().size());
+  EXPECT_EQ(nullptr, displayed_frame());
+}
+
 TEST_F(BufferQueueTest, CheckCorrectBufferOrdering) {
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   const size_t kSwapCount = 3;
   for (size_t i = 0; i < kSwapCount; ++i) {
     output_surface_->BindFramebuffer();
@@ -490,6 +508,7 @@ TEST_F(BufferQueueTest, CheckCorrectBufferOrdering) {
 }
 
 TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   const size_t kSwapCount = 3;
   for (size_t i = 0; i < kSwapCount; ++i) {
     output_surface_->BindFramebuffer();
@@ -510,6 +529,7 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
 
 TEST_F(BufferQueueTest, SwapAfterReshape) {
   DCHECK_EQ(0u, gpu_memory_buffer_manager_->set_color_space_count());
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   const size_t kSwapCount = 3;
   for (size_t i = 0; i < kSwapCount; ++i) {
     output_surface_->BindFramebuffer();
@@ -562,6 +582,7 @@ TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
   // This tests buffers in all states.
   // Bind/swap pushes frames into the in flight list, then the PageFlipComplete
   // calls pull one frame into displayed and another into the free list.
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   output_surface_->BindFramebuffer();
   SwapBuffers();
   output_surface_->BindFramebuffer();
@@ -585,7 +606,9 @@ TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
 
   // Expect all 4 images to be destroyed, 3 of the existing textures to be
   // copied from and 3 new images to be created.
-  EXPECT_CALL(*context_, createImageCHROMIUM(_, 0, 0, GL_RGB)).Times(3);
+  EXPECT_CALL(*context_, createImageCHROMIUM(_, screen_size.width(),
+                                             screen_size.height(), GL_RGB))
+      .Times(3);
   Expectation copy1 = EXPECT_CALL(*mock_output_surface_,
                                   CopyBufferDamage(_, displayed->texture, _, _))
                           .Times(1);

@@ -88,10 +88,10 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
 }
 
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
-  // If BindFramebuffer has not been called, we still want to
-  // advance to the next surface.
-  if (!current_surface_)
-    current_surface_ = GetNextSurface();
+  if (damage.IsEmpty()) {
+    in_flight_surfaces_.push_back(nullptr);
+    return;
+  }
 
   if (current_surface_) {
     if (damage != gfx::Rect(size_)) {
@@ -189,17 +189,31 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::RecreateBuffer(
 
 void BufferQueue::PageFlipComplete() {
   DCHECK(!in_flight_surfaces_.empty());
-  if (displayed_surface_)
-    available_surfaces_.push_back(std::move(displayed_surface_));
-  displayed_surface_ = std::move(in_flight_surfaces_.front());
+  if (in_flight_surfaces_.front()) {
+    if (displayed_surface_)
+      available_surfaces_.push_back(std::move(displayed_surface_));
+    displayed_surface_ = std::move(in_flight_surfaces_.front());
+  }
+
   in_flight_surfaces_.pop_front();
 }
 
-uint32_t BufferQueue::GetCurrentTextureId() {
-  if (!current_surface_)
-    current_surface_ = GetNextSurface();
+uint32_t BufferQueue::GetCurrentTextureId() const {
   if (current_surface_)
     return current_surface_->texture;
+
+  // Return in-flight or displayed surface texture if no surface is
+  // currently bound. This can happen when using overlays and surface
+  // damage is empty. Note: |in_flight_surfaces_| entries can be null
+  // as a result of calling FreeAllSurfaces().
+  for (auto& surface : base::Reversed(in_flight_surfaces_)) {
+    if (surface)
+      return surface->texture;
+  }
+
+  if (displayed_surface_)
+    return displayed_surface_->texture;
+
   return 0;
 }
 
