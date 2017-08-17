@@ -1642,19 +1642,9 @@ load_x11_backend(struct weston_compositor *c,
 	return 0;
 }
 
-static void
-wayland_backend_output_configure_hotplug(struct wl_listener *listener, void *data)
+static int
+wayland_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
-
-	/* This backend has all values hardcoded, so nothing can be configured here */
-	weston_output_enable(output);
-}
-
-static void
-wayland_backend_output_configure(struct wl_listener *listener, void *data)
-{
-	struct weston_output *output = data;
 	struct wet_output_config defaults = {
 		.width = 1024,
 		.height = 640,
@@ -1662,10 +1652,7 @@ wayland_backend_output_configure(struct wl_listener *listener, void *data)
 		.transform = WL_OUTPUT_TRANSFORM_NORMAL
 	};
 
-	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
-		weston_log("Cannot configure output \"%s\".\n", output->name);
-
-	weston_output_enable(output);
+	return wet_configure_windowed_output_from_config(output, &defaults);
 }
 
 static int
@@ -1732,13 +1719,15 @@ load_wayland_backend(struct weston_compositor *c,
 	if (api == NULL) {
 		/* We will just assume if load_backend() finished cleanly and
 		 * windowed_output_api is not present that wayland backend is
-		 * started with --sprawl or runs on fullscreen-shell. */
-		wet_set_pending_output_handler(c, wayland_backend_output_configure_hotplug);
+		 * started with --sprawl or runs on fullscreen-shell.
+		 * In this case, all values are hardcoded, so nothing can be
+		 * configured; simply create and enable an output. */
+		wet_set_simple_head_configurator(c, NULL);
 
 		return 0;
 	}
 
-	wet_set_pending_output_handler(c, wayland_backend_output_configure);
+	wet_set_simple_head_configurator(c, wayland_backend_output_configure);
 
 	section = NULL;
 	while (weston_config_next_section(wc, &section, &section_name)) {
