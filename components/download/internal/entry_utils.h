@@ -21,9 +21,9 @@ struct Entry;
 namespace util {
 
 // Helper method to return the number of Entry objects in |entries| are
-// associated with |client|.
-uint32_t GetNumberOfEntriesForClient(DownloadClient client,
-                                     const std::vector<Entry*>& entries);
+// associated with |client| and do not have a state of Entry::State::COMPLETE.
+uint32_t GetNumberOfLiveEntriesForClient(DownloadClient client,
+                                         const std::vector<Entry*>& entries);
 
 // Effectively runs a map reduce to turn a list of Entry objects into a map of
 // [Client Id] -> List of entries.  Any Entry in |entries| that does not have a

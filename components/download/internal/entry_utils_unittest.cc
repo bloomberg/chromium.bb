@@ -13,17 +13,18 @@
 
 namespace download {
 
-TEST(DownloadServiceEntryUtilsTest, TestGetNumberOfEntriesForClient_NoEntries) {
+TEST(DownloadServiceEntryUtilsTest, TestGetNumberOfLiveEntriesForClient) {
   Entry entry1 = test::BuildBasicEntry();
   Entry entry2 = test::BuildBasicEntry();
   Entry entry3 = test::BuildBasicEntry();
+  Entry entry4 = test::BuildBasicEntry(Entry::State::COMPLETE);
 
-  std::vector<Entry*> entries = {&entry1, &entry2, &entry3};
+  std::vector<Entry*> entries = {&entry1, &entry2, &entry3, &entry4};
 
+  EXPECT_EQ(0U, util::GetNumberOfLiveEntriesForClient(DownloadClient::INVALID,
+                                                      entries));
   EXPECT_EQ(
-      0U, util::GetNumberOfEntriesForClient(DownloadClient::INVALID, entries));
-  EXPECT_EQ(3U,
-            util::GetNumberOfEntriesForClient(DownloadClient::TEST, entries));
+      3U, util::GetNumberOfLiveEntriesForClient(DownloadClient::TEST, entries));
 }
 
 TEST(DownloadServiceEntryUtilsTest, MapEntriesToClients) {

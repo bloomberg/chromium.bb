@@ -143,8 +143,8 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
     return;
   }
 
-  uint32_t client_count =
-      util::GetNumberOfEntriesForClient(params.client, model_->PeekEntries());
+  uint32_t client_count = util::GetNumberOfLiveEntriesForClient(
+      params.client, model_->PeekEntries());
   if (client_count >= config_->max_scheduled_downloads) {
     HandleStartDownloadResponse(params.client, params.guid,
                                 DownloadParams::StartResult::BACKOFF,
