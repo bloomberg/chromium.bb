@@ -26,7 +26,10 @@ class PLATFORM_EXPORT Suborigin {
 
   void SetTo(const Suborigin&);
   String GetName() const { return name_; }
-  void SetName(const String& name) { name_ = name; }
+  void SetName(const String& name) {
+    DCHECK(!name.IsEmpty());
+    name_ = name;
+  }
   void AddPolicyOption(SuboriginPolicyOptions);
   bool PolicyContains(SuboriginPolicyOptions) const;
   void Clear();
