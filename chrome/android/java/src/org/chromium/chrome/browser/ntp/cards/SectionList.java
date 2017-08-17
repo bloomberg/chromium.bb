@@ -213,6 +213,15 @@ public class SectionList
     }
 
     /**
+     * Clicks on the more button for the Articles for you section. This assumes that that is the
+     * only present section.
+     */
+    public void clickArticlesMoreButton() {
+        assert mSections.size() == 1;
+        mSections.get(KnownCategories.ARTICLES).clickMoreButton(mUiDelegate);
+    }
+
+    /**
      * Synchronises the data of the sections with that of the suggestions source, resetting the ones
      * that are stale. (see {@link SuggestionsSection#isDataStale()})
      */

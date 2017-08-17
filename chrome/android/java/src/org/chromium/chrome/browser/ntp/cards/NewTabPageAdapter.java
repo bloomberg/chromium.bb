@@ -86,11 +86,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
         mRoot = new InnerNode();
-
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
         mSigninPromo = new SignInPromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
-        mFooter = new Footer();
 
         if (mAboveTheFoldView == null) {
             mAboveTheFold = null;
@@ -114,9 +112,16 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (SuggestionsConfig.useModern()) {
-            mRoot.addChildren(mSigninPromo, mSections, mAllDismissed, mFooter);
+            mRoot.addChildren(mSigninPromo, mSections, mAllDismissed);
         } else {
-            mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
+            mRoot.addChildren(mSections, mSigninPromo, mAllDismissed);
+        }
+
+        if (SuggestionsConfig.scrollToLoad()) {
+            mFooter = null;
+        } else {
+            mFooter = new Footer();
+            mRoot.addChild(mFooter);
         }
 
         if (mAboveTheFoldView == null
@@ -242,7 +247,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     int getLastContentItemPosition() {
-        return getChildPositionOffset(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+        int bottomSpacerPosition = getChildPositionOffset(mBottomSpacer);
+        assert bottomSpacerPosition > 0;
+        return bottomSpacerPosition - 1;
     }
 
     int getBottomSpacerPosition() {
@@ -256,7 +263,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled();
 
         mAllDismissed.setVisible(areRemoteSuggestionsEnabled && hasAllBeenDismissed());
-        mFooter.setVisible(areRemoteSuggestionsEnabled && !hasAllBeenDismissed());
+        if (!SuggestionsConfig.scrollToLoad()) {
+            mFooter.setVisible(areRemoteSuggestionsEnabled && !hasAllBeenDismissed());
+        }
+
         if (mBottomSpacer != null) {
             mBottomSpacer.setVisible(areRemoteSuggestionsEnabled || !hasAllBeenDismissed());
         }
@@ -291,14 +301,22 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
 
+        if (mRecyclerView == recyclerView) return;
+
         // We are assuming for now that the adapter is used with a single RecyclerView.
         // Getting the reference as we are doing here is going to be broken if that changes.
-        assert mRecyclerView == null || recyclerView == mRecyclerView;
+        assert mRecyclerView == null;
 
         // FindBugs chokes on the cast below when not checked, raising BC_UNCONFIRMED_CAST
         assert recyclerView instanceof SuggestionsRecyclerView;
 
         mRecyclerView = (SuggestionsRecyclerView) recyclerView;
+
+        if (SuggestionsConfig.scrollToLoad()) {
+            mRecyclerView.addOnScrollListener(new ScrollToLoadListener(this,
+                    mRecyclerView.getLinearLayoutManager(), mUiDelegate,
+                    mSections));
+        }
     }
 
     @Override

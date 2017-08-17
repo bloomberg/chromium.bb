@@ -667,6 +667,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressIndicatorView.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ProgressViewHolder.java",
+  "java/src/org/chromium/chrome/browser/ntp/cards/ScrollToLoadListener.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SectionList.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SignInPromo.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SpacingItem.java",

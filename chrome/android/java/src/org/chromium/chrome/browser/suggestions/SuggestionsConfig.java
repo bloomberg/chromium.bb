@@ -38,6 +38,13 @@ public final class SuggestionsConfig {
     }
 
     /**
+     * @return Whether scrolling to the bottom of suggestions triggers a load.
+     */
+    public static boolean scrollToLoad() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
+    }
+
+    /**
      * @return Whether to use the Sites exploration UI to display the site suggestions.
      */
     public static boolean useSitesExplorationUi() {
