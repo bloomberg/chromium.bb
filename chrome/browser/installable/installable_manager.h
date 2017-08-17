@@ -315,9 +315,6 @@ class InstallableManager
 
     // Tasks which are waiting indefinitely for a service worker to be detected.
     std::vector<Task> paused_tasks_;
-
-   public:
-    bool is_active_;
   };
 
   TaskQueue task_queue_;
