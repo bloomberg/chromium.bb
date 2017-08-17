@@ -5,15 +5,13 @@
 #ifndef UI_GL_GL_GLX_API_IMPLEMENTATION_H_
 #define UI_GL_GL_GLX_API_IMPLEMENTATION_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
-namespace base {
-class CommandLine;
-}
 namespace gl {
 
 struct GLWindowSystemBindingInfo;
@@ -22,6 +20,8 @@ GL_EXPORT void InitializeStaticGLBindingsGLX();
 GL_EXPORT void InitializeDebugGLBindingsGLX();
 GL_EXPORT void ClearBindingsGLX();
 GL_EXPORT bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info);
+GL_EXPORT void SetDisabledExtensionsGLX(const std::string& disabled_extensions);
+GL_EXPORT bool InitializeExtensionSettingsOneOffGLX();
 
 class GL_EXPORT GLXApiBase : public GLXApi {
  public:
@@ -43,8 +43,7 @@ class GL_EXPORT RealGLXApi : public GLXApiBase {
   RealGLXApi();
   ~RealGLXApi() override;
   void Initialize(DriverGLX* driver);
-  void InitializeWithCommandLine(DriverGLX* driver,
-                                 base::CommandLine* command_line);
+  void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   const char* glXQueryExtensionsStringFn(Display* dpy, int screen) override;
  private:
@@ -58,6 +57,8 @@ class GL_EXPORT DebugGLXApi : public GLXApi {
  public:
   DebugGLXApi(GLXApi* glx_api);
   ~DebugGLXApi() override;
+
+  void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -74,6 +75,8 @@ class GL_EXPORT TraceGLXApi : public GLXApi {
   TraceGLXApi(GLXApi* glx_api) : glx_api_(glx_api) { }
   ~TraceGLXApi() override;
 
+  void SetDisabledExtensions(const std::string& disabled_extensions) override;
+
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
@@ -86,6 +89,3 @@ class GL_EXPORT TraceGLXApi : public GLXApi {
 }  // namespace gl
 
 #endif  // UI_GL_GL_GLX_API_IMPLEMENTATION_H_
-
-
-
