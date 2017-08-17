@@ -244,7 +244,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);
 }
-
 // Test that a renderer-initiated navigation to an invalid URL does not leave
 // around a pending entry that could be used in a URL spoof.  We test this in
 // a browser test because our unit test framework incorrectly calls
@@ -485,15 +484,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   base::string16 title = title_watcher.WaitAndGetTitle();
   ASSERT_EQ(title, base::ASCIIToUTF16("pushState"));
 
-  // LoadingStateChanged should be called 5 times: start and stop for the
-  // initial load of push_state.html, once for the switch from
-  // IsWaitingForResponse() to !IsWaitingForResponse(), and start and stop for
-  // the "navigation" triggered by history.pushState(). However, the start
-  // notification for the history.pushState() navigation should set
-  // to_different_document to false.
+  // LoadingStateChanged should be called 4 times: start and stop for the
+  // initial load of push_state.html, and start and stop for the "navigation"
+  // triggered by history.pushState(). However, the start notification for the
+  // history.pushState() navigation should set to_different_document to false.
   EXPECT_EQ("pushState", shell()->web_contents()->GetLastCommittedURL().ref());
-  EXPECT_EQ(5, delegate->loadingStateChangedCount());
-  EXPECT_EQ(4, delegate->loadingStateToDifferentDocumentCount());
+  EXPECT_EQ(4, delegate->loadingStateChangedCount());
+  EXPECT_EQ(3, delegate->loadingStateToDifferentDocumentCount());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -513,55 +510,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WebContents* new_web_contents = new_web_contents_observer.GetWebContents();
   WaitForLoadStop(new_web_contents);
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
-}
-
-namespace {
-
-class DidGetResourceResponseStartObserver : public WebContentsObserver {
- public:
-  DidGetResourceResponseStartObserver(Shell* shell)
-      : WebContentsObserver(shell->web_contents()), shell_(shell) {
-    shell->web_contents()->SetDelegate(&delegate_);
-    EXPECT_FALSE(shell->web_contents()->IsWaitingForResponse());
-    EXPECT_FALSE(shell->web_contents()->IsLoading());
-  }
-
-  ~DidGetResourceResponseStartObserver() override {}
-
-  void DidGetResourceResponseStart(
-      const ResourceRequestDetails& details) override {
-    EXPECT_FALSE(shell_->web_contents()->IsWaitingForResponse());
-    EXPECT_TRUE(shell_->web_contents()->IsLoading());
-    EXPECT_GT(delegate_.loadingStateChangedCount(), 0);
-    ++resource_response_start_count_;
-  }
-
-  int resource_response_start_count() const {
-    return resource_response_start_count_;
-  }
-
- private:
-  Shell* shell_;
-  LoadingStateChangedDelegate delegate_;
-  int resource_response_start_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DidGetResourceResponseStartObserver);
-};
-
-}  // namespace
-
-// Makes sure that the WebContents is no longer marked as waiting for a response
-// after DidGetResourceResponseStart() is called.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DidGetResourceResponseStartUpdatesWaitingState) {
-  DidGetResourceResponseStartObserver observer(shell());
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  LoadStopNotificationObserver load_observer(
-      &shell()->web_contents()->GetController());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
-  load_observer.Wait();
-  EXPECT_GT(observer.resource_response_start_count(), 0);
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
