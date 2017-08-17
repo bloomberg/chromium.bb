@@ -2,7 +2,9 @@ include_rules = [
     "-bindings",
     "-core",
     "-modules",
+    "+v8",
+
+    # Allowed only inside INSIDE_BLINK
     "+platform/heap",
     "+platform/wtf",
-    "+v8",
 ]
