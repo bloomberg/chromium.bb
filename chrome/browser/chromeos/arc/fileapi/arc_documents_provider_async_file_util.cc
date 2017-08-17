@@ -17,6 +17,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/common/fileapi/directory_entry.h"
 
 using content::BrowserThread;
 
@@ -34,13 +35,21 @@ void OnGetFileInfoOnUIThread(
 }
 
 void OnReadDirectoryOnUIThread(
-    const ArcDocumentsProviderRoot::ReadDirectoryCallback& callback,
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
     base::File::Error result,
-    const storage::AsyncFileUtil::EntryList& entries,
-    bool has_more) {
+    std::vector<ArcDocumentsProviderRoot::ThinFileInfo> files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result, entries, has_more));
+
+  storage::AsyncFileUtil::EntryList entries;
+  entries.reserve(files.size());
+  for (const auto& file : files)
+    entries.emplace_back(file.name, file.is_directory
+                                        ? storage::DirectoryEntry::DIRECTORY
+                                        : storage::DirectoryEntry::FILE);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(callback, result, entries, false /* has_more */));
 }
 
 void GetFileInfoOnUIThread(
@@ -70,26 +79,25 @@ void GetFileInfoOnUIThread(
 
 void ReadDirectoryOnUIThread(
     const storage::FileSystemURL& url,
-    const ArcDocumentsProviderRoot::ReadDirectoryCallback& callback) {
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
       ArcDocumentsProviderRootMap::GetForArcBrowserContext();
   if (!roots) {
-    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_SECURITY,
-                              storage::AsyncFileUtil::EntryList(), false);
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_SECURITY, {});
     return;
   }
 
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND,
-                              storage::AsyncFileUtil::EntryList(), false);
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND, {});
     return;
   }
 
-  root->ReadDirectory(path, base::Bind(&OnReadDirectoryOnUIThread, callback));
+  root->ReadDirectory(path,
+                      base::BindOnce(&OnReadDirectoryOnUIThread, callback));
 }
 
 }  // namespace

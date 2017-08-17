@@ -169,9 +169,9 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfo) {
                      base::Bind(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
+                           run_loop->Quit();
                            EXPECT_EQ(base::File::FILE_OK, error);
                            ExpectMatchesSpec(info, kPhotoSpec);
-                           run_loop->Quit();
                          },
                          &run_loop));
   run_loop.Run();
@@ -183,9 +183,9 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDirectory) {
                      base::Bind(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
+                           run_loop->Quit();
                            EXPECT_EQ(base::File::FILE_OK, error);
                            ExpectMatchesSpec(info, kDirSpec);
-                           run_loop->Quit();
                          },
                          &run_loop));
   run_loop.Run();
@@ -197,9 +197,9 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoRoot) {
                      base::Bind(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
+                           run_loop->Quit();
                            EXPECT_EQ(base::File::FILE_OK, error);
                            ExpectMatchesSpec(info, kRootSpec);
-                           run_loop->Quit();
                          },
                          &run_loop));
   run_loop.Run();
@@ -211,8 +211,8 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoNoSuchFile) {
                      base::Bind(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
-                           EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
                            run_loop->Quit();
+                           EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
                          },
                          &run_loop));
   run_loop.Run();
@@ -226,9 +226,9 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDups) {
                      base::Bind(
                          [](base::RunLoop* run_loop, base::File::Error error,
                             const base::File::Info& info) {
+                           run_loop->Quit();
                            EXPECT_EQ(base::File::FILE_OK, error);
                            ExpectMatchesSpec(info, kDup3Spec);
-                           run_loop->Quit();
                          },
                          &run_loop));
   run_loop.Run();
@@ -240,15 +240,16 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
       base::FilePath(FILE_PATH_LITERAL("dir")),
       base::Bind(
           [](base::RunLoop* run_loop, base::File::Error error,
-             const EntryList& file_list, bool has_more) {
+             std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+            run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
             ASSERT_EQ(2u, file_list.size());
             EXPECT_EQ(FILE_PATH_LITERAL("music.bin.mp3"), file_list[0].name);
+            EXPECT_EQ("music-id", file_list[0].document_id);
             EXPECT_FALSE(file_list[0].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("photo.jpg"), file_list[1].name);
+            EXPECT_EQ("photo-id", file_list[1].document_id);
             EXPECT_FALSE(file_list[1].is_directory);
-            EXPECT_FALSE(has_more);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
@@ -260,15 +261,16 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryRoot) {
       base::FilePath(FILE_PATH_LITERAL("")),
       base::Bind(
           [](base::RunLoop* run_loop, base::File::Error error,
-             const EntryList& file_list, bool has_more) {
+             std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+            run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
             ASSERT_EQ(2u, file_list.size());
             EXPECT_EQ(FILE_PATH_LITERAL("dir"), file_list[0].name);
+            EXPECT_EQ("dir-id", file_list[0].document_id);
             EXPECT_TRUE(file_list[0].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("dups"), file_list[1].name);
+            EXPECT_EQ("dups-id", file_list[1].document_id);
             EXPECT_TRUE(file_list[1].is_directory);
-            EXPECT_FALSE(has_more);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
@@ -276,16 +278,16 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryRoot) {
 
 TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryNoSuchDirectory) {
   base::RunLoop run_loop;
-  root_->ReadDirectory(base::FilePath(FILE_PATH_LITERAL("missing")),
-                       base::Bind(
-                           [](base::RunLoop* run_loop, base::File::Error error,
-                              const EntryList& file_list, bool has_more) {
-                             EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
-                             EXPECT_EQ(0u, file_list.size());
-                             EXPECT_FALSE(has_more);
-                             run_loop->Quit();
-                           },
-                           &run_loop));
+  root_->ReadDirectory(
+      base::FilePath(FILE_PATH_LITERAL("missing")),
+      base::Bind(
+          [](base::RunLoop* run_loop, base::File::Error error,
+             std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+            EXPECT_EQ(0u, file_list.size());
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -295,20 +297,23 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryDups) {
       base::FilePath(FILE_PATH_LITERAL("dups")),
       base::Bind(
           [](base::RunLoop* run_loop, base::File::Error error,
-             const EntryList& file_list, bool has_more) {
+             std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+            run_loop->Quit();
             EXPECT_EQ(base::File::FILE_OK, error);
             ASSERT_EQ(4u, file_list.size());
             // Files are sorted lexicographically.
             EXPECT_EQ(FILE_PATH_LITERAL("dup (1).mp4"), file_list[0].name);
+            EXPECT_EQ("dup2-id", file_list[0].document_id);
             EXPECT_FALSE(file_list[0].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("dup (2).mp4"), file_list[1].name);
+            EXPECT_EQ("dup3-id", file_list[1].document_id);
             EXPECT_FALSE(file_list[1].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("dup (3).mp4"), file_list[2].name);
+            EXPECT_EQ("dup4-id", file_list[2].document_id);
             EXPECT_FALSE(file_list[2].is_directory);
             EXPECT_EQ(FILE_PATH_LITERAL("dup.mp4"), file_list[3].name);
+            EXPECT_EQ("dup1-id", file_list[3].document_id);
             EXPECT_FALSE(file_list[3].is_directory);
-            EXPECT_FALSE(has_more);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
@@ -329,8 +334,8 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
                       watcher_callback,
                       base::Bind(
                           [](base::RunLoop* run_loop, base::File::Error error) {
-                            EXPECT_EQ(base::File::FILE_OK, error);
                             run_loop->Quit();
+                            EXPECT_EQ(base::File::FILE_OK, error);
                           },
                           &run_loop));
     run_loop.Run();
@@ -356,8 +361,8 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
         base::FilePath(FILE_PATH_LITERAL("dir")),
         base::Bind(
             [](base::RunLoop* run_loop, base::File::Error error) {
-              EXPECT_EQ(base::File::FILE_OK, error);
               run_loop->Quit();
+              EXPECT_EQ(base::File::FILE_OK, error);
             },
             &run_loop));
     run_loop.Run();
@@ -379,8 +384,8 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
                       watcher_callback,
                       base::Bind(
                           [](base::RunLoop* run_loop, base::File::Error error) {
-                            EXPECT_EQ(base::File::FILE_OK, error);
                             run_loop->Quit();
+                            EXPECT_EQ(base::File::FILE_OK, error);
                           },
                           &run_loop));
     run_loop.Run();
@@ -408,8 +413,8 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
         base::FilePath(FILE_PATH_LITERAL("dir")),
         base::Bind(
             [](base::RunLoop* run_loop, base::File::Error error) {
-              EXPECT_EQ(base::File::FILE_OK, error);
               run_loop->Quit();
+              EXPECT_EQ(base::File::FILE_OK, error);
             },
             &run_loop));
     run_loop.Run();
@@ -422,9 +427,9 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrl) {
       base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
       base::Bind(
           [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/photo-id"),
                       url);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
@@ -436,9 +441,9 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlRoot) {
       base::FilePath(FILE_PATH_LITERAL("")),
       base::Bind(
           [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/root-id"),
                       url);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
@@ -449,8 +454,8 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlNoSuchFile) {
   root_->ResolveToContentUrl(base::FilePath(FILE_PATH_LITERAL("missing")),
                              base::Bind(
                                  [](base::RunLoop* run_loop, const GURL& url) {
-                                   EXPECT_EQ(GURL(), url);
                                    run_loop->Quit();
+                                   EXPECT_EQ(GURL(), url);
                                  },
                                  &run_loop));
   run_loop.Run();
@@ -464,9 +469,9 @@ TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlDups) {
       base::FilePath(FILE_PATH_LITERAL("dups/dup (2).mp4")),
       base::Bind(
           [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
             EXPECT_EQ(GURL("content://org.chromium.test/document/dup3-id"),
                       url);
-            run_loop->Quit();
           },
           &run_loop));
   run_loop.Run();
