@@ -30,7 +30,8 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                                             client::WindowType type,
                                             int id,
                                             const gfx::Rect& bounds,
-                                            Window* parent);
+                                            Window* parent,
+                                            bool show_on_creation);
 
 // Returns true if |upper| is above |lower| in the window stacking order.
 bool WindowIsAbove(Window* upper, Window* lower);

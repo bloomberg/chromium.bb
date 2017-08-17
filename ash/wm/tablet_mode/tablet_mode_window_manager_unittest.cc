@@ -44,12 +44,29 @@ class TabletModeWindowManagerTest : public AshTestBase {
   TabletModeWindowManagerTest() {}
   ~TabletModeWindowManagerTest() override {}
 
+  // Initialize parameters for test windows.  If |can_maximize| is not
+  // set, |max_size| is the upper limiting size for the window,
+  // whereas an empty size means that there is no limit.
+  struct InitParams {
+    InitParams(aura::client::WindowType t) : type(t) {}
+
+    aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL;
+    gfx::Rect bounds;
+    gfx::Size max_size;
+    bool can_maximize = true;
+    bool can_resize = true;
+    bool show_on_creation = true;
+  };
+
   // Creates a window which has a fixed size.
   aura::Window* CreateFixedSizeNonMaximizableWindow(
       aura::client::WindowType type,
       const gfx::Rect& bounds) {
-    return CreateWindowInWatchedContainer(type, bounds, gfx::Size(), false,
-                                          false);
+    InitParams params(type);
+    params.bounds = bounds;
+    params.can_maximize = false;
+    params.can_resize = false;
+    return CreateWindowInWatchedContainer(params);
   }
 
   // Creates a window which can not be maximized, but resized. |max_size|
@@ -58,14 +75,19 @@ class TabletModeWindowManagerTest : public AshTestBase {
   aura::Window* CreateNonMaximizableWindow(aura::client::WindowType type,
                                            const gfx::Rect& bounds,
                                            const gfx::Size& max_size) {
-    return CreateWindowInWatchedContainer(type, bounds, max_size, false, true);
+    InitParams params(type);
+    params.bounds = bounds;
+    params.max_size = max_size;
+    params.can_maximize = false;
+    return CreateWindowInWatchedContainer(params);
   }
 
   // Creates a maximizable and resizable window.
   aura::Window* CreateWindow(aura::client::WindowType type,
                              const gfx::Rect bounds) {
-    return CreateWindowInWatchedContainer(type, bounds, gfx::Size(), true,
-                                          true);
+    InitParams params(type);
+    params.bounds = bounds;
+    return CreateWindowInWatchedContainer(params);
   }
 
   // Creates a window which also has a widget.
@@ -114,28 +136,21 @@ class TabletModeWindowManagerTest : public AshTestBase {
     UpdateDisplay(size.ToString());
   }
 
- private:
   // Create a window in one of the containers which are watched by the
   // TabletModeWindowManager. Note that this only works with one root window.
-  // If |can_maximize| is not set, |max_size| is the upper limiting size for
-  // the window, whereas an empty size means that there is no limit.
-  aura::Window* CreateWindowInWatchedContainer(aura::client::WindowType type,
-                                               const gfx::Rect& bounds,
-                                               const gfx::Size& max_size,
-                                               bool can_maximize,
-                                               bool can_resize) {
+  aura::Window* CreateWindowInWatchedContainer(const InitParams& params) {
     aura::test::TestWindowDelegate* delegate = NULL;
-    if (!can_maximize) {
+    if (!params.can_maximize) {
       delegate = aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
       delegate->set_window_component(HTCAPTION);
-      if (!max_size.IsEmpty())
-        delegate->set_maximum_size(max_size);
+      if (!params.max_size.IsEmpty())
+        delegate->set_maximum_size(params.max_size);
     }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
-        delegate, type, 0, bounds, NULL);
+        delegate, params.type, 0, params.bounds, NULL, params.show_on_creation);
     int32_t behavior = ui::mojom::kResizeBehaviorNone;
-    behavior |= can_resize ? ui::mojom::kResizeBehaviorCanResize : 0;
-    behavior |= can_maximize ? ui::mojom::kResizeBehaviorCanMaximize : 0;
+    behavior |= params.can_resize ? ui::mojom::kResizeBehaviorCanResize : 0;
+    behavior |= params.can_maximize ? ui::mojom::kResizeBehaviorCanMaximize : 0;
     window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
     aura::Window* container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(), wm::kSwitchableWindowContainerIds[0]);
@@ -143,6 +158,7 @@ class TabletModeWindowManagerTest : public AshTestBase {
     return window;
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManagerTest);
 };
 
@@ -1699,6 +1715,19 @@ TEST_F(TabletModeWindowManagerTest, StateTyepChange) {
   window_state->RemoveObserver(&observer);
 
   DestroyTabletModeWindowManager();
+}
+
+// Test that the restore state will be kept at its original value for
+// session restoration purposes.
+TEST_F(TabletModeWindowManagerTest, SetPropertyOnUnmanagedWindow) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  InitParams params(aura::client::WINDOW_TYPE_NORMAL);
+  params.bounds = gfx::Rect(10, 10, 100, 100);
+  params.show_on_creation = false;
+  std::unique_ptr<aura::Window> window(CreateWindowInWatchedContainer(params));
+  wm::GetWindowState(window.get())->set_allow_set_bounds_direct(true);
+  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->Show();
 }
 
 }  // namespace ash

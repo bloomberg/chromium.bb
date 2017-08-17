@@ -36,14 +36,15 @@ Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,
                                      const gfx::Rect& bounds,
                                      Window* parent) {
   return CreateTestWindowWithDelegateAndType(
-      delegate, client::WINDOW_TYPE_NORMAL, id, bounds, parent);
+      delegate, client::WINDOW_TYPE_NORMAL, id, bounds, parent, true);
 }
 
 Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                                             client::WindowType type,
                                             int id,
                                             const gfx::Rect& bounds,
-                                            Window* parent) {
+                                            Window* parent,
+                                            bool show_on_creation) {
   Window* window = new Window(delegate);
   window->set_id(id);
   window->SetType(type);
@@ -52,7 +53,8 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                       ui::mojom::kResizeBehaviorCanResize |
                           ui::mojom::kResizeBehaviorCanMaximize);
   window->SetBounds(bounds);
-  window->Show();
+  if (show_on_creation)
+    window->Show();
   if (parent)
     parent->AddChild(window);
   return window;
