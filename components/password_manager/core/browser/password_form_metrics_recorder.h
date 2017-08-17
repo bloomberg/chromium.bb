@@ -16,68 +16,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace password_manager {
-
-// URL Keyed Metrics.
-
-// This metric records whether a submission of a password form has been
-// observed. The values 0 and 1 correspond to false and true respectively.
-extern const char kUkmSubmissionObserved[];
-
-// This metric records the outcome of a password form submission. The values are
-// numbered according to PasswordFormMetricsRecorder::SubmitResult.
-// Note that no metric is recorded for kSubmitResultNotSubmitted.
-extern const char kUkmSubmissionResult[];
-
-// This metric records the classification of a form at submission time. The
-// values correspond to PasswordFormMetricsRecorder::SubmittedFormType.
-// Note that no metric is recorded for kSubmittedFormTypeUnspecified.
-extern const char kUkmSubmissionFormType[];
-
-// This metric records the boolean value indicating whether a password update
-// prompt was shown, which asked the user for permission to update a password.
-extern const char kUkmUpdatingPromptShown[];
-
-// This metric records the reason why a password update prompt was shown to ask
-// the user for permission to update a password. The values correspond to
-// PasswordFormMetricsRecorder::BubbleTrigger.
-extern const char kUkmUpdatingPromptTrigger[];
-
-// This metric records how a user interacted with an updating prompt. The values
-// correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
-extern const char kUkmUpdatingPromptInteraction[];
-
-// This metric records the boolean value indicating whether a password save
-// prompt was shown, which asked the user for permission to save a new
-// credential.
-extern const char kUkmSavingPromptShown[];
-
-// This metric records the reason why a password save prompt was shown to ask
-// the user for permission to save a new credential. The values correspond to
-// PasswordFormMetricsRecorder::BubbleTrigger.
-extern const char kUkmSavingPromptTrigger[];
-
-// This metric records how a user interacted with a saving prompt. The values
-// correspond to PasswordFormMetricsRecorder::BubbleDismissalReason.
-extern const char kUkmSavingPromptInteraction[];
-
-// This metric records attempts to fill a password form. Values correspond to
-// PasswordFormMetricsRecorder::ManagerFillEvent.
-extern const char kUkmManagerFillEvent[];
-
-// This metric records what the user does with a form. Values correspond to the
-// enum UserAction.
-extern const char kUkmUserActionSimplified[];
-
-// This metric records what the user does with all UI entry points of the
-// password manager, like bubbles, context menus, forms, form fields, etc.
-// in relation to a given form. Values correspond to the enum
-// DetailedUserAction. In contrast to kUkmUserActionSimplified, ths metric is
-// intended to be extensible with new user action types.
-extern const char kUkmUserAction[];
 
 class FormFetcher;
 
@@ -329,9 +272,6 @@ class PasswordFormMetricsRecorder
   int GetHistogramSampleForSuppressedAccounts(
       SuppressedAccountExistence best_matching_account) const;
 
-  // Records a metric into |ukm_entry_builder_| if it is not nullptr.
-  void RecordUkmMetric(const char* metric_name, int64_t value);
-
   // Returns true if an |action| should be recorded multiple times per life-cyle
   // of a PasswordFormMetricsRecorder.
   static bool IsRepeatedUserAction(DetailedUserAction action);
@@ -379,9 +319,8 @@ class PasswordFormMetricsRecorder
   // URL for which UKMs are reported.
   GURL main_frame_url_;
 
-  // Records URL keyed metrics (UKMs) and submits them on its destruction. May
-  // be a nullptr in which case no recording is expected.
-  std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder_;
+  // Holds URL keyed metrics (UKMs) to be recorded on destruction.
+  ukm::builders::PasswordForm ukm_entry_builder_;
 
   // Set of observed user actions that are only recorded once for the lifetime
   // of a PasswordFormMetricsRecorder.

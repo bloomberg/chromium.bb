@@ -177,6 +177,7 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
   using BubbleTrigger = PasswordFormMetricsRecorder::BubbleTrigger;
   using BubbleDismissalReason =
       PasswordFormMetricsRecorder::BubbleDismissalReason;
+  using UkmEntry = ukm::builders::PasswordForm;
 
   BubbleDismissalReason dismissal_reason = GetParam();
   SCOPED_TRACE(::testing::Message() << "dismissal_reason = "
@@ -216,13 +217,13 @@ TEST_P(SavePasswordInfoBarDelegateTestForUKMs, VerifyUKMRecording) {
   const ukm::UkmSource* source =
       test_ukm_recorder.GetSourceForUrl("https://www.example.com/");
   ASSERT_TRUE(source);
-  test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
-                                 password_manager::kUkmSavingPromptShown, 1);
+  test_ukm_recorder.ExpectMetric(*source, UkmEntry::kEntryName,
+                                 UkmEntry::kSaving_Prompt_ShownName, 1);
   test_ukm_recorder.ExpectMetric(
-      *source, "PasswordForm", password_manager::kUkmSavingPromptTrigger,
+      *source, UkmEntry::kEntryName, UkmEntry::kSaving_Prompt_TriggerName,
       static_cast<int64_t>(BubbleTrigger::kPasswordManagerSuggestionAutomatic));
-  test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
-                                 password_manager::kUkmSavingPromptInteraction,
+  test_ukm_recorder.ExpectMetric(*source, UkmEntry::kEntryName,
+                                 UkmEntry::kSaving_Prompt_InteractionName,
                                  static_cast<int64_t>(dismissal_reason));
 }
 

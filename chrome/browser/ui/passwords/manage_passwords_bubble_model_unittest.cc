@@ -329,6 +329,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
 
 TEST_F(ManagePasswordsBubbleModelTest, Edit) {
   using password_manager::metrics_util::CredentialSourceType;
+  using UkmEntry = ukm::builders::PasswordForm;
   for (const bool do_change : {false, true}) {
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
@@ -375,15 +376,13 @@ TEST_F(ManagePasswordsBubbleModelTest, Edit) {
         static_cast<int64_t>(password_manager::PasswordFormMetricsRecorder::
                                  DetailedUserAction::kEditedUsernameInBubble);
     if (do_change) {
-      EXPECT_THAT(
-          test_ukm_recorder.GetMetrics(*source, "PasswordForm",
-                                       password_manager::kUkmUserAction),
-          Contains(kEditedUsernameInBubbleAsInt64));
+      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
+                                               UkmEntry::kUser_ActionName),
+                  Contains(kEditedUsernameInBubbleAsInt64));
     } else {
-      EXPECT_THAT(
-          test_ukm_recorder.GetMetrics(*source, "PasswordForm",
-                                       password_manager::kUkmUserAction),
-          Not(Contains(kEditedUsernameInBubbleAsInt64)));
+      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
+                                               UkmEntry::kUser_ActionName),
+                  Not(Contains(kEditedUsernameInBubbleAsInt64)));
     }
   }
 }
@@ -551,6 +550,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
   using BubbleTrigger =
       password_manager::PasswordFormMetricsRecorder::BubbleTrigger;
   using password_manager::metrics_util::CredentialSourceType;
+  using UkmEntry = ukm::builders::PasswordForm;
 
   // |credential_management_api| defines whether credentials originate from the
   // credential management API.
@@ -635,22 +635,22 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
             test_ukm_recorder.GetSourceForUrl("https://www.example.com/");
         ASSERT_TRUE(source);
         test_ukm_recorder.ExpectMetric(
-            *source, "PasswordForm",
-            update ? password_manager::kUkmUpdatingPromptShown
-                   : password_manager::kUkmSavingPromptShown,
+            *source, UkmEntry::kEntryName,
+            update ? UkmEntry::kUpdating_Prompt_ShownName
+                   : UkmEntry::kSaving_Prompt_ShownName,
             1);
         test_ukm_recorder.ExpectMetric(
-            *source, "PasswordForm",
-            update ? password_manager::kUkmUpdatingPromptTrigger
-                   : password_manager::kUkmSavingPromptTrigger,
+            *source, UkmEntry::kEntryName,
+            update ? UkmEntry::kUpdating_Prompt_TriggerName
+                   : UkmEntry::kSaving_Prompt_TriggerName,
             static_cast<int64_t>(
                 credential_management_api
                     ? BubbleTrigger::kCredentialManagementAPIAutomatic
                     : BubbleTrigger::kPasswordManagerSuggestionAutomatic));
         test_ukm_recorder.ExpectMetric(
-            *source, "PasswordForm",
-            update ? password_manager::kUkmUpdatingPromptInteraction
-                   : password_manager::kUkmSavingPromptInteraction,
+            *source, UkmEntry::kEntryName,
+            update ? UkmEntry::kUpdating_Prompt_InteractionName
+                   : UkmEntry::kSaving_Prompt_InteractionName,
             static_cast<int64_t>(interaction));
       }
     }
