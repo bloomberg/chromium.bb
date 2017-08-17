@@ -28,6 +28,8 @@ enum CdmResultForUMA {
   // UNKNOWN_ERROR = 5,  // Deprecated.
   // CLIENT_ERROR = 6,   // Deprecated.
   // OUTPUT_ERROR = 7,   // Deprecated.
+  SESSION_NOT_FOUND = 8,
+  SESSION_ALREADY_EXISTS = 9,
   NUM_RESULT_CODES  // Must be last.
 };
 
