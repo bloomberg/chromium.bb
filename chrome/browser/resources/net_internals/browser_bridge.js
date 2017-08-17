@@ -26,6 +26,7 @@ var BrowserBridge = (function() {
     // List of observers for various bits of browser state.
     this.connectionTestsObservers_ = [];
     this.hstsObservers_ = [];
+    this.expectCTObservers_ = [];
     this.constantsObservers_ = [];
     this.crosONCFileParseObservers_ = [];
     this.storeDebugLogsObservers_ = [];
@@ -172,8 +173,16 @@ var BrowserBridge = (function() {
           [domain, sts_include_subdomains, pkp_include_subdomains, pins]);
     },
 
-    sendHSTSDelete: function(domain) {
-      this.send('hstsDelete', [domain]);
+    sendDomainSecurityPolicyDelete: function(domain) {
+      this.send('domainSecurityPolicyDelete', [domain]);
+    },
+
+    sendExpectCTQuery: function(domain) {
+      this.send('expectCTQuery', [domain]);
+    },
+
+    sendExpectCTAdd: function(domain, report_uri, enforce) {
+      this.send('expectCTAdd', [domain, report_uri, enforce]);
     },
 
     sendGetSessionNetworkStats: function() {
@@ -316,6 +325,11 @@ var BrowserBridge = (function() {
     receivedHSTSResult: function(info) {
       for (var i = 0; i < this.hstsObservers_.length; i++)
         this.hstsObservers_[i].onHSTSQueryResult(info);
+    },
+
+    receivedExpectCTResult: function(info) {
+      for (var i = 0; i < this.expectCTObservers_.length; i++)
+        this.expectCTObservers_[i].onExpectCTQueryResult(info);
     },
 
     receivedONCFileParse: function(error) {
@@ -540,6 +554,16 @@ var BrowserBridge = (function() {
      */
     addHSTSObserver: function(observer) {
       this.hstsObservers_.push(observer);
+    },
+
+    /**
+     * Adds a listener for the results of Expect-CT queries. The observer will
+     * be called back with:
+     *
+     *   observer.onExpectCTQueryResult(result);
+     */
+    addExpectCTObserver: function(observer) {
+      this.expectCTObservers_.push(observer);
     },
 
     /**
