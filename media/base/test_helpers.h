@@ -30,6 +30,7 @@ class TimeDelta;
 namespace media {
 
 class AudioBuffer;
+class AudioBus;
 class DecoderBuffer;
 
 // Return a callback that expects to be run once.
@@ -144,6 +145,32 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
                                            T increment,
                                            size_t frames,
                                            base::TimeDelta timestamp);
+
+// Create an AudioBuffer containing bitstream data. |start| and |increment| are
+// used to specify the values for the data. The value is determined by:
+//   start + frames * increment
+//   start + (frames + 1) * increment
+//   start + (frames + 2) * increment, ...
+scoped_refptr<AudioBuffer> MakeBitstreamAudioBuffer(
+    SampleFormat format,
+    ChannelLayout channel_layout,
+    size_t channel_count,
+    int sample_rate,
+    uint8_t start,
+    uint8_t increment,
+    size_t frames,
+    size_t data_size,
+    base::TimeDelta timestamp);
+
+// Verify the bitstream data in an AudioBus. |start| and |increment| are
+// used to specify the values for the data. The value is determined by:
+//   start + frames * increment
+//   start + (frames + 1) * increment
+//   start + (frames + 2) * increment, ...
+void VerifyBitstreamAudioBus(AudioBus* bus,
+                             size_t data_size,
+                             uint8_t start,
+                             uint8_t increment);
 
 // Create a fake video DecoderBuffer for testing purpose. The buffer contains
 // part of video decoder config info embedded so that the testing code can do

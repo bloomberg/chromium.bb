@@ -827,4 +827,39 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyInteractive) {
   ReturnMixer(mixer);
 }
 
+// Verify output parameters are the same as input properties for bitstream
+// formats.
+TEST_F(AudioRendererMixerManagerTest, MixerParamsBitstreamFormat) {
+  mock_sink_ = new media::MockAudioRendererSink(
+      std::string(), media::OUTPUT_DEVICE_STATUS_OK,
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, 44100,
+                      kBitsPerChannel, 2048));
+
+  EXPECT_CALL(*mock_sink_.get(), Start()).Times(1);
+  EXPECT_CALL(*mock_sink_.get(), Stop()).Times(1);
+  EXPECT_CALL(*this, ReleaseSinkPtr(mock_sink_.get())).Times(1);
+
+  media::AudioParameters params(AudioParameters::AUDIO_BITSTREAM_EAC3,
+                                kAnotherChannelLayout, 32000, 8, 512);
+  params.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
+
+  media::AudioRendererMixer* mixer =
+      GetMixer(kRenderFrameId, params, params.latency_tag(), kDefaultDeviceId,
+               kSecurityOrigin, nullptr);
+
+  // Output parameters should be the same as input properties for bitstream
+  // formats.
+  EXPECT_EQ(params.format(), mixer->GetOutputParamsForTesting().format());
+  EXPECT_EQ(params.channel_layout(),
+            mixer->GetOutputParamsForTesting().channel_layout());
+  EXPECT_EQ(params.sample_rate(),
+            mixer->GetOutputParamsForTesting().sample_rate());
+  EXPECT_EQ(params.bits_per_sample(),
+            mixer->GetOutputParamsForTesting().bits_per_sample());
+  EXPECT_EQ(params.frames_per_buffer(),
+            mixer->GetOutputParamsForTesting().frames_per_buffer());
+
+  ReturnMixer(mixer);
+}
+
 }  // namespace content

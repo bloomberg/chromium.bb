@@ -127,6 +127,7 @@ if (is_android) {
     sources = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioRecordInput.java",
+      "java/src/org/chromium/media/AudioTrackOutputStream.java",
       "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecUtil.java",
@@ -165,6 +166,7 @@ if (is_android) {
     java_files = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioRecordInput.java",
+      "java/src/org/chromium/media/AudioTrackOutputStream.java",
       "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecUtil.java",
@@ -175,6 +177,17 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
       "java/src/org/chromium/media/MediaSwitches.java",
+    ]
+  }
+
+  junit_binary("media_base_junit_tests") {
+    java_files =
+        [ "java/src/test/org/chromium/media/AudioTrackOutputStreamTest.java" ]
+    deps = [
+      ":media_java",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/junit",
     ]
   }
 }

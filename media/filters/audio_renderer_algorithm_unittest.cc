@@ -106,8 +106,15 @@ class AudioRendererAlgorithmTest : public testing::Test {
     channel_layout_ = channel_layout;
     sample_format_ = sample_format;
     bytes_per_sample_ = SampleFormatToBytesPerChannel(sample_format);
-    AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
-                           channel_layout, samples_per_second,
+
+    media::AudioParameters::Format format =
+        media::AudioParameters::AUDIO_PCM_LINEAR;
+    if (sample_format == kSampleFormatAc3)
+      format = media::AudioParameters::AUDIO_BITSTREAM_AC3;
+    else if (sample_format == kSampleFormatEac3)
+      format = media::AudioParameters::AUDIO_BITSTREAM_EAC3;
+
+    AudioParameters params(format, channel_layout, samples_per_second,
                            bytes_per_sample_ * 8, frames_per_buffer);
     bool is_encrypted = false;
     algorithm_.Initialize(params, is_encrypted);
@@ -121,6 +128,13 @@ class AudioRendererAlgorithmTest : public testing::Test {
     scoped_refptr<AudioBuffer> buffer;
     while (!algorithm_.IsQueueFull()) {
       switch (sample_format_) {
+        case kSampleFormatAc3:
+        case kSampleFormatEac3:
+          buffer = MakeBitstreamAudioBuffer(
+              sample_format_, channel_layout_,
+              ChannelLayoutToChannelCount(channel_layout_), samples_per_second_,
+              1, 1, kFrameSize, kFrameSize, kNoTimestamp);
+          break;
         case kSampleFormatU8:
           buffer = MakeAudioBuffer<uint8_t>(
               sample_format_, channel_layout_,
@@ -340,6 +354,12 @@ TEST_F(AudioRendererAlgorithmTest, InitializeWithLargeParameters) {
   EXPECT_LT(kBufferSize, algorithm_.QueueCapacity());
   algorithm_.FlushBuffers();
   EXPECT_LT(kBufferSize, algorithm_.QueueCapacity());
+}
+
+TEST_F(AudioRendererAlgorithmTest, FillBuffer_Bitstream) {
+  Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatEac3, kSamplesPerSecond,
+             kSamplesPerSecond / 100);
+  TestPlaybackRate(1.0, kFrameSize, 16 * kFrameSize);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_NormalRate) {

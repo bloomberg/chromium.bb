@@ -317,6 +317,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // suspend/is suspended and when it resumes.
   bool is_suspending_;
 
+  // Whether to pass compressed audio bitstream to audio sink directly.
+  bool is_passthrough_;
+
   // End variables which must be accessed under |lock_|. ----------------------
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

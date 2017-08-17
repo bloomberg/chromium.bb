@@ -53,6 +53,17 @@ class AudioBusTest : public testing::Test {
                                  float epsilon) {
     ASSERT_EQ(expected->channels(), result->channels());
     ASSERT_EQ(expected->frames(), result->frames());
+    ASSERT_EQ(expected->is_bitstream_format(), result->is_bitstream_format());
+
+    if (expected->is_bitstream_format()) {
+      ASSERT_EQ(expected->GetBitstreamDataSize(),
+                result->GetBitstreamDataSize());
+      ASSERT_EQ(expected->GetBitstreamFrames(), result->GetBitstreamFrames());
+      ASSERT_EQ(0, memcmp(expected->channel(0), result->channel(0),
+                          result->GetBitstreamDataSize()));
+      return;
+    }
+
     for (int ch = 0; ch < result->channels(); ++ch) {
       for (int i = 0; i < result->frames(); ++i) {
         SCOPED_TRACE(base::StringPrintf("ch=%d, i=%d", ch, i));
@@ -681,6 +692,30 @@ TEST_F(AudioBusTest, Scale) {
     SCOPED_TRACE("Zero Scale");
     VerifyArrayIsFilledWithValue(bus->channel(i), bus->frames(), 0);
   }
+}
+
+TEST_F(AudioBusTest, Bitstream) {
+  static const size_t kDataSize = kFrameCount / 2;
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(1, kFrameCount);
+
+  EXPECT_FALSE(bus->is_bitstream_format());
+  bus->set_is_bitstream_format(true);
+  EXPECT_TRUE(bus->is_bitstream_format());
+
+  EXPECT_EQ(size_t{0}, bus->GetBitstreamDataSize());
+  bus->SetBitstreamDataSize(kDataSize);
+  EXPECT_EQ(kDataSize, bus->GetBitstreamDataSize());
+
+  EXPECT_EQ(0, bus->GetBitstreamFrames());
+  bus->SetBitstreamFrames(kFrameCount);
+  EXPECT_EQ(kFrameCount, bus->GetBitstreamFrames());
+
+  std::unique_ptr<AudioBus> bus2 = AudioBus::Create(1, kFrameCount);
+  CopyTest(bus.get(), bus2.get());
+
+  bus->Zero();
+  EXPECT_EQ(size_t{0}, bus->GetBitstreamDataSize());
+  EXPECT_EQ(0, bus->GetBitstreamFrames());
 }
 
 }  // namespace media
