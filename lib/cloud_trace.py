@@ -14,12 +14,15 @@ import random
 import re
 
 import google.protobuf.internal.well_known_types as types
+from infra_libs import ts_mon
 
 from chromite.lib import cros_logging as log
+from chromite.lib import metrics
 from chromite.lib import structured
 
-PROJECT_ID = 'google.com:chromeos-infra-logging'
+
 SPANS_LOG = '/var/log/trace/{pid}-{span_id}.json'
+_SPAN_COUNT_METRIC = 'chromeos/trace/client/logged_count'
 
 #--- Code for logging spans to a file for later processing. --------------------
 def GetSpanLogFilePath(span):
@@ -37,6 +40,7 @@ def LogSpan(span):
   Args:
     span: A Span instance to serialize.
   """
+  _RecordSpanMetrics(span)
   try:
     with open(GetSpanLogFilePath(span), 'w') as fh:
       fh.write(json.dumps(span.ToDict()))
@@ -51,6 +55,19 @@ def LogSpan(span):
       return None
     else:
       raise
+
+
+def _RecordSpanMetrics(span):
+  """Increments the count of spans logged.
+
+  Args:
+    span: The span to record.
+  """
+  m = metrics.Counter(
+      _SPAN_COUNT_METRIC,
+      description="A count of spans logged by a client.",
+      field_spec=[ts_mon.StringField('name')])
+  m.increment(fields={'name': span.name})
 
 #-- User-facing API ------------------------------------------------------------
 class Span(structured.Structured):
