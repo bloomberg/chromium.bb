@@ -362,11 +362,18 @@ NSEvent* MockScrollWheelEventWithMomentumPhase(SEL mockPhaseSelector,
 
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
-  RenderWidgetHostViewMacTest() : rwhv_mac_(nullptr), old_rwhv_(nullptr) {
+  RenderWidgetHostViewMacTest(bool scroll_latching = false)
+      : rwhv_mac_(nullptr),
+        scroll_latching_(scroll_latching),
+        old_rwhv_(nullptr) {
     std::unique_ptr<base::SimpleTestTickClock> mock_clock(
         new base::SimpleTestTickClock());
     mock_clock->Advance(base::TimeDelta::FromMilliseconds(100));
     ui::SetEventTickClockForTesting(std::move(mock_clock));
+    if (scroll_latching)
+      EnableWheelScrollLatching();
+    else
+      DisableWheelScrollLatching();
   }
 
   void SetUp() override {
@@ -420,14 +427,30 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     return base::UTF16ToUTF8(rwhv_mac_->GetTextSelection()->selected_text());
   }
 
+  void EnableWheelScrollLatching() {
+    feature_list_.InitFromCommandLine(
+        features::kTouchpadAndWheelScrollLatching.name, "");
+  }
+
+  void DisableWheelScrollLatching() {
+    feature_list_.InitFromCommandLine(
+        "", features::kTouchpadAndWheelScrollLatching.name);
+  }
+
+  void IgnoreEmptyUnhandledWheelEventWithWheelGestures();
+  void ScrollWheelEndEventDelivery();
+
   RenderWidgetHostViewMac* rwhv_mac_;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
+  bool scroll_latching_;
 
  private:
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
 
   RenderWidgetHostView* old_rwhv_;
+
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacTest);
 };
@@ -1074,7 +1097,7 @@ TEST_F(RenderWidgetHostViewMacTest, SourceEventTypeExistsInLatencyInfo) {
   host->ShutdownAndDestroyWidget(true);
 }
 
-TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
+void RenderWidgetHostViewMacTest::ScrollWheelEndEventDelivery() {
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -1111,10 +1134,20 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [NSApp postEvent:event2 atStart:NO];
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(1U, process_host->sink().message_count());
+  if (scroll_latching_) {
+    // The wheel event with phaseEnded won't be sent to the render view
+    // immediately, instead the mouse_wheel_phase_handler will wait for 100ms
+    // to see if a wheel event with momentumPhase began arrives or not.
+    ASSERT_EQ(0U, process_host->sink().message_count());
+  } else {
+    ASSERT_EQ(1U, process_host->sink().message_count());
+  }
 
   // Clean up.
   host->ShutdownAndDestroyWidget(true);
+}
+TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
+  ScrollWheelEndEventDelivery();
 }
 
 TEST_F(RenderWidgetHostViewMacTest, PointerEventWithEraserType) {
@@ -1215,8 +1248,8 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
   host->ShutdownAndDestroyWidget(true);
 }
 
-TEST_F(RenderWidgetHostViewMacTest,
-       IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
+void RenderWidgetHostViewMacTest::
+    IgnoreEmptyUnhandledWheelEventWithWheelGestures() {
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -1249,7 +1282,21 @@ TEST_F(RenderWidgetHostViewMacTest,
   std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
-  ASSERT_EQ(2U, process_host->sink().message_count());
+
+  if (scroll_latching_) {
+    // Only wheel event ack exists since GSB event is blocking.
+    ASSERT_EQ(1U, process_host->sink().message_count());
+    // Send GSB ack.
+    InputEventAck unhandled_scroll_ack(
+        InputEventAckSource::COMPOSITOR_THREAD,
+        blink::WebInputEvent::kGestureScrollBegin,
+        INPUT_EVENT_ACK_STATE_CONSUMED);
+    std::unique_ptr<IPC::Message> scroll_response1(
+        new InputHostMsg_HandleInputEvent_ACK(0, unhandled_scroll_ack));
+    host->OnMessageReceived(*scroll_response1);
+  } else {
+    ASSERT_EQ(2U, process_host->sink().message_count());
+  }
   process_host->sink().ClearMessages();
 
   InputEventAck unhandled_scroll_ack(InputEventAckSource::COMPOSITOR_THREAD,
@@ -1266,7 +1313,12 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Send another wheel event, this time for scrolling by 0 lines (empty event).
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseChanged), 0);
   [view->cocoa_view() scrollWheel:event2];
-  ASSERT_EQ(2U, process_host->sink().message_count());
+  if (scroll_latching_) {
+    ASSERT_EQ(1U, process_host->sink().message_count());
+  } else {
+    // The second message will be nonblocking GSB's ack.
+    ASSERT_EQ(2U, process_host->sink().message_count());
+  }
 
   // Indicate that the wheel event was also unhandled.
   std::unique_ptr<IPC::Message> response2(
@@ -1278,6 +1330,10 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // Clean up.
   host->ShutdownAndDestroyWidget(true);
+}
+TEST_F(RenderWidgetHostViewMacTest,
+       IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
+  IgnoreEmptyUnhandledWheelEventWithWheelGestures();
 }
 
 // Tests that when view initiated shutdown happens (i.e. RWHView is deleted
@@ -1387,14 +1443,19 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
 class RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest
     : public RenderWidgetHostViewMacTest {
  public:
-  RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest() {
-    feature_list_.InitFromCommandLine(
-        features::kTouchpadAndWheelScrollLatching.name, "");
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
+  RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest()
+      : RenderWidgetHostViewMacTest(true) {}
 };
+
+TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
+  IgnoreEmptyUnhandledWheelEventWithWheelGestures();
+}
+
+TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       ScrollWheelEndEventDelivery) {
+  ScrollWheelEndEventDelivery();
+}
 
 // When wheel scroll latching is enabled, wheel end events are not sent
 // immediately, instead we start a timer to see if momentum phase of the scroll

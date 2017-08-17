@@ -186,6 +186,10 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       }
 
       if (needs_update) {
+        // It is possible that the wheel event with phaseBegan is consumed and
+        // no GSB is sent.
+        if (needs_scroll_begin_)
+          SendScrollBegin(scroll_update, false);
         ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
         latency.AddLatencyNumber(
             ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
@@ -193,9 +197,9 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
       }
 
-      if (current_phase_ended) {
-        // Send GSE with if scroll latching is enabled and no fling is going
-        // to happen next.
+      if (current_phase_ended && needs_scroll_end_) {
+        // Send GSE when scroll latching is enabled, GSB is sent, and no fling
+        // is going to happen next.
         SendScrollEnd(scroll_update, false);
       }
     } else {  // !enable_scroll_latching_

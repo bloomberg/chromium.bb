@@ -68,6 +68,17 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
+  if (web_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+    DCHECK(
+        !render_widget_host()->GetView()->IsRenderWidgetHostViewChildFrame() &&
+        !render_widget_host()->GetView()->IsRenderWidgetHostViewGuest());
+    // Send the pending wheel end event immediately.
+    static_cast<RenderWidgetHostViewAura*>(render_widget_host()->GetView())
+        ->event_handler()
+        ->mouse_wheel_phase_handler()
+        .DispatchPendingWheelEndEvent();
+    return;
+  }
   ui::MouseWheelEvent wheel_event(
       gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y), gfx::Point(),
       gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);

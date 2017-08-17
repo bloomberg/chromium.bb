@@ -20,6 +20,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "third_party/Webkit/public/platform/WebMouseWheelEvent.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/events/base_event_utils.h"
@@ -71,6 +72,38 @@ enum Deployment {
   [super dealloc];
 }
 @end
+
+class WheelEndAckWaiter : public content::RenderWidgetHost::InputEventObserver {
+ public:
+  WheelEndAckWaiter()
+      : message_loop_runner_(new content::MessageLoopRunner),
+        wheel_end_ack_received_(false) {}
+  ~WheelEndAckWaiter() override {}
+
+  void OnInputEventAck(const blink::WebInputEvent& event) override {
+    if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
+      blink::WebMouseWheelEvent received_wheel =
+          *static_cast<const blink::WebMouseWheelEvent*>(&event);
+      if (received_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+        wheel_end_ack_received_ = true;
+        if (message_loop_runner_->loop_running())
+          message_loop_runner_->Quit();
+      }
+    }
+  }
+
+  void Wait() {
+    if (!wheel_end_ack_received_) {
+      message_loop_runner_->Run();
+    }
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool wheel_end_ack_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(WheelEndAckWaiter);
+};
 
 class ChromeRenderWidgetHostViewMacHistorySwiperTest
     : public InProcessBrowserTest {
@@ -735,6 +768,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   if (!IsHistorySwipingSupported())
     return;
 
+  WheelEndAckWaiter wheel_end_ack_waiter;
+  GetWebContents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(
+      &wheel_end_ack_waiter);
+
   ui_test_utils::NavigateToURL(browser(), url_iframe_);
   ASSERT_EQ(url_iframe_, GetWebContents()->GetURL());
   QueueBeginningEvents(0, -1);
@@ -745,6 +782,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
 
   QueueEndEvents();
   RunQueuedEvents();
+
+  // Wait for the scroll to end.
+  wheel_end_ack_waiter.Wait();
+
   content::WaitForLoadStop(GetWebContents());
   EXPECT_EQ(url_iframe_, GetWebContents()->GetURL());
 }
