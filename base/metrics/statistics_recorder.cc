@@ -34,48 +34,6 @@ bool HistogramNameLesser(const base::HistogramBase* a,
 
 namespace base {
 
-StatisticsRecorder::HistogramIterator::HistogramIterator(
-    const HistogramMap::iterator& iter, bool include_persistent)
-    : iter_(iter),
-      include_persistent_(include_persistent) {
-  // The starting location could point to a persistent histogram when such
-  // is not wanted. If so, skip it.
-  if (!include_persistent_ && iter_ != histograms_->end() &&
-      (iter_->second->flags() & HistogramBase::kIsPersistent)) {
-    // This operator will continue to skip until a non-persistent histogram
-    // is found.
-    operator++();
-  }
-}
-
-StatisticsRecorder::HistogramIterator::HistogramIterator(
-    const HistogramIterator& rhs)
-    : iter_(rhs.iter_),
-      include_persistent_(rhs.include_persistent_) {
-}
-
-StatisticsRecorder::HistogramIterator::~HistogramIterator() {}
-
-StatisticsRecorder::HistogramIterator&
-StatisticsRecorder::HistogramIterator::operator++() {
-  const HistogramMap::iterator histograms_end = histograms_->end();
-  if (iter_ == histograms_end)
-    return *this;
-
-  for (;;) {
-    ++iter_;
-    if (iter_ == histograms_end)
-      break;
-    if (!include_persistent_ && (iter_->second->flags() &
-                                 HistogramBase::kIsPersistent)) {
-      continue;
-    }
-    break;
-  }
-
-  return *this;
-}
-
 StatisticsRecorder::~StatisticsRecorder() {
   DCHECK(histograms_);
   DCHECK(ranges_);
@@ -332,33 +290,27 @@ void StatisticsRecorder::PrepareDeltas(
     HistogramBase::Flags flags_to_set,
     HistogramBase::Flags required_flags,
     HistogramSnapshotManager* snapshot_manager) {
-  // This must be called *before* the lock is acquired below because it will
-  // call back into this object to register histograms. Those called methods
-  // will acquire the lock at that time.
-  ImportGlobalPersistentHistograms();
+  if (include_persistent)
+    ImportGlobalPersistentHistograms();
 
-  base::AutoLock auto_lock(lock_.Get());
-  snapshot_manager->PrepareDeltas(begin(include_persistent), end(),
-                                  flags_to_set, required_flags);
+  auto known = GetKnownHistograms(include_persistent);
+  snapshot_manager->PrepareDeltas(known.begin(), known.end(), flags_to_set,
+                                  required_flags);
 }
 
 // static
 void StatisticsRecorder::ValidateAllHistograms() {
-  // This must be called *before* the lock is acquired below because it will
-  // call back into this object to register histograms. Those called methods
-  // will acquire the lock at that time.
   ImportGlobalPersistentHistograms();
 
-  base::AutoLock auto_lock(lock_.Get());
+  auto known = GetKnownHistograms(/*include_persistent=*/true);
 
   HistogramBase* last_invalid_histogram = nullptr;
   int invalid_count = 0;
-  HistogramIterator end_it = end();
-  for (HistogramIterator it = begin(true); it != end_it; ++it) {
-    const bool is_valid = (*it)->ValidateHistogramContents(false, 0);
+  for (HistogramBase* h : known) {
+    const bool is_valid = h->ValidateHistogramContents(false, 0);
     if (!is_valid) {
       ++invalid_count;
-      last_invalid_histogram = *it;
+      last_invalid_histogram = h;
     }
   }
   if (last_invalid_histogram)
@@ -492,18 +444,21 @@ void StatisticsRecorder::UninitializeForTesting() {
 }
 
 // static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
+std::vector<HistogramBase*> StatisticsRecorder::GetKnownHistograms(
     bool include_persistent) {
-  DCHECK(histograms_);
+  std::vector<HistogramBase*> known;
+  base::AutoLock auto_lock(lock_.Get());
 
-  HistogramMap::iterator iter_begin = histograms_->begin();
-  return HistogramIterator(iter_begin, include_persistent);
-}
+  known.reserve(histograms_->size());
+  for (const auto& h : *histograms_) {
+    if (!include_persistent &&
+        (h.second->flags() & HistogramBase::kIsPersistent)) {
+      continue;
+    }
+    known.push_back(h.second);
+  }
 
-// static
-StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
-  HistogramMap::iterator iter_end = histograms_->end();
-  return HistogramIterator(iter_end, true);
+  return known;
 }
 
 // static
