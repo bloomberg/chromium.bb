@@ -214,8 +214,9 @@ SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
   DCHECK(!database_client_ || !check_results_.empty());
   if (!check_results_.empty()) {
     DCHECK(check_results_.back().finished);
-    matched_list = GetListForThreatTypeAndMetadata(
-        check_results_.back().threat_type, check_results_.back().pattern_type);
+    matched_list =
+        GetListForThreatTypeAndMetadata(check_results_.back().threat_type,
+                                        check_results_.back().threat_metadata);
   }
 
   const auto config_list = GetEnabledConfigurations();
@@ -303,7 +304,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::
     RecordRedirectChainMatchPatternForList(ActivationList activation_list) {
   DCHECK(check_results_.back().finished);
   ActivationList matched_list = GetListForThreatTypeAndMetadata(
-      check_results_.back().threat_type, check_results_.back().pattern_type);
+      check_results_.back().threat_type, check_results_.back().threat_metadata);
   bool is_matched = matched_list == activation_list;
   size_t chain_size = check_results_.size();
   switch (activation_list) {

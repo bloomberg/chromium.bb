@@ -85,7 +85,7 @@ void SubresourceFilterSafeBrowsingClientRequest::SendCheckResultToClient(
   SubresourceFilterSafeBrowsingClient::CheckResult result;
   result.request_id = request_id_;
   result.threat_type = threat_type;
-  result.pattern_type = metadata.threat_pattern_type;
+  result.threat_metadata = metadata;
   result.check_time = base::TimeTicks::Now() - start_time_;
 
   // This memeber is separate from |request_completed_|, in that it just

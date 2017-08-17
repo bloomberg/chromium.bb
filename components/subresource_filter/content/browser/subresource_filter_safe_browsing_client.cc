@@ -24,7 +24,9 @@ SubresourceFilterSafeBrowsingClient::CheckResult::ToTracedValue() const {
   auto value = base::MakeUnique<base::trace_event::TracedValue>();
   value->SetInteger("request_id", request_id);
   value->SetInteger("threat_type", threat_type);
-  value->SetInteger("pattern_type", static_cast<int>(pattern_type));
+  value->SetInteger("pattern_type",
+                    static_cast<int>(threat_metadata.threat_pattern_type));
+  // TODO(crbug.com/756009): Add "experimental" and "warning" when it lands.
   value->SetInteger("check_time (us)", check_time.InMicroseconds());
   value->SetBoolean("finished", finished);
   return value;
