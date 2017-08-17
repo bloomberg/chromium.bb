@@ -470,23 +470,26 @@ void InstallMethodInternal(
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
                                   signature, config.length);
     function_template->RemovePrototype();
-    if (config.access_check_configuration == V8DOMConfiguration::kCheckAccess)
+    if (config.access_check_configuration == V8DOMConfiguration::kCheckAccess) {
       function_template->SetAcceptAnyReceiver(false);
+    }
     v8::Local<v8::Function> function =
         function_template->GetFunction(isolate->GetCurrentContext())
             .ToLocalChecked();
-    if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty())
+    if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
       instance
           ->DefineOwnProperty(
               isolate->GetCurrentContext(), name, function,
               static_cast<v8::PropertyAttribute>(config.attribute))
           .ToChecked();
-    if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty())
+    }
+    if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty()) {
       prototype
           ->DefineOwnProperty(
               isolate->GetCurrentContext(), name, function,
               static_cast<v8::PropertyAttribute>(config.attribute))
           .ToChecked();
+    }
   }
   if (location & V8DOMConfiguration::kOnInterface && !interface.IsEmpty()) {
     // Operations installed on the interface object must be static
@@ -753,16 +756,16 @@ v8::Local<v8::FunctionTemplate> V8DOMConfiguration::DomClassTemplate(
     WrapperTypeInfo* wrapper_type_info,
     InstallTemplateFunction configure_dom_class_template) {
   V8PerIsolateData* data = V8PerIsolateData::From(isolate);
-  v8::Local<v8::FunctionTemplate> result =
+  v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, wrapper_type_info);
-  if (!result.IsEmpty())
-    return result;
+  if (!interface_template.IsEmpty())
+    return interface_template;
 
-  result = v8::FunctionTemplate::New(
+  interface_template = v8::FunctionTemplate::New(
       isolate, V8ObjectConstructor::IsValidConstructorMode);
-  configure_dom_class_template(isolate, world, result);
-  data->SetInterfaceTemplate(world, wrapper_type_info, result);
-  return result;
+  configure_dom_class_template(isolate, world, interface_template);
+  data->SetInterfaceTemplate(world, wrapper_type_info, interface_template);
+  return interface_template;
 }
 
 void V8DOMConfiguration::SetClassString(

@@ -36,7 +36,7 @@ class CORE_EXPORT V8Initializer {
   STATIC_ONLY(V8Initializer);
 
  public:
-  static void InitializeMainThread();
+  static void InitializeMainThread(intptr_t* reference_table);
   static void InitializeWorker(v8::Isolate*);
 
   static void ReportRejectedPromisesOnMainThread();

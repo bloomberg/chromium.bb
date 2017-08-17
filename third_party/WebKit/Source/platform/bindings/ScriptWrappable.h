@@ -155,7 +155,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   void MarkWrapper(const ScriptWrappableVisitor*) const;
 
  private:
-  // These classes are exceptionally allowed to use mainWorldWrapper().
+  // These classes are exceptionally allowed to use MainWorldWrapper().
   friend class DOMDataStore;
   friend class HeapSnaphotWrapperVisitor;
   friend class V8HiddenValue;
