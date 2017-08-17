@@ -69,19 +69,6 @@ class MEDIA_EXPORT AudioBus {
   void SetChannelData(int channel, float* data);
   void set_frames(int frames);
 
-  // Methods for compressed bitstream formats. The data size may not be equal to
-  // the capacity of the AudioBus. Also, the frame count may not be equal to the
-  // capacity of the AudioBus. Thus, we need extra methods to access the real
-  // data size and frame count for bitstream formats.
-  bool is_bitstream_format() const { return is_bitstream_format_; }
-  void set_is_bitstream_format(bool is_bitstream_format) {
-    is_bitstream_format_ = is_bitstream_format;
-  }
-  size_t GetBitstreamDataSize() const;
-  void SetBitstreamDataSize(size_t data_size);
-  int GetBitstreamFrames() const;
-  void SetBitstreamFrames(int frames);
-
   // Overwrites the sample values stored in this AudioBus instance with values
   // from a given interleaved |source_buffer| with expected layout
   // [ch0, ch1, ..., chN, ch0, ch1, ...] and sample values in the format
@@ -219,13 +206,6 @@ class MEDIA_EXPORT AudioBus {
 
   // Contiguous block of channel memory.
   std::unique_ptr<float, base::AlignedFreeDeleter> data_;
-
-  // Whether the data is compressed bitstream or not.
-  bool is_bitstream_format_ = false;
-  // The data size for a compressed bitstream.
-  size_t bitstream_data_size_ = 0;
-  // The PCM frame count for a compressed bitstream.
-  int bitstream_frames_ = 0;
 
   // One float pointer per channel pointing to a contiguous block of memory for
   // that channel. If the memory is owned by this instance, this will

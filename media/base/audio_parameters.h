@@ -43,8 +43,6 @@ struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioOutputBufferParameters {
   uint32_t frames_skipped;
   int64_t delay;
   int64_t delay_timestamp;
-  uint32_t bitstream_data_size;
-  uint32_t bitstream_frames;
 };
 #undef PARAMETERS_ALIGNMENT
 #if defined(OS_WIN)
@@ -87,12 +85,6 @@ class MEDIA_EXPORT AudioParameters {
     kTelephoneSampleRate = 8000,
     // CD sampling rate is 44.1 KHz or conveniently 2x2x3x3x5x5x7x7.
     kAudioCDSampleRate = 44100,
-  };
-
-  enum {
-    // The maxmium number of PCM frames can be decoded out of a compressed
-    // audio frame, e.g. MP3, AAC, AC-3.
-    kMaxFramesPerCompressedAudioBuffer = 4096,
   };
 
   // Bitmasks to determine whether certain platform (typically hardware) audio

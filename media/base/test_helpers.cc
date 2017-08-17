@@ -233,49 +233,6 @@ scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
   return output;
 }
 
-scoped_refptr<AudioBuffer> MakeBitstreamAudioBuffer(
-    SampleFormat format,
-    ChannelLayout channel_layout,
-    size_t channel_count,
-    int sample_rate,
-    uint8_t start,
-    uint8_t increment,
-    size_t frames,
-    size_t data_size,
-    base::TimeDelta timestamp) {
-  scoped_refptr<AudioBuffer> output = AudioBuffer::CreateBitstreamBuffer(
-      format, channel_layout, static_cast<int>(channel_count), sample_rate,
-      static_cast<int>(frames), data_size);
-  output->set_timestamp(timestamp);
-
-  // Values in channel 0 will be:
-  //   start
-  //   start + increment
-  //   start + 2 * increment, ...
-  uint8_t* buffer = reinterpret_cast<uint8_t*>(output->channel_data()[0]);
-  for (size_t i = 0; i < data_size; ++i) {
-    buffer[i] = static_cast<uint8_t>(start + i * increment);
-  }
-
-  return output;
-}
-
-void VerifyBitstreamAudioBus(AudioBus* bus,
-                             size_t data_size,
-                             uint8_t start,
-                             uint8_t increment) {
-  ASSERT_TRUE(bus->is_bitstream_format());
-
-  // Values in channel 0 will be:
-  //   start
-  //   start + increment
-  //   start + 2 * increment, ...
-  uint8_t* buffer = reinterpret_cast<uint8_t*>(bus->channel(0));
-  for (size_t i = 0; i < data_size; ++i) {
-    ASSERT_EQ(buffer[i], static_cast<uint8_t>(start + i * increment));
-  }
-}
-
 // Instantiate all the types of MakeAudioBuffer() and
 // MakeAudioBuffer() needed.
 #define DEFINE_MAKE_AUDIO_BUFFER_INSTANCE(type)              \

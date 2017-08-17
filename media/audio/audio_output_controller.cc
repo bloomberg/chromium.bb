@@ -285,8 +285,7 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->Read(dest);
 
-  const int frames =
-      dest->is_bitstream_format() ? dest->GetBitstreamFrames() : dest->frames();
+  const int frames = dest->frames();
   delay += AudioTimestampHelper::FramesToTime(frames, params_.sample_rate());
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
