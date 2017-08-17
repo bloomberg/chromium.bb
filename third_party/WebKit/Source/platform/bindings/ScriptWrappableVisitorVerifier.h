@@ -9,8 +9,11 @@
 
 namespace blink {
 
-class ScriptWrappableVisitorVerifier : public WrapperVisitor {
+class ScriptWrappableVisitorVerifier : public ScriptWrappableVisitor {
  public:
+  explicit ScriptWrappableVisitorVerifier(v8::Isolate* isolate)
+      : ScriptWrappableVisitor(isolate) {}
+
   void DispatchTraceWrappers(const TraceWrapperBase* t) const override {
     t->TraceWrappers(this);
   }
@@ -19,8 +22,9 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
   }
   void MarkWrapper(const v8::PersistentBase<v8::Value>*) const override {}
 
-  bool PushToMarkingDeque(
-      void (*trace_wrappers_callback)(const WrapperVisitor*, const void*),
+  void PushToMarkingDeque(
+      void (*trace_wrappers_callback)(const ScriptWrappableVisitor*,
+                                      const void*),
       HeapObjectHeader* (*heap_object_header_callback)(const void*),
       void (*missed_write_barrier_callback)(void),
       const void* object) const override {
@@ -39,7 +43,6 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
       NOTREACHED();
     }
     trace_wrappers_callback(this, object);
-    return true;
   }
 
   bool MarkWrapperHeader(HeapObjectHeader* header) const override {

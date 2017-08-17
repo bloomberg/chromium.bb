@@ -48,8 +48,8 @@ class {{v8_class}} {
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->Trace(scriptWrappable->ToImpl<{{cpp_class}}>());
   }
-  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<{{cpp_class}}>());
+  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<{{cpp_class}}>());
   }
   {% for method in methods %}
   {% if method.is_custom %}

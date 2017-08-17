@@ -5,11 +5,11 @@
 #ifndef TraceTraits_h
 #define TraceTraits_h
 
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
-#include "platform/heap/WrapperVisitor.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashCountedSet.h"
@@ -193,8 +193,8 @@ class TraceTrait {
  public:
   static void Trace(Visitor*, void* self);
 
-  static void MarkWrapperNoTracing(const WrapperVisitor*, const void*);
-  static void TraceMarkedWrapper(const WrapperVisitor*, const void*);
+  static void MarkWrapperNoTracing(const ScriptWrappableVisitor*, const void*);
+  static void TraceMarkedWrapper(const ScriptWrappableVisitor*, const void*);
   static HeapObjectHeader* GetHeapObjectHeader(const void*);
 
   template <typename VisitorDispatcher>
@@ -226,7 +226,7 @@ void TraceTrait<T>::Trace(Visitor* visitor, void* self) {
 }
 
 template <typename T>
-void TraceTrait<T>::MarkWrapperNoTracing(const WrapperVisitor* visitor,
+void TraceTrait<T>::MarkWrapperNoTracing(const ScriptWrappableVisitor* visitor,
                                          const void* t) {
   const T* traceable = ToWrapperTracingType(t);
   DCHECK(!GetHeapObjectHeader(traceable)->IsWrapperHeaderMarked());
@@ -234,7 +234,7 @@ void TraceTrait<T>::MarkWrapperNoTracing(const WrapperVisitor* visitor,
 }
 
 template <typename T>
-void TraceTrait<T>::TraceMarkedWrapper(const WrapperVisitor* visitor,
+void TraceTrait<T>::TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
                                        const void* t) {
   const T* traceable = ToWrapperTracingType(t);
   DCHECK(GetHeapObjectHeader(t)->IsWrapperHeaderMarked());

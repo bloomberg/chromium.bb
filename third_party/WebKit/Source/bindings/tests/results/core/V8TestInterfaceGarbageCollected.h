@@ -40,8 +40,8 @@ class V8TestInterfaceGarbageCollected {
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->Trace(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
   }
-  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
+  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 

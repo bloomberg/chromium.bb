@@ -39,8 +39,8 @@ class V8TestInterfaceCustomConstructor {
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->Trace(scriptWrappable->ToImpl<TestInterfaceCustomConstructor>());
   }
-  static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceCustomConstructor>());
+  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
+    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceCustomConstructor>());
   }
   static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;

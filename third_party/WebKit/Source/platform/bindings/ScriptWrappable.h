@@ -152,7 +152,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   //  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
   //  wrapper in the main world. To mark wrappers in all worlds call
   //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
-  void MarkWrapper(const WrapperVisitor*) const;
+  void MarkWrapper(const ScriptWrappableVisitor*) const;
 
  private:
   // These classes are exceptionally allowed to use mainWorldWrapper().

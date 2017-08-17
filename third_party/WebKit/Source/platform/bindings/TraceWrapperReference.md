@@ -111,7 +111,7 @@ the needed wrapper tracing method.
 wrapper tracing.
 
 Many more convenience wrappers, like inline definitions, can be found in
-``platform/heap/WrapperVisitor.h``.
+``platform/bindings/ScriptWrappableVisitor.h``.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
