@@ -36,9 +36,11 @@ struct GPU_EXPORT GpuFeatureInfo {
   GpuFeatureStatus status_values[NUMBER_OF_GPU_FEATURE_TYPES];
   // Active gpu driver bug workaround IDs.
   // See gpu/config/gpu_driver_bug_workaround_type.h for ID mappings.
-  std::vector<int> enabled_gpu_driver_bug_workarounds;
+  std::vector<int32_t> enabled_gpu_driver_bug_workarounds;
   // Disabled extensions separated by whitespaces.
   std::string disabled_extensions;
+  // Applied gpu driver bug list entry indices.
+  std::vector<uint32_t> applied_gpu_driver_bug_list_entries;
 };
 
 }  // namespace gpu

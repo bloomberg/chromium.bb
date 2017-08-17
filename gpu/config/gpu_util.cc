@@ -218,6 +218,8 @@ GpuFeatureInfo GetGpuFeatureInfo(const GPUInfo& gpu_info,
     std::unique_ptr<gpu::GpuDriverBugList> list(GpuDriverBugList::Create());
     enabled_driver_bug_workarounds =
         list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
+    gpu_feature_info.applied_gpu_driver_bug_list_entries =
+        list->GetActiveEntries();
 
     driver_bug_disabled_extensions = list->GetDisabledExtensions();
     all_disabled_extensions.insert(driver_bug_disabled_extensions.begin(),
