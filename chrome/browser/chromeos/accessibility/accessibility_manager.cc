@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -380,6 +380,10 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
   if (!profile_)
     return;
 
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
+
   // Update system tray menu visibility.
   ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
       ash::A11Y_NOTIFICATION_NONE);
@@ -435,6 +439,10 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
                                           enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
 
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
+
   ash::Shell::Get()->cursor_manager()->SetCursorSize(
       enabled ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
   ash::Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
@@ -480,6 +488,11 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_STICKY_KEYS,
                                           enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
+
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
+
   ash::Shell::Get()->sticky_keys_controller()->Enable(enabled);
 }
 
@@ -571,6 +584,10 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
       ash::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
+
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
 
   ash::Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
   ash::Shell::Get()->SetCursorCompositingEnabled(
@@ -725,7 +742,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     return;
   autoclick_enabled_ = enabled;
 
-  if (ash_util::IsRunningInMash()) {
+  if (GetAshConfig() == ash::Config::MASH) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     mash::mojom::LaunchablePtr launchable;
@@ -764,7 +781,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
     return;
   autoclick_delay_ms_ = autoclick_delay_ms;
 
-  if (ash_util::IsRunningInMash()) {
+  if (GetAshConfig() == ash::Config::MASH) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
@@ -804,7 +821,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   virtual_keyboard_enabled_ = enabled;
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  if (!ash_util::IsRunningInMash()) {
+  if (GetAshConfig() != ash::Config::MASH) {
     // Note that there are two versions of the on-screen keyboard. A full layout
     // is provided for accessibility, which includes sticky modifier keys to
     // enable typing of hotkeys. A compact version is used in touchview mode
@@ -854,6 +871,10 @@ void AccessibilityManager::UpdateMonoAudioFromPref() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_MONO_AUDIO,
                                           enabled, ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
+
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
 
   ash::Shell::Get()->audio_a11y_controller()->SetOutputMono(enabled);
 }
@@ -1128,7 +1149,7 @@ void AccessibilityManager::InputMethodChanged(
     bool show_message) {
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.
-  if (!ash_util::IsRunningInMash()) {
+  if (GetAshConfig() != ash::Config::MASH) {
     ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());
@@ -1337,6 +1358,10 @@ AccessibilityManager::RegisterCallback(const AccessibilityStatusCallback& cb) {
 void AccessibilityManager::NotifyAccessibilityStatusChanged(
     AccessibilityStatusEventDetails& details) {
   callback_list_.Notify(details);
+
+  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
 
   // Update system tray menu visibility.
   if (details.notification_type != ACCESSIBILITY_MANAGER_SHUTDOWN) {
