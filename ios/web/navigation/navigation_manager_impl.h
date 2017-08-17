@@ -131,6 +131,10 @@ class NavigationManagerImpl : public NavigationManager {
       ui::PageTransition transition,
       NavigationInitiationType initiation_type);
 
+  // Updates the URL of the yet to be committed pending item. Useful for page
+  // redirects. Does nothing if there is no pending item.
+  void UpdatePendingItemUrl(const GURL& url) const;
+
   // NavigationManager:
   NavigationItem* GetLastCommittedItem() const final;
   NavigationItem* GetPendingItem() const final;

@@ -488,47 +488,6 @@ TEST_F(CRWSessionControllerTest,
             [session_controller_ currentItem]);
 }
 
-TEST_F(CRWSessionControllerTest, updatePendingItemWithoutPendingItem) {
-  [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
-  [session_controller_ commitPendingItem];
-
-  EXPECT_TRUE([session_controller_ items].empty());
-  EXPECT_FALSE([session_controller_ currentItem]);
-}
-
-TEST_F(CRWSessionControllerTest, updatePendingItemWithPendingItem) {
-  [session_controller_
-               addPendingItem:GURL("http://www.url.com")
-                     referrer:MakeReferrer("http://www.referer.com")
-                   transition:ui::PAGE_TRANSITION_TYPED
-               initiationType:web::NavigationInitiationType::USER_INITIATED
-      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
-  [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
-
-  EXPECT_EQ(
-      GURL("http://www.another.url.com/"),
-      [session_controller_ currentURL]);
-}
-
-TEST_F(CRWSessionControllerTest,
-       updatePendingItemWithPendingItemAlreadyCommited) {
-  [session_controller_
-               addPendingItem:GURL("http://www.url.com")
-                     referrer:MakeReferrer("http://www.referer.com")
-                   transition:ui::PAGE_TRANSITION_TYPED
-               initiationType:web::NavigationInitiationType::USER_INITIATED
-      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
-  [session_controller_ commitPendingItem];
-  [session_controller_ updatePendingItem:GURL("http://www.another.url.com")];
-  [session_controller_ commitPendingItem];
-
-  EXPECT_EQ(1U, [session_controller_ items].size());
-  EXPECT_EQ(GURL("http://www.url.com/"),
-            [session_controller_ URLForItemAtIndex:0U]);
-  EXPECT_EQ([session_controller_ items].front().get(),
-            [session_controller_ currentItem]);
-}
-
 // Tests inserting session controller state.
 TEST_F(CRWSessionControllerTest, CopyState) {
   // Add 1 committed and 1 pending item to target controller.

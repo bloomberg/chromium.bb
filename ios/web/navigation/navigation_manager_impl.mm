@@ -127,6 +127,24 @@ std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
   return item;
 }
 
+void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
+  // If there is no pending item, navigation is probably happening within the
+  // back forward history. Don't modify the item list.
+  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  if (!pending_item || url == pending_item->GetURL())
+    return;
+
+  // UpdatePendingItemUrl is used to handle redirects after loading starts for
+  // the currenting pending item. No transient item should exists at this point.
+  DCHECK(!GetTransientItem());
+  pending_item->SetURL(url);
+  pending_item->SetVirtualURL(url);
+  // Redirects (3xx response code), or client side navigation must change POST
+  // requests to GETs.
+  pending_item->SetPostData(nil);
+  pending_item->ResetHttpRequestHeaders();
+}
+
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
   return GetLastCommittedItemImpl();
 }

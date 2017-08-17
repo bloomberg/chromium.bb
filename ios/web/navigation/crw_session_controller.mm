@@ -374,28 +374,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
   return NO;
 }
 
-- (void)updatePendingItem:(const GURL&)url {
-  // If there is no pending item, navigation is probably happening within the
-  // session history. Don't modify the item list.
-  web::NavigationItemImpl* item = self.pendingItem;
-  if (!item)
-    return;
-
-  if (url != item->GetURL()) {
-    // Assume a redirection, and discard any transient item.
-    // TODO(stuartmorgan): Once the current safe browsing code is gone,
-    // consider making this a DCHECK that there's no transient item.
-    [self discardTransientItem];
-
-    item->SetURL(url);
-    item->SetVirtualURL(url);
-    // Redirects (3xx response code), or client side navigation must change
-    // POST requests to GETs.
-    item->SetPostData(nil);
-    item->ResetHttpRequestHeaders();
-  }
-}
-
 - (void)clearForwardItems {
   DCHECK_EQ(self.pendingItemIndex, -1);
   [self discardTransientItem];
