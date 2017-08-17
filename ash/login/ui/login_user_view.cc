@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -41,6 +42,11 @@ constexpr int kExtraSmallUserViewWidthDp = 282;
 constexpr int kLargeUserImageSizeDp = 96;
 constexpr int kSmallUserImageSizeDp = 74;
 constexpr int kExtraSmallUserImageSizeDp = 60;
+
+// Opacity for when the user view is active/focused and inactive.
+constexpr float kOpaqueUserViewOpacity = 1.f;
+constexpr float kTransparentUserViewOpacity = 0.63f;
+constexpr float kUserFadeAnimationDurationMs = 180;
 
 constexpr const char* kUserViewClassName = "UserView";
 constexpr const char* kLoginUserImageClassName = "LoginUserImage";
@@ -169,6 +175,29 @@ views::View* LoginUserView::TestApi::user_label() const {
   return view_->user_label_;
 }
 
+bool LoginUserView::TestApi::is_opaque() const {
+  return view_->is_opaque_;
+}
+
+// Opacity updates are dispatched via a PreTarget event handler to ensure that
+// LoginUserView receives an opacity update for every event, even if the event
+// is handled elsewhere.
+class LoginUserView::OpacityInputHandler : public ui::EventHandler {
+ public:
+  explicit OpacityInputHandler(LoginUserView* user_view)
+      : user_view_(user_view) {}
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    user_view_->UpdateOpacity();
+  }
+
+ private:
+  LoginUserView* user_view_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(OpacityInputHandler);
+};
+
 // static
 int LoginUserView::WidthForLayoutStyle(LoginDisplayStyle style) {
   switch (style) {
@@ -187,7 +216,10 @@ int LoginUserView::WidthForLayoutStyle(LoginDisplayStyle style) {
 LoginUserView::LoginUserView(LoginDisplayStyle style,
                              bool show_dropdown,
                              const OnTap& on_tap)
-    : views::Button(this), on_tap_(on_tap), display_style_(style) {
+    : views::Button(this),
+      on_tap_(on_tap),
+      opacity_input_handler_(base::MakeUnique<OpacityInputHandler>(this)),
+      display_style_(style) {
   // show_dropdown can only be true when the user view is rendering in large
   // mode.
   DCHECK(!show_dropdown || style == LoginDisplayStyle::kLarge);
@@ -214,19 +246,26 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
 
   // Layer rendering is needed for animation. We apply animations to child views
   // separately to reduce overdraw.
-  user_image_->SetPaintToLayer();
-  user_image_->layer()->SetFillsBoundsOpaquely(false);
+  auto setup_layer = [](views::View* view) {
+    view->SetPaintToLayer();
+    view->layer()->SetFillsBoundsOpaquely(false);
+    view->layer()->SetOpacity(kTransparentUserViewOpacity);
+    view->layer()->GetAnimator()->set_preemption_strategy(
+        ui::LayerAnimator::PreemptionStrategy::
+            IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  };
+  setup_layer(user_image_);
+  setup_layer(user_label_);
+  if (user_dropdown_)
+    setup_layer(user_dropdown_);
 
-  user_label_->SetPaintToLayer();
-  user_label_->layer()->SetFillsBoundsOpaquely(false);
-
-  if (user_dropdown_) {
-    user_dropdown_->SetPaintToLayer();
-    user_dropdown_->layer()->SetFillsBoundsOpaquely(false);
-  }
+  AddPreTargetHandler(opacity_input_handler_.get());
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
-LoginUserView::~LoginUserView() = default;
+LoginUserView::~LoginUserView() {
+  RemovePreTargetHandler(opacity_input_handler_.get());
+}
 
 void LoginUserView::UpdateForUser(const mojom::UserInfoPtr& user,
                                   bool animate) {
@@ -250,7 +289,8 @@ void LoginUserView::UpdateForUser(const mojom::UserInfoPtr& user,
     user_image_->layer()->GetAnimator()->StartAnimation(image_sequence);
 
     // Create opacity fade animation, which applies to the entire element.
-    auto make_opacity_sequence = []() {
+    bool is_opaque = this->is_opaque_;
+    auto make_opacity_sequence = [is_opaque]() {
       auto make_opacity_element = [](float target_opacity) {
         auto element = ui::LayerAnimationElement::CreateOpacityElement(
             target_opacity,
@@ -262,7 +302,9 @@ void LoginUserView::UpdateForUser(const mojom::UserInfoPtr& user,
 
       auto* opacity_sequence = new ui::LayerAnimationSequence();
       opacity_sequence->AddElement(make_opacity_element(0 /*target_opacity*/));
-      opacity_sequence->AddElement(make_opacity_element(1 /*target_opacity*/));
+      opacity_sequence->AddElement(make_opacity_element(
+          is_opaque ? kOpaqueUserViewOpacity
+                    : kTransparentUserViewOpacity /*target_opacity*/));
       return opacity_sequence;
     };
     user_image_->layer()->GetAnimator()->StartAnimation(
@@ -279,6 +321,39 @@ void LoginUserView::UpdateForUser(const mojom::UserInfoPtr& user,
   }
 }
 
+void LoginUserView::SetForceOpaque(bool force_opaque) {
+  force_opaque_ = force_opaque;
+  UpdateOpacity();
+}
+
+const char* LoginUserView::GetClassName() const {
+  return kUserViewClassName;
+}
+
+gfx::Size LoginUserView::CalculatePreferredSize() const {
+  switch (display_style_) {
+    case LoginDisplayStyle::kLarge:
+      return gfx::Size(kLargeUserViewWidthDp, kLargeUserViewHeightDp);
+    case LoginDisplayStyle::kSmall:
+      return gfx::Size(kSmallUserViewWidthDp, kSmallUserImageSizeDp);
+    case LoginDisplayStyle::kExtraSmall:
+      return gfx::Size(kExtraSmallUserViewWidthDp, kExtraSmallUserImageSizeDp);
+  }
+
+  NOTREACHED();
+  return gfx::Size();
+}
+
+void LoginUserView::OnFocus() {
+  views::Button::OnFocus();
+  UpdateOpacity();
+}
+
+void LoginUserView::OnBlur() {
+  views::Button::OnBlur();
+  UpdateOpacity();
+}
+
 void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
   on_tap_.Run();
 }
@@ -287,6 +362,34 @@ void LoginUserView::UpdateCurrentUserState() {
   user_image_->UpdateForUser(current_user_);
   user_label_->UpdateForUser(current_user_);
   Layout();
+}
+
+void LoginUserView::UpdateOpacity() {
+  bool was_opaque = is_opaque_;
+  is_opaque_ = force_opaque_ || IsMouseHovered() || HasFocus();
+
+  if (was_opaque == is_opaque_)
+    return;
+
+  // Animate to new opacity.
+  auto build_settings = [](views::View* view) {
+    auto settings = base::MakeUnique<ui::ScopedLayerAnimationSettings>(
+        view->layer()->GetAnimator());
+    settings->SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kUserFadeAnimationDurationMs));
+    settings->SetTweenType(gfx::Tween::Type::EASE_IN_OUT);
+    return settings;
+  };
+  auto user_image_settings = build_settings(user_image_);
+  auto user_label_settings = build_settings(user_label_);
+  float target_opacity =
+      is_opaque_ ? kOpaqueUserViewOpacity : kTransparentUserViewOpacity;
+  user_image_->layer()->SetOpacity(target_opacity);
+  user_label_->layer()->SetOpacity(target_opacity);
+  if (user_dropdown_) {
+    auto user_dropdown_settings = build_settings(user_dropdown_);
+    user_dropdown_->layer()->SetOpacity(target_opacity);
+  }
 }
 
 void LoginUserView::SetLargeLayout() {
@@ -346,24 +449,6 @@ void LoginUserView::SetSmallishLayout() {
 
   AddChildView(user_image_);
   AddChildView(user_label_);
-}
-
-const char* LoginUserView::GetClassName() const {
-  return kUserViewClassName;
-}
-
-gfx::Size LoginUserView::CalculatePreferredSize() const {
-  switch (display_style_) {
-    case LoginDisplayStyle::kLarge:
-      return gfx::Size(kLargeUserViewWidthDp, kLargeUserViewHeightDp);
-    case LoginDisplayStyle::kSmall:
-      return gfx::Size(kSmallUserViewWidthDp, kSmallUserImageSizeDp);
-    case LoginDisplayStyle::kExtraSmall:
-      return gfx::Size(kExtraSmallUserViewWidthDp, kExtraSmallUserImageSizeDp);
-  }
-
-  NOTREACHED();
-  return gfx::Size();
 }
 
 }  // namespace ash

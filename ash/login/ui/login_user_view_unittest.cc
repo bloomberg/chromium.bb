@@ -146,4 +146,87 @@ TEST_F(LoginUserViewUnittest, EntireViewIsTapTarget) {
   EXPECT_FALSE(tap(view->GetBoundsInScreen().bottom_right(), 1, 1));
 }
 
+// Verifies the focused user view is opaque. Verifies that a hovered view is
+// opaque. Verifies the interaction between focus and hovered opaqueness.
+TEST_F(LoginUserViewUnittest, FocusHoverOpaqueInteractions) {
+  LoginUserView* one = AddUserView(LoginDisplayStyle::kSmall, false);
+  LoginUserView* two = AddUserView(LoginDisplayStyle::kSmall, false);
+  LoginUserView::TestApi one_test(one);
+  LoginUserView::TestApi two_test(two);
+
+  // Start out as non-opaque.
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+
+  // Only the focused element is opaque.
+  one->RequestFocus();
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+  two->RequestFocus();
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // Non-focused element can be opaque if the mouse is over it.
+  GetEventGenerator().MoveMouseTo(one->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // Focused element stays opaque when mouse is over it.
+  GetEventGenerator().MoveMouseTo(two->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // Focused element stays opaque when mouse leaves it.
+  GetEventGenerator().MoveMouseTo(one->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // Losing focus (after a mouse hover) makes the element transparent.
+  one->RequestFocus();
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+}
+
+// Verifies that forced opaque keeps the element opaque even if it gains/loses
+// focus, and that a forced opaque element can transition to both
+// opaque/transparent when losing forced opaque.
+TEST_F(LoginUserViewUnittest, ForcedOpaque) {
+  LoginUserView* one = AddUserView(LoginDisplayStyle::kSmall, false);
+  LoginUserView* two = AddUserView(LoginDisplayStyle::kSmall, false);
+  LoginUserView::TestApi one_test(one);
+  LoginUserView::TestApi two_test(two);
+
+  // Start out as non-opaque.
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+
+  // Non-opaque becomes opaque with SetForceOpaque.
+  one->SetForceOpaque(true);
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+
+  // Forced opaque stays opaque when gaining or losing focus.
+  one->RequestFocus();
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_FALSE(two_test.is_opaque());
+  two->RequestFocus();
+  EXPECT_TRUE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // An element can become transparent when losing forced opaque.
+  EXPECT_TRUE(two->HasFocus());
+  one->SetForceOpaque(false);
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+
+  // An element can stay opaque when losing forced opaque.
+  EXPECT_TRUE(two->HasFocus());
+  two->SetForceOpaque(true);
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+  two->SetForceOpaque(false);
+  EXPECT_FALSE(one_test.is_opaque());
+  EXPECT_TRUE(two_test.is_opaque());
+}
+
 }  // namespace ash

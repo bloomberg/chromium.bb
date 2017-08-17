@@ -186,6 +186,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
 
   pin_view_->SetVisible(auth_methods_ & AUTH_PIN);
 
+  user_view_->SetForceOpaque(auth_methods_ != 0);
+
   PreferredSizeChanged();
 }
 
@@ -301,6 +303,10 @@ gfx::Size LoginAuthUserView::CalculatePreferredSize() const {
   // view will be below minimum size when no auth methods are displayed.
   size.SetToMax(user_view_->GetPreferredSize());
   return size;
+}
+
+void LoginAuthUserView::RequestFocus() {
+  password_view_->RequestFocus();
 }
 
 void LoginAuthUserView::OnAuthSubmit(bool is_pin,

@@ -35,6 +35,8 @@ class ASH_EXPORT LoginUserView : public views::Button,
 
     views::View* user_label() const;
 
+    bool is_opaque() const;
+
    private:
     LoginUserView* const view_;
   };
@@ -52,18 +54,27 @@ class ASH_EXPORT LoginUserView : public views::Button,
   // Update the user view to display the given user information.
   void UpdateForUser(const mojom::UserInfoPtr& user, bool animate);
 
+  // Set if the view must be opaque.
+  void SetForceOpaque(bool force_opaque);
+
   const mojom::UserInfoPtr& current_user() const { return current_user_; }
 
   // views::Button:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // views::ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
+  class OpacityInputHandler;
+
   // Updates UI element values so they reflect the data in |current_user_|.
   void UpdateCurrentUserState();
+  // Updates view opacity based on input state and |force_opaque_|.
+  void UpdateOpacity();
 
   void SetLargeLayout();
   void SetSmallishLayout();
@@ -78,10 +89,19 @@ class ASH_EXPORT LoginUserView : public views::Button,
   // animation completes).
   mojom::UserInfoPtr current_user_;
 
+  // Used to dispatch opacity update events.
+  std::unique_ptr<OpacityInputHandler> opacity_input_handler_;
+
   LoginDisplayStyle display_style_;
   UserImage* user_image_ = nullptr;
   UserLabel* user_label_ = nullptr;
   views::ImageView* user_dropdown_ = nullptr;
+
+  // True iff the view is currently opaque (ie, opacity = 1).
+  bool is_opaque_ = false;
+  // True if the view must be opaque (ie, opacity = 1) regardless of input
+  // state.
+  bool force_opaque_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUserView);
 };
