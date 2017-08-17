@@ -468,12 +468,12 @@ public class SuggestionsSection extends InnerNode {
 
         return true;
     }
-
     /** Fetches additional suggestions only for this section. */
     public void fetchSuggestions() {
         // We want to disable the action item while we are fetching suggestions in order to
         // avoid fetching the same suggestions twice. See crbug.com/739648.
         mMoreButton.setEnabled(false);
+        mMoreButton.setVisible(false);
         mSuggestionsSource.fetchSuggestions(mCategoryInfo.getCategory(),
                 getDisplayedSuggestionIds(), new Callback<List<SnippetArticle>>() {
                     @Override
@@ -481,12 +481,23 @@ public class SuggestionsSection extends InnerNode {
                         if (!isAttached()) return; // The section has been dismissed.
 
                         mProgressIndicator.setVisible(false);
+
                         appendSuggestions(additionalSuggestions, /*keepSectionSize=*/false);
+
                         mMoreButton.setEnabled(true);
+                        mMoreButton.setVisible(true);
                     }
                 });
 
         mProgressIndicator.setVisible(true);
+    }
+
+    /**
+     * Programmatically click the more button. This differs from directly calling
+     * {@link #fetchSuggestions()} in that it disables the button.
+     */
+    public void clickMoreButton(SuggestionsUiDelegate delegate) {
+        mMoreButton.performAction(delegate);
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
@@ -495,6 +506,7 @@ public class SuggestionsSection extends InnerNode {
             clearData();
             Log.d(TAG, "setStatus: unavailable status, cleared suggestions.");
         }
+
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
     }
 

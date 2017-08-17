@@ -26,6 +26,7 @@ extern const base::Feature kChromeHomeExpandButton;
 extern const base::Feature kChromeHomeModernLayout;
 extern const base::Feature kChromeHomeSwipeLogic;
 extern const base::Feature kContentSuggestionsLargeThumbnail;
+extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsVideoOverlay;
 extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContentSuggestionsShowSummary;

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.LayoutRes;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
@@ -11,6 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
@@ -99,6 +101,10 @@ public class ActionItem extends OptionalLeaf {
         mEnabled = enabled;
     }
 
+    public void setVisible(boolean visible) {
+        setVisibilityInternal(visible);
+    }
+
     /** ViewHolder associated to {@link ItemViewType#ACTION}. */
     public static class ViewHolder extends CardViewHolder implements ContextMenuManager.Delegate {
         private ActionItem mActionListItem;
@@ -106,7 +112,7 @@ public class ActionItem extends OptionalLeaf {
         public ViewHolder(final SuggestionsRecyclerView recyclerView,
                 ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
                 UiConfig uiConfig) {
-            super(R.layout.new_tab_page_action_card, recyclerView, uiConfig, contextMenuManager);
+            super(getLayout(), recyclerView, uiConfig, contextMenuManager);
 
             itemView.findViewById(R.id.action_button)
                     .setOnClickListener(new View.OnClickListener() {
@@ -130,6 +136,12 @@ public class ActionItem extends OptionalLeaf {
         public void onBindViewHolder(ActionItem item) {
             super.onBindViewHolder();
             mActionListItem = item;
+        }
+
+        @LayoutRes
+        private static int getLayout() {
+            return SuggestionsConfig.useModern() ? R.layout.content_suggestions_action_card_modern
+                                                 : R.layout.new_tab_page_action_card;
         }
     }
 }

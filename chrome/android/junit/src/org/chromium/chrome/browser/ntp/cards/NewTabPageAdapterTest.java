@@ -92,7 +92,9 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false),
         @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
-        @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false)})
+        @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false),
+        @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
+                enabled = false)})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -962,7 +964,9 @@ public class NewTabPageAdapterTest {
     // TODO(https://crbug.com/754778) improve annotation processor, flags repeated to enable modern.
     @Features({@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false),
             @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
-            @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT)})
+            @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
+            @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
+                    enabled = false)})
     public void testSigninPromoModern() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
