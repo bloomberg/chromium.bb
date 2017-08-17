@@ -32,6 +32,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   }
   ~InspectorPerformanceAgent() override;
 
+  void Restore() override;
+
   // Performance protocol domain implementation.
   protocol::Response enable() override;
   protocol::Response disable() override;

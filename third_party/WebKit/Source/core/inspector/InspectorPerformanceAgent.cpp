@@ -15,20 +15,35 @@ namespace blink {
 
 using protocol::Response;
 
+namespace {
+static const char kPerformanceAgentEnabled[] = "PerformanceAgentEnabled";
+}  // namespace
+
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames) {}
 
 InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
+void InspectorPerformanceAgent::Restore() {
+  if (state_->booleanProperty(kPerformanceAgentEnabled, false))
+    enable();
+}
+
 protocol::Response InspectorPerformanceAgent::enable() {
+  if (enabled_)
+    return Response::OK();
   enabled_ = true;
+  state_->setBoolean(kPerformanceAgentEnabled, true);
   instrumenting_agents_->addInspectorPerformanceAgent(this);
   return Response::OK();
 }
 
 protocol::Response InspectorPerformanceAgent::disable() {
+  if (!enabled_)
+    return Response::OK();
   enabled_ = false;
+  state_->setBoolean(kPerformanceAgentEnabled, false);
   instrumenting_agents_->removeInspectorPerformanceAgent(this);
   return Response::OK();
 }
