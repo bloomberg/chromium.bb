@@ -144,4 +144,48 @@ public class ArchiveTest extends AwTestBase {
         doArchiveTest(mTestContainerView.getAwContents(), path, true, null);
     }
 
+    /**
+     * Ensure passing a null callback to saveWebArchive doesn't cause a crash.
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullCallbackNullPath() throws Throwable {
+        loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+                TEST_PAGE);
+
+        saveWebArchiveAndWaitForUiPost(null, false /* autoname */, null /* callback */);
+    }
+
+    /**
+     * Ensure passing a null callback to saveWebArchive doesn't cause a crash.
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullCallbackGoodPath() throws Throwable {
+        final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
+        deleteFile(path);
+
+        loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+                TEST_PAGE);
+
+        saveWebArchiveAndWaitForUiPost(path, false /* autoname */, null /* callback */);
+    }
+
+    private void saveWebArchiveAndWaitForUiPost(
+            final String path, boolean autoname, final ValueCallback<String> callback) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTestContainerView.getAwContents().saveWebArchive(path, false, callback);
+            }
+        });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Just wait for this task to having been posted on the UI thread.
+                // This ensures that if the implementation of saveWebArchive posts a task to the UI
+                // thread we will allow that task to run before finishing our test.
+            }
+        });
+    }
 }
