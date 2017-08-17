@@ -64,9 +64,6 @@ public interface TabModel extends TabList {
          * The tab is initially detached.
          */
         FROM_DETACHED,
-
-        /** Opened in the background from Browser Actions context menu. */
-        FROM_BROWSER_ACTIONS,
     }
 
     /**
