@@ -201,6 +201,8 @@ void PaletteDelegateChromeOS::CancelPartialScreenshot() {
 }
 
 bool PaletteDelegateChromeOS::IsMetalayerSupported() {
+  if (!profile_)
+    return false;
   auto* service =
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   return service && service->IsMetalayerSupported();

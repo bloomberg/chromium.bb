@@ -67,15 +67,6 @@ void MetalayerMode::OnMetalayerDone() {
 }
 
 void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
-  if (enabled())
-    return;
-
-  // Shell::palette_delegate() might return null in some tests that are not
-  // concerned with palette but generate touch events.
-  if (!Shell::Get()->palette_delegate() ||
-      !Shell::Get()->palette_delegate()->IsMetalayerSupported())
-    return;
-
   if (event->pointer_details().pointer_type !=
       ui::EventPointerType::POINTER_TYPE_PEN)
     return;
@@ -88,6 +79,15 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
     return;
 
   if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
+    return;
+
+  if (enabled())
+    return;
+
+  // Shell::palette_delegate() might return null in some tests that are not
+  // concerned with palette but generate touch events.
+  if (!Shell::Get()->palette_delegate() ||
+      !Shell::Get()->palette_delegate()->IsMetalayerSupported())
     return;
 
   delegate()->RecordPaletteOptionsUsage(
