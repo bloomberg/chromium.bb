@@ -1584,7 +1584,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   double start_time_;
 
-  Member<ScriptRunner> script_runner_;
+  TraceWrapperMember<ScriptRunner> script_runner_;
 
   HeapVector<Member<ScriptElementBase>> current_script_stack_;
 
