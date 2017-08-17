@@ -747,19 +747,7 @@
         {
             "platforms": [
                 "android",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "DocumentWriteScriptBlockGroup",
-                    "params": {
-                        "disallowFetchForDocWrittenScriptsInMainFrame": "true"
-                    }
-                }
-            ]
-        },
-        {
-            "platforms": [
+                "chromeos",
                 "linux",
                 "mac",
                 "win"
