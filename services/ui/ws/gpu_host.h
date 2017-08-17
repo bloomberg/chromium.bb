@@ -16,7 +16,7 @@
 #include "services/ui/gpu/gpu_main.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace viz {
 class ServerGpuMemoryBufferManager;

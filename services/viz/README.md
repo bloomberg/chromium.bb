@@ -60,7 +60,7 @@ there are StructTraits with the interfaces that produce/consume data_types for
 mojo transport.
 
 ```
-//services/viz/{compositing, gl, hit_test, media}/private/interfaces
+//services/viz/private/interfaces/{compositing, gl, hit_test, media}
 ```
 
 These interfaces directories contain mojoms that may only be used by going
@@ -72,8 +72,8 @@ directories must not. There is no private client library, as these are meant for
 consumption by the public client library.
 
 ```
-//services/viz/{compositing, gl, hit_test, media}/privileged/interfaces
-//services/viz/{compositing, gl, hit_test, media}/privileged/<language>
+//services/viz/privileged/interfaces/{compositing, gl, hit_test, media}
+//services/viz/privileged/<language>/{compositing, gl, hit_test, media}
 ```
 
 The interfaces directories contains mojoms that may only be used by the
@@ -88,7 +88,7 @@ window server serves as the privileged client to Viz.
 ```
 
 This is the glue code that implements the primordial VizMain interface (in
-`//services/viz/main/privileged/interfaces`) that starts up the Viz process
+`//services/viz/privileged/interfaces/main`) that starts up the Viz process
 through the service manager. VizMain is a factory interface that enables the
 privileged client to instantiate the Viz subservices: compositing, gl, hit_test,
 and media.
@@ -115,7 +115,7 @@ Once the content module has been removed (or no longer depends on
 appropriate destinations in `//services/viz/public/<language>/...`.
 `//components/viz/service` will move to the appropriate service directories in
 `//services/viz/...`. `//components/viz/host` will move to
-`//services/viz/{compositing, gl, hit_test, media}/privileged`.
+`//services/viz/privileged/<language>/{compositing, gl, hit_test, media}`.
 
 Once the content module is gone, and `//services/ui` is the only privileged
 client, then perhaps the privileged client library may move to `//services/ui`.

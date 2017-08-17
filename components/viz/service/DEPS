@@ -2,6 +2,7 @@ include_rules = [
   "+cc",
   "-components/viz/common/switches.h",
   "+components/viz/service",
+  "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+third_party/skia",
   "+ui/gfx",
@@ -12,6 +13,5 @@ include_rules = [
 specific_include_rules = {
   ".*_unittest\.cc": [
     "+components/viz/test",
-    "+services/compositing/privileged/interfaces",
   ]
 }

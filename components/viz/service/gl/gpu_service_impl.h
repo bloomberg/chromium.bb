@@ -25,7 +25,7 @@
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {

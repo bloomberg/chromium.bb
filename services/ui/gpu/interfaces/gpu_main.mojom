@@ -6,8 +6,8 @@ module ui.mojom;
 
 import "gpu/ipc/common/gpu_preferences.mojom";
 import "services/ui/gpu/interfaces/gpu_host.mojom";
-import "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom";
-import "services/viz/gl/privileged/interfaces/gpu_service.mojom";
+import "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom";
+import "services/viz/privileged/interfaces/gl/gpu_service.mojom";
 
 // This is the primordial interface used to (re)start the mus-gpu bundle
 // of services.

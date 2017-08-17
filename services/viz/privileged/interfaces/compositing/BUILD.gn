@@ -4,15 +4,17 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("compositing") {
   sources = [
-    "gpu_service.mojom",
+    "frame_sink_manager.mojom",
+    "renderer_settings.mojom",
   ]
 
   public_deps = [
+    "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
-    "//media/gpu/mojo:jpeg_decoder",
-    "//media/mojo/interfaces",
+    "//mojo/common:common_custom_types",
+    "//services/viz/public/interfaces/compositing",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]

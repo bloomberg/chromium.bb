@@ -2,25 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
-
-mojom("interfaces") {
-  sources = [
-    "frame_sink_manager.mojom",
-    "renderer_settings.mojom",
-  ]
-
-  public_deps = [
-    "//cc/ipc:interfaces",
-    "//gpu/ipc/common:interfaces",
-    "//mojo/common:common_custom_types",
-    "//services/viz/public/interfaces/compositing",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
-  ]
-}
-
-source_set("tests") {
+source_set("unit_tests") {
   testonly = true
 
   sources = [
@@ -28,12 +10,12 @@ source_set("tests") {
   ]
 
   deps = [
-    ":interfaces",
     "//base/test:test_support",
     "//components/viz/common:common",
     "//media/capture/mojo:capture_types",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
+    "//services/viz/privileged/interfaces/compositing",
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]
