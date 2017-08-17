@@ -705,10 +705,8 @@ void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void MagnificationControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableTouchSupportForScreenMagnifier)) {
+  if (!IsEnabled())
     return;
-  }
 
   const ui::GestureEventDetails& details = event->details();
   if (details.type() == ui::ET_GESTURE_SCROLL_UPDATE &&

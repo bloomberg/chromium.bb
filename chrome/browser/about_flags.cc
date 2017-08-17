@@ -2946,15 +2946,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDesktopIOSPromotion)},
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-    {"enable-touch-support-for-screen-magnifier",
-     flag_descriptions::kEnableTouchSupportForScreenMagnifierName,
-     flag_descriptions::kEnableTouchSupportForScreenMagnifierDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableTouchSupportForScreenMagnifier)},
-#endif  // OS_CHROMEOS
-
     {"enable-zero-suggest-redirect-to-chrome",
      flag_descriptions::kEnableZeroSuggestRedirectToChromeName,
      flag_descriptions::kEnableZeroSuggestRedirectToChromeDescription, kOsAll,
