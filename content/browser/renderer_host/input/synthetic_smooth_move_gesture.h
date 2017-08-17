@@ -103,6 +103,8 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   int current_move_segment_;
   base::TimeTicks current_move_segment_start_time_;
   base::TimeTicks current_move_segment_stop_time_;
+  // Used to set phase information for synthetic wheel events.
+  bool needs_scroll_begin_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothMoveGesture);
 };

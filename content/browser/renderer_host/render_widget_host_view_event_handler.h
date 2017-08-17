@@ -111,6 +111,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // fullscreen.
   void TrackHost(aura::Window* reference_window);
 
+  MouseWheelPhaseHandler& mouse_wheel_phase_handler() {
+    return mouse_wheel_phase_handler_;
+  }
+
 #if defined(OS_WIN)
   // Sets the ContextMenuParams when a context menu is triggered. Required for
   // subsequent event processing.

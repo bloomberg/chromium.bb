@@ -1538,6 +1538,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       ->GetRenderWidgetHost()
       ->AddInputEventObserver(gesture_end_observer_child.get());
 
+#if defined(USE_AURA)
+  const float overscroll_threshold =
+      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
+#elif defined(OS_ANDROID)
+  const float overscroll_threshold = 0.f;
+#endif
+
   // First we need our scroll to initiate an overscroll gesture in the root
   // via unconsumed scrolls in the child.
   blink::WebGestureEvent gesture_scroll_begin(
@@ -1550,6 +1557,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
+#if defined(USE_AURA)
+  // For aura, we scroll horizontally to activate an overscroll navigation.
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint =
+      overscroll_threshold + 1;
+#elif defined(OS_ANDROID)
+  // For android, we scroll vertically to activate pull-to-refresh.
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint =
+      overscroll_threshold + 1;
+#endif
   router->RouteGestureEvent(rwhv_root, &gesture_scroll_begin,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
 
@@ -1567,16 +1583,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
 #if defined(USE_AURA)
-  const float threshold =
-      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
-  // For aura, we scroll horizontally to activate an overscroll navigation.
   float* delta = &gesture_scroll_update.data.scroll_update.delta_x;
 #elif defined(OS_ANDROID)
-  const float threshold = 0.f;
-  // For android, we scroll vertically to activate pull-to-refresh.
   float* delta = &gesture_scroll_update.data.scroll_update.delta_y;
 #endif
-  *delta = threshold + 1;
+  *delta = overscroll_threshold + 1;
   mock_overscroll_observer->Reset();
   // This will bring us into an overscroll gesture.
   router->RouteGestureEvent(rwhv_root, &gesture_scroll_update,

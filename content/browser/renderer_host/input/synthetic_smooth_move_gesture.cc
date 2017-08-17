@@ -51,8 +51,8 @@ SyntheticSmoothMoveGesture::SyntheticSmoothMoveGesture(
     SyntheticSmoothMoveGestureParams params)
     : params_(params),
       current_move_segment_start_position_(params.start_point),
-      state_(SETUP) {
-}
+      state_(SETUP),
+      needs_scroll_begin_(true) {}
 
 SyntheticSmoothMoveGesture::~SyntheticSmoothMoveGesture() {}
 
@@ -149,8 +149,6 @@ void SyntheticSmoothMoveGesture::ForwardTouchInputEvents(
 void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  blink::WebMouseWheelEvent::Phase phase =
-      blink::WebMouseWheelEvent::kPhaseChanged;
   switch (state_) {
     case STARTED:
       if (MoveIsNoOp()) {
@@ -159,7 +157,6 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       }
       ComputeNextMoveSegment();
       state_ = MOVING;
-      phase = blink::WebMouseWheelEvent::kPhaseBegan;
       // Fall through to forward the first event.
     case MOVING: {
       // Even though WebMouseWheelEvents take floating point deltas,
@@ -173,7 +170,16 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       gfx::Vector2d delta_discrete =
           FloorTowardZero(current_move_segment_total_delta -
                           current_move_segment_total_delta_discrete_);
-      ForwardMouseWheelEvent(target, delta_discrete, phase, event_timestamp);
+
+      blink::WebMouseWheelEvent::Phase phase =
+          needs_scroll_begin_ ? blink::WebMouseWheelEvent::kPhaseBegan
+                              : blink::WebMouseWheelEvent::kPhaseChanged;
+      // Only send wheel events if they have non-zero deltas.
+      if (delta_discrete.x() || delta_discrete.y()) {
+        ForwardMouseWheelEvent(target, delta_discrete, phase, event_timestamp);
+        if (phase == blink::WebMouseWheelEvent::kPhaseBegan)
+          needs_scroll_begin_ = false;
+      }
       current_move_segment_total_delta_discrete_ += delta_discrete;
 
       if (FinishedCurrentMoveSegment(event_timestamp)) {
@@ -183,9 +189,11 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
           ForwardMouseWheelInputEvents(timestamp, target);
         } else {
           state_ = DONE;
+          // Forward a wheel event with phase ended and zero deltas.
           ForwardMouseWheelEvent(target, gfx::Vector2d(),
                                  blink::WebMouseWheelEvent::kPhaseEnded,
                                  event_timestamp);
+          needs_scroll_begin_ = true;
         }
       }
     } break;

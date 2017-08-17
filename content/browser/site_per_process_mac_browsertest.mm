@@ -223,7 +223,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // If wheel scroll latching is enabled, no wheel event with phase ended will
-  // be sent before a wheel event with momentum phase began.
+  // be sent before a wheel event with momentum phase began. So, no
+  // GestureScrollEnd and no GestureScrollBegin will be generated between
+  // normal scroll and momentum scroll phases.
   if (!child_rwhv->wheel_scroll_latching_enabled()) {
     // End of non-momentum scrolling.
     scroll_event.delta_y = 0.0f;
@@ -231,17 +233,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
     scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
     child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
     gesture_scroll_end_ack_observer->Wait();
+    gesture_scroll_begin_ack_observer->Reset();
+    gesture_scroll_end_ack_observer->Reset();
   }
-
-  gesture_scroll_begin_ack_observer->Reset();
-  gesture_scroll_end_ack_observer->Reset();
 
   // We now go into a fling.
   scroll_event.delta_y = -2.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
   scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseBegan;
   child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  gesture_scroll_begin_ack_observer->Wait();
+  if (!child_rwhv->wheel_scroll_latching_enabled())
+    gesture_scroll_begin_ack_observer->Wait();
 
   scroll_event.delta_y = -2.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
