@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
-#define CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -37,7 +37,7 @@ class CompositorFrameSinkSupport;
 }
 
 namespace content {
-class CrossProcessFrameConnector;
+class FrameConnectorDelegate;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewChildFrameTest;
@@ -61,8 +61,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
 
-  void SetCrossProcessFrameConnector(
-      CrossProcessFrameConnector* frame_connector);
+  void SetFrameConnectorDelegate(FrameConnectorDelegate* frame_connector);
 
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
@@ -171,7 +170,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   InputEventAckState FilterChildGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
 
   // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;
   viz::SurfaceId SurfaceIdForTesting() const override;
-  CrossProcessFrameConnector* FrameConnectorForTesting() const {
+  FrameConnectorDelegate* FrameConnectorForTesting() const {
     return frame_connector_;
   }
 
@@ -256,7 +256,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // frame_connector_ provides a platform abstraction. Messages
   // sent through it are routed to the embedding renderer process.
-  CrossProcessFrameConnector* frame_connector_;
+  FrameConnectorDelegate* frame_connector_;
 
   base::WeakPtr<RenderWidgetHostViewChildFrame> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();

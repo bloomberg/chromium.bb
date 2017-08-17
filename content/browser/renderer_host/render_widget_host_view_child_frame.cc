@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 
 #include <algorithm>
 #include <utility>
@@ -23,8 +23,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -115,8 +115,8 @@ void RenderWidgetHostViewChildFrame::
   selection_controller_client_.reset();
 }
 
-void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
-    CrossProcessFrameConnector* frame_connector) {
+void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
+    FrameConnectorDelegate* frame_connector) {
   if (frame_connector_ == frame_connector)
     return;
 
@@ -176,8 +176,7 @@ void RenderWidgetHostViewChildFrame::OnManagerWillDestroy(
   selection_controller_client_.reset();
 }
 
-void RenderWidgetHostViewChildFrame::InitAsChild(
-    gfx::NativeView parent_view) {
+void RenderWidgetHostViewChildFrame::InitAsChild(gfx::NativeView parent_view) {
   NOTREACHED();
 }
 
@@ -198,8 +197,7 @@ void RenderWidgetHostViewChildFrame::SetBounds(const gfx::Rect& rect) {
   }
 }
 
-void RenderWidgetHostViewChildFrame::Focus() {
-}
+void RenderWidgetHostViewChildFrame::Focus() {}
 
 bool RenderWidgetHostViewChildFrame::HasFocus() const {
   if (frame_connector_)
@@ -359,8 +357,8 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
   if (frame_connector_) {
-    frame_connector_->set_view(nullptr);
-    SetCrossProcessFrameConnector(nullptr);
+    frame_connector_->SetView(nullptr);
+    SetFrameConnectorDelegate(nullptr);
   }
 
   // We notify our observers about shutdown here since we are about to release
@@ -414,7 +412,7 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
 void RenderWidgetHostViewChildFrame::SetIsInert() {
   if (host_ && frame_connector_) {
     host_->Send(new ViewMsg_SetIsInert(host_->GetRoutingID(),
-                                       frame_connector_->is_inert()));
+                                       frame_connector_->IsInert()));
   }
 }
 
@@ -687,7 +685,7 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   // spammy way to do this, but triggering on SendScreenRects() is reasonable
   // until somebody figures that out. RWHVCF::Init() is too early.
   if (frame_connector_) {
-    UpdateViewportIntersection(frame_connector_->viewport_intersection());
+    UpdateViewportIntersection(frame_connector_->ViewportIntersection());
     SetIsInert();
   }
 }
@@ -698,8 +696,7 @@ RenderWidgetHostViewChildFrame::GetAcceleratedWidgetMac() const {
   return nullptr;
 }
 
-void RenderWidgetHostViewChildFrame::SetActive(bool active) {
-}
+void RenderWidgetHostViewChildFrame::SetActive(bool active) {}
 
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
   if (frame_connector_) {
@@ -712,8 +709,7 @@ bool RenderWidgetHostViewChildFrame::SupportsSpeech() const {
   return false;
 }
 
-void RenderWidgetHostViewChildFrame::SpeakSelection() {
-}
+void RenderWidgetHostViewChildFrame::SpeakSelection() {}
 
 bool RenderWidgetHostViewChildFrame::IsSpeaking() const {
   return false;
@@ -764,7 +760,7 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
 }
 
 bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
-      const gfx::Size& desired_size) {
+    const gfx::Size& desired_size) {
   return false;
 }
 
@@ -850,7 +846,8 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterChildGestureEvent(
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   return BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
@@ -941,7 +938,7 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
   if (!frame_connector_)
     return true;
 
-  if (frame_connector_->is_hidden())
+  if (frame_connector_->IsHidden())
     return false;
 
   RenderWidgetHostViewBase* parent_view = GetParentView();

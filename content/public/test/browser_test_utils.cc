@@ -41,9 +41,9 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/fileapi/file_system_messages.h"
@@ -1351,7 +1351,8 @@ bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
       static_cast<RenderWidgetHostViewChildFrame*>(rwhvb);
 
   CrossProcessFrameConnector* frame_connector =
-      rwhvcf->FrameConnectorForTesting();
+      static_cast<CrossProcessFrameConnector*>(
+          rwhvcf->FrameConnectorForTesting());
 
   WebContentsImpl* inner_web_contents =
       static_cast<WebContentsImpl*>(impl->GetWebContents());
@@ -1508,8 +1509,9 @@ void WaitForChildFrameSurfaceReady(content::RenderFrameHost* child_frame) {
     return;
 
   RenderWidgetHostViewBase* root_view =
-      static_cast<RenderWidgetHostViewChildFrame*>(child_view)
-          ->FrameConnectorForTesting()
+      static_cast<CrossProcessFrameConnector*>(
+          static_cast<RenderWidgetHostViewChildFrame*>(child_view)
+              ->FrameConnectorForTesting())
           ->GetRootRenderWidgetHostViewForTesting();
 
   SurfaceHitTestReadyNotifier notifier(child_view);

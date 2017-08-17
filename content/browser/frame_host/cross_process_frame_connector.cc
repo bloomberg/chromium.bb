@@ -12,13 +12,13 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -34,7 +34,7 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   // Notify the view of this object being destroyed, if the view still exists.
-  set_view(nullptr);
+  SetView(nullptr);
 }
 
 bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
@@ -54,15 +54,14 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void CrossProcessFrameConnector::set_view(
-    RenderWidgetHostViewChildFrame* view) {
+void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
   if (view_) {
     RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
     if (root_view && root_view->GetCursorManager())
       root_view->GetCursorManager()->ViewBeingDestroyed(view_);
 
-    // The RenderWidgetHostDelegate needs to be checked because set_view() can
+    // The RenderWidgetHostDelegate needs to be checked because SetView() can
     // be called during nested WebContents destruction. See
     // https://crbug.com/644306.
     if (is_scroll_bubbling_ && GetParentRenderWidgetHostView() &&
@@ -76,7 +75,7 @@ void CrossProcessFrameConnector::set_view(
           ->CancelScrollBubbling(view_);
       is_scroll_bubbling_ = false;
     }
-    view_->SetCrossProcessFrameConnector(nullptr);
+    view_->SetFrameConnectorDelegate(nullptr);
   }
 
   view_ = view;
@@ -85,7 +84,7 @@ void CrossProcessFrameConnector::set_view(
   // visibility in case the frame owner is hidden in parent process. We should
   // try to move these updates to a single IPC (see https://crbug.com/750179).
   if (view_) {
-    view_->SetCrossProcessFrameConnector(this);
+    view_->SetFrameConnectorDelegate(this);
     SetRect(child_frame_rect_);
     if (is_hidden_)
       OnVisibilityChanged(false);
@@ -376,6 +375,14 @@ CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
   }
 
   return nullptr;
+}
+
+bool CrossProcessFrameConnector::IsInert() const {
+  return is_inert_;
+}
+
+bool CrossProcessFrameConnector::IsHidden() const {
+  return is_hidden_;
 }
 
 }  // namespace content

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 
 #include <stdint.h>
 
@@ -22,8 +22,8 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
-#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -46,10 +46,10 @@ const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
 
 }  // namespace
 
-class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
+class MockFrameConnectorDelegate : public FrameConnectorDelegate {
  public:
-  MockCrossProcessFrameConnector() : CrossProcessFrameConnector(nullptr) {}
-  ~MockCrossProcessFrameConnector() override {}
+  MockFrameConnectorDelegate() : FrameConnectorDelegate() {}
+  ~MockFrameConnectorDelegate() override {}
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                             const viz::SurfaceSequence& sequence) override {
@@ -91,8 +91,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         &delegate_, process_host, routing_id, std::move(widget), false);
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
-    test_frame_connector_ = new MockCrossProcessFrameConnector();
-    view_->SetCrossProcessFrameConnector(test_frame_connector_);
+    test_frame_connector_ = new MockFrameConnectorDelegate();
+    view_->SetFrameConnectorDelegate(test_frame_connector_);
 
     viz::mojom::CompositorFrameSinkPtr sink;
     viz::mojom::CompositorFrameSinkRequest sink_request =
@@ -145,7 +145,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   std::unique_ptr<MockWidgetImpl> widget_impl_;
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewChildFrame* view_;
-  MockCrossProcessFrameConnector* test_frame_connector_;
+  MockFrameConnectorDelegate* test_frame_connector_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
 
@@ -202,7 +202,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
     EXPECT_TRUE(surface);
 #endif
 
-    // Surface ID should have been passed to CrossProcessFrameConnector to
+    // Surface ID should have been passed to FrameConnectorDelegate to
     // be sent to the embedding renderer.
     EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
               test_frame_connector_->last_surface_info_);
