@@ -222,9 +222,10 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
                                     PROCESS_QUERY_INFORMATION | SYNCHRONIZE);
   bool is_running = false;
   if (plugin_process.IsValid()) {
-    is_running =
-        base::GetTerminationStatus(plugin_process.Handle(), NULL) ==
-            base::TERMINATION_STATUS_STILL_RUNNING;
+    int unused_exit_code = 0;
+    is_running = base::GetTerminationStatus(plugin_process.Handle(),
+                                            &unused_exit_code) ==
+                 base::TERMINATION_STATUS_STILL_RUNNING;
     plugin_process.Close();
   }
 
