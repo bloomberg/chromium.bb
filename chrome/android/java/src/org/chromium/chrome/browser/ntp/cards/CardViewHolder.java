@@ -244,8 +244,10 @@ public abstract class CardViewHolder
         // height of their shadows. We want |mCardGap| instead, so we set the bottom margin to
         // the difference.
         // noinspection ResourceType
-        getParams().bottomMargin =
+        RecyclerView.LayoutParams layoutParams = getParams();
+        layoutParams.bottomMargin =
                 hasCardBelow ? (mCardGap - (mCardShadow.top + mCardShadow.bottom)) : 0;
+        itemView.setLayoutParams(layoutParams);
     }
 
     /**
