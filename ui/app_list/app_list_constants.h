@@ -114,8 +114,9 @@ APP_LIST_EXPORT extern const size_t kMaxFolderNameChars;
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 
 // The different ways that the app list can transition from PEEKING to
-// FULLSCREEN_ALL_APPS. This enum must not have its order altered as it is used
-// in histograms.
+// FULLSCREEN_ALL_APPS. These values are written to logs.  New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
 enum AppListPeekingToFullscreenSource {
   kSwipe = 0,
   kExpandArrow = 1,
@@ -124,8 +125,9 @@ enum AppListPeekingToFullscreenSource {
   kMaxPeekingToFullscreen = 4,
 };
 
-// The different ways the app list can be shown. This enum must not have its
-// order altered as it is used in histograms.
+// The different ways the app list can be shown. These values are written to
+// logs.  New enum values can be added, but existing enums must never be
+// renumbered or deleted and reused.
 enum AppListShowSource {
   kSearchKey = 0,
   kShelfButton = 1,
@@ -133,16 +135,37 @@ enum AppListShowSource {
   kMaxAppListToggleMethod = 3,
 };
 
-// The two versions of folders. This enum must not have its order altered as it
-// is used in histograms.
+// The two versions of folders. These values are written to logs.  New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
 enum AppListFolderOpened {
   kOldFolders = 0,
   kFullscreenAppListFolders = 1,
   kMaxFolderOpened = 2,
 };
 
+// The valid AppListState transitions. These values are written to logs.  New
+// enum values can be added, but existing enums must never be renumbered or
+// deleted and reused. If adding a state transition, add it to the switch
+// statement in AppListView::GetAppListStateTransitionSource.
+enum AppListStateTransitionSource {
+  kFullscreenAllAppsToClosed = 0,
+  kFullscreenAllAppsToFullscreenSearch = 1,
+  kFullscreenAllAppsToPeeking = 2,
+  kFullscreenSearchToClosed = 3,
+  kFullscreenSearchToFullscreenAllApps = 4,
+  kHalfToClosed = 5,
+  KHalfToFullscreenSearch = 6,
+  kHalfToPeeking = 7,
+  kPeekingToClosed = 8,
+  kPeekingToFullscreenAllApps = 9,
+  kPeekingToHalf = 10,
+  kMaxAppListStateTransition = 11,
+};
+
 APP_LIST_EXPORT extern const char kAppListAppLaunched[];
 APP_LIST_EXPORT extern const char kAppListAppLaunchedFullscreen[];
+APP_LIST_EXPORT extern const char kAppListStateTransitionSourceHistogram[];
 APP_LIST_EXPORT extern const char kAppListFolderOpenedHistogram[];
 APP_LIST_EXPORT extern const char kAppListPeekingToFullscreenHistogram[];
 APP_LIST_EXPORT extern const char kAppListToggleMethodHistogram[];

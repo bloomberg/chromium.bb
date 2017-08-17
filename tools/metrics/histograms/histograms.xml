@@ -1718,6 +1718,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListStateTransitionSource"
+    enum="AppListStateTransitionSource">
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The number of transitions from the different AppListStates. This is gathered
+    each time the launcher transitions from various states in
+    AppListView::SetState (Peeking, Half, Fullscreen All Apps, Fullscreen
+    Search, and Closed). Not all state transitions are collected because they
+    are not meaningful in measuring user activity. This metric is only recorded
+    when the Fullscreen App List feature is enabled.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListTimeToDiscover" units="ms">
   <owner>tapted@chromium.org</owner>
   <summary>

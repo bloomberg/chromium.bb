@@ -174,6 +174,11 @@ const char kAppListAppLaunched[] = "Apps.AppListAppLaunched";
 const char kAppListAppLaunchedFullscreen[] =
     "Apps.AppListAppLaunchedFullscreen";
 
+// The UMA histogram that logs usage of state transitions in the new
+// app list UI.
+const char kAppListStateTransitionSourceHistogram[] =
+    "Apps.AppListStateTransitionSource";
+
 // The UMA histogram that logs usage of the original and redesigned folders.
 const char kAppListFolderOpenedHistogram[] = "Apps.AppListFolderOpened";
 

@@ -1175,6 +1175,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Swipe Up From Shelf"/>
 </enum>
 
+<enum name="AppListStateTransitionSource">
+  <int value="0" label="Fullscreen All Apps To Closed"/>
+  <int value="1" label="Fullscreen All Apps To Fullscreen Search"/>
+  <int value="2" label="Fullscreen All Apps To Peeking"/>
+  <int value="3" label="Fullscreen Search To Closed"/>
+  <int value="4" label="Fullscreen Search To Fullscreen All Apps"/>
+  <int value="5" label="Half To Closed"/>
+  <int value="6" label="Half To Fullscreen Search"/>
+  <int value="7" label="Half To Peeking"/>
+  <int value="8" label="Peeking To Closed"/>
+  <int value="9" label="Peeking To Fullscreen All Apps"/>
+  <int value="10" label="Peeking To Half"/>
+</enum>
+
 <enum name="AppLoadedInTabSource">
   <int value="0" label="SOURCE_APP"/>
   <int value="1" label="SOURCE_BACKGROUND_PAGE"/>
