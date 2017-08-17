@@ -8326,6 +8326,46 @@ I don't think this site should be blocked!
          desc="Title for the app launcher promo box shown on apps pages.">
         Discover the Chrome App Launcher
       </message>
+      <message name="IDS_NEW_TAB_VOICE_LISTENING"
+        desc="Used to indicate that the speech recognition service has started and is still waiting for user input. This message appears if there is no activity for 2 seconds after the user has been instructed to start speaking.">
+        Listening...
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_READY"
+        desc="Used to indicate that the speech recognition service has started and is waiting for user input.">
+        Speak now
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_NO_TRANSLATION"
+        desc="Used to indicate that speech input was detected but the service couldn't confidently translate the message.">
+        Didn't get that.
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_WAITING"
+        desc="Used to indicate that the speech recognition service is waiting for user permission to use the microphone.">
+        Waiting...
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_AUDIO_ERROR"
+        desc="Used to indicate that there was an error starting the microphone to record speech input.">
+        Please check your microphone.
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_NETWORK_ERROR"
+        desc="Used to indicate that there was a network error when communicating with the speech recognition service.">
+        No Internet connection.
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_LANGUAGE_ERROR"
+        desc="Used to indicate that the speech recognition service is not available for the user's locale.">
+        Voice search in your language is not available.
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_NO_VOICE"
+        desc="Used to indicate that the speech recognition service didn't receive any voice input.">
+        Please check your microphone and audio levels.
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_TRY_AGAIN"
+        desc="Used as text for a link to retrying voice input, in case we recognize that the user is speaking, but cannot determine the exact words.">
+        Try again
+      </message>
+      <message name="IDS_NEW_TAB_VOICE_LEARN_MORE"
+        desc="Used as text for a link to a help web page, in case speech recognition fails.">
+        Learn more
+      </message>
 
       <if expr="not use_titlecase">
         <message name="IDS_NEW_TAB_APP_OPTIONS"

@@ -8,9 +8,11 @@ action("local_ntp_code_generate") {
   script = "tools/generate_integrity_header.py"
   header_path = "$target_gen_dir/local_ntp_js_integrity.h"
   local_ntp_js = local_ntp_resources + "/local_ntp.js"
+  voice_js = local_ntp_resources + "/voice.js"
 
   inputs = [
     local_ntp_js,
+    voice_js,
   ]
 
   outputs = [
@@ -20,6 +22,7 @@ action("local_ntp_code_generate") {
   args = [
     "--output_path=" + rebase_path(header_path, root_build_dir),
     rebase_path(local_ntp_js, root_build_dir),
+    rebase_path(voice_js, root_build_dir),
   ]
 }
 
