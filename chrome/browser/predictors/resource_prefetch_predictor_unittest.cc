@@ -191,17 +191,17 @@ ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() = default;
 void ResourcePrefetchPredictorTest::SetUp() {
   InitializeSampleData();
 
-  ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+  CHECK(profile_->CreateHistoryService(true, false));
   profile_->BlockUntilHistoryProcessesPendingRequests();
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
+  CHECK(HistoryServiceFactory::GetForProfile(
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS));
   // Initialize the predictor with empty data.
   ResetPredictor();
-  EXPECT_EQ(predictor_->initialization_state_,
-            ResourcePrefetchPredictor::NOT_INITIALIZED);
+  CHECK_EQ(predictor_->initialization_state_,
+           ResourcePrefetchPredictor::NOT_INITIALIZED);
   InitializePredictor();
-  EXPECT_EQ(predictor_->initialization_state_,
-            ResourcePrefetchPredictor::INITIALIZED);
+  CHECK_EQ(predictor_->initialization_state_,
+           ResourcePrefetchPredictor::INITIALIZED);
 
   url_request_job_factory_.Reset();
   url_request_context_.set_job_factory(&url_request_job_factory_);

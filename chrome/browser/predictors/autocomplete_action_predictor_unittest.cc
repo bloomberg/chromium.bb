@@ -92,7 +92,21 @@ namespace predictors {
 class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
-      : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {}
+      : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kPrerenderFromOmnibox,
+        switches::kPrerenderFromOmniboxSwitchValueEnabled);
+
+    CHECK(profile_->CreateHistoryService(true, false));
+    predictor_ = base::MakeUnique<AutocompleteActionPredictor>(profile_.get());
+    predictor_->CreateLocalCachesFromDatabase();
+    profile_->BlockUntilHistoryProcessesPendingRequests();
+    content::RunAllBlockingPoolTasksUntilIdle();
+
+    CHECK(predictor_->initialized_);
+    CHECK(db_cache()->empty());
+    CHECK(db_id_cache()->empty());
+  }
 
   ~AutocompleteActionPredictorTest() override {
     // Wait for all pending tasks on the DB sequence.
@@ -102,22 +116,6 @@ class AutocompleteActionPredictorTest : public testing::Test {
     // supposed to be called as part of being a KeyedService. The behavior of
     // this method is not explicitly verified.
     predictor_->Shutdown();
-  }
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kPrerenderFromOmnibox,
-        switches::kPrerenderFromOmniboxSwitchValueEnabled);
-
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
-    predictor_ = base::MakeUnique<AutocompleteActionPredictor>(profile_.get());
-    predictor_->CreateLocalCachesFromDatabase();
-    profile_->BlockUntilHistoryProcessesPendingRequests();
-    content::RunAllBlockingPoolTasksUntilIdle();
-
-    ASSERT_TRUE(predictor_->initialized_);
-    ASSERT_TRUE(db_cache()->empty());
-    ASSERT_TRUE(db_id_cache()->empty());
   }
 
  protected:
