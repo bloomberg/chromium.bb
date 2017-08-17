@@ -201,10 +201,10 @@ int main(int argc, char* argv[]) {
   // Dump Errors and Warnings to stdout.
   const std::vector<AuditorResult>& errors = auditor.errors();
   for (const auto& error : errors) {
-    printf("%s: %s\n",
-           error.type() == AuditorResult::ResultType::ERROR_SYNTAX ? "Error"
-                                                                   : "Warning",
-           error.ToText().c_str());
+    printf(
+        "%s: %s\n",
+        error.type() == AuditorResult::Type::ERROR_SYNTAX ? "Error" : "Warning",
+        error.ToText().c_str());
   }
 
   return 0;
