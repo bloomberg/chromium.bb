@@ -202,6 +202,13 @@ speech.finalResult_;
 
 
 /**
+ * Base URL for sending queries to Search. Includes trailing forward slash.
+ * @private {string}
+ */
+speech.googleBaseUrl_;
+
+
+/**
  * The ID for the idle timer.
  * @private {number}
  */
@@ -232,7 +239,8 @@ speech.init = function(configData) {
         'Trying to re-initialize speech when not in UNINITIALIZED state.');
   }
 
-  view.init(speech.onClick_);
+  speech.googleBaseUrl_ = configData.googleBaseUrl;
+
   // Set translations map.
   speech.messages = {
     audioError: configData.translatedStrings.audioError,
@@ -253,6 +261,7 @@ speech.init = function(configData) {
     waiting: configData.translatedStrings.waiting,
   };
 
+  view.init(speech.onClick_);
   speech.initWebkitSpeech_();
   speech.reset_();
 };
@@ -615,9 +624,13 @@ speech.submitFinalResult_ = function() {
   }
 
   // Getting |speech.finalResult_| needs to happen before stopping speech.
-  // TODO(oskopek): Encode (and wrap) |speech.finalResult_|.
-  const queryUrl = `https://google.com/search?hl=${getChromeUILanguage()}` +
-      `&q=${speech.finalResult_}&gs_ivs=1`;
+  const encodedQuery =
+      encodeURIComponent(speech.finalResult_).replace(/%20/g, '+');
+  const queryUrl = speech.googleBaseUrl_ +
+      // Add the actual query.
+      'search?q=' + encodedQuery +
+      // Add a parameter to indicate that this request is a voice search.
+      '&gs_ivs=1';
 
   speech.stop_();
   window.location.href = queryUrl;
