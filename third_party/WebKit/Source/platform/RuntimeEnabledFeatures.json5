@@ -1055,7 +1055,7 @@
     },
     {
       name: "ValidationBubbleInRenderer",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "VibrateRequiresUserGesture",

@@ -1608,8 +1608,10 @@ class FormBubbleDelegate : public WebContentsDelegate {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
+// TODO(tkent): Remove this test when we remove the browser-side validation
+// bubble implementation. crbug.com/739091
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       NavigationHidesFormValidationBubble) {
+                       DISABLED_NavigationHidesFormValidationBubble) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
