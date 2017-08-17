@@ -178,7 +178,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Called when the session is closed with a net error.
     void OnSessionClosed(QuicVersion quic_version,
-                         int error,
+                         int net_error,
+                         QuicErrorCode quic_error,
                          bool port_migration_detected,
                          LoadTimingInfo::ConnectTiming connect_timing,
                          bool was_ever_used);
@@ -199,7 +200,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // session is destroyed.
     NetLogWithSource net_log_;
     bool was_handshake_confirmed_;
-    int error_;
+    int net_error_;
+    QuicErrorCode quic_error_;
     bool port_migration_detected_;
     QuicServerId server_id_;
     QuicVersion quic_version_;
