@@ -214,10 +214,14 @@ def SaveTimestampsAndHash(root, sha1):
 def HaveSrcInternalAccess():
   """Checks whether access to src-internal is available."""
   with open(os.devnull, 'w') as nul:
+    # This is required to avoid modal dialog boxes after Git 2.14.1 and Git
+    # Credential Manager for Windows 1.12. See https://crbug.com/755694 and
+    # https://github.com/Microsoft/Git-Credential-Manager-for-Windows/issues/482.
+    child_env = dict(os.environ, GCM_INTERACTIVE='NEVER')
     return subprocess.call(
-        ['git', '-c', 'core.askpass=true', 'remote', 'show',
-         'https://chrome-internal.googlesource.com/chrome/src-internal/'],
-        shell=True, stdin=nul, stdout=nul, stderr=nul) == 0
+       ['git', '-c', 'core.askpass=true', 'remote', 'show',
+        'https://chrome-internal.googlesource.com/chrome/src-internal/'],
+       shell=True, stdin=nul, stdout=nul, stderr=nul, env=child_env) == 0
 
 
 def LooksLikeGoogler():
