@@ -615,7 +615,6 @@ source_set("blink_headers") {
     "web/WebUserGestureToken.h",
     "web/WebUserMediaClient.h",
     "web/WebUserMediaRequest.h",
-    "web/WebV8ContextSnapshot.h",
     "web/WebView.h",
     "web/WebViewClient.h",
     "web/WebWidget.h",

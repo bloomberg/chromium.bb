@@ -54,13 +54,17 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA) && \
+    !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#include "gin/v8_initializer.h"
+#endif
 
 #if defined(OS_WIN)
 #include <malloc.h>
@@ -174,24 +178,6 @@ void InitializeFieldTrialAndFeatureList(
   base::FeatureList::SetInstance(std::move(feature_list));
 }
 
-void LoadV8ContextSnapshotFile() {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::FileDescriptorStore& file_descriptor_store =
-      base::FileDescriptorStore::GetInstance();
-  base::MemoryMappedFile::Region region;
-  base::ScopedFD fd = file_descriptor_store.MaybeTakeFD(
-      kV8ContextSnapshotDataDescriptor, &region);
-  if (fd.is_valid()) {
-    gin::V8Initializer::LoadV8ContextSnapshotFromFD(fd.get(), region.offset,
-                                                    region.size);
-    return;
-  }
-#endif  // OS
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  gin::V8Initializer::LoadV8ContextSnapshot();
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
-}
-
 void InitializeV8IfNeeded(
     const base::CommandLine& command_line,
     const std::string& process_type) {
@@ -208,26 +194,24 @@ void InitializeV8IfNeeded(
   if (v8_snapshot_fd.is_valid()) {
     gin::V8Initializer::LoadV8SnapshotFromFD(v8_snapshot_fd.get(),
                                              region.offset, region.size);
-  } else {
-    gin::V8Initializer::LoadV8Snapshot();
-  }
-  base::ScopedFD v8_natives_fd =
-      file_descriptor_store.MaybeTakeFD(kV8NativesDataDescriptor, &region);
-  if (v8_natives_fd.is_valid()) {
-    gin::V8Initializer::LoadV8NativesFromFD(v8_natives_fd.get(), region.offset,
-                                            region.size);
-  } else {
-    gin::V8Initializer::LoadV8Natives();
-  }
+    } else {
+      gin::V8Initializer::LoadV8Snapshot();
+    }
+    base::ScopedFD v8_natives_fd =
+        file_descriptor_store.MaybeTakeFD(kV8NativesDataDescriptor, &region);
+    if (v8_natives_fd.is_valid()) {
+      gin::V8Initializer::LoadV8NativesFromFD(v8_natives_fd.get(),
+                                              region.offset, region.size);
+    } else {
+      gin::V8Initializer::LoadV8Natives();
+    }
 #else
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
+    gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
 #endif  // OS_POSIX && !OS_MACOSX
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
-
-  LoadV8ContextSnapshotFile();
 }
 
 }  // namespace

@@ -16,7 +16,6 @@ group("bindings_modules_v8_generated") {
     ":generate_bindings_modules_v8_interfaces",
     ":generate_bindings_modules_v8_partial_interfaces",
     ":generate_bindings_modules_v8_partial_interfaces_for_testing",
-    ":generate_v8_context_snapshot_external_references",
   ]
 }
 
@@ -108,38 +107,4 @@ blink_modules_sources("bindings_modules_impl") {
     # multiple shards.
     split_count = 5
   }
-}
-
-action("generate_v8_context_snapshot_external_references") {
-  script = "$bindings_scripts_dir/generate_v8_context_snapshot_external_references.py"
-  idl_files = core_idl_files + core_idl_with_modules_dependency_files +
-              modules_definition_idl_files
-  output = bindings_generated_v8_context_snapshot_external_references_file
-
-  inputs = idl_files + [ script ]
-  outputs = [
-    output,
-  ]
-
-  response_file_contents = rebase_path(idl_files, root_build_dir)
-  args = [
-    "--cache-dir",
-    rebase_path(bindings_scripts_output_dir, root_build_dir),
-    "--output",
-    rebase_path(output, root_build_dir),
-    "--idl-files-list",
-    "{{response_file_name}}",
-    "--info-dir",
-    rebase_path("$bindings_output_dir", root_build_dir),
-    "--target-component",
-    "modules",
-  ]
-
-  deps = [
-    "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info",
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info_individual_modules",
-    "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
-    "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
-  ]
 }

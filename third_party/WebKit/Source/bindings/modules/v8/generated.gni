@@ -86,6 +86,3 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/RemotePlaybackAvailabilityCallback.cpp",
   "$bindings_modules_v8_output_dir/RemotePlaybackAvailabilityCallback.h",
 ]
-
-bindings_generated_v8_context_snapshot_external_references_file =
-    "$bindings_modules_v8_output_dir/V8ContextSnapshotExternalReferences.cpp"

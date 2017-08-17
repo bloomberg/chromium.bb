@@ -19,7 +19,6 @@ bindings_modules_v8_files =
                     "ToV8ForModules.h",
                     "V8BindingForModules.cpp",
                     "V8BindingForModules.h",
-                    "V8ContextSnapshotExternalReferences.h",
                     "wasm/WasmResponseExtensions.cpp",
                     "wasm/WasmResponseExtensions.h",
                     "WebGLAny.cpp",

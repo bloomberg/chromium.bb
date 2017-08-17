@@ -117,7 +117,6 @@ if (!is_android && !is_mac) {
   group("chrome") {
     public_deps = [
       ":chrome_initial",
-      "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
     data_deps = [
       ":chrome_initial",
@@ -863,7 +862,6 @@ if (is_win) {
   bundle_data("chrome_framework_resources") {
     sources = [
       "$root_out_dir/app_mode_loader.app",
-      "$root_out_dir/v8_context_snapshot.bin",
 
       # This image is used to badge the lock icon in the
       # authentication dialogs, such as those used for installation
@@ -883,7 +881,6 @@ if (is_win) {
     public_deps = [
       ":packed_resources",
       "//chrome/app_shim:app_mode_loader",
-      "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
     if (is_chrome_branded) {
