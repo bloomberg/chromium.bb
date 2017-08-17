@@ -343,7 +343,8 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   }
 
   // Used externally by blink for setting the PropertyTrees when
-  // |settings_.use_layer_lists| is true. This is a SPV2 setting.
+  // UseLayerLists() is true, which also implies that Slimming Paint
+  // v2 is enabled.
   PropertyTrees* property_trees() { return &property_trees_; }
 
   void SetNeedsDisplayOnAllLayers();
@@ -459,6 +460,11 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
 
   bool IsSingleThreaded() const;
   bool IsThreaded() const;
+
+  // Indicates whether this host is configured to use layer lists
+  // rather than layer trees. This also implies that property trees
+  // are always already built and so cc doesn't have to build them.
+  bool IsUsingLayerLists() const;
 
   // viz::SurfaceReferenceOwner implementation.
   viz::SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() override;
