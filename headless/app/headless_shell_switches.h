@@ -17,6 +17,7 @@ extern const char kDeterministicFetch[];
 extern const char kDumpDom[];
 extern const char kHideScrollbars[];
 extern const char kPrintToPDF[];
+extern const char kProxyBypassList[];
 extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
 extern const char kRemoteDebuggingSocketFd[];
