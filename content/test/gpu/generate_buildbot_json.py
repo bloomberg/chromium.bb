@@ -1758,6 +1758,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       # subset of machines, like the way the tester_configs work.
       'shards': 6,
     },
+    'android_args': [
+      # The current working directory when run via isolate is
+      # out/Debug or out/Release. Reference this file relatively to
+      # it.
+      '--read-abbreviated-json-results-from=' + \
+      '../../content/test/data/gpu/webgl_conformance_tests_output.json',
+    ],
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [

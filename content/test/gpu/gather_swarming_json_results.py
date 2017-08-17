@@ -65,45 +65,41 @@ class Swarming:
   @staticmethod
   def ExtractShardTaskIDs(urls):
     SWARMING_URL = 'https://chromium-swarm.appspot.com/user/task/'
-    taskIDs = []
-    for k,v in urls.iteritems():
-      if not k.startswith('shard'):
-        raise Exception('Illegally formatted \'urls\' key %s' % k)
-      if not v.startswith(SWARMING_URL):
+    task_ids = []
+    for u in urls:
+      if not u.startswith(SWARMING_URL):
         raise Exception('Illegally formatted \'urls\' value %s' % v)
-      taskIDs.append(v[len(SWARMING_URL):])
-    return taskIDs
+      task_ids.append(u[len(SWARMING_URL):])
+    return task_ids
 
 class Waterfall:
   def __init__(self, waterfall):
     self._waterfall = waterfall
-    self.BASE_URL = 'http://build.chromium.org/p/'
-    self.BASE_JSON_BUILDERS_URL = self.BASE_URL + '%s/json/builders'
-    self.BASE_JSON_BUILDS_URL = self.BASE_JSON_BUILDERS_URL + '/%s/builds'
-
-  def GetJsonFromUrl(self, url):
-    conn = urllib2.urlopen(url)
-    result = conn.read()
-    conn.close()
-    return json.loads(result)
-
-  def GetBuildNumbersForBot(self, bot):
-    builds_json = self.GetJsonFromUrl(
-      self.BASE_JSON_BUILDS_URL %
-      (self._waterfall, urllib.quote(bot)))
-    build_numbers = [int(k) for k in builds_json.keys()]
-    build_numbers.sort()
-    return build_numbers
-
-  def GetMostRecentlyCompletedBuildNumberForBot(self, bot):
-    builds = self.GetBuildNumbersForBot(bot)
-    return builds[len(builds) - 1]
 
   def GetJsonForBuild(self, bot, build):
-    return self.GetJsonFromUrl(
-      (self.BASE_JSON_BUILDS_URL + '/%d') %
-      (self._waterfall, urllib.quote(bot), build))
+    # Explorable via RPC explorer:
+    # https://luci-milo.appspot.com/rpcexplorer/services/milo.BuildInfo/Get
 
+    # The Python docs are wrong. It's fine for this payload to be just
+    # a JSON string.
+    call_arg = json.dumps({ "buildbot": { "masterName": self._waterfall,
+                                          "builderName": bot,
+                                          "buildNumber": build }})
+    headers = {
+      "content-type": "application/json",
+      "accept": "application/json"
+    }
+    request = urllib2.Request(
+      "https://luci-milo.appspot.com/prpc/milo.BuildInfo/Get",
+      call_arg,
+      headers)
+    conn = urllib2.urlopen(request)
+    result = conn.read()
+    conn.close()
+
+    # Result is a two-line string the first line of which is
+    # deliberate garbage and the second of which is a JSON payload.
+    return json.loads(result.splitlines()[1])
 
 def JsonLoadStrippingUnicode(file, **kwargs):
   def StripUnicode(obj):
@@ -125,6 +121,23 @@ def JsonLoadStrippingUnicode(file, **kwargs):
 
   return StripUnicode(json.load(file, **kwargs))
 
+def FindStepRecursive(node, step_name):
+  # The format of this JSON-encoded protobuf is defined here:
+  # https://chromium.googlesource.com/infra/luci/luci-go/+/master/
+  #   common/proto/milo/annotations.proto
+  # It's easiest to just use the RPC explorer to fetch one and see
+  # what's desired to extract.
+  if 'name' in node:
+    if node['name'].startswith(step_name):
+      return node
+  if 'substep' in node:
+    for subnode in node['substep']:
+      # The substeps all wrap the node we care about in a wrapper
+      # object which has one field named "step".
+      res = FindStepRecursive(subnode['step'], step_name)
+      if res:
+        return res
+  return None
 
 def Merge(dest, src):
   if isinstance(dest, list):
@@ -168,7 +181,7 @@ def main():
   parser.add_argument('--bot', type=str, default='Linux Release (NVIDIA)',
                       help='Which bot on the waterfall to examine')
   parser.add_argument('--build', default=-1, type=int,
-                      help='Which build to fetch (-1 means most recent)')
+                      help='Which build to fetch (must be specified)')
   parser.add_argument('--step', type=str, default='webgl2_conformance_tests',
                       help='Which step to fetch (treated as a prefix)')
   parser.add_argument('--output', type=str, default='output.json',
@@ -193,7 +206,8 @@ def main():
     waterfall = Waterfall(options.waterfall)
     build = options.build
     if build < 0:
-      build = waterfall.GetMostRecentlyCompletedBuildNumberForBot(options.bot)
+      print "Build number must be specified; check the bot's page"
+      return 1
 
     build_json = waterfall.GetJsonForBuild(options.bot, build)
 
@@ -201,37 +215,32 @@ def main():
       print 'Fetching information from %s, bot %s, build %s' % (
         options.waterfall, options.bot, build)
 
-    taskIDs = []
-    for s in build_json['steps']:
-      if s['name'].startswith(options.step):
-        # Found the step.
-        #
-        # The Swarming shards happen to be listed in the 'urls' property
-        # of the step. Iterate down them.
-        if 'urls' not in s or not s['urls']:
-          # Note: we could also just download json.output if it exists.
-          print ('%s on waterfall %s, bot %s, build %s doesn\'t '
-                 'look like a Swarmed task') % (
-                   s['name'], options.waterfall, options.bot, build)
-          return 1
-        taskIDs = Swarming.ExtractShardTaskIDs(s['urls'])
-        if options.verbose:
-          print 'Found Swarming task IDs for step %s' % s['name']
+    step = FindStepRecursive(build_json['step'], options.step)
+    if not step:
+      print "Unable to find step starting with " + options.step
+      return 1
 
-        break
-    if not taskIDs:
+    shard_urls = []
+    expected_prefix = 'https://chromium-swarm.appspot.com/user/task/'
+    for link in step['otherLinks']:
+      label = link['label']
+      if label.startswith('shard #') and not label.endswith('isolated out'):
+        shard_urls.append(link['url'])
+    task_ids = Swarming.ExtractShardTaskIDs(shard_urls)
+
+    if not task_ids:
       print 'Problem gathering the Swarming task IDs for %s' % options.step
       return 1
 
     # Collect the results.
     tmpdir = tempfile.mkdtemp()
-    Swarming.Collect(taskIDs, tmpdir, options.verbose)
-    numTaskIDs = len(taskIDs)
+    Swarming.Collect(task_ids, tmpdir, options.verbose)
+    num_task_ids = len(task_ids)
 
   # Shards' JSON outputs are in sequentially-numbered subdirectories
   # of the output directory.
   merged_json = None
-  for i in xrange(numTaskIDs):
+  for i in xrange(num_task_ids):
     with open(os.path.join(tmpdir, str(i), 'output.json')) as f:
       cur_json = JsonLoadStrippingUnicode(f)
       if not merged_json:
