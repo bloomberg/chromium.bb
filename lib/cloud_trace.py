@@ -11,6 +11,7 @@ import functools
 import json
 import os
 import random
+import re
 
 import google.protobuf.internal.well_known_types as types
 
@@ -59,7 +60,7 @@ class Span(structured.Structured):
       'name', 'spanId', 'parentSpanId', 'labels',
       'startTime', 'endTime', 'status')
 
-  def __init__(self, name, spanId=None, parentSpanId=None, labels=None,
+  def __init__(self, name, spanId=None, labels=None, parentSpanId=None,
                traceId=None):
     """Creates a Span object.
 
@@ -67,27 +68,29 @@ class Span(structured.Structured):
       name: The name of the span
       spanId: (optional) A 64-bit number as a string. If not provided, it will
           be generated randomly with .GenerateSpanId().
-      parentSpanId: (optional) The spanId of the parent.
       labels: (optional) a dict<string, string> of key/values
       traceId: (optional) A 32 hex digit string referring to the trace
           containing this span. If not provided, a new trace will be created
           with a random id.
+      parentSpanId: (optional) The spanId of the parent.
     """
-    # visible attributes
+    # Visible attributes
     self.name = name
-    self.spanId = self.GenerateSpanId() if spanId is None else spanId
+    self.spanId = spanId or Span.GenerateSpanId()
     self.parentSpanId = parentSpanId
     self.labels = labels or {}
     self.startTime = None
     self.endTime = None
+    # Non-visible attributes
+    self.traceId = traceId or Span.GenerateTraceId()
 
-    self.traceId = traceId or self.GenerateTraceId()
-
-  def GenerateSpanId(self):
+  @staticmethod
+  def GenerateSpanId():
     """Returns a random 64-bit number as a string."""
     return str(random.randint(0, 2**64))
 
-  def GenerateTraceId(self):
+  @staticmethod
+  def GenerateTraceId():
     """Returns a random 128-bit number as a 32-byte hex string."""
     id_number = random.randint(0, 2**128)
     return '%0.32X' % id_number
@@ -115,11 +118,46 @@ class Span(structured.Structured):
 
 class SpanStack(object):
   """A stack of Span contexts."""
-  def __init__(self, traceId=None, parentSpanId=None, labels=None):
+
+  CLOUD_TRACE_CONTEXT_ENV = 'CLOUD_TRACE_CONTEXT'
+  CLOUD_TRACE_CONTEXT_PATTERN = re.compile(
+      r'(?P<traceId>[0-9A-Fa-f]+)'
+      r'/'
+      r'(?P<parentSpanId>\d+)'
+      r';o=(?P<options>\d+)'
+  )
+
+  def __init__(self, global_context=None, traceId=None, parentSpanId=None,
+               labels=None, enabled=True):
+    """Initializes the Span.
+
+      global_context: (optional) A global context str, perhaps read from the
+          X-Cloud-Trace-Context header.
+      traceId: (optional) A 32 hex digit string referring to the trace
+          containing this span. If not provided, a new trace will be created
+          with a random id.
+      parentSpanId: (optional) The spanId of the parent.
+      labels: (optional) a dict<string, string> of key/values to attach to
+          each Span created, or None.
+      enabled: (optional) a bool indicating whether we should log the spans
+          to a file for later uploading by the cloud trace log consumer daemon.
+    """
     self.traceId = traceId
     self.spans = []
     self.last_span_id = parentSpanId
     self.labels = labels
+    self.enabled = enabled
+
+    global_context = (global_context or
+                      os.environ.get(self.CLOUD_TRACE_CONTEXT_ENV, ''))
+    context = SpanStack._ParseCloudTraceContext(global_context)
+
+    if traceId is None:
+      self.traceId = context.get('traceId')
+    if parentSpanId is None:
+      self.last_span_id = context.get('parentSpanId')
+    if context.get('options') == '0':
+      self.enabled = False
 
   def _CreateSpan(self, name, **kwargs):
     """Creates a span instance, setting certain defaults.
@@ -156,13 +194,15 @@ class SpanStack(object):
     self.spans.append(span)
 
     with span:
-      yield span
+      with self.EnvironmentContext():
+        yield span
 
     self.spans.pop()
     self.last_span_id = old_span_id
 
     # Log each span to a file for later processing.
-    LogSpan(span)
+    if self.enabled:
+      LogSpan(span)
 
   # pylint: disable=docstring-misnamed-args
   def Spanned(self, *span_args, **span_kwargs):
@@ -183,3 +223,72 @@ class SpanStack(object):
           f(*args, **kwargs)
       return inner
     return SpannedDecorator
+
+  def _GetCloudTraceContextHeader(self):
+    """Gets the Cloud Trace HTTP header context.
+
+    From the cloud trace doc explaining this (
+    https://cloud.google.com/trace/docs/support?hl=bg)
+
+      "X-Cloud-Trace-Context: TRACE_ID/SPAN_ID;o=TRACE_TRUE"
+      Where:
+        - TRACE_ID is a 32-character hex value representing a 128-bit number.
+        It should be unique between your requests, unless you intentionally
+        want to bundle the requests together. You can use UUIDs.
+        - SPAN_ID should be 0 for the first span in your trace. For
+        subsequent requests, set SPAN_ID to the span ID of the parent
+        request. See the description of TraceSpan (REST, RPC) for more
+        information about nested traces.
+        - TRACE_TRUE must be 1 to trace this request. Specify 0 to not trace
+        the request. For example, to force a trace with cURL:
+          curl "http://www.example.com" --header "X-Cloud-Trace-Context:
+            105445aa7843bc8bf206b120001000/0;o=1"
+    """
+    if not self.traceId:
+      return ''
+    span_postfix = '/%s' % self.spans[-1].spanId if self.spans else ''
+    enabled = '1' if self.enabled else '0'
+    return "{trace_id}{span_postfix};o={enabled}".format(
+        trace_id=self.traceId,
+        span_postfix=span_postfix,
+        enabled=enabled)
+
+  @contextlib.contextmanager
+  def EnvironmentContext(self):
+    """Sets CLOUD_TRACE_CONTEXT to the value of X-Cloud-Trace-Context.
+
+    Cloud Trace uses an HTTP header to propagate trace context across RPC
+    boundaries. This method does the same across process boundaries using an
+    environment variable.
+    """
+    old_value = os.environ.get(self.CLOUD_TRACE_CONTEXT_ENV)
+    try:
+      os.environ[self.CLOUD_TRACE_CONTEXT_ENV] = (
+          self._GetCloudTraceContextHeader())
+      yield
+    finally:
+      if old_value is not None:
+        os.environ[self.CLOUD_TRACE_CONTEXT_ENV] = old_value
+      elif self.CLOUD_TRACE_CONTEXT_ENV in os.environ:
+        del os.environ[self.CLOUD_TRACE_CONTEXT_ENV]
+
+  @staticmethod
+  def _ParseCloudTraceContext(context):
+    """Sets current_span_id and trace_id from the |context|.
+
+    See _GetCloudTraceContextHeader.
+
+    Args:
+      context: The context variable, either from X-Cloud-Trace-Context
+          or from the CLOUD_TRACE_CONTEXT environment variable.
+
+    Returns:
+      A dictionary, which if the context string matches
+      CLOUD_TRACE_CONTEXT_PATTERN, contains the matched groups. If not matched,
+      returns an empty dictionary.
+    """
+    m = SpanStack.CLOUD_TRACE_CONTEXT_PATTERN.match(context)
+    if m:
+      return m.groupdict()
+    else:
+      return {}
