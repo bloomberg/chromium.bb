@@ -482,6 +482,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
         ['mac', ('nvidia', 0xfe9)], bug=654187)
 
+    # When this fails on this configuration, it fails multiple times in a row.
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'nvidia'], bug=756537)
+
     # Mac AMD
     # TODO(kbr): uncomment the following two exepectations after test
     # has been made more robust.
