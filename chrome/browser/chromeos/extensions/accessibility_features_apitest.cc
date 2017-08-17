@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/test/result_catcher.h"
 
@@ -70,19 +70,19 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
   // Returns preference path for accessibility features as defined by the API.
   const char* GetPrefForFeature(const std::string& feature) {
     if (feature == "spokenFeedback")
-      return ash::prefs::kAccessibilitySpokenFeedbackEnabled;
+      return prefs::kAccessibilitySpokenFeedbackEnabled;
     if (feature == "largeCursor")
-      return ash::prefs::kAccessibilityLargeCursorEnabled;
+      return prefs::kAccessibilityLargeCursorEnabled;
     if (feature == "stickyKeys")
-      return ash::prefs::kAccessibilityStickyKeysEnabled;
+      return prefs::kAccessibilityStickyKeysEnabled;
     if (feature == "highContrast")
-      return ash::prefs::kAccessibilityHighContrastEnabled;
+      return prefs::kAccessibilityHighContrastEnabled;
     if (feature == "screenMagnifier")
-      return ash::prefs::kAccessibilityScreenMagnifierEnabled;
+      return prefs::kAccessibilityScreenMagnifierEnabled;
     if (feature == "autoclick")
-      return ash::prefs::kAccessibilityAutoclickEnabled;
+      return prefs::kAccessibilityAutoclickEnabled;
     if (feature == "virtualKeyboard")
-      return ash::prefs::kAccessibilityVirtualKeyboardEnabled;
+      return prefs::kAccessibilityVirtualKeyboardEnabled;
     return NULL;
   }
 

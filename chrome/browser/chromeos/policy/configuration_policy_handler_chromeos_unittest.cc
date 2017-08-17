@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -59,9 +58,8 @@ void LoginScreenPowerManagementPolicyHandlerTest::SetUp() {
 TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
   handler_.ApplyPolicySettings(policy_, &prefs_);
   EXPECT_FALSE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled, NULL));
-  EXPECT_FALSE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, NULL));
+      prefs_.GetValue(prefs::kAccessibilityScreenMagnifierEnabled, NULL));
+  EXPECT_FALSE(prefs_.GetValue(prefs::kAccessibilityScreenMagnifierType, NULL));
 }
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
@@ -71,14 +69,13 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
-  EXPECT_TRUE(prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                              &enabled));
+  EXPECT_TRUE(
+      prefs_.GetValue(prefs::kAccessibilityScreenMagnifierEnabled, &enabled));
   ASSERT_TRUE(enabled);
   EXPECT_TRUE(base::Value(false).Equals(enabled));
 
   const base::Value* type = NULL;
-  EXPECT_TRUE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, &type));
+  EXPECT_TRUE(prefs_.GetValue(prefs::kAccessibilityScreenMagnifierType, &type));
   ASSERT_TRUE(type);
   EXPECT_TRUE(base::Value(0).Equals(type));
 }
@@ -90,14 +87,13 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
-  EXPECT_TRUE(prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                              &enabled));
+  EXPECT_TRUE(
+      prefs_.GetValue(prefs::kAccessibilityScreenMagnifierEnabled, &enabled));
   ASSERT_TRUE(enabled);
   EXPECT_TRUE(base::Value(true).Equals(enabled));
 
   const base::Value* type = NULL;
-  EXPECT_TRUE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, &type));
+  EXPECT_TRUE(prefs_.GetValue(prefs::kAccessibilityScreenMagnifierType, &type));
   ASSERT_TRUE(type);
   EXPECT_TRUE(base::Value(1).Equals(type));
 }
