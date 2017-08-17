@@ -79,6 +79,7 @@ if (is_android) {
       "./platform/WebTextInputMode.h",
       "./platform/WebTextInputType.h",
       "./platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
+      "./web/WebContextMenuData.h",
     ]
   }
 

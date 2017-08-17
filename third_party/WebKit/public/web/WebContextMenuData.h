@@ -48,6 +48,9 @@ namespace blink {
 
 // This struct is passed to WebViewClient::ShowContextMenu.
 struct WebContextMenuData {
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebContextMenuMediaType
   enum MediaType {
     // No special node is in context.
     kMediaTypeNone,
