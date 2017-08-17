@@ -31,7 +31,7 @@
 #
 #   * You must use ninja & clang to build Chromium.
 #
-#   * You must have run gyp_chromium and built Chromium recently.
+#   * You must have built Chromium recently.
 #
 #
 # Hacking notes:
@@ -57,7 +57,7 @@ import sys
 # Flags from YCM's default config.
 _default_flags = [
     '-DUSE_CLANG_COMPLETER',
-    '-std=c++11',
+    '-std=c++14',
     '-x',
     'c++',
 ]
@@ -111,7 +111,7 @@ def GetDefaultSourceFile(chrome_root, filename):
   """
   blink_root = os.path.join(chrome_root, 'third_party', 'WebKit')
   if filename.startswith(blink_root):
-    return os.path.join(blink_root, 'Source', 'core', 'Init.cpp')
+    return os.path.join(blink_root, 'Source', 'core', 'CoreInitializer.cpp')
   else:
     if 'test.' in filename:
       return os.path.join(chrome_root, 'base', 'logging_unittest.cc')
