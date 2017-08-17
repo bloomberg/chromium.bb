@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -66,15 +67,15 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
     // The initial state for the app list when neither maximize or side shelf
     // modes are active. If set, the widget will peek over the shelf by
     // kPeekingAppListHeight DIPs.
-    PEEKING,
+    PEEKING = 1,
     // Entered when text is entered into the search box from peeking mode.
-    HALF,
+    HALF = 2,
     // Default app list state in maximize and side shelf modes. Entered from an
     // upward swipe from |PEEKING| or from clicking the chevron.
-    FULLSCREEN_ALL_APPS,
+    FULLSCREEN_ALL_APPS = 3,
     // Entered from an upward swipe from |HALF| or by entering text in the
     // search box from |FULLSCREEN_ALL_APPS|.
-    FULLSCREEN_SEARCH,
+    FULLSCREEN_SEARCH = 4,
   };
 
   // Does not take ownership of |delegate|.
@@ -226,11 +227,21 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
+  // Records the state transition for UMA.
+  void RecordStateTransitionForUma(AppListState new_state);
+
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
 
   // Gets the apps grid view owned by this view.
   AppsGridView* GetAppsGridView() const;
+
+  // Gets the AppListStateTransitionSource for |app_list_state_| to
+  // |target_state|. If we are not interested in recording a state transition
+  // (ie. PEEKING->PEEKING) then return kMaxAppListStateTransition. If this is
+  // modified, histograms will be affected.
+  AppListStateTransitionSource GetAppListStateTransitionSource(
+      AppListState target_state) const;
 
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
