@@ -854,7 +854,7 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyUnknownIR);
 };
 
-class SpdySerializedFrame {
+class SPDY_EXPORT_PRIVATE SpdySerializedFrame {
  public:
   SpdySerializedFrame()
       : frame_(const_cast<char*>("")), size_(0), owns_buffer_(false) {}
@@ -936,7 +936,7 @@ class SpdySerializedFrame {
 // having to know what type they are.  An instance of this interface can be
 // passed to a SpdyFrameIR's Visit method, and the appropriate type-specific
 // method of this class will be called.
-class SpdyFrameVisitor {
+class SPDY_EXPORT_PRIVATE SpdyFrameVisitor {
  public:
   virtual void VisitRstStream(const SpdyRstStreamIR& rst_stream) = 0;
   virtual void VisitSettings(const SpdySettingsIR& settings) = 0;
@@ -959,6 +959,33 @@ class SpdyFrameVisitor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyFrameVisitor);
+};
+
+// Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
+// SpdyFramerDebugVisitorInterface may be used in conjunction with SpdyFramer in
+// order to extract debug/internal information about the SpdyFramer as it
+// operates.
+//
+// Most HTTP2 implementations need not bother with this interface at all.
+class SPDY_EXPORT_PRIVATE SpdyFramerDebugVisitorInterface {
+ public:
+  virtual ~SpdyFramerDebugVisitorInterface() {}
+
+  // Called after compressing a frame with a payload of
+  // a list of name-value pairs.
+  // |payload_len| is the uncompressed payload size.
+  // |frame_len| is the compressed frame size.
+  virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
+                                     SpdyFrameType type,
+                                     size_t payload_len,
+                                     size_t frame_len) {}
+
+  // Called when a frame containing a compressed payload of
+  // name-value pairs is received.
+  // |frame_len| is the compressed frame size.
+  virtual void OnReceiveCompressedFrame(SpdyStreamId stream_id,
+                                        SpdyFrameType type,
+                                        size_t frame_len) {}
 };
 
 }  // namespace net
