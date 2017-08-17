@@ -383,11 +383,9 @@ class CORE_EXPORT Node : public EventTarget {
   // integrity of the tree.
   void SetPreviousSibling(Node* previous) {
     previous_ = previous;
-    ScriptWrappableVisitor::WriteBarrier(previous_);
   }
   void SetNextSibling(Node* next) {
     next_ = next;
-    ScriptWrappableVisitor::WriteBarrier(next_);
   }
 
   virtual bool CanContainRangeEndPoint() const { return false; }
@@ -978,10 +976,10 @@ class CORE_EXPORT Node : public EventTarget {
   TransientMutationObserverRegistry();
 
   uint32_t node_flags_;
-  Member<ContainerNode> parent_or_shadow_host_node_;
+  TraceWrapperMember<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;
-  Member<Node> previous_;
-  Member<Node> next_;
+  TraceWrapperMember<Node> previous_;
+  TraceWrapperMember<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
     DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}
@@ -994,14 +992,12 @@ class CORE_EXPORT Node : public EventTarget {
 
 inline void Node::SetParentOrShadowHostNode(ContainerNode* parent) {
   DCHECK(IsMainThread());
-  parent_or_shadow_host_node_ = parent;
-  ScriptWrappableVisitor::WriteBarrier(
-      reinterpret_cast<Node*>(parent_or_shadow_host_node_.Get()));
+  parent_or_shadow_host_node_ = reinterpret_cast<Node*>(parent);
 }
 
 inline ContainerNode* Node::ParentOrShadowHostNode() const {
   DCHECK(IsMainThread());
-  return parent_or_shadow_host_node_;
+  return reinterpret_cast<ContainerNode*>(parent_or_shadow_host_node_.Get());
 }
 
 inline ContainerNode* Node::parentNode() const {
