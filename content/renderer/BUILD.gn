@@ -460,7 +460,6 @@ target(link_target_type, "renderer") {
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
-    "//jingle:jingle_glue",
     "//media",
     "//media:media_features",
     "//media/blink",
@@ -774,6 +773,7 @@ target(link_target_type, "renderer") {
 
     deps += [
       "//crypto",
+      "//jingle:jingle_glue",
       "//third_party/libvpx",
       "//third_party/opus",
       "//third_party/webrtc/api:libjingle_peerconnection",
