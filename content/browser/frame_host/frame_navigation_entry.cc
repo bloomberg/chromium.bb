@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
 
@@ -97,7 +98,8 @@ void FrameNavigationEntry::SetPageState(const PageState& page_state) {
   document_sequence_number_ = exploded_state.top.document_sequence_number;
 }
 
-scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData() const {
+scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData(
+    std::string* content_type) const {
   if (method_ != "POST")
     return nullptr;
 
@@ -106,6 +108,8 @@ scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData() const {
   if (!DecodePageState(page_state_.ToEncodedData(), &exploded_state))
     return nullptr;
 
+  *content_type = base::UTF16ToASCII(
+      exploded_state.top.http_body.http_content_type.string());
   return exploded_state.top.http_body.request_body;
 }
 

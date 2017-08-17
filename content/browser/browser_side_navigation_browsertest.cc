@@ -215,32 +215,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, FailedNavigation) {
   }
 }
 
-// Ensure that browser side navigation handles POST navigations correctly.
-IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, POSTNavigation) {
-  GURL url(embedded_test_server()->GetURL("/session_history/form.html"));
-  GURL post_url = embedded_test_server()->GetURL("/echotitle");
-
-  // Navigate to a page with a form.
-  TestNavigationObserver observer(shell()->web_contents());
-  NavigateToURL(shell(), url);
-  EXPECT_EQ(url, observer.last_navigation_url());
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-
-  // Submit the form.
-  GURL submit_url("javascript:submitForm('isubmit')");
-  NavigateToURL(shell(), submit_url);
-
-  // Check that a proper POST navigation was done.
-  EXPECT_EQ("text=&select=a",
-            base::UTF16ToASCII(shell()->web_contents()->GetTitle()));
-  EXPECT_EQ(post_url, shell()->web_contents()->GetLastCommittedURL());
-  EXPECT_TRUE(shell()
-                  ->web_contents()
-                  ->GetController()
-                  .GetActiveEntry()
-                  ->GetHasPostData());
-}
-
 // Ensure that browser side navigation can load browser initiated navigations
 // to view-source URLs.
 IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
