@@ -1245,7 +1245,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mContentsClientAdapter.setWebViewClient(client);
     }
 
-    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/627248)
+    @Override
     public WebViewClient getWebViewClient() {
         return mContentsClientAdapter.getWebViewClient();
     }
@@ -1261,7 +1261,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mContentsClientAdapter.setWebChromeClient(client);
     }
 
-    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/627248)
+    @Override
     public WebChromeClient getWebChromeClient() {
         return mContentsClientAdapter.getWebChromeClient();
     }
