@@ -713,10 +713,6 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
 
 #pragma mark - NavigationManagerDelegate implementation
 
-void WebStateImpl::GoToIndex(int index) {
-  [web_controller_ goToItemAtIndex:index];
-}
-
 void WebStateImpl::ClearTransientContent() {
   if (interstitial_) {
     // Store the currently displayed interstitial in a local variable and reset
@@ -735,6 +731,17 @@ void WebStateImpl::ClearTransientContent() {
 
 void WebStateImpl::RecordPageStateInNavigationItem() {
   [web_controller_ recordStateInHistory];
+}
+
+void WebStateImpl::UpdateHtml5HistoryState() {
+  [web_controller_ updateHTML5HistoryState];
+}
+
+void WebStateImpl::WillChangeUserAgentType() {
+  // TODO(crbug.com/736103): due to the bug, updating the user agent of web view
+  // requires reconstructing the whole web view, change the behavior to call
+  // [WKWebView setCustomUserAgent] once the bug is fixed.
+  [web_controller_ requirePageReconstruction];
 }
 
 void WebStateImpl::WillLoadCurrentItemWithParams(

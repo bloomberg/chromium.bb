@@ -13,11 +13,12 @@ namespace web {
 
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
-  void GoToIndex(int index) override;
   void ClearTransientContent() override;
   void RecordPageStateInNavigationItem() override;
+  void UpdateHtml5HistoryState() override;
   void WillLoadCurrentItemWithParams(const NavigationManager::WebLoadParams&,
                                      bool is_initial_navigation) override;
+  void WillChangeUserAgentType() override;
   void LoadCurrentItem() override;
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;

@@ -259,9 +259,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void CancelDialogs();
 
   // NavigationManagerDelegate:
-  void GoToIndex(int index) override;
   void ClearTransientContent() override;
   void RecordPageStateInNavigationItem() override;
+  void UpdateHtml5HistoryState() override;
+  void WillChangeUserAgentType() override;
   void WillLoadCurrentItemWithParams(const NavigationManager::WebLoadParams&,
                                      bool is_initial_navigation) override;
   void LoadCurrentItem() override;

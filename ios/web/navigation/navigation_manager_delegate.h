@@ -21,11 +21,6 @@ class NavigationManagerDelegate {
  public:
   virtual ~NavigationManagerDelegate() {}
 
-  // Instructs the delegate to begin navigating to the item with index.
-  // TODO(crbug.com/661316): Remove this method once all navigation code is
-  // moved to NavigationManagerImpl.
-  virtual void GoToIndex(int index) = 0;
-
   // Instructs the delegate to clear any transient content to prepare for new
   // navigation.
   virtual void ClearTransientContent() = 0;
@@ -34,6 +29,14 @@ class NavigationManagerDelegate {
   // values, whatever can be harvested) from the current page into the
   // navigation item.
   virtual void RecordPageStateInNavigationItem() = 0;
+
+  // Instructs the delegate to update HTML5 History state of the page using the
+  // current NavigationItem.
+  virtual void UpdateHtml5HistoryState() = 0;
+
+  // Instructs the delegate to perform book keeping in preparation for a new
+  // navigation using a different user agent type.
+  virtual void WillChangeUserAgentType() = 0;
 
   // Instructs the delegate to notify its delegates that the current navigation
   // item will be loaded.
