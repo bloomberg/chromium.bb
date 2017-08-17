@@ -99,8 +99,6 @@ crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readb
 crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
 crbug.com/726075 [ Win ] vr/requestPresent_resolve_webgl2.html [ Crash ]
 
-crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
-
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 

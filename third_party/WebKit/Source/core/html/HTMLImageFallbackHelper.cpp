@@ -113,6 +113,8 @@ RefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     place_holder->SetInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
     place_holder->SetInlineStyleProperty(CSSPropertyDisplay,
                                          CSSValueInlineBlock);
+    place_holder->SetInlineStyleProperty(CSSPropertyPointerEvents,
+                                         CSSValueNone);
     CSSPrimitiveValue::UnitType unit =
         new_style->Height().IsPercent()
             ? CSSPrimitiveValue::UnitType::kPercentage
