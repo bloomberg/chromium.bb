@@ -1393,10 +1393,9 @@ load_headless_backend(struct weston_compositor *c,
 	return 0;
 }
 
-static void
-rdp_backend_output_configure(struct wl_listener *listener, void *data)
+static int
+rdp_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	struct wet_compositor *compositor = to_wet_compositor(output->compositor);
 	struct wet_output_config *parsed_options = compositor->parsed_options;
 	const struct weston_rdp_output_api *api = weston_rdp_output_get_api(output->compositor);
@@ -1407,7 +1406,7 @@ rdp_backend_output_configure(struct wl_listener *listener, void *data)
 
 	if (!api) {
 		weston_log("Cannot use weston_rdp_output_api.\n");
-		return;
+		return -1;
 	}
 
 	if (parsed_options->width)
@@ -1422,10 +1421,10 @@ rdp_backend_output_configure(struct wl_listener *listener, void *data)
 	if (api->output_set_size(output, width, height) < 0) {
 		weston_log("Cannot configure output \"%s\" using weston_rdp_output_api.\n",
 			   output->name);
-		return;
+		return -1;
 	}
 
-	weston_output_enable(output);
+	return 0;
 }
 
 static void
@@ -1470,15 +1469,11 @@ load_rdp_backend(struct weston_compositor *c,
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
 
+	wet_set_simple_head_configurator(c, rdp_backend_output_configure);
+
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_RDP,
 					     &config.base);
 
-	if (ret < 0)
-		goto out;
-
-	wet_set_pending_output_handler(c, rdp_backend_output_configure);
-
-out:
 	free(config.bind_address);
 	free(config.rdp_key);
 	free(config.server_cert);
