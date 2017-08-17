@@ -39,7 +39,7 @@ v8::Local<v8::Object> ScriptWrappable::AssociateWithWrapper(
                                                   wrapper_type_info, wrapper);
 }
 
-void ScriptWrappable::MarkWrapper(const WrapperVisitor* visitor) const {
+void ScriptWrappable::MarkWrapper(const ScriptWrappableVisitor* visitor) const {
   if (ContainsWrapper())
     visitor->MarkWrapper(&main_world_wrapper_.As<v8::Value>());
 }

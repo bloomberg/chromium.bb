@@ -52,7 +52,6 @@ source_set("heap") {
     "Visitor.cpp",
     "Visitor.h",
     "VisitorImpl.h",
-    "WrapperVisitor.h",
   ]
 
   configs += [

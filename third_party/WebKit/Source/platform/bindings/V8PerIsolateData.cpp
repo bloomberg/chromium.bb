@@ -310,7 +310,7 @@ void V8PerIsolateData::TemporaryScriptWrappableVisitorScope::
         std::unique_ptr<ScriptWrappableVisitor>& visitor) {
   ScriptWrappableVisitor* current = CurrentVisitor();
   if (current)
-    current->PerformCleanup();
+    ScriptWrappableVisitor::PerformCleanup(isolate_);
 
   V8PerIsolateData::From(isolate_)->script_wrappable_visitor_.swap(
       saved_visitor_);

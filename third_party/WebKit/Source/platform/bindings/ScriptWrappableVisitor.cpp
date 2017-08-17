@@ -51,7 +51,7 @@ void ScriptWrappableVisitor::TraceEpilogue() {
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
-  ScriptWrappableVisitorVerifier verifier;
+  ScriptWrappableVisitorVerifier verifier(isolate_);
   for (auto& marking_data : verifier_deque_) {
     marking_data.TraceWrappers(&verifier);
   }
@@ -304,7 +304,8 @@ void ScriptWrappableVisitor::PerformCleanup(v8::Isolate* isolate) {
     script_wrappable_visitor->PerformCleanup();
 }
 
-WrapperVisitor* ScriptWrappableVisitor::CurrentVisitor(v8::Isolate* isolate) {
+ScriptWrappableVisitor* ScriptWrappableVisitor::CurrentVisitor(
+    v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->GetScriptWrappableVisitor();
 }
 

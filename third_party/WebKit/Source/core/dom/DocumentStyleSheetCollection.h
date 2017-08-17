@@ -31,7 +31,6 @@
 #define DocumentStyleSheetCollection_h
 
 #include "core/dom/TreeScopeStyleSheetCollection.h"
-#include "platform/heap/WrapperVisitor.h"
 
 namespace blink {
 

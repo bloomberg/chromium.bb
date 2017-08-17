@@ -59,7 +59,8 @@ static const int kV8PrototypeInternalFieldcount = 1;
 typedef v8::Local<v8::FunctionTemplate> (
     *DomTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
-typedef void (*TraceWrappersFunction)(WrapperVisitor*, ScriptWrappable*);
+typedef void (*TraceWrappersFunction)(ScriptWrappableVisitor*,
+                                      ScriptWrappable*);
 typedef ActiveScriptWrappableBase* (*ToActiveScriptWrappableFunction)(
     v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(
@@ -144,7 +145,7 @@ struct WrapperTypeInfo {
     return trace_function(visitor, script_wrappable);
   }
 
-  void TraceWrappers(WrapperVisitor* visitor,
+  void TraceWrappers(ScriptWrappableVisitor* visitor,
                      ScriptWrappable* script_wrappable) const {
     DCHECK(trace_wrappers_function);
     return trace_wrappers_function(visitor, script_wrappable);
