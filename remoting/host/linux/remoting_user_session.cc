@@ -703,6 +703,15 @@ int main(int argc, char** argv) {
   // Initialize gExecutablePath
   DetermineExecutablePath();
 
+  // This binary requires elevated privileges.
+  if (geteuid() != 0) {
+    std::fprintf(stderr,
+                 "%s not installed setuid root. Host must be started by "
+                 "administrator.\n",
+                 gExecutablePath);
+    std::exit(EXIT_FAILURE);
+  }
+
   if (argc < 2 || std::strcmp(argv[1], kStartCommand) != 0) {
     PrintUsage();
     std::exit(EXIT_FAILURE);
