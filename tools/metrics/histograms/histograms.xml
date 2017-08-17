@@ -2409,7 +2409,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of seconds between task window activations triggered by users
     clicking or tapping on a window, as recorded by the Desktop_SwitchTask user
-    action. Recorded on ChromeOS only. Task switches from other sources are
+    action. Recorded on Chrome OS only. Task switches from other sources are
     ignored and do not affect this metric. In other words, if a user performs
     the following steps (1) click on task window 'A' (2) Alt+Tab to task 'Z'(3)
     click on task window 'B', then this will result in a sample recorded for the
@@ -7297,7 +7297,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>oshima@chromium.org</owner>
   <summary>
     Out of BrowserRenderProcessHost.ChildKills, numer of kills due to SIGKILL,
-    which is a strong signal of out of memory on ChromeOS, grouped by renderer
+    which is a strong signal of out of memory on Chrome OS, grouped by renderer
     type.
   </summary>
 </histogram>
@@ -8018,7 +8018,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>oshima@chromium.org</owner>
   <summary>
     Out of ChildProcess.Killled, number of kills due to SIGKILL, which is a
-    strong signal of out of memory on ChromeOS, grouped by process type.
+    strong signal of out of memory on Chrome OS, grouped by process type.
   </summary>
 </histogram>
 
@@ -8359,7 +8359,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>xiaowenx@chromium.org</owner>
   <owner>mukai@chromium.org</owner>
   <summary>
-    The name of the current color calibration of the display on ChromeOS. This
+    The name of the current color calibration of the display on Chrome OS. This
     value is sent when the color calibration is changed by the user.
   </summary>
 </histogram>
@@ -8375,7 +8375,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ChromeOS.MachineIdRegen.AgeSeconds" units="seconds">
   <owner>zeuthen@chromium.org</owner>
   <summary>
-    The number of seconds of uptime since the last time the ChromeOS machine-id
+    The number of seconds of uptime since the last time the Chrome OS machine-id
     was regenerated. This is reported every time the machine-id is regenerated
     except for the first time since reboot.
   </summary>
@@ -8384,7 +8384,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ChromeOS.MachineIdRegen.Reason" enum="ChromeOSMachineIdReason">
   <owner>zeuthen@chromium.org</owner>
   <summary>
-    The reason why the ChromeOS machine-id was regenerated. This is reported
+    The reason why the Chrome OS machine-id was regenerated. This is reported
     when the machine-id is re-generated.
   </summary>
 </histogram>
@@ -8392,7 +8392,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ChromeOS.MemoryPressureLevel" enum="MemoryPressureLevel">
   <owner>xdai@chromium.org</owner>
   <summary>
-    The memory pressure level in ChromeOS, which is recorded periodically (once
+    The memory pressure level in Chrome OS, which is recorded periodically (once
     per second). This is used to show the relative frequency of the system being
     in a critical vs relaxed memory pressure state.
   </summary>
@@ -17353,7 +17353,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Enterprise.UserPolicyValidationFailure"
     enum="ValidationFailures">
   <owner>mnissler@chromium.org</owner>
-  <summary>Source of policy validation errors on ChromeOS.</summary>
+  <summary>Source of policy validation errors on Chrome OS.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyValidationLoadStatus"
@@ -25332,7 +25332,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>merkulova@chromium.org</owner>
   <summary>
     Which HID were detected when user pressed Continue on OOBE dialog. This
-    metric is specific to ChromeOS.
+    metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -25340,7 +25340,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>merkulova@chromium.org</owner>
   <summary>
     Whether HID detection dialog was shown on OOBE. Logged on screen show or on
-    screen skip respectively. This metric is specific to ChromeOS.
+    screen skip respectively. This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -25348,7 +25348,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>merkulova@chromium.org</owner>
   <summary>
     Records number of times the dialog was shown by the time OOBE is completed.
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -26921,7 +26921,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="moves">
   <owner>rsadam@chromium.org</owner>
   <summary>
-    ChromeOS histogram that counts the number of times the cursor was moved to
+    Chrome OS histogram that counts the number of times the cursor was moved to
     the previous word by swiping backwards on the selection track. The count is
     initialized when the user starts swiping from any side of the virtual
     keyboard, incremented based on how far they swipe backwards on the selection
@@ -26983,7 +26983,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="InputMethod.VirtualKeyboard.MovesPerSwipe" units="moves">
   <owner>rsadam@chromium.org</owner>
   <summary>
-    ChromeOS histogram that counts the number of times the cursor was moved to
+    Chrome OS histogram that counts the number of times the cursor was moved to
     the next word by swiping forward on the selection track. The count is
     initialized when the user starts swiping from any side of the virtual
     keyboard, incremented based on how far they swipe forwards on the selection
@@ -27003,7 +27003,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="words">
   <owner>rsadam@chromium.org</owner>
   <summary>
-    ChromeOS histogram that tracks the total number of words that were deleted
+    Chrome OS histogram that tracks the total number of words that were deleted
     by swiping forward on the deletion track. The count is initialized when the
     user starts swiping on the backspace key, incremented based on how far they
     swipe forwards on the deletion track, and recorded when they release their
@@ -27023,7 +27023,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="words">
   <owner>rsadam@chromium.org</owner>
   <summary>
-    ChromeOS histogram that tracks the total number of words that were restored
+    Chrome OS histogram that tracks the total number of words that were restored
     by swiping backwards on the deletion track. The count is initialized when
     the user starts swiping on the backspace key, incremented based on how far
     they swipe backwards on the deletion track, and recorded when they release
@@ -27136,7 +27136,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported on reboot after a successful recovery. Cleared only when
     switching to dev mode or on factory reset.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -27147,7 +27147,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on reboot after a successful recovery.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -28393,10 +28393,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>xiaohuic@chromium.org</owner>
   <owner>zalcorn@chromium.org</owner>
   <summary>
-    The time between a user pressing the ChromeOS &quot;Search&quot; key and the
-    second key being pressed down to active a shortcut. e.g. Search + L would
-    record the time between Search key down and L key down. If the user pressed
-    multiple keys after Search, we only record the first key down.
+    The time between a user pressing the Chrome OS &quot;Search&quot; key and
+    the second key being pressed down to active a shortcut. e.g. Search + L
+    would record the time between Search key down and L key down. If the user
+    pressed multiple keys after Search, we only record the first key down.
   </summary>
 </histogram>
 
@@ -30576,7 +30576,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>xhwang@chromium.org</owner>
   <summary>
     Whether a given WebMediaPlayer instance, with a CDM attached, is played in
-    an incognito window or in ChromeOS guest mode. Players that never started
+    an incognito window or in Chrome OS guest mode. Players that never started
     playback are excluded. Recorded once at time of player destruction.
   </summary>
 </histogram>
@@ -57071,7 +57071,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Temperature reading at sensor 0 of the CPU collected every few seconds (may
     vary between devices).
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57081,7 +57081,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Temperature reading at wireless interface 0 collected every few seconds (may
     vary between devices).
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57091,7 +57091,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Temperature reading at wireless interface 1 collected every few seconds (may
     vary between devices).
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57101,7 +57101,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Temperature reading at wireless interface 2 collected every few seconds (may
     vary between devices).
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57111,7 +57111,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     State of the thermal zone of the CPU collected every second. State depends
     on device, higher state corresponds to a higher temperature.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57121,7 +57121,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     State of the thermal zone of wireless interface 0 collected every second.
     State depends on device, higher state corresponds to a higher temperature.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57131,7 +57131,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     State of the thermal zone of wireless interface 1 collected every second.
     State depends on device, higher state corresponds to a higher temperature.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -57141,7 +57141,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     State of the thermal zone of wireless interface 2 collected every second.
     State depends on device, higher state corresponds to a higher temperature.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -61114,7 +61114,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="PrinterServiceEventType">
   <owner>vitalybuka@chromium.org</owner>
   <summary>
-    Count of events in PrinterService on ChromeOS related to USB printers.
+    Count of events in PrinterService on Chrome OS related to USB printers.
   </summary>
 </histogram>
 
@@ -65312,7 +65312,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="ResourceReporterCpuUsage">
   <owner>afakhry@chromium.org</owner>
   <summary>
-    The cpu usage range reported for the browser process when the chromeos
+    The CPU usage range reported for the browser process when the Chrome OS
     device memory pressure (which is the percentage of total memory used by the
     system) is critical. This is emitted only when memory pressure changes from
     a low pressure to a higher pressure.
@@ -65324,7 +65324,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>afakhry@chromium.org</owner>
   <summary>
     The system memory usage range reported for the browser process when the
-    chromeos device memory pressure (which is the percentage of total memory
+    Chrome OS device memory pressure (which is the percentage of total memory
     used by the system) is critical. This is emitted only when memory pressure
     changes from a low pressure to a higher pressure.
   </summary>
@@ -65334,7 +65334,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="ResourceReporterCpuUsage">
   <owner>afakhry@chromium.org</owner>
   <summary>
-    The cpu usage range reported for the GPU process when the chromeos device
+    The CPU usage range reported for the GPU process when the Chrome OS device
     memory pressure (which is the percentage of total memory used by the system)
     is critical. This is emitted only when memory pressure changes from a low
     pressure to a higher pressure.
@@ -65346,7 +65346,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>afakhry@chromium.org</owner>
   <summary>
     The system's RAM memory usage range reported for the GPU process when the
-    chromeos device memory pressure (which is the percentage of total memory
+    Chrome OS device memory pressure (which is the percentage of total memory
     used by the system) is critical. This is emitted only when memory pressure
     changes from a low pressure to a higher pressure.
   </summary>
@@ -73759,7 +73759,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>mlerman@chromium.org</owner>
   <summary>
     Failure reason of ListAccounts call failure during account reconciliation,
-    ChromeOS login, or signin internals queries.
+    Chrome OS login, or signin internals queries.
   </summary>
 </histogram>
 
@@ -73767,7 +73767,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>mlerman@chromium.org</owner>
   <summary>
     Retry reason of failed ListAccounts call during Chrome OS login during
-    account reconciliation, ChromeOS login, or signin internals queries.
+    account reconciliation, Chrome OS login, or signin internals queries.
   </summary>
 </histogram>
 
@@ -82195,7 +82195,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Team: input-dev@chromium.org.
   </summary>
   <details>
-    NOTE: This metric was incorrectly recorded on ChromeOS for versions 42
+    NOTE: This metric was incorrectly recorded on Chrome OS for versions 42
     through 45, see http://crbug.com/499476 for more details. As of
     http://crbug.com/644318, we changed the internal name to
     TouchEventFeatureDetection, but we still keep the old histogram name here to
@@ -83821,7 +83821,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83835,7 +83835,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported when an attempt ends with the &quot;Payload Download
     Error&quot; result.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83848,7 +83848,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83860,7 +83860,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83872,7 +83872,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83885,7 +83885,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an attempt ends with the InternalError result.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83897,7 +83897,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83908,7 +83908,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83921,7 +83921,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83932,7 +83932,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83947,7 +83947,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83958,7 +83958,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported when an update attempt ends.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83972,7 +83972,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported when an update attempt ends but only if there was a
     previous attempt for the same update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -83986,7 +83986,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported when an update attempt ends but only if there was a
     previous attempt for the same update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84000,7 +84000,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported on every HTTPS connection to the payload download server.
     Connection drops on the same payload may report different values.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84013,7 +84013,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every update check.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84027,7 +84027,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported on every update check resulting in &quot;Download
     error&quot;.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84041,7 +84041,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on update checks resulting in &quot;Update available&quot;.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84054,7 +84054,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every update check.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84066,7 +84066,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every update check except for the first one.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84079,7 +84079,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every update check except for the first one.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84090,7 +84090,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every update check but at most once a day.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84103,7 +84103,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported every time the firmware fails to boot the slot with the
     update and fell back to the slot it originally updated from.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84117,7 +84117,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported when OOBE (Out Of Box Experience) completes (M34 or later)
     or when upgrading to a version with install-date-days support.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84128,7 +84128,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported every time there's a rollback request.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84139,7 +84139,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84151,7 +84151,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84164,7 +84164,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84177,7 +84177,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84190,7 +84190,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84202,7 +84202,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84215,7 +84215,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84226,7 +84226,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84239,7 +84239,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84250,7 +84250,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84264,7 +84264,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84277,7 +84277,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84289,7 +84289,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This is reported on every successful update.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -84303,7 +84303,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This is reported every time the device is rebooted after an update has been
     applied.
 
-    This metric is specific to ChromeOS.
+    This metric is specific to Chrome OS.
   </summary>
 </histogram>
 
@@ -89266,7 +89266,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WebRTC.Video.CpuLimitedResolutionInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
-    Percentage of frames that are limited in resolution due to cpu for a sent
+    Percentage of frames that are limited in resolution due to CPU for a sent
     video stream. Recorded when a stream is removed.
   </summary>
 </histogram>
@@ -100877,7 +100877,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="VideoAdaptationReason" separator=".">
-  <suffix name="Cpu" label="Adapt reason: cpu."/>
+  <suffix name="Cpu" label="Adapt reason: CPU."/>
   <suffix name="Quality" label="Adapt reason: quality."/>
   <affected-histogram name="WebRTC.Video.AdaptChangesPerMinute"/>
 </histogram_suffixes>
