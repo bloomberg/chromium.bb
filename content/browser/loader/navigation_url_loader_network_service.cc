@@ -432,7 +432,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->load_flags = load_flags;
 
   new_request->request_body = request_info->common_params.post_data.get();
-  new_request->report_raw_headers = request_info->report_raw_headers;
 
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
