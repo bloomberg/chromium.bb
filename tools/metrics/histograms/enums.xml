@@ -39132,6 +39132,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
   <int value="2" label="JS dialog was suppressed in VR"/>
   <int value="3" label="Media permission was suppressed in VR"/>
+  <int value="4" label="Permission request was suppressed in VR"/>
 </enum>
 
 <enum name="VRUnsupportedMode">

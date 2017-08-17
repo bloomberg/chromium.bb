@@ -332,6 +332,7 @@ int PermissionManager::RequestPermissions(
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
   if (vr::VrTabHelper::IsInVr(web_contents)) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kPermissionRequest);
     callback.Run(
         std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
     return kNoPendingOperation;
