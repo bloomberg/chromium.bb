@@ -28,7 +28,7 @@
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
-#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {

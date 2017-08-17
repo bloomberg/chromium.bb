@@ -146,7 +146,7 @@ static_library("lib") {
     "//services/ui/common:mus_common",
     "//services/ui/display",
     "//services/ui/public/interfaces",
-    "//services/viz/compositing/privileged/interfaces",
+    "//services/viz/privileged/interfaces/compositing",
     "//ui/base",
     "//ui/display",
     "//ui/events",

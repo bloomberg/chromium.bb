@@ -16,7 +16,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"

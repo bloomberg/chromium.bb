@@ -10,7 +10,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 
 namespace ui {

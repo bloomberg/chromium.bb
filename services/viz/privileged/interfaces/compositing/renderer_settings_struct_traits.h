@@ -1,12 +1,12 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef SERVICES_VIZ_COMPOSITING_PRIVILEGED_INTERFACES_RENDERER_SETTINGS_STRUCT_TRAITS_H_
-#define SERVICES_VIZ_COMPOSITING_PRIVILEGED_INTERFACES_RENDERER_SETTINGS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
 
 #include "components/viz/common/display/renderer_settings.h"
-#include "services/viz/compositing/privileged/interfaces/renderer_settings.mojom.h"
-#include "services/viz/compositing/privileged/interfaces/renderer_settings_struct_traits.h"
+#include "services/viz/privileged/interfaces/compositing/renderer_settings.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 
 namespace mojo {
 template <>
@@ -76,4 +76,4 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_VIZ_COMPOSITING_PRIVILEGED_INTERFACES_RENDERER_SETTINGS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_

@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 mojom =
-    "//services/viz/compositing/privileged/interfaces/renderer_settings.mojom"
+    "//services/viz/privileged/interfaces/compositing/renderer_settings.mojom"
 public_headers = [ "//components/viz/common/display/renderer_settings.h" ]
-traits_headers = [ "//services/viz/compositing/privileged/interfaces/renderer_settings_struct_traits.h" ]
+traits_headers = [ "//services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h" ]
 deps = [
   "//cc",
   "//mojo/common:struct_traits",

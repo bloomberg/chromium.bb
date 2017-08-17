@@ -11,7 +11,7 @@
 #include "gpu/ipc/service/gpu_init.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;

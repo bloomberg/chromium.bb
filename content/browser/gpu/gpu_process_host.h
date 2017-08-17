@@ -33,7 +33,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"

@@ -9,7 +9,6 @@ include_rules = [
   "+media/mojo",
   "+mojo/public/cpp",
   "+services/ui/gpu/interfaces",
-  "+services/viz/gl/privileged/interfaces",
   "+ui/gl",
 ]
 

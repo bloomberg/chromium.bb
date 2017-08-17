@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 

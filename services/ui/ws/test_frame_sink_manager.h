@@ -6,7 +6,7 @@
 #define SERVICES_UI_WS_TEST_FRAME_SINK_MANAGER_H_
 
 #include "base/macros.h"
-#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {

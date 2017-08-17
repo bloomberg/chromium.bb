@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/viz/compositing/privileged/interfaces/renderer_settings_struct_traits.h"
+#include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 
 namespace mojo {

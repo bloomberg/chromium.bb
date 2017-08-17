@@ -29,7 +29,7 @@
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
+#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"

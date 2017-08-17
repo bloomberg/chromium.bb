@@ -18,7 +18,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
-#include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/base/window_tracker_template.h"
 #include "ui/gfx/geometry/insets.h"

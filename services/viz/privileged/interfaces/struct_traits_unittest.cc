@@ -8,7 +8,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/viz/compositing/privileged/interfaces/renderer_settings_struct_traits.h"
+#include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
