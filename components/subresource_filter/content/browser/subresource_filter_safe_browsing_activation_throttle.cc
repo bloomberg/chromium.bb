@@ -165,8 +165,11 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     client_->WhitelistInCurrentWebContents(navigation_handle()->GetURL());
   }
 
-  Configuration::ActivationOptions matched_options;
-  ActivationDecision activation_decision = ComputeActivation(&matched_options);
+  Configuration matched_configuration;
+  ActivationDecision activation_decision =
+      ComputeActivation(&matched_configuration);
+  Configuration::ActivationOptions& matched_options =
+      matched_configuration.activation_options;
 
   // For forced activation, keep all the options except activation_level.
   if (client_->ForceActivationInCurrentWebContents()) {
@@ -189,7 +192,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   }
 
   driver_factory->NotifyPageActivationComputed(
-      navigation_handle(), activation_decision, matched_options);
+      navigation_handle(), activation_decision, matched_configuration);
 
   base::TimeDelta delay = defer_time_.is_null()
                               ? base::TimeDelta::FromMilliseconds(0)
@@ -208,7 +211,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
 
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
-    Configuration::ActivationOptions* options) {
+    Configuration* configuration) {
   const GURL& url(navigation_handle()->GetURL());
   ActivationList matched_list = ActivationList::NONE;
   DCHECK(!database_client_ || !check_results_.empty());
@@ -245,14 +248,14 @@ SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
   if (!has_activated_config)
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
 
-  const Configuration::ActivationOptions activation_options =
+  const Configuration::ActivationOptions& activation_options =
       highest_priority_activated_config->activation_options;
   if (!scheme_is_http_or_https &&
       activation_options.activation_level != ActivationLevel::DISABLED) {
     return ActivationDecision::UNSUPPORTED_SCHEME;
   }
 
-  *options = activation_options;
+  *configuration = *highest_priority_activated_config;
   return activation_options.activation_level == ActivationLevel::DISABLED
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;

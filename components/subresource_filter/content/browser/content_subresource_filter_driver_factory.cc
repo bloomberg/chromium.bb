@@ -64,28 +64,29 @@ ContentSubresourceFilterDriverFactory::
 void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
     content::NavigationHandle* navigation_handle,
     ActivationDecision activation_decision,
-    Configuration::ActivationOptions matched_options) {
+    const Configuration& matched_configuration) {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->IsSameDocument());
   if (navigation_handle->GetNetErrorCode() != net::OK)
     return;
 
   activation_decision_ = activation_decision;
-  activation_options_ = matched_options;
+  matched_configuration_ = matched_configuration;
   DCHECK_NE(activation_decision_, ActivationDecision::UNKNOWN);
 
   // ACTIVATION_DISABLED implies DISABLED activation level.
   DCHECK(activation_decision_ != ActivationDecision::ACTIVATION_DISABLED ||
-         activation_options_.activation_level == ActivationLevel::DISABLED);
-  ActivationState state = ActivationState(activation_options_.activation_level);
+         activation_options().activation_level == ActivationLevel::DISABLED);
+  ActivationState state =
+      ActivationState(activation_options().activation_level);
   state.measure_performance = ShouldMeasurePerformanceForPageLoad(
-      activation_options_.performance_measurement_rate);
+      activation_options().performance_measurement_rate);
 
   // TODO(csharrison): Also use metadata returned from the safe browsing filter,
   // when it is available to set enable_logging. Add tests for this behavior.
   state.enable_logging =
-      activation_options_.activation_level == ActivationLevel::ENABLED &&
-      !activation_options_.should_suppress_notifications &&
+      activation_options().activation_level == ActivationLevel::ENABLED &&
+      !activation_options().should_suppress_notifications &&
       base::FeatureList::IsEnabled(
           kSafeBrowsingSubresourceFilterExperimentalUI);
 
@@ -95,18 +96,19 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  if (activation_options_.should_suppress_notifications)
+  if (activation_options().should_suppress_notifications)
     return;
-  client_->ToggleNotificationVisibility(activation_options_.activation_level ==
+  DCHECK_EQ(activation_options().activation_level, ActivationLevel::ENABLED);
+  client_->ToggleNotificationVisibility(activation_options().activation_level ==
                                         ActivationLevel::ENABLED);
 }
 
 bool ContentSubresourceFilterDriverFactory::AllowStrongPopupBlocking() {
-  return activation_options_.should_strengthen_popup_blocker;
+  return activation_options().should_strengthen_popup_blocker;
 }
 
 bool ContentSubresourceFilterDriverFactory::AllowRulesetRules() {
-  return !activation_options_.should_disable_ruleset_rules;
+  return !activation_options().should_disable_ruleset_rules;
 }
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
@@ -125,7 +127,7 @@ void ContentSubresourceFilterDriverFactory::DidFinishNavigation(
       activation_decision_ == ActivationDecision::UNKNOWN &&
       navigation_handle->HasCommitted()) {
     activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
-    activation_options_ = Configuration::ActivationOptions();
+    matched_configuration_ = Configuration();
   }
 }
 
