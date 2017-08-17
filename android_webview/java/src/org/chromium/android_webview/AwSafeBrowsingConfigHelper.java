@@ -27,6 +27,7 @@ public class AwSafeBrowsingConfigHelper {
 
     private static Boolean sSafeBrowsingUserOptIn;
 
+    @SuppressWarnings("unchecked")
     public static void maybeInitSafeBrowsingFromSettings(final Context appContext) {
         AwContentsStatics.setSafeBrowsingEnabledByManifest(
                 CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
