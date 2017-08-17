@@ -116,7 +116,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+    !defined(OS_FUCHSIA)
   // This call could already have been made from zygote_main_linux.cc. However
   // we need to do it here if Zygote is disabled.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote)) {
