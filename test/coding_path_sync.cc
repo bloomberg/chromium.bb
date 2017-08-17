@@ -37,8 +37,15 @@ class CompressedSource {
     cfg.rc_end_usage = AOM_CQ;
     cfg.rc_max_quantizer = max_q;
     cfg.rc_min_quantizer = max_q;
-    cfg.g_w = kWidth;
-    cfg.g_h = kHeight;
+
+    // choose the picture size
+    {
+      width_ = rnd_.PseudoUniform(kWidth - 8) + 8;
+      height_ = rnd_.PseudoUniform(kHeight - 8) + 8;
+    }
+
+    cfg.g_w = width_;
+    cfg.g_h = height_;
     cfg.g_lag_in_frames = 0;
 
     aom_codec_enc_init(&enc_, algo, &cfg, 0);
@@ -60,7 +67,7 @@ class CompressedSource {
       buf[i] = (i + phase) % period < period / 2 ? val_a : val_b;
 
     aom_image_t img;
-    aom_img_wrap(&img, AOM_IMG_FMT_I420, kWidth, kHeight, 0, buf);
+    aom_img_wrap(&img, AOM_IMG_FMT_I420, width_, height_, 0, buf);
     aom_codec_encode(&enc_, &img, frame_count_++, 1, 0, 0);
 
     aom_codec_iter_t iter = NULL;
@@ -75,12 +82,13 @@ class CompressedSource {
   }
 
  private:
-  static const int kWidth = 32;
-  static const int kHeight = 32;
+  static const int kWidth = 128;
+  static const int kHeight = 128;
 
   ACMRandom rnd_;
   aom_codec_ctx_t enc_;
   int frame_count_;
+  int width_, height_;
 };
 
 // lowers an aom_image_t to a easily comparable/printable form
