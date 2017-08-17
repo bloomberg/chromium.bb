@@ -429,6 +429,14 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   if (!PossiblyHasMarkers(types))
     return nullptr;
 
+  // Minor optimization: if we have an empty range at a node boundary, it
+  // doesn't fall in the interior of any marker.
+  if (start_offset == 0 && end_offset == 0)
+    return nullptr;
+  const unsigned node_length = node.length();
+  if (start_offset == node_length && end_offset == node_length)
+    return nullptr;
+
   MarkerLists* const markers = markers_.at(&node);
   if (!markers)
     return nullptr;
