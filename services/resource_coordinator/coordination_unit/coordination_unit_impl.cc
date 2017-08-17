@@ -84,11 +84,10 @@ CoordinationUnitImpl* CoordinationUnitImpl::CreateCoordinationUnit(
       new_cu =
           base::MakeUnique<CoordinationUnitImpl>(id, std::move(service_ref));
   }
-  CoordinationUnitImpl* new_cu_ptr = new_cu.get();
+
   auto it = g_cu_map().insert(std::make_pair(new_cu->id(), std::move(new_cu)));
   DCHECK(it.second);  // Inserted successfully
-
-  return new_cu_ptr;
+  return it.first->second.get();
 }
 
 void CoordinationUnitImpl::Destruct() {
