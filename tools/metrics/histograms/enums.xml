@@ -23305,6 +23305,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-598050737" label="disable-es3-apis"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
+  <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
@@ -23360,6 +23361,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-378180863" label="disable-panels"/>
   <int value="-378033324" label="disable-win32k-renderer-lockdown"/>
   <int value="-374657496" label="OmniboxEnableClipboardProvider:enabled"/>
+  <int value="-367474066" label="DialogTouchBar:enabled"/>
   <int value="-365920680" label="ImageCaptureAPI:disabled"/>
   <int value="-364587218" label="ResourceLoadScheduler:enabled"/>
   <int value="-364325011" label="enable-files-quick-view"/>

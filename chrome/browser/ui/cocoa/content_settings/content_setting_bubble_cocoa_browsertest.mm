@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, TouchBar) {
   if (@available(macOS 10.12.2, *)) {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+    feature_list.InitAndEnableFeature(features::kDialogTouchBar);
 
     TabSpecificContentSettings::FromWebContents(web_contents())
         ->BlockAllContentForTesting();
