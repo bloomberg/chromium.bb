@@ -568,16 +568,25 @@ if (enable_vr) {
     testonly = true
 
     java_files = [
+      "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
+      "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrCoreVersionCheckerImpl.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrDaydreamApi.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrIntentHandler.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/nfc_apk/SimNfcActivity.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/ChromeTabbedActivityVrTestRule.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/CustomTabActivityVrTestRule.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/VrActivityRestriction.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/VrActivityRestrictionRule.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/VrTestRule.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/rules/WebappActivityVrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/CardboardUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrInfoBarUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrShellDelegateUtils.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrTestRuleUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrTransitionUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrFeedbackInfoBarTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrInstallUpdateInfoBarTest.java",
@@ -586,11 +595,13 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNativeUiTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTransitionTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestRule.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestFramework.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrDeviceTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrInputTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTabTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTransitionTest.java",
+      "javatests/src/org/chromium/chrome/browser/webapps/TestFetchStorageCallback.java",
+      "javatests/src/org/chromium/chrome/browser/webapps/WebappActivityTestRule.java",
     ]
 
     deps = [

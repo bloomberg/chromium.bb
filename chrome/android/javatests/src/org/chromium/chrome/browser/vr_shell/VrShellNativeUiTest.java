@@ -11,8 +11,8 @@ import static org.chromium.chrome.browser.UrlConstants.DOWNLOADS_URL;
 import static org.chromium.chrome.browser.UrlConstants.NATIVE_HISTORY_URL;
 import static org.chromium.chrome.browser.UrlConstants.NTP_URL;
 import static org.chromium.chrome.browser.UrlConstants.RECENT_TABS_URL;
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 
 import android.support.test.filters.MediumTest;
@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -41,11 +42,13 @@ import java.util.concurrent.TimeoutException;
         "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
 public class VrShellNativeUiTest {
+    // We explicitly instantiate a rule here instead of using parameterization since this class
+    // only ever runs in ChromeTabbedActivity.
     @Rule
-    public VrTestRule mVrTestRule = new VrTestRule();
+    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestRule.getHtmlTestFile("test_navigation_2d_page");
+            VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
 
     @Before
     public void setUp() throws Exception {

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.vr_shell.util;
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 
-import org.chromium.chrome.browser.vr_shell.VrTestRule;
+import org.chromium.chrome.browser.vr_shell.VrTestFramework;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -28,12 +28,12 @@ public class CardboardUtils {
     /**
      * Sends a cardboard click then waits for the JavaScript step to finish.
      *
-     * Only meant to be used alongside the test framework from VrTestRule.
+     * Only meant to be used alongside the test framework from VrTestFramework.
      * @param activity The activity to send the cardboard click to.
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
     public static void sendCardboardClickAndWait(Activity activity, WebContents webContents) {
         sendCardboardClick(activity);
-        VrTestRule.waitOnJavaScriptStep(webContents);
+        VrTestFramework.waitOnJavaScriptStep(webContents);
     }
 }
