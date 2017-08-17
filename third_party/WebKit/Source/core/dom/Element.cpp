@@ -1932,9 +1932,13 @@ RefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   }
 
   if (style->HasTransform()) {
-    if (const StylePropertySet* inline_style = this->InlineStyle())
+    if (const StylePropertySet* inline_style = this->InlineStyle()) {
       style->SetHasInlineTransform(
-          inline_style->HasProperty(CSSPropertyTransform));
+          inline_style->HasProperty(CSSPropertyTransform) ||
+          inline_style->HasProperty(CSSPropertyTranslate) ||
+          inline_style->HasProperty(CSSPropertyRotate) ||
+          inline_style->HasProperty(CSSPropertyScale));
+    }
   }
 
   style->UpdateIsStackingContext(this == GetDocument().documentElement(),

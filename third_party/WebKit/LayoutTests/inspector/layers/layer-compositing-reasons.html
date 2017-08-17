@@ -7,6 +7,11 @@
         100%  { transform: rotate(360deg); }
 }
 
+@keyframes rotate-individual {
+        0%  { rotate: 0deg; }
+        50%  { rotate: 180deg; }
+        100%  { rotate: 360deg; }
+}
 </style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/layers-test.js"></script>
@@ -32,10 +37,13 @@ function test()
 
     var idsToTest = [
         "transform3d",
+        "transform3d-individual",
         "iframe",
         "backface-visibility",
         "animation",
+        "animation-individual",
         "transformWithCompositedDescendants",
+        "transformWithCompositedDescendants-individual",
         "opacityWithCompositedDescendants",
         "reflectionWithCompositedDescendants",
         "perspective",
@@ -57,11 +65,17 @@ function test()
 </head>
 <body onload="runTest()">
 <div id="transform3d" style="transform: translateZ(100px);">translated</div>
+<div id="transform3d-individual" style="translate: 0px 0px 100px;">translated individual</div>
 <iframe id="iframe" src="resources/composited-iframe.html"></iframe>
 <div id="backface-visibility" style="backface-visibility: hidden">backface hidden</div>
 <div id="animation" style="width: 50px; height: 50px; -webkit-animation-name: rotate; -webkit-animation-iteration-count: infinite; -webkit-animation-duration: 5s;">animated</div>
+<div id="animation-individual" style="width: 50px; height: 50px; animation-name: rotate-individual; animation-iteration-count: infinite; animation-duration: 5s;">animated individual</div>
 <div id="transformWithCompositedDescendants" style="transform: rotate(10deg)">
-    <div style="transform: translateZ(100px);">
+    <div style="transform: scale3d(2, 3, 4);">
+    </div>
+</div>
+<div id="transformWithCompositedDescendants-individual" style="rotate: 10deg">
+    <div style="scale: 2 3 4;">
     </div>
 </div>
 <div id="opacityWithCompositedDescendants" style="opacity: 0.5">
