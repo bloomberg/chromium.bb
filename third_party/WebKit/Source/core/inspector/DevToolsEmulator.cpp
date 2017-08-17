@@ -179,33 +179,25 @@ void DevToolsEmulator::SetMainFrameResizesAreOrientationChanges(bool value) {
 
 void DevToolsEmulator::SetAvailablePointerTypes(int types) {
   embedder_available_pointer_types_ = types;
-  bool emulate_mobile_enabled =
-      device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
+  if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(types);
 }
 
 void DevToolsEmulator::SetPrimaryPointerType(PointerType pointer_type) {
   embedder_primary_pointer_type_ = pointer_type;
-  bool emulate_mobile_enabled =
-      device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
+  if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetPrimaryPointerType(pointer_type);
 }
 
 void DevToolsEmulator::SetAvailableHoverTypes(int types) {
   embedder_available_hover_types_ = types;
-  bool emulate_mobile_enabled =
-      device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
+  if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(types);
 }
 
 void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
   embedder_primary_hover_type_ = hover_type;
-  bool emulate_mobile_enabled =
-      device_metrics_enabled_ && emulate_mobile_enabled_;
-  if (!emulate_mobile_enabled)
+  if (!touch_event_emulation_enabled_)
     web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
@@ -295,11 +287,6 @@ void DevToolsEmulator::EnableMobileEmulation() {
   web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
       true);
   web_view_->GetPage()->GetSettings().SetPluginsEnabled(false);
-  web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
-      kPointerTypeCoarse);
-  web_view_->GetPage()->GetSettings().SetPrimaryPointerType(kPointerTypeCoarse);
-  web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(kHoverTypeNone);
-  web_view_->GetPage()->GetSettings().SetPrimaryHoverType(kHoverTypeNone);
   web_view_->GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
       true);
   web_view_->SetZoomFactorOverride(1);
@@ -337,14 +324,6 @@ void DevToolsEmulator::DisableMobileEmulation() {
       embedder_viewport_style_);
   web_view_->GetPage()->GetSettings().SetPluginsEnabled(
       embedder_plugins_enabled_);
-  web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
-      embedder_available_pointer_types_);
-  web_view_->GetPage()->GetSettings().SetPrimaryPointerType(
-      embedder_primary_pointer_type_);
-  web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(
-      embedder_available_hover_types_);
-  web_view_->GetPage()->GetSettings().SetPrimaryHoverType(
-      embedder_primary_hover_type_);
   web_view_->GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
       embedder_main_frame_resizes_are_orientation_changes_);
   web_view_->SetZoomFactorOverride(0);
@@ -488,6 +467,14 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
       enabled ? true : original_device_supports_touch_);
   web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
       enabled ? max_touch_points : original_max_touch_points_);
+  web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
+      enabled ? kPointerTypeCoarse : embedder_available_pointer_types_);
+  web_view_->GetPage()->GetSettings().SetPrimaryPointerType(
+      enabled ? kPointerTypeCoarse : embedder_primary_pointer_type_);
+  web_view_->GetPage()->GetSettings().SetAvailableHoverTypes(
+      enabled ? kHoverTypeNone : embedder_available_hover_types_);
+  web_view_->GetPage()->GetSettings().SetPrimaryHoverType(
+      enabled ? kHoverTypeNone : embedder_primary_hover_type_);
   WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
   if (!original_device_supports_touch_ && enabled && frame)
     frame->GetFrame()->GetEventHandler().ClearMouseEventManager();

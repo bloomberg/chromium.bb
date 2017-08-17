@@ -77,6 +77,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageDocument.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -9923,11 +9924,13 @@ TEST_P(DeviceEmulationTest, DeviceSizeInvalidatedOnResize) {
 }
 
 TEST_P(DeviceEmulationTest, PointerAndHoverTypes) {
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
-  web_view_helper_.WebView()->EnableDeviceEmulation(params);
+  web_view_helper_.WebView()
+      ->GetDevToolsEmulator()
+      ->SetTouchEventEmulationEnabled(true, 1);
   EXPECT_EQ("20x20", DumpSize("pointer"));
-  web_view_helper_.WebView()->DisableDeviceEmulation();
+  web_view_helper_.WebView()
+      ->GetDevToolsEmulator()
+      ->SetTouchEventEmulationEnabled(false, 1);
 }
 
 TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling) {
