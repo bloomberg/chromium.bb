@@ -57,9 +57,11 @@ class NetworkHandler : public DevToolsDomainHandler,
   void GetCookies(Maybe<protocol::Array<String>> urls,
                   std::unique_ptr<GetCookiesCallback> callback) override;
   void GetAllCookies(std::unique_ptr<GetAllCookiesCallback> callback) override;
-  void DeleteCookie(const std::string& cookie_name,
-                    const std::string& url,
-                    std::unique_ptr<DeleteCookieCallback> callback) override;
+  void DeleteCookies(const std::string& name,
+                     Maybe<std::string> url,
+                     Maybe<std::string> domain,
+                     Maybe<std::string> path,
+                     std::unique_ptr<DeleteCookiesCallback> callback) override;
   void SetCookie(const std::string& name,
                  const std::string& value,
                  Maybe<std::string> url,

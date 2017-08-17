@@ -4,21 +4,18 @@ Enabling network
 
 Running test: simpleCookieAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar1, domain: 127.0.0.1, path: /, session
 
 Running test: simpleCookieChange
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: second bar2, domain: 127.0.0.1, path: /, session
 
 Running test: anotherSimpleCookieAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 2
 name: foo, value: second bar2, domain: 127.0.0.1, path: /, session
@@ -26,7 +23,6 @@ name: foo2, value: bar1, domain: 127.0.0.1, path: /, session
 
 Running test: simpleCookieDelete
 Deleting Cookie
-Logging Cookies
 Num of cookies 1
 name: foo2, value: bar1, domain: 127.0.0.1, path: /, session
 
@@ -34,7 +30,6 @@ Running test: deleteAllCookies
 
 Running test: sessionCookieAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar4, domain: 127.0.0.1, path: /, session
@@ -43,7 +38,6 @@ Running test: deleteAllCookies
 
 Running test: nonSessionCookieZeroAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 0
 
@@ -51,7 +45,6 @@ Running test: deleteAllCookies
 
 Running test: nonSessionCookieAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar6, domain: 127.0.0.1, path: /
@@ -60,7 +53,6 @@ Running test: deleteAllCookies
 
 Running test: differentOriginCookieAdd
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar7, domain: example.com, path: /, session
@@ -69,7 +61,6 @@ Running test: deleteAllCookies
 
 Running test: invalidCookieAddDomain
 Setting Cookie
-Logging Cookies
 Success: false
 Num of cookies 0
 
@@ -77,7 +68,6 @@ Running test: deleteAllCookies
 
 Running test: invalidCookieAddName
 Setting Cookie
-Logging Cookies
 Success: false
 Num of cookies 0
 
@@ -85,15 +75,14 @@ Running test: deleteAllCookies
 
 Running test: secureCookieAdd
 Setting Cookie
-Logging Cookies
-Success: false
-Num of cookies 0
+Success: true
+Num of cookies 1
+name: foo, value: bar, domain: 127.0.0.1, path: /, secure, session
 
 Running test: deleteAllCookies
 
 Running test: cookieAddHttpOnly
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar, domain: 127.0.0.1, path: /, httpOnly, session
@@ -102,7 +91,6 @@ Running test: deleteAllCookies
 
 Running test: cookieAddSameSiteLax
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar, domain: 127.0.0.1, path: /, session, Lax
@@ -111,7 +99,6 @@ Running test: deleteAllCookies
 
 Running test: cookieAddSameSiteLax
 Setting Cookie
-Logging Cookies
 Success: true
 Num of cookies 1
 name: foo, value: bar, domain: 127.0.0.1, path: /, session, Strict
@@ -120,15 +107,51 @@ Running test: deleteAllCookies
 
 Running test: setCookiesBasic
 Adding multiple cookies
-Logging Cookies
-Num of cookies 7
-name: foo1, value: bar1, domain: 127.0.0.1, path: /, session
-name: foo2, value: bar2, domain: 127.0.0.1, path: /, httpOnly, session
-name: foo3, value: bar3, domain: 127.0.0.1, path: /, secure, session
-name: foo4, value: bar4, domain: 127.0.0.1, path: /, session, Lax
-name: foo5, value: bar5, domain: 127.0.0.1, path: /, session
-name: foo6, value: bar6, domain: .chromium.org, path: /path
-name: foo7, value: bar7, domain: www.chromium.org, path: /, secure
+Num of cookies 8
+name: cookie1, value: session, domain: localhost, path: /, session
+name: cookie2, value: httpOnly, domain: localhost, path: /, httpOnly, session
+name: cookie3, value: secure, domain: localhost, path: /, secure, session
+name: cookie4, value: lax, domain: localhost, path: /, session, Lax
+name: cookie5, value: expires, domain: localhost, path: /
+name: cookie6, value: .domain, domain: .chromium.org, path: /path, session
+name: cookie7, value: domain, domain: www.chromium.org, path: /path, session
+name: cookie8, value: url-based, domain: www.chromium.org, path: /, secure, session
+
+Running test: deleteAllCookies
+
+Running test: deleteCookieByURL
+Adding multiple cookies
+Num of cookies 2
+name: cookie1, value: .domain, domain: www.chromium.org, path: /, session
+name: cookie2, value: .domain, domain: www.chromium.org, path: /
+Deleting Cookie
+Num of cookies 1
+name: cookie2, value: .domain, domain: www.chromium.org, path: /
+
+Running test: deleteAllCookies
+
+Running test: deleteCookieByDomain
+Adding multiple cookies
+Num of cookies 2
+name: cookie1, value: .domain, domain: .chromium.org, path: /path, session
+name: cookie2, value: .domain, domain: .chromium.org, path: /path
+Deleting Cookie
+Num of cookies 1
+name: cookie2, value: .domain, domain: .chromium.org, path: /path
+Deleting Cookie
+Num of cookies 0
+
+Running test: deleteAllCookies
+
+Running test: deleteCookieByDomainAndPath
+Adding multiple cookies
+Num of cookies 1
+name: cookie1, value: .domain, domain: .chromium.org, path: /path, session
+Deleting Cookie
+Num of cookies 1
+name: cookie1, value: .domain, domain: .chromium.org, path: /path, session
+Deleting Cookie
+Num of cookies 0
 
 Running test: deleteAllCookies
 
