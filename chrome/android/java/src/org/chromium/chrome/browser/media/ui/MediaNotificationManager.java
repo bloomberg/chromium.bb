@@ -12,7 +12,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -676,7 +675,7 @@ public class MediaNotificationManager {
     }
 
     /**
-     * @return The ideal size of the media image.
+     * @returns The ideal size of the media image.
      */
     public static int getIdealMediaImageSize() {
         if (SysUtils.isLowEndDevice()) {
@@ -686,7 +685,7 @@ public class MediaNotificationManager {
     }
 
     /**
-     * @return Whether |icon| is suitable as the media image, i.e. bigger than the minimal size.
+     * @returns Whether |icon| is suitable as the media image, i.e. bigger than the minimal size.
      * @param icon The icon to be checked.
      */
     public static boolean isBitmapSuitableAsMediaImage(Bitmap icon) {
@@ -1065,9 +1064,7 @@ public class MediaNotificationManager {
             // Non-playback (Cast) notification will not use MediaStyle, so not
             // setting the large icon is fine.
             builder.setLargeIcon(null);
-        } else if (mMediaNotificationInfo.notificationLargeIcon != null
-                && !mMediaNotificationInfo.isPrivate) {
-            // Notifications in incognito shouldn't show an icon to avoid leaking information.
+        } else if (mMediaNotificationInfo.notificationLargeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);
         } else if (!isRunningN()) {
             if (mDefaultNotificationLargeIcon == null) {
@@ -1127,14 +1124,6 @@ public class MediaNotificationManager {
     }
 
     private void setMediaStyleNotificationText(ChromeNotificationBuilder builder) {
-        if (mMediaNotificationInfo.isPrivate) {
-            // Notifications in incognito shouldn't show what is playing to avoid leaking
-            // information.
-            Resources resources = getContext().getResources();
-            builder.setContentTitle(resources.getString(R.string.app_name));
-            builder.setContentText(resources.getString(R.string.media_notification_incognito));
-            return;
-        }
         builder.setContentTitle(mMediaNotificationInfo.metadata.getTitle());
         String artistAndAlbumText = getArtistAndAlbumText(mMediaNotificationInfo.metadata);
         if (isRunningN() || !artistAndAlbumText.isEmpty()) {
