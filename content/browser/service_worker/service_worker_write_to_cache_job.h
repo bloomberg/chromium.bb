@@ -132,24 +132,25 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   net::Error NotifyFinishedCaching(net::Error net_error,
                                    const std::string& status_message);
 
-  std::unique_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
-  std::unique_ptr<ServiceWorkerResponseWriter> CreateCacheResponseWriter();
+  // Returns true when the incumbent service worker exists and it's required to
+  // do the byte-for-byte check.
+  bool ShouldByteForByteCheck() const;
 
-  ResourceType resource_type_;  // Differentiate main script and imports
+  const ResourceType resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;
   int io_buffer_bytes_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  GURL url_;
-  int64_t resource_id_;
-  int64_t incumbent_resource_id_;
+  const GURL url_;
+  const int64_t resource_id_;
+  const int64_t incumbent_resource_id_;
   std::unique_ptr<net::URLRequest> net_request_;
   std::unique_ptr<net::HttpResponseInfo> http_info_;
   std::unique_ptr<ServiceWorkerResponseWriter> writer_;
   scoped_refptr<ServiceWorkerVersion> version_;
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
-  bool has_been_killed_;
-  bool did_notify_started_;
-  bool did_notify_finished_;
+  bool has_been_killed_ = false;
+  bool did_notify_started_ = false;
+  bool did_notify_finished_ = false;
 
   base::WeakPtrFactory<ServiceWorkerWriteToCacheJob> weak_factory_;
 

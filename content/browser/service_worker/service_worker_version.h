@@ -351,6 +351,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
+  // Used for pausing service worker startup in the renderer in order to do the
+  // byte-for-byte check.
   bool pause_after_download() const { return pause_after_download_; }
   void set_pause_after_download(bool pause_after_download) {
     pause_after_download_ = pause_after_download;
