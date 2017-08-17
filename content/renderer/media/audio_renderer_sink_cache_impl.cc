@@ -174,8 +174,9 @@ void AudioRendererSinkCacheImpl::DeleteLaterIfUnused(
     const media::AudioRendererSink* sink_ptr) {
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&AudioRendererSinkCacheImpl::DeleteSink, weak_this_,
-                 base::RetainedRef(sink_ptr), false /*do not delete if used*/),
+      base::BindOnce(&AudioRendererSinkCacheImpl::DeleteSink, weak_this_,
+                     base::RetainedRef(sink_ptr),
+                     false /*do not delete if used*/),
       delete_timeout_);
 }
 

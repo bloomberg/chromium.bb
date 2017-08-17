@@ -16,9 +16,10 @@ void EnsureMonitorCaptureDevices() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::EnsureDeviceMonitorStarted,
-                 base::Unretained(
-                     BrowserMainLoop::GetInstance()->media_stream_manager())));
+      base::BindOnce(
+          &MediaStreamManager::EnsureDeviceMonitorStarted,
+          base::Unretained(
+              BrowserMainLoop::GetInstance()->media_stream_manager())));
 }
 
 }  // namespace
@@ -58,8 +59,8 @@ void MediaCaptureDevicesImpl::AddVideoCaptureObserver(
   if (media_stream_manager != nullptr) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaStreamManager::AddVideoCaptureObserver,
-                   base::Unretained(media_stream_manager), observer));
+        base::BindOnce(&MediaStreamManager::AddVideoCaptureObserver,
+                       base::Unretained(media_stream_manager), observer));
   } else {
     DVLOG(3) << "media_stream_manager is null.";
   }
@@ -71,8 +72,8 @@ void MediaCaptureDevicesImpl::RemoveAllVideoCaptureObservers() {
   if (media_stream_manager != nullptr) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MediaStreamManager::RemoveAllVideoCaptureObservers,
-                   base::Unretained(media_stream_manager)));
+        base::BindOnce(&MediaStreamManager::RemoveAllVideoCaptureObservers,
+                       base::Unretained(media_stream_manager)));
   } else {
     DVLOG(3) << "media_stream_manager is null.";
   }
@@ -85,8 +86,8 @@ void MediaCaptureDevicesImpl::OnAudioCaptureDevicesChanged(
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaCaptureDevicesImpl::UpdateAudioDevicesOnUIThread,
-                   base::Unretained(this), devices));
+        base::BindOnce(&MediaCaptureDevicesImpl::UpdateAudioDevicesOnUIThread,
+                       base::Unretained(this), devices));
   }
 }
 
@@ -97,8 +98,8 @@ void MediaCaptureDevicesImpl::OnVideoCaptureDevicesChanged(
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaCaptureDevicesImpl::UpdateVideoDevicesOnUIThread,
-                   base::Unretained(this), devices));
+        base::BindOnce(&MediaCaptureDevicesImpl::UpdateVideoDevicesOnUIThread,
+                       base::Unretained(this), devices));
   }
 }
 

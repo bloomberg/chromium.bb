@@ -73,8 +73,8 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
   const scoped_refptr<base::SingleThreadTaskRunner> current_task_runner(
       base::ThreadTaskRunnerHandle::Get());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&EstablishGpuChannelOnUIThread,
-                                     current_task_runner, AsWeakPtr()));
+                          base::BindOnce(&EstablishGpuChannelOnUIThread,
+                                         current_task_runner, AsWeakPtr()));
 }
 
 VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
@@ -267,8 +267,9 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   task_runner->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization,
-                            weak_this, std::move(gpu_channel_host)));
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureGpuJpegDecoder::FinishInitialization,
+                     weak_this, std::move(gpu_channel_host)));
 }
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(

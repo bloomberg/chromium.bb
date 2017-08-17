@@ -170,8 +170,8 @@ int VideoCaptureManager::Open(const MediaStreamDevice& device) {
   // |capture_session_id| to the caller of this function before using that same
   // id in a listener event.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureManager::OnOpened, this, device.type,
-                            capture_session_id));
+      FROM_HERE, base::BindOnce(&VideoCaptureManager::OnOpened, this,
+                                device.type, capture_session_id));
   return capture_session_id;
 }
 
@@ -200,8 +200,8 @@ void VideoCaptureManager::Close(int capture_session_id) {
 
   // Notify listeners asynchronously, and forget the session.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureManager::OnClosed, this,
-                            session_it->second.type, capture_session_id));
+      FROM_HERE, base::BindOnce(&VideoCaptureManager::OnClosed, this,
+                                session_it->second.type, capture_session_id));
   sessions_.erase(session_it);
 }
 
@@ -258,8 +258,8 @@ void VideoCaptureManager::DoStopDevice(VideoCaptureController* controller) {
   // ReleaseDeviceAsnyc() is executing, we pass it shared ownership to
   // |controller|.
   controller->ReleaseDeviceAsync(
-      base::Bind([](scoped_refptr<VideoCaptureController>) {},
-                 GetControllerSharedRef(controller)));
+      base::BindOnce([](scoped_refptr<VideoCaptureController>) {},
+                     GetControllerSharedRef(controller)));
 }
 
 void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
@@ -302,10 +302,10 @@ void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
   // controller->parameters, and simplify if this is not the case.
   controller->CreateAndStartDeviceAsync(
       request->params(), static_cast<VideoCaptureDeviceLaunchObserver*>(this),
-      base::Bind([](scoped_refptr<VideoCaptureManager>,
-                    scoped_refptr<VideoCaptureController>) {},
-                 scoped_refptr<VideoCaptureManager>(this),
-                 GetControllerSharedRef(controller)));
+      base::BindOnce([](scoped_refptr<VideoCaptureManager>,
+                        scoped_refptr<VideoCaptureController>) {},
+                     scoped_refptr<VideoCaptureManager>(this),
+                     GetControllerSharedRef(controller)));
 }
 
 void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
@@ -591,8 +591,8 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
 
   existing_device->SetDesktopCaptureWindowIdAsync(
       window_id_it->second,
-      base::Bind([](scoped_refptr<VideoCaptureManager>) {},
-                 scoped_refptr<VideoCaptureManager>(this)));
+      base::BindOnce([](scoped_refptr<VideoCaptureManager>) {},
+                     scoped_refptr<VideoCaptureManager>(this)));
   notification_window_ids_.erase(window_id_it);
 }
 

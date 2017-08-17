@@ -87,7 +87,7 @@ MediaInterfaceFactory::GetMediaInterfaceFactory() {
 
   if (!media_interface_factory_) {
     remote_interfaces_->GetInterface(&media_interface_factory_);
-    media_interface_factory_.set_connection_error_handler(base::Bind(
+    media_interface_factory_.set_connection_error_handler(base::BindOnce(
         &MediaInterfaceFactory::OnConnectionError, base::Unretained(this)));
   }
 

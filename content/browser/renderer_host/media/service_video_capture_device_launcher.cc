@@ -105,13 +105,13 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   // Use of Unretained(this) is safe, because |done_cb_| guarantees that |this|
   // stays alive.
   device.set_connection_error_handler(
-      base::Bind(&ServiceVideoCaptureDeviceLauncher::
-                     OnConnectionLostWhileWaitingForCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ServiceVideoCaptureDeviceLauncher::
+                         OnConnectionLostWhileWaitingForCallback,
+                     base::Unretained(this)));
   (*device_factory_)
       ->CreateDevice(
           device_id, std::move(device_request),
-          base::Bind(
+          base::BindOnce(
               // Use of Unretained |this| is safe, because |done_cb_| guarantees
               // that |this| stays alive.
               &ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback,
@@ -135,7 +135,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(callbacks_);
   DCHECK(done_cb_);
-  device.set_connection_error_handler(base::Bind(&base::DoNothing));
+  device.set_connection_error_handler(base::BindOnce(&base::DoNothing));
   const bool abort_requested = (state_ == State::DEVICE_START_ABORTING);
   state_ = State::READY_TO_LAUNCH;
   Callbacks* callbacks = callbacks_;

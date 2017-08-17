@@ -31,9 +31,11 @@ class RtcDtmfSenderHandler::Observer :
   ~Observer() override {}
 
   void OnToneChange(const std::string& tone) override {
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&RtcDtmfSenderHandler::Observer::OnToneChangeOnMainThread,
-                   this, tone));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RtcDtmfSenderHandler::Observer::OnToneChangeOnMainThread, this,
+            tone));
   }
 
   void OnToneChangeOnMainThread(const std::string& tone) {

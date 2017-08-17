@@ -51,7 +51,7 @@ void PpapiDecryptor::Create(
         "Unable to create the CDM for the key system " + key_system + ".";
     DLOG(ERROR) << message;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, nullptr, message));
+        FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, message));
     return;
   }
 
@@ -232,9 +232,9 @@ void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::RegisterNewKeyCB,
-                   weak_ptr_factory_.GetWeakPtr(), stream_type, new_key_cb));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::RegisterNewKeyCB,
+                                  weak_ptr_factory_.GetWeakPtr(), stream_type,
+                                  new_key_cb));
     return;
   }
 
@@ -258,8 +258,8 @@ void PpapiDecryptor::Decrypt(
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PpapiDecryptor::Decrypt, weak_ptr_factory_.GetWeakPtr(),
-                   stream_type, encrypted, decrypt_cb));
+        base::BindOnce(&PpapiDecryptor::Decrypt, weak_ptr_factory_.GetWeakPtr(),
+                       stream_type, encrypted, decrypt_cb));
     return;
   }
 
@@ -275,8 +275,8 @@ void PpapiDecryptor::Decrypt(
 void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PpapiDecryptor::CancelDecrypt,
-                              weak_ptr_factory_.GetWeakPtr(), stream_type));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::CancelDecrypt,
+                                  weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 
@@ -290,8 +290,9 @@ void PpapiDecryptor::InitializeAudioDecoder(
     const DecoderInitCB& init_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PpapiDecryptor::InitializeAudioDecoder,
-                              weak_ptr_factory_.GetWeakPtr(), config, init_cb));
+        FROM_HERE,
+        base::BindOnce(&PpapiDecryptor::InitializeAudioDecoder,
+                       weak_ptr_factory_.GetWeakPtr(), config, init_cb));
     return;
   }
 
@@ -313,8 +314,9 @@ void PpapiDecryptor::InitializeVideoDecoder(
     const DecoderInitCB& init_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
-                              weak_ptr_factory_.GetWeakPtr(), config, init_cb));
+        FROM_HERE,
+        base::BindOnce(&PpapiDecryptor::InitializeVideoDecoder,
+                       weak_ptr_factory_.GetWeakPtr(), config, init_cb));
     return;
   }
 
@@ -336,9 +338,9 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
     const AudioDecodeCB& audio_decode_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::DecryptAndDecodeAudio,
-                   weak_ptr_factory_.GetWeakPtr(), encrypted, audio_decode_cb));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::DecryptAndDecodeAudio,
+                                  weak_ptr_factory_.GetWeakPtr(), encrypted,
+                                  audio_decode_cb));
     return;
   }
 
@@ -354,9 +356,9 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     const VideoDecodeCB& video_decode_cb) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::DecryptAndDecodeVideo,
-                   weak_ptr_factory_.GetWeakPtr(), encrypted, video_decode_cb));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::DecryptAndDecodeVideo,
+                                  weak_ptr_factory_.GetWeakPtr(), encrypted,
+                                  video_decode_cb));
     return;
   }
 
@@ -370,8 +372,8 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
 void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PpapiDecryptor::ResetDecoder,
-                              weak_ptr_factory_.GetWeakPtr(), stream_type));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::ResetDecoder,
+                                  weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 
@@ -383,8 +385,8 @@ void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
 void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
   if (!render_task_runner_->BelongsToCurrentThread()) {
     render_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PpapiDecryptor::DeinitializeDecoder,
-                              weak_ptr_factory_.GetWeakPtr(), stream_type));
+        FROM_HERE, base::BindOnce(&PpapiDecryptor::DeinitializeDecoder,
+                                  weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 

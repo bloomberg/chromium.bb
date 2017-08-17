@@ -124,10 +124,8 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
   decoder.reset(new RTCVideoDecoder(type, factories));
   decoder->factories_->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoDecoder::CreateVDA,
-                 base::Unretained(decoder.get()),
-                 profile,
-                 &waiter));
+      base::BindOnce(&RTCVideoDecoder::CreateVDA,
+                     base::Unretained(decoder.get()), profile, &waiter));
   waiter.Wait();
   // |decoder->vda_| is nullptr if the codec is not supported.
   if (decoder->vda_)
@@ -270,9 +268,8 @@ int32_t RTCVideoDecoder::Decode(
 
   SaveToDecodeBuffers_Locked(inputImage, std::move(shm_buffer), buffer_data);
   factories_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&RTCVideoDecoder::RequestBufferDecode,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&RTCVideoDecoder::RequestBufferDecode,
+                                weak_factory_.GetWeakPtr()));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -659,9 +656,8 @@ void RTCVideoDecoder::Reset_Locked() {
   if (state_ != RESETTING) {
     state_ = RESETTING;
     factories_->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::ResetInternal,
-                   weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&RTCVideoDecoder::ResetInternal,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -819,8 +815,8 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
   // Create twice as large buffers as required, to avoid frequent reallocation.
   factories_->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoDecoder::CreateSHM, weak_factory_.GetWeakPtr(),
-                 kNumSharedMemorySegments, min_size * 2));
+      base::BindOnce(&RTCVideoDecoder::CreateSHM, weak_factory_.GetWeakPtr(),
+                     kNumSharedMemorySegments, min_size * 2));
 
   // We'll be called again after the shared memory is created.
   return NULL;

@@ -286,8 +286,8 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(
-            &base::WaitableEvent::Signal, base::Unretained(&done)));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
     ASSERT_TRUE(destination_);
 

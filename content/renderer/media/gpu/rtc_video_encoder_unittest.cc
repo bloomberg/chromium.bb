@@ -106,8 +106,8 @@ class RTCVideoEncoderTest
   void RunUntilIdle() {
     DVLOG(3) << __func__;
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                              base::Unretained(&idle_waiter_)));
+        FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                  base::Unretained(&idle_waiter_)));
     idle_waiter_.Wait();
   }
 

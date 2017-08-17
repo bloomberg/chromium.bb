@@ -472,8 +472,8 @@ void DesktopCaptureDevice::AllocateAndStart(
     std::unique_ptr<Client> client) {
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&Core::AllocateAndStart, base::Unretained(core_.get()), params,
-                 base::Passed(&client)));
+      base::BindOnce(&Core::AllocateAndStart, base::Unretained(core_.get()),
+                     params, base::Passed(&client)));
 }
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
@@ -490,8 +490,8 @@ void DesktopCaptureDevice::SetNotificationWindowId(
   if (!core_)
     return;
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Core::SetNotificationWindowId,
-                            base::Unretained(core_.get()), window_id));
+      FROM_HERE, base::BindOnce(&Core::SetNotificationWindowId,
+                                base::Unretained(core_.get()), window_id));
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(

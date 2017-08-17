@@ -34,8 +34,8 @@ void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebContentsTracker::StartObservingWebContents, this,
-                   render_process_id, main_render_frame_id));
+        base::BindOnce(&WebContentsTracker::StartObservingWebContents, this,
+                       render_process_id, main_render_frame_id));
   }
 }
 
@@ -49,8 +49,8 @@ void WebContentsTracker::Stop() {
     WebContentsObserver::Observe(nullptr);
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&WebContentsTracker::Observe, this,
-                                       static_cast<WebContents*>(nullptr)));
+                            base::BindOnce(&WebContentsTracker::Observe, this,
+                                           static_cast<WebContents*>(nullptr)));
   }
 }
 
@@ -99,9 +99,9 @@ void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
     return;
   }
 
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&WebContentsTracker::MaybeDoCallback, this,
-                                    is_still_tracking()));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebContentsTracker::MaybeDoCallback, this,
+                                is_still_tracking()));
 }
 
 void WebContentsTracker::MaybeDoCallback(bool was_still_tracking) {
@@ -166,7 +166,7 @@ void WebContentsTracker::MainFrameWasResized(bool width_changed) {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebContentsTracker::MaybeDoResizeCallback, this));
+      base::BindOnce(&WebContentsTracker::MaybeDoResizeCallback, this));
 }
 
 void WebContentsTracker::WebContentsDestroyed() {

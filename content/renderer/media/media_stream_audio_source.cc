@@ -144,14 +144,14 @@ void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
 
   // Stop source when error occurs.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MediaStreamSource::StopSource, GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&MediaStreamSource::StopSource, GetWeakPtr()));
 }
 
 void MediaStreamAudioSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamAudioSource::SetMutedState state=" << muted_state;
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MediaStreamSource::SetSourceMuted, GetWeakPtr(),
-                            muted_state));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&MediaStreamSource::SetSourceMuted,
+                                        GetWeakPtr(), muted_state));
 }
 
 }  // namespace content

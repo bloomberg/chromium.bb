@@ -497,8 +497,9 @@ class AudioOutputDelegateTest : public testing::Test {
     CHECK(!task_runner->BelongsToCurrentThread());
     base::WaitableEvent e = {base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED};
-    task_runner->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                                                base::Unretained(&e)));
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&e)));
     e.Wait();
   }
 
@@ -507,25 +508,28 @@ class AudioOutputDelegateTest : public testing::Test {
 
 TEST_F(AudioOutputDelegateTest, Create) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::CreateTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::CreateTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, Play) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::PlayTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::PlayTest, base::Unretained(this),
+                     l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, Pause) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::PauseTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::PauseTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
@@ -533,40 +537,44 @@ TEST_F(AudioOutputDelegateTest, PlayPausePlay) {
   base::RunLoop l;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateTest::PlayPausePlayTest,
-                 base::Unretained(this), l.QuitClosure()));
+      base::BindOnce(&AudioOutputDelegateTest::PlayPausePlayTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, PlayPlay) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::PlayPlayTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::PlayPlayTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, PlayDivert) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::PlayDivertTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::PlayDivertTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, CreateDivert) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::CreateDivertTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::CreateDivertTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
 TEST_F(AudioOutputDelegateTest, Error) {
   base::RunLoop l;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioOutputDelegateTest::ErrorTest,
-                                     base::Unretained(this), l.QuitClosure()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioOutputDelegateTest::ErrorTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
@@ -574,8 +582,8 @@ TEST_F(AudioOutputDelegateTest, CreateAndDestroy) {
   base::RunLoop l;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateTest::CreateAndDestroyTest,
-                 base::Unretained(this), l.QuitClosure()));
+      base::BindOnce(&AudioOutputDelegateTest::CreateAndDestroyTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
@@ -583,8 +591,8 @@ TEST_F(AudioOutputDelegateTest, PlayAndDestroy) {
   base::RunLoop l;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateTest::PlayAndDestroyTest,
-                 base::Unretained(this), l.QuitClosure()));
+      base::BindOnce(&AudioOutputDelegateTest::PlayAndDestroyTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 
@@ -592,8 +600,8 @@ TEST_F(AudioOutputDelegateTest, ErrorAndDestroy) {
   base::RunLoop l;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioOutputDelegateTest::PlayAndDestroyTest,
-                 base::Unretained(this), l.QuitClosure()));
+      base::BindOnce(&AudioOutputDelegateTest::PlayAndDestroyTest,
+                     base::Unretained(this), l.QuitClosure()));
   l.Run();
 }
 

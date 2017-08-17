@@ -43,7 +43,7 @@ DesktopCaptureDeviceAura::DesktopCaptureDeviceAura(
   // |core_| owns |machine| and deletes it on UI thread so passing the raw
   // pointer to the UI thread is safe here.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SetCaptureSource, machine, source));
+                          base::BindOnce(&SetCaptureSource, machine, source));
 }
 
 DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {

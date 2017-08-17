@@ -214,8 +214,8 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
-        base::Bind(&MediaDevicesDispatcherHostTest::DevicesEnumerated,
-                   base::Unretained(this), run_loop.QuitClosure()));
+        base::BindOnce(&MediaDevicesDispatcherHostTest::DevicesEnumerated,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_FALSE(enumerated_devices_.empty());
@@ -408,10 +408,9 @@ TEST_P(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
   base::RunLoop run_loop;
   EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback())
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  host_->GetVideoInputCapabilities(
-      base::Bind(
-          &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
-          base::Unretained(this)));
+  host_->GetVideoInputCapabilities(base::BindOnce(
+      &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
+      base::Unretained(this)));
   run_loop.Run();
 }
 
@@ -419,7 +418,7 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAudioInputCapabilities) {
   base::RunLoop run_loop;
   EXPECT_CALL(*this, MockAudioInputCapabilitiesCallback())
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  host_->GetAudioInputCapabilities(base::Bind(
+  host_->GetAudioInputCapabilities(base::BindOnce(
       &MediaDevicesDispatcherHostTest::AudioInputCapabilitiesCallback,
       base::Unretained(this)));
   run_loop.Run();

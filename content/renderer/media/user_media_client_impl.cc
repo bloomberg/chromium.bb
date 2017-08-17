@@ -431,8 +431,9 @@ void UserMediaClientImpl::RequestUserMedia(
   pending_request_infos_.push_back(std::move(request_info));
   if (!current_request_info_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -483,9 +484,9 @@ void UserMediaClientImpl::LegacySetupAudioInput() {
     GetMediaDevicesDispatcher()->EnumerateDevices(
         true /* audio_input */, false /* video_input */,
         false /* audio_output */,
-        base::Bind(&UserMediaClientImpl::LegacySelectAudioInputDevice,
-                   weak_factory_.GetWeakPtr(),
-                   current_request_info_->request()));
+        base::BindOnce(&UserMediaClientImpl::LegacySelectAudioInputDevice,
+                       weak_factory_.GetWeakPtr(),
+                       current_request_info_->request()));
     return;
   }
 
@@ -529,7 +530,7 @@ void UserMediaClientImpl::SetupAudioInput() {
   InitializeTrackControls(current_request_info_->request().AudioConstraints(),
                           &audio_controls);
   if (IsDeviceSource(audio_controls.stream_source)) {
-    GetMediaDevicesDispatcher()->GetAudioInputCapabilities(base::Bind(
+    GetMediaDevicesDispatcher()->GetAudioInputCapabilities(base::BindOnce(
         &UserMediaClientImpl::SelectAudioSettings, weak_factory_.GetWeakPtr(),
         current_request_info_->request()));
   } else {
@@ -601,7 +602,7 @@ void UserMediaClientImpl::SetupVideoInput() {
   InitializeTrackControls(current_request_info_->request().VideoConstraints(),
                           &video_controls);
   if (IsDeviceSource(video_controls.stream_source)) {
-    GetMediaDevicesDispatcher()->GetVideoInputCapabilities(base::Bind(
+    GetMediaDevicesDispatcher()->GetVideoInputCapabilities(base::BindOnce(
         &UserMediaClientImpl::SelectVideoDeviceSettings,
         weak_factory_.GetWeakPtr(), current_request_info_->request()));
   } else {
@@ -745,8 +746,8 @@ void UserMediaClientImpl::RequestMediaDevices(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetMediaDevicesDispatcher()->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
-      base::Bind(&UserMediaClientImpl::FinalizeEnumerateDevices,
-                 weak_factory_.GetWeakPtr(), media_devices_request));
+      base::BindOnce(&UserMediaClientImpl::FinalizeEnumerateDevices,
+                     weak_factory_.GetWeakPtr(), media_devices_request));
 }
 
 void UserMediaClientImpl::SetMediaDeviceChangeObserver(
@@ -845,9 +846,9 @@ void UserMediaClientImpl::OnAudioSourceStartedOnAudioThread(
     MediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&UserMediaClientImpl::OnAudioSourceStarted,
-                                   weak_ptr, source, result, result_name));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&UserMediaClientImpl::OnAudioSourceStarted,
+                                weak_ptr, source, result, result_name));
 }
 
 void UserMediaClientImpl::OnAudioSourceStarted(
@@ -1170,8 +1171,8 @@ void UserMediaClientImpl::GetUserMediaRequestSucceeded(
   // post a task to complete the request with a clean stack.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded,
-                 weak_factory_.GetWeakPtr(), stream, request));
+      base::BindOnce(&UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded,
+                     weak_factory_.GetWeakPtr(), stream, request));
 }
 
 void UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded(
@@ -1197,9 +1198,9 @@ void UserMediaClientImpl::GetUserMediaRequestFailed(
   // post a task to complete the request with a clean stack.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestFailed,
-                 weak_factory_.GetWeakPtr(), current_request_info_->request(),
-                 result, result_name));
+      base::BindOnce(&UserMediaClientImpl::DelayedGetUserMediaRequestFailed,
+                     weak_factory_.GetWeakPtr(),
+                     current_request_info_->request(), result, result_name));
 }
 
 void UserMediaClientImpl::DelayedGetUserMediaRequestFailed(
@@ -1351,8 +1352,8 @@ bool UserMediaClientImpl::DeleteRequestInfo(
     if (!pending_request_infos_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
+                         weak_factory_.GetWeakPtr()));
     }
     return true;
   }

@@ -116,8 +116,10 @@ void PeerConnectionTrackerHost::OnGetUserMedia(
 }
 
 void PeerConnectionTrackerHost::OnSuspend() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&PeerConnectionTrackerHost::SendOnSuspendOnUIThread, this));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&PeerConnectionTrackerHost::SendOnSuspendOnUIThread,
+                     this));
 }
 
 void PeerConnectionTrackerHost::SendOnSuspendOnUIThread() {

@@ -71,9 +71,10 @@ void MediaPermissionDispatcher::HasPermission(
     const PermissionStatusCB& permission_status_cb) {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MediaPermissionDispatcher::HasPermission,
-                              weak_ptr_, type, security_origin,
-                              media::BindToCurrentLoop(permission_status_cb)));
+        FROM_HERE,
+        base::BindOnce(&MediaPermissionDispatcher::HasPermission, weak_ptr_,
+                       type, security_origin,
+                       media::BindToCurrentLoop(permission_status_cb)));
     return;
   }
 
@@ -85,8 +86,8 @@ void MediaPermissionDispatcher::HasPermission(
   GetPermissionService()->HasPermission(
       MediaPermissionTypeToPermissionDescriptor(type),
       url::Origin(security_origin),
-      base::Bind(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
-                 request_id));
+      base::BindOnce(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
+                     request_id));
 }
 
 void MediaPermissionDispatcher::RequestPermission(
@@ -95,9 +96,10 @@ void MediaPermissionDispatcher::RequestPermission(
     const PermissionStatusCB& permission_status_cb) {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MediaPermissionDispatcher::RequestPermission,
-                              weak_ptr_, type, security_origin,
-                              media::BindToCurrentLoop(permission_status_cb)));
+        FROM_HERE,
+        base::BindOnce(&MediaPermissionDispatcher::RequestPermission, weak_ptr_,
+                       type, security_origin,
+                       media::BindToCurrentLoop(permission_status_cb)));
     return;
   }
 
@@ -110,8 +112,8 @@ void MediaPermissionDispatcher::RequestPermission(
       MediaPermissionTypeToPermissionDescriptor(type),
       url::Origin(security_origin),
       blink::WebUserGestureIndicator::IsProcessingUserGesture(),
-      base::Bind(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
-                 request_id));
+      base::BindOnce(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
+                     request_id));
 }
 
 uint32_t MediaPermissionDispatcher::RegisterCallback(
@@ -129,7 +131,7 @@ blink::mojom::PermissionService*
 MediaPermissionDispatcher::GetPermissionService() {
   if (!permission_service_) {
     connect_to_service_cb_.Run(mojo::MakeRequest(&permission_service_));
-    permission_service_.set_connection_error_handler(base::Bind(
+    permission_service_.set_connection_error_handler(base::BindOnce(
         &MediaPermissionDispatcher::OnConnectionError, base::Unretained(this)));
   }
 

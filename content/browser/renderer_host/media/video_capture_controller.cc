@@ -536,8 +536,8 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
   device_launch_observer_ = observer;
   device_launcher_->LaunchDeviceAsync(
       device_id_, stream_type_, params, GetWeakPtrForIOThread(),
-      base::Bind(&VideoCaptureController::OnDeviceConnectionLost,
-                 GetWeakPtrForIOThread()),
+      base::BindOnce(&VideoCaptureController::OnDeviceConnectionLost,
+                     GetWeakPtrForIOThread()),
       this, std::move(done_cb));
 }
 

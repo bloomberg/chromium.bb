@@ -158,8 +158,8 @@ void MediaInterfaceProxy::ConnectToMediaService() {
                                         GetFrameServices());
 
   interface_factory_ptr_.set_connection_error_handler(
-      base::Bind(&MediaInterfaceProxy::OnMediaServiceConnectionError,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaInterfaceProxy::OnMediaServiceConnectionError,
+                     base::Unretained(this)));
 }
 
 void MediaInterfaceProxy::ConnectToCdmService() {
@@ -176,8 +176,8 @@ void MediaInterfaceProxy::ConnectToCdmService() {
       MakeRequest(&cdm_interface_factory_ptr_), GetFrameServices());
 
   cdm_interface_factory_ptr_.set_connection_error_handler(
-      base::Bind(&MediaInterfaceProxy::OnCdmServiceConnectionError,
-                 base::Unretained(this)));
+      base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
+                     base::Unretained(this)));
 }
 
 }  // namespace content

@@ -86,9 +86,9 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(&WebRtcMediaStreamTrackAdapterTest::
-                                  RunMessageLoopUntilIdleOnSignalingThread,
-                              base::Unretained(this), &waitable_event));
+        FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapterTest::
+                                      RunMessageLoopUntilIdleOnSignalingThread,
+                                  base::Unretained(this), &waitable_event));
     waitable_event.Wait();
     base::RunLoop().RunUntilIdle();
   }
@@ -153,8 +153,9 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
       MockWebRtcAudioTrack::Create("remote_audio_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
-      base::Bind(&WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
-                 base::Unretained(this), webrtc_track.get()));
+      base::BindOnce(
+          &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
+          base::Unretained(this), webrtc_track.get()));
   RunMessageLoopsUntilIdle();
   DCHECK(track_adapter_);
   EXPECT_TRUE(track_adapter_->is_initialized());
@@ -176,8 +177,9 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
       MockWebRtcVideoTrack::Create("remote_video_track");
   dependency_factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
-      base::Bind(&WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
-                 base::Unretained(this), webrtc_track.get()));
+      base::BindOnce(
+          &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
+          base::Unretained(this), webrtc_track.get()));
   RunMessageLoopsUntilIdle();
   DCHECK(track_adapter_);
   EXPECT_TRUE(track_adapter_->is_initialized());

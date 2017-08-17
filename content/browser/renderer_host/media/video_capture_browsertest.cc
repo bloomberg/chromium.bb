@@ -130,8 +130,9 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     if (post_to_end_of_message_queue) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
-                     base::Unretained(this), continuation, false));
+          base::BindOnce(
+              &VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
+              base::Unretained(this), continuation, false));
       return;
     }
 
@@ -237,8 +238,9 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
                  std::move(quit_run_loop_on_current_thread_cb), true);
   BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
-                 base::Unretained(this), std::move(after_start_continuation)));
+      base::BindOnce(
+          &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
+          base::Unretained(this), std::move(after_start_continuation)));
   run_loop.Run();
 }
 
@@ -326,8 +328,9 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   base::Closure do_nothing;
   BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
-                 base::Unretained(this), std::move(do_nothing)));
+      base::BindOnce(
+          &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
+          base::Unretained(this), std::move(do_nothing)));
   run_loop.Run();
 
   EXPECT_FALSE(must_wait_for_gpu_decode_to_start);

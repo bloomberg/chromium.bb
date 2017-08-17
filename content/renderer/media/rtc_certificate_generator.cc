@@ -69,12 +69,11 @@ class RTCCertificateGeneratorRequest
     CertificateCallbackPtr transition(
         observer.release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
-    worker_thread_->PostTask(FROM_HERE, base::Bind(
-        &RTCCertificateGeneratorRequest::GenerateCertificateOnWorkerThread,
-        this,
-        key_params,
-        expires_ms,
-        base::Passed(&transition)));
+    worker_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCCertificateGeneratorRequest::GenerateCertificateOnWorkerThread,
+            this, key_params, expires_ms, base::Passed(&transition)));
   }
 
  private:
@@ -93,7 +92,7 @@ class RTCCertificateGeneratorRequest
 
     main_thread_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &RTCCertificateGeneratorRequest::DoCallbackOnMainThread, this,
             base::Passed(std::move(observer)),
             base::Passed(base::MakeUnique<RTCCertificate>(certificate))));

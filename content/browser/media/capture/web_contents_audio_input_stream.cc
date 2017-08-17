@@ -173,7 +173,7 @@ bool WebContentsAudioInputStream::Impl::Open() {
       initial_render_process_id_, initial_main_render_frame_id_,
       base::Bind(&Impl::OnTargetChanged, this));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&Impl::IncrementCapturerCount, this));
+                          base::BindOnce(&Impl::IncrementCapturerCount, this));
 
   return true;
 }
@@ -207,10 +207,8 @@ void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
   // WebContents audio muting is implemented as audio capture to nowhere.
   // Unmuting will stop that audio capture, allowing AudioMirroringManager to
   // divert audio capture to here.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Impl::UnmuteWebContentsAudio, this));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&Impl::UnmuteWebContentsAudio, this));
 }
 
 void WebContentsAudioInputStream::Impl::Stop() {
@@ -234,8 +232,9 @@ void WebContentsAudioInputStream::Impl::Close() {
 
   if (state_ == OPENED) {
     state_ = CONSTRUCTED;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&Impl::DecrementCapturerCount, this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Impl::DecrementCapturerCount, this));
     tracker_->Stop();
     mixer_stream_->Close();
   }
@@ -263,18 +262,18 @@ void WebContentsAudioInputStream::Impl::StartMirroring() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioMirroringManager::StartMirroring,
-                                     base::Unretained(mirroring_manager_),
-                                     base::RetainedRef(this)));
+                          base::BindOnce(&AudioMirroringManager::StartMirroring,
+                                         base::Unretained(mirroring_manager_),
+                                         base::RetainedRef(this)));
 }
 
 void WebContentsAudioInputStream::Impl::StopMirroring() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioMirroringManager::StopMirroring,
-                                     base::Unretained(mirroring_manager_),
-                                     base::RetainedRef(this)));
+                          base::BindOnce(&AudioMirroringManager::StopMirroring,
+                                         base::Unretained(mirroring_manager_),
+                                         base::RetainedRef(this)));
 }
 
 void WebContentsAudioInputStream::Impl::UnmuteWebContentsAudio() {
@@ -289,12 +288,9 @@ void WebContentsAudioInputStream::Impl::QueryForMatches(
     const std::set<SourceFrameRef>& candidates,
     const MatchesCallback& results_callback) {
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Impl::QueryForMatchesOnUIThread,
-                 this,
-                 candidates,
-                 media::BindToCurrentLoop(results_callback)));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Impl::QueryForMatchesOnUIThread, this, candidates,
+                     media::BindToCurrentLoop(results_callback)));
 }
 
 void WebContentsAudioInputStream::Impl::QueryForMatchesOnUIThread(

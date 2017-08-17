@@ -328,8 +328,8 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
       // RunUntilIdle is required for this task to complete.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&UserMediaClientImplUnderTest::SignalSourceReady,
-                     source_ready, source));
+          base::BindOnce(&UserMediaClientImplUnderTest::SignalSourceReady,
+                         source_ready, source));
     }
 
     *has_sw_echo_cancellation = false;

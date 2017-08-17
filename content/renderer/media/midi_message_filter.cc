@@ -46,7 +46,7 @@ void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
   } else if (clients_waiting_session_queue_.size() == 1u) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&MidiMessageFilter::StartSessionOnIOThread, this));
+        base::BindOnce(&MidiMessageFilter::StartSessionOnIOThread, this));
   }
 }
 
@@ -68,7 +68,8 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
     inputs_.clear();
     outputs_.clear();
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MidiMessageFilter::EndSessionOnIOThread, this));
+        FROM_HERE,
+        base::BindOnce(&MidiMessageFilter::EndSessionOnIOThread, this));
   }
 }
 
@@ -86,8 +87,8 @@ void MidiMessageFilter::SendMidiData(uint32_t port,
   unacknowledged_bytes_sent_ += length;
   std::vector<uint8_t> v(data, data + length);
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MidiMessageFilter::SendMidiDataOnIOThread, this,
-                            port, v, timestamp));
+      FROM_HERE, base::BindOnce(&MidiMessageFilter::SendMidiDataOnIOThread,
+                                this, port, v, timestamp));
 }
 
 void MidiMessageFilter::StartSessionOnIOThread() {
@@ -156,35 +157,35 @@ void MidiMessageFilter::OnSessionStarted(Result result) {
   // Handle on the main JS thread.
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleClientAdded, this, result));
+      base::BindOnce(&MidiMessageFilter::HandleClientAdded, this, result));
 }
 
 void MidiMessageFilter::OnAddInputPort(midi::MidiPortInfo info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleAddInputPort, this, info));
+      base::BindOnce(&MidiMessageFilter::HandleAddInputPort, this, info));
 }
 
 void MidiMessageFilter::OnAddOutputPort(midi::MidiPortInfo info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MidiMessageFilter::HandleAddOutputPort, this, info));
+      base::BindOnce(&MidiMessageFilter::HandleAddOutputPort, this, info));
 }
 
 void MidiMessageFilter::OnSetInputPortState(uint32_t port, PortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetInputPortState, this,
-                            port, state));
+      FROM_HERE, base::BindOnce(&MidiMessageFilter::HandleSetInputPortState,
+                                this, port, state));
 }
 
 void MidiMessageFilter::OnSetOutputPortState(uint32_t port, PortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetOutputPortState, this,
-                            port, state));
+      FROM_HERE, base::BindOnce(&MidiMessageFilter::HandleSetOutputPortState,
+                                this, port, state));
 }
 
 void MidiMessageFilter::OnDataReceived(uint32_t port,
@@ -194,15 +195,15 @@ void MidiMessageFilter::OnDataReceived(uint32_t port,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MidiMessageFilter::HandleDataReceived, this, port,
-                            data, timestamp));
+      FROM_HERE, base::BindOnce(&MidiMessageFilter::HandleDataReceived, this,
+                                port, data, timestamp));
 }
 
 void MidiMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MidiMessageFilter::HandleAckknowledgeSentData,
-                            this, bytes_sent));
+      FROM_HERE, base::BindOnce(&MidiMessageFilter::HandleAckknowledgeSentData,
+                                this, bytes_sent));
 }
 
 void MidiMessageFilter::HandleClientAdded(Result result) {

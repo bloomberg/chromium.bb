@@ -821,10 +821,10 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::CreateAndInitializeVEA, impl_,
-                 gfx::Size(codec_settings->width, codec_settings->height),
-                 codec_settings->startBitrate, profile_, &initialization_waiter,
-                 &initialization_retval));
+      base::BindOnce(&RTCVideoEncoder::Impl::CreateAndInitializeVEA, impl_,
+                     gfx::Size(codec_settings->width, codec_settings->height),
+                     codec_settings->startBitrate, profile_,
+                     &initialization_waiter, &initialization_retval));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   initialization_waiter.Wait();
@@ -850,12 +850,8 @@ int32_t RTCVideoEncoder::Encode(
   int32_t encode_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::Enqueue,
-                 impl_,
-                 &input_image,
-                 want_key_frame,
-                 &encode_waiter,
-                 &encode_retval));
+      base::BindOnce(&RTCVideoEncoder::Impl::Enqueue, impl_, &input_image,
+                     want_key_frame, &encode_waiter, &encode_retval));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   encode_waiter.Wait();
@@ -877,8 +873,8 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
   int32_t register_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback, impl_,
-                 &register_waiter, &register_retval, callback));
+      base::BindOnce(&RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback,
+                     impl_, &register_waiter, &register_retval, callback));
   register_waiter.Wait();
   return register_retval;
 }
@@ -893,7 +889,7 @@ int32_t RTCVideoEncoder::Release() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
+      base::BindOnce(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
   release_waiter.Wait();
   impl_ = NULL;
   return WEBRTC_VIDEO_CODEC_OK;
@@ -922,10 +918,8 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
 
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::RequestEncodingParametersChange,
-                 impl_,
-                 new_bit_rate,
-                 frame_rate));
+      base::BindOnce(&RTCVideoEncoder::Impl::RequestEncodingParametersChange,
+                     impl_, new_bit_rate, frame_rate));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 

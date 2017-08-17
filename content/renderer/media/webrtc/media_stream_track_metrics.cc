@@ -73,10 +73,10 @@ class MediaStreamObserver
   // webrtc::ObserverInterface implementation.
   void OnChanged() override {
     DCHECK(signaling_thread_.CalledOnValidThread());
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&MediaStreamObserver::OnChangedOnMainThread, this,
-                   GetTrackIds(stream_->GetAudioTracks()),
-                   GetTrackIds(stream_->GetVideoTracks())));
+    main_thread_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaStreamObserver::OnChangedOnMainThread,
+                                  this, GetTrackIds(stream_->GetAudioTracks()),
+                                  GetTrackIds(stream_->GetVideoTracks())));
   }
 
   void OnChangedOnMainThread(const IdSet& audio_track_ids,

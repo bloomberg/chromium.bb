@@ -105,9 +105,9 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   device_factory_provider_->ConnectToDeviceFactory(
       mojo::MakeRequest(&device_factory_));
   // Unretained |this| is safe, because |this| owns |device_factory_|.
-  device_factory_.set_connection_error_handler(
-      base::Bind(&ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory,
-                 base::Unretained(this)));
+  device_factory_.set_connection_error_handler(base::BindOnce(
+      &ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory,
+      base::Unretained(this)));
 }
 
 void ServiceVideoCaptureProvider::OnDeviceInfosReceived(

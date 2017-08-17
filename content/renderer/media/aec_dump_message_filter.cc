@@ -54,7 +54,7 @@ void AecDumpMessageFilter::AddDelegate(
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AecDumpMessageFilter::RegisterAecDumpConsumer, this, id));
+      base::BindOnce(&AecDumpMessageFilter::RegisterAecDumpConsumer, this, id));
 }
 
 void AecDumpMessageFilter::RemoveDelegate(
@@ -68,7 +68,8 @@ void AecDumpMessageFilter::RemoveDelegate(
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AecDumpMessageFilter::UnregisterAecDumpConsumer, this, id));
+      base::BindOnce(&AecDumpMessageFilter::UnregisterAecDumpConsumer, this,
+                     id));
 }
 
 void AecDumpMessageFilter::Send(IPC::Message* message) {
@@ -117,7 +118,7 @@ void AecDumpMessageFilter::OnChannelClosing() {
   sender_ = NULL;
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AecDumpMessageFilter::DoChannelClosingOnDelegates, this));
+      base::BindOnce(&AecDumpMessageFilter::DoChannelClosingOnDelegates, this));
 }
 
 void AecDumpMessageFilter::OnEnableAecDump(
@@ -125,21 +126,21 @@ void AecDumpMessageFilter::OnEnableAecDump(
     IPC::PlatformFileForTransit file_handle) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AecDumpMessageFilter::DoEnableAecDump, this, id,
-                            file_handle));
+      FROM_HERE, base::BindOnce(&AecDumpMessageFilter::DoEnableAecDump, this,
+                                id, file_handle));
 }
 
 void AecDumpMessageFilter::OnDisableAecDump() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AecDumpMessageFilter::DoDisableAecDump, this));
+      FROM_HERE, base::BindOnce(&AecDumpMessageFilter::DoDisableAecDump, this));
 }
 
 void AecDumpMessageFilter::OnEnableAec3(int id, bool enable) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AecDumpMessageFilter::DoEnableAec3, this, id, enable));
+      base::BindOnce(&AecDumpMessageFilter::DoEnableAec3, this, id, enable));
 }
 
 void AecDumpMessageFilter::DoEnableAecDump(

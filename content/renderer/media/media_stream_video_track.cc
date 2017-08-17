@@ -109,7 +109,7 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FrameDeliverer::AddCallbackOnIO, this, id, callback));
+      base::BindOnce(&FrameDeliverer::AddCallbackOnIO, this, id, callback));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
@@ -122,8 +122,8 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::RemoveCallbackOnIO, this, id,
-                            base::ThreadTaskRunnerHandle::Get()));
+      FROM_HERE, base::BindOnce(&FrameDeliverer::RemoveCallbackOnIO, this, id,
+                                base::ThreadTaskRunnerHandle::Get()));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
@@ -138,7 +138,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
       callback.reset(new VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
       task_runner->PostTask(
-          FROM_HERE, base::Bind(&ResetCallback, base::Passed(&callback)));
+          FROM_HERE, base::BindOnce(&ResetCallback, base::Passed(&callback)));
       return;
     }
   }
@@ -147,7 +147,8 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::SetEnabledOnIO, this, enabled));
+      FROM_HERE,
+      base::BindOnce(&FrameDeliverer::SetEnabledOnIO, this, enabled));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
@@ -186,7 +187,7 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
   if (!wrapped_black_frame)
     return nullptr;
   wrapped_black_frame->AddDestructionObserver(
-      base::Bind(&ReleaseOriginalFrame, black_frame_));
+      base::BindOnce(&ReleaseOriginalFrame, black_frame_));
 
   wrapped_black_frame->set_timestamp(reference_frame->timestamp());
   base::TimeTicks reference_time;

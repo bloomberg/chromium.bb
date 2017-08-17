@@ -61,7 +61,7 @@ class MediaStreamRemoteVideoSourceTest
     std::unique_ptr<TrackObserver> track_observer;
     mock_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                webrtc::MediaStreamTrackInterface* webrtc_track,
                std::unique_ptr<TrackObserver>* track_observer,
@@ -116,7 +116,7 @@ class MediaStreamRemoteVideoSourceTest
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     mock_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(
+        FROM_HERE, base::BindOnce(
                        [](MockWebRtcVideoTrack* video_track,
                           base::WaitableEvent* waitable_event) {
                          video_track->SetEnded();

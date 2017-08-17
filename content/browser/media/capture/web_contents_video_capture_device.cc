@@ -471,8 +471,8 @@ bool WebContentsCaptureMachine::InternalStart(
 void WebContentsCaptureMachine::Suspend() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebContentsCaptureMachine::InternalSuspend,
-                 base::Unretained(this)));
+      base::BindOnce(&WebContentsCaptureMachine::InternalSuspend,
+                     base::Unretained(this)));
 }
 
 void WebContentsCaptureMachine::InternalSuspend() {
@@ -485,9 +485,10 @@ void WebContentsCaptureMachine::InternalSuspend() {
 }
 
 void WebContentsCaptureMachine::Resume() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&WebContentsCaptureMachine::InternalResume,
-                                     base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebContentsCaptureMachine::InternalResume,
+                     base::Unretained(this)));
 }
 
 void WebContentsCaptureMachine::InternalResume() {
@@ -500,9 +501,10 @@ void WebContentsCaptureMachine::InternalResume() {
 }
 
 void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&WebContentsCaptureMachine::InternalStop,
-                                     base::Unretained(this), callback));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WebContentsCaptureMachine::InternalStop,
+                     base::Unretained(this), callback));
 }
 
 void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
@@ -526,10 +528,11 @@ void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
 void WebContentsCaptureMachine::MaybeCaptureForRefresh() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebContentsCaptureMachine::InternalMaybeCaptureForRefresh,
-                 // Use of Unretained() is safe here since this task must run
-                 // before InternalStop().
-                 base::Unretained(this)));
+      base::BindOnce(
+          &WebContentsCaptureMachine::InternalMaybeCaptureForRefresh,
+          // Use of Unretained() is safe here since this task must run
+          // before InternalStop().
+          base::Unretained(this)));
 }
 
 void WebContentsCaptureMachine::InternalMaybeCaptureForRefresh() {
