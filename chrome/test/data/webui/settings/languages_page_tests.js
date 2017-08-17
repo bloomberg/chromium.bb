@@ -263,15 +263,15 @@ cr.define('languages_page_tests', function() {
       test('test translate.enable toggle', function() {
         var settingsToggle = languagesPage.$.offerTranslateOtherLanguages;
         assertTrue(!!settingsToggle);
-        assertTrue(!!settingsToggle.actionTarget);
+        assertTrue(!!settingsToggle);
 
         // Clicking on the toggle switches it to false.
-        MockInteractions.tap(settingsToggle.actionTarget);
+        MockInteractions.tap(settingsToggle);
         var newToggleValue = languageHelper.prefs.translate.enabled.value;
         assertFalse(newToggleValue);
 
         // Clicking on the toggle switches it to true again.
-        MockInteractions.tap(settingsToggle.actionTarget);
+        MockInteractions.tap(settingsToggle);
         newToggleValue = languageHelper.prefs.translate.enabled.value;
         assertTrue(newToggleValue);
       });

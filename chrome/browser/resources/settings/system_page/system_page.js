@@ -51,7 +51,9 @@ Polymer({
   },
 
   /** @private */
-  onRestartTap_: function() {
+  onRestartTap_: function(e) {
+    // Prevent event from bubbling up to the toggle button.
+    e.stopPropagation();
     // TODO(dbeam): we should prompt before restarting the browser.
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
