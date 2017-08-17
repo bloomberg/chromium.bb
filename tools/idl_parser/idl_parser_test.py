@@ -26,10 +26,6 @@ class WebIDLParser(unittest.TestCase):
     comments = node.GetListOf('SpecialComment')
     for comment in comments:
       check, value = ParseCommentTest(comment.GetName())
-      if check == 'BUILD':
-        msg = 'Expecting %s, but found %s.\n' % (value, str(node))
-        self.assertEqual(value, str(node), msg)
-
       if check == 'ERROR':
         msg = node.GetLogLine('Expecting\n\t%s\nbut found \n\t%s\n' % (
                               value, str(node)))
