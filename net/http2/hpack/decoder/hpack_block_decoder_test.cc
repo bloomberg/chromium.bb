@@ -5,7 +5,6 @@
 #include "net/http2/hpack/decoder/hpack_block_decoder.h"
 
 #include <cstdint>
-#include <strstream>
 
 // Tests of HpackBlockDecoder.
 
