@@ -1039,9 +1039,10 @@ bool SelectionController::HandleMouseReleaseEvent(
         builder.Collapse(pos.ToPositionWithAffinity());
     }
 
+    const SelectionInFlatTree new_selection = builder.Build();
     if (Selection().ComputeVisibleSelectionInFlatTree() !=
-        CreateVisibleSelection(builder.Build())) {
-      Selection().SetSelection(ConvertToSelectionInDOMTree(builder.Build()));
+        CreateVisibleSelection(new_selection)) {
+      Selection().SetSelection(ConvertToSelectionInDOMTree(new_selection));
     }
 
     handled = true;
