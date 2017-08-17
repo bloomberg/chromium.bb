@@ -11,12 +11,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -76,8 +74,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
         } else if (mCreatorPackageName == null) {
             Log.e(TAG, "Missing creator's pacakge name");
             return false;
-        } else if (!TextUtils.equals(mCreatorPackageName, getPackageName())
-                && (intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
+        } else if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
             Log.e(TAG, "Intent should not be started with FLAG_ACTIVITY_NEW_TASK");
             return false;
         } else if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
@@ -94,24 +91,10 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     @Override
     public void openContextMenu(View view) {
         ContextMenuParams params = createContextMenuParams();
-        Runnable listener = new Runnable() {
-            @Override
-            public void run() {
-                startDelayedNativeInitialization();
-            }
-        };
-        mHelper = new BrowserActionsContextMenuHelper(this, params, mActions, mCreatorPackageName,
-                mOnBrowserActionSelectedCallback, listener);
+        mHelper = new BrowserActionsContextMenuHelper(
+                this, params, mActions, mCreatorPackageName, mOnBrowserActionSelectedCallback);
         mHelper.displayBrowserActionsMenu(view);
         return;
-    }
-
-    /**
-     * @return The {@link BrowserActionsContextMenuHelper} for testing.
-     */
-    @VisibleForTesting
-    BrowserActionsContextMenuHelper getHelperForTesting() {
-        return mHelper;
     }
 
     /**
@@ -142,17 +125,18 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
         return true;
     }
 
+    /**
+     * Callback when Browser Actions menu dialog is shown.
+     */
+    public void onMenuShown() {
+        startDelayedNativeInitialization();
+    }
+
     @Override
     public void onContextMenuClosed(Menu menu) {
         super.onContextMenuClosed(menu);
         if (mHelper != null) {
             mHelper.onContextMenuClosed();
         }
-    }
-
-    @Override
-    public void finishNativeInitialization() {
-        super.finishNativeInitialization();
-        mHelper.onNativeInitialized();
     }
 }

@@ -150,6 +150,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 tab.loadUrl(loadUrlParams);
             }
             tab.getTabRedirectHandler().updateIntent(intent);
+
             if (intent != null && intent.hasExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA)) {
                 ServiceTabLauncher.onWebContentsForRequestAvailable(
                         intent.getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
@@ -297,7 +298,6 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             case FROM_RESTORE:
             case FROM_LINK:
             case FROM_EXTERNAL_APP:
-            case FROM_BROWSER_ACTIONS:
                 transition = PageTransition.LINK | PageTransition.FROM_API;
                 break;
             case FROM_CHROME_UI:

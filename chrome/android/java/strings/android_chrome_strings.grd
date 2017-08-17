@@ -1763,9 +1763,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BROWSER_ACTIONS_NOTIFICATION_TEXT" desc="Context text displayed in the notification when links are opened in the background from Browser Actions. [CHAR-LIMIT=30]">
         Tap to view
       </message>
-      <message name="IDS_BROWSER_ACTIONS_LOADING_NATIVE_MESSAGE" desc="Message on the progress dialog used when waiting for loading native library before downloading a url. [CHAR-LIMIT=30]">
-        Please wait…
-      </message>
 
       <!-- App banner strings -->
       <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed. [CHAR-LIMIT=25]">
