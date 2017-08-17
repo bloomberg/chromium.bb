@@ -167,7 +167,8 @@ RefPtr<ArrayBuffer> ArrayBuffer::Create(
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kNotShared, policy);
-  CHECK(contents.Data());
+  if (UNLIKELY(!contents.Data()))
+    OOM_CRASH();
   return AdoptRef(new ArrayBuffer(contents));
 }
 
