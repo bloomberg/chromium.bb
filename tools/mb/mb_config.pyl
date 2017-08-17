@@ -423,8 +423,8 @@
 
     'chromium.webrtc': {
       'Linux Builder': 'release_bot_chrome_with_codecs',
-      'Mac Builder': 'chrome_with_codecs_blink_logging_release_trybot',
-      'Win Builder': 'chrome_with_codecs_blink_logging_release_trybot_x86',
+      'Mac Builder': 'release_bot_chrome_with_codecs',
+      'Win Builder': 'release_bot_x86_minimal_symbols',
     },
 
     'chromium.webrtc.fyi': {
@@ -432,8 +432,11 @@
       'Android Builder (dbg)': 'android_debug_static_bot',
       'Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
       'Linux Builder': 'release_bot_chrome_with_codecs',
-      'Mac Builder': 'chrome_with_codecs_blink_logging_release_trybot',
-      'Win Builder': 'chrome_with_codecs_blink_logging_release_trybot_x86',
+      'Linux Builder (dbg)': 'debug_bot',
+      'Mac Builder': 'release_bot_chrome_with_codecs',
+      'Mac Builder (dbg)': 'debug_bot',
+      'Win Builder': 'release_bot_x86_minimal_symbols',
+      'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols',
     },
 
     'chromium.win': {
@@ -1001,14 +1004,6 @@
 
     'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
       'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
-    ],
-
-    'chrome_with_codecs_blink_logging_release_trybot': [
-      'chrome_with_codecs', 'blink_logging', 'release_trybot',
-    ],
-
-    'chrome_with_codecs_blink_logging_release_trybot_x86': [
-      'chrome_with_codecs', 'blink_logging', 'release_trybot', 'x86',
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
@@ -1623,10 +1618,6 @@
 
     'asan': {
       'gn_args': 'is_asan=true',
-    },
-
-    'blink_logging': {
-      'gn_args': 'blink_logging_always_on=true',
     },
 
     'ffmpeg_branding_chrome': {
