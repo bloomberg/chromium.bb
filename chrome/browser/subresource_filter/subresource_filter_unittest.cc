@@ -104,14 +104,13 @@ TEST_F(SubresourceFilterTest,
       subresource_filter::ActivationLevel::DISABLED,
       subresource_filter::ActivationScope::NO_SITES));
 
+  subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   GURL url("data:text/html,hello world");
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  auto* driver_factory = subresource_filter::
-      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
   EXPECT_EQ(
       subresource_filter::ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-      driver_factory->GetActivationDecisionForLastCommittedPageLoad());
+      observer.GetPageActivation(url));
 
   // Also don't report UNSUPPORTED_SCHEME if the navigation matches a
   // configuration with DISABLED activation level.
@@ -122,7 +121,7 @@ TEST_F(SubresourceFilterTest,
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_EQ(subresource_filter::ActivationDecision::ACTIVATION_DISABLED,
-            driver_factory->GetActivationDecisionForLastCommittedPageLoad());
+            observer.GetPageActivation(url));
 
   // Sanity check that UNSUPPORTED_SCHEME is reported if the navigation does
   // activate.
@@ -132,7 +131,7 @@ TEST_F(SubresourceFilterTest,
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_EQ(subresource_filter::ActivationDecision::UNSUPPORTED_SCHEME,
-            driver_factory->GetActivationDecisionForLastCommittedPageLoad());
+            observer.GetPageActivation(url));
 }
 
 TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {

@@ -50,14 +50,6 @@ class ContentSubresourceFilterDriverFactory
       ActivationDecision activation_decision,
       Configuration::ActivationOptions matched_options);
 
-  // Returns the |ActivationDecision| for the current main frame document. Do
-  // not rely on this API, it is only temporary.
-  // TODO(csharrison): Remove this and |activation_decision_| once consumers
-  // move to become SubresourceFilterObservers.
-  ActivationDecision GetActivationDecisionForLastCommittedPageLoad() const {
-    return activation_decision_;
-  }
-
   // Returns the |ActivationOptions| for the current main frame
   // document. Do not rely on this API, it is only temporary.
   // TODO(csharrison): Remove this and |activation_options_| in place of adding
