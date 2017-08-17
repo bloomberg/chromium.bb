@@ -6,6 +6,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -864,8 +865,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // The test also exits fullscreen by simulating pressing ESC rather than using
 // document.webkitExitFullscreen(), which tests the browser-initiated
 // fullscreen exit path.
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#define MAYBE_FullscreenElementInMultipleSubframes \
+  DISABLED_FullscreenElementInMultipleSubframes
+#else
+#define MAYBE_FullscreenElementInMultipleSubframes \
+  FullscreenElementInMultipleSubframes
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       FullscreenElementInMultipleSubframes) {
+                       MAYBE_FullscreenElementInMultipleSubframes) {
   // Allow fullscreen in all iframes descending to |c_middle|.
   GURL main_url(embedded_test_server()->GetURL(
       "a.com",
