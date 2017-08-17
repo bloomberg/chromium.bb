@@ -16,37 +16,19 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
+  },
 
-    /**
-     * Which element will trigger state changes. Defaults to |this|.
-     * @type {HTMLElement}
-     */
-    actionTarget: {
-      observer: 'onActionTargetChange_',
-      type: Object,
-      value: function() {
-        return this;
-      },
-    },
+  listeners: {
+    'tap': 'onHostTap_',
   },
 
   observers: [
-    'onDisableOrPrefChange_(disabled, pref.*, actionTarget)',
+    'onDisableOrPrefChange_(disabled, pref.*)',
   ],
 
   /** @override */
   focus: function() {
     this.$.control.focus();
-  },
-
-  /** @private */
-  onActionTargetChange_: function(current, prior) {
-    if (prior) {
-      this.unlisten(prior, 'tap', 'onLabelWrapperTap_');
-    }
-    if (current) {
-      this.listen(current, 'tap', 'onLabelWrapperTap_');
-    }
   },
 
   /**
@@ -63,9 +45,9 @@ Polymer({
   /** @private */
   onDisableOrPrefChange_: function() {
     if (this.controlDisabled_()) {
-      this.actionTarget.removeAttribute('actionable');
+      this.removeAttribute('actionable');
     } else {
-      this.actionTarget.setAttribute('actionable', '');
+      this.setAttribute('actionable', '');
     }
   },
 
@@ -74,7 +56,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onLabelWrapperTap_: function(e) {
+  onHostTap_: function(e) {
     // Stop the event from propagating to avoid firing two 'changed' events.
     e.stopPropagation();
     if (this.controlDisabled_())

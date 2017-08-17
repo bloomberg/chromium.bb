@@ -10,12 +10,10 @@
       margin-top: 0;  /* Cancel separation between main and secondary text. */
     }
     </style>
-    <div class="settings-box first two-line">
-      <settings-toggle-button id="toggle" class="start"
-          label="$i18n{siteSettingsPdfDownloadPdfs}"
-          pref="{{prefs.plugins.always_open_pdf_externally}}">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button id="toggle" class="settings-box first two-line"
+        label="$i18n{siteSettingsPdfDownloadPdfs}"
+        pref="{{prefs.plugins.always_open_pdf_externally}}">
+    </settings-toggle-button>
   </template>
   <script src="pdf_documents.js"></script>
 </dom-module>
