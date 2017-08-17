@@ -502,13 +502,16 @@ void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
   OnStreamReady(used_ssl_config, used_proxy_info, std::move(stream));
 }
 
-void HttpNetworkTransaction::OnStreamFailed(int result,
-                                            const SSLConfig& used_ssl_config) {
+void HttpNetworkTransaction::OnStreamFailed(
+    int result,
+    const NetErrorDetails& net_error_details,
+    const SSLConfig& used_ssl_config) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK_NE(OK, result);
   DCHECK(stream_request_.get());
   DCHECK(!stream_.get());
   server_ssl_config_ = used_ssl_config;
+  net_error_details_ = net_error_details;
 
   OnIOComplete(result);
 }

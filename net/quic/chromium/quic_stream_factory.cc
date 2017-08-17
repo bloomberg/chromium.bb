@@ -355,6 +355,8 @@ class QuicStreamFactory::Job {
 
   base::WeakPtr<Job> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
+  void PopulateNetErrorDetails(NetErrorDetails* details) const;
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -472,6 +474,15 @@ void QuicStreamFactory::Job::Cancel() {
     session_->connection()->CloseConnection(
         QUIC_CONNECTION_CANCELLED, "New job canceled.",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+}
+
+void QuicStreamFactory::Job::PopulateNetErrorDetails(
+    NetErrorDetails* details) const {
+  if (!session_)
+    return;
+  details->connection_info = QuicHttpStream::ConnectionInfoFromQuicVersion(
+      session_->connection()->version());
+  details->quic_connection_error = session_->error();
 }
 
 size_t QuicStreamFactory::Job::EstimateMemoryUsage() const {
@@ -593,10 +604,14 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
                                const GURL& url,
                                QuicStringPiece method,
                                const NetLogWithSource& net_log,
+                               NetErrorDetails* net_error_details,
                                const CompletionCallback& callback) {
   DCHECK_NE(quic_version, QUIC_VERSION_UNSUPPORTED);
+  DCHECK(net_error_details);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
+
+  net_error_details_ = net_error_details;
   server_id_ = QuicServerId(HostPortPair::FromURL(url), privacy_mode);
 
   int rv = factory_->Create(server_id_, destination, quic_version,
@@ -1030,6 +1045,9 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     // Even though we're invoking callbacks here, we don't need to worry
     // about |this| being deleted, because the factory is owned by the
     // profile which can not be deleted via callbacks.
+    if (rv < 0) {
+      job->PopulateNetErrorDetails(request->net_error_details());
+    }
     request->OnRequestComplete(rv);
   }
 
