@@ -38,10 +38,6 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
       JNIEnv* env,
       mojo::ScopedSharedBufferMapping mapping,
       const CreateSensorCallback& callback);
-  void CreateRelativeOrientationQuaternionSensor(
-      JNIEnv* env,
-      mojo::ScopedSharedBufferMapping mapping,
-      const CreateSensorCallback& callback);
 
   // Java object org.chromium.device.sensors.PlatformSensorProvider
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
