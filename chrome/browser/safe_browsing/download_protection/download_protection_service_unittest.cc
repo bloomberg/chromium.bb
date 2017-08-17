@@ -674,11 +674,11 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.exe"));  // final_path
 
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(4);
+      .Times(3);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(4);
+      .Times(3);
 
   // We should not get whilelist checks for other URLs than specified below.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
@@ -768,11 +768,11 @@ TEST_F(DownloadProtectionServiceTest,
                            FILE_PATH_LITERAL("a.tmp"),   // tmp_path
                            FILE_PATH_LITERAL("a.exe"));  // final_path
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(4);
+      .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(6);
+      .Times(3);
   // Assume http://www.whitelist.com/a.exe is on the whitelist.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -1670,46 +1670,37 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                         base::Unretained(this), run_loop.QuitClosure()));
 
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  ClientDownloadRequest request;
-  EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
-  EXPECT_EQ(download_file_path, request.url());
-  EXPECT_EQ(hash_, request.digests().sha256());
-  EXPECT_EQ(item.GetReceivedBytes(), request.length());
-  EXPECT_EQ(item.HasUserGesture(), request.user_initiated());
-  EXPECT_TRUE(RequestContainsServerIp(request, remote_address));
-  EXPECT_EQ(2, request.resources_size());
-  EXPECT_TRUE(RequestContainsResource(request,
+  // Wait until processing is finished.
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  const ClientDownloadRequest* request = GetClientDownloadRequest();
+  EXPECT_EQ(download_file_path, request->url());
+  EXPECT_EQ(hash_, request->digests().sha256());
+  EXPECT_EQ(item.GetReceivedBytes(), request->length());
+  EXPECT_EQ(item.HasUserGesture(), request->user_initiated());
+  EXPECT_TRUE(RequestContainsServerIp(*request, remote_address));
+  EXPECT_EQ(2, request->resources_size());
+  EXPECT_TRUE(RequestContainsResource(*request,
                                       ClientDownloadRequest::DOWNLOAD_REDIRECT,
                                       "http://www.google.com/", ""));
-  EXPECT_TRUE(RequestContainsResource(request,
+  EXPECT_TRUE(RequestContainsResource(*request,
                                       ClientDownloadRequest::DOWNLOAD_URL,
                                       download_file_path, referrer_.spec()));
-  EXPECT_TRUE(request.has_signature());
+  ASSERT_TRUE(request->has_signature());
 #if !defined(OS_MACOSX)
-  ASSERT_EQ(1, request.signature().certificate_chain_size());
+  ASSERT_EQ(1, request->signature().certificate_chain_size());
   const ClientDownloadRequest_CertificateChain& chain =
-      request.signature().certificate_chain(0);
+      request->signature().certificate_chain(0);
   ASSERT_EQ(1, chain.element_size());
   EXPECT_EQ("dummy cert data", chain.element(0).certificate());
-  EXPECT_TRUE(request.has_image_headers());
-  const ClientDownloadRequest_ImageHeaders& headers = request.image_headers();
+  EXPECT_TRUE(request->has_image_headers());
+  const ClientDownloadRequest_ImageHeaders& headers = request->image_headers();
   EXPECT_TRUE(headers.has_pe_headers());
   EXPECT_TRUE(headers.pe_headers().has_dos_header());
   EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 #endif  // OS_MACOSX
 
-  // Simulate the request finishing.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                     base::Unretained(this), fetcher));
-  run_loop.Run();
 }
 
 // Similar to above, but with an unsigned binary.
@@ -1755,34 +1746,25 @@ TEST_F(DownloadProtectionServiceTest,
       &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                         base::Unretained(this), run_loop.QuitClosure()));
 
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
-  EXPECT_TRUE(HasClientDownloadRequest());
-  ClearClientDownloadRequest();
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  ClientDownloadRequest request;
-  EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
-  EXPECT_EQ(download_file_path, request.url());
-  EXPECT_EQ(hash_, request.digests().sha256());
-  EXPECT_EQ(item.GetReceivedBytes(), request.length());
-  EXPECT_EQ(item.HasUserGesture(), request.user_initiated());
-  EXPECT_EQ(2, request.resources_size());
-  EXPECT_TRUE(RequestContainsResource(request,
+  // Wait until processing is finished.
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  const ClientDownloadRequest* request = GetClientDownloadRequest();
+  EXPECT_EQ(download_file_path, request->url());
+  EXPECT_EQ(hash_, request->digests().sha256());
+  EXPECT_EQ(item.GetReceivedBytes(), request->length());
+  EXPECT_EQ(item.HasUserGesture(), request->user_initiated());
+  EXPECT_TRUE(RequestContainsServerIp(*request, remote_address));
+  EXPECT_EQ(2, request->resources_size());
+  EXPECT_TRUE(RequestContainsResource(*request,
                                       ClientDownloadRequest::DOWNLOAD_REDIRECT,
                                       "http://www.google.com/", ""));
-  EXPECT_TRUE(RequestContainsResource(request,
+  EXPECT_TRUE(RequestContainsResource(*request,
                                       ClientDownloadRequest::DOWNLOAD_URL,
                                       download_file_path, referrer_.spec()));
-  EXPECT_TRUE(request.has_signature());
-  EXPECT_EQ(0, request.signature().certificate_chain_size());
-
-  // Simulate the request finishing.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                     base::Unretained(this), fetcher));
-  run_loop.Run();
+  ASSERT_TRUE(request->has_signature());
+  EXPECT_EQ(0, request->signature().certificate_chain_size());
 }
 
 // Similar to above, but with tab history.
@@ -2040,24 +2022,16 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
                 MatchDownloadWhitelistUrl(_))
         .WillRepeatedly(Return(false));
 
-#if defined(OS_MACOSX)
     // Expects that MockDownloadItem will go out of scope while asynchronous
-    // processing is parsing file metadata, and thus ExtractFileOrDmgFeatures()
-    // will return rather than continuing to process the download.
+    // processing is checking whitelist, and thus will return after whitelist
+    // check rather than continuing to process the download, since
+    // OnDownloadDestroyed will be called to terminate the processing.
     EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
         .Times(0);
     EXPECT_CALL(*binary_feature_extractor_.get(),
                 ExtractImageFeatures(
                     tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
         .Times(0);
-#else
-    // Expects synchronous processing that continues to extract features from
-    // download even after MockDownloadItem goes out of scope.
-    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
-    EXPECT_CALL(*binary_feature_extractor_.get(),
-                ExtractImageFeatures(
-                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
-#endif
 
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
@@ -2088,10 +2062,12 @@ TEST_F(DownloadProtectionServiceTest,
         item.reset();
         return false;
       }));
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(0);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
-                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+      .Times(0);
 
   RunLoop run_loop;
   download_service_->CheckClientDownload(
