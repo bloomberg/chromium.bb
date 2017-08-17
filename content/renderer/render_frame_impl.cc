@@ -167,6 +167,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -6099,8 +6100,14 @@ void RenderFrameImpl::NavigateInternal(
                            ? blink::WebURLRequest::kFrameTypeTopLevel
                            : blink::WebURLRequest::kFrameTypeNested);
 
-  if (IsBrowserSideNavigationEnabled() && common_params.post_data)
+  if (IsBrowserSideNavigationEnabled() && common_params.post_data) {
     request.SetHTTPBody(GetWebHTTPBodyForRequestBody(common_params.post_data));
+    if (!request_params.post_content_type.empty()) {
+      request.AddHTTPHeaderField(
+          WebString::FromASCII(net::HttpRequestHeaders::kContentType),
+          WebString::FromASCII(request_params.post_content_type));
+    }
+  }
 
   // Used to determine whether this frame is actually loading a request as part
   // of a history navigation.

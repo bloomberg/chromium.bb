@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -203,12 +204,17 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
   scoped_refptr<ResourceRequestBody> request_body;
+  std::string post_content_type;
   if (post_body) {
     // Standard form submission from the renderer.
     request_body = post_body;
   } else if (frame_entry.method() == "POST") {
     // Form resubmission during a back/forward/reload navigation.
-    request_body = frame_entry.GetPostData();
+    request_body = frame_entry.GetPostData(&post_content_type);
+    // Might have a LF at end.
+    post_content_type =
+        base::TrimWhitespaceASCII(post_content_type, base::TRIM_ALL)
+            .as_string();
   }
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
@@ -228,14 +234,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_entry, request_body, dest_url, dest_referrer, navigation_type,
       previews_state, navigation_start);
 
-  std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params,
-      BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
-                            false,  // has_user_gestures
-                            false,  // skip_service_worker
-                            REQUEST_CONTEXT_TYPE_LOCATION,
-                            blink::WebMixedContentContextType::kBlockable,
-                            is_form_submission, initiator),
+  RequestNavigationParams request_params =
       entry.ConstructRequestNavigationParams(
           frame_entry, common_params.url, common_params.method,
           is_history_navigation_in_new_child,
@@ -244,8 +243,18 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
-          controller->GetEntryCount()),
-      browser_initiated,
+          controller->GetEntryCount());
+  request_params.post_content_type = post_content_type;
+
+  std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
+      frame_tree_node, common_params,
+      BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
+                            false,  // has_user_gestures
+                            false,  // skip_service_worker
+                            REQUEST_CONTEXT_TYPE_LOCATION,
+                            blink::WebMixedContentContextType::kBlockable,
+                            is_form_submission, initiator),
+      request_params, browser_initiated,
       true,  // may_transfer
       &frame_entry, &entry));
   return navigation_request;
@@ -369,6 +378,21 @@ NavigationRequest::NavigationRequest(
       &headers, common_params_.url, common_params_.navigation_type,
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       common_params.method, user_agent_override, frame_tree_node);
+
+  if (begin_params.is_form_submission) {
+    if (browser_initiated && !request_params.post_content_type.empty()) {
+      // This is a form resubmit, so make sure to set the Content-Type header.
+      headers.SetHeaderIfMissing(net::HttpRequestHeaders::kContentType,
+                                 request_params.post_content_type);
+    } else if (!browser_initiated) {
+      // Save the Content-Type in case the form is resubmitted. This will get
+      // sent back to the renderer in the CommitNavigation IPC. The renderer
+      // will then send it back with the post body so that we can access it
+      // along with the body in FrameNavigationEntry::page_state_.
+      headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                        &request_params_.post_content_type);
+    }
+  }
   begin_params_.headers = headers.ToString();
 }
 

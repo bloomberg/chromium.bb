@@ -298,6 +298,10 @@ struct CONTENT_EXPORT RequestNavigationParams {
   std::vector<net::RedirectInfo> redirect_infos;
 
   // PlzNavigate
+  // The content type from the request headers for POST requests.
+  std::string post_content_type;
+
+  // PlzNavigate
   // The original URL & method for this navigation.
   GURL original_url;
   std::string original_method;

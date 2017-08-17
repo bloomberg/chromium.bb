@@ -132,7 +132,8 @@ class CONTENT_EXPORT FrameNavigationEntry
 
   // The data sent during a POST navigation. Returns nullptr if the navigation
   // is not a POST.
-  scoped_refptr<ResourceRequestBody> GetPostData() const;
+  scoped_refptr<ResourceRequestBody> GetPostData(
+      std::string* content_type) const;
 
  private:
   friend class base::RefCounted<FrameNavigationEntry>;

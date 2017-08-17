@@ -22,6 +22,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 
 namespace content {
 
@@ -486,6 +487,59 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // The |stream_handle_| must have been released now.
   EXPECT_EQ(nullptr, main_frame->stream_handle_for_testing());
+}
+
+namespace {
+void PostRequestMonitor(int* post_counter,
+                        const net::test_server::HttpRequest& request) {
+  if (request.method != net::test_server::METHOD_POST)
+    return;
+  (*post_counter)++;
+  auto it = request.headers.find("Content-Type");
+  CHECK(it != request.headers.end());
+  CHECK(!it->second.empty());
+}
+}  // namespace
+
+// Verifies form submits and resubmits work.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
+  net::EmbeddedTestServer http_server;
+  base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
+  http_server.AddDefaultHandlers(content_test_data);
+  int post_counter = 0;
+  http_server.RegisterRequestMonitor(
+      base::Bind(&PostRequestMonitor, &post_counter));
+  ASSERT_TRUE(http_server.Start());
+
+  GURL url(http_server.GetURL("/session_history/form.html"));
+  GURL post_url = http_server.GetURL("/echotitle");
+
+  // Navigate to a page with a form.
+  TestNavigationObserver observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Submit the form.
+  GURL submit_url("javascript:submitForm('isubmit')");
+  NavigateToURL(shell(), submit_url);
+
+  // Check that a proper POST navigation was done.
+  EXPECT_EQ("text=&select=a",
+            base::UTF16ToASCII(shell()->web_contents()->GetTitle()));
+  EXPECT_EQ(post_url, shell()->web_contents()->GetLastCommittedURL());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetActiveEntry()
+                  ->GetHasPostData());
+
+  // Reload and verify the form was submitted.
+  shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ("text=&select=a",
+            base::UTF16ToASCII(shell()->web_contents()->GetTitle()));
+  CHECK_EQ(2, post_counter);
 }
 
 }  // namespace content
