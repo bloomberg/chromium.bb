@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 
 CSSValue* ConsumeAttr(CSSParserTokenRange args,
-                      const CSSParserContext* context) {
+                      const CSSParserContext& context) {
   if (args.Peek().GetType() != kIdentToken)
     return nullptr;
 
@@ -27,7 +27,7 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
   if (!args.AtEnd())
     return nullptr;
 
-  if (context->IsHTMLDocument())
+  if (context.IsHTMLDocument())
     attr_name = attr_name.LowerASCII();
 
   CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueAttr);
@@ -93,7 +93,7 @@ const CSSValue* CSSPropertyAPIContent::ParseSingleValue(
     if (!parsed_value) {
       if (range.Peek().FunctionId() == CSSValueAttr) {
         parsed_value = ConsumeAttr(
-            CSSPropertyParserHelpers::ConsumeFunction(range), &context);
+            CSSPropertyParserHelpers::ConsumeFunction(range), context);
       } else if (range.Peek().FunctionId() == CSSValueCounter) {
         parsed_value = ConsumeCounterContent(
             CSSPropertyParserHelpers::ConsumeFunction(range), false);
