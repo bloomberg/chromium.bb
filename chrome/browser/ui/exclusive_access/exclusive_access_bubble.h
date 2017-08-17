@@ -109,6 +109,8 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   ExclusiveAccessBubbleType bubble_type_;
 
  private:
+  friend class FullscreenControllerTest;
+
   // Shows the bubble and sets up timers to auto-hide and prevent re-showing for
   // a certain snooze time.
   void ShowAndStartTimers();
