@@ -31,7 +31,86 @@ var QueryResultType = {
 };
 
 /**
- * A Task that waits for the results of an HSTS query.  Once the results are
+ * A Task that waits for the results of a lookup query. Once the results are
+ * received, checks them before completing.  Does not initiate the query.
+ * @param {string} domain The domain that was looked up.
+ * @param {string} inputId The ID of the input element for the lookup domain.
+ * @param {string} outputId The ID of the element where the results are
+       presented.
+ * @param {QueryResultType} queryResultType The expected result type of the
+ *     results of the query.
+ * @extends {NetInternalsTest.Task}
+ */
+function CheckQueryResultTask(domain, inputId, outputId, queryResultType) {
+  this.domain_ = domain;
+  this.inputId_ = inputId;
+  this.outputId_ = outputId;
+  this.queryResultType_ = queryResultType;
+  NetInternalsTest.Task.call(this);
+}
+
+CheckQueryResultTask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  /**
+   * Validates |result| and completes the task.
+   * @param {object} result Results from the query.
+   */
+  onQueryResult_: function(result) {
+    // Ignore results after |this| is finished.
+    if (this.isDone())
+      return;
+
+    expectEquals(this.domain_, $(this.inputId_).value);
+
+    // Each case has its own validation function because of the design of the
+    // test reporting infrastructure.
+    if (result.error != undefined) {
+      this.checkError_(result);
+    } else if (!result.result) {
+      this.checkNotFound_(result);
+    } else {
+      this.checkSuccess_(result);
+    }
+    this.running_ = false;
+
+    // Start the next task asynchronously, so it can add another observer
+    // without getting the current result.
+    window.setTimeout(this.onTaskDone.bind(this), 1);
+  },
+
+  /**
+   * On errors, checks the result.
+   * @param {object} result Results from the query.
+   */
+  checkError_: function(result) {
+    expectEquals(QueryResultType.ERROR, this.queryResultType_);
+    expectEquals(result.error, $(this.outputId_).innerText);
+  },
+
+  /**
+   * Checks the result when the entry was not found.
+   * @param {object} result Results from the query.
+   */
+  checkNotFound_: function(result) {
+    expectEquals(QueryResultType.NOT_FOUND, this.queryResultType_);
+    expectEquals('Not found', $(this.outputId_).innerText);
+  },
+
+  /**
+   * Checks successful results.
+   * @param {object} result Results from the query.
+   */
+  checkSuccess_: function(result) {
+    expectEquals(QueryResultType.SUCCESS, this.queryResultType_);
+    // Verify that the domain appears somewhere in the displayed text.
+    var outputText = $(this.outputId_).innerText;
+    expectLE(0, outputText.search(this.domain_));
+  }
+};
+
+/**
+ * A Task that waits for the results of an HSTS/PKP query.  Once the results are
  * received, checks them before completing.  Does not initiate the query.
  * @param {string} domain The domain expected in the returned results.
  * @param {bool} stsSubdomains Whether or not the stsSubdomains flag is expected
@@ -46,23 +125,23 @@ var QueryResultType = {
  *     error and not found results.
  * @param {QueryResultType} queryResultType The expected result type of the
  *     results of the query.
- * @extends {NetInternalsTest.Task}
+ * @extends {CheckQueryResultTask}
  */
-function CheckQueryResultTask(domain, stsSubdomains, pkpSubdomains,
-                              stsObserved, pkpObserved, publicKeyHashes,
-                              queryResultType) {
-  this.domain_ = domain;
+function CheckHSTSPKPQueryResultTask(
+    domain, stsSubdomains, pkpSubdomains, stsObserved, pkpObserved,
+    publicKeyHashes, queryResultType) {
   this.stsSubdomains_ = stsSubdomains;
   this.pkpSubdomains_ = pkpSubdomains;
   this.stsObserved_ = stsObserved;
   this.pkpObserved_ = pkpObserved;
   this.publicKeyHashes_ = publicKeyHashes;
-  this.queryResultType_ = queryResultType;
-  NetInternalsTest.Task.call(this);
+  CheckQueryResultTask.call(
+      this, domain, DomainSecurityPolicyView.QUERY_HSTS_PKP_INPUT_ID,
+      DomainSecurityPolicyView.QUERY_HSTS_PKP_OUTPUT_DIV_ID, queryResultType);
 }
 
-CheckQueryResultTask.prototype = {
-  __proto__: NetInternalsTest.Task.prototype,
+CheckHSTSPKPQueryResultTask.prototype = {
+  __proto__: CheckQueryResultTask.prototype,
 
   /**
    * Starts watching for the query results.
@@ -77,43 +156,7 @@ CheckQueryResultTask.prototype = {
    * @param {object} result Results from the query.
    */
   onHSTSQueryResult: function(result) {
-    // Ignore results after |this| is finished.
-    if (!this.isDone()) {
-      expectEquals(this.domain_, $(DomainSecurityPolicyView.QUERY_INPUT_ID).value);
-
-      // Each case has its own validation function because of the design of the
-      // test reporting infrastructure.
-      if (result.error != undefined) {
-        this.checkError_(result);
-      } else if (!result.result) {
-        this.checkNotFound_(result);
-      } else {
-        this.checkSuccess_(result);
-      }
-      this.running_ = false;
-
-      // Start the next task asynchronously, so it can add another HSTS observer
-      // without getting the current result.
-      window.setTimeout(this.onTaskDone.bind(this), 1);
-    }
-  },
-
-  /**
-   * On errors, checks the result.
-   * @param {object} result Results from the query.
-   */
-  checkError_: function(result) {
-    expectEquals(QueryResultType.ERROR, this.queryResultType_);
-    expectEquals(result.error, $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText);
-  },
-
-  /**
-   * Checks the result when the entry was not found.
-   * @param {object} result Results from the query.
-   */
-  checkNotFound_: function(result) {
-    expectEquals(QueryResultType.NOT_FOUND, this.queryResultType_);
-    expectEquals('Not found', $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText);
+    this.onQueryResult_(result);
   },
 
   /**
@@ -121,7 +164,6 @@ CheckQueryResultTask.prototype = {
    * @param {object} result Results from the query.
    */
   checkSuccess_: function(result) {
-    expectEquals(QueryResultType.SUCCESS, this.queryResultType_);
     expectEquals(this.stsSubdomains_, result.dynamic_sts_include_subdomains);
     expectEquals(this.pkpSubdomains_, result.dynamic_pkp_include_subdomains);
     // Disabled because of http://crbug.com/397639
@@ -152,17 +194,14 @@ CheckQueryResultTask.prototype = {
       hashes.push(result.dynamic_spki_hashes);
 
     expectEquals(this.publicKeyHashes_, hashes.join(','));
-
-    // Verify that the domain appears somewhere in the displayed text.
-    outputText = $(DomainSecurityPolicyView.QUERY_OUTPUT_DIV_ID).innerText;
-    expectLE(0, outputText.search(this.domain_));
+    CheckQueryResultTask.prototype.checkSuccess_.call(this, result);
   }
 };
 
 /**
- * A Task to try and add an HSTS domain via the HTML form. The task will wait
- * until the results from the automatically sent query have been received, and
- * then checks them against the expected values.
+ * A Task to try and add an HSTS/PKP domain via the HTML form. The task will
+ * wait until the results from the automatically sent query have been received,
+ * and then checks them against the expected values.
  * @param {string} domain The domain to send and expected to be returned.
  * @param {bool} stsSubdomains Whether the HSTS subdomain checkbox should be
  *     selected. Also the corresponding expected return value, in the success
@@ -177,10 +216,11 @@ CheckQueryResultTask.prototype = {
  *     corresponding expected return value, on success.  When this is the string
  *     INVALID_HASH, an empty string is expected to be received instead.
  * @param {QueryResultType} queryResultType Expected result type.
- * @extends {CheckQueryResultTask}
+ * @extends {CheckHSTSPKPQueryResultTask}
  */
-function AddTask(domain, stsSubdomains, pkpSubdomains, publicKeyHashes,
-                 stsObserved, pkpObserved, queryResultType) {
+function AddHSTSPKPTask(
+    domain, stsSubdomains, pkpSubdomains, publicKeyHashes, stsObserved,
+    pkpObserved, queryResultType) {
   this.requestedPublicKeyHashes_ = publicKeyHashes;
   this.requestedPkpSubdomains_ = pkpSubdomains;
   if (publicKeyHashes == INVALID_HASH || publicKeyHashes === '') {
@@ -190,52 +230,53 @@ function AddTask(domain, stsSubdomains, pkpSubdomains, publicKeyHashes,
     pkpSubdomains = undefined;
     publicKeyHashes = '';
   }
-  CheckQueryResultTask.call(this, domain, stsSubdomains, pkpSubdomains,
-                            stsObserved, pkpObserved, publicKeyHashes,
-                            queryResultType);
+  CheckHSTSPKPQueryResultTask.call(
+      this, domain, stsSubdomains, pkpSubdomains, stsObserved, pkpObserved,
+      publicKeyHashes, queryResultType);
 }
 
-AddTask.prototype = {
-  __proto__: CheckQueryResultTask.prototype,
+AddHSTSPKPTask.prototype = {
+  __proto__: CheckHSTSPKPQueryResultTask.prototype,
 
   /**
    * Fills out the add form, simulates a click to submit it, and starts
    * listening for the results of the query that is automatically submitted.
    */
   start: function() {
-    $(DomainSecurityPolicyView.ADD_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.ADD_HSTS_PKP_INPUT_ID).value = this.domain_;
     $(DomainSecurityPolicyView.ADD_STS_CHECK_ID).checked = this.stsSubdomains_;
     $(DomainSecurityPolicyView.ADD_PKP_CHECK_ID).checked = this.requestedPkpSubdomains_;
     $(DomainSecurityPolicyView.ADD_PINS_ID).value = this.requestedPublicKeyHashes_;
-    $(DomainSecurityPolicyView.ADD_SUBMIT_ID).click();
-    CheckQueryResultTask.prototype.start.call(this);
+    $(DomainSecurityPolicyView.ADD_HSTS_PKP_SUBMIT_ID).click();
+    CheckHSTSPKPQueryResultTask.prototype.start.call(this);
   }
 };
 
 /**
  * A Task to query a domain and wait for the results.  Parameters mirror those
- * of CheckQueryResultTask, except |domain| is also the name of the domain to
- * query.
- * @extends {CheckQueryResultTask}
+ * of CheckHSTSPKPQueryResultTask, except |domain| is also the name of the
+ * domain to query.
+ * @extends {CheckHSTSPKPQueryResultTask}
  */
-function QueryTask(domain, stsSubdomains, pkpSubdomains, stsObserved,
-                   pkpObserved, publicKeyHashes, queryResultType) {
-  CheckQueryResultTask.call(this, domain, stsSubdomains, pkpSubdomains,
-                            stsObserved, pkpObserved, publicKeyHashes,
-                            queryResultType);
+function QueryHSTSPKPTask(
+    domain, stsSubdomains, pkpSubdomains, stsObserved, pkpObserved,
+    publicKeyHashes, queryResultType) {
+  CheckHSTSPKPQueryResultTask.call(
+      this, domain, stsSubdomains, pkpSubdomains, stsObserved, pkpObserved,
+      publicKeyHashes, queryResultType);
 }
 
-QueryTask.prototype = {
-  __proto__: CheckQueryResultTask.prototype,
+QueryHSTSPKPTask.prototype = {
+  __proto__: CheckHSTSPKPQueryResultTask.prototype,
 
   /**
    * Fills out the query form, simulates a click to submit it, and starts
    * listening for the results.
    */
   start: function() {
-    CheckQueryResultTask.prototype.start.call(this);
-    $(DomainSecurityPolicyView.QUERY_INPUT_ID).value = this.domain_;
-    $(DomainSecurityPolicyView.QUERY_SUBMIT_ID).click();
+    CheckHSTSPKPQueryResultTask.prototype.start.call(this);
+    $(DomainSecurityPolicyView.QUERY_HSTS_PKP_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.QUERY_HSTS_PKP_SUBMIT_ID).click();
   }
 };
 
@@ -250,11 +291,11 @@ QueryTask.prototype = {
 function DeleteTask(domain, queryResultType) {
   expectNotEquals(queryResultType, QueryResultType.SUCCESS);
   this.domain_ = domain;
-  QueryTask.call(this, domain, false, false, '', 0, 0, queryResultType);
+  QueryHSTSPKPTask.call(this, domain, false, false, '', 0, 0, queryResultType);
 }
 
 DeleteTask.prototype = {
-  __proto__: QueryTask.prototype,
+  __proto__: QueryHSTSPKPTask.prototype,
 
   /**
    * Fills out the delete form and simulates a click to submit it.  Then sends
@@ -263,7 +304,120 @@ DeleteTask.prototype = {
   start: function() {
     $(DomainSecurityPolicyView.DELETE_INPUT_ID).value = this.domain_;
     $(DomainSecurityPolicyView.DELETE_SUBMIT_ID).click();
-    QueryTask.prototype.start.call(this);
+    QueryHSTSPKPTask.prototype.start.call(this);
+  }
+};
+
+/**
+ * A Task that waits for the results of an Expect-CT query. Once the results are
+ * received, checks them before completing.  Does not initiate the query.
+ * @param {string} domain The domain expected in the returned results.
+ * @param {bool} enforce Whether or not the 'enforce' flag is expected
+ *     to be set in the returned results.  Ignored on error and not found
+ *     results.
+ * @param {string} reportUri Expected report URI for the policy. Ignored on
+ *     error and not found results.
+ * @param {QueryResultType} queryResultType The expected result type of the
+ *     results of the query.
+ * @extends {CheckQueryResultTask}
+ */
+function CheckExpectCTQueryResultTask(
+    domain, enforce, reportUri, queryResultType) {
+  this.enforce_ = enforce;
+  this.reportUri_ = reportUri;
+  CheckQueryResultTask.call(
+      this, domain, DomainSecurityPolicyView.QUERY_EXPECT_CT_INPUT_ID,
+      DomainSecurityPolicyView.QUERY_EXPECT_CT_OUTPUT_DIV_ID, queryResultType);
+}
+
+CheckExpectCTQueryResultTask.prototype = {
+  __proto__: CheckQueryResultTask.prototype,
+
+  /**
+   * Starts watching for the query results.
+   */
+  start: function() {
+    g_browser.addExpectCTObserver(this);
+  },
+
+  /**
+   * Callback from the BrowserBridge.  Validates |result| and completes the
+   * task.
+   * @param {object} result Results from the query.
+   */
+  onExpectCTQueryResult: function(result) {
+    this.onQueryResult_(result);
+  },
+
+  /**
+   * Checks successful results.
+   * @param {object} result Results from the query.
+   */
+  checkSuccess_: function(result) {
+    expectEquals(this.enforce_, result.dynamic_expect_ct_enforce);
+    expectEquals(this.reportUri_, result.dynamic_expect_ct_report_uri);
+    CheckQueryResultTask.prototype.checkSuccess_.call(this, result);
+  }
+};
+
+/**
+ * A Task to try and add an Expect-CT domain via the HTML form. The task will
+ * wait until the results from the automatically sent query have been received,
+ * and then checks them against the expected values.
+ * @param {string} domain The domain to send and expected to be returned.
+ * @param {bool} enforce Whether the enforce checkbox should be
+ *     selected. Also the corresponding expected return value, in the success
+ *     case.
+ * @param {string} reportUri The report URI for the Expect-CT policy. Also the
+ *     corresponding expected return value, on success.
+ * @param {QueryResultType} queryResultType Expected result type.
+ * @extends {CheckExpectCTQueryResultTask}
+ */
+function AddExpectCTTask(domain, enforce, reportUri, queryResultType) {
+  CheckExpectCTQueryResultTask.call(
+      this, domain, enforce, reportUri, queryResultType);
+}
+
+AddExpectCTTask.prototype = {
+  __proto__: CheckExpectCTQueryResultTask.prototype,
+
+  /**
+   * Fills out the add form, simulates a click to submit it, and starts
+   * listening for the results of the query that is automatically submitted.
+   */
+  start: function() {
+    $(DomainSecurityPolicyView.ADD_EXPECT_CT_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.ADD_EXPECT_CT_ENFORCE_CHECK_ID).checked =
+        this.enforce_;
+    $(DomainSecurityPolicyView.ADD_EXPECT_CT_REPORT_URI_INPUT_ID).value =
+        this.reportUri_;
+    $(DomainSecurityPolicyView.ADD_EXPECT_CT_SUBMIT_ID).click();
+    CheckExpectCTQueryResultTask.prototype.start.call(this);
+  }
+};
+
+/**
+ * A Task to query a domain and wait for the results.  Parameters mirror those
+ * of CheckExpectCTQueryResultTask, except |domain| is also the name of the
+ * domain to query.
+ * @extends {CheckExpectCTQueryResultTask}
+ */
+function QueryExpectCTTask(domain, enforce, reportUri, queryResultType) {
+  CheckExpectCTQueryResultTask.call(
+      this, domain, enforce, reportUri, queryResultType);
+}
+
+QueryExpectCTTask.prototype = {
+  __proto__: CheckExpectCTQueryResultTask.prototype,
+
+  /**
+   * Fills out the query form, simulates a click to submit it, and starts
+   * listening for the results.
+   */
+  start: function() {
+    CheckExpectCTQueryResultTask.prototype.start.call(this);
+    $(DomainSecurityPolicyView.QUERY_EXPECT_CT_INPUT_ID).value = this.domain_;
+    $(DomainSecurityPolicyView.QUERY_EXPECT_CT_SUBMIT_ID).click();
   }
 };
 
@@ -274,8 +428,8 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryNotFound', 
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new QueryTask('somewhere.com', false, false, now, now, '',
-                                  QueryResultType.NOT_FOUND));
+  taskQueue.addTask(new QueryHSTSPKPTask(
+      'somewhere.com', false, false, now, now, '', QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
 
@@ -286,8 +440,8 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryError', fun
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new QueryTask('\u3024', false, false, now, now, '',
-                                  QueryResultType.ERROR));
+  taskQueue.addTask(new QueryHSTSPKPTask(
+      '\u3024', false, false, now, now, '', QueryResultType.ERROR));
   taskQueue.run();
 });
 
@@ -318,8 +472,9 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddDelete', func
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('somewhere.com', false, false, VALID_HASH,
-                                now, now, QueryResultType.SUCCESS));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      'somewhere.com', false, false, VALID_HASH, now, now,
+      QueryResultType.SUCCESS));
   taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
@@ -331,10 +486,10 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddFail', functi
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('0123456789012345678901234567890' +
-                                '012345678901234567890123456789012345',
-                                false, false, '', now, now,
-                                QueryResultType.NOT_FOUND));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      '0123456789012345678901234567890' +
+          '012345678901234567890123456789012345',
+      false, false, '', now, now, QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
 
@@ -346,8 +501,8 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddError', funct
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('\u3024', false, false, '', now, now,
-                                QueryResultType.ERROR));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      '\u3024', false, false, '', now, now, QueryResultType.ERROR));
   taskQueue.run();
 });
 
@@ -358,8 +513,9 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddInvalidHash',
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('somewhere.com', true, true, INVALID_HASH,
-                                now, now, QueryResultType.SUCCESS));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      'somewhere.com', true, true, INVALID_HASH, now, now,
+      QueryResultType.SUCCESS));
   taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
@@ -371,10 +527,11 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddOverwrite', f
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
   var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('somewhere.com', true, true, VALID_HASH,
-                                now, now, QueryResultType.SUCCESS));
-  taskQueue.addTask(new AddTask('somewhere.com', false, false, '',
-                                now, now, QueryResultType.SUCCESS));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      'somewhere.com', true, true, VALID_HASH, now, now,
+      QueryResultType.SUCCESS));
+  taskQueue.addTask(new AddHSTSPKPTask(
+      'somewhere.com', false, false, '', now, now, QueryResultType.SUCCESS));
   taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
@@ -382,24 +539,151 @@ TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddOverwrite', f
 /**
  * Adds two different domains and then deletes them.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddTwice', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddTask('somewhere.com', false, false, VALID_HASH,
-                                now, now, QueryResultType.SUCCESS));
-  taskQueue.addTask(new QueryTask('somewhereelse.com', false, false, now, now,
-                                  '', QueryResultType.NOT_FOUND));
-  taskQueue.addTask(new AddTask('somewhereelse.com', true, false, '',
-                                now, now, QueryResultType.SUCCESS));
-  taskQueue.addTask(new QueryTask('somewhere.com', false, false, now, now,
-                                  VALID_HASH, QueryResultType.SUCCESS));
-  taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.addTask(new QueryTask('somewhereelse.com', true, undefined, now,
-                                  now, '', QueryResultType.SUCCESS));
-  taskQueue.addTask(new DeleteTask('somewhereelse.com',
-                                   QueryResultType.NOT_FOUND));
-  taskQueue.run(true);
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddTwice',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhere.com', false, false, VALID_HASH, now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(new QueryHSTSPKPTask(
+          'somewhereelse.com', false, false, now, now, '',
+          QueryResultType.NOT_FOUND));
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhereelse.com', true, false, '', now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(new QueryHSTSPKPTask(
+          'somewhere.com', false, false, now, now, VALID_HASH,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.addTask(new QueryHSTSPKPTask(
+          'somewhereelse.com', true, undefined, now, now, '',
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhereelse.com', QueryResultType.NOT_FOUND));
+      taskQueue.run(true);
+    });
+
+/**
+ * Checks that querying an Expect-CT domain that was never added fails.
+ */
+TEST_F(
+    'NetInternalsTest',
+    'netInternalsDomainSecurityPolicyViewExpectCTQueryNotFound', function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new QueryExpectCTTask(
+          'somewhere.com', false, '', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
+
+/**
+ * Checks that querying an Expect-CT domain with an invalid name returns an
+ * error.
+ */
+TEST_F(
+    'NetInternalsTest',
+    'netInternalsDomainSecurityPolicyViewExpectCTQueryError', function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(
+          new QueryExpectCTTask('\u3024', false, '', QueryResultType.ERROR));
+      taskQueue.run();
+    });
+
+/**
+ * Adds an Expect-CT domain and then deletes it.
+ */
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewExpectCTAddDelete',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new AddExpectCTTask(
+          'somewhere.com', true, '', QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
+
+/**
+ * Tries to add an Expect-CT domain with an invalid name.
+ */
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewExpectCTAddFail',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new AddExpectCTTask(
+          '0123456789012345678901234567890' +
+              '012345678901234567890123456789012345',
+          false, '', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
+
+/**
+ * Tries to add an Expect-CT domain with a name that errors out on lookup due to
+ * having non-ASCII characters in it.
+ */
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewExpectCTAddError',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(
+          new AddExpectCTTask('\u3024', false, '', QueryResultType.ERROR));
+      taskQueue.run();
+    });
+
+/**
+ * Adds the same Expect-CT domain twice in a row, modifying some values the
+ * second time.
+ */
+TEST_F(
+    'NetInternalsTest',
+    'netInternalsDomainSecurityPolicyViewExpectCTAddOverwrite', function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new AddExpectCTTask(
+          'somewhere.com', true, 'https://reporting.test/',
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(new AddExpectCTTask(
+          'somewhere.com', false, 'https://other-reporting.test/',
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
+
+/**
+ * Adds two different Expect-CT domains and then deletes them.
+ */
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewExpectCTAddTwice',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new AddExpectCTTask(
+          'somewhere.com', true, '', QueryResultType.SUCCESS));
+      taskQueue.addTask(new QueryExpectCTTask(
+          'somewhereelse.com', false, '', QueryResultType.NOT_FOUND));
+      taskQueue.addTask(new AddExpectCTTask(
+          'somewhereelse.com', true, 'https://reporting.test/',
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(new QueryExpectCTTask(
+          'somewhere.com', true, '', QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.addTask(new QueryExpectCTTask(
+          'somewhereelse.com', true, 'https://reporting.test/',
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhereelse.com', QueryResultType.NOT_FOUND));
+      taskQueue.run(true);
+    });
 
 })();  // Anonymous namespace
