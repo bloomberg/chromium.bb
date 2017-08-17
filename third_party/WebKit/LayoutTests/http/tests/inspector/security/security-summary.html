@@ -7,11 +7,11 @@ function test()
 {
     /** @type {!Protocol.Security.InsecureContentStatus} */
     var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: false, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, true, [], insecureContentStatus, "Test: Summary Override Text"));
+    TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, true, [], insecureContentStatus, "Test: Summary Override Text"));
 
-    InspectorTest.dumpDeepInnerHTML(Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-summary-text")[0]);
+    TestRunner.dumpDeepInnerHTML(Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-summary-text")[0]);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

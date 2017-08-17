@@ -9,13 +9,13 @@ function test()
 {
     // Warm up highlighter module.
     runtime.loadModulePromise("source_frame").then(function() {
-        InspectorTest.expandElementsTree(callback);
+        ElementsTestRunner.expandElementsTree(callback);
     });
 
     function callback()
     {
-        InspectorTest.dumpElementsTree();
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpElementsTree();
+        TestRunner.completeTest();
     }
 
 }

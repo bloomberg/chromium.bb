@@ -27,22 +27,22 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(addMessage, true);
+    ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
 
     function addMessage(uiMessage)
     {
         // There will be only one such message.
         if (uiMessage.element().deepTextContent().indexOf("non-existent-iframe") !== -1)
-            InspectorTest.expandConsoleMessages(onExpandedMessages);
+            ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
     }
 
     function onExpandedMessages()
     {
-        InspectorTest.dumpConsoleMessagesWithClasses(true);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
+        TestRunner.completeTest();
     }
 
-    InspectorTest.evaluateInPage("performActions()");
+    TestRunner.evaluateInPage("performActions()");
 }
 
 </script>

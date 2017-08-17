@@ -38,10 +38,10 @@ function test()
     ObjectUI.JavaScriptAutocomplete.completionsForExpression("objectC.", "e").then(checkCompletions.bind(this));
     function checkCompletions(completions)
     {
-        InspectorTest.addResult("Completions:")
+        TestRunner.addResult("Completions:")
         for (var completion of completions)
-            InspectorTest.addObject(completion);
-        InspectorTest.completeTest();
+            TestRunner.addObject(completion);
+        TestRunner.completeTest();
     }
 }
 

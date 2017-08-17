@@ -9,17 +9,17 @@ async function test()
     var sourcesNavigatorView = new Sources.SourcesNavigatorView();
     sourcesNavigatorView.show(UI.inspectorView.element);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding urls");
-    await InspectorTest.addScriptUISourceCode(rootURL + "foo/bar/script.js", '', false);
-    var contentUISourceCode = await InspectorTest.addScriptUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", '', true, 42);
-    InspectorTest.dumpNavigatorView(sourcesNavigatorView);
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding urls");
+    await SourcesTestRunner.addScriptUISourceCode(rootURL + "foo/bar/script.js", '', false);
+    var contentUISourceCode = await SourcesTestRunner.addScriptUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", '', true, 42);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Removing contentScripts project");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Removing contentScripts project");
     contentUISourceCode.project().removeProject();
-    InspectorTest.dumpNavigatorView(sourcesNavigatorView);
-    InspectorTest.completeTest();
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
+    TestRunner.completeTest();
 }
 </script>
 

@@ -12,30 +12,30 @@ async function test() {
   var navigated = false;
   var observer = {
     targetAdded(target) {
-      if (!InspectorTest.isDedicatedWorker(target))
+      if (!TestRunner.isDedicatedWorker(target))
         return;
-      InspectorTest.addResult('Worker added');
+      TestRunner.addResult('Worker added');
       workerTargetId = target.id();
       if (navigated)
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     },
     targetRemoved(target) {
-      if (!InspectorTest.isDedicatedWorker(target))
+      if (!TestRunner.isDedicatedWorker(target))
         return;
       if (target.id() === workerTargetId) {
-        InspectorTest.addResult('Worker removed');
+        TestRunner.addResult('Worker removed');
         workerTargetId = '';
       } else {
-        InspectorTest.addResult('Unknown worker removed');
+        TestRunner.addResult('Unknown worker removed');
       }
     }
   };
 
   SDK.targetManager.observeTargets(observer);
-  await InspectorTest.evaluateInPagePromise('startWorker()');
-  await InspectorTest.navigatePromise('http://localhost:8080/inspector/workers-on-navigation.html');
+  await TestRunner.evaluateInPagePromise('startWorker()');
+  await TestRunner.navigatePromise('http://localhost:8080/inspector/workers-on-navigation.html');
   navigated = true;
-  await InspectorTest.evaluateInPagePromise('startWorker()');
+  await TestRunner.evaluateInPagePromise('startWorker()');
 }
 
 </script>

@@ -7,20 +7,20 @@
 <script>
 async function test()
 {
-    await InspectorTest.NetworkAgent.setCacheDisabled(true);
+    await TestRunner.NetworkAgent.setCacheDisabled(true);
 
-    InspectorTest.makeSimpleXHR("GET", "resources/initiator.css", false, sendBinaryRequest);
+    NetworkTestRunner.makeSimpleXHR("GET", "resources/initiator.css", false, sendBinaryRequest);
 
     function sendBinaryRequest()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/binary.data", false, makeHAR);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/binary.data", false, makeHAR);
     }
 
     async function makeHAR()
     {
-        var stream = new InspectorTest.StringOutputStream(onSaved);
+        var stream = new TestRunner.StringOutputStream(onSaved);
         var progress = new Common.Progress();
-        await Network.HARWriter.write(stream, InspectorTest.networkRequests(), progress);
+        await Network.HARWriter.write(stream, NetworkTestRunner.networkRequests(), progress);
         progress.done();
         stream.close();
     }
@@ -28,28 +28,28 @@ async function test()
     function dumpContent(content)
     {
         if (!content) {
-            InspectorTest.addResult("    NOT FOUND");
+            TestRunner.addResult("    NOT FOUND");
             return;
         }
         var propertyNames = Object.keys(content);
         propertyNames.sort();
         for (var prop of propertyNames)
-            InspectorTest.addResult(`    ${prop}: ` + JSON.stringify(content[prop]));
+            TestRunner.addResult(`    ${prop}: ` + JSON.stringify(content[prop]));
     }
 
     function onSaved(data)
     {
         var har = JSON.parse(data);
 
-        InspectorTest.addResult("initiator.css:");
+        TestRunner.addResult("initiator.css:");
         dumpContent(findEntry(har, /\/initiator\.css$/).response.content);
 
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
 
-        InspectorTest.addResult("binary.data:");
+        TestRunner.addResult("binary.data:");
         dumpContent(findEntry(har, /\/binary\.data$/).response.content);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function findEntry(har, regexp)
@@ -57,7 +57,7 @@ async function test()
         var entry = har.log.entries.find(entry => regexp.test(entry.request.url));
         if (entry)
             return entry;
-        InspectorTest.addResult("FAIL: can't find resource for " + regexp);
+        TestRunner.addResult("FAIL: can't find resource for " + regexp);
         return null;
     }
 }

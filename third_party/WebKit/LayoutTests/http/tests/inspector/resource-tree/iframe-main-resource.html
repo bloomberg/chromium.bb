@@ -13,9 +13,9 @@ function createIframe() {
 
 async function test()
 {
-    await InspectorTest.evaluateInPageAsync('createIframe()');
+    await TestRunner.evaluateInPageAsync('createIframe()');
 
-    var resourceTreeModel = new SDK.ResourceTreeModel(InspectorTest.mainTarget);
+    var resourceTreeModel = new SDK.ResourceTreeModel(TestRunner.mainTarget);
     var resources = [];
     resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, event => resources.push(event.data));
     resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, function() {
@@ -24,9 +24,9 @@ async function test()
                 return 0;
             return a.url < b.url ? -1 : 1;
         });
-        InspectorTest.addResult('Reported resources:');
-        InspectorTest.addResult(resources.map(r => '  ' + r.url).join('\n'));
-        InspectorTest.completeTest();
+        TestRunner.addResult('Reported resources:');
+        TestRunner.addResult(resources.map(r => '  ' + r.url).join('\n'));
+        TestRunner.completeTest();
     });
 }
 </script>

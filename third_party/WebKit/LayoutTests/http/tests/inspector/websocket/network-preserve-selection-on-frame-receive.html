@@ -4,30 +4,30 @@
 <script src="/inspector/network-test.js"></script>
 <script>
 async function test() {
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
 
     const wsUrl = "ws://localhost:8880/echo";
     const networkLogView = UI.panels.network._networkLogView;
     const dataGrid = networkLogView._dataGrid;
-    await InspectorTest.evaluateInPagePromise("ws = new WebSocket('" + wsUrl + "')");
-    var websocketRequest = InspectorTest.findRequestsByURLPattern(createPlainTextSearchRegex(wsUrl))[0];
-    await InspectorTest.waitForRequestResponse(websocketRequest);
-    var node = await InspectorTest.waitForNetworkLogViewNodeForRequest(websocketRequest);
+    await TestRunner.evaluateInPagePromise("ws = new WebSocket('" + wsUrl + "')");
+    var websocketRequest = NetworkTestRunner.findRequestsByURLPattern(createPlainTextSearchRegex(wsUrl))[0];
+    await NetworkTestRunner.waitForRequestResponse(websocketRequest);
+    var node = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(websocketRequest);
     networkLogView._refresh();
     node.select();
     logSelectedNode();
     
-    InspectorTest.addResult("Sending Websocket frame");
-    await InspectorTest.evaluateInPagePromise("ws.send('test')");
-    await InspectorTest.waitForWebsocketFrameReceived(websocketRequest, "test");
+    TestRunner.addResult("Sending Websocket frame");
+    await TestRunner.evaluateInPagePromise("ws.send('test')");
+    await NetworkTestRunner.waitForWebsocketFrameReceived(websocketRequest, "test");
     networkLogView._refresh();
-    InspectorTest.addResult("Websocket Frame Received");
+    TestRunner.addResult("Websocket Frame Received");
     logSelectedNode();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function logSelectedNode() {
-        InspectorTest.addResult("Selected Request: " + (dataGrid.selectedNode && dataGrid.selectedNode.request().url()) || '');        
+        TestRunner.addResult("Selected Request: " + (dataGrid.selectedNode && dataGrid.selectedNode.request().url()) || '');        
     }
 }
 </script>

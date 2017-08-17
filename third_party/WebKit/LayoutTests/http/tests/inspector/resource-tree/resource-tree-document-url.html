@@ -14,13 +14,13 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
-    InspectorTest.evaluateInPage("loadIframe()");
+    TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+    TestRunner.evaluateInPage("loadIframe()");
 
     function waitForResources()
     {
-        InspectorTest.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
-        InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], dump);
+        TestRunner.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+        ApplicationTestRunner.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], dump);
     }
 
     function dump()
@@ -30,8 +30,8 @@ function test()
             return resource.url + " => " + resource.documentURL;
         }
     
-        InspectorTest.dumpResources(formatter);    
-        InspectorTest.completeTest();
+        ApplicationTestRunner.dumpResources(formatter);    
+        TestRunner.completeTest();
     }
 }
 

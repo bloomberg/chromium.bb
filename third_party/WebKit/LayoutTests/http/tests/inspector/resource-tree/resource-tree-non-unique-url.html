@@ -13,19 +13,19 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.addSniffer(Resources.FrameTreeElement.prototype, "appendResource", onResource, true);
+    TestRunner.addSniffer(Resources.FrameTreeElement.prototype, "appendResource", onResource, true);
 
     var cssRequestsCount = 0;
     function onResource(resource)
     {
         if (resource.url.match(/\.css$/) && ++cssRequestsCount === 2) {
-            InspectorTest.addResult("Resources Tree:");
-            InspectorTest.dumpResourcesTree();
-            InspectorTest.completeTest();
+            TestRunner.addResult("Resources Tree:");
+            ApplicationTestRunner.dumpResourcesTree();
+            TestRunner.completeTest();
         }
     }
 
-    InspectorTest.evaluateInPage("loadIframe();");
+    TestRunner.evaluateInPage("loadIframe();");
 }
 </script>
 </head>

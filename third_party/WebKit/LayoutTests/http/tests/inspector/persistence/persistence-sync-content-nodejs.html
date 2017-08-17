@@ -8,7 +8,7 @@
 
 async function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
+    var testMapping = BindingsTestRunner.initializeTestMapping();
     // Pretend we are running under V8 front-end.
     SDK.targetManager.mainTarget().setIsNodeJSForTest();
 
@@ -22,34 +22,34 @@ async function test()
     var fsContent = Persistence.Persistence._NodeShebang + content;
     var nodeContent = Persistence.Persistence._NodePrefix + content + Persistence.Persistence._NodeSuffix;
 
-    InspectorTest.addResult("Initial fileSystem content:");
-    InspectorTest.addResult(indent(fsContent));
-    InspectorTest.addResult("\n Initial network content:");
-    InspectorTest.addResult(indent(nodeContent));
+    TestRunner.addResult("Initial fileSystem content:");
+    TestRunner.addResult(indent(fsContent));
+    TestRunner.addResult("\n Initial network content:");
+    TestRunner.addResult(indent(nodeContent));
 
-    await InspectorTest.addScriptUISourceCode("http://127.0.0.1:8000/nodejs.js", nodeContent);
+    await SourcesTestRunner.addScriptUISourceCode("http://127.0.0.1:8000/nodejs.js", nodeContent);
 
     // Add filesystem UISourceCode and mapping.
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
     var fsEntry = fs.root.addFile("nodejs.js", fsContent);
     fs.reportCreated(function() { });
 
     var binding;
     testMapping.addBinding("nodejs.js");
-    InspectorTest.waitForBinding("nodejs.js").then(onBindingCreated);
+    BindingsTestRunner.waitForBinding("nodejs.js").then(onBindingCreated);
 
     function onBindingCreated(theBinding)
     {
         binding = theBinding;
-        InspectorTest.addResult("Binding created: " + binding);
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.addResult("Binding created: " + binding);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
         function addNetworkUISourceCodeRevision(next)
         {
             var newContent = nodeContent.replace("//TODO", "network();\n//TODO");
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            TestRunner.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             binding.network.addRevision(newContent);
 
             function onSynced()
@@ -62,7 +62,7 @@ async function test()
         function setNetworkUISourceCodeWorkingCopy(next)
         {
             var newContent = nodeContent.replace("//TODO", "workingCopy1();\n//TODO");
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            TestRunner.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             binding.network.setWorkingCopy(newContent);
 
             function onSynced()
@@ -75,7 +75,7 @@ async function test()
         function changeFileSystemFile(next)
         {
             var newContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            TestRunner.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             fsEntry.setContent(newContent);
 
             function onSynced()
@@ -88,7 +88,7 @@ async function test()
         function setFileSystemUISourceCodeWorkingCopy(next)
         {
             var newContent = fsContent.replace("//TODO", "workingCopy2();\n//TODO");
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            TestRunner.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             binding.fileSystem.setWorkingCopy(newContent);
 
             function onSynced()
@@ -101,12 +101,12 @@ async function test()
 
     function dumpBindingContent()
     {
-        InspectorTest.addResult("Network:");
-        InspectorTest.addResult(indent(binding.network.workingCopy()));
-        InspectorTest.addResult("");
-        InspectorTest.addResult("FileSystem:");
-        InspectorTest.addResult(indent(binding.fileSystem.workingCopy()));
-        InspectorTest.addResult("");
+        TestRunner.addResult("Network:");
+        TestRunner.addResult(indent(binding.network.workingCopy()));
+        TestRunner.addResult("");
+        TestRunner.addResult("FileSystem:");
+        TestRunner.addResult(indent(binding.fileSystem.workingCopy()));
+        TestRunner.addResult("");
     }
 
     function indent(content)

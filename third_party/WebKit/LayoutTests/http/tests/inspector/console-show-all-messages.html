@@ -9,28 +9,28 @@ function test()
 {
     var filterByExecutionContextSetting = Console.ConsoleView.instance()._filter._filterByExecutionContextSetting;
 
-    //we can't use usual InspectorTest.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
+    //we can't use usual ConsoleTestRunner.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
     function dumpVisibleConsoleMessageText()
     {
         var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messageViews.length; ++i) {
-            InspectorTest.addResult(messageViews[i].consoleMessage().messageText);
+            TestRunner.addResult(messageViews[i].consoleMessage().messageText);
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
 
             function testInitialState(next)
             {
                 if (filterByExecutionContextSetting.get())
-                    InspectorTest.addResult("\"Show target messages\" checkbox should be unchecked by default");
+                    TestRunner.addResult("\"Show target messages\" checkbox should be unchecked by default");
                 dumpVisibleConsoleMessageText();
                 next();
             },
 
             function testPageOnlyMessages(next)
             {
-                InspectorTest.changeExecutionContext("top");
+                ConsoleTestRunner.changeExecutionContext("top");
                 filterByExecutionContextSetting.set(true);
                 dumpVisibleConsoleMessageText();
                 next();
@@ -38,7 +38,7 @@ function test()
 
             function testFrameOnlyMessages(next)
             {
-                InspectorTest.changeExecutionContext("myIFrame");
+                ConsoleTestRunner.changeExecutionContext("myIFrame");
                 dumpVisibleConsoleMessageText();
                 next();
             },

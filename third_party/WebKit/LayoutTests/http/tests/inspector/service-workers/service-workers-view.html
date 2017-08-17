@@ -13,38 +13,38 @@ function test()
     var step = 0;
     Resources.ServiceWorkersView._noThrottle = true;
 
-    InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+    TestRunner.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
     function updateRegistration(registration)
     {
         for (var version of registration.versions.values()) {
             if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
-                InspectorTest.addResult("Register ServiceWorker for scope2");
-                InspectorTest.registerServiceWorker(scriptURL, scope2);
+                TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView());
+                TestRunner.addResult("Register ServiceWorker for scope2");
+                ApplicationTestRunner.registerServiceWorker(scriptURL, scope2);
             } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
-                InspectorTest.addResult("Unegister ServiceWorker for scope1");
-                InspectorTest.unregisterServiceWorker(scope1);
+                TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView());
+                TestRunner.addResult("Unegister ServiceWorker for scope1");
+                ApplicationTestRunner.unregisterServiceWorker(scope1);
             } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
                 ++step;
-                InspectorTest.addResult(InspectorTest.dumpServiceWorkersView());
-                InspectorTest.addResult("Unegister ServiceWorker for scope1");
-                InspectorTest.unregisterServiceWorker(scope2);
+                TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView());
+                TestRunner.addResult("Unegister ServiceWorker for scope1");
+                ApplicationTestRunner.unregisterServiceWorker(scope2);
             } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
                 ++step;
-                InspectorTest.deleteServiceWorkerRegistration(scope1);
-                InspectorTest.deleteServiceWorkerRegistration(scope2);
-                InspectorTest.completeTest();
+                ApplicationTestRunner.deleteServiceWorkerRegistration(scope1);
+                ApplicationTestRunner.deleteServiceWorkerRegistration(scope2);
+                TestRunner.completeTest();
             }
         }
     }
 
-    InspectorTest.addResult("Select ServiceWorkers tree element.");
+    TestRunner.addResult("Select ServiceWorkers tree element.");
     UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
-    InspectorTest.addResult("Register ServiceWorker for scope1");
-    InspectorTest.registerServiceWorker(scriptURL, scope1);
+    TestRunner.addResult("Register ServiceWorker for scope1");
+    ApplicationTestRunner.registerServiceWorker(scriptURL, scope1);
 }
 
 </script>

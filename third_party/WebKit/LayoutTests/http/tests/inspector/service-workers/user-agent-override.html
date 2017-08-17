@@ -13,7 +13,7 @@ function test()
             var sniffer = {
                 targetAdded: function(target)
                 {
-                    if (InspectorTest.isServiceWorker(target)) {
+                    if (TestRunner.isServiceWorker(target)) {
                         resolve();
                         SDK.targetManager.unobserveTargets(sniffer);
                     }
@@ -47,36 +47,36 @@ function test()
     var userAgentString = "Mozilla/5.0 (Overridden User Agent)";
     var originalUserAgent = navigator.userAgent;
 
-    InspectorTest.addResult("Enable emulation and set User-Agent override");
+    TestRunner.addResult("Enable emulation and set User-Agent override");
     SDK.multitargetNetworkManager.setUserAgentOverride(userAgentString);
 
-    InspectorTest.registerServiceWorker(scriptURL, scope)
+    ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
         .then(waitForTarget)
-        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, "message"))
         .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
         .then(function(msg) {
-            InspectorTest.addResult("Overriden user agent: " + msg.messageText);
-            InspectorTest.addResult("Disable emulation");
+            TestRunner.addResult("Overriden user agent: " + msg.messageText);
+            TestRunner.addResult("Disable emulation");
                 SDK.multitargetNetworkManager.setUserAgentOverride("");
-            return InspectorTest.unregisterServiceWorker(scope);
+            return ApplicationTestRunner.unregisterServiceWorker(scope);
         })
         .then(function() {
-            return InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
+            return ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
         })
         .then(waitForTarget)
-        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, "message"))
         .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
         .then(function(msg) {
-            InspectorTest.addResult("User agent without override is correct: " + (msg.messageText != userAgentString));
-            return InspectorTest.unregisterServiceWorker(scope);
+            TestRunner.addResult("User agent without override is correct: " + (msg.messageText != userAgentString));
+            return ApplicationTestRunner.unregisterServiceWorker(scope);
         })
         .then(function() {
-            InspectorTest.addResult("Test complete");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Test complete");
+            TestRunner.completeTest();
         })
         .catch(function(err) {
             console.log(err);
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         });
 }
 

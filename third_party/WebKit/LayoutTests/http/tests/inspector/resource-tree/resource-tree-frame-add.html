@@ -16,19 +16,19 @@ function createIframe()
 
 function test()
 {
-    InspectorTest.addResult("Before addition");
-    InspectorTest.addResult("====================================");
-    InspectorTest.dumpResourceTreeEverything();
-    InspectorTest.addConsoleSniffer(step2);
-    InspectorTest.evaluateInPage("createIframe()");
+    TestRunner.addResult("Before addition");
+    TestRunner.addResult("====================================");
+    ApplicationTestRunner.dumpResourceTreeEverything();
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage("createIframe()");
 
     function step2()
     {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("After addition");
-        InspectorTest.addResult("====================================");
-        InspectorTest.dumpResourceTreeEverything();
-        InspectorTest.completeTest();
+        TestRunner.addResult("");
+        TestRunner.addResult("After addition");
+        TestRunner.addResult("====================================");
+        ApplicationTestRunner.dumpResourceTreeEverything();
+        TestRunner.completeTest();
     }
 }
 

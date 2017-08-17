@@ -11,22 +11,22 @@ function test()
 {
     let scope = "http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-scope";
 
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
 
-    InspectorTest.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
+    ApplicationTestRunner.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
 
     function fetchCallback(result)
     {
-        InspectorTest.addResult('Fetch in worker result: ' + result.value);
+        TestRunner.addResult('Fetch in worker result: ' + result.value);
 
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         requests.forEach((request) => {
-          InspectorTest.addResult(request.url());
-          InspectorTest.addResult("resource.type: " + request.resourceType());
-          InspectorTest.addResult("request.failed: " + !!request.failed);
+          TestRunner.addResult(request.url());
+          TestRunner.addResult("resource.type: " + request.resourceType());
+          TestRunner.addResult("request.failed: " + !!request.failed);
         });
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

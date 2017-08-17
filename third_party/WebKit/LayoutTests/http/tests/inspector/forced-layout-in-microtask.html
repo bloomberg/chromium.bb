@@ -17,11 +17,11 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", onTimelineRecorded);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", onTimelineRecorded);
     function onTimelineRecorded()
     {
-        InspectorTest.printTimelineRecordsWithDetails("Layout");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecordsWithDetails("Layout");
+        TestRunner.completeTest();
     }
 }
 

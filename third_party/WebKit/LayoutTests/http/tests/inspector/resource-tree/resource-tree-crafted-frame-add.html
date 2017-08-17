@@ -16,12 +16,12 @@ function createCraftedIframe()
 
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["inspector-test.js", "resources-test.js", "resource-tree-test.js"], step1);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["inspector-test.js", "resources-test.js", "resource-tree-test.js"], step1);
 
     function step1()
     {
-        InspectorTest.addSniffer(InspectorTest.resourceTreeModel, "_frameAttached", InspectorTest.completeTest);
-        InspectorTest.evaluateInPage("createCraftedIframe()");
+        TestRunner.addSniffer(TestRunner.resourceTreeModel, "_frameAttached", TestRunner.completeTest);
+        TestRunner.evaluateInPage("createCraftedIframe()");
     }
 }
 

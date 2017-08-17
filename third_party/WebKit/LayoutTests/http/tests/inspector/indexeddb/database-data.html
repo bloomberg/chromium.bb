@@ -5,8 +5,8 @@
 <script>
 function test()
 {
-    var indexedDBModel = InspectorTest.createIndexedDBModel();
-    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+    var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
     var securityOrigin = "http://127.0.0.1:8000";
     var databaseName = "testDatabase";
     var objectStoreName = "testObjectStore";
@@ -28,14 +28,14 @@ function test()
             var id = i < 10 ? "0" + i : i;
             var key = "key_" + id;
             var value = "value_" + id;
-            InspectorTest.addIDBValue(mainFrameId, databaseName, objectStoreName, { key: key, value: value }, "", addValues);
+            ApplicationTestRunner.addIDBValue(mainFrameId, databaseName, objectStoreName, { key: key, value: value }, "", addValues);
         }
     }
 
     function loadValuesAndDump(fromIndex, idbKeyRange, skipCount, pageSize, callback)
     {
         var idbKeyRangeString = idbKeyRange ? "{lower:\"" + idbKeyRange.lower + "\",lowerOpen:" + idbKeyRange.lowerOpen + ",upper:\"" + idbKeyRange.upper + "\",upperOpen:" + idbKeyRange.upperOpen + "}" : "null";
-        InspectorTest.addResult("Dumping values, fromIndex = " + fromIndex + ", skipCount = " + skipCount + ", pageSize = " + pageSize + ", idbKeyRange = " + idbKeyRangeString);
+        TestRunner.addResult("Dumping values, fromIndex = " + fromIndex + ", skipCount = " + skipCount + ", pageSize = " + pageSize + ", idbKeyRange = " + idbKeyRangeString);
         if (fromIndex)
             indexedDBModel.loadIndexData(databaseId, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, innerCallback);
         else
@@ -50,7 +50,7 @@ function test()
             function dumpEntries()
             {
                 if (index === entries.length) {
-                    InspectorTest.addResult("    hasMore = " + hasMore);
+                    TestRunner.addResult("    hasMore = " + hasMore);
                     callback();
                     return;
                 }
@@ -65,26 +65,26 @@ function test()
 
             function dumped(value)
             {
-                InspectorTest.addResult("    Key = " + entry.key.description + ", primaryKey = " + entry.primaryKey.description + ", value = " + value);
+                TestRunner.addResult("    Key = " + entry.key.description + ", primaryKey = " + entry.primaryKey.description + ", value = " + value);
                 dumpEntries();
             }
         }
     }
 
-    InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
+    TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
 
     function fillDatabase()
     {
-        InspectorTest.createDatabase(mainFrameId, databaseName, step2);
+        ApplicationTestRunner.createDatabase(mainFrameId, databaseName, step2);
 
         function step2()
         {
-            InspectorTest.createObjectStore(mainFrameId, databaseName, objectStoreName, "key", true, step3);
+            ApplicationTestRunner.createObjectStore(mainFrameId, databaseName, objectStoreName, "key", true, step3);
         }
 
         function step3()
         {
-            InspectorTest.createObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, "value", false, true, step4);
+            ApplicationTestRunner.createObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, "value", false, true, step4);
         }
 
         function step4()
@@ -95,7 +95,7 @@ function test()
 
     function refreshDatabaseNames()
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", refreshDatabase, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", refreshDatabase, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
@@ -184,7 +184,7 @@ function test()
     function runClearTests()
     {
         indexedDBModel.clearObjectStore(databaseId, objectStoreName).then(step1);
-        InspectorTest.addResult("Cleared data from objectStore");
+        TestRunner.addResult("Cleared data from objectStore");
 
         function step1() {
             indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, step2);
@@ -201,21 +201,21 @@ function test()
     }
 
     function deleteDatabase() {
-        InspectorTest.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, step2);
+        ApplicationTestRunner.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, step2);
 
         function step2()
         {
-            InspectorTest.deleteObjectStore(mainFrameId, databaseName, objectStoreName, step3);
+            ApplicationTestRunner.deleteObjectStore(mainFrameId, databaseName, objectStoreName, step3);
         }
 
         function step3()
         {
-            InspectorTest.deleteDatabase(mainFrameId, databaseName, step4);
+            ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, step4);
         }
 
         function step4()
         {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         }
     }
 }

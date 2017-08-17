@@ -27,18 +27,18 @@ function initialize_extensionsPanelTest()
     {
         var panel = UI.inspectorView.currentPanelDeprecated();
         var items = panel._panelToolbar._contentElement.children;
-        InspectorTest.addResult("Status bar buttons state:");
+        TestRunner.addResult("Status bar buttons state:");
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
             if (item instanceof HTMLContentElement)
                 continue;
             if (!(item instanceof HTMLButtonElement)) {
-                InspectorTest.addResult("status bar item " + i + " is not a button: " + item);
+                TestRunner.addResult("status bar item " + i + " is not a button: " + item);
                 continue;
             }
             // Strip url(...) and prefix of the URL within, leave just last 3 components.
             var url = item.style.backgroundImage.replace(/^url\(.*(([/][^/]*){3}[^/)]*)\)$/, "...$1");
-            InspectorTest.addResult("status bar item " + i + ", icon: \"" + url + ", tooltip: '" + item[UI.Tooltip._symbol].content + "', disabled: " + item.disabled);
+            TestRunner.addResult("status bar item " + i + ", icon: \"" + url + ", tooltip: '" + item[UI.Tooltip._symbol].content + "', disabled: " + item.disabled);
        }
     }
 
@@ -55,22 +55,22 @@ function initialize_extensionsPanelTest()
                 buttonIndex++;
             }
         }
-        InspectorTest.addResult("No button with index " + index);
+        TestRunner.addResult("No button with index " + index);
         items[index].click();
     }
 
     InspectorTest.logMessageAndClickOnURL = function()
     {
-        InspectorTest.disableConsoleViewport();
-        InspectorTest.evaluateInPage("logMessage()");
-        var wrappedConsoleMessageAdded = InspectorTest.safeWrap(consoleMessageAdded);
+        ConsoleTestRunner.disableConsoleViewport();
+        TestRunner.evaluateInPage("logMessage()");
+        var wrappedConsoleMessageAdded = TestRunner.safeWrap(consoleMessageAdded);
         ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
 
         function consoleMessageAdded()
         {
             ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
             Console.ConsoleView.instance()._invalidateViewport();
-            InspectorTest.deprecatedRunAfterPendingDispatches(clickOnMessage)
+            TestRunner.deprecatedRunAfterPendingDispatches(clickOnMessage)
         }
 
         function clickOnMessage()
@@ -88,12 +88,12 @@ function initialize_extensionsPanelTest()
         function showURL(panelName, url, lineNumber)
         {
             var url = url.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
-            InspectorTest.addResult("Showing resource " + url + " in panel " + panelName + "), line: " + lineNumber);
+            TestRunner.addResult("Showing resource " + url + " in panel " + panelName + "), line: " + lineNumber);
         }
-        InspectorTest.recordNetwork();
-        InspectorTest.addSniffer(UI.panels.sources, "showUILocation", showUILocationHook, true);
-        InspectorTest.addSniffer(UI.panels.resources._sidebar, "showResource", showResourceHook, true);
-        InspectorTest.addSniffer(UI.panels.network, "revealAndHighlightRequest", showRequestHook, true);
+        NetworkTestRunner.recordNetwork();
+        TestRunner.addSniffer(UI.panels.sources, "showUILocation", showUILocationHook, true);
+        TestRunner.addSniffer(UI.panels.resources._sidebar, "showResource", showResourceHook, true);
+        TestRunner.addSniffer(UI.panels.network, "revealAndHighlightRequest", showRequestHook, true);
 
         function showUILocationHook(uiLocation)
         {
@@ -266,7 +266,7 @@ function extension_testStatusBarButtons(nextTest)
         });
         // First we click on button2 (that is [1] in array). But it is disabled, so this should be a noop. Then we click on button1.
         // button1 click updates buttons. and clicks button2.
-        evaluateOnFrontend("InspectorTest.showPanel('extension').then(function() { InspectorTest.clickButton(1); InspectorTest.clickButton(0); })");
+        evaluateOnFrontend("TestRunner.showPanel('extension').then(function() { InspectorTest.clickButton(1); InspectorTest.clickButton(0); })");
     }
 
     webInspector.panels.create("Buttons Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);

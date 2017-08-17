@@ -11,19 +11,19 @@
 function test()
 {
     // Resources panel has heavy initialization that does not work well with reloading-from-test.
-    InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-        InspectorTest.reloadPage(step1);
+    TestRunner.deprecatedRunAfterPendingDispatches(function() {
+        TestRunner.reloadPage(step1);
     });
 
     function step1()
     {
-        InspectorTest.runAfterResourcesAreFinished(["resource-tree-reload.html", "resources-test.js", "inspector-test.js", "resource-tree-test.js", "resource-tree-reload-iframe.html", "script-initial.js", "styles-initial-2.css"], step2);
+        ApplicationTestRunner.runAfterResourcesAreFinished(["resource-tree-reload.html", "resources-test.js", "inspector-test.js", "resource-tree-test.js", "resource-tree-reload-iframe.html", "script-initial.js", "styles-initial-2.css"], step2);
     }
 
     function step2()
     {
-        InspectorTest.dumpResourceTreeEverything();
-        InspectorTest.completeTest();
+        ApplicationTestRunner.dumpResourceTreeEverything();
+        TestRunner.completeTest();
     }
 }
 

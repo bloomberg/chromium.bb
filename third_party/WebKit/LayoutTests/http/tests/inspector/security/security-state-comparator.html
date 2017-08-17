@@ -14,27 +14,27 @@ function test()
         Protocol.Security.SecurityState.Unknown
     ];
 
-    InspectorTest.assertEquals(ordering.length, Object.keys(Protocol.Security.SecurityState).length);
+    TestRunner.assertEquals(ordering.length, Object.keys(Protocol.Security.SecurityState).length);
 
     for (var i = 0; i < ordering.length; i++) {
-        InspectorTest.assertEquals(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0, "Security state comparison failed when checking that \"" + ordering[i] + "\" == \"" + ordering[i] + "\"");
+        TestRunner.assertEquals(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0, "Security state comparison failed when checking that \"" + ordering[i] + "\" == \"" + ordering[i] + "\"");
     }
 
     for (var i = 0; i < ordering.length; i++) {
         var j;
 
         for (j = 0; j < i; j++) {
-            InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 1)");
+            TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 1)");
         }
 
-        InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 0)");
+        TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 0)");
 
         for (j = i + 1; j < ordering.length; j++) {
-            InspectorTest.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: -1)");
+            TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: -1)");
         }
     }
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

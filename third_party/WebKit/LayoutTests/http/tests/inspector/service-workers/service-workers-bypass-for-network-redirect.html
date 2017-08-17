@@ -20,22 +20,22 @@ function test()
             Common.settings.settingForTest("bypassServiceWorker").set(true);
             var callback;
             var promise = new Promise((fulfill) => callback = fulfill);
-            InspectorTest.addConsoleSniffer(message => {
+            ConsoleTestRunner.addConsoleSniffer(message => {
                 if (message.messageText == "getRegistration finished") {
                   callback();
                 }
               }, true);
-            InspectorTest.evaluateInPage("loadIframe()");
+            TestRunner.evaluateInPage("loadIframe()");
             return promise;
         })
         .then(function() {
-            InspectorTest.addResult("Success");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Success");
+            TestRunner.completeTest();
         })
         .catch(function(exception) {
-            InspectorTest.addResult("Error");
-            InspectorTest.addResult(exception);
-            InspectorTest.completeTest();
+            TestRunner.addResult("Error");
+            TestRunner.addResult(exception);
+            TestRunner.completeTest();
         });
 }
 

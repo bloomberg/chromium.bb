@@ -34,28 +34,28 @@ function step3()
 
 function test()
 {
-    InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {headers: {"x-test": "redirect"}}, function () {});
-    InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {}, disableCache);
+    NetworkTestRunner.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {headers: {"x-test": "redirect"}}, function () {});
+    NetworkTestRunner.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {}, disableCache);
 
     async function disableCache()
     {
-        await InspectorTest.NetworkAgent.setCacheDisabled(true);
-        InspectorTest.recordNetwork();
-        InspectorTest.addConsoleSniffer(step4);
-        InspectorTest.evaluateInPage("step1();");
+        await TestRunner.NetworkAgent.setCacheDisabled(true);
+        NetworkTestRunner.recordNetwork();
+        ConsoleTestRunner.addConsoleSniffer(step4);
+        TestRunner.evaluateInPage("step1();");
     }
 
     async function step4()
     {
-        await InspectorTest.NetworkAgent.setCacheDisabled(false);
-        var requests = InspectorTest.networkRequests();
+        await TestRunner.NetworkAgent.setCacheDisabled(false);
+        var requests = NetworkTestRunner.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             var method = request.requestMethod;
             if (method === "OPTIONS" || method === "POST")
-                InspectorTest.addResult(method + ": " + request.url());
+                TestRunner.addResult(method + ": " + request.url());
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

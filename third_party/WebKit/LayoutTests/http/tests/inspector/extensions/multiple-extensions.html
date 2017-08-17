@@ -10,9 +10,9 @@ var pendingTestCount = 2;
 InspectorTest.extensionTestComplete = function()
 {
     if (--pendingTestCount)
-        InspectorTest.runExtensionTests();
+        ExtensionsTestRunner.runExtensionTests();
     else
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
 }
 
 }

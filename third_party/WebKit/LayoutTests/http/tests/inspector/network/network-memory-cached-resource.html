@@ -13,41 +13,41 @@ function attachIframe()
 function test()
 {
     var finished = false;
-    InspectorTest.NetworkAgent.setCacheDisabled(true).then(step1);
+    TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
 
     function findResource(url, status, cached)
     {
-        return InspectorTest.networkRequests().find(request => url.test(request.url()) && (status === request.statusCode) && (cached === request.cached()));
+        return NetworkTestRunner.networkRequests().find(request => url.test(request.url()) && (status === request.statusCode) && (cached === request.cached()));
     }
 
     function step1()
     {
-        InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-        InspectorTest.reloadPage(step2);
+        TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
+        TestRunner.reloadPage(step2);
     }
 
     function step2()
     {
-        InspectorTest.evaluateInPage("attachIframe()");
+        TestRunner.evaluateInPage("attachIframe()");
     }
 
     function onRequest()
     {
         if (!finished && findResource(/abe\.png/, 200, false) && findResource(/abe\.png/, 200, true)) {
             finished = true;
-            InspectorTest.addResult("Memory-cached resource found.");
+            TestRunner.addResult("Memory-cached resource found.");
             step3();
         }
     }
 
     function step3()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step4);
+        TestRunner.NetworkAgent.setCacheDisabled(false).then(step4);
     }
 
     function step4()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

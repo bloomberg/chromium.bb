@@ -13,20 +13,20 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.addConsoleSniffer(step2);
-    InspectorTest.evaluateInPage("loadIframe()");
+    NetworkTestRunner.recordNetwork();
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage("loadIframe()");
 
     function step2()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/resource.php", true, step3);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php", true, step3);
     }
 
     function step3()
     {
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.resourceType().name());
-        InspectorTest.completeTest();
+        var request1 = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request1.resourceType().name());
+        TestRunner.completeTest();
     }
 }
 </script>

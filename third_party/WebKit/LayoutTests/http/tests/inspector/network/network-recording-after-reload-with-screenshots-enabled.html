@@ -10,14 +10,14 @@ function test()
     
     Network.NetworkPanel._displayScreenshotDelay = 0;
 
-    InspectorTest.resourceTreeModel.reloadPage();
-    InspectorTest.runWhenPageLoads(() => setTimeout(checkRecording, 50));
+    TestRunner.resourceTreeModel.reloadPage();
+    TestRunner.runWhenPageLoads(() => setTimeout(checkRecording, 50));
 
     function checkRecording() 
     {
-        InspectorTest.addResult(UI.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
+        TestRunner.addResult(UI.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
 }

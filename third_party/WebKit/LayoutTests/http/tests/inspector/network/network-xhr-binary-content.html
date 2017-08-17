@@ -6,25 +6,25 @@
 
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.makeSimpleXHR("GET", "resources/binary.data", true, step2);
+    NetworkTestRunner.recordNetwork();
+    NetworkTestRunner.makeSimpleXHR("GET", "resources/binary.data", true, step2);
 
     async function step2()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("request.type: " + request.resourceType());
-        InspectorTest.addResult("request.mimeType: " + request.mimeType);
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult("request.type: " + request.resourceType());
+        TestRunner.addResult("request.mimeType: " + request.mimeType);
 
         var contentData = await request.contentData();
 
-        InspectorTest.addResult("request.contentEncoded: " + contentData.encoded);
-        InspectorTest.addResult("request.content: " + contentData.content);
+        TestRunner.addResult("request.contentEncoded: " + contentData.encoded);
+        TestRunner.addResult("request.content: " + contentData.content);
         var raw = window.atob(contentData.content);
         var bytes = [];
         for (var i = 0; i < raw.length; ++i)
             bytes.push(raw.charCodeAt(i));
-        InspectorTest.addResult("request.content decoded: " + bytes.join(", "));
-        InspectorTest.completeTest();
+        TestRunner.addResult("request.content decoded: " + bytes.join(", "));
+        TestRunner.completeTest();
     }
 }
 </script>

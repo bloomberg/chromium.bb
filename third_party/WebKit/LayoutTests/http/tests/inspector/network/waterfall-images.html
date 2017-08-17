@@ -49,11 +49,11 @@ function test()
   dataGrid.onResize();
   waterfall.onResize();
   dataGrid._update(); // Clears animation frame.
-  InspectorTest.addSniffer(waterfall, "_didDrawForTest", onWaterfallDraw, true);
-  InspectorTest.override(CanvasRenderingContext2D.prototype, "measureText", measureText, true);
-  InspectorTest.override(CanvasRenderingContext2D.prototype, "fillText", fillText, true);
+  TestRunner.addSniffer(waterfall, "_didDrawForTest", onWaterfallDraw, true);
+  TestRunner.override(CanvasRenderingContext2D.prototype, "measureText", measureText, true);
+  TestRunner.override(CanvasRenderingContext2D.prototype, "fillText", fillText, true);
   
-  InspectorTest.recordNetwork();
+  NetworkTestRunner.recordNetwork();
   var types = Common.resourceTypes;
   var requests = [
     makeRequest({
@@ -229,7 +229,7 @@ function test()
   function fillText(text, textPosition, paddingTop) {
     if (numDraws >= 2 || this.canvas !== waterfall._canvas)
       return;
-    InspectorTest.addResult(text);
+    TestRunner.addResult(text);
     this.save();
     this.fillStyle = "#F90";
     this.fillRect(textPosition, paddingTop, text.length * fontWidth, fontHeight);
@@ -281,10 +281,10 @@ function test()
     var imageData = waterfall._canvas.toDataURL();
     var height = waterfall._canvas.height;
     var width = waterfall._canvas.width;
-    var promise = InspectorTest.evaluateInPagePromise(`receiveImage('${imageData}')`);
+    var promise = TestRunner.evaluateInPagePromise(`receiveImage('${imageData}')`);
     if (done) {
       promise.then(
-          InspectorTest.evaluateInPage.bind(InspectorTest, "done()", InspectorTest.completeTest.bind(InspectorTest)));
+          TestRunner.evaluateInPage.bind(InspectorTest, "done()", TestRunner.completeTest.bind(InspectorTest)));
     }
   }
 }

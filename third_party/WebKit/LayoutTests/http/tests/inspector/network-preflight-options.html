@@ -73,12 +73,12 @@ var test = function()
         if (request.requestMethod === "POST" && ++postRequestsCount === 4) {
             requestMessages.sort();
             for (var i = 0; i < requestMessages.length; i++)
-                InspectorTest.addResult(requestMessages[i]);
-            InspectorTest.completeTest();
+                TestRunner.addResult(requestMessages[i]);
+            TestRunner.completeTest();
         }
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-    InspectorTest.evaluateInPage("doCrossOriginXHR();");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
+    TestRunner.evaluateInPage("doCrossOriginXHR();");
 }
 </script>
 </head>

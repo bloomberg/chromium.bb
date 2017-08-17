@@ -10,8 +10,8 @@
 
 function test()
 {
-    InspectorTest.initializeTestMapping();
-    InspectorTest.overrideNetworkModificationTime({
+    BindingsTestRunner.initializeTestMapping();
+    BindingsTestRunner.overrideNetworkModificationTime({
         "http://127.0.0.1:8000/inspector/persistence/resources/sourcemap-name-clash/out.js": null
     });
 
@@ -22,8 +22,8 @@ function test()
 
     function onResourceContents(contents)
     {
-        var fs = new InspectorTest.TestFileSystem("file:///var/www");
-        InspectorTest.addFiles(fs, {
+        var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+        BindingsTestRunner.addFiles(fs, {
             "out.js": {
                 content: contents[0],
                 time: new Date("December 1, 1989")
@@ -38,15 +38,15 @@ function test()
 
     function onFileSystemCreated()
     {
-        var automappingTest = new InspectorTest.AutomappingTest(Workspace.workspace);
-        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
+        var automappingTest = new BindingsTestRunner.AutomappingTest(Workspace.workspace);
+        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
     }
 
     function getResourceContent(name)
     {
         var fulfill;
         var promise = new Promise(x => fulfill = x);
-        InspectorTest.waitForScriptSource(name, onSource);
+        SourcesTestRunner.waitForScriptSource(name, onSource);
         return promise;
 
         function onSource(uiSourceCode)

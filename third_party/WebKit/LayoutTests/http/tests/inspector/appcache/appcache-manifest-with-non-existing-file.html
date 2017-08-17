@@ -11,27 +11,27 @@ function test()
     var frameId3;
 
     UI.viewManager.showView("resources");
-    InspectorTest.startApplicationCacheStatusesRecording();
-    InspectorTest.dumpApplicationCache();
-    InspectorTest.createAndNavigateIFrame("resources/page-with-manifest.php?manifestId=with-non-existing-file", step1);
+    ApplicationTestRunner.startApplicationCacheStatusesRecording();
+    ApplicationTestRunner.dumpApplicationCache();
+    ApplicationTestRunner.createAndNavigateIFrame("resources/page-with-manifest.php?manifestId=with-non-existing-file", step1);
 
     function step1(frameId)
     {
         frameId1 = frameId;
         // Waiting for at least two status events notifications from backend, to make sure
         // we are not completing test before loading application cache.
-        InspectorTest.ensureFrameStatusEventsReceived(frameId, 2, step2)
+        ApplicationTestRunner.ensureFrameStatusEventsReceived(frameId, 2, step2)
     }
 
     function step2()
     {
-        InspectorTest.waitForFrameManifestURLAndStatus(frameId1, "", applicationCache.UNCACHED, step3);
+        ApplicationTestRunner.waitForFrameManifestURLAndStatus(frameId1, "", applicationCache.UNCACHED, step3);
     }
 
     function step3()
     {
-        InspectorTest.dumpApplicationCache();
-        InspectorTest.completeTest();
+        ApplicationTestRunner.dumpApplicationCache();
+        TestRunner.completeTest();
     }
 }
 </script>

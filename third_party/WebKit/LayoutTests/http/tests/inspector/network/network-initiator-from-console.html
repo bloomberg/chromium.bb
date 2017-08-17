@@ -5,11 +5,11 @@
 <script>
 var test = function()
 {
-    InspectorTest.reloadPage(step1);
+    TestRunner.reloadPage(step1);
 
     function step1()
     {
-        InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+        TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
         var str = "";
         str += "var s = document.createElement(\"script\");";
         str += "s.src = \"resources/silent_script.js\";";
@@ -26,11 +26,11 @@ var test = function()
 
     function step2()
     {
-        var results = InspectorTest.findRequestsByURLPattern(/silent_script.js/);
+        var results = NetworkTestRunner.findRequestsByURLPattern(/silent_script.js/);
         if (results.length === 0)
             return;
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

@@ -10,23 +10,23 @@ function test()
     function checkMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, mapping)
     {
         var entry = mapping.findEntry(compiledLineNumber, compiledColumnNumber);
-        InspectorTest.addResult(sourceURL + " === " + entry.sourceURL);
-        InspectorTest.addResult(sourceLineNumber + " === " + entry.sourceLineNumber);
-        InspectorTest.addResult(sourceColumnNumber + " === " + entry.sourceColumnNumber);
+        TestRunner.addResult(sourceURL + " === " + entry.sourceURL);
+        TestRunner.addResult(sourceLineNumber + " === " + entry.sourceLineNumber);
+        TestRunner.addResult(sourceColumnNumber + " === " + entry.sourceColumnNumber);
     }
 
     function checkReverseMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, mapping)
     {
         var entry = mapping.firstSourceLineMapping(sourceURL, sourceLineNumber);
         if (!entry) {
-            InspectorTest.addResult("source line " + sourceLineNumber + " has no mappings.");
+            TestRunner.addResult("source line " + sourceLineNumber + " has no mappings.");
             return;
         }
-        InspectorTest.addResult(compiledLineNumber + " === " + entry.lineNumber);
-        InspectorTest.addResult(compiledColumnNumber + " === " + entry.columnNumber);
+        TestRunner.addResult(compiledLineNumber + " === " + entry.lineNumber);
+        TestRunner.addResult(compiledColumnNumber + " === " + entry.columnNumber);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimpleMap(next)
         {
             /*
@@ -78,7 +78,7 @@ function test()
             var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             var entry = mapping.findEntry(0, 1);
-            InspectorTest.assertTrue(!entry.sourceURL);
+            TestRunner.assertTrue(!entry.sourceURL);
             checkMapping(0, 2, "example.js", 0, 2, mapping);
             next();
         },
@@ -135,7 +135,7 @@ function test()
                 }
             ]};
             var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
-            InspectorTest.assertEquals(2, mapping.sourceURLs().length);
+            TestRunner.assertEquals(2, mapping.sourceURLs().length);
             checkMapping(0, 0, "source1.js", 0, 0, mapping);
             checkMapping(0, 1, "source1.js", 2, 1, mapping);
             checkMapping(2, 10, "source2.js", 0, 0, mapping);
@@ -224,7 +224,7 @@ function test()
             var mapping = new SDK.TextSourceMap("chrome_issue_611738.js", "chrome_issue_611738.js.map", mappingPayload);
             mapping.mappings().forEach(function(entry) {
                 const name = entry.name ? "'" + entry.name + "'" : "[no name assigned]";
-                InspectorTest.addResult(entry.lineNumber + ":" + entry.columnNumber + " > " + name);
+                TestRunner.addResult(entry.lineNumber + ":" + entry.columnNumber + " > " + name);
             });
             next();
         }

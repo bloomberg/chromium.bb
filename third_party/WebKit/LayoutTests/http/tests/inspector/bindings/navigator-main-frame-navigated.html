@@ -10,26 +10,26 @@ async function test()
     var sourcesNavigator = new Sources.SourcesNavigatorView();
     sourcesNavigator.show(UI.inspectorView.element);
 
-    InspectorTest.markStep('dumpInitialNavigator');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('dumpInitialNavigator');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('attachFrame');
+    TestRunner.markStep('attachFrame');
     await Promise.all([
-        InspectorTest.attachFrame('frame', './resources/sourcemap-frame.html'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+        BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
     ]);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('navigateMainFrame');
+    TestRunner.markStep('navigateMainFrame');
     var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
-    await InspectorTest.navigatePromise(url);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    await TestRunner.navigatePromise(url);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('navigateBack');
+    TestRunner.markStep('navigateBack');
     var originalUrl = "http://127.0.0.1:8000/inspector/bindings/navigator-main-frame-navigated.html";
-    await InspectorTest.navigatePromise(originalUrl);
-    InspectorTest.completeTest();
+    await TestRunner.navigatePromise(originalUrl);
+    TestRunner.completeTest();
 }
 
 </script>

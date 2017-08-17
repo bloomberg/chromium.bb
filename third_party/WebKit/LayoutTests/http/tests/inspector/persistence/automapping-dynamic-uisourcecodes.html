@@ -13,13 +13,13 @@ function test()
         time: new Date("December 1, 1989")
     };
 
-    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
     fs.reportCreated(onFileSystemCreated);
 
     function onFileSystemCreated()
     {
-        InspectorTest.runTestSuite(tests);
+        TestRunner.runTestSuite(tests);
     }
 
     var tests = [
@@ -33,7 +33,7 @@ function test()
 
         function addFileSystemUISourceCode(next)
         {
-            InspectorTest.addFiles(fs, {
+            BindingsTestRunner.addFiles(fs, {
                 "scripts/foo.js": foo_js,
             });
             automappingTest.waitUntilMappingIsStabilized().then(next);

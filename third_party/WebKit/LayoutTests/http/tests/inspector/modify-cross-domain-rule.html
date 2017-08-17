@@ -12,7 +12,7 @@ function test()
     var rule;
     var matchedStyleResult;
 
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
 
     function onStyleSheetChanged(event)
     {
@@ -26,13 +26,13 @@ function test()
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next) {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", selectCallback);
 
             function selectCallback()
             {
-                var idToDOMNode = InspectorTest.domModel._idToDOMNode;
+                var idToDOMNode = TestRunner.domModel._idToDOMNode;
                 for (var id in idToDOMNode) {
                     node = idToDOMNode[id];
                     if (node.getAttribute && node.getAttribute("id") === "inspected") {
@@ -42,19 +42,19 @@ function test()
                 }
 
                 if (!nodeId) {
-                    InspectorTest.completeTest();
+                    TestRunner.completeTest();
                     return;
                 }
 
-                InspectorTest.cssModel.matchedStylesPromise(nodeId, false, false)
+                TestRunner.cssModel.matchedStylesPromise(nodeId, false, false)
                     .then(callback);
             }
 
             function callback(matchedResult)
             {
                 if (!matchedResult) {
-                    InspectorTest.addResult("[!] No rules found");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("[!] No rules found");
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -76,10 +76,10 @@ function test()
             rule.style.appendProperty("width", "100%", callback);
             function callback(success)
             {
-                InspectorTest.addResult("=== Rule modified ===");
+                TestRunner.addResult("=== Rule modified ===");
                 if (!success) {
-                    InspectorTest.addResult("[!] No valid rule style received");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("[!] No valid rule style received");
+                    TestRunner.completeTest();
                 } else {
                     dumpProperties(rule.style);
                     rule.setSelectorText("body")
@@ -91,8 +91,8 @@ function test()
             function onSelectorUpdated(success)
             {
                 if (!success) {
-                    InspectorTest.addResult("[!] Failed to change selector");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("[!] Failed to change selector");
+                    TestRunner.completeTest();
                     return;
                 }
                 return matchedStyleResult.recomputeMatchingSelectors(rule);
@@ -100,9 +100,9 @@ function test()
 
             function successCallback()
             {
-                InspectorTest.addResult("=== Selector changed ===");
-                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyleResult, rule));
+                TestRunner.addResult("=== Selector changed ===");
+                TestRunner.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
+                TestRunner.addResult("Selectors matching the (#inspected) node: " + ElementsTestRunner.matchingSelectors(matchedStyleResult, rule));
                 next();
             }
         }
@@ -114,7 +114,7 @@ function test()
            return;
        var allProperties = style.allProperties();
        for (var i = 0; i < allProperties.length; ++i)
-           InspectorTest.addResult(allProperties[i].text);
+           TestRunner.addResult(allProperties[i].text);
     }
 }
 </script>

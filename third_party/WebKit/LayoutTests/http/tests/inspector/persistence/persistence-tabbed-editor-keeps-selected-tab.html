@@ -9,15 +9,15 @@
 
 async function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem('file:///var/www');
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
     fs.root.addFile('bar.js', "window.bar = ()=>'bar';");
     await fs.reportCreatedPromise();
 
-    var fsSourceCode = await InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
-    var networkSourceCode = await InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.Network);
-    var barSourceCode = await InspectorTest.waitForUISourceCode('bar.js');
+    var fsSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+    var networkSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.Network);
+    var barSourceCode = await TestRunner.waitForUISourceCode('bar.js');
     UI.panels.sources.showUISourceCode(barSourceCode, 0, 0);
     UI.panels.sources.showUISourceCode(networkSourceCode, 0, 0);
     // Open and select file system tab. Selection should stay here.
@@ -25,21 +25,21 @@ async function test()
 
     dumpTabs('Opened tabs before persistence binding:');
     testMapping.addBinding('foo.js');
-    await InspectorTest.waitForBinding('foo.js');
+    await BindingsTestRunner.waitForBinding('foo.js');
     dumpTabs('\nOpened tabs after persistence binding:');
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function dumpTabs(title)
     {
         var tabbedPane = UI.panels.sources._sourcesView._editorContainer._tabbedPane;
         var tabs = tabbedPane._tabs;
-        InspectorTest.addResult(title);
+        TestRunner.addResult(title);
         for (var i = 0; i < tabs.length; ++i) {
             var text = (i + 1) + ': ';
             text += tabs[i].title;
             if (tabs[i] === tabbedPane._currentTab)
                 text += ' [selected]';
-            InspectorTest.addResult('    '  + text);
+            TestRunner.addResult('    '  + text);
         }
     }
 };

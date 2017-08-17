@@ -22,23 +22,23 @@ function installScriptWithPoorSourceMap()
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
-            InspectorTest.showScriptSource("source1.js", didShowSource);
+            SourcesTestRunner.showScriptSource("source1.js", didShowSource);
 
             function didShowSource(sourceFrame)
             {
-                InspectorTest.addResult("Script source was shown.");
-                InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
-                InspectorTest.waitUntilPaused(paused);
-                InspectorTest.evaluateInPage("setTimeout(clickButton, 0)");
+                TestRunner.addResult("Script source was shown.");
+                SourcesTestRunner.setBreakpoint(sourceFrame, 14, "", true);
+                SourcesTestRunner.waitUntilPaused(paused);
+                TestRunner.evaluateInPage("setTimeout(clickButton, 0)");
             }
 
             function paused(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.resumeExecution(next);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.resumeExecution(next);
             }
         }
     ]);

@@ -30,34 +30,34 @@ function test()
         if (request.name() !== requestName)
             return;
         requestName = undefined;
-        InspectorTest.addResult("BlockedReason: " + request.blockedReason());
+        TestRunner.addResult("BlockedReason: " + request.blockedReason());
         nextStep();
     }
 
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
 
     function testBlockedURL(patterns, url, next)
     {
-        InspectorTest.addResult("Blocked patterns: " + patterns.join(";"));
-        InspectorTest.addResult("Request: " + url);
+        TestRunner.addResult("Blocked patterns: " + patterns.join(";"));
+        TestRunner.addResult("Request: " + url);
         var blockedPatterns = patterns.map(p => ({url: p, enabled: true}));
         SDK.multitargetNetworkManager.setBlockedPatterns(blockedPatterns);
         nextStep = next;
-        InspectorTest.deprecatedRunAfterPendingDispatches(addScript);
+        TestRunner.deprecatedRunAfterPendingDispatches(addScript);
 
         function addScript()
         {
             requestName = url.substring(url.lastIndexOf("/") + 1);
-            InspectorTest.evaluateInPage("addBlockedScript(\"" + url + "\")");
+            TestRunner.evaluateInPage("addBlockedScript(\"" + url + "\")");
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testCSP(next)
         {
             requestName = "csp.js";
             nextStep = next;
-            InspectorTest.evaluateInPage("sendCSPRequest()");
+            TestRunner.evaluateInPage("sendCSPRequest()");
         },
 
         function testBlockedByDevTools1(next)

@@ -7,27 +7,27 @@
 
 async function test()
 {
-    InspectorTest.markStep('attachFrame');
+    TestRunner.markStep('attachFrame');
     await Promise.all([
-        InspectorTest.attachFrame('frame', './resources/sourcemap-frame.html'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+        BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
     ]);
 
-    var jsLiveLocation = InspectorTest.createDebuggerLiveLocation('js', 'sourcemap-script.js');
-    var cssLiveLocation = InspectorTest.createCSSLiveLocation('css', 'sourcemap-style.css');
+    var jsLiveLocation = BindingsTestRunner.createDebuggerLiveLocation('js', 'sourcemap-script.js');
+    var cssLiveLocation = BindingsTestRunner.createCSSLiveLocation('css', 'sourcemap-style.css');
 
-    InspectorTest.markStep('navigateMainFrame');
+    TestRunner.markStep('navigateMainFrame');
     var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
-    await InspectorTest.navigatePromise(url);
-    InspectorTest.dumpLocation(jsLiveLocation);
-    InspectorTest.dumpLocation(cssLiveLocation);
+    await TestRunner.navigatePromise(url);
+    BindingsTestRunner.dumpLocation(jsLiveLocation);
+    BindingsTestRunner.dumpLocation(cssLiveLocation);
 
-    InspectorTest.markStep('navigateBack');
+    TestRunner.markStep('navigateBack');
     var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";
-    await InspectorTest.navigatePromise(originalUrl);
+    await TestRunner.navigatePromise(originalUrl);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

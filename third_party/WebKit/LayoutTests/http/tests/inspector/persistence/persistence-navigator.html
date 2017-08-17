@@ -9,14 +9,14 @@
 
 function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
+    var testMapping = BindingsTestRunner.initializeTestMapping();
     Runtime.experiments.enableForTest("persistence2");
     var sourcesNavigator = new Sources.SourcesNavigatorView();
     sourcesNavigator.show(UI.inspectorView.element);
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function addFileSystem(next)
         {
             fs.reportCreated(next);
@@ -25,14 +25,14 @@ function test()
         function waitForUISourceCodes(next)
         {
             var promises = [
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ];
             Promise.all(promises).then(onUISourceCodesAdded);
 
             function onUISourceCodesAdded()
             {
-                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
+                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },
@@ -40,11 +40,11 @@ function test()
         function addFileMapping(next)
         {
             testMapping.addBinding("foo.js");
-            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
 
             function onBindingCreated(binding)
             {
-                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
+                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },
@@ -60,7 +60,7 @@ function test()
                 if (binding.network.name() !== "foo.js")
                     return
                 Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
+                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },

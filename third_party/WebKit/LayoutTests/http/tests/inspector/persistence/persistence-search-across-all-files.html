@@ -10,18 +10,18 @@
 
 function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
     var scope = new Sources.SourcesSearchScope();
     fs.reportCreated(function() { });
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function waitForUISourceCodes(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ]).then(next);
         },
 
@@ -30,7 +30,7 @@ function test()
         function addFileMapping(next)
         {
             testMapping.addBinding("foo.js");
-            InspectorTest.waitForBinding("foo.js").then(next);
+            BindingsTestRunner.waitForBinding("foo.js").then(next);
         },
 
         dumpSearchResults,
@@ -39,7 +39,7 @@ function test()
     function dumpSearchResults(next)
     {
         var searchConfig = new Workspace.SearchConfig("window.foo f:foo", true, false);
-        InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+        SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     }
 
     InspectorFrontendHost.searchInPath = function(requestId, path, query)

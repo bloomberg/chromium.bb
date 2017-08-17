@@ -93,7 +93,7 @@ function test()
         {"fn": "createIFrame", "requests": 1},
         {"fn": "sendScriptsFromDocumentWriteAfterImage", "requests": 5},
     ];
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
 
     var nextAction = 0;
     var expectedRequestCount = 0;
@@ -102,18 +102,18 @@ function test()
     function performNextAction()
     {
         if (nextAction >= actions.length) {
-            InspectorTest.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
-            InspectorTest.completeTest();
+            TestRunner.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult(actions[nextAction].fn);
+        TestRunner.addResult(actions[nextAction].fn);
         expectedRequestCount = actions[nextAction].requests;
-        InspectorTest.evaluateInPage(actions[nextAction++].fn + "()");
+        TestRunner.evaluateInPage(actions[nextAction++].fn + "()");
     }
     function onRequestStarted(event)
     {
         var request = event.data;
-        InspectorTest.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
+        TestRunner.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
         expectedRequestCount--;
         if (expectedRequestCount < 1)
             performNextAction();

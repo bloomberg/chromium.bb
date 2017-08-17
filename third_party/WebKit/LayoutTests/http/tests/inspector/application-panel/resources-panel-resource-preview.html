@@ -18,7 +18,7 @@ async function test()
     function dump(node, prefix)
     {
         for (var child of node.children()) {
-            InspectorTest.addResult(prefix + child.listItemElement.textContent + (child.selected ? " (selected)" : ""));
+            TestRunner.addResult(prefix + child.listItemElement.textContent + (child.selected ? " (selected)" : ""));
             dump(child, prefix + '  ');
         }
     }
@@ -31,7 +31,7 @@ async function test()
         ]);
 
         var view = UI.panels.resources;
-        InspectorTest.addResult(label);
+        TestRunner.addResult(label);
         dump(view._sidebar._sidebarTree.rootElement(), '');
         var visibleView = view.visibleView;
         if (visibleView instanceof UI.SearchableView)
@@ -58,7 +58,7 @@ async function test()
         }
 
         if (!r) {
-            InspectorTest.addResult(name + ' was not found');
+            TestRunner.addResult(name + ' was not found');
             return;
         }
         await Common.Revealer.revealPromise(r);
@@ -71,7 +71,7 @@ async function test()
     await revealResourceWithDisplayName('image.png');
     await revealResourceWithDisplayName('resources-panel-resource-preview.html');
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

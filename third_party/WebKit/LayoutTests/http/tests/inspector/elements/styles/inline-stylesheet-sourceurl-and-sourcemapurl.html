@@ -14,13 +14,13 @@ function addStyleSheet() {
 
 async function test()
 {
-    InspectorTest.markStep('Adding style sheet');
+    TestRunner.markStep('Adding style sheet');
     await Promise.all([
-        InspectorTest.evaluateInPagePromise('addStyleSheet()'),
-        InspectorTest.waitForSourceMap('selector-line.css.map'),
+        TestRunner.evaluateInPagePromise('addStyleSheet()'),
+        BindingsTestRunner.waitForSourceMap('selector-line.css.map'),
     ]);
-    InspectorTest.addResult("SourceMap successfully loaded.");
-    InspectorTest.completeTest();
+    TestRunner.addResult("SourceMap successfully loaded.");
+    TestRunner.completeTest();
 }
 
 </script>

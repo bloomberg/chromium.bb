@@ -9,34 +9,34 @@ async function test()
     var sourcesNavigator = new Sources.SourcesNavigatorView();
     sourcesNavigator.show(UI.inspectorView.element);
 
-    InspectorTest.markStep('initialWorkspace');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('initialWorkspace');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('attachFrame1');
+    TestRunner.markStep('attachFrame1');
     await Promise.all([
-        InspectorTest.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+        BindingsTestRunner.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
     ]);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('attachFrame2');
+    TestRunner.markStep('attachFrame2');
     await Promise.all([
-        InspectorTest.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+        BindingsTestRunner.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
     ]);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('detachFrame1');
-    await InspectorTest.detachFrame('frame1', '_test_detachFrame1.js');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('detachFrame1');
+    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('detachFrame2');
-    await InspectorTest.detachFrame('frame2', '_test_detachFrame2.js');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('detachFrame2');
+    await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

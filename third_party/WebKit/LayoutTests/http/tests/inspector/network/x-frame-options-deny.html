@@ -11,34 +11,34 @@ function loadIFrameWithDownload()
 
 function test()
 {
-    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "responseReceived", responseReceived);
-    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
-    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
-    InspectorTest.evaluateInPage("loadIFrameWithDownload()");
+    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "responseReceived", responseReceived);
+    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
+    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
+    TestRunner.evaluateInPage("loadIFrameWithDownload()");
 
     function responseReceived(requestId, time, resourceType, response)
     {
-        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
+        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
         if (/x-frame-options-deny\.cgi/.exec(request.url())) {
-            InspectorTest.addResult("Received response for x-frame-options-deny.cgi");
-            InspectorTest.addResult("SUCCESS");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Received response for x-frame-options-deny.cgi");
+            TestRunner.addResult("SUCCESS");
+            TestRunner.completeTest();
         }
     }
 
     function loadingFinished(requestId, finishTime)
     {
-        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
+        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
         if (/x-frame-options-deny\.cgi/.exec(request.url()))
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 
     function loadingFailed(requestId, time, localizedDescription, canceled)
     {
-        var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
+        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
         if (/x-frame-options-deny\.cgi/.exec(request.url())) {
-            InspectorTest.addResult("TODO(mkwst): This started failing when we moved XFO to the browser.");
-            InspectorTest.completeTest();
+            TestRunner.addResult("TODO(mkwst): This started failing when we moved XFO to the browser.");
+            TestRunner.completeTest();
         }
     }
 }

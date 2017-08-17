@@ -13,15 +13,15 @@ function test() {
     {
         var request = event.data;
         if (request.name() === 'done') {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult(eventType + ": " + request.name());
+        TestRunner.addResult(eventType + ": " + request.name());
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest.bind(null, "RequestStarted"));
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, "RequestFinished"));
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest.bind(null, "RequestStarted"));
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, "RequestFinished"));
 
-    InspectorTest.evaluateInPage("createIFrame()");
+    TestRunner.evaluateInPage("createIFrame()");
 }
 </script>
 </head>

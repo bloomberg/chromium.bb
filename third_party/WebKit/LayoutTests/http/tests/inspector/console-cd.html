@@ -7,11 +7,11 @@
 
 function test()
 {
-    InspectorTest.changeExecutionContext("myIFrame");
-    InspectorTest.evaluateInConsoleAndDump("foo", finish, true);
+    ConsoleTestRunner.changeExecutionContext("myIFrame");
+    ConsoleTestRunner.evaluateInConsoleAndDump("foo", finish, true);
     function finish()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

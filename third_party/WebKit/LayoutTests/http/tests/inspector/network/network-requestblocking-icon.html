@@ -15,9 +15,9 @@ async function test()
     SDK.multitargetNetworkManager.setBlockingEnabled(false);
     dumpIconResult();
 
-    InspectorTest.addResult("Loading Network Module");
+    TestRunner.addResult("Loading Network Module");
     await self.runtime.loadModulePromise('network');
-    InspectorTest.addResult("Network Module Loaded");
+    TestRunner.addResult("Network Module Loaded");
 
     SDK.multitargetNetworkManager.setBlockingEnabled(false);
     SDK.multitargetNetworkManager.setBlockedPatterns([]);
@@ -28,13 +28,13 @@ async function test()
     dumpIconResult();
     SDK.multitargetNetworkManager.setBlockingEnabled(false);
     dumpIconResult();
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function dumpIconResult() {
         var hasIcon = !!UI.inspectorView._tabbedPane._tabsElement.getElementsByClassName("smallicon-warning").length;
-        InspectorTest.addResult("Is blocking: " + SDK.multitargetNetworkManager.isBlocking());
-        InspectorTest.addResult(hasIcon ? "Has Icon" : "Does Not Have Icon");
-        InspectorTest.addResult("");
+        TestRunner.addResult("Is blocking: " + SDK.multitargetNetworkManager.isBlocking());
+        TestRunner.addResult(hasIcon ? "Has Icon" : "Does Not Have Icon");
+        TestRunner.addResult("");
     }
 }
 </script>

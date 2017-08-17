@@ -29,9 +29,9 @@ function test()
     var secondVersionId = -1;
     Resources.ServiceWorkersView._noThrottle = true;
 
-    InspectorTest.evaluateInPage("frontendReopeningCount", function(result) {
+    TestRunner.evaluateInPage("frontendReopeningCount", function(result) {
         if (result._description == "0") {
-            InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+            TestRunner.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
             function updateRegistration(registration)
             {
                 if (registration.scopeURL != scope)
@@ -40,19 +40,19 @@ function test()
                     if (step == 0 && version.isRunning() && version.isActivated()) {
                         ++step;
                         firstVersionId = version.id;
-                        InspectorTest.addResult("The first ServiceWorker is activated.");
-                        InspectorTest.addResult("==== ServiceWorkersView ====");
-                        InspectorTest.addResult(InspectorTest.dumpServiceWorkersView([scope]));
-                        InspectorTest.addResult("============================");
-                        InspectorTest.evaluateInPage("loadIframe(\"" + scope + "\");");
+                        TestRunner.addResult("The first ServiceWorker is activated.");
+                        TestRunner.addResult("==== ServiceWorkersView ====");
+                        TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView([scope]));
+                        TestRunner.addResult("============================");
+                        TestRunner.evaluateInPage("loadIframe(\"" + scope + "\");");
                     } else if (step == 1 && version.isRunning() && version.isInstalled()) {
                         ++step;
                         secondVersionId = version.id;
-                        InspectorTest.addResult("The second Serviceworker is installed.");
-                        InspectorTest.addResult("==== ServiceWorkersView ====");
-                        InspectorTest.addResult(InspectorTest.dumpServiceWorkersView([scope]));
-                        InspectorTest.addResult("============================");
-                        InspectorTest.evaluateInPage("unloadIframe();");
+                        TestRunner.addResult("The second Serviceworker is installed.");
+                        TestRunner.addResult("==== ServiceWorkersView ====");
+                        TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView([scope]));
+                        TestRunner.addResult("============================");
+                        TestRunner.evaluateInPage("unloadIframe();");
                     }
                 }
                 if (step != 2)
@@ -61,24 +61,24 @@ function test()
                 var secondVersion = registration.versions.get(secondVersionId);
                 if ((!firstVersion || (firstVersion.isStopped() && firstVersion.isRedundant())) && secondVersion.isActivated() && secondVersion.isRunning()) {
                     ++step;
-                    InspectorTest.addResult("The first ServiceWorker worker became redundant and stopped.");
-                    InspectorTest.addResult("==== ServiceWorkersView ====");
-                    InspectorTest.addResult(InspectorTest.dumpServiceWorkersView([scope]));
-                    InspectorTest.addResult("============================");
-                    InspectorTest.flushResults();
-                    InspectorTest.evaluateInPage("reopenFrontend()");
+                    TestRunner.addResult("The first ServiceWorker worker became redundant and stopped.");
+                    TestRunner.addResult("==== ServiceWorkersView ====");
+                    TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView([scope]));
+                    TestRunner.addResult("============================");
+                    TestRunner.flushResults();
+                    TestRunner.evaluateInPage("reopenFrontend()");
                 }
             }
             UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
-            InspectorTest.registerServiceWorker(scriptURL, scope);
+            ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
         } else {
-            InspectorTest.addResult("DevTools frontend is reopened.");
+            TestRunner.addResult("DevTools frontend is reopened.");
             UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
-            InspectorTest.addResult("==== ServiceWorkersView ====");
-            InspectorTest.addResult(InspectorTest.dumpServiceWorkersView([scope]));
-            InspectorTest.addResult("============================");
-            InspectorTest.deleteServiceWorkerRegistration(scope);
-            InspectorTest.completeTest();
+            TestRunner.addResult("==== ServiceWorkersView ====");
+            TestRunner.addResult(ApplicationTestRunner.dumpServiceWorkersView([scope]));
+            TestRunner.addResult("============================");
+            ApplicationTestRunner.deleteServiceWorkerRegistration(scope);
+            TestRunner.completeTest();
         }});
 }
 

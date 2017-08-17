@@ -11,30 +11,30 @@ function onload()
 
 function test()
 {
-    InspectorTest.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
+    TestRunner.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
 
     function sniffInspect(objectId, hints)
     {
-        InspectorTest.addResult("WebInspector.inspect called with: " + objectId.description);
-        InspectorTest.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
+        TestRunner.addResult("WebInspector.inspect called with: " + objectId.description);
+        TestRunner.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
     }
 
     function evalAndDump(expression, next)
     {
-        InspectorTest.addResult("\n");
-        InspectorTest.evaluateInConsole(expression, dumpCallback);
+        TestRunner.addResult("\n");
+        ConsoleTestRunner.evaluateInConsole(expression, dumpCallback);
         function dumpCallback(text)
         {
-            InspectorTest.addResult(expression + " = " + text);
+            TestRunner.addResult(expression + " = " + text);
             if (next)
                 next();
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testRevealElement(next)
         {
-            InspectorTest.addSniffer(Common.Revealer, "revealPromise", step2, true);
+            TestRunner.addSniffer(Common.Revealer, "revealPromise", step2, true);
             evalAndDump("inspect($('#p1'))");
 
             function step2(node, revealPromise)
@@ -46,7 +46,7 @@ function test()
 
             function step3()
             {
-                InspectorTest.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
+                TestRunner.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
                 next();
             }
         }

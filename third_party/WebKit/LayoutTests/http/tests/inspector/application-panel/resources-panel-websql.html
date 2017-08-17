@@ -18,13 +18,13 @@ async function test()
     function dump(node, prefix)
     {
         for (var child of node.children()) {
-            InspectorTest.addResult(prefix + child.listItemElement.textContent + (child.selected ? " (selected)" : ""));
+            TestRunner.addResult(prefix + child.listItemElement.textContent + (child.selected ? " (selected)" : ""));
             dump(child, prefix + "  ");
         }
     }
 
     function dumpCurrentState(label) {
-        InspectorTest.addResult(label);
+        TestRunner.addResult(label);
         dump(UI.panels.resources._sidebar._sidebarTree.rootElement(), "");
     }
 
@@ -47,12 +47,12 @@ async function test()
     UI.viewManager.showView('resources');
     dumpCurrentState('Initial state:');
 
-    await InspectorTest.evaluateInPagePromise('openDatabase("inspector-test-db", "1.0", "Database for inspector test", 1024*1024)');
+    await TestRunner.evaluateInPagePromise('openDatabase("inspector-test-db", "1.0", "Database for inspector test", 1024*1024)');
 
     var parent = UI.panels.resources._sidebar._sidebarTree.rootElement();
     var databaseElement = findTreeElement(parent, ['Storage', 'Web SQL', 'inspector-test-db']);
 
-    InspectorTest.addResult("Found: " + !!databaseElement);
+    TestRunner.addResult("Found: " + !!databaseElement);
 
     if (!databaseElement)
         return;
@@ -62,7 +62,7 @@ async function test()
 
     var queryView = UI.panels.resources.visibleView;
     if (!queryView instanceof Resources.DatabaseQueryView) {
-        InspectorTest.addResult("Not a Resources.DatabaseQueryView");
+        TestRunner.addResult("Not a Resources.DatabaseQueryView");
         return;
     }
 
@@ -73,7 +73,7 @@ async function test()
     }
 
     dumpCurrentState("Table added:");
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

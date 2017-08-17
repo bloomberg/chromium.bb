@@ -13,9 +13,9 @@ function test()
         deduplicatedNames.add(name);
     }
 
-    InspectorTest.addResult("Number of names (" + originGroupNameSize + ") == number of unique names (" + deduplicatedNames.size + "): " + (originGroupNameSize == deduplicatedNames.size) + " (expected: true)");
+    TestRunner.addResult("Number of names (" + originGroupNameSize + ") == number of unique names (" + deduplicatedNames.size + "): " + (originGroupNameSize == deduplicatedNames.size) + " (expected: true)");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

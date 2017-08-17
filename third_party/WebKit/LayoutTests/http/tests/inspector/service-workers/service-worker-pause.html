@@ -10,18 +10,18 @@ function test()
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-debugger.js";
     var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope-debugger/";
 
-    InspectorTest.startDebuggerTest(start);
+    SourcesTestRunner.startDebuggerTest(start);
 
     function start()
     {
-        InspectorTest.waitUntilPaused(onPaused);
-        InspectorTest.registerServiceWorker(scriptURL, scope);
+        SourcesTestRunner.waitUntilPaused(onPaused);
+        ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
     }
 
     function onPaused(frames, reason, breakpointIds, async)
     {
-        InspectorTest.captureStackTrace(frames, async);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.captureStackTrace(frames, async);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

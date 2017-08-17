@@ -14,15 +14,15 @@ function test() {
     };
     var sourceMapURL = "data:application/json;base64," + btoa(JSON.stringify(sourceMap));
     var scriptSource = "\n//# sourceMappingURL=" + sourceMapURL + "\n";
-    InspectorTest.evaluateInPage(scriptSource);
-    InspectorTest.debuggerModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onSourceMap);
+    TestRunner.evaluateInPage(scriptSource);
+    TestRunner.debuggerModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onSourceMap);
 
     function onSourceMap(event) {
         var sourceMap = event.data.sourceMap;
-        InspectorTest.addResult('SourceMap Loaded:');
-        InspectorTest.addResult('url: ' + sourceMap.url());
-        InspectorTest.addResult('compiledURL: ' + sourceMap.compiledURL());
-        InspectorTest.completeTest();
+        TestRunner.addResult('SourceMap Loaded:');
+        TestRunner.addResult('url: ' + sourceMap.url());
+        TestRunner.addResult('compiledURL: ' + sourceMap.compiledURL());
+        TestRunner.completeTest();
     }
 }
 

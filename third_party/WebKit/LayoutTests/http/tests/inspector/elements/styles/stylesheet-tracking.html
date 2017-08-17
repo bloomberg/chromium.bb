@@ -69,33 +69,33 @@ function test()
 {
     var inspectedNode;
 
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
-    var headers = InspectorTest.cssModel.styleSheetHeaders();
-    InspectorTest.addResult(headers.length + " headers known:");
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
+    var headers = TestRunner.cssModel.styleSheetHeaders();
+    TestRunner.addResult(headers.length + " headers known:");
     sortAndDumpData(headers);
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step0);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step0);
 
     function step0(node)
     {
         inspectedNode = node;
-        InspectorTest.addResult("=== Adding iframe... ===");
-        InspectorTest.evaluateInPage("loadIframe()");
+        TestRunner.addResult("=== Adding iframe... ===");
+        TestRunner.evaluateInPage("loadIframe()");
         waitStyleSheetAdded(1, iframeAdded);
 
         function iframeAdded()
         {
-            InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+            TestRunner.addResult("=== Adding iframe stylesheet... ===");
             waitStyleSheetAdded(2, navigateIframe);
-            InspectorTest.evaluateInPage("addIframeStyleSheets()");
+            TestRunner.evaluateInPage("addIframeStyleSheets()");
         }
 
         function navigateIframe()
         {
-            InspectorTest.addResult("=== Navigating iframe... ===");
+            TestRunner.addResult("=== Navigating iframe... ===");
             waitStyleSheetRemoved(3, frameNavigated);
-            InspectorTest.evaluateInPage("navigateIframe()");
+            TestRunner.evaluateInPage("navigateIframe()");
             
             function frameNavigated()
             {
@@ -104,64 +104,64 @@ function test()
 
             function styleSheetsAdded()
             {
-                InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+                TestRunner.addResult("=== Adding iframe stylesheet... ===");
                 waitStyleSheetAdded(2, removeIframeStyleSheets);
-                InspectorTest.evaluateInPage("addIframeStyleSheets()");
+                TestRunner.evaluateInPage("addIframeStyleSheets()");
             }
         }
 
         function removeIframeStyleSheets()
         {
-            InspectorTest.addResult("=== Removing iframe stylesheet... ===");
+            TestRunner.addResult("=== Removing iframe stylesheet... ===");
             waitStyleSheetRemoved(2, step1)
-            InspectorTest.evaluateInPage("removeIframeStyleSheets()");
+            TestRunner.evaluateInPage("removeIframeStyleSheets()");
         }
     }
 
     function step1()
     {
-        InspectorTest.addResult("=== Adding stylesheet... ===");
+        TestRunner.addResult("=== Adding stylesheet... ===");
         waitStyleSheetAdded(4, step2);
-        InspectorTest.evaluateInPage("addStyleSheet()");
+        TestRunner.evaluateInPage("addStyleSheet()");
     }
 
     function step2()
     {
-        InspectorTest.addResult("=== Removing @import... ===");
+        TestRunner.addResult("=== Removing @import... ===");
         waitStyleSheetRemoved(3, step3);
-        InspectorTest.evaluateInPage("removeImport()");
+        TestRunner.evaluateInPage("removeImport()");
     }
 
     function step3()
     {
-        InspectorTest.addResult("=== Removing stylesheet... ===");
+        TestRunner.addResult("=== Removing stylesheet... ===");
         waitStyleSheetRemoved(1, step4);
-        InspectorTest.evaluateInPage("removeStyleSheet()");
+        TestRunner.evaluateInPage("removeStyleSheet()");
     }
 
     function step4()
     {
-        InspectorTest.addResult("=== Adding rule... ===");
+        TestRunner.addResult("=== Adding rule... ===");
         waitStyleSheetAdded(1);
-        InspectorTest.addNewRule("#inspected", successCallback);
+        ElementsTestRunner.addNewRule("#inspected", successCallback);
 
         function successCallback()
         {
-            InspectorTest.addResult("Rule added");
+            TestRunner.addResult("Rule added");
             step5();
         }
     }
 
     function step5()
     {
-        InspectorTest.addResult("=== Removing iframe... ===");
-        InspectorTest.evaluateInPage("removeIframe()");
+        TestRunner.addResult("=== Removing iframe... ===");
+        TestRunner.evaluateInPage("removeIframe()");
         waitStyleSheetRemoved(1, step6);
     }
 
     function step6()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     var addedCallback;
@@ -182,9 +182,9 @@ function test()
         if (addedSheetCount > 0)
             return;
         else if (addedSheetCount < 0)
-            InspectorTest.addResult("Unexpected styleSheetAdded()");
+            TestRunner.addResult("Unexpected styleSheetAdded()");
 
-        InspectorTest.addResult("Stylesheets added:");
+        TestRunner.addResult("Stylesheets added:");
         sortAndDumpData(addedSheets);
         addedSheets = [];
         if (addedCallback) {
@@ -212,9 +212,9 @@ function test()
         if (removedSheetCount > 0)
             return;
         else if (removedSheetCount < 0)
-            InspectorTest.addResult("Unexpected styleSheetRemoved()");
+            TestRunner.addResult("Unexpected styleSheetRemoved()");
 
-        InspectorTest.addResult("Stylesheets removed:");
+        TestRunner.addResult("Stylesheets removed:");
         sortAndDumpData(removedSheets);
         removedSheets = [];
         if (removedCallback) {
@@ -233,10 +233,10 @@ function test()
         sheets = sheets.sort(sorter);
         for (var i = 0; i < sheets.length; ++i) {
             var header = sheets[i];
-            InspectorTest.addResult("    URL=" + trimURL(header.sourceURL));
-            InspectorTest.addResult("    origin=" + header.origin);
-            InspectorTest.addResult("    isInline=" + header.isInline);
-            InspectorTest.addResult("    hasSourceURL=" + header.hasSourceURL);
+            TestRunner.addResult("    URL=" + trimURL(header.sourceURL));
+            TestRunner.addResult("    origin=" + header.origin);
+            TestRunner.addResult("    isInline=" + header.isInline);
+            TestRunner.addResult("    hasSourceURL=" + header.hasSourceURL);
         }
     }
 

@@ -7,7 +7,7 @@ function test()
 {
     function createNetworkRequestWithJSONMIMEType(type)
     {
-        InspectorTest.addResult("Creating a NetworkRequest with type: " + type);
+        TestRunner.addResult("Creating a NetworkRequest with type: " + type);
         var request = new SDK.NetworkRequest(0, 'http://localhost');
         request.mimeType = type;
         request._contentData = Promise.resolve({ error: null, content: '{"number": 42}', encoded: false });
@@ -19,8 +19,8 @@ function test()
         var previewView = new Network.RequestPreviewView(request, null);
         previewView.wasShown();
         var previewer = await previewView._contentViewPromise;
-        InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
-        InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof SourceFrame.JSONView));
+        TestRunner.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
+        TestRunner.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof SourceFrame.JSONView));
     }
 
     function testType(contentType, callback)
@@ -28,7 +28,7 @@ function test()
         var request = createNetworkRequestWithJSONMIMEType(contentType);
         testPreviewer(request).then(callback);
     }
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function test1(next)
         {
             testType("application/json", next);

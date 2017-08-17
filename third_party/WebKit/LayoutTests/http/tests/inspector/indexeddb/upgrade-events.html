@@ -5,8 +5,8 @@
 <script>
 function test()
 {
-    var indexedDBModel = InspectorTest.createIndexedDBModel();
-    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+    var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
     var securityOrigin = "http://127.0.0.1:8000";
     var databaseName = "testDatabase - " + self.location;
     var objectStoreName = "testObjectStore";
@@ -16,7 +16,7 @@ function test()
         var old = console.error;
         console.error = function(message) {
             console.error = old;
-            InspectorTest.addResult(message);
+            TestRunner.addResult(message);
             callback();
         };
     }
@@ -36,7 +36,7 @@ function test()
             var id = i < 10 ? "0" + i : i;
             var key = "key_" + id;
             var value = "value_" + id;
-            InspectorTest.addIDBValue(mainFrameId, databaseName, objectStoreName, { key: key, value: value }, "", addValues);
+            ApplicationTestRunner.addIDBValue(mainFrameId, databaseName, objectStoreName, { key: key, value: value }, "", addValues);
         }
     }
 
@@ -50,21 +50,21 @@ function test()
         }
     }
 
-    InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
+    TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
 
     function fillDatabase()
     {
-        InspectorTest.addResult('Preparing database');
-        InspectorTest.deleteDatabase(mainFrameId, databaseName, step2);
+        TestRunner.addResult('Preparing database');
+        ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, step2);
 
         function step2()
         {
-            InspectorTest.createDatabase(mainFrameId, databaseName, step3);
+            ApplicationTestRunner.createDatabase(mainFrameId, databaseName, step3);
         }
 
         function step3()
         {
-            InspectorTest.createObjectStore(mainFrameId, databaseName, objectStoreName, "key", true, step4);
+            ApplicationTestRunner.createObjectStore(mainFrameId, databaseName, objectStoreName, "key", true, step4);
         }
 
         function step4()
@@ -74,65 +74,65 @@ function test()
 
         function step5()
         {
-            InspectorTest.addResult('Verifying that database was created');
+            TestRunner.addResult('Verifying that database was created');
             checkDatabaseDoesExist(loadValuesAndDeleteDatabase);
         }
     }
 
     function loadValuesAndDeleteDatabase()
     {
-        InspectorTest.addResult('Loading values');
+        TestRunner.addResult('Loading values');
         loadValues(0, 2, step2);
 
         function step2()
         {
-            InspectorTest.addResult('Deleting database');
-            InspectorTest.deleteDatabase(mainFrameId, databaseName, step3);
+            TestRunner.addResult('Deleting database');
+            ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, step3);
         }
 
         function step3()
         {
             // ... but access the database again. This will implicitly attempt to recreate it,
             // which should be aborted during the "upgradeneeded" event.
-            InspectorTest.addResult('Loading values again (which should fail)');
-            loadValues(0, 2, function() { InspectorTest.addResult("Unexpected callback"); });
+            TestRunner.addResult('Loading values again (which should fail)');
+            loadValues(0, 2, function() { TestRunner.addResult("Unexpected callback"); });
             onConsoleError(step4);
         }
 
         function step4()
         {
-            InspectorTest.addResult('Verifying that database was not recreated');
+            TestRunner.addResult('Verifying that database was not recreated');
             checkDatabaseDoesNotExist(step5);
         }
 
         function step5()
         {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         }
     }
 
     function checkDatabaseDoesExist(callback)
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
         indexedDBModel.refreshDatabaseNames();
 
         function step2()
         {
             var names = indexedDBModel._databaseNamesBySecurityOrigin[securityOrigin];
-            InspectorTest.assertGreaterOrEqual(0, names.indexOf(databaseName), "Database should exist");
+            TestRunner.assertGreaterOrEqual(0, names.indexOf(databaseName), "Database should exist");
             callback();
         }
     }
 
     function checkDatabaseDoesNotExist(callback)
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
         indexedDBModel.refreshDatabaseNames();
 
         function step2()
         {
             var names = indexedDBModel._databaseNamesBySecurityOrigin[securityOrigin];
-            InspectorTest.assertEquals(-1, names.indexOf(databaseName), "Database should not exist");
+            TestRunner.assertEquals(-1, names.indexOf(databaseName), "Database should not exist");
             callback();
         }
     }

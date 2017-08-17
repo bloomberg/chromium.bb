@@ -8,26 +8,26 @@ function test()
 {
     var offset;
 
-    InspectorTest.recordNetwork();
-    offset = InspectorTest.networkRequests().length;
-    InspectorTest.makeSimpleXHR("PUT", "resources/redirect.cgi?status=301&ttl=3", true, step2);
+    NetworkTestRunner.recordNetwork();
+    offset = NetworkTestRunner.networkRequests().length;
+    NetworkTestRunner.makeSimpleXHR("PUT", "resources/redirect.cgi?status=301&ttl=3", true, step2);
 
     function step2()
     {
-        InspectorTest.networkRequests()[offset].requestContent().then(step3);
+        NetworkTestRunner.networkRequests()[offset].requestContent().then(step3);
     }
 
     function step3() {
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             var requestMethod = request.requestMethod;
             var actualMethod = request.responseHeaderValue("request-method");
-            InspectorTest.addResult(requestMethod + " " + request.url());
-            InspectorTest.addResult("  actual http method was: " + actualMethod);
-            InspectorTest.addResult("");
+            TestRunner.addResult(requestMethod + " " + request.url());
+            TestRunner.addResult("  actual http method was: " + actualMethod);
+            TestRunner.addResult("");
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

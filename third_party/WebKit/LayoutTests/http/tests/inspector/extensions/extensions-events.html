@@ -11,7 +11,7 @@ function initialize_extensionsSidebarTest()
     InspectorTest.expandSidebar = function(callback)
     {
         var sidebar = InspectorTest._extensionSidebar();
-        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
+        TestRunner.deprecatedRunAfterPendingDispatches(function() {
             sidebar.revealView();
             callback();
         });
@@ -67,7 +67,7 @@ function extension_testOnNavigated(nextTest)
         if (loadCount !== urls.length)
             return;
         if (loadCount === 1)
-            evaluateOnFrontend("InspectorTest.navigate(InspectorTest.mainTarget.inspectedURL().substring(0, InspectorTest.mainTarget.inspectedURL().indexOf('?')), reply)", onLoad);
+            evaluateOnFrontend("TestRunner.navigate(TestRunner.mainTarget.inspectedURL().substring(0, TestRunner.mainTarget.inspectedURL().indexOf('?')), reply)", onLoad);
         else {
             webInspector.network.onNavigated.removeListener(onNavigated);
             for (var i = 0; i < urls.length; ++i)
@@ -81,7 +81,7 @@ function extension_testOnNavigated(nextTest)
         processEvent();
     }
     webInspector.network.onNavigated.addListener(onNavigated);
-    evaluateOnFrontend("InspectorTest.navigate(InspectorTest.mainTarget.inspectedURL() + '?navigated', reply)", onLoad);
+    evaluateOnFrontend("TestRunner.navigate(TestRunner.mainTarget.inspectedURL() + '?navigated', reply)", onLoad);
 }
 
 function extension_testViewShowHide(nextTest)

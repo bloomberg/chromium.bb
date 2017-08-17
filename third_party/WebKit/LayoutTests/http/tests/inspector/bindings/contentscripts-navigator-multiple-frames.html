@@ -9,26 +9,26 @@ async function test()
     var contentScriptsNavigator = new Sources.ContentScriptsNavigatorView();
     contentScriptsNavigator.show(UI.inspectorView.element);
 
-    InspectorTest.markStep('initialWorkspace');
-    InspectorTest.dumpNavigatorView(contentScriptsNavigator, false);
+    TestRunner.markStep('initialWorkspace');
+    SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
-    InspectorTest.markStep('attachFrame1');
-    await InspectorTest.attachFrame('frame1', './resources/contentscript-frame.html', '_test_attachFrame1.js'),
-    InspectorTest.dumpNavigatorView(contentScriptsNavigator, false);
+    TestRunner.markStep('attachFrame1');
+    await BindingsTestRunner.attachFrame('frame1', './resources/contentscript-frame.html', '_test_attachFrame1.js'),
+    SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
-    InspectorTest.markStep('attachFrame2');
-    await InspectorTest.attachFrame('frame2', './resources/contentscript-frame.html', '_test_attachFrame2.js'),
-    InspectorTest.dumpNavigatorView(contentScriptsNavigator, false);
+    TestRunner.markStep('attachFrame2');
+    await BindingsTestRunner.attachFrame('frame2', './resources/contentscript-frame.html', '_test_attachFrame2.js'),
+    SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
-    InspectorTest.markStep('detachFrame1');
-    await InspectorTest.detachFrame('frame1', '_test_detachFrame1.js');
-    InspectorTest.dumpNavigatorView(contentScriptsNavigator, false);
+    TestRunner.markStep('detachFrame1');
+    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
+    SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
-    InspectorTest.markStep('detachFrame2');
-    await InspectorTest.detachFrame('frame2', '_test_detachFrame2.js');
-    InspectorTest.dumpNavigatorView(contentScriptsNavigator, false);
+    TestRunner.markStep('detachFrame2');
+    await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
+    SourcesTestRunner.dumpNavigatorView(contentScriptsNavigator, false);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

@@ -5,15 +5,15 @@
 <script>
 var test = function()
 {
-    InspectorTest.reloadPage(step1);
+    TestRunner.reloadPage(step1);
 
     function step1()
     {
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         for (var i = 0; i < requests.length; ++i)
-            InspectorTest.assertTrue(requests[i].responseHeaderValue("Set-Cookie") === undefined);
-        InspectorTest.addResult("Success, no Set-Cookie headers found.");
-        InspectorTest.completeTest();
+            TestRunner.assertTrue(requests[i].responseHeaderValue("Set-Cookie") === undefined);
+        TestRunner.addResult("Success, no Set-Cookie headers found.");
+        TestRunner.completeTest();
     }
 }
 </script>

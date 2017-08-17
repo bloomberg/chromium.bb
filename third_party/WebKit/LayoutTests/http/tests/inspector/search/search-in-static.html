@@ -6,7 +6,7 @@
 <script>
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["search.js"], step2);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["search.js"], step2);
     var resource;
     var staticContentProvider;
 
@@ -19,25 +19,25 @@ function test()
     async function step3()
     {
         staticContentProvider = Common.StaticContentProvider.fromString("", Common.resourceTypes.Script, resource.content);
-        InspectorTest.addResult(resource.url);
+        TestRunner.addResult(resource.url);
 
         var text = "searchTestUniqueString";
         var searchMatches = await staticContentProvider.searchInContent(text, true, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "searchTestUniqueString";
         searchMatches = await staticContentProvider.searchInContent(text, true, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await staticContentProvider.searchInContent(text, false, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await staticContentProvider.searchInContent(text, true, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -5,24 +5,24 @@
 <script>
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.makeXHR("GET", "resources/resource.php", true, undefined, undefined, [], false, undefined, 'blob', step2);
+    NetworkTestRunner.recordNetwork();
+    NetworkTestRunner.makeXHR("GET", "resources/resource.php", true, undefined, undefined, [], false, undefined, 'blob', step2);
 
     function step2()
     {
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.url());
-        InspectorTest.addResult("resource.type: " + request1.resourceType());
-        InspectorTest.addResult("resource.size: " + request1.resourceSize);
-        InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
+        var request1 = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request1.url());
+        TestRunner.addResult("resource.type: " + request1.resourceType());
+        TestRunner.addResult("resource.size: " + request1.resourceSize);
+        TestRunner.assertTrue(!request1.failed, "Resource loading failed.");
         request1.requestContent().then(step3);
     }
 
     function step3(content)
     {
-        InspectorTest.addResult("resource.content after requesting content: " + content);
+        TestRunner.addResult("resource.content after requesting content: " + content);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

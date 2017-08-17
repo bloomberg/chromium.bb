@@ -56,11 +56,11 @@ function test() {
             headersText = event.data.responseHeadersText;
             firstLine = headersText ? headersText.split('\r\n')[0] : headersText;
             console.log('responseHeadersText (first line): ' + firstLine);
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         }
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
-    InspectorTest.evaluateInPage('sendMessages()');
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
+    TestRunner.evaluateInPage('sendMessages()');
 }
 </script>
 </head>

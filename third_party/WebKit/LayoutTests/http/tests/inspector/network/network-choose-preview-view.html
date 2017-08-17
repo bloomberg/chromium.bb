@@ -7,9 +7,9 @@ async function test()
 {
     function createNetworkRequest(mimeType, content, statusCode)
     {
-        InspectorTest.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
+        TestRunner.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
         var request = new SDK.NetworkRequest(0, 'http://localhost');
-        InspectorTest.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
+        TestRunner.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
         request.mimeType = mimeType;
         request._contentData = Promise.resolve({error: null, content: content, encoded: false});
         if (statusCode !== undefined)
@@ -31,37 +31,37 @@ async function test()
         var request = createNetworkRequest(contentType, content, statusCode);
         var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
         previewView.wasShown();
-        InspectorTest.addResult("Its previewer type: " + getViewName(await previewView._contentViewPromise));
+        TestRunner.addResult("Its previewer type: " + getViewName(await previewView._contentViewPromise));
     }
 
-    InspectorTest.addResult("Simple JSON");
+    TestRunner.addResult("Simple JSON");
     await testPreviewer("application/json", "[533,3223]", 200);
 
-    InspectorTest.addResult("MIME JSON");
+    TestRunner.addResult("MIME JSON");
     await testPreviewer("application/vnd.document+json", "{foo0foo: 123}", 200);
 
-    InspectorTest.addResult("Simple XML");
+    TestRunner.addResult("Simple XML");
     await testPreviewer("text/xml", "<bar><foo/></bar>", 200);
 
-    InspectorTest.addResult("XML MIME But JSON");
+    TestRunner.addResult("XML MIME But JSON");
     await testPreviewer("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", 200);
 
-    InspectorTest.addResult("XML With Unknown MIME");
+    TestRunner.addResult("XML With Unknown MIME");
     await testPreviewer("text/foobar", "<bar><foo/></bar>", 200);
 
-    InspectorTest.addResult("XML With Error 500");
+    TestRunner.addResult("XML With Error 500");
     await testPreviewer("text/xml", "<bar><foo/></bar>", 500);
 
-    InspectorTest.addResult("Unknown MIME Text With Error 500");
+    TestRunner.addResult("Unknown MIME Text With Error 500");
     await testPreviewer("text/foobar", "Foo Bar", 500);
 
-    InspectorTest.addResult("Binary Image File");
+    TestRunner.addResult("Binary Image File");
     await testPreviewer("image/png", "Bin\0ary\1 File\0\0", 200);
 
-    InspectorTest.addResult("Binary Blank Image File");
+    TestRunner.addResult("Binary Blank Image File");
     await testPreviewer("image/png", "", 200);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

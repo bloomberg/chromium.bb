@@ -10,9 +10,9 @@ async function test()
 {
 
     function createIndexedDB(callback) {
-        var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
-        var model = InspectorTest.mainTarget.model(Resources.IndexedDBModel);
-        InspectorTest.createDatabase(mainFrameId, 'Database1', () => {
+        var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
+        var model = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+        ApplicationTestRunner.createDatabase(mainFrameId, 'Database1', () => {
             var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
                 Common.EventTarget.removeEventListeners([event]);
                 callback();
@@ -24,31 +24,31 @@ async function test()
     function dump(node, prefix)
     {
         for (var child of node.children()) {
-            InspectorTest.addResult(prefix + child.listItemElement.textContent);
+            TestRunner.addResult(prefix + child.listItemElement.textContent);
             dump(child, prefix + '  ');
         }
     }
 
     function dumpCurrentState(label) {
         var view = UI.panels.resources;
-        InspectorTest.addResult(label);
+        TestRunner.addResult(label);
         dump(view._sidebar._sidebarTree.rootElement(), '');
-        InspectorTest.addResult('Visible view is a query view: ' + (view.visibleView instanceof Resources.DatabaseQueryView));
+        TestRunner.addResult('Visible view is a query view: ' + (view.visibleView instanceof Resources.DatabaseQueryView));
     }
 
     function fireFrameNavigated() {
-        var rtm = InspectorTest.resourceTreeModel;
+        var rtm = TestRunner.resourceTreeModel;
         rtm.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, rtm.mainFrame);
     }
 
     await new Promise(createIndexedDB);
-    await InspectorTest.createWebSQLDatabase('database-for-test');
+    await ApplicationTestRunner.createWebSQLDatabase('database-for-test');
     UI.viewManager.showView('resources');
     UI.panels.resources._sidebar.databasesListTreeElement.firstChild().select(false, true);
     dumpCurrentState('Initial state:');
-    await InspectorTest.navigatePromise('http://127.0.0.1:8000/inspector/application-panel/resources-panel-on-navigation.html');
+    await TestRunner.navigatePromise('http://127.0.0.1:8000/inspector/application-panel/resources-panel-on-navigation.html');
     dumpCurrentState('After navigation:');
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

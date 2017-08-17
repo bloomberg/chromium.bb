@@ -16,7 +16,7 @@ function extension_testReloadInjectsCode(nextTest)
     {
         webInspector.inspectedWindow.eval("window.bar", function(value) {
             valueWithInjectedCode = value;
-            evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithoutInjectedCodeLoaded);
+            evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onPageWithoutInjectedCodeLoaded);
             webInspector.inspectedWindow.reload();
         });
     }
@@ -28,7 +28,7 @@ function extension_testReloadInjectsCode(nextTest)
             nextTest();
         });
     }
-    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
+    evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
     webInspector.inspectedWindow.reload({
         injectedScript: "window.foo = 42;"
     });
@@ -52,7 +52,7 @@ function initialize_testReloadInjectsCodeWithMessage()
     }
     InspectorTest.getScriptSource = async function(scriptId, callback)
     {
-        var source = await InspectorTest.DebuggerAgent.getScriptSource(scriptId);
+        var source = await TestRunner.DebuggerAgent.getScriptSource(scriptId);
         callback(source);
     }
 }
@@ -80,7 +80,7 @@ function extension_testReloadInjectsCodeWithMessage(nextTest)
         }
     }
 
-    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
+    evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
     webInspector.inspectedWindow.reload({
         injectedScript: "console.log(42)"
     });

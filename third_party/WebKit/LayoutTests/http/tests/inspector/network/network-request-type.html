@@ -25,14 +25,14 @@ function test() {
     {
         requestName = "empty.html?xhr";
         nextStep = step2;
-        InspectorTest.evaluateInPage("sendXHRRequest()");
+        TestRunner.evaluateInPage("sendXHRRequest()");
     }
 
     function step2()
     {
         requestName = "empty.html?iframe";
-        nextStep = InspectorTest.completeTest;
-        InspectorTest.evaluateInPage("createIFrame()");
+        nextStep = TestRunner.completeTest;
+        TestRunner.evaluateInPage("createIFrame()");
     }
 
     function onRequest(event)
@@ -41,17 +41,17 @@ function test() {
         if (request.name() !== requestName)
             return;
         requestName = undefined;
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Request: " + request.name());
-        InspectorTest.addResult("Type: " + request.resourceType().name());
+        TestRunner.addResult("");
+        TestRunner.addResult("Request: " + request.name());
+        TestRunner.addResult("Type: " + request.resourceType().name());
         nextStep();
     }
 
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
 
     var requestName = "empty-script.js";
     var nextStep = step1;
-    InspectorTest.evaluateInPage("sendScriptRequest()");
+    TestRunner.evaluateInPage("sendScriptRequest()");
 }
 </script>
 </head>

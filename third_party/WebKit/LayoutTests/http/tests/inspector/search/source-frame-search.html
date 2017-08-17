@@ -16,7 +16,7 @@ function test()
             modifiers.push("caseSensitive");
         var modifiersString = modifiers.length ?  " (" + modifiers.join(", ") + ")" : "";
 
-        InspectorTest.addResult("Running search test for query = " + searchConfig.query + modifiersString + ":");
+        TestRunner.addResult("Running search test for query = " + searchConfig.query + modifiersString + ":");
         sourceFrame.performSearch(searchConfig, false, false);
 
         var searchResults = sourceFrame._searchResults;
@@ -27,16 +27,16 @@ function test()
             var prefix = sourceFrame._textEditor.text(prefixRange);
             var result = sourceFrame._textEditor.text(range);
             var postfix = sourceFrame._textEditor.text(postfixRange);
-            InspectorTest.addResult("  - " + prefix + "<" + result + ">" + postfix);
+            TestRunner.addResult("  - " + prefix + "<" + result + ">" + postfix);
         }
     }
 
     UI.viewManager.showView("sources");
-    InspectorTest.showScriptSource("search.js", didShowScriptSource);
+    SourcesTestRunner.showScriptSource("search.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)
     {
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testSearch(next)
             {
                 var query = "searchTestUniqueString";

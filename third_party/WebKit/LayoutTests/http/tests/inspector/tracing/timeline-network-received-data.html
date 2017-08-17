@@ -22,18 +22,18 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", done);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", done);
 
     function done()
     {
-        InspectorTest.addResult("Script evaluated.");
-        var event = InspectorTest.findTimelineEvent("ResourceReceivedData");
+        TestRunner.addResult("Script evaluated.");
+        var event = PerformanceTestRunner.findTimelineEvent("ResourceReceivedData");
         if (event) {
             var data = event.args["data"];
             if (data && typeof data.encodedDataLength === "number")
-                InspectorTest.addResult("Resource received data has length, test passed.");
+                TestRunner.addResult("Resource received data has length, test passed.");
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

@@ -14,12 +14,12 @@ function test()
 
     function testLoadForURL(url, headers, next)
     {
-        InspectorTest.addResult("Loading resource from " + url);
+        TestRunner.addResult("Loading resource from " + url);
         Host.ResourceLoader.load(url, headers, callback);
 
         function callback(statusCode, headers, content)
         {
-            InspectorTest.addResult("Success: " + statusCode);
+            TestRunner.addResult("Success: " + statusCode);
             var headersArray = [];
             for (var name in headers) {
                 var nameLower = name.toLowerCase();
@@ -27,14 +27,14 @@ function test()
                     headersArray.push(nameLower);
             }
             headersArray.sort();
-            InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
-            InspectorTest.addResult("Content: \"" + content + "\"");
+            TestRunner.addResult("Logged headers: " + headersArray.join(", "));
+            TestRunner.addResult("Content: \"" + content + "\"");
 
-            InspectorTest.deprecatedRunAfterPendingDispatches(next);
+            TestRunner.deprecatedRunAfterPendingDispatches(next);
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testNetworkResourceNonCached(next)
         {
             testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", undefined, next);
@@ -57,7 +57,7 @@ function test()
 
         function testResourceWithCookie(next)
         {
-            InspectorTest.makeSimpleXHR("GET", "http://127.0.0.1:8000/inspector/network/resources/set-cookie.php", false, callback)
+            NetworkTestRunner.makeSimpleXHR("GET", "http://127.0.0.1:8000/inspector/network/resources/set-cookie.php", false, callback)
 
             function callback()
             {

@@ -6,17 +6,17 @@
 
 async function test()
 {
-    await InspectorTest.clearNetworkCache();
+    await NetworkTestRunner.clearNetworkCache();
 
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
 
-    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, () => {
+    NetworkTestRunner.makeFetch("resources/style.css", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("resources/abe.png", {}, () => {
       // Ensures result is cached.
-      InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+      NetworkTestRunner.makeFetch("resources/abe.png", {}, ensureAllResources);
       ensureAllResources();
     });
-    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("missing/foo.bar", {}, ensureAllResources);
 
     var filterChecks = [
         "-.css",
@@ -45,7 +45,7 @@ async function test()
     function checkFilters()
     {
         for (var filterText of filterChecks) {
-            InspectorTest.addResult("filterText: " + filterText);
+            TestRunner.addResult("filterText: " + filterText);
             setNetworkLogFilter(filterText);
 
             var nodes = UI.panels.network._networkLogView.flatNodesList();
@@ -55,10 +55,10 @@ async function test()
                     foundNodesCount++;
             }
 
-            InspectorTest.addResult("Found results: " + foundNodesCount);
-            InspectorTest.addResult("");
+            TestRunner.addResult("Found results: " + foundNodesCount);
+            TestRunner.addResult("");
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     /**

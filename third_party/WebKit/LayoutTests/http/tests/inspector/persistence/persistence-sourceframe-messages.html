@@ -9,21 +9,21 @@
 
 function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    BindingsTestRunner.addFooJSFile(fs);
     var networkSourceCode;
     var fileSystemSourceCode;
     var fileSystemSourceFrame, networkSourceFrame;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function waitForUISourceCodes(next)
         {
             fs.reportCreated(function() { });
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
                     .then(sourceCode => fileSystemSourceCode = sourceCode),
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
                     .then(sourceCode => networkSourceCode = sourceCode),
             ]).then(next);
         },
@@ -34,16 +34,16 @@ function test()
             networkSourceCode.addLineMessage(Workspace.UISourceCode.Message.Level.Warning, 'warning in network', 1, 0);
 
             Promise.all([
-                InspectorTest.showUISourceCodePromise(fileSystemSourceCode),
-                InspectorTest.showUISourceCodePromise(networkSourceCode)
+                SourcesTestRunner.showUISourceCodePromise(fileSystemSourceCode),
+                SourcesTestRunner.showUISourceCodePromise(networkSourceCode)
             ]).then(onSourceFrames);
 
             function onSourceFrames(sourceFrames)
             {
                 fileSystemSourceFrame = sourceFrames[0];
                 networkSourceFrame = sourceFrames[1];
-                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
-                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
                 next();
             }
         },
@@ -51,12 +51,12 @@ function test()
         function addMapping(next)
         {
             testMapping.addBinding("foo.js");
-            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
 
             function onBindingCreated(binding)
             {
-                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
-                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
                 next();
             }
         },
@@ -72,8 +72,8 @@ function test()
                 if (binding.network.name() !== "foo.js")
                     return
                 Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
-                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                SourcesTestRunner.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
                 next();
             }
         },

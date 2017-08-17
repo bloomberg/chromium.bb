@@ -34,7 +34,7 @@ This test verifies that imported document is rendered within the import link.
           <script src="../inspector-test.js"></script>
           <script src="../elements-test.js"></script>
         - <script>
-              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        InspectorTest.expandElementsTree(callback);\n    });\n\n    function callback()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n\n}\n
+              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        ElementsTestRunner.expandElementsTree(callback);\n    });\n\n    function callback()\n    {\n        ElementsTestRunner.dumpElementsTree();\n        TestRunner.completeTest();\n    }\n\n}\n
           </script>
       </head>
     - <body onload="runTest()">

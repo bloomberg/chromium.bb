@@ -9,29 +9,29 @@ import {x} from "./resources/empty-module.js";
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        InspectorTest.waitUntilPaused(step2);
-        InspectorTest.reloadPage();
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        SourcesTestRunner.waitUntilPaused(step2);
+        TestRunner.reloadPage();
     }
 
     function step2()
     {
-        var callFrames = InspectorTest.debuggerModel.callFrames;
+        var callFrames = TestRunner.debuggerModel.callFrames;
         var frame = callFrames[0];
         var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-        InspectorTest.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
+        SourcesTestRunner.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
 
         function dumpCallFrameLine(sourceFrame)
         {
             var resourceText = sourceFrame._textEditor.text();
             var lines = resourceText.split("\n");
             var lineNumber = uiLocation.lineNumber;
-            InspectorTest.addResult("line " + lineNumber + ", content: " + lines[lineNumber]);
-            InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("line " + lineNumber + ", content: " + lines[lineNumber]);
+            SourcesTestRunner.completeDebuggerTest();
         }
     }
 }

@@ -9,21 +9,21 @@
 
 function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
     fs.reportCreated(function() { });
     testMapping.addBinding("foo.js");
-    InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+    BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
 
     function onBindingCreated(binding)
     {
-        InspectorTest.addResult("Binding created: " + binding);
+        TestRunner.addResult("Binding created: " + binding);
         dumpEditorTabs("Opened tabs before opening any UISourceCodes:");
-        InspectorTest.addResult("request open uiSourceCode: " + binding.fileSystem.url());
+        TestRunner.addResult("request open uiSourceCode: " + binding.fileSystem.url());
         UI.panels.sources.showUISourceCode(binding.network, 0, 0);
         dumpEditorTabs("Opened tabs after opening UISourceCode:");
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function dumpEditorTabs(title)
@@ -31,9 +31,9 @@ function test()
         var editorContainer = UI.panels.sources._sourcesView._editorContainer;
         var openedUISourceCodes = editorContainer._tabIds.keysArray();
         openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
-        InspectorTest.addResult(title);
+        TestRunner.addResult(title);
         for (code of openedUISourceCodes)
-            InspectorTest.addResult("    " + code.url());
+            TestRunner.addResult("    " + code.url());
     }
 };
 </script>
