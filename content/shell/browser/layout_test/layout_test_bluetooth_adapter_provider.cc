@@ -316,8 +316,8 @@ LayoutTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
       .WillRepeatedly(
           RunCallbackWithResult<1 /* success_callback */>([adapter_ptr]() {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::Bind(&NotifyDevicesAdded,
-                                      base::RetainedRef(adapter_ptr)));
+                FROM_HERE, base::BindOnce(&NotifyDevicesAdded,
+                                          base::RetainedRef(adapter_ptr)));
 
             return GetDiscoverySession();
           }));
@@ -354,8 +354,8 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
       .WillByDefault(
           RunCallbackWithResult<1 /* success_callback */>([adapter_ptr]() {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::Bind(&NotifyDevicesAdded,
-                                      base::RetainedRef(adapter_ptr)));
+                FROM_HERE, base::BindOnce(&NotifyDevicesAdded,
+                                          base::RetainedRef(adapter_ptr)));
 
             return GetDiscoverySession();
           }));
@@ -406,8 +406,8 @@ LayoutTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
             // device, shortly after the session starts.
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::Bind(&AddDevice, make_scoped_refptr(adapter_ptr),
-                           base::Passed(GetHeartRateDevice(adapter_ptr))));
+                base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                               base::Passed(GetHeartRateDevice(adapter_ptr))));
             return GetDiscoverySession();
           }));
 
@@ -464,23 +464,23 @@ LayoutTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
 
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::Bind(&AddDevice, make_scoped_refptr(adapter_ptr),
-                             base::Passed(&glucose_device)));
+                  base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                                 base::Passed(&glucose_device)));
 
               // Add uuid and notify of device changed.
               changing_battery_ptr->AddUUID(BluetoothUUID(kBatteryServiceUUID));
               base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE, base::Bind(&NotifyDeviceChanged,
-                                        base::RetainedRef(adapter_ptr),
-                                        changing_battery_ptr));
+                  FROM_HERE, base::BindOnce(&NotifyDeviceChanged,
+                                            base::RetainedRef(adapter_ptr),
+                                            changing_battery_ptr));
 
               // Add uuid and notify of services discovered.
               discovery_generic_access_ptr->AddUUID(
                   BluetoothUUID(kGenericAccessServiceUUID));
               base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE, base::Bind(&NotifyServicesDiscovered,
-                                        base::RetainedRef(adapter_ptr),
-                                        discovery_generic_access_ptr));
+                  FROM_HERE, base::BindOnce(&NotifyServicesDiscovered,
+                                            base::RetainedRef(adapter_ptr),
+                                            discovery_generic_access_ptr));
             }
             return GetDiscoverySession();
           }));
@@ -515,21 +515,20 @@ LayoutTestBluetoothAdapterProvider::GetDevicesRemovedAdapter() {
 
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::Bind(&AddDevice, make_scoped_refptr(adapter_ptr),
-                             base::Passed(&glucose_device)));
+                  base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                                 base::Passed(&glucose_device)));
 
               // Post task to remove ConnectedHeartRateDevice.
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::Bind(&RemoveDevice, make_scoped_refptr(adapter_ptr),
-                             connected_hr_address));
+                  base::BindOnce(&RemoveDevice, make_scoped_refptr(adapter_ptr),
+                                 connected_hr_address));
 
               // Post task to remove NewGlucoseDevice.
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::Bind(&RemoveDevice, make_scoped_refptr(adapter_ptr),
-                             glucose_address));
-
+                  base::BindOnce(&RemoveDevice, make_scoped_refptr(adapter_ptr),
+                                 glucose_address));
             }
             return GetDiscoverySession();
           }));
@@ -594,8 +593,8 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
           device_ptr->AddMockService(std::move(heart_rate));
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyServicesDiscovered,
-                         base::RetainedRef(adapter_ptr), device_ptr));
+              base::BindOnce(&NotifyServicesDiscovered,
+                             base::RetainedRef(adapter_ptr), device_ptr));
 
           DCHECK(services.size() == 0);
           return false;
@@ -872,8 +871,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
             if (services.size() != 0) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::Bind(&NotifyServicesDiscovered,
-                             base::RetainedRef(adapter_ptr), device_ptr));
+                  base::BindOnce(&NotifyServicesDiscovered,
+                                 base::RetainedRef(adapter_ptr), device_ptr));
             }
 
             device_ptr->SetConnected(true);
@@ -902,8 +901,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
             device_ptr->SetConnected(false);
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                           device_ptr));
+                base::BindOnce(&NotifyDeviceChanged,
+                               base::RetainedRef(adapter_ptr), device_ptr));
           }
           DCHECK(services.size() == 0);
           return false;
@@ -973,8 +972,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                         device_ptr));
+              base::BindOnce(&NotifyDeviceChanged,
+                             base::RetainedRef(adapter_ptr), device_ptr));
         }
       }));
 
@@ -995,8 +994,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                         device_ptr));
+              base::BindOnce(&NotifyDeviceChanged,
+                             base::RetainedRef(adapter_ptr), device_ptr));
         }
       }));
 
@@ -1020,8 +1019,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                         device_ptr));
+              base::BindOnce(&NotifyDeviceChanged,
+                             base::RetainedRef(adapter_ptr), device_ptr));
         }
       }));
 
@@ -1048,8 +1047,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                         device_ptr));
+              base::BindOnce(&NotifyDeviceChanged,
+                             base::RetainedRef(adapter_ptr), device_ptr));
         }
       }));
 
@@ -1069,8 +1068,8 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
-                         device_ptr));
+              base::BindOnce(&NotifyDeviceChanged,
+                             base::RetainedRef(adapter_ptr), device_ptr));
         }
       }));
 
@@ -1135,8 +1134,9 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
                     device_ptr->SetConnected(false);
                     base::ThreadTaskRunnerHandle::Get()->PostTask(
                         FROM_HERE,
-                        base::Bind(&NotifyDeviceChanged,
-                                   base::RetainedRef(adapter_ptr), device_ptr));
+                        base::BindOnce(&NotifyDeviceChanged,
+                                       base::RetainedRef(adapter_ptr),
+                                       device_ptr));
                   }
                 }));
             return notify_session;

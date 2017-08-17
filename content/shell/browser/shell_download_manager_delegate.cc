@@ -88,10 +88,10 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
-      base::Bind(&ShellDownloadManagerDelegate::GenerateFilename,
-                 download->GetURL(), download->GetContentDisposition(),
-                 download->GetSuggestedFilename(), download->GetMimeType(),
-                 default_download_path_, filename_determined_callback));
+      base::BindOnce(&ShellDownloadManagerDelegate::GenerateFilename,
+                     download->GetURL(), download->GetContentDisposition(),
+                     download->GetSuggestedFilename(), download->GetMimeType(),
+                     default_download_path_, filename_determined_callback));
   return true;
 }
 
@@ -126,8 +126,8 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     base::CreateDirectory(suggested_directory);
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, suggested_path));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, suggested_path));
 }
 
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(

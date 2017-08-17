@@ -90,9 +90,9 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ShellDevToolsBindings::CallClientFunction, devtools_bindings_,
-                 "DevToolsAPI.streamWrite", base::Owned(id),
-                 base::Owned(chunkValue), nullptr));
+      base::BindOnce(&ShellDevToolsBindings::CallClientFunction,
+                     devtools_bindings_, "DevToolsAPI.streamWrite",
+                     base::Owned(id), base::Owned(chunkValue), nullptr));
   return num_bytes;
 }
 

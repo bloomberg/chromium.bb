@@ -25,14 +25,11 @@ ShellAccessTokenStore::~ShellAccessTokenStore() {
 void ShellAccessTokenStore::LoadAccessTokens(
     const LoadAccessTokensCallback& callback) {
   BrowserThread::PostTaskAndReply(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ShellAccessTokenStore::GetRequestContextOnUIThread,
-                 this,
-                 shell_browser_context_),
-      base::Bind(&ShellAccessTokenStore::RespondOnOriginatingThread,
-                 this,
-                 callback));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ShellAccessTokenStore::GetRequestContextOnUIThread, this,
+                     shell_browser_context_),
+      base::BindOnce(&ShellAccessTokenStore::RespondOnOriginatingThread, this,
+                     callback));
 }
 
 void ShellAccessTokenStore::GetRequestContextOnUIThread(

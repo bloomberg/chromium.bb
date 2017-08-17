@@ -33,8 +33,8 @@ void TestMediaStreamVideoRenderer::Start() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kStarted;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&TestMediaStreamVideoRenderer::GenerateFrame,
-                            this));
+      FROM_HERE,
+      base::BindOnce(&TestMediaStreamVideoRenderer::GenerateFrame, this));
 }
 
 void TestMediaStreamVideoRenderer::Stop() {
@@ -71,12 +71,14 @@ void TestMediaStreamVideoRenderer::GenerateFrame() {
 
     // TODO(wjia): set pixel data to pre-defined patterns if it's desired to
     // verify frame content.
-    io_task_runner_->PostTask(FROM_HERE, base::Bind(repaint_cb_, video_frame));
+    io_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(repaint_cb_, video_frame));
   }
 
   current_time_ += frame_duration_;
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&TestMediaStreamVideoRenderer::GenerateFrame, this),
+      FROM_HERE,
+      base::BindOnce(&TestMediaStreamVideoRenderer::GenerateFrame, this),
       frame_duration_);
 }
 
