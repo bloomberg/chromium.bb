@@ -1392,6 +1392,10 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
     EXPECT_EQ(1 + i, test_socket_performance_watcher_factory_.watcher_count());
+
+    NetErrorDetails details;
+    trans.PopulateNetErrorDetails(&details);
+    EXPECT_EQ(QUIC_PACKET_READ_ERROR, details.quic_connection_error);
   }
 }
 
