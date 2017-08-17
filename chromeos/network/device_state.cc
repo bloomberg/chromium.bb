@@ -79,8 +79,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
     }
     if (dict->GetWithoutPathExpansion(shill::kSIMLockRetriesLeftProperty,
                                       &out_value)) {
-      GetUInt32Value(shill::kSIMLockRetriesLeftProperty, *out_value,
-                     &sim_retries_left_);
+      GetIntegerValue(shill::kSIMLockRetriesLeftProperty, *out_value,
+                      &sim_retries_left_);
     }
     return true;
   } else if (key == shill::kMeidProperty) {
