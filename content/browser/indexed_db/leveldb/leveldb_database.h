@@ -93,6 +93,8 @@ class CONTENT_EXPORT LevelDBDatabase
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  leveldb::DB* db() { return db_.get(); }
+
  protected:
   explicit LevelDBDatabase(size_t max_open_iterators);
 

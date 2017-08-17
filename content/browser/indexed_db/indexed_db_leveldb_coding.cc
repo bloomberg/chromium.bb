@@ -1783,15 +1783,20 @@ IndexDataKey::IndexDataKey()
       index_id_(-1),
       sequence_number_(-1) {}
 
+IndexDataKey::IndexDataKey(IndexDataKey&& other) = default;
+
 IndexDataKey::~IndexDataKey() {}
 
 bool IndexDataKey::Decode(StringPiece* slice, IndexDataKey* result) {
   KeyPrefix prefix;
   if (!KeyPrefix::Decode(slice, &prefix))
     return false;
-  DCHECK(prefix.database_id_);
-  DCHECK(prefix.object_store_id_);
-  DCHECK_GE(prefix.index_id_, kMinimumIndexId);
+  if (prefix.database_id_ <= 0)
+    return false;
+  if (prefix.object_store_id_ <= 0)
+    return false;
+  if (prefix.index_id_ < kMinimumIndexId)
+    return false;
   result->database_id_ = prefix.database_id_;
   result->object_store_id_ = prefix.object_store_id_;
   result->index_id_ = prefix.index_id_;
@@ -1868,6 +1873,11 @@ std::string IndexDataKey::EncodeMaxKey(int64_t database_id,
                                        int64_t index_id) {
   return Encode(database_id, object_store_id, index_id, MaxIDBKey(),
                 MaxIDBKey(), std::numeric_limits<int64_t>::max());
+}
+
+std::string IndexDataKey::Encode() const {
+  return Encode(database_id_, object_store_id_, index_id_, encoded_user_key_,
+                encoded_primary_key_, sequence_number_);
 }
 
 int64_t IndexDataKey::DatabaseId() const {

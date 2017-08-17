@@ -27,6 +27,12 @@ IndexedDBIndexMetadata::~IndexedDBIndexMetadata() = default;
 IndexedDBIndexMetadata& IndexedDBIndexMetadata::operator=(
     const IndexedDBIndexMetadata& other) = default;
 
+bool IndexedDBIndexMetadata::operator==(
+    const IndexedDBIndexMetadata& other) const {
+  return name == other.name && id == other.id && key_path == other.key_path &&
+         unique == other.unique && multi_entry == other.multi_entry;
+}
+
 IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
     const base::string16& name,
     int64_t id,
@@ -49,6 +55,13 @@ IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() = default;
 IndexedDBObjectStoreMetadata& IndexedDBObjectStoreMetadata::operator=(
     const IndexedDBObjectStoreMetadata& other) = default;
 
+bool IndexedDBObjectStoreMetadata::operator==(
+    const IndexedDBObjectStoreMetadata& other) const {
+  return name == other.name && id == other.id && key_path == other.key_path &&
+         auto_increment == other.auto_increment &&
+         max_index_id == other.max_index_id && indexes == other.indexes;
+}
+
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata() : version(NO_VERSION) {}
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
@@ -68,5 +81,12 @@ IndexedDBDatabaseMetadata::~IndexedDBDatabaseMetadata() = default;
 
 IndexedDBDatabaseMetadata& IndexedDBDatabaseMetadata::operator=(
     const IndexedDBDatabaseMetadata& other) = default;
+
+bool IndexedDBDatabaseMetadata::operator==(
+    const IndexedDBDatabaseMetadata& other) const {
+  return name == other.name && id == other.id && version == other.version &&
+         max_object_store_id == other.max_object_store_id &&
+         object_stores == other.object_stores;
+}
 
 }  // namespace content

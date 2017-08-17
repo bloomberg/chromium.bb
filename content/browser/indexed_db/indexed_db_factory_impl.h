@@ -122,7 +122,10 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   leveldb::Status AbortTransactions(const url::Origin& origin);
 
   // Called internally after a database is closed, with some delay. If this
-  // factory has the last reference, it will be released.
+  // factory has the last reference it will start running pre-close tasks.
+  void MaybeStartPreCloseTasks(const url::Origin& origin);
+  // Called internally after pre-close tasks. If this factory has the last
+  // reference it will be released.
   void MaybeCloseBackingStore(const url::Origin& origin);
   bool HasLastBackingStoreReference(const url::Origin& origin) const;
 

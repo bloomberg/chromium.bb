@@ -965,6 +965,37 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
   }
 }
 
+TEST(IndexedDBLevelDBCodingTest, IndexDataKeyEncodeDecode) {
+  std::vector<std::string> keys;
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MinIDBKey(), 0));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MinIDBKey(), 1));
+  keys.push_back(
+      IndexDataKey::Encode(1, 1, 30, IndexedDBKey(ASCIIToUTF16("user key")),
+                           IndexedDBKey(ASCIIToUTF16("primary key"))));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MaxIDBKey(), 0));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MinIDBKey(), MaxIDBKey(), 1));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MaxIDBKey(), MinIDBKey(), 0));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MaxIDBKey(), MinIDBKey(), 1));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MaxIDBKey(), MaxIDBKey(), 0));
+  keys.push_back(IndexDataKey::Encode(1, 1, 30, MaxIDBKey(), MaxIDBKey(), 1));
+  keys.push_back(IndexDataKey::Encode(1, 1, 31, MinIDBKey(), MinIDBKey(), 0));
+  keys.push_back(IndexDataKey::Encode(1, 2, 30, MinIDBKey(), MinIDBKey(), 0));
+  keys.push_back(IndexDataKey::EncodeMaxKey(
+      1, 2, std::numeric_limits<int32_t>::max() - 1));
+
+  std::vector<IndexDataKey> obj_keys;
+  for (const std::string& key : keys) {
+    base::StringPiece piece(key);
+    IndexDataKey obj_key;
+    EXPECT_TRUE(IndexDataKey::Decode(&piece, &obj_key));
+    obj_keys.push_back(std::move(obj_key));
+  }
+
+  for (size_t i = 0; i < keys.size(); ++i) {
+    EXPECT_EQ(keys[i], obj_keys[i].Encode()) << "key at " << i;
+  }
+}
+
 TEST(IndexedDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest) {
   std::vector<unsigned char> test_cases;
   test_cases.push_back(0);
