@@ -777,8 +777,8 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       const int nb_col = col - sig_ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
-      if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-            nb_col < txb_info->stride))
+      if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
+          nb_col >= txb_info->stride)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -799,8 +799,8 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       const int nb_col = col - base_ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
-      if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-            nb_col < txb_info->stride))
+      if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
+          nb_col >= txb_info->stride)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
@@ -821,8 +821,8 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       const int nb_col = col - br_ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
-      if (!(nb_row >= 0 && nb_col >= 0 && nb_row < txb_info->height &&
-            nb_col < txb_info->stride))
+      if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
+          nb_col >= txb_info->stride)
         continue;
 
       const int nb_scan_idx = iscan[nb_coeff_idx];
