@@ -43,7 +43,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
-#include "core/editing/SetSelectionData.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/commands/CreateLinkCommand.h"
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/commands/FormatBlockCommand.h"
@@ -411,7 +411,7 @@ static bool ExpandSelectionToGranularity(LocalFrame& frame,
     return false;
   frame.Selection().SetSelection(
       SelectionInDOMTree::Builder().SetBaseAndExtent(new_range).Build(),
-      SetSelectionData::Builder().SetShouldCloseTyping(true).Build());
+      SetSelectionOptions::Builder().SetShouldCloseTyping(true).Build());
   return true;
 }
 
@@ -818,7 +818,7 @@ static bool ExecuteDeleteToMark(LocalFrame& frame,
             .SetBaseAndExtent(
                 UnionEphemeralRanges(mark, frame.GetEditor().SelectedRange()))
             .Build(),
-        SetSelectionData::Builder().SetShouldCloseTyping(true).Build());
+        SetSelectionOptions::Builder().SetShouldCloseTyping(true).Build());
   }
   frame.GetEditor().PerformDelete();
   frame.GetEditor().SetMark(
@@ -1245,7 +1245,7 @@ bool ModifySelectionyWithPageGranularity(
 
   frame.Selection().SetSelection(
       selection_modifier.Selection().AsSelection(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetSetSelectionBy(SetSelectionBy::kUser)
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
@@ -1857,7 +1857,7 @@ static bool ExecuteSelectToMark(LocalFrame& frame,
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(UnionEphemeralRanges(mark, selection))
           .Build(),
-      SetSelectionData::Builder().SetShouldCloseTyping(true).Build());
+      SetSelectionOptions::Builder().SetShouldCloseTyping(true).Build());
   return true;
 }
 

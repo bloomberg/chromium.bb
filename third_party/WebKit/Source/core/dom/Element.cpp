@@ -78,7 +78,7 @@
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SetSelectionData.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/EventDispatcher.h"
@@ -2855,7 +2855,7 @@ void Element::UpdateFocusAppearance(
         SelectionInDOMTree::Builder()
             .Collapse(FirstPositionInOrBeforeNode(this))
             .Build(),
-        SetSelectionData::Builder()
+        SetSelectionOptions::Builder()
             .SetShouldCloseTyping(true)
             .SetShouldClearTypingStyle(true)
             .SetDoNotSetFocus(true)

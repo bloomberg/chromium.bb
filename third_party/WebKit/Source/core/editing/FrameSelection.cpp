@@ -173,7 +173,7 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
   builder.SetIsDirectional(GetSelectionInDOMTree().IsDirectional());
   if (position.IsNotNull())
     builder.Collapse(position.ToPositionWithAffinity());
-  SetSelection(builder.Build(), SetSelectionData::Builder()
+  SetSelection(builder.Build(), SetSelectionOptions::Builder()
                                     .SetShouldCloseTyping(true)
                                     .SetShouldClearTypingStyle(true)
                                     .SetSetSelectionBy(SetSelectionBy::kUser)
@@ -182,13 +182,13 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
 }
 
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
-                                  const SetSelectionData& data) {
+                                  const SetSelectionOptions& data) {
   if (SetSelectionDeprecated(selection, data))
     DidSetSelectionDeprecated(data);
 }
 
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection) {
-  SetSelection(selection, SetSelectionData::Builder()
+  SetSelection(selection, SetSelectionOptions::Builder()
                               .SetShouldCloseTyping(true)
                               .SetShouldClearTypingStyle(true)
                               .Build());
@@ -196,7 +196,7 @@ void FrameSelection::SetSelection(const SelectionInDOMTree& selection) {
 
 bool FrameSelection::SetSelectionDeprecated(
     const SelectionInDOMTree& passed_selection,
-    const SetSelectionData& options) {
+    const SetSelectionOptions& options) {
   DCHECK(IsAvailable());
   passed_selection.AssertValidFor(GetDocument());
 
@@ -241,7 +241,7 @@ bool FrameSelection::SetSelectionDeprecated(
 }
 
 void FrameSelection::DidSetSelectionDeprecated(
-    const SetSelectionData& options) {
+    const SetSelectionOptions& options) {
   const Document& current_document = GetDocument();
   if (!GetSelectionInDOMTree().IsNone() && !options.DoNotSetFocus()) {
     SetFocusedNodeIfNeeded();
@@ -373,7 +373,7 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
   }
 
   SetSelection(selection_modifier.Selection().AsSelection(),
-               SetSelectionData::Builder()
+               SetSelectionOptions::Builder()
                    .SetShouldCloseTyping(true)
                    .SetShouldClearTypingStyle(true)
                    .SetSetSelectionBy(set_selection_by)
@@ -694,7 +694,7 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
 
   // TODO(editing-dev): Should we pass in set_selection_by?
   SetSelection(SelectionInDOMTree::Builder().SelectAllChildren(*root).Build(),
-               SetSelectionData::Builder()
+               SetSelectionOptions::Builder()
                    .SetShouldCloseTyping(true)
                    .SetShouldClearTypingStyle(true)
                    .SetShouldShowHandle(IsHandleVisible())
@@ -1052,7 +1052,7 @@ bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
                        .Collapse(start.ToPositionWithAffinity())
                        .Extend(end.DeepEquivalent())
                        .Build(),
-                   SetSelectionData::Builder()
+                   SetSelectionOptions::Builder()
                        .SetShouldCloseTyping(true)
                        .SetShouldClearTypingStyle(true)
                        .SetGranularity(TextGranularity::kWord)
@@ -1093,7 +1093,7 @@ void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
       SelectionInDOMTree::Builder(
           GetGranularityStrategy()->UpdateExtent(contents_point, frame_))
           .Build(),
-      SetSelectionData::Builder()
+      SetSelectionOptions::Builder()
           .SetShouldCloseTyping(true)
           .SetShouldClearTypingStyle(true)
           .SetDoNotClearStrategy(true)
@@ -1132,7 +1132,7 @@ void FrameSelection::MoveRangeSelection(const VisiblePosition& base_position,
                              visible_selection.Start());
   }
   builder.SetAffinity(visible_selection.Affinity());
-  SetSelection(builder.Build(), SetSelectionData::Builder()
+  SetSelection(builder.Build(), SetSelectionOptions::Builder()
                                     .SetShouldCloseTyping(true)
                                     .SetShouldClearTypingStyle(true)
                                     .SetGranularity(granularity)

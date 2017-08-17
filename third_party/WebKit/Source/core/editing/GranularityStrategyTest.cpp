@@ -727,7 +727,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
           .SetIsDirectional(true)
           .Build();
   Selection().SetSelection(selection_in_dom_tree,
-                           SetSelectionData::Builder()
+                           SetSelectionOptions::Builder()
                                .SetShouldCloseTyping(true)
                                .SetShouldClearTypingStyle(true)
                                .SetShouldShowHandle(true)
@@ -763,7 +763,7 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
           .SetIsDirectional(true)
           .Build();
   Selection().SetSelection(selection_in_dom_tree,
-                           SetSelectionData::Builder()
+                           SetSelectionOptions::Builder()
                                .SetShouldCloseTyping(true)
                                .SetShouldClearTypingStyle(true)
                                .SetShouldShowHandle(true)
