@@ -42,6 +42,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       search_result_->RemoveObserver(this);
   }
 
+  bool selected() const { return selected_; }
+
   void SetSelected(bool selected) {
     if (selected == selected_)
       return;
@@ -51,7 +53,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       ScrollRectToVisible(GetLocalBounds());
   }
 
-  void SetSearchResult(SearchResult* search_result) {
+  bool SetSearchResult(SearchResult* search_result) {
     views::View* const old_result_view = child_count() ? child_at(0) : nullptr;
     views::View* const new_result_view =
         search_result ? search_result->view() : nullptr;
@@ -63,13 +65,19 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
         AddChildView(new_result_view);
     }
 
-    if (search_result_)
+    base::string16 old_title, new_title;
+    if (search_result_) {
       search_result_->RemoveObserver(this);
+      old_title = search_result_->title();
+    }
     search_result_ = search_result;
     if (search_result_) {
       search_result_->AddObserver(this);
-      SetAccessibleName(search_result_->title());
+      new_title = search_result_->title();
+      SetAccessibleName(new_title);
     }
+
+    return old_title != new_title;
   }
 
   // views::Button overrides:
@@ -156,11 +164,13 @@ int SearchResultAnswerCardView::DoUpdate() {
   const bool have_result =
       !display_results.empty() && !features::IsAnswerCardDarkRunEnabled();
 
-  search_answer_container_view_->SetSearchResult(
+  const bool title_changed = search_answer_container_view_->SetSearchResult(
       have_result ? display_results[0] : nullptr);
   parent()->SetVisible(have_result);
 
   set_container_score(have_result ? display_results.front()->relevance() : 0);
+  if (title_changed && search_answer_container_view_->selected())
+    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   return have_result ? 1 : 0;
 }
 
