@@ -95,7 +95,7 @@ interface CoreProbes {
   void didReceiveData(ExecutionContext*, unsigned long identifier, DocumentLoader*, const char* data, int dataLength);
   void didReceiveEncodedDataLength(ExecutionContext*, unsigned long identifier, int encodedDataLength);
   void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
-  void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+  void didReceiveCORSRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didFailLoading(ExecutionContext*, unsigned long identifier, const ResourceError&);
   void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
   void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
@@ -158,7 +158,7 @@ interface CoreProbes {
   ParseHTML(Document* document, HTMLDocumentParser* parser);
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
   void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
-  void shouldForceCORSPreflight(Document*, bool* result);
+  void shouldForceCORSPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);
 }

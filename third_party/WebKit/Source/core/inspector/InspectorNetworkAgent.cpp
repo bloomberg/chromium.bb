@@ -861,7 +861,6 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
 }
 
 void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
-    LocalFrame* frame,
     unsigned long identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,

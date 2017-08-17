@@ -5,6 +5,6 @@ http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker.j
 resource.type: other
 request.failed: false
 http://127.0.0.1:8000/inspector/network/resources/resource.php
-resource.type: other
+resource.type: fetch
 request.failed: false
 
