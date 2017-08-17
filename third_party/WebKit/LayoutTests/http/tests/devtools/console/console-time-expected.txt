@@ -1,7 +1,7 @@
 console.time / console.timeEnd tests.
 
-console-time.html:12 default: <time>
-console-time.html:14 42: <time>
-console-time.html:16 239: <time>
-console-time.html:18 [object Object]: <time>
+console-time.js:16 default: <time>
+console-time.js:18 42: <time>
+console-time.js:20 239: <time>
+console-time.js:22 [object Object]: <time>
 

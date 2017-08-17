@@ -1,61 +1,55 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function log()
-{
-    // Fill console.
-    console.log("one");
-    console.log("two");
-    console.log("three");
-}
+(async function() {
+  TestRunner.addResult(`Tests that console is cleared via console.clear() method\n`);
 
-function clearConsoleFromPage()
-{
-    console.clear();
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.loadHTML(`
+    <a href="https://bugs.webkit.org/show_bug.cgi?id=101021">Bug 101021</a>
+  `);
+  await TestRunner.evaluateInPagePromise(`
+    function log()
+    {
+      // Fill console.
+      console.log("one");
+      console.log("two");
+      console.log("three");
+    }
 
-async function test()
-{
-    InspectorTest.runTestSuite([
-        async function clearFromConsoleAPI(next) {
-            await InspectorTest.RuntimeAgent.evaluate("log();");
-            InspectorTest.addResult("=== Before clear ===");
-            InspectorTest.dumpConsoleMessages();
+    function clearConsoleFromPage()
+    {
+      console.clear();
+    }
+  `);
 
-            await InspectorTest.RuntimeAgent.evaluate("clearConsoleFromPage();");
+  TestRunner.runTestSuite([
+    async function clearFromConsoleAPI(next) {
+      await TestRunner.RuntimeAgent.evaluate('log();');
+      TestRunner.addResult('=== Before clear ===');
+      ConsoleTestRunner.dumpConsoleMessages();
 
-            InspectorTest.addResult("=== After clear ===");
-            InspectorTest.dumpConsoleMessages();
-            next();
-        },
+      await TestRunner.RuntimeAgent.evaluate('clearConsoleFromPage();');
 
-        async function shouldNotClearWithPreserveLog(next) {
-            await InspectorTest.RuntimeAgent.evaluate("log();");
-            InspectorTest.addResult("=== Before clear ===");
-            InspectorTest.dumpConsoleMessages();
-            Common.moduleSetting("preserveConsoleLog").set(true);
+      TestRunner.addResult('=== After clear ===');
+      ConsoleTestRunner.dumpConsoleMessages();
+      next();
+    },
 
-            await InspectorTest.RuntimeAgent.evaluate("clearConsoleFromPage();");
+    async function shouldNotClearWithPreserveLog(next) {
+      await TestRunner.RuntimeAgent.evaluate('log();');
+      TestRunner.addResult('=== Before clear ===');
+      ConsoleTestRunner.dumpConsoleMessages();
+      Common.moduleSetting('preserveConsoleLog').set(true);
 
-            InspectorTest.addResult("=== After clear ===");
-            InspectorTest.dumpConsoleMessages();
-            Common.moduleSetting("preserveConsoleLog").set(false);
-            next();
-        }
-    ]);
-}
+      await TestRunner.RuntimeAgent.evaluate('clearConsoleFromPage();');
 
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that console is cleared via console.clear() method
-</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=101021">Bug 101021</a>
-
-</body>
-</html>
+      TestRunner.addResult('=== After clear ===');
+      ConsoleTestRunner.dumpConsoleMessages();
+      Common.moduleSetting('preserveConsoleLog').set(false);
+      next();
+    }
+  ]);
+})();

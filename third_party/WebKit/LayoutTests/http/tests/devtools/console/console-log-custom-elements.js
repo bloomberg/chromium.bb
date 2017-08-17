@@ -1,57 +1,51 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-function registerNonElement()
-{
-    var nonElementProto = {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that logging custom elements uses proper formatting.\n`);
+
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.loadHTML(`
+    <foo-bar></foo-bar>
+    <foo-bar2></foo-bar2>
+  `);
+  await TestRunner.evaluateInPagePromise(`
+    function registerNonElement()
+    {
+      var nonElementProto = {
         createdCallback: function()
         {
-            console.dir(this);
+          console.dir(this);
         }
-    };
-    var nonElementOptions = { prototype: nonElementProto };
-    document.registerElement("foo-bar", nonElementOptions);
-}
+      };
+      var nonElementOptions = { prototype: nonElementProto };
+      document.registerElement("foo-bar", nonElementOptions);
+    }
 
-function registerElement()
-{
-    var elementProto = Object.create(HTMLElement.prototype);
-    elementProto.createdCallback = function()
+    function registerElement()
     {
+      var elementProto = Object.create(HTMLElement.prototype);
+      elementProto.createdCallback = function()
+      {
         console.dir(this);
-    };
-    var elementOptions = { prototype: elementProto };
-    document.registerElement("foo-bar2", elementOptions);
-}
-
-function test()
-{
-    InspectorTest.waitUntilMessageReceived(step1);
-    InspectorTest.evaluateInPage("registerNonElement();");
-
-    function step1()
-    {
-        InspectorTest.waitUntilMessageReceived(step2);
-        InspectorTest.evaluateInPage("registerElement();");
+      };
+      var elementOptions = { prototype: elementProto };
+      document.registerElement("foo-bar2", elementOptions);
     }
+  `);
 
-    function step2()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
-}
-</script>
-</head>
+  ConsoleTestRunner.waitUntilMessageReceived(step1);
+  TestRunner.evaluateInPage('registerNonElement();');
 
-<body onload="runTest()">
-<foo-bar></foo-bar>
-<foo-bar2></foo-bar2>
-<p>
-Tests that logging custom elements uses proper formatting.
-</p>
+  function step1() {
+    ConsoleTestRunner.waitUntilMessageReceived(step2);
+    TestRunner.evaluateInPage('registerElement();');
+  }
 
-</body>
-</html>
+  function step2() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();

@@ -1,24 +1,11 @@
-CONSOLE MESSAGE: line 9: outer group
-CONSOLE MESSAGE: line 10: inner group
-CONSOLE MESSAGE: line 11: Message inside inner group
-CONSOLE MESSAGE: line 12: console.groupEnd
-CONSOLE MESSAGE: line 13: console.groupEnd
-CONSOLE MESSAGE: line 14: Message that must not be in any group
-CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
-CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
-CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
-CONSOLE MESSAGE: line 21: Message inside third group
-CONSOLE MESSAGE: line 23: console.groupEnd
-CONSOLE MESSAGE: line 23: console.groupEnd
-CONSOLE MESSAGE: line 23: console.groupEnd
 Tests that console.group/groupEnd messages won't be coalesced. Bug 56114. Bug 63521.
 
-console-nested-group.html:9 outer group console-message-wrapper console-info-level > console-message console-group-title
-console-nested-group.html:10 inner group console-message-wrapper console-info-level > console-message console-group-title
-console-nested-group.html:11 Message inside inner group console-message-wrapper console-info-level > console-message
-console-nested-group.html:14 Message that must not be in any group console-message-wrapper console-info-level > console-message
-console-nested-group.html:19 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
-console-nested-group.html:19 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
-console-nested-group.html:19 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
-console-nested-group.html:21 Message inside third group console-message-wrapper console-info-level > console-message
+console-nested-group.js:18 outer group console-message-wrapper console-info-level > console-message console-group-title
+console-nested-group.js:19 inner group console-message-wrapper console-info-level > console-message console-group-title
+console-nested-group.js:20 Message inside inner group console-message-wrapper console-info-level > console-message
+console-nested-group.js:23 Message that must not be in any group console-message-wrapper console-info-level > console-message
+console-nested-group.js:28 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
+console-nested-group.js:28 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
+console-nested-group.js:28 One of several groups which shouldn't be coalesced. console-message-wrapper console-info-level > console-message console-group-title
+console-nested-group.js:30 Message inside third group console-message-wrapper console-info-level > console-message
 

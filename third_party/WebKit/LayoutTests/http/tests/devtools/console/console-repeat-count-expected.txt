@@ -1,39 +1,29 @@
-CONSOLE MESSAGE: line 10: Message
-CONSOLE MESSAGE: line 10: Message
-CONSOLE MESSAGE: line 13: Error: Message with error
-CONSOLE MESSAGE: line 13: Error: Message with error
-CONSOLE ERROR: line 16: [object Object]
-CONSOLE ERROR: line 16: [object Object]
-CONSOLE ERROR: line 26: Uncaught Primitive value
-CONSOLE ERROR: line 26: Uncaught Primitive value
-CONSOLE ERROR: line 21: Uncaught [object Object]
-CONSOLE ERROR: line 21: Uncaught [object Object]
 Tests that repeat count is properly updated.
 
 Message count: 7
-2console-repeat-count.html:6 Message
-2console-repeat-count.html:9 Error: Message with error
-    at dumpMessages (console-repeat-count.html:9)
-    at <anonymous>:1:1
-console-repeat-count.html:12 {a: 1}
-dumpMessages @ console-repeat-count.html:12
-(anonymous) @ VM:1
-console-repeat-count.html:12 {a: 1}
-dumpMessages @ console-repeat-count.html:12
-(anonymous) @ VM:1
-2console-repeat-count.html:22 Uncaught Primitive value
-setTimeout @ console-repeat-count.html:22
+2console-repeat-count.js:15 Message
+2console-repeat-count.js:18 Error: Message with error
+    at dumpMessages (console-repeat-count.js:18)
+    at console-repeat-count.js:36
+console-repeat-count.js:21 {a: 1}
+dumpMessages @ console-repeat-count.js:21
+(anonymous) @ console-repeat-count.js:36
+console-repeat-count.js:21 {a: 1}
+dumpMessages @ console-repeat-count.js:21
+(anonymous) @ console-repeat-count.js:36
+2console-repeat-count.js:31 Uncaught Primitive value
+setTimeout @ console-repeat-count.js:31
 setTimeout (async)
-throwPrimitiveValues @ console-repeat-count.html:22
-(anonymous) @ VM:1
-console-repeat-count.html:17 Uncaught {a: 1}
-setTimeout @ console-repeat-count.html:17
+throwPrimitiveValues @ console-repeat-count.js:31
+(anonymous) @ console-repeat-count.js:37
+console-repeat-count.js:26 Uncaught {a: 1}
+setTimeout @ console-repeat-count.js:26
 setTimeout (async)
-throwObjects @ console-repeat-count.html:17
-(anonymous) @ VM:1
-console-repeat-count.html:17 Uncaught {a: 1}
-setTimeout @ console-repeat-count.html:17
+throwObjects @ console-repeat-count.js:26
+(anonymous) @ console-repeat-count.js:38
+console-repeat-count.js:26 Uncaught {a: 1}
+setTimeout @ console-repeat-count.js:26
 setTimeout (async)
-throwObjects @ console-repeat-count.html:17
-(anonymous) @ VM:1
+throwObjects @ console-repeat-count.js:26
+(anonymous) @ console-repeat-count.js:38
 

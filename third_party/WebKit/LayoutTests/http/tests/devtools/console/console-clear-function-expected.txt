@@ -1,31 +1,24 @@
-CONSOLE MESSAGE: line 10: one
-CONSOLE MESSAGE: line 11: two
-CONSOLE MESSAGE: line 12: three
-CONSOLE MESSAGE: line 10: one
-CONSOLE MESSAGE: line 11: two
-CONSOLE MESSAGE: line 12: three
 Tests that console is cleared via console.clear() method
 
-Bug 101021
 
 Running: clearFromConsoleAPI
 === Before clear ===
-console-clear-function.html:10 one
-console-clear-function.html:11 two
-console-clear-function.html:12 three
+console-clear-function.js:17 one
+console-clear-function.js:18 two
+console-clear-function.js:19 three
 === After clear ===
-console-clear-function.html:17 Console was cleared
+console-clear-function.js:24 Console was cleared
 
 Running: shouldNotClearWithPreserveLog
 === Before clear ===
-console-clear-function.html:17 Console was cleared
-console-clear-function.html:10 one
-console-clear-function.html:11 two
-console-clear-function.html:12 three
+console-clear-function.js:24 Console was cleared
+console-clear-function.js:17 one
+console-clear-function.js:18 two
+console-clear-function.js:19 three
 === After clear ===
-console-clear-function.html:17 Console was cleared
-console-clear-function.html:10 one
-console-clear-function.html:11 two
-console-clear-function.html:12 three
-console-clear-function.html:17 console.clear() was prevented due to 'Preserve log'
+console-clear-function.js:24 Console was cleared
+console-clear-function.js:17 one
+console-clear-function.js:18 two
+console-clear-function.js:19 three
+console-clear-function.js:24 console.clear() was prevented due to 'Preserve log'
 

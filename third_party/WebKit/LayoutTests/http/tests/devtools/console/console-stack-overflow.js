@@ -1,43 +1,38 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-// Both the call and the function entry may trigger stack overflow.
-// Intentionally keep both on the same line to avoid flaky test failures.
-function overflow() { overflow(); }
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function doOverflow()
-{
-    setTimeout(overflow, 0);
-}
+(async function() {
+  TestRunner.addResult(
+    `Tests that when stack overflow exception happens when inspector is open the stack trace is correctly shown in console.\n`
+  );
 
-function test()
-{
-    InspectorTest.evaluateInPage("doOverflow()", step2.bind(this));
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    // Both the call and the function entry may trigger stack overflow.
+    // Intentionally keep both on the same line to avoid flaky test failures.
+    function overflow() { overflow(); }
 
-    function step2()
+    function doOverflow()
     {
-        if (Console.ConsoleView.instance()._visibleViewMessages.length < 1)
-            InspectorTest.addConsoleSniffer(step2);
-        else
-            step3();
+      setTimeout(overflow, 0);
     }
+  `);
 
-    function step3()
-    {
-        InspectorTest.expandConsoleMessages(onExpanded);
-    }
+  TestRunner.evaluateInPage('doOverflow()', step2.bind(this));
 
-    function onExpanded()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that when stack overflow exception happens when inspector is open the stack trace is correctly shown in console.</p>
-</body>
-</html>
+  function step2() {
+    if (Console.ConsoleView.instance()._visibleViewMessages.length < 1) ConsoleTestRunner.addConsoleSniffer(step2);
+    else step3();
+  }
+
+  function step3() {
+    ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
+
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();

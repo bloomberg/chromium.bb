@@ -1,49 +1,45 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-var foo = function ()
-{
-    throw new Error();
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-foo.displayName = 'foo.displayName';
-Object.defineProperty(foo, 'name', { value: 'foo.function.name' } );
+(async function() {
+  TestRunner.addResult(`Tests exception message contains stack with correct function name.\n`);
 
-var bar = function()
-{
-    foo();
-}
-
-bar.displayName = 'bar.displayName';
-
-var baz = function()
-{
-    bar();
-}
-
-Object.defineProperty(baz, 'name', { value: 'baz.function.name' } );
-
-function test()
-{
-    InspectorTest.waitUntilNthMessageReceived(1, step1);
-    InspectorTest.evaluateInPage("setTimeout(baz, 0);");
-
-    function step1()
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    var foo = function ()
     {
-        InspectorTest.expandConsoleMessages(step2);
+      throw new Error();
     }
 
-    function step2()
+    foo.displayName = 'foo.displayName';
+    Object.defineProperty(foo, 'name', { value: 'foo.function.name' } );
+
+    var bar = function()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+      foo();
     }
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests exception message contains stack with correct function name.</p>
-</body>
-</html>
+
+    bar.displayName = 'bar.displayName';
+
+    var baz = function()
+    {
+      bar();
+    }
+
+    Object.defineProperty(baz, 'name', { value: 'baz.function.name' } );
+  `);
+
+  ConsoleTestRunner.waitUntilNthMessageReceived(1, step1);
+  TestRunner.evaluateInPage('setTimeout(baz, 0);');
+
+  function step1() {
+    ConsoleTestRunner.expandConsoleMessages(step2);
+  }
+
+  function step2() {
+    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    TestRunner.completeTest();
+  }
+})();

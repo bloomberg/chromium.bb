@@ -1,9 +1,8 @@
-CONSOLE MESSAGE: line 9: console.trace
 Tests that console.trace dumps stack trace with source URLs and line numbers.
 
-console-trace.html:9 console.trace
-b @ console-trace.html:9
-a @ console-trace.html:14
+console-trace.js:13 console.trace
+b @ console-trace.js:13
+a @ console-trace.js:18
 setTimeout (async)
-(anonymous) @ VM:1
+(anonymous) @ console-trace.js:26
 

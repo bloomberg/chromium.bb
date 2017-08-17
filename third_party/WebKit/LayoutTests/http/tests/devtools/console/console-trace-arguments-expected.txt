@@ -1,8 +1,7 @@
-CONSOLE MESSAGE: line 9: 1
 Tests that console.trace dumps arguments alongside the stack trace.
 
-console-trace-arguments.html:9 1 2 3
-a @ console-trace-arguments.html:9
+console-trace-arguments.js:13 1 2 3
+a @ console-trace-arguments.js:13
 setTimeout (async)
-(anonymous) @ VM:1
+(anonymous) @ console-trace-arguments.js:21
 
