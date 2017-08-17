@@ -1007,8 +1007,6 @@ wet_configure_windowed_output_from_config(struct weston_output *output,
 		return -1;
 	}
 
-	weston_output_enable(output);
-
 	return 0;
 }
 
@@ -1152,6 +1150,8 @@ headless_backend_output_configure(struct wl_listener *listener, void *data)
 
 	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
 		weston_log("Cannot configure output \"%s\".\n", output->name);
+
+	weston_output_enable(output);
 }
 
 static int
@@ -1370,6 +1370,8 @@ x11_backend_output_configure(struct wl_listener *listener, void *data)
 
 	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
 		weston_log("Cannot configure output \"%s\".\n", output->name);
+
+	weston_output_enable(output);
 }
 
 static int
@@ -1486,6 +1488,8 @@ wayland_backend_output_configure(struct wl_listener *listener, void *data)
 
 	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
 		weston_log("Cannot configure output \"%s\".\n", output->name);
+
+	weston_output_enable(output);
 }
 
 static int
