@@ -2362,12 +2362,6 @@ const char kEnableAndroidWallpapersAppDescription[] =
     "Enables the Android Wallpapers App as the default Wallpaper App on Chrome "
     "OS.";
 
-const char kEnableTouchSupportForScreenMagnifierName[] =
-    "Touch support for screen magnifier";
-
-const char kEnableTouchSupportForScreenMagnifierDescription[] =
-    "Enables touch support for screen magnifier";
-
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";

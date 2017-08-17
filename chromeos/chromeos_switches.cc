@@ -314,10 +314,6 @@ const char kEnableTouchCalibrationSetting[] =
 const char kEnableTouchpadThreeFingerClick[] =
     "enable-touchpad-three-finger-click";
 
-// Enables touch support for screen magnifier.
-const char kEnableTouchSupportForScreenMagnifier[] =
-    "enable-touch-support-for-screen-magnifier";
-
 // Enables the chromecast support for video player app.
 const char kEnableVideoPlayerChromecastSupport[] =
     "enable-video-player-chromecast-support";
