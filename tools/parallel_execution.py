@@ -54,7 +54,7 @@ def trigger(swarming_server, isolate_server, task_name, isolated_hash, args):
       '--isolate-server', isolate_server,
       '--task-name', task_name,
       '--dump-json', jsonfile,
-      isolated_hash,
+      '-s', isolated_hash,
     ]
     returncode, out, duration = capture(cmd + args)
     with open(jsonfile) as f:

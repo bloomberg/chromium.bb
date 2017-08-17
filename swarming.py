@@ -242,7 +242,7 @@ def trigger_task_shards(swarming, task_request, shards):
       break
     logging.info('Request result: %s', task)
     if (not priority_warning and
-        task['request']['priority'] != task_request.priority):
+        int(task['request']['priority']) != task_request.priority):
       priority_warning = True
       print >> sys.stderr, (
           'Priority was reset to %s' % task['request']['priority'])

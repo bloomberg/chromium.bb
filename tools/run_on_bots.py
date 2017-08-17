@@ -11,8 +11,9 @@ on all the swarming bots corresponding to the --dimension filters specified, or
 all the bots if no filter is specified.
 """
 
-__version__ = '0.1'
+__version__ = '0.2'
 
+import json
 import os
 import tempfile
 import shutil
@@ -26,23 +27,33 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
 import parallel_execution
 
 from third_party import colorama
+from third_party.chromium import natsort
 from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import tools
 
 
-def get_bot_list(swarming_server, dimensions, dead_only):
-  """Returns a list of swarming bots."""
+def get_bot_list(swarming_server, dimensions):
+  """Returns a list of swarming bots: health, quarantined, dead."""
+  q = '&'.join(
+      'dimensions=%s:%s' % (k, v) for k, v in sorted(dimensions.iteritems()))
   cmd = [
-    sys.executable, 'swarming.py', 'bots',
+    sys.executable, 'swarming.py', 'query',
     '--swarming', swarming_server,
-    '--bare',
+    '--limit', '0',
+    'bots/list?' + q,
   ]
-  for k, v in sorted(dimensions.iteritems()):
-    cmd.extend(('--dimension', k, v))
-  if dead_only:
-    cmd.append('--dead-only')
-  return subprocess.check_output(cmd, cwd=ROOT_DIR).splitlines()
+  healthy = []
+  quarantined = []
+  dead = []
+  for b in json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))['items']:
+    if b['is_dead']:
+      dead.append(b['bot_id'])
+    elif b['quarantined']:
+      quarantined.append(b['bot_id'])
+    else:
+      healthy.append(b['bot_id'])
+  return natsort.natsorted(healthy), quarantined, dead
 
 
 def archive(isolate_server, script):
@@ -73,8 +84,8 @@ def archive(isolate_server, script):
 
 
 def run_serial(
-    swarming_server, isolate_server, priority, deadline, repeat, isolated_hash,
-    name, bots):
+    swarming_server, isolate_server, dimensions, priority, deadline, repeat,
+    isolated_hash, name, bots):
   """Runs the task one at a time.
 
   This will be mainly bound by task scheduling latency, especially if the bots
@@ -94,16 +105,18 @@ def run_serial(
         '--deadline', deadline,
         '--dimension', 'id', bot,
         '--task-name', task_name,
-        isolated_hash,
+        '-s', isolated_hash,
       ]
+      for k, v in sorted(dimensions.iteritems()):
+        cmd.extend(('-d', k, v))
       r = subprocess.call(cmd, cwd=ROOT_DIR)
       result = max(r, result)
   return result
 
 
 def run_parallel(
-    swarming_server, isolate_server, priority, deadline, repeat, isolated_hash,
-    name, bots):
+    swarming_server, isolate_server, dimensions, priority, deadline, repeat,
+    isolated_hash, name, bots):
   tasks = []
   for i in xrange(repeat):
     suffix = '/%d' % i if repeat > 1 else ''
@@ -115,6 +128,8 @@ def run_parallel(
           {'id': bot},
         ) for bot in bots)
   extra_args = ['--priority', priority, '--deadline', deadline]
+  for k, v in sorted(dimensions.iteritems()):
+    extra_args.extend(('-d', k, v))
   print('Using priority %s' % priority)
   for failed_task in parallel_execution.run_swarming_tasks_parallel(
       swarming_server, isolate_server, extra_args, tasks):
@@ -147,14 +162,15 @@ def main():
         'task only runs when the bot is idle.')
 
   # 1. Query the bots list.
-  bots = get_bot_list(options.swarming, options.dimensions, False)
+  bots, quarantined_bots, dead_bots = get_bot_list(
+      options.swarming, options.dimensions)
   print('Found %d bots to process' % len(bots))
-  if not bots:
-    return 1
-
-  dead_bots = get_bot_list(options.swarming, options.dimensions, True)
+  if quarantined_bots:
+    print('Warning: found %d quarantined bots' % len(quarantined_bots))
   if dead_bots:
     print('Warning: found %d dead bots' % len(dead_bots))
+  if not bots:
+    return 1
 
   # 2. Archive the script to run.
   isolated_hash = archive(options.isolate_server, args[0])
@@ -166,6 +182,7 @@ def main():
     return run_serial(
         options.swarming,
         options.isolate_server,
+        options.dimensions,
         str(options.priority),
         str(options.deadline),
         options.repeat,
@@ -176,6 +193,7 @@ def main():
   return run_parallel(
       options.swarming,
       options.isolate_server,
+      options.dimensions,
       str(options.priority),
       str(options.deadline),
       options.repeat,
