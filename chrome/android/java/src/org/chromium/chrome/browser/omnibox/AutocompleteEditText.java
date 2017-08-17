@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.StrictMode;
 import android.support.annotation.CallSuper;
-import android.text.Editable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -51,6 +50,11 @@ public class AutocompleteEditText
         super(context, attrs);
         mAccessibilityManager =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+    }
+
+    @VisibleForTesting
+    public AccessibilityManager getAccessibilityManagerForTesting() {
+        return mAccessibilityManager;
     }
 
     private void ensureModel() {
@@ -208,14 +212,24 @@ public class AutocompleteEditText
 
     @Override
     public void sendAccessibilityEventUnchecked(AccessibilityEvent event) {
-        if (mIgnoreTextChangesForAutocomplete) {
-            if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED
-                    || event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
-                if (DEBUG) Log.i(TAG, "Ignoring accessibility event from autocomplete.");
-                return;
-            }
+        if (shouldIgnoreAccessibilityEvent(event)) {
+            if (DEBUG) Log.i(TAG, "Ignoring accessibility event from autocomplete.");
+            return;
         }
         super.sendAccessibilityEventUnchecked(event);
+    }
+
+    @Override
+    public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
+        super.onPopulateAccessibilityEvent(event);
+        if (DEBUG) Log.i(TAG, "onPopulateAccessibilityEvent: " + event);
+    }
+
+    private boolean shouldIgnoreAccessibilityEvent(AccessibilityEvent event) {
+        return (mIgnoreTextChangesForAutocomplete
+                       || (mModel != null && mModel.shouldIgnoreAccessibilityEvent()))
+                && (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED
+                           || event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
     }
 
     @Override
@@ -286,20 +300,8 @@ public class AutocompleteEditText
     }
 
     @Override
-    public void onNoChangeTypingAccessibilityEvent(int selectionStart) {
-        if (DEBUG) Log.i(TAG, "onNoChangeTypingAccessibilityEvent: " + selectionStart);
-        // Since the text isn't changing, TalkBack won't read out the typed characters.
-        // To work around this, explicitly send an accessibility event. crbug.com/416595
-        Editable currentText = getText();
-        if (mAccessibilityManager != null && mAccessibilityManager.isEnabled()) {
-            AccessibilityEvent event =
-                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
-            event.setFromIndex(selectionStart);
-            event.setRemovedCount(0);
-            event.setAddedCount(1);
-            event.setBeforeText(currentText.toString().substring(0, selectionStart));
-            sendAccessibilityEventUnchecked(event);
-        }
+    public boolean isAccessibilityEnabled() {
+        return mAccessibilityManager != null && mAccessibilityManager.isEnabled();
     }
 
     @Override
