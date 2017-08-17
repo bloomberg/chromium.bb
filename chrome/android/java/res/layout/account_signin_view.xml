@@ -14,7 +14,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="52dp">
+        android:layout_marginBottom="68dp">
 
         <!-- The view that allows the user to choose the sign in account -->
         <org.chromium.chrome.browser.signin.AccountSigninChooseView
@@ -183,10 +183,9 @@
     <LinearLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="68dp"
         android:layout_gravity="bottom"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:padding="16dp"
         android:orientation="horizontal" >
 
         <!--suppress ButtonStyle -->
