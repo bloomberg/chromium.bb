@@ -51,9 +51,10 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   // adapter.
   void Dispose();
 
-  // The adapter must be initialized in order to use |web_track| and
-  // |webrtc_track|.
   bool is_initialized() const;
+  // These methods must be called on the main thread.
+  // TODO(hbos): Allow these methods to be called on any thread and make them
+  // const. https://crbug.com/756436
   const blink::WebMediaStreamTrack& web_track();
   webrtc::MediaStreamTrackInterface* webrtc_track();
   bool IsEqual(const blink::WebMediaStreamTrack& web_track);
