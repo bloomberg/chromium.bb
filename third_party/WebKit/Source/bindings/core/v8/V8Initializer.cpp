@@ -35,6 +35,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/UseCounterCallback.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8ContextSnapshot.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ErrorEvent.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
@@ -388,6 +389,8 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
+
+  V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
 }
 
 namespace {
@@ -461,7 +464,7 @@ static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
 }
 
-void V8Initializer::InitializeMainThread() {
+void V8Initializer::InitializeMainThread(intptr_t* reference_table) {
   DCHECK(IsMainThread());
 
   WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
@@ -475,13 +478,28 @@ void V8Initializer::InitializeMainThread() {
 
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
   WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
+
+  V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
+      Platform::Current()->IsTakingV8ContextSnapshot()
+          ? V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot
+          : V8PerIsolateData::V8ContextSnapshotMode::kUseSnapshot;
+  if (v8_context_snapshot_mode ==
+          V8PerIsolateData::V8ContextSnapshotMode::kUseSnapshot &&
+      !RuntimeEnabledFeatures::V8ContextSnapshotEnabled()) {
+    v8_context_snapshot_mode =
+        V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
+    reference_table = nullptr;
+  }
+  V8ContextSnapshot::SetReferenceTable(reference_table);
+
   // When timer task runner is used for PerIsolateData, GC tasks are getting
   // throttled and memory usage goes up. For now we're using loading task queue
   // to prevent this.
   // TODO(altimin): Consider switching to timerTaskRunner here.
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
       scheduler ? scheduler->LoadingTaskRunner()
-                : Platform::Current()->CurrentThread()->GetWebTaskRunner());
+                : Platform::Current()->CurrentThread()->GetWebTaskRunner(),
+      reference_table, v8_context_snapshot_mode);
 
   InitializeV8Common(isolate);
 
