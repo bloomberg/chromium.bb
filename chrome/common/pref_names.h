@@ -228,28 +228,6 @@ extern const char kLanguageXkbAutoRepeatEnabled[];
 extern const char kLanguageXkbAutoRepeatDelay[];
 extern const char kLanguageXkbAutoRepeatInterval[];
 
-// TODO(dmazzoni): move accessibility prefs out of chrome/.
-// http://crbug.com/594887
-extern const char kAccessibilityLargeCursorEnabled[];
-extern const char kAccessibilityLargeCursorDipSize[];
-extern const char kAccessibilityStickyKeysEnabled[];
-extern const char kAccessibilitySpokenFeedbackEnabled[];
-extern const char kAccessibilityHighContrastEnabled[];
-extern const char kAccessibilityScreenMagnifierCenterFocus[];
-extern const char kAccessibilityScreenMagnifierEnabled[];
-extern const char kAccessibilityScreenMagnifierType[];
-extern const char kAccessibilityScreenMagnifierScale[];
-extern const char kAccessibilityVirtualKeyboardEnabled[];
-extern const char kAccessibilityMonoAudioEnabled[];
-extern const char kAccessibilityAutoclickEnabled[];
-extern const char kAccessibilityAutoclickDelayMs[];
-extern const char kAccessibilityCaretHighlightEnabled[];
-extern const char kAccessibilityCursorHighlightEnabled[];
-extern const char kAccessibilityFocusHighlightEnabled[];
-extern const char kAccessibilitySelectToSpeakEnabled[];
-extern const char kAccessibilitySwitchAccessEnabled[];
-extern const char kShouldAlwaysShowAccessibilityMenu[];
-
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
 extern const char kEnableAutoScreenLock[];

@@ -244,37 +244,37 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Accessibility.
-  (*s_whitelist)[::prefs::kAccessibilitySpokenFeedbackEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilitySpokenFeedbackEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityAutoclickEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityAutoclickEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityAutoclickDelayMs] =
+  (*s_whitelist)[ash::prefs::kAccessibilityAutoclickDelayMs] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityCaretHighlightEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityCaretHighlightEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityCursorHighlightEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityCursorHighlightEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kShouldAlwaysShowAccessibilityMenu] =
+  (*s_whitelist)[ash::prefs::kShouldAlwaysShowAccessibilityMenu] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityFocusHighlightEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityFocusHighlightEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityHighContrastEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityHighContrastEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityLargeCursorEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityLargeCursorEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityLargeCursorDipSize] =
+  (*s_whitelist)[ash::prefs::kAccessibilityLargeCursorDipSize] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)[::prefs::kAccessibilityScreenMagnifierEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityScreenMagnifierEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilitySelectToSpeakEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilitySelectToSpeakEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityStickyKeysEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityStickyKeysEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilitySwitchAccessEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityVirtualKeyboardEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityVirtualKeyboardEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kAccessibilityMonoAudioEnabled] =
+  (*s_whitelist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Android Apps.

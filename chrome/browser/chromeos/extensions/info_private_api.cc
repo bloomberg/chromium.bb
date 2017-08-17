@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -168,24 +169,27 @@ const struct {
   const char* api_name;
   const char* preference_name;
 } kPreferencesMap[] = {
-    {kPropertyLargeCursorEnabled, prefs::kAccessibilityLargeCursorEnabled},
-    {kPropertyStickyKeysEnabled, prefs::kAccessibilityStickyKeysEnabled},
+    {kPropertyLargeCursorEnabled, ash::prefs::kAccessibilityLargeCursorEnabled},
+    {kPropertyStickyKeysEnabled, ash::prefs::kAccessibilityStickyKeysEnabled},
     {kPropertySpokenFeedbackEnabled,
-     prefs::kAccessibilitySpokenFeedbackEnabled},
-    {kPropertyHighContrastEnabled, prefs::kAccessibilityHighContrastEnabled},
+     ash::prefs::kAccessibilitySpokenFeedbackEnabled},
+    {kPropertyHighContrastEnabled,
+     ash::prefs::kAccessibilityHighContrastEnabled},
     {kPropertyScreenMagnifierEnabled,
-     prefs::kAccessibilityScreenMagnifierEnabled},
-    {kPropertyAutoclickEnabled, prefs::kAccessibilityAutoclickEnabled},
+     ash::prefs::kAccessibilityScreenMagnifierEnabled},
+    {kPropertyAutoclickEnabled, ash::prefs::kAccessibilityAutoclickEnabled},
     {kPropertyVirtualKeyboardEnabled,
-     prefs::kAccessibilityVirtualKeyboardEnabled},
+     ash::prefs::kAccessibilityVirtualKeyboardEnabled},
     {kPropertyCaretHighlightEnabled,
-     prefs::kAccessibilityCaretHighlightEnabled},
+     ash::prefs::kAccessibilityCaretHighlightEnabled},
     {kPropertyCursorHighlightEnabled,
-     prefs::kAccessibilityCursorHighlightEnabled},
+     ash::prefs::kAccessibilityCursorHighlightEnabled},
     {kPropertyFocusHighlightEnabled,
-     prefs::kAccessibilityFocusHighlightEnabled},
-    {kPropertySelectToSpeakEnabled, prefs::kAccessibilitySelectToSpeakEnabled},
-    {kPropertySwitchAccessEnabled, prefs::kAccessibilitySwitchAccessEnabled},
+     ash::prefs::kAccessibilityFocusHighlightEnabled},
+    {kPropertySelectToSpeakEnabled,
+     ash::prefs::kAccessibilitySelectToSpeakEnabled},
+    {kPropertySwitchAccessEnabled,
+     ash::prefs::kAccessibilitySwitchAccessEnabled},
     {kPropertySendFunctionsKeys, prefs::kLanguageSendFunctionKeys}};
 
 const char* GetBoolPrefNameForApiProperty(const char* api_name) {
