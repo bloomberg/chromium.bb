@@ -67,12 +67,14 @@ class DiscardableImageMapTest : public testing::Test {
   std::vector<PositionScaleDrawImage> GetDiscardableImagesInRect(
       const DiscardableImageMap& image_map,
       const gfx::Rect& rect) {
-    std::vector<DrawImage> draw_images;
+    std::vector<const DrawImage*> draw_image_ptrs;
     // Choose a not-SRGB-and-not-invalid target color space to verify that it
     // is passed correctly to the resulting DrawImages.
     gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
-    image_map.GetDiscardableImagesInRect(rect, 1.f, target_color_space,
-                                         &draw_images);
+    image_map.GetDiscardableImagesInRect(rect, &draw_image_ptrs);
+    std::vector<DrawImage> draw_images;
+    for (const auto* image : draw_image_ptrs)
+      draw_images.push_back(DrawImage(*image, 1.f, target_color_space));
 
     std::vector<PositionScaleDrawImage> position_draw_images;
     for (DrawImage& image : image_map.images_rtree_.Search(rect)) {
@@ -607,20 +609,19 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
   display_list->GenerateDiscardableImagesMetadata();
   const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
-      std::vector<DrawImage> draw_images;
+      std::vector<const DrawImage*> draw_images;
       image_map.GetDiscardableImagesInRect(
-          gfx::Rect(x * 512, y * 512, 500, 500), 1.f, target_color_space,
-          &draw_images);
+          gfx::Rect(x * 512, y * 512, 500, 500), &draw_images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, draw_images.size()) << x << " " << y;
-        EXPECT_TRUE(draw_images[0].image() == discardable_image[y][x])
+        EXPECT_TRUE(draw_images[0]->image() == discardable_image[y][x])
             << x << " " << y;
-        EXPECT_EQ(std::max(x * 0.5f, kMinScale), draw_images[0].scale().fWidth);
+        EXPECT_EQ(std::max(x * 0.5f, kMinScale),
+                  draw_images[0]->scale().fWidth);
         EXPECT_EQ(std::max(y * 0.5f, kMinScale),
-                  draw_images[0].scale().fHeight);
+                  draw_images[0]->scale().fHeight);
       } else {
         EXPECT_EQ(0u, draw_images.size()) << x << " " << y;
       }
@@ -628,14 +629,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
   }
 
   // Capture 4 pixel refs.
-  std::vector<DrawImage> draw_images;
-  image_map.GetDiscardableImagesInRect(gfx::Rect(512, 512, 2048, 2048), 1.f,
-                                       target_color_space, &draw_images);
+  std::vector<const DrawImage*> draw_images;
+  image_map.GetDiscardableImagesInRect(gfx::Rect(512, 512, 2048, 2048),
+                                       &draw_images);
   EXPECT_EQ(4u, draw_images.size());
-  EXPECT_TRUE(draw_images[0].image() == discardable_image[1][2]);
-  EXPECT_TRUE(draw_images[1].image() == discardable_image[2][1]);
-  EXPECT_TRUE(draw_images[2].image() == discardable_image[2][3]);
-  EXPECT_TRUE(draw_images[3].image() == discardable_image[3][2]);
+  EXPECT_TRUE(draw_images[0]->image() == discardable_image[1][2]);
+  EXPECT_TRUE(draw_images[1]->image() == discardable_image[2][1]);
+  EXPECT_TRUE(draw_images[2]->image() == discardable_image[2][3]);
+  EXPECT_TRUE(draw_images[3]->image() == discardable_image[3][2]);
 }
 
 TEST_F(DiscardableImageMapTest, ClipsImageRects) {
@@ -693,18 +694,15 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   DiscardableImageMap image_map;
   image_map.Generate(&root_buffer, gfx::Rect(200, 200));
 
-  gfx::ColorSpace target_color_space;
-  std::vector<DrawImage> images;
-  image_map.GetDiscardableImagesInRect(gfx::Rect(0, 0, 5, 95), 1.f,
-                                       target_color_space, &images);
+  std::vector<const DrawImage*> images;
+  image_map.GetDiscardableImagesInRect(gfx::Rect(0, 0, 5, 95), &images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_TRUE(discardable_image == images[0].paint_image());
+  EXPECT_TRUE(discardable_image == images[0]->paint_image());
 
   images.clear();
-  image_map.GetDiscardableImagesInRect(gfx::Rect(105, 105, 5, 95), 1.f,
-                                       target_color_space, &images);
+  image_map.GetDiscardableImagesInRect(gfx::Rect(105, 105, 5, 95), &images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_TRUE(discardable_image2 == images[0].paint_image());
+  EXPECT_TRUE(discardable_image2 == images[0]->paint_image());
 }
 
 class DiscardableImageMapColorSpaceTest

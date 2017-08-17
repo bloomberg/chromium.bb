@@ -212,18 +212,13 @@ class DiscardableImageGenerator {
       color_stats_srgb_image_count_++;
     }
 
-    // The true target color space will be assigned when it is known, in
-    // GetDiscardableImagesInRect.
-    gfx::ColorSpace target_color_space;
-
     SkMatrix matrix = ctm;
     if (local_matrix)
       matrix.postConcat(*local_matrix);
 
     image_id_to_rect_[paint_image.stable_id()].Union(image_rect);
     image_set_.emplace_back(
-        DrawImage(std::move(paint_image), src_irect, filter_quality, matrix,
-                  target_color_space),
+        DrawImage(std::move(paint_image), src_irect, filter_quality, matrix),
         image_rect);
   }
 
@@ -269,18 +264,8 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
 
 void DiscardableImageMap::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
-    float contents_scale,
-    const gfx::ColorSpace& target_color_space,
-    std::vector<DrawImage>* images) const {
-  *images = images_rtree_.Search(rect);
-  // TODO(vmpstr): Remove the second pass and do this in TileManager.
-  // crbug.com/727772.
-  std::transform(
-      images->begin(), images->end(), images->begin(),
-      [&contents_scale, &target_color_space](const DrawImage& image) {
-        return image.ApplyScale(contents_scale)
-            .ApplyTargetColorSpace(target_color_space);
-      });
+    std::vector<const DrawImage*>* images) const {
+  *images = images_rtree_.SearchRefs(rect);
 }
 
 gfx::Rect DiscardableImageMap::GetRectForImage(PaintImage::Id image_id) const {

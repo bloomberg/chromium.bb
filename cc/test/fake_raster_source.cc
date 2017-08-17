@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/test/fake_recording_source.h"
+#include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -37,6 +38,21 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
 
   recording_source->Rerecord();
 
+  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+}
+
+scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledWithImages(
+    const gfx::Size& size) {
+  auto recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(size);
+
+  for (int y = 0; y < size.height(); y += 100) {
+    for (int x = 0; x < size.width(); x += 100) {
+      recording_source->add_draw_image(
+          CreateDiscardablePaintImage(gfx::Size(100, 100)), gfx::Point(x, y));
+    }
+  }
+  recording_source->Rerecord();
   return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
 }
 

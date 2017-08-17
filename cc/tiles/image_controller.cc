@@ -68,7 +68,7 @@ void ImageController::StopWorkerTasks() {
 
   // Unlock all of the locked images (note that this vector would only be
   // populated if we actually need to unref the image.
-  for (auto image_pair : requested_locked_images_)
+  for (auto& image_pair : requested_locked_images_)
     cache_->UnrefImage(image_pair.second);
   requested_locked_images_.clear();
 
@@ -162,7 +162,7 @@ void ImageController::GetTasksForImagesAndRef(
 }
 
 void ImageController::UnrefImages(const std::vector<DrawImage>& images) {
-  for (auto image : images)
+  for (auto& image : images)
     cache_->UnrefImage(image);
 }
 
@@ -227,7 +227,7 @@ void ImageController::UnlockImageDecode(ImageDecodeRequestId id) {
   if (it == requested_locked_images_.end())
     return;
 
-  UnrefImages({it->second});
+  UnrefImages({std::move(it->second)});
   requested_locked_images_.erase(it);
 }
 

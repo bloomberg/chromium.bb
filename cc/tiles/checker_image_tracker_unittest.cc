@@ -471,7 +471,7 @@ TEST_F(CheckerImageTrackerTest, ChoosesMaxScaleAndQuality) {
   SetUpTracker(true);
 
   DrawImage image = CreateImage(ImageType::CHECKERABLE);
-  DrawImage scaled_image1 = image.ApplyScale(0.5f);
+  DrawImage scaled_image1(image, 0.5f, gfx::ColorSpace());
   DrawImage scaled_image2 =
       DrawImage(image.paint_image(), image.src_rect(), kHigh_SkFilterQuality,
                 SkMatrix::MakeScale(1.8f), gfx::ColorSpace());

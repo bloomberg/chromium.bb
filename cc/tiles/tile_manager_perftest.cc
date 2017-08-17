@@ -56,9 +56,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,
                                           const gfx::Size& tile_size) {
     scoped_refptr<FakeRasterSource> pending_raster_source =
-        FakeRasterSource::CreateFilled(layer_bounds);
+        FakeRasterSource::CreateFilledWithImages(layer_bounds);
     scoped_refptr<FakeRasterSource> active_raster_source =
-        FakeRasterSource::CreateFilled(layer_bounds);
+        FakeRasterSource::CreateFilledWithImages(layer_bounds);
 
     SetupPendingTree(std::move(active_raster_source), tile_size, Region());
     ActivateTree();
@@ -232,7 +232,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
     // Create the rest of the layers as children of the root layer.
     scoped_refptr<FakeRasterSource> raster_source =
-        FakeRasterSource::CreateFilled(layer_bounds);
+        FakeRasterSource::CreateFilledWithImages(layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
       std::unique_ptr<FakePictureLayerImpl> child_layer =
           FakePictureLayerImpl::CreateWithRasterSource(
