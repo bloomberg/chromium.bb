@@ -24,10 +24,10 @@ struct DocumentLoadStatistics;
 class UnverifiedRulesetDealer;
 class WebDocumentSubresourceFilterImpl;
 
-// The renderer-side agent of ContentSubresourceFilterDriverFactory. There is
+// The renderer-side agent of ContentSubresourceFilterThrottleManager. There is
 // one instance per RenderFrame, responsible for setting up the subresource
 // filter for the ongoing provisional document load in the frame when instructed
-// to do so by the driver.
+// to do so by the manager.
 class SubresourceFilterAgent
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<SubresourceFilterAgent>,

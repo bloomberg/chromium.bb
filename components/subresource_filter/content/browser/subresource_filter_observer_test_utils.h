@@ -14,9 +14,11 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }  // namespace content
 
@@ -25,7 +27,8 @@ namespace subresource_filter {
 // This class can be used to observe subresource filtering events associated
 // with a particular web contents. Particular events can be expected by using
 // the Get* methods.
-class TestSubresourceFilterObserver : public SubresourceFilterObserver {
+class TestSubresourceFilterObserver : public SubresourceFilterObserver,
+                                      public content::WebContentsObserver {
  public:
   TestSubresourceFilterObserver(content::WebContents* web_contents);
   ~TestSubresourceFilterObserver() override;
@@ -40,12 +43,21 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver {
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy) override;
 
-  base::Optional<ActivationDecision> GetPageActivation(const GURL& url);
-  base::Optional<LoadPolicy> GetSubframeLoadPolicy(const GURL& url);
+  // content::WebContentsObserver
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  base::Optional<ActivationDecision> GetPageActivation(const GURL& url) const;
+  base::Optional<LoadPolicy> GetSubframeLoadPolicy(const GURL& url) const;
+  base::Optional<ActivationDecision> GetPageActivationForLastCommittedLoad()
+      const;
 
  private:
   std::map<GURL, LoadPolicy> subframe_load_evaluations_;
   std::map<GURL, ActivationDecision> page_activations_;
+
+  std::map<content::NavigationHandle*, ActivationDecision> pending_activations_;
+  base::Optional<ActivationDecision> last_committed_activation_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
       scoped_observer_;
