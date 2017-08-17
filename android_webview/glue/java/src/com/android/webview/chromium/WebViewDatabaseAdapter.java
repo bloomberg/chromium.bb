@@ -68,7 +68,7 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
         mHttpAuthDatabase.clearHttpAuthUsernamePassword();
     }
 
-    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/616583)
+    @Override
     public void setHttpAuthUsernamePassword(
             final String host, final String realm, final String username, final String password) {
         if (checkNeedsPost()) {
@@ -83,7 +83,7 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
         mHttpAuthDatabase.setHttpAuthUsernamePassword(host, realm, username, password);
     }
 
-    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/616583)
+    @Override
     public String[] getHttpAuthUsernamePassword(final String host, final String realm) {
         if (checkNeedsPost()) {
             return mFactory.runOnUiThreadBlocking(new Callable<String[]>() {
