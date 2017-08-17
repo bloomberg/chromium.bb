@@ -10,6 +10,8 @@
 #include "base/logging.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
+#include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -52,7 +54,9 @@ const CGFloat kCloseButtonSize = 24.0;
 const CGFloat kFaviconSize = 16.0;
 }
 
-@interface TabView () {
+@interface TabView ()<DropAndNavigateDelegate> {
+  __weak id<TabViewDelegate> _delegate;
+
   // Close button for this tab.
   UIButton* _closeButton;
 
@@ -76,6 +80,10 @@ const CGFloat kFaviconSize = 16.0;
   BOOL _collapsed;
 
   MDCActivityIndicator* _activityIndicator;
+
+#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
+  API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
+#endif
 }
 @end
 
@@ -109,7 +117,7 @@ const CGFloat kFaviconSize = 16.0;
 
 @implementation TabView
 
-@synthesize closeButton = _closeButton;
+@synthesize delegate = _delegate;
 @synthesize titleLabel = _titleLabel;
 @synthesize collapsed = _collapsed;
 @synthesize background = background_;
@@ -127,6 +135,18 @@ const CGFloat kFaviconSize = 16.0;
     [self updateBackgroundImage:selected];
     if (!emptyView)
       [self createButtonsAndLabel];
+
+    [self addTarget:self
+                  action:@selector(tabWasTapped)
+        forControlEvents:UIControlEventTouchUpInside];
+
+#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
+    if (@available(iOS 11, *)) {
+      _dropInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_dropInteraction];
+    }
+#endif
   }
   return self;
 }
@@ -278,6 +298,10 @@ const CGFloat kFaviconSize = 16.0;
                                                       kTabCloseRightInset)];
   [_closeButton setAccessibilityLabel:l10n_util::GetNSString(
                                           IDS_IOS_TOOLS_MENU_CLOSE_TAB)];
+  [_closeButton addTarget:self
+                   action:@selector(closeButtonPressed)
+         forControlEvents:UIControlEventTouchUpInside];
+
   [self addSubview:_closeButton];
 
   // Add fade truncating label.
@@ -375,6 +399,22 @@ const CGFloat kFaviconSize = 16.0;
 - (UIImage*)defaultFaviconImage {
   return self.incognitoStyle ? [UIImage imageNamed:@"default_favicon_incognito"]
                              : [UIImage imageNamed:@"default_favicon"];
+}
+
+#pragma mark - DropAndNavigateDelegate
+
+- (void)URLWasDropped:(GURL const&)url {
+  [_delegate tabView:self receivedDroppedURL:url];
+}
+
+#pragma mark - Touch events
+
+- (void)closeButtonPressed {
+  [_delegate tabViewcloseButtonPressed:self];
+}
+
+- (void)tabWasTapped {
+  [_delegate tabViewTapped:self];
 }
 
 @end

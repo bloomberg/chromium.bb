@@ -53,9 +53,6 @@ extern NSString* const kTabStripDragEnded;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Called when a tab is tapped.  |sender| should be a TabView.
-- (IBAction)tabTapped:(id)sender;
-
 // Records metrics for the given action.
 - (IBAction)recordUserMetrics:(id)sender;
 

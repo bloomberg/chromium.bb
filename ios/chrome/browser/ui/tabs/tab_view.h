@@ -9,13 +9,15 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/ui/tabs/tab_view_delegate.h"
 
 @class GTMFadeTruncatingLabel;
+@protocol TabViewDelegate;
 
 // View class that draws a Chrome-style tab.
 @interface TabView : UIControl
 
-@property(nonatomic, readonly, strong) UIButton* closeButton;
+@property(nonatomic, weak) id<TabViewDelegate> delegate;
 @property(nonatomic, readonly, strong) GTMFadeTruncatingLabel* titleLabel;
 @property(nonatomic, strong) UIImage* favicon;
 @property(nonatomic, assign, getter=isCollapsed) BOOL collapsed;
