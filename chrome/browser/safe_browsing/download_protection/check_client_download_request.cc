@@ -119,98 +119,15 @@ void CheckClientDownloadRequest::Start() {
     is_incognito_ = item_->GetBrowserContext()->IsOffTheRecord();
   }
 
-  DownloadCheckResultReason reason = REASON_MAX;
-  if (!IsSupportedDownload(*item_, item_->GetTargetFilePath(), &reason,
-                           &type_)) {
-    switch (reason) {
-      case REASON_EMPTY_URL_CHAIN:
-      case REASON_INVALID_URL:
-      case REASON_LOCAL_FILE:
-      case REASON_REMOTE_FILE:
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
-        return;
-      case REASON_UNSUPPORTED_URL_SCHEME:
-        RecordFileExtensionType(
-            base::StringPrintf(
-                "%s.%s", kUnsupportedSchemeUmaPrefix,
-                GetUnsupportedSchemeName(item_->GetUrlChain().back()).c_str()),
-            item_->GetTargetFilePath());
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
-        return;
-      case REASON_NOT_BINARY_FILE:
-        if (ShouldSampleUnsupportedFile(item_->GetTargetFilePath())) {
-          // Send a "light ping" and don't use the verdict.
-          type_ = ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE;
-          break;
-        }
-        RecordFileExtensionType(kDownloadExtensionUmaName,
-                                item_->GetTargetFilePath());
-        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
-        return;
-
-      default:
-        // We only expect the reasons explicitly handled above.
-        NOTREACHED();
-    }
-  }
-  RecordFileExtensionType(kDownloadExtensionUmaName,
-                          item_->GetTargetFilePath());
-
-  // Compute features from the file contents. Note that we record histograms
-  // based on the result, so this runs regardless of whether the pingbacks
-  // are enabled.
-  if (item_->GetTargetFilePath().MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-    StartExtractZipFeatures();
-#if defined(OS_MACOSX)
-  } else if (item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dmg")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".img")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".iso")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".smi")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".cdr")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dc42")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".diskcopy42")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dmgpart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dvdr")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".imgpart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".ndif")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".sparsebundle")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".sparseimage")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".toast")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".udif"))) {
-    StartExtractDmgFeatures();
-#endif
-  } else {
-#if defined(OS_MACOSX)
-    // Checks for existence of "koly" signature even if file doesn't have
-    // archive-type extension, then calls ExtractFileOrDmgFeatures() with
-    // result.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(DiskImageTypeSnifferMac::IsAppleDiskImage,
-                   item_->GetTargetFilePath()),
-        base::Bind(&CheckClientDownloadRequest::ExtractFileOrDmgFeatures,
-                   this));
-#else
-    StartExtractFileFeatures();
-#endif
-  }
+  // If whitelist check passes, PostFinishTask() will be called to avoid
+  // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
+  // analysis.
+  auto io_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  cancelable_task_tracker_.PostTask(
+      io_task_runner.get(), FROM_HERE,
+      base::BindOnce(&CheckClientDownloadRequest::CheckUrlAgainstWhitelist,
+                     this));
 }
 
 // Start a timeout to cancel the request if it takes too long.
@@ -235,6 +152,7 @@ void CheckClientDownloadRequest::StartTimeout() {
 // FinishRequest.
 void CheckClientDownloadRequest::Cancel() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  cancelable_task_tracker_.TryCancelAll();
   if (fetcher_.get()) {
     // The DownloadProtectionService is going to release its reference, so we
     // might be destroyed before the URLFetcher completes.  Cancel the
@@ -385,15 +303,122 @@ CheckClientDownloadRequest::~CheckClientDownloadRequest() {
   DCHECK(item_ == NULL);
 }
 
+void CheckClientDownloadRequest::AnalyzeFile() {
+  // Returns if DownloadItem is destroyed during whitelist check.
+  if (item_ == nullptr) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+    return;
+  }
+
+  DownloadCheckResultReason reason = REASON_MAX;
+  if (!IsSupportedDownload(*item_, item_->GetTargetFilePath(), &reason,
+                           &type_)) {
+    switch (reason) {
+      case REASON_EMPTY_URL_CHAIN:
+      case REASON_INVALID_URL:
+      case REASON_LOCAL_FILE:
+      case REASON_REMOTE_FILE:
+        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        return;
+      case REASON_UNSUPPORTED_URL_SCHEME:
+        RecordFileExtensionType(
+            base::StringPrintf(
+                "%s.%s", kUnsupportedSchemeUmaPrefix,
+                GetUnsupportedSchemeName(item_->GetUrlChain().back()).c_str()),
+            item_->GetTargetFilePath());
+        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        return;
+      case REASON_NOT_BINARY_FILE:
+        if (ShouldSampleUnsupportedFile(item_->GetTargetFilePath())) {
+          // Send a "light ping" and don't use the verdict.
+          type_ = ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE;
+          break;
+        }
+        RecordFileExtensionType(kDownloadExtensionUmaName,
+                                item_->GetTargetFilePath());
+        PostFinishTask(DownloadCheckResult::UNKNOWN, reason);
+        return;
+
+      default:
+        // We only expect the reasons explicitly handled above.
+        NOTREACHED();
+    }
+  }
+  RecordFileExtensionType(kDownloadExtensionUmaName,
+                          item_->GetTargetFilePath());
+
+  // Compute features from the file contents. Note that we record histograms
+  // based on the result, so this runs regardless of whether the pingbacks
+  // are enabled.
+  if (item_->GetTargetFilePath().MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
+    StartExtractZipFeatures();
+#if defined(OS_MACOSX)
+  } else if (item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".dmg")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".img")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".iso")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".smi")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".cdr")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".dart")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".dc42")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".diskcopy42")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".dmgpart")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".dvdr")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".imgpart")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".ndif")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".sparsebundle")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".sparseimage")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".toast")) ||
+             item_->GetTargetFilePath().MatchesExtension(
+                 FILE_PATH_LITERAL(".udif"))) {
+    StartExtractDmgFeatures();
+#endif
+  } else {
+#if defined(OS_MACOSX)
+    // Checks for existence of "koly" signature even if file doesn't have
+    // archive-type extension, then calls ExtractFileOrDmgFeatures() with
+    // result.
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::Bind(DiskImageTypeSnifferMac::IsAppleDiskImage,
+                   item_->GetTargetFilePath()),
+        base::Bind(&CheckClientDownloadRequest::ExtractFileOrDmgFeatures,
+                   this));
+#else
+    StartExtractFileFeatures();
+#endif
+  }
+}
+
 void CheckClientDownloadRequest::OnFileFeatureExtractionDone() {
   // This can run in any thread, since it just posts more messages.
+  if (item_ == nullptr) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+    return;
+  }
 
   // TODO(noelutz): DownloadInfo should also contain the IP address of
   // every URL in the redirect chain.  We also should check whether the
   // download URL is hosted on the internal network.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CheckClientDownloadRequest::CheckWhitelists, this));
+      base::BindOnce(
+          &CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist,
+          this));
 
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
@@ -460,6 +485,10 @@ void CheckClientDownloadRequest::OnZipAnalysisFinished(
     const ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE, type_);
+  if (item_ == nullptr) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+    return;
+  }
   if (!service_)
     return;
 
@@ -551,6 +580,10 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
     const ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(ClientDownloadRequest::MAC_EXECUTABLE, type_);
+  if (item_ == nullptr) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+    return;
+  }
   if (!service_)
     return;
 
@@ -611,7 +644,7 @@ bool CheckClientDownloadRequest::ShouldSampleWhitelistedDownload() {
          base::RandDouble() < service_->whitelist_sample_rate();
 }
 
-void CheckClientDownloadRequest::CheckWhitelists() {
+void CheckClientDownloadRequest::CheckUrlAgainstWhitelist() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!database_manager_.get()) {
@@ -620,7 +653,7 @@ void CheckClientDownloadRequest::CheckWhitelists() {
   }
 
   const GURL& url = url_chain_.back();
-  // TODO(asanka): This may acquire a lock on the SB DB on the IO thread.
+  // TODO(vakh): This may acquire a lock on the SB DB on the IO thread.
   if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
     DVLOG(2) << url << " is on the download whitelist.";
     RecordCountOfWhitelistedDownload(URL_WHITELIST);
@@ -633,6 +666,20 @@ void CheckClientDownloadRequest::CheckWhitelists() {
       PostFinishTask(DownloadCheckResult::SAFE, REASON_WHITELISTED_URL);
       return;
     }
+  }
+
+  // Posts task to continue with analysis.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&CheckClientDownloadRequest::AnalyzeFile, this));
+}
+
+void CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!database_manager_.get()) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_SB_DISABLED);
+    return;
   }
 
   if (!skipped_url_whitelist_ && signature_info_.trusted()) {

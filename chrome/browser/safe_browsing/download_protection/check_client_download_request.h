@@ -67,7 +67,9 @@ class CheckClientDownloadRequest
   friend class base::DeleteHelper<CheckClientDownloadRequest>;
 
   ~CheckClientDownloadRequest() override;
-
+  // Performs file feature extraction and SafeBrowsing ping for downloads that
+  // don't match the URL whitelist.
+  void AnalyzeFile();
   void OnFileFeatureExtractionDone();
   void StartExtractFileFeatures();
   void ExtractFileFeatures(const base::FilePath& file_path);
@@ -81,7 +83,10 @@ class CheckClientDownloadRequest
 #endif  // defined(OS_MACOSX)
 
   bool ShouldSampleWhitelistedDownload();
-  void CheckWhitelists();
+  // Checks the download URL against SafeBrowsing whitelist. If download URL is
+  // on whitelist, file feature extraction and download ping are skipped.
+  void CheckUrlAgainstWhitelist();
+  void CheckCertificateChainAgainstWhitelist();
   void GetTabRedirects();
   void OnGotTabRedirects(const GURL& url,
                          const history::RedirectList* redirect_list);
@@ -144,6 +149,9 @@ class CheckClientDownloadRequest
   bool skipped_certificate_whitelist_;
   bool is_extended_reporting_;
   bool is_incognito_;
+  // This task tracker is used for posting the URL whitelist check to the IO
+  // thread. The posted task will be cancelled if DownloadItem gets destroyed.
+  base::CancelableTaskTracker cancelable_task_tracker_;
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
