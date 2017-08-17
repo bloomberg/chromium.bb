@@ -898,9 +898,6 @@ def _GetFilesForTarget(target, root='/'):
 
   # Find all the files owned by the packages for this target.
   for pkg in GetTargetPackages(target):
-    # Ignore packages that are part of the target sysroot.
-    if pkg in ('kernel', 'libc'):
-      continue
 
     # Skip Go compiler from redistributable packages.
     # The "go" executable has GOROOT=/usr/lib/go/${CTARGET} hardcoded
