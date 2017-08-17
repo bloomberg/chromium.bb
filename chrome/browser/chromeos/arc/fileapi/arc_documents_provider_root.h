@@ -33,8 +33,16 @@ namespace arc {
 // for those operations will be never called.
 class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
  public:
+  struct ThinFileInfo {
+    base::FilePath::StringType name;
+    std::string document_id;
+    bool is_directory;
+  };
+
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;
-  using ReadDirectoryCallback = storage::AsyncFileUtil::ReadDirectoryCallback;
+  using ReadDirectoryCallback =
+      base::OnceCallback<void(base::File::Error error,
+                              std::vector<ThinFileInfo> files)>;
   using ChangeType = storage::WatcherManager::ChangeType;
   // TODO(nya): Use OnceCallback/RepeatingCallback.
   using WatcherCallback = base::Callback<void(ChangeType type)>;
@@ -54,7 +62,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // Queries a list of files under a directory just like
   // AsyncFileUtil.ReadDirectory().
   void ReadDirectory(const base::FilePath& path,
-                     const ReadDirectoryCallback& callback);
+                     ReadDirectoryCallback callback);
 
   // Installs a document watcher.
   //
@@ -165,12 +173,11 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   void GetFileInfoWithDocument(const GetFileInfoCallback& callback,
                                mojom::DocumentPtr document);
 
-  void ReadDirectoryWithDocumentId(const ReadDirectoryCallback& callback,
+  void ReadDirectoryWithDocumentId(ReadDirectoryCallback callback,
                                    const std::string& document_id);
-  void ReadDirectoryWithNameToThinDocumentMap(
-      const ReadDirectoryCallback& callback,
-      base::File::Error error,
-      NameToThinDocumentMap mapping);
+  void ReadDirectoryWithNameToThinDocumentMap(ReadDirectoryCallback callback,
+                                              base::File::Error error,
+                                              NameToThinDocumentMap mapping);
 
   void AddWatcherWithDocumentId(const base::FilePath& path,
                                 uint64_t watcher_request_id,

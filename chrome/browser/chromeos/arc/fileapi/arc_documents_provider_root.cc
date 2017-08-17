@@ -58,13 +58,13 @@ void ArcDocumentsProviderRoot::GetFileInfo(
                        weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void ArcDocumentsProviderRoot::ReadDirectory(
-    const base::FilePath& path,
-    const ReadDirectoryCallback& callback) {
+void ArcDocumentsProviderRoot::ReadDirectory(const base::FilePath& path,
+                                             ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResolveToDocumentId(
       path, base::Bind(&ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(std::move(callback))));
 }
 
 void ArcDocumentsProviderRoot::AddWatcher(
@@ -175,37 +175,36 @@ void ArcDocumentsProviderRoot::GetFileInfoWithDocument(
 }
 
 void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(
-    const ReadDirectoryCallback& callback,
+    ReadDirectoryCallback callback,
     const std::string& document_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document_id.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(),
-                 false /* has_more */);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, {});
     return;
   }
   ReadDirectoryInternal(
       document_id,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap,
-          weak_ptr_factory_.GetWeakPtr(), callback));
+          weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
 }
 
 void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
-    const ReadDirectoryCallback& callback,
+    ReadDirectoryCallback callback,
     base::File::Error error,
     NameToThinDocumentMap mapping) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    callback.Run(error, EntryList(), false /* has_more */);
+    std::move(callback).Run(error, {});
     return;
   }
-  EntryList entry_list;
+
+  std::vector<ThinFileInfo> files;
   for (const auto& pair : mapping) {
-    entry_list.emplace_back(pair.first, pair.second.is_directory
-                                            ? storage::DirectoryEntry::DIRECTORY
-                                            : storage::DirectoryEntry::FILE);
+    files.emplace_back(ThinFileInfo{pair.first, pair.second.document_id,
+                                    pair.second.is_directory});
   }
-  callback.Run(base::File::FILE_OK, entry_list, false /* has_more */);
+  std::move(callback).Run(base::File::FILE_OK, std::move(files));
 }
 
 void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
