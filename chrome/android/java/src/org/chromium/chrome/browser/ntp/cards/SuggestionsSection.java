@@ -68,6 +68,9 @@ public class SuggestionsSection extends InnerNode {
      */
     private boolean mIsDataStale;
 
+    /** Whether content has been recently inserted. We reset this flag upon reading its value. */
+    private boolean mHasInsertedContent;
+
     /**
      * Delegate interface that allows dismissing this section without introducing
      * a circular dependency.
@@ -268,7 +271,10 @@ public class SuggestionsSection extends InnerNode {
     @Override
     public void onItemRangeInserted(TreeNode child, int index, int count) {
         super.onItemRangeInserted(child, index, count);
-        if (child == mSuggestionsList) onSuggestionsListCountChanged(getSuggestionsCount() - count);
+        if (child == mSuggestionsList) {
+            mHasInsertedContent = true;
+            onSuggestionsListCountChanged(getSuggestionsCount() - count);
+        }
     }
 
     @Override
@@ -347,6 +353,16 @@ public class SuggestionsSection extends InnerNode {
 
     public boolean isDataStale() {
         return mIsDataStale;
+    }
+
+    /**
+     * Returns whether content has been inserted in the section since last time this method was
+     * called.
+     */
+    public boolean hasRecentlyInsertedContent() {
+        boolean value = mHasInsertedContent;
+        mHasInsertedContent = false;
+        return value;
     }
 
     public String[] getDisplayedSuggestionIds() {

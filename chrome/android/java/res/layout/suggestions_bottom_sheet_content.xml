@@ -19,6 +19,7 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:scrollbars="vertical"
         android:paddingTop="@dimen/bottom_control_container_height" />
 
     <org.chromium.chrome.browser.widget.FadingShadowView

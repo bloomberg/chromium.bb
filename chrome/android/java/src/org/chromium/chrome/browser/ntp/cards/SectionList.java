@@ -212,6 +212,17 @@ public class SectionList
         return mSections.isEmpty();
     }
 
+    /** Returns whether content has recently been inserted in any of the sections. */
+    public boolean hasRecentlyInsertedContent() {
+        boolean value = false;
+        for (SuggestionsSection section : mSections.values()) {
+            // We explicitly go through all the sections to make sure we reset the flag everywhere.
+            boolean sectionHasRecentInsertion = section.hasRecentlyInsertedContent();
+            value = value || sectionHasRecentInsertion;
+        }
+        return value;
+    }
+
     /**
      * Clicks on the more button for the Articles for you section. This assumes that that is the
      * only present section.
