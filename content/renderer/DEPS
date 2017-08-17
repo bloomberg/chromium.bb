@@ -24,6 +24,7 @@ include_rules = [
   "+mojo",
   "+services",
   "-storage/browser",
+  "+storage/public/interfaces",
   "+third_party/hyphen/hyphen.h",
   "+third_party/webrtc_overrides",
   "+v8/include",

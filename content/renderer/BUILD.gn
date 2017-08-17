@@ -490,6 +490,7 @@ target(link_target_type, "renderer") {
     "//services/ui/public/cpp/gpu",
     "//skia",
     "//storage/common",
+    "//storage/public/interfaces",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:mojo_bindings",

@@ -7,6 +7,7 @@ module content.mojom;
 import "content/public/common/url_loader.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
+import "storage/public/interfaces/blobs.mojom";
 import "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_app.mojom";
@@ -53,16 +54,17 @@ struct ExtendableMessageEvent {
 };
 
 // Browser-side interface which is passed through DispatchFetchEvent. The
-// renderer uses this interface to respond to a fetch event. This interface is
-// only used for responses where the body is a stream or doesn't exist. When the
-// body is a blob, the legacy IPC (ServiceWorkerHostMsg_FetchEventResponse) is
-// used.
-// TODO(shimazu): Use this interface for all responses after the blob system is
-// mojoified: https://crbug.com/611935.
+// renderer uses this interface to respond to a fetch event.
 interface ServiceWorkerFetchResponseCallback {
   // Responds to the request with |response|. The body is empty.
   OnResponse(ServiceWorkerResponse response,
              mojo.common.mojom.Time dispatch_event_time);
+  // Responds to the request with |response|. The body is returned as a blob.
+  // TODO(kinuko): This should not be necessary once we properly support
+  // transferring blob within |response|. See crbug.com/75523 for more details.
+  OnResponseBlob(ServiceWorkerResponse response,
+                 storage.mojom.Blob body_as_blob,
+                 mojo.common.mojom.Time dispatch_event_time);
   // Responds to the request with |response|. The body is returned as a stream.
   OnResponseStream(ServiceWorkerResponse response,
                    blink.mojom.ServiceWorkerStreamHandle body_as_stream,

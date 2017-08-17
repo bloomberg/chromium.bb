@@ -290,15 +290,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return event_dispatcher_.get();
   }
 
-  // This method registers a callback to receive messages sent back from the
-  // service worker in response to |request_id|.
-  // ResponseMessage is the type of the IPC message that is used for the
-  // response, and its first argument MUST be the request_id.
-  // Callback registration should be done once for one request_id.
-  template <typename ResponseMessage, typename ResponseCallbackType>
-  void RegisterRequestCallback(int request_id,
-                               const ResponseCallbackType& callback);
-
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
@@ -480,22 +471,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                    ServiceWorkerMetrics::EventType event_type);
     ~PendingRequest();
 
-    // ------------------------------------------------------------------------
-    // For all requests. Set by StartRequest.
-    // ------------------------------------------------------------------------
     StatusCallback error_callback;
     base::Time start_time;
     base::TimeTicks start_time_ticks;
     ServiceWorkerMetrics::EventType event_type;
-
-    // ------------------------------------------------------------------------
-    // For IPC message requests.
-    // ------------------------------------------------------------------------
-    // Set by RegisterRequestCallback. Receives IPC responses to the request via
-    // OnMessageReceived.
-    std::unique_ptr<EmbeddedWorkerInstance::Listener> listener;
-    // True if an IPC message was sent to dispatch the event for this request.
-    bool is_dispatched = false;
   };
 
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
@@ -823,19 +802,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
-
-template <typename ResponseMessage, typename ResponseCallbackType>
-void ServiceWorkerVersion::RegisterRequestCallback(
-    int request_id,
-    const ResponseCallbackType& callback) {
-  PendingRequest* request = pending_requests_.Lookup(request_id);
-  DCHECK(request) << "Invalid request id";
-  DCHECK(!request->listener) << "Callback was already registered";
-  DCHECK(!request->is_dispatched) << "Request already dispatched an IPC event";
-  request->listener.reset(
-      new EventResponseHandler<ResponseMessage, ResponseCallbackType>(
-          embedded_worker()->AsWeakPtr(), request_id, callback));
-}
 
 template <typename ResponseMessage, typename CallbackType, typename... Args>
 bool ServiceWorkerVersion::EventResponseHandler<

@@ -97,10 +97,14 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
       ServiceWorkerFetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+      storage::mojom::BlobPtr body_as_blob,
       const scoped_refptr<ServiceWorkerVersion>& version);
 
+  // |body_as_blob| is kept around until BlobDataHandle is created from
+  // blob_uuid just to make sure the blob is kept alive.
   void StartResponse(const ServiceWorkerResponse& response,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+                     storage::mojom::BlobPtr body_as_blob,
                      mojom::URLLoaderRequest request,
                      mojom::URLLoaderClientPtr client);
   void AfterRead(scoped_refptr<net::IOBuffer> buffer, int bytes);
