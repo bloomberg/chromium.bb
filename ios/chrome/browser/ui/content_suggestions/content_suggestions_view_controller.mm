@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -456,6 +457,20 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       scrollViewWillEndDragging:scrollView
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
+
+  CGFloat toolbarHeight = ntp_header::kToolbarHeight;
+  CGFloat targetY = targetContentOffset->y;
+
+  if (IsIPadIdiom() || targetY <= 0 || targetY >= toolbarHeight)
+    return;
+
+  // Adjust the toolbar to be all the way on or off screen.
+  if (targetY > toolbarHeight / 2) {
+    [self.collectionView setContentOffset:CGPointMake(0, toolbarHeight)
+                                 animated:YES];
+  } else {
+    [self.collectionView setContentOffset:CGPointMake(0, 0) animated:YES];
+  }
 }
 
 #pragma mark - UIGestureRecognizerDelegate
