@@ -2160,33 +2160,33 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
   const int32_t *src = (const int32_t *)input;
   switch (tx_type) {
     case DCT_DCT:
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
       av1_inv_txfm2d_add_32x32(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                                bd);
       break;
+
+    // The optimised version only supports DCT_DCT, so force use of
+    // the C version for all other transform types.
+    case ADST_DCT:
+    case DCT_ADST:
+    case ADST_ADST:
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
     case DCT_FLIPADST:
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
-      av1_inv_txfm2d_add_32x32(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-                               bd);
-      break;
-    // use the c version for anything including identity for now
+    case IDTX:
     case V_DCT:
     case H_DCT:
     case V_ADST:
     case H_ADST:
     case V_FLIPADST:
     case H_FLIPADST:
-    case IDTX:
+#endif  // CONFIG_EXT_TX
       av1_inv_txfm2d_add_32x32_c(src, CONVERT_TO_SHORTPTR(dest), stride,
                                  tx_type, bd);
       break;
-#endif  // CONFIG_EXT_TX
+
     default: assert(0);
   }
 }
