@@ -394,15 +394,13 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         if (cm->use_highbitdepth) {
           cdef_filter_fb(
 #if CONFIG_CDEF_SINGLEPASS
-              NULL,
-              &CONVERT_TO_SHORTPTR(
+              NULL, &CONVERT_TO_SHORTPTR(xd->plane[pli].dst.buf)
 #else
-              (uint8_t *)&CONVERT_TO_SHORTPTR(
+              (uint8_t *)&CONVERT_TO_SHORTPTR(xd->plane[pli].dst.buf)
 #endif
-                  xd->plane[pli]
-                      .dst.buf)[xd->plane[pli].dst.stride *
-                                    (MI_SIZE_64X64 * fbr << mi_high_l2[pli]) +
-                                (fbc * MI_SIZE_64X64 << mi_wide_l2[pli])],
+                        [xd->plane[pli].dst.stride *
+                             (MI_SIZE_64X64 * fbr << mi_high_l2[pli]) +
+                         (fbc * MI_SIZE_64X64 << mi_wide_l2[pli])],
 #if CONFIG_CDEF_SINGLEPASS
               xd->plane[pli].dst.stride,
 #else
