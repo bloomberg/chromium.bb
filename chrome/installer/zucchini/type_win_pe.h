@@ -45,8 +45,10 @@ struct ImageDOSHeader {
   uint16_t e_oemid;  // 0x24
   uint16_t e_oeminfo;
   uint16_t e_res2[10];
-  uint32_t e_lfanew;  // 0x3c
+  uint32_t e_lfanew;  // 0x3C
 };
+static_assert(sizeof(ImageDOSHeader) == 0x40,
+              "DOS header size should be 0x40 bytes");
 
 // IMAGE_SECTION_HEADER
 struct ImageSectionHeader {
@@ -61,12 +63,16 @@ struct ImageSectionHeader {
   uint16_t number_of_line_numbers;   // Always zero in an image.
   uint32_t characteristics;
 };
+static_assert(sizeof(ImageSectionHeader) == 0x28,
+              "Section header size should be 0x28 bytes");
 
 // IMAGE_DATA_DIRECTORY
 struct ImageDataDirectory {
   uint32_t virtual_address;
   uint32_t size;
 };
+static_assert(sizeof(ImageDataDirectory) == 0x08,
+              "Data directory size should be 0x08 bytes");
 
 // IMAGE_FILE_HEADER
 struct ImageFileHeader {
@@ -78,10 +84,12 @@ struct ImageFileHeader {
   uint16_t size_of_optional_header;
   uint16_t characteristics;
 };
+static_assert(sizeof(ImageFileHeader) == 0x14,
+              "File header size should be 0x14 bytes");
 
 // IMAGE_OPTIONAL_HEADER
 struct ImageOptionalHeader {
-  uint16_t magic;  // 0x00: 0x10b or 0x107
+  uint16_t magic;  // 0x00: 0x10B
   uint8_t major_linker_version;
   uint8_t minor_linker_version;
   uint32_t size_of_code;
@@ -115,10 +123,12 @@ struct ImageOptionalHeader {
   ImageDataDirectory data_directory[kImageNumberOfDirectoryEntries];  // 0x60
   /* 0xE0 */
 };
+static_assert(sizeof(ImageOptionalHeader) == 0xE0,
+              "Optional header (32) size should be 0xE0 bytes");
 
 // IMAGE_OPTIONAL_HEADER64
 struct ImageOptionalHeader64 {
-  uint16_t magic;  // 0x00: 0x10b or 0x107
+  uint16_t magic;  // 0x00: 0x20B
   uint8_t major_linker_version;
   uint8_t minor_linker_version;
   uint32_t size_of_code;
@@ -151,6 +161,8 @@ struct ImageOptionalHeader64 {
   ImageDataDirectory data_directory[kImageNumberOfDirectoryEntries];  // 0x70
   /* 0xF0 */
 };
+static_assert(sizeof(ImageOptionalHeader64) == 0xF0,
+              "Optional header (64) size should be 0xF0 bytes");
 
 #pragma pack(pop)
 
