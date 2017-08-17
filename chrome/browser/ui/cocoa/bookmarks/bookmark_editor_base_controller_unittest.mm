@@ -284,7 +284,7 @@ TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
 TEST_F(BookmarkEditorBaseControllerTest, TouchBar) {
   if (@available(macOS 10.12.2, *)) {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+    feature_list.InitAndEnableFeature(features::kDialogTouchBar);
 
     NSTouchBar* touch_bar = [controller_ makeTouchBar];
     NSArray* touch_bar_items = [touch_bar itemIdentifiers];

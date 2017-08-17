@@ -361,7 +361,7 @@ NSString* const kOkEnabledName = @"okEnabled";
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);

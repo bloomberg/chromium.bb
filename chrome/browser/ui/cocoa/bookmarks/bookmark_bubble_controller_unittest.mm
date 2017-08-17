@@ -512,7 +512,7 @@ TEST_F(BookmarkBubbleControllerTest, TextfieldChanges) {
 TEST_F(BookmarkBubbleControllerTest, TouchBar) {
   if (@available(macOS 10.12.2, *)) {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+    feature_list.InitAndEnableFeature(features::kDialogTouchBar);
 
     const BookmarkNode* node = CreateTestBookmark();
     NSTouchBar* touch_bar = [ControllerForNode(node) makeTouchBar];
