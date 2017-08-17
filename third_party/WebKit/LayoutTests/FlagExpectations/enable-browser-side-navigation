@@ -20,7 +20,6 @@ Bug(718942) virtual/mojo-loading/http/tests/misc/onload-detach-during-csp-frame-
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
 Bug(718942) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
-Bug(718942) virtual/off-main-thread-fetch/http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failure ]
 
 # Console error message source location is present with PlzNavigate. It means
 # that URLs are potentially disclosed across cross-origin renderers.
@@ -56,4 +55,3 @@ Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-s
 # cross-origin iframe.
 Bug(none) http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
-

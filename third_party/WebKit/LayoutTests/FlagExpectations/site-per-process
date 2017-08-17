@@ -48,7 +48,6 @@ crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspe
 # https://crbug.com/602493 - Layout tests harness doesn't support history dump across OOPIFs
 crbug.com/602493 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
 crbug.com/602493 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
-crbug.com/602493 virtual/off-main-thread-fetch/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
 
 # https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
 # https://crbug.com/602497 - Inconsistent console messages about mixed content,
@@ -57,8 +56,6 @@ crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-iframe.html
 crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
-crbug.com/602497 virtual/off-main-thread-fetch/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
-crbug.com/602497 virtual/off-main-thread-fetch/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
@@ -78,7 +75,6 @@ crbug.com/606594 virtual/mojo-loading/http/tests/local/serviceworker/fetch-reque
 # https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
 crbug.com/607991 http/tests/misc/copy-resolves-urls.html [ Failure ]
 crbug.com/607991 virtual/mojo-loading/http/tests/misc/copy-resolves-urls.html [ Failure ]
-crbug.com/607991 virtual/off-main-thread-fetch/http/tests/misc/copy-resolves-urls.html [ Failure ]
 
 # https://crbug.com/608780 - window.performance doesn't work with OOPIFs
 crbug.com/608780 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Failure ]
@@ -143,7 +139,6 @@ crbug.com/678491 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [
 # These tests sometimes fail on usual bots but crash w/ --site-per-process.
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Crash ]
 crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Crash ]
-crbug.com/678492 virtual/off-main-thread-fetch/http/tests/misc/webtiming-ssl.php [ Crash ]
 
 # Slow tests. These are listed in SlowTests listed here also because
 # expectations are unfortunately not inherited automatically (e.g. see
