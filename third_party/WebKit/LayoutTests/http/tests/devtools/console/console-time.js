@@ -1,41 +1,35 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-testRunner.setDumpConsoleMessages(false);
+(async function() {
+  TestRunner.addResult(`console.time / console.timeEnd tests.\n`);
 
-function testFunction()
-{
-    console.time();
-    console.timeEnd();
-    console.time("42");
-    console.timeEnd("42");
-    console.time(239)
-    console.timeEnd(239);
-    console.time({});
-    console.timeEnd({});
-}
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    testRunner.setDumpConsoleMessages(false);
 
-function test()
-{
-    InspectorTest.waitUntilNthMessageReceived(4, dumpMessagesAndCompleTest);
-    InspectorTest.evaluateInPage("testFunction()");
-
-    function dumpMessagesAndCompleTest()
+    function testFunction()
     {
-        var messages = InspectorTest.dumpConsoleMessagesIntoArray();
-        messages = messages.map(message => message.replace(/\d+\.\d+ms/, "<time>"));
-        InspectorTest.addResults(messages);
-        InspectorTest.completeTest();
+      console.time();
+      console.timeEnd();
+      console.time("42");
+      console.timeEnd("42");
+      console.time(239)
+      console.timeEnd(239);
+      console.time({});
+      console.timeEnd({});
     }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>
-console.time / console.timeEnd tests.
-</p>
-</body>
-</html>
+  `);
+
+  ConsoleTestRunner.waitUntilNthMessageReceived(4, dumpMessagesAndCompleTest);
+  TestRunner.evaluateInPage('testFunction()');
+
+  function dumpMessagesAndCompleTest() {
+    var messages = ConsoleTestRunner.dumpConsoleMessagesIntoArray();
+    messages = messages.map(message => message.replace(/\d+\.\d+ms/, '<time>'));
+    TestRunner.addResults(messages);
+    TestRunner.completeTest();
+  }
+})();

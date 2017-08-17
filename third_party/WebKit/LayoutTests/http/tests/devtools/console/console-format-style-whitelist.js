@@ -1,10 +1,20 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-function onload()
-{
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+    `Tests that console logging dumps properly styled messages, and that the whole message gets the same style, regardless of multiple %c settings.\n`
+  );
+
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.loadHTML(`
+    <p>Tests that console logging dumps properly styled messages, and that
+    the whole message gets the same style, regardless of multiple %c
+    settings.</p>
+  `);
+  await TestRunner.evaluateInPagePromise(`
     console.log('%cColors are awesome.', 'color: blue;');
     console.log('%cSo are fonts!', 'font: 1em Helvetica;');
     console.log('%cAnd borders and margins and paddings!', 'border: 1px solid red; margin: 20px; padding: 10px;');
@@ -12,28 +22,12 @@ function onload()
 
     console.log('%cDisplay, on the other hand, is bad news.', 'display: none;');
     console.log('%cAnd position too.', 'position: absolute;');
-    runTest();
-}
-//# sourceURL=console-format-style-whitelist.html
-</script>
+  `);
 
-<script>
-function test()
-{
-    InspectorTest.expandConsoleMessages(onExpanded);
+  ConsoleTestRunner.expandConsoleMessages(onExpanded);
 
-    function onExpanded()
-    {
-        InspectorTest.dumpConsoleMessagesWithStyles();
-        InspectorTest.completeTest();
-    }
-}
-</script>
-</head>
-
-<body onload="onload()">
-<p>Tests that console logging dumps properly styled messages, and that
-the whole message gets the same style, regardless of multiple %c
-settings.</p>
-</body>
-</html>
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessagesWithStyles();
+    TestRunner.completeTest();
+  }
+})();

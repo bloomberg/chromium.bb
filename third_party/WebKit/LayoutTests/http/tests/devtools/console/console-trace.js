@@ -1,37 +1,28 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function b()
-{
-    console.trace();
-}
+(async function() {
+  TestRunner.addResult(`Tests that console.trace dumps stack trace with source URLs and line numbers.\n`);
 
-function a()
-{
-    b();
-}
-
-function test()
-{
-    function callback()
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    function b()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+      console.trace();
     }
-    InspectorTest.evaluateInPage("setTimeout(a, 0)");
-    InspectorTest.addConsoleSniffer(callback);
-}
 
-</script>
-</head>
+    function a()
+    {
+      b();
+    }
+  `);
 
-<body onload="runTest()">
-<p>
-Tests that console.trace dumps stack trace with source URLs and line numbers.
-</p>
-
-</body>
-</html>
+  function callback() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+  TestRunner.evaluateInPage('setTimeout(a, 0)');
+  ConsoleTestRunner.addConsoleSniffer(callback);
+})();

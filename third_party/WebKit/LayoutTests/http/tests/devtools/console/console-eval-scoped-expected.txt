@@ -1,11 +1,8 @@
-CONSOLE MESSAGE: line 4: with: Object property value
-CONSOLE MESSAGE: line 1: eval in with: Object property value
-CONSOLE MESSAGE: line 1: eval in function: Function parameter
 Tests that evaluating 'console.log()' in the console will have access to its outer scope variables. Bug 60547.
 
 
 Running: testSnippet1
-VM:4 with: Object property value
+console-eval-scoped.js:72 with: Object property value
 VM:1 eval in with: Object property value
 
 Running: testSnippet2

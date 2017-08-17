@@ -1,20 +1,22 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function onload()
-{
+(async function() {
+  TestRunner.addResult(`Tests that console logging dumps proper messages.\n`);
+
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
     console.log('log');
     console.debug('debug');
     console.info('info');
     console.warn('warn');
     console.error('error');
     for (var i = 0; i < 5; ++i)
-        console.log('repeated');
+      console.log('repeated');
     for (var i = 0; i < 2; ++i)
-        console.count('count');
+      console.count('count');
     console.group('group');
     console.groupEnd();
     console.log('1', '2', '3');
@@ -36,23 +38,9 @@ function onload()
     console.count("title");
     console.count("title");
     console.count("title");
+  `);
 
-    runTest();
-}
-
-function test()
-{
-    Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
-    InspectorTest.dumpConsoleMessagesWithClasses();
-    InspectorTest.completeTest();
-}
-</script>
-</head>
-
-<body onload="onload()">
-<p>
-Tests that console logging dumps proper messages.
-</p>
-
-</body>
-</html>
+  Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
+  ConsoleTestRunner.dumpConsoleMessagesWithClasses();
+  TestRunner.completeTest();
+})();

@@ -1,7 +1,5 @@
-CONSOLE MESSAGE: line 11: [object HTMLElement]
-CONSOLE MESSAGE: line 23: [object HTMLElement]
 Tests that logging custom elements uses proper formatting.
 
-console-log-custom-elements.html:11 foo-bar
-console-log-custom-elements.html:23 foo-bar2
+console-log-custom-elements.js:20 foo-bar
+console-log-custom-elements.js:32 foo-bar2
 

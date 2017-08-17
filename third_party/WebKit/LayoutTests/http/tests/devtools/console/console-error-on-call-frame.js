@@ -1,50 +1,43 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-function testFunction()
-{
-    var i = 0;
-    debugger;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test()
-{
-    InspectorTest.startDebuggerTest(step1);
+(async function() {
+  TestRunner.addResult(`Tests that console.error does not throw exception when executed in console on call frame.\n`);
 
-    function step1()
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    function testFunction()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+      var i = 0;
+      debugger;
     }
+  `);
 
-    function step2()
-    {
-        InspectorTest.evaluateInConsole("console.error(42)", step3);
-    }
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step3()
-    {
-        InspectorTest.resumeExecution(step4);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step4()
-    {
-        InspectorTest.expandConsoleMessages(onExpanded);
-    }
+  function step2() {
+    ConsoleTestRunner.evaluateInConsole('console.error(42)', step3);
+  }
 
-    function onExpanded()
-    {
-        var result = InspectorTest.dumpConsoleMessagesIntoArray().join("\n");
-        result = result.replace(/(\(program\)):\d+/g, "$1");
-        InspectorTest.addResult(result);
-        InspectorTest.completeDebuggerTest();
-    }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that console.error does not throw exception when executed in console on call frame.</p>
-</body>
-</html>
+  function step3() {
+    SourcesTestRunner.resumeExecution(step4);
+  }
+
+  function step4() {
+    ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
+
+  function onExpanded() {
+    var result = ConsoleTestRunner.dumpConsoleMessagesIntoArray().join('\n');
+    result = result.replace(/(\(program\)):\d+/g, '$1');
+    TestRunner.addResult(result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+})();

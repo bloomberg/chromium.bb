@@ -1,73 +1,62 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-function foo()
-{
-    console.trace(239);
-}
-//# sourceURL=foo.js
-</script>
-<script>
-function boo()
-{
-    foo();
-}
-//# sourceURL=boo.js
-</script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test()
-{
-    InspectorTest.evaluateInPage("boo()", step1);
+(async function() {
+  TestRunner.addResult(`Test that console.log() would linkify its location in respect with blackboxing.\n`);
 
-    function step1()
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+    function foo()
     {
-        dumpConsoleMessageURLs();
-
-        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step2);
-        var frameworkRegexString = "foo\\.js";
-        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+      console.trace(239);
     }
-
-    function step2()
+    //# sourceURL=foo.js
+  `);
+  await TestRunner.evaluateInPagePromise(`
+    function boo()
     {
-        dumpConsoleMessageURLs();
-        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step3);
-        var frameworkRegexString = "foo\\.js|boo\\.js";
-        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+      foo();
     }
+    //# sourceURL=boo.js
+  `);
 
-    function step3()
-    {
-        dumpConsoleMessageURLs();
-        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step4);
-        var frameworkRegexString = "";
-        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
-    }
+  TestRunner.evaluateInPage('boo()', step1);
 
-    function step4()
-    {
-        dumpConsoleMessageURLs();
-        InspectorTest.completeTest();
-    }
+  function step1() {
+    dumpConsoleMessageURLs();
 
-    function dumpConsoleMessageURLs()
-    {
-        var messages = Console.ConsoleView.instance()._visibleViewMessages;
-        for (var i = 0; i < messages.length; ++i) {
-            var element = messages[i].toMessageElement();
-            var anchor = element.querySelector(".console-message-anchor");
-            InspectorTest.addResult(anchor.textContent.replace(/VM\d+/g, "VM"));
-        }
+    TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step2);
+    var frameworkRegexString = 'foo\\.js';
+    Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
+  }
+
+  function step2() {
+    dumpConsoleMessageURLs();
+    TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step3);
+    var frameworkRegexString = 'foo\\.js|boo\\.js';
+    Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
+  }
+
+  function step3() {
+    dumpConsoleMessageURLs();
+    TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step4);
+    var frameworkRegexString = '';
+    Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
+  }
+
+  function step4() {
+    dumpConsoleMessageURLs();
+    TestRunner.completeTest();
+  }
+
+  function dumpConsoleMessageURLs() {
+    var messages = Console.ConsoleView.instance()._visibleViewMessages;
+    for (var i = 0; i < messages.length; ++i) {
+      var element = messages[i].toMessageElement();
+      var anchor = element.querySelector('.console-message-anchor');
+      TestRunner.addResult(anchor.textContent.replace(/VM\d+/g, 'VM'));
     }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>
-Test that console.log() would linkify its location in respect with blackboxing.
-</p>
-</body>
-</html>
+  }
+})();
