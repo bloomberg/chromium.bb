@@ -104,12 +104,10 @@ const gfx::VectorIcon& GetBluetoothDeviceIcon(
     case device::BluetoothDeviceType::MODEM:
     case device::BluetoothDeviceType::PERIPHERAL:
       return ash::kSystemMenuBluetoothIcon;
-    case device::BluetoothDeviceType::UNKNOWN:
-      LOG(WARNING) << "Unknown device type icon for Bluetooth was requested.";
-      break;
+    default:
+      return connected ? ash::kSystemMenuBluetoothConnectedIcon
+                       : ash::kSystemMenuBluetoothIcon;
   }
-  return connected ? ash::kSystemMenuBluetoothConnectedIcon
-                   : ash::kSystemMenuBluetoothIcon;
 }
 
 const int kDisabledPanelLabelBaselineY = 20;
