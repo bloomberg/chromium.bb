@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -96,6 +97,12 @@ void TabStatsTracker::OnResume() {
 
 void TabStatsTracker::UmaStatsReportingDelegate::ReportTabCountOnResume(
     size_t tab_count) {
+  // Don't report the number of tabs on resume if Chrome is running in
+  // background with no visible window.
+  if (g_browser_process && g_browser_process->background_mode_manager()
+                               ->IsBackgroundWithoutWindows()) {
+    return;
+  }
   UMA_HISTOGRAM_COUNTS_10000(kNumberOfTabsOnResumeHistogramName, tab_count);
 }
 
