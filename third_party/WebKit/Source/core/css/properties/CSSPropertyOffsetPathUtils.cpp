@@ -12,6 +12,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

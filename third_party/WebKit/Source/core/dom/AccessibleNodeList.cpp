@@ -5,6 +5,7 @@
 #include "core/dom/AccessibleNodeList.h"
 
 #include "core/dom/AccessibleNode.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
