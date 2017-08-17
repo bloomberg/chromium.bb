@@ -15,7 +15,7 @@ void SignalInitializeCrashReporting() {}
 
 void SignalChromeElf() {}
 
-void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
+bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
                                size_t user_data_dir_length,
                                wchar_t* invalid_user_data_dir,
                                size_t invalid_user_data_dir_length) {
@@ -30,4 +30,6 @@ void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
             user_data_dir_path.value().c_str(), _TRUNCATE);
   wcsncpy_s(invalid_user_data_dir, invalid_user_data_dir_length, L"",
             _TRUNCATE);
+
+  return !user_data_dir_path.empty();
 }

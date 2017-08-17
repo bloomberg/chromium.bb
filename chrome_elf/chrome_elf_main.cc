@@ -29,7 +29,7 @@ void SignalChromeElf() {
   blacklist::ResetBeacon();
 }
 
-void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
+bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
                                size_t user_data_dir_length,
                                wchar_t* invalid_user_data_dir,
                                size_t invalid_user_data_dir_length) {
@@ -42,6 +42,8 @@ void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
             _TRUNCATE);
   wcsncpy_s(invalid_user_data_dir, invalid_user_data_dir_length,
             invalid_user_data_dir_str.c_str(), _TRUNCATE);
+
+  return true;
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {

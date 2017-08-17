@@ -394,17 +394,20 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
   // Reach out to chrome_elf for the truth on the user data directory.
   // Note that in tests, this links to chrome_elf_test_stubs.
   wchar_t user_data_dir_buf[MAX_PATH], invalid_user_data_dir_buf[MAX_PATH];
-  GetUserDataDirectoryThunk(user_data_dir_buf, arraysize(user_data_dir_buf),
-                            invalid_user_data_dir_buf,
-                            arraysize(invalid_user_data_dir_buf));
-  base::FilePath user_data_dir(user_data_dir_buf);
-  if (invalid_user_data_dir_buf[0] != 0) {
-    chrome::SetInvalidSpecifiedUserDataDir(
-        base::FilePath(invalid_user_data_dir_buf));
-    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+
+  // In tests this may return false, implying the user data dir should be unset.
+  if (GetUserDataDirectoryThunk(user_data_dir_buf, arraysize(user_data_dir_buf),
+                                invalid_user_data_dir_buf,
+                                arraysize(invalid_user_data_dir_buf))) {
+    base::FilePath user_data_dir(user_data_dir_buf);
+    if (invalid_user_data_dir_buf[0] != 0) {
+      chrome::SetInvalidSpecifiedUserDataDir(
+          base::FilePath(invalid_user_data_dir_buf));
+      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+    }
+    CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+                                                 user_data_dir, false, true));
   }
-  CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
-                                               user_data_dir, false, true));
 #else  // OS_WIN
   base::FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);

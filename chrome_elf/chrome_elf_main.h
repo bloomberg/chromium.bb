@@ -12,7 +12,10 @@
 extern "C" {
 
 void DumpProcessWithoutCrash();
-void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
+
+// Returns true if |user_data_dir| or |invalid_data_dir| contain data.
+// This should always be the case in non-test builds.
+bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
                                size_t user_data_dir_length,
                                wchar_t* invalid_user_data_dir,
                                size_t invalid_user_data_dir_length);
