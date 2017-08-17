@@ -66,6 +66,10 @@ constexpr char kDisallowSubframeConsoleMessageSuffix[] =
 constexpr char kLearnMoreLink[] =
     "https://support.google.com/chrome/?p=blocked_ads";
 
+constexpr char kDisallowNewWindowMessage[] =
+    "Chrome prevented this site from opening a new tab or window. Learn more "
+    "at https://www.chromestatus.com/feature/5243055179300864";
+
 }  // namespace subresource_filter
 
 #endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CONSTANTS_H_
