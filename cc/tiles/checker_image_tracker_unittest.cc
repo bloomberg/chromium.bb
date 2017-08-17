@@ -543,5 +543,18 @@ TEST_F(CheckerImageTrackerTest, RespectsDecodePriority) {
   EXPECT_EQ(image_controller_.decoded_images()[3], image4);
 }
 
+TEST_F(CheckerImageTrackerTest, UseSrcRectForSize) {
+  SetUpTracker(true);
+
+  // Create an image with checkerable dimensions and subrect it. It should not
+  // be checkered.
+  DrawImage image = CreateImage(ImageType::CHECKERABLE);
+  image = DrawImage(image.paint_image(), SkIRect::MakeWH(200, 200),
+                    image.filter_quality(), image.matrix(),
+                    image.target_color_space());
+  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
+      image, WhichTree::PENDING_TREE));
+}
+
 }  // namespace
 }  // namespace cc
