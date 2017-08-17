@@ -119,8 +119,7 @@
       'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_bot',
       'Chromium Mac Goma Canary LocalOutputCache': 'release_bot',
-      'Chromium Win 10 GCE Tests (Win 7 Build)': 'release_bot_minimal_symbols',
-      'Chromium Win 10 GCE Tests (Win 10 Build)': 'release_bot_minimal_symbols',
+      'Chromium Win 10 GCE Tests': 'release_bot_minimal_symbols',
       'Chromium Win PGO Builder': {
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
         '2': 'official_optimize_chrome_pgo_phase_2_x86',
