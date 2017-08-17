@@ -694,7 +694,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
-#if !CONFIG_PVQ || !CONFIG_LV_MAP
+#if !CONFIG_PVQ && !CONFIG_LV_MAP
       if (!dry_run) {
         (*t)->token = EOSB_TOKEN;
         (*t)++;

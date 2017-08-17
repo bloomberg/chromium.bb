@@ -2529,7 +2529,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                &cols);
       assert(*tok < tok_end);
       pack_palette_tokens(w, tok, palette_size_plane, rows * cols);
+#if !CONFIG_LV_MAP
       assert(*tok < tok_end + mbmi->skip);
+#endif  // !CONFIG_LV_MAP
     }
   }
 
@@ -2618,7 +2620,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y)) {
+#if !CONFIG_LV_MAP
         (*tok)++;
+#endif  // !CONFIG_LV_MAP
         continue;
       }
 #endif
