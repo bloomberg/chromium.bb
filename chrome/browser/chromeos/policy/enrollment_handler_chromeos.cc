@@ -170,7 +170,7 @@ void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
         EnrollmentStatus::ForStatus(EnrollmentStatus::LICENSE_REQUEST_FAILED));
     return;
   }
-  if (!available_licenses_callback_)
+  if (available_licenses_callback_)
     available_licenses_callback_.Run(license_map);
 }
 
