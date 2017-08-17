@@ -7,13 +7,13 @@
 function test()
 {
     var containerNode;
-    InspectorTest.expandElementsTree(step1);
+    ElementsTestRunner.expandElementsTree(step1);
 
     function step1(node)
     {
-        containerNode = InspectorTest.expandedNodeWithId("container");
-        InspectorTest.addResult("========= Original ========");
-        InspectorTest.dumpElementsTree(containerNode);
+        containerNode = ElementsTestRunner.expandedNodeWithId("container");
+        TestRunner.addResult("========= Original ========");
+        ElementsTestRunner.dumpElementsTree(containerNode);
         step2();
     }
 
@@ -21,8 +21,8 @@ function test()
     {
         function callback()
         {
-            InspectorTest.addResult("===== Modified element =====");
-            InspectorTest.dumpElementsTree(containerNode);
+            TestRunner.addResult("===== Modified element =====");
+            ElementsTestRunner.dumpElementsTree(containerNode);
             step3();
         }
         containerNode.setAttribute("", "foo=\"bar\"", callback);
@@ -30,13 +30,13 @@ function test()
 
     async function step3()
     {
-        await InspectorTest.domModel.undo();
-        InspectorTest.addResult("===== Undo 1 =====");
-        InspectorTest.dumpElementsTree(containerNode);
+        await TestRunner.domModel.undo();
+        TestRunner.addResult("===== Undo 1 =====");
+        ElementsTestRunner.dumpElementsTree(containerNode);
 
-        InspectorTest.addResult("===== Undo 2 =====");
-        InspectorTest.dumpElementsTree(containerNode);
-        InspectorTest.completeTest();
+        TestRunner.addResult("===== Undo 2 =====");
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        TestRunner.completeTest();
     }
 }
 

@@ -23,23 +23,23 @@ function test()
     var childNode;
     var frameNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            treeOutline = InspectorTest.firstElementsTreeOutline();
+            treeOutline = ElementsTestRunner.firstElementsTreeOutline();
 
-            InspectorTest.nodeWithId("parent-node", callback);
+            ElementsTestRunner.nodeWithId("parent-node", callback);
 
             function callback(node)
             {
                 parentNode = node
-                InspectorTest.nodeWithId("child-node", callback2);
+                ElementsTestRunner.nodeWithId("child-node", callback2);
             }
 
             function callback2(node)
             {
                 childNode = node;
-                InspectorTest.nodeWithId("frame-node", callback3);
+                ElementsTestRunner.nodeWithId("frame-node", callback3);
             }
 
             function callback3(node)
@@ -55,21 +55,21 @@ function test()
 
             function callback()
             {
-                InspectorTest.addResult("=== Added hide shortcut ===");
-                InspectorTest.cssModel.computedStylePromise(parentNode.id).then(callback2);
+                TestRunner.addResult("=== Added hide shortcut ===");
+                TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
             }
 
             function callback2(style)
             {
-                InspectorTest.addResult("=== Parent node is hidden ===");
-                InspectorTest.addResult(getPropertyText(style, "visibility"));
-                InspectorTest.cssModel.computedStylePromise(childNode.id).then(callback3);
+                TestRunner.addResult("=== Parent node is hidden ===");
+                TestRunner.addResult(getPropertyText(style, "visibility"));
+                TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
             }
 
             function callback3(style)
             {
-                InspectorTest.addResult("=== Child node is hidden ===");
-                InspectorTest.addResult(getPropertyText(style, "visibility"));
+                TestRunner.addResult("=== Child node is hidden ===");
+                TestRunner.addResult(getPropertyText(style, "visibility"));
                 next();
             }
         },
@@ -80,21 +80,21 @@ function test()
 
             function callback()
             {
-                InspectorTest.addResult("=== Removed hide shortcut ===");
-                InspectorTest.cssModel.computedStylePromise(parentNode.id).then(callback2);
+                TestRunner.addResult("=== Removed hide shortcut ===");
+                TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
             }
 
             function callback2(style)
             {
-                InspectorTest.addResult("=== Parent node is visible ===");
-                InspectorTest.addResult(getPropertyText(style, "visibility"));
-                InspectorTest.cssModel.computedStylePromise(childNode.id).then(callback3);
+                TestRunner.addResult("=== Parent node is visible ===");
+                TestRunner.addResult(getPropertyText(style, "visibility"));
+                TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
             }
 
             function callback3(style)
             {
-                InspectorTest.addResult("=== Child node is visible ===");
-                InspectorTest.addResult(getPropertyText(style, "visibility"));
+                TestRunner.addResult("=== Child node is visible ===");
+                TestRunner.addResult(getPropertyText(style, "visibility"));
                 next();
             }
         },
@@ -125,10 +125,10 @@ function test()
 
             function callback()
             {
-                InspectorTest.evaluateInPagePromise("pseudoIframeVisibility()").then(function(result) {
-                    InspectorTest.addResult("=== Added hide shortcut in frame ===");
-                    InspectorTest.addResult("=== Frame node is hidden ===");
-                    InspectorTest.addResult("visibility: " + result.value + ";");
+                TestRunner.evaluateInPagePromise("pseudoIframeVisibility()").then(function(result) {
+                    TestRunner.addResult("=== Added hide shortcut in frame ===");
+                    TestRunner.addResult("=== Frame node is hidden ===");
+                    TestRunner.addResult("visibility: " + result.value + ";");
                     next();
                 });
             }
@@ -146,8 +146,8 @@ function test()
         function callback()
         {
             var pseudoNodeTypeArg = pseudoNode.pseudoType() ? ("\"" + pseudoNode.pseudoType() + "\"") : "undefined";
-            InspectorTest.evaluateInPagePromise("pseudoVisibility(" + pseudoNodeTypeArg + ")").then(function(result) {
-                InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result.value + "'");
+            TestRunner.evaluateInPagePromise("pseudoVisibility(" + pseudoNodeTypeArg + ")").then(function(result) {
+                TestRunner.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result.value + "'");
                 next();
             });
         }

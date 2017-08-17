@@ -7,10 +7,10 @@ function test()
 {
     var mainContext;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function initialize(next)
         {
-            InspectorTest.expandElementsTree(onExpanded);
+            ElementsTestRunner.expandElementsTree(onExpanded);
 
             function onExpanded()
             {
@@ -21,24 +21,24 @@ function test()
 
         function selectIframeInnerNode(next)
         {
-            InspectorTest.selectNodeWithId("head", dumpContextAndNext.bind(null, next));
+            ElementsTestRunner.selectNodeWithId("head", dumpContextAndNext.bind(null, next));
         },
 
         function selectMainFrameNode(next)
         {
-            InspectorTest.selectNodeWithId("element", dumpContextAndNext.bind(null, next));
+            ElementsTestRunner.selectNodeWithId("element", dumpContextAndNext.bind(null, next));
         },
 
         function selectIframeNode(next)
         {
-            InspectorTest.selectNodeWithId("iframe-per-se", dumpContextAndNext.bind(null, next));
+            ElementsTestRunner.selectNodeWithId("iframe-per-se", dumpContextAndNext.bind(null, next));
         },
 
         function selectIframeImmediateChild(next)
         {
             var iframe = UI.context.flavor(SDK.DOMNode);
             var child = iframe.firstChild;
-            InspectorTest.selectNode(child).then(dumpContextAndNext.bind(null, next));
+            ElementsTestRunner.selectNode(child).then(dumpContextAndNext.bind(null, next));
         },
     ]);
 
@@ -48,8 +48,8 @@ function test()
         var node = UI.context.flavor(SDK.DOMNode);
         var contextName = context === mainContext ? "main" : "iframe";
         var matchesNode = context.frameId === node.frameId();
-        InspectorTest.addResult("Execution Context: " + contextName);
-        InspectorTest.addResult("          matches: " + matchesNode);
+        TestRunner.addResult("Execution Context: " + contextName);
+        TestRunner.addResult("          matches: " + matchesNode);
         next();
     }
 }

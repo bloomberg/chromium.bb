@@ -34,7 +34,7 @@ function onload()
 async function test()
 {
     function dumpGridHighlight(id) {
-        return new Promise(resolve => InspectorTest.dumpInspectorHighlightJSON(id, resolve));
+        return new Promise(resolve => ElementsTestRunner.dumpInspectorHighlightJSON(id, resolve));
     }
 
     try {
@@ -44,9 +44,9 @@ async function test()
 
 
     } catch (e) {
-        InspectorTest.addResult(e.message);
+        TestRunner.addResult(e.message);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

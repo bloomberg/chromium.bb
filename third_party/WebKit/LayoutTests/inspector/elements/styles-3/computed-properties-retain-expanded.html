@@ -23,22 +23,22 @@ div {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", step1);
 
     function step1()
     {
-        var treeElement = InspectorTest.findComputedPropertyWithName("display");
+        var treeElement = ElementsTestRunner.findComputedPropertyWithName("display");
         treeElement.expand();
-        InspectorTest.addResult("\n#inspected computed styles: ");
-        InspectorTest.dumpComputedStyle(true);
-        InspectorTest.selectNodeAndWaitForStylesWithComputed("other", step2);
+        TestRunner.addResult("\n#inspected computed styles: ");
+        ElementsTestRunner.dumpComputedStyle(true);
+        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("other", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("\n#other computed styles: ");
-        InspectorTest.dumpComputedStyle(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("\n#other computed styles: ");
+        ElementsTestRunner.dumpComputedStyle(true);
+        TestRunner.completeTest();
     }
 }
 

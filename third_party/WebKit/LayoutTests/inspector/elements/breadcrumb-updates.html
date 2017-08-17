@@ -17,32 +17,32 @@ function deleteClass()
 
 function test()
 {
-    InspectorTest.expandElementsTree(step0);
+    ElementsTestRunner.expandElementsTree(step0);
 
     function step0()
     {
-        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step1);
-        InspectorTest.selectNodeWithId("target");
+        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step1);
+        ElementsTestRunner.selectNodeWithId("target");
     }
 
     function step1()
     {
-        InspectorTest.dumpBreadcrumb("Original breadcrumb");
-        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step2);
-        InspectorTest.evaluateInPage("changeClass()");
+        ElementsTestRunner.dumpBreadcrumb("Original breadcrumb");
+        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step2);
+        TestRunner.evaluateInPage("changeClass()");
     }
 
     function step2()
     {
-        InspectorTest.dumpBreadcrumb("After class change");
-        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step3);
-        InspectorTest.evaluateInPage("deleteClass()");
+        ElementsTestRunner.dumpBreadcrumb("After class change");
+        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step3);
+        TestRunner.evaluateInPage("deleteClass()");
     }
 
     function step3()
     {
-        InspectorTest.dumpBreadcrumb("After class removal");
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpBreadcrumb("After class removal");
+        TestRunner.completeTest();
     }
 }
 

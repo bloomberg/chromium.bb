@@ -93,35 +93,35 @@ function setupReturnIncorrectResult()
 function test()
 {
     Common.settingForTest("showEventListenersForAncestors").set(false);
-    InspectorTest.selectNodeWithId("inspectedNode", step1);
+    ElementsTestRunner.selectNodeWithId("inspectedNode", step1);
 
     function step1()
     {
-        InspectorTest.addResult("== Incorrect fetchers")
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+        TestRunner.addResult("== Incorrect fetchers")
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
     }
 
     function step2()
     {
-        InspectorTest.evaluateInPage("setupExceptionInGetter()", step3);
+        TestRunner.evaluateInPage("setupExceptionInGetter()", step3);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("inspectedNode", step4);
+        ElementsTestRunner.selectNodeWithId("inspectedNode", step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("== Exception in fetchers' getter");
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step5);
-        InspectorTest.eventListenersWidget().doUpdate();
+        TestRunner.addResult("== Exception in fetchers' getter");
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step5);
+        ElementsTestRunner.eventListenersWidget().doUpdate();
     }
 
     function step5()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+        TestRunner.completeTest();
     }
 }
 

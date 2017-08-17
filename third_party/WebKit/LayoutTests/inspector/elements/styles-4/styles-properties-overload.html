@@ -27,12 +27,12 @@ div {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspect", step2);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspect", step2);
 
     function step2()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false, false);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
+        TestRunner.completeTest();
     }
 }
 

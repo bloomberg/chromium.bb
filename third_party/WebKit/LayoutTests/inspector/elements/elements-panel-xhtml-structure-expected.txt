@@ -9,7 +9,7 @@ Next line
           <script src="../../http/tests/inspector/inspector-test.js"></script>
           <script src="../../http/tests/inspector/elements-test.js"></script>
         - <script>
-              <![CDATA[function test(){    InspectorTest.expandElementsTree(step1);    function step1()    {        InspectorTest.dumpElementsTree();        InspectorTest.completeTest();    }}]]>
+              <![CDATA[function test(){    ElementsTestRunner.expandElementsTree(step1);    function step1()    {        ElementsTestRunner.dumpElementsTree();        TestRunner.completeTest();    }}]]>
           </script>
       </Head>
     - <body onload="runTest()">

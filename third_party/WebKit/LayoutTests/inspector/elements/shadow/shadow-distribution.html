@@ -65,7 +65,7 @@ function reparentElement(elementId, parentId)
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function createHost1(next)
         {
             evalAndDump("createShadowRoot('host1', ['slot1', 'slot2', ''])", "host1", next);
@@ -149,11 +149,11 @@ function test()
 
     function evalAndDump(code, nodeId, next)
     {
-        InspectorTest.evaluateInPage(code, InspectorTest.expandElementsTree.bind(InspectorTest, dump));
+        TestRunner.evaluateInPage(code, ElementsTestRunner.expandElementsTree.bind(InspectorTest, dump));
 
         function dump()
         {
-            InspectorTest.dumpElementsTree(InspectorTest.expandedNodeWithId(nodeId));
+            ElementsTestRunner.dumpElementsTree(ElementsTestRunner.expandedNodeWithId(nodeId));
             next();
         }
     }

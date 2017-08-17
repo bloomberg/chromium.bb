@@ -7,7 +7,7 @@
 //<![CDATA[
 function test()
 {
-    InspectorTest.expandElementsTree(dumpNodes.bind(null, ""));
+    ElementsTestRunner.expandElementsTree(dumpNodes.bind(null, ""));
     var doc;
 
     function dumpNodes(prefix, node)
@@ -23,12 +23,12 @@ function test()
         for (var i = 0; children && i < children.length; ++i)
             dumpNodes(prefix + "  ", children[i]);
         if (node === doc)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 
     function getDocumentElement()
     {
-        var map = InspectorTest.domModel._idToDOMNode;
+        var map = TestRunner.domModel._idToDOMNode;
         for (var id in map) {
             if (map[id].nodeName() === "#document")
                 return map[id];
@@ -40,7 +40,7 @@ function test()
     function dumpNodeData(node, prefix)
     {
         var result = prefix + "'" + node.nodeName() + "':'" + node.nodeValue() + "' - '" + Components.DOMPresentationUtils.xPath(node, true) + "'";
-        InspectorTest.addResult(result.replace(/\r?\n/g, "\\n"));
+        TestRunner.addResult(result.replace(/\r?\n/g, "\\n"));
     }
 }
 //]]>

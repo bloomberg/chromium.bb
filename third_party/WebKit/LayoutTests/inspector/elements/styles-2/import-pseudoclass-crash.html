@@ -7,11 +7,11 @@
 
 function test()
 {
-    InspectorTest.nodeWithId("lastchild", nodeFound);
+    ElementsTestRunner.nodeWithId("lastchild", nodeFound);
 
     function nodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
+        TestRunner.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
     }
 
     var styleSheetId;
@@ -19,18 +19,18 @@ function test()
     function matchedStylesCallback(matchedResult)
     {
         styleSheetId = matchedResult.nodeStyles()[1].styleSheetId;
-        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
+        TestRunner.CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n").then(modifiedCallback);
     }
 
     function modifiedCallback()
     {
-        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n").then(modifiedCallback2);
+        TestRunner.CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n").then(modifiedCallback2);
     }
 
     function modifiedCallback2()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

@@ -10,12 +10,12 @@ function updateShadowDOM()
 
 function test()
 {
-    InspectorTest.expandElementsTree(function() {
-        InspectorTest.evaluateInPage("updateShadowDOM()", function() {
-            InspectorTest.expandElementsTree(function() {
-                var containerElem = InspectorTest.expandedNodeWithId('container');
-                InspectorTest.dumpElementsTree(containerElem);
-                InspectorTest.completeTest();
+    ElementsTestRunner.expandElementsTree(function() {
+        TestRunner.evaluateInPage("updateShadowDOM()", function() {
+            ElementsTestRunner.expandElementsTree(function() {
+                var containerElem = ElementsTestRunner.expandedNodeWithId('container');
+                ElementsTestRunner.dumpElementsTree(containerElem);
+                TestRunner.completeTest();
             });
         });
     });

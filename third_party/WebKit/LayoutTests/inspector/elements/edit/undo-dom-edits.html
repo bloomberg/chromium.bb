@@ -10,12 +10,12 @@ function test()
 
     function testSetUp(next)
     {
-        InspectorTest.addResult("Setting up");
-        InspectorTest.expandElementsTree(callback);
+        TestRunner.addResult("Setting up");
+        ElementsTestRunner.expandElementsTree(callback);
 
         function callback()
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         }
     }
     testSuite.push(testSetUp);
@@ -23,35 +23,35 @@ function test()
 
     function testRemove(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-remove"); 
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-remove"); 
         node.removeNode(callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testRemove));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testRemove));
 
 
     function testSetNodeName(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-set-name"); 
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-set-name"); 
         node.setNodeName("span", callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testSetNodeName));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testSetNodeName));
 
 
     function testSetNodeValue(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-set-value"); 
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-set-value"); 
         node.firstChild.setNodeValue("New Text", callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testSetNodeValue));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testSetNodeValue));
 
     function testEditAsHTML(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-edit-as-html"); 
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-edit-as-html"); 
         node.setOuterHTML("<div id=\"node-to-edit-as-html\"><div id=\"span2\">Text2</div></div><span>Second node</span>", callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testEditAsHTML));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testEditAsHTML));
 
-    InspectorTest.runTestSuite(testSuite);
+    TestRunner.runTestSuite(testSuite);
 }
 
 </script>

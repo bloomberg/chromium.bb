@@ -30,35 +30,35 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("third", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("third", next);
         },
 
         function onNodeSelected(next)
         {
-            InspectorTest.dumpRenderedMatchedStyles();
+            ElementsTestRunner.dumpRenderedMatchedStyles();
             next();
         },
 
         function testFilterFontFamily(next)
         {
-            InspectorTest.filterMatchedStyles("font-family");
+            ElementsTestRunner.filterMatchedStyles("font-family");
             dumpSidebarSeparators();
             next();
         },
 
         function testContentProperty(next)
         {
-            InspectorTest.filterMatchedStyles("content");
+            ElementsTestRunner.filterMatchedStyles("content");
             dumpSidebarSeparators();
             next();
         },
 
         function testDisplayProperty(next)
         {
-            InspectorTest.filterMatchedStyles("display");
+            ElementsTestRunner.filterMatchedStyles("display");
             dumpSidebarSeparators();
             next();
         }
@@ -71,7 +71,7 @@ function test()
             var separator = separators[i];
             var hidden = separator.classList.contains("hidden");
             var text = String.sprintf("%s %s", hidden ? "[ HIDDEN ] " : "[ VISIBLE ]", separator.deepTextContent());
-            InspectorTest.addResult(text);
+            TestRunner.addResult(text);
         }
     }
 }

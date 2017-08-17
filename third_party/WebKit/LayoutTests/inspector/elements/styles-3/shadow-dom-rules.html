@@ -13,19 +13,19 @@ function createShadowRoot()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testInit(next)
         {
-            InspectorTest.evaluateInPage("createShadowRoot()", callback);
+            TestRunner.evaluateInPage("createShadowRoot()", callback);
             function callback()
             {
-              InspectorTest.selectNodeAndWaitForStyles("inner", next);
+              ElementsTestRunner.selectNodeAndWaitForStyles("inner", next);
             }
         },
 
         function testDumpStyles(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             next();
         }
     ]);

@@ -54,7 +54,7 @@ function test()
         'hsla'
     ];
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testColors(next)
         {
             for (var i = 0; i < colors.length; ++i)
@@ -73,11 +73,11 @@ function test()
     {
         var color = Common.Color.parse(colorString);
         if (!color) {
-            InspectorTest.addResult("");
-            InspectorTest.addResult("SUCCESS: parsed invalid color " + colorString + " to null");
+            TestRunner.addResult("");
+            TestRunner.addResult("SUCCESS: parsed invalid color " + colorString + " to null");
         } else {
-            InspectorTest.addResult("");
-            InspectorTest.addResult("FAIL: invalid color " + colorString + " did not parse to to null");
+            TestRunner.addResult("");
+            TestRunner.addResult("FAIL: invalid color " + colorString + " did not parse to to null");
         }
     }
 
@@ -87,9 +87,9 @@ function test()
         if (!color)
             return;
 
-        InspectorTest.addResult("");
-        InspectorTest.addResult("color: " + colorString);
-        InspectorTest.addResult("  simple: " + !color.hasAlpha());
+        TestRunner.addResult("");
+        TestRunner.addResult("color: " + colorString);
+        TestRunner.addResult("  simple: " + !color.hasAlpha());
         var cf = Common.Color.Format;
         for (var colorFormatKey in cf) {
             var colorFormat = cf[colorFormatKey];
@@ -105,7 +105,7 @@ function test()
             // If there is no nickname, then skip it.
             if (colorFormat === cf.Nickname && !color.nickname())
                 continue;
-            InspectorTest.addResult('  ' + colorFormat + ": " + color.asString(colorFormat));
+            TestRunner.addResult('  ' + colorFormat + ": " + color.asString(colorFormat));
         }
     }
 }

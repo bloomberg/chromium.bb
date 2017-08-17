@@ -12,36 +12,36 @@
 function test()
 {
     var treeElement;
-    InspectorTest.selectNodeAndWaitForStyles("inspected", editProperty);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", editProperty);
 
     function editProperty()
     {
-        treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         treeElement.valueElement.textContent = "red";
-        InspectorTest.waitForStyleApplied(commitInvalidProperty);
+        ElementsTestRunner.waitForStyleApplied(commitInvalidProperty);
         treeElement.kickFreeFlowStyleEditForTest();
     }
 
     function commitInvalidProperty()
     {
         treeElement.valueElement.textContent = "red/*";
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(invalidCommitted);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(invalidCommitted);
     }
 
     function invalidCommitted()
     {
-        InspectorTest.waitForStyleApplied(dumpAndExit);
+        ElementsTestRunner.waitForStyleApplied(dumpAndExit);
     }
 
     function dumpAndExit()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 

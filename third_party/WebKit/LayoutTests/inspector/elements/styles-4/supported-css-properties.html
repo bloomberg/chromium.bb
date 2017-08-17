@@ -6,8 +6,8 @@ function test()
 {
     var marginLonghands = SDK.cssMetadata().longhands("margin");
     marginLonghands.sort();
-    InspectorTest.addResult("Margin longhands: " + marginLonghands.join(", "));
-    InspectorTest.completeTest();
+    TestRunner.addResult("Margin longhands: " + marginLonghands.join(", "));
+    TestRunner.completeTest();
 }
 </script>
 </head>

@@ -9,7 +9,7 @@ function test()
 {
     var formattedStyle;
 
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
 
     function onStyleSheetChanged(event)
     {
@@ -18,14 +18,14 @@ function test()
         formattedStyle.rebase(event.data.edit);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function initFormattedStyle(next)
         {
             function callback(matchedResult)
             {
                 if (!matchedResult) {
-                    InspectorTest.addResult("empty styles");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("empty styles");
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -35,9 +35,9 @@ function test()
 
             function nodeCallback(node)
             {
-                InspectorTest.cssModel.matchedStylesPromise(node.id, false, false).then(callback);
+                TestRunner.cssModel.matchedStylesPromise(node.id, false, false).then(callback);
             }
-            InspectorTest.selectNodeWithId("formatted", nodeCallback);
+            ElementsTestRunner.selectNodeWithId("formatted", nodeCallback);
         },
 
         function testFormattedDisableLast(next)
@@ -63,8 +63,8 @@ function test()
     function dumpFormattedAndCallNext(next, success)
     {
         if (!success) {
-            InspectorTest.addResult("error: operation failed.");
-            InspectorTest.completeTest();
+            TestRunner.addResult("error: operation failed.");
+            TestRunner.completeTest();
             return;
         }
 
@@ -77,8 +77,8 @@ function test()
     {
         if (!style)
             return;
-        InspectorTest.addResult("raw cssText:");
-        InspectorTest.addResult("{" + style.cssText + "}");
+        TestRunner.addResult("raw cssText:");
+        TestRunner.addResult("{" + style.cssText + "}");
     }
 }
 </script>

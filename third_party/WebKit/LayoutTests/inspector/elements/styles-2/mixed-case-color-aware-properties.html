@@ -9,9 +9,9 @@ function test()
     var colorAwareProperties = ["bAckground-ColoR", "COloR", "Border-coLoR", "border-right-color", "BOX-SHADOW"];
     for (var i = 0; i < colorAwareProperties.length; ++i) {
         var isColorAware = SDK.cssMetadata().isColorAwareProperty(colorAwareProperties[i]);
-        InspectorTest.addResult(colorAwareProperties[i] + (isColorAware ? " is" : " is NOT") + " color aware");
+        TestRunner.addResult(colorAwareProperties[i] + (isColorAware ? " is" : " is NOT") + " color aware");
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

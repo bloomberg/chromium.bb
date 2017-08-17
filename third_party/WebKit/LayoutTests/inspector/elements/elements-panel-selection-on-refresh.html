@@ -6,25 +6,25 @@
 
 function test()
 {
-    InspectorTest.selectNodeWithId("test-topic", step1);
+    ElementsTestRunner.selectNodeWithId("test-topic", step1);
 
     function step1()
     {
-        InspectorTest.reloadPage(step2);
+        TestRunner.reloadPage(step2);
     }
  
     function step2()
     {
-        InspectorTest.deprecatedRunAfterPendingDispatches(step3);
+        TestRunner.deprecatedRunAfterPendingDispatches(step3);
     }
 
     function step3()
     {
         // We should have "test-topic" element selected after refresh.
-        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
         var nodeName = selectedElement ? selectedElement.node().nodeName() : "null";
-        InspectorTest.addResult("Selected element should be 'P', was: '" + nodeName + "'");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Selected element should be 'P', was: '" + nodeName + "'");
+        TestRunner.completeTest();
     }
 }
 

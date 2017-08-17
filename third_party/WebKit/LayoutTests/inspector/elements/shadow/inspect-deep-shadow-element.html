@@ -7,7 +7,7 @@
 
 function test()
 {
-    InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
 
     var tests = [
         ["shadow", "inspect(host.shadowRoot.firstChild.firstChild.firstChild)"],
@@ -20,7 +20,7 @@ function test()
         if (!node)
             return;
         if (node.getAttribute("id") == tests[0][0]) {
-            InspectorTest.addResult(Components.DOMPresentationUtils.xPath(node, false));
+            TestRunner.addResult(Components.DOMPresentationUtils.xPath(node, false));
             tests.shift();
             nextTest();
         }
@@ -29,10 +29,10 @@ function test()
     function nextTest()
     {
         if (!tests.length) {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.evaluateInConsole(tests[0][1]);
+        ConsoleTestRunner.evaluateInConsole(tests[0][1]);
     }
 
     nextTest();

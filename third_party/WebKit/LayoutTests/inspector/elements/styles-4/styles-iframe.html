@@ -20,26 +20,26 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.evaluateInPage("loadIframe()");
-    InspectorTest.addConsoleSniffer(step0);
+    TestRunner.evaluateInPage("loadIframe()");
+    ConsoleTestRunner.addConsoleSniffer(step0);
 
     function step0()
     {
-        InspectorTest.selectNodeAndWaitForStyles("main", step1);
+        ElementsTestRunner.selectNodeAndWaitForStyles("main", step1);
     }
 
     function step1()
     {
-        InspectorTest.addResult("Main frame style:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.selectNodeAndWaitForStyles("iframeBody", step2);
+        TestRunner.addResult("Main frame style:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        ElementsTestRunner.selectNodeAndWaitForStyles("iframeBody", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("iframe style:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("iframe style:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 </script>

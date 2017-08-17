@@ -11,19 +11,19 @@ function test()
     var cssSourceFrame;
     Bindings.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectContainer(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function showEditor(next)
         {
-            var headers = InspectorTest.cssModel.styleSheetHeaders();
+            var headers = TestRunner.cssModel.styleSheetHeaders();
             for (var i = 0; i < headers.length; ++i) {
                 if (headers[i].sourceURL.endsWith(".css")) {
                     var cssLocation = new SDK.CSSLocation(headers[i], 0);
-                    InspectorTest.showUISourceCode(Bindings.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
+                    SourcesTestRunner.showUISourceCode(Bindings.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
                     break;
                 }
             }
@@ -31,7 +31,7 @@ function test()
             function callback(sourceFrame)
             {
                 cssSourceFrame = sourceFrame;
-                InspectorTest.dumpSourceFrameContents(cssSourceFrame);
+                SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
                 next();
             }
         },
@@ -43,8 +43,8 @@ function test()
 
         function dumpDisabledText(next)
         {
-            InspectorTest.dumpSourceFrameContents(cssSourceFrame);
-            InspectorTest.dumpSelectedElementStyles(true);
+            SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             next();
         },
 
@@ -55,17 +55,17 @@ function test()
 
         function dumpEnabledText(next)
         {
-            InspectorTest.dumpSourceFrameContents(cssSourceFrame);
-            InspectorTest.dumpSelectedElementStyles(true);
+            SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             next();
         }
     ]);
 
     function toggleProperty(value, next)
     {
-        InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", callback);
-        InspectorTest.waitForStyles("inspected", callback);
-        InspectorTest.toggleMatchedStyleProperty("font-weight", value);
+        TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", callback);
+        ElementsTestRunner.waitForStyles("inspected", callback);
+        ElementsTestRunner.toggleMatchedStyleProperty("font-weight", value);
 
         var barrierCounter = 2;
         function callback()

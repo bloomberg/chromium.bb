@@ -6,31 +6,31 @@
 
 function test()
 {
-    var treeOutline = InspectorTest.firstElementsTreeOutline();
-    InspectorTest.findNode(function() { return false; }, firstStep);
+    var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+    ElementsTestRunner.findNode(function() { return false; }, firstStep);
         
     function firstStep()
     {
-        InspectorTest.addResult("===== Initial state of tree outline =====\n");
+        TestRunner.addResult("===== Initial state of tree outline =====\n");
         dump();
 
         var topNode = treeOutline.rootElement().childAt(0).childAt(1).childAt(1);
         topNode.expandRecursively();
-        InspectorTest.deprecatedRunAfterPendingDispatches(secondStep);
+        TestRunner.deprecatedRunAfterPendingDispatches(secondStep);
     };
         
     function secondStep()
     {
-        InspectorTest.addResult("\n===== State of tree outline after calling .expandRecursively() =====\n");
+        TestRunner.addResult("\n===== State of tree outline after calling .expandRecursively() =====\n");
         dump();
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     };
 
     function dump()
     {
-        var node = InspectorTest.expandedNodeWithId("depth-1");
-        InspectorTest.dumpElementsTree(node);
+        var node = ElementsTestRunner.expandedNodeWithId("depth-1");
+        ElementsTestRunner.dumpElementsTree(node);
     };
 }
 

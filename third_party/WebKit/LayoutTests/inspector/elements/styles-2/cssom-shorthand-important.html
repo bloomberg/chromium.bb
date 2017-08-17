@@ -14,12 +14,12 @@ document.styleSheets[0].cssRules[0].style.marginTop = "10px"
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", dump);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", dump);
 
     function dump()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 </script>

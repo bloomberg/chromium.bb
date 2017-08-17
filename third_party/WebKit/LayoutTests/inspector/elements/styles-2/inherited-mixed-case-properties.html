@@ -12,12 +12,12 @@
 function test()
 {
 
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("nested", step1);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("nested", step1);
 
     function step1()
     {
-        InspectorTest.dumpSelectedElementStyles();
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles();
+        TestRunner.completeTest();
     }
 }
 </script>

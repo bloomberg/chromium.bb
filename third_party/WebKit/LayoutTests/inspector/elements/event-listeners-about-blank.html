@@ -20,16 +20,16 @@ function setupEventListeners()
 function test()
 {
     Common.settingForTest("showEventListenersForAncestors").set(true);
-    InspectorTest.evaluateInPage("setupEventListeners()", step1);
+    TestRunner.evaluateInPage("setupEventListeners()", step1);
 
     function step1()
     {
-        InspectorTest.selectNodeWithId("div-in-iframe", step2);
+        ElementsTestRunner.selectNodeWithId("div-in-iframe", step2);
     }
 
     function step2()
     {
-        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(InspectorTest));
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(InspectorTest));
     }
 }
 

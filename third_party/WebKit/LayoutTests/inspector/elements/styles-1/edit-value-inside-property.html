@@ -6,11 +6,11 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", testEmulateKeypress);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", testEmulateKeypress);
 
     function testEmulateKeypress()
     {
-        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-size");
+        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("font-size");
         treeElement.startEditing(treeElement.valueElement);
         var selection = treeElement.valueElement.getComponentSelection();
         var range = selection.getRangeAt(0);
@@ -21,28 +21,28 @@ function test()
         selection.addRange(newRange);
         // Use eventSender to emit "input" event.
         eventSender.keyDown("1");
-        InspectorTest.waitForStyleApplied(onStyleApplied);
+        ElementsTestRunner.waitForStyleApplied(onStyleApplied);
     }
 
     function onStyleApplied()
     {
-        InspectorTest.nodeWithId("inspected", onNodeFound);
+        ElementsTestRunner.nodeWithId("inspected", onNodeFound);
     }
 
     function onNodeFound(node)
     {
-        InspectorTest.cssModel.inlineStylesPromise(node.id).then(onInlineStyle);
+        TestRunner.cssModel.inlineStylesPromise(node.id).then(onInlineStyle);
     }
 
     function onInlineStyle(inlineStyleResult)
     {
         if (!inlineStyleResult || !inlineStyleResult.inlineStyle) {
-            InspectorTest.addResult("Failed to get inline styles.").
-            InspectorTest.completeTest();
+            TestRunner.addResult("Failed to get inline styles.").
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult("font-size: " + inlineStyleResult.inlineStyle.getPropertyValue("font-size"));
-        InspectorTest.completeTest();
+        TestRunner.addResult("font-size: " + inlineStyleResult.inlineStyle.getPropertyValue("font-size"));
+        TestRunner.completeTest();
     }
 }
 

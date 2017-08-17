@@ -6,29 +6,29 @@
 
 function test()
 {
-    InspectorTest.selectNodeWithId("inspected", execute);
+    ElementsTestRunner.selectNodeWithId("inspected", execute);
 
     function execute()
     {
-        var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(InspectorTest.expandedNodeWithId("inspected"));
+        var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(ElementsTestRunner.expandedNodeWithId("inspected"));
         var textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[0];
-        InspectorTest.addResult("Original textContent");
-        InspectorTest.addResult(treeElement.title.textContent);
+        TestRunner.addResult("Original textContent");
+        TestRunner.addResult(treeElement.title.textContent);
 
         treeElement._startEditingTarget(textElement);
-        InspectorTest.addResult("textContent when editing 'href'");
-        InspectorTest.addResult(treeElement.title.textContent);
+        TestRunner.addResult("textContent when editing 'href'");
+        TestRunner.addResult(treeElement.title.textContent);
 
         eventSender.keyDown("Tab");
-        InspectorTest.addResult("textContent after moving to 'id'");
-        InspectorTest.addResult(treeElement.title.textContent);
+        TestRunner.addResult("textContent after moving to 'id'");
+        TestRunner.addResult(treeElement.title.textContent);
 
         textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[1];
-        textElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
-        InspectorTest.addResult("textContent after canceling the edit (equal to the original one)");
-        InspectorTest.addResult(treeElement.title.textContent);
+        textElement.dispatchEvent(TestRunner.createKeyEvent("Escape"));
+        TestRunner.addResult("textContent after canceling the edit (equal to the original one)");
+        TestRunner.addResult(treeElement.title.textContent);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

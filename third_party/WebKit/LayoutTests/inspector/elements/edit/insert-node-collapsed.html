@@ -17,30 +17,30 @@ function test()
 {
     var containerNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
                 containerNode = node;
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.selectNodeWithId("container", callback);
+            ElementsTestRunner.selectNodeWithId("container", callback);
         },
 
         function testAppend(next) {
             function callback()
             {
-                InspectorTest.firstElementsTreeOutline().runPendingUpdates();
-                InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-                    InspectorTest.addResult("======== Appended =========");
-                    InspectorTest.dumpElementsTree(containerNode);
+                ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
+                TestRunner.deprecatedRunAfterPendingDispatches(function() {
+                    TestRunner.addResult("======== Appended =========");
+                    ElementsTestRunner.dumpElementsTree(containerNode);
                     next();
                 })
             }
-            InspectorTest.evaluateInPage("appendChild()", callback);
+            TestRunner.evaluateInPage("appendChild()", callback);
         }
     ]);
 }

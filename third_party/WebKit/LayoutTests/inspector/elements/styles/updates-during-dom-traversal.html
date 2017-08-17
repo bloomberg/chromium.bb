@@ -9,24 +9,24 @@ function test()
     var updateCount = 0;
     var keydownCount = 5;
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", selectCallback);
     function selectCallback()
     {
-        InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffUpdate, true);
-        var element = InspectorTest.firstElementsTreeOutline().element;
+        TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffUpdate, true);
+        var element = ElementsTestRunner.firstElementsTreeOutline().element;
         for (var i = 0; i < keydownCount; ++i)
-            element.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
+            element.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
 
-        InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
+        TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
     }
 
     function completeCallback()
     {
         if (updateCount >= keydownCount)
-            InspectorTest.addResult("ERROR: got " + updateCount + " updates for " + keydownCount + " consecutive keydowns");
+            TestRunner.addResult("ERROR: got " + updateCount + " updates for " + keydownCount + " consecutive keydowns");
         else
-            InspectorTest.addResult("OK: updates throttled");
-        InspectorTest.completeTest();
+            TestRunner.addResult("OK: updates throttled");
+        TestRunner.completeTest();
     }
 
     function sniffUpdate()

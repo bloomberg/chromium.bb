@@ -6,19 +6,19 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function init(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function keyframesRuleSelector(next)
         {
-            InspectorTest.addNewRule("@-webkit-keyframes shake", callback);
+            ElementsTestRunner.addNewRule("@-webkit-keyframes shake", callback);
 
             function callback()
             {
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
                 next();
             }
         }

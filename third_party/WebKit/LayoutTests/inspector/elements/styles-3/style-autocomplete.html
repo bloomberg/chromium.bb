@@ -10,7 +10,7 @@
 
 function test()
 {
-    var node = InspectorTest.nodeWithId('inner', node => InspectorTest.cssModel.cachedMatchedCascadeForNode(node).then(step1));
+    var node = ElementsTestRunner.nodeWithId('inner', node => TestRunner.cssModel.cachedMatchedCascadeForNode(node).then(step1));
     function step1(matchedStyles) {
         var namePrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().allProperties(), matchedStyles.cssVariables(), null, true);
         var valuePrompt = valuePromptFor("color");
@@ -18,7 +18,7 @@ function test()
         {
             return new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().propertyValues(name), matchedStyles.cssVariables(), null, false);
         }
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testEmptyName(next)
             {
                 testAgainstGolden(namePrompt, "", false, [], ["width"], next);
@@ -115,11 +115,11 @@ function test()
             var i;
             for (i = 0; i < golden.length; ++i) {
                 if (!suggestions.has(golden[i]))
-                    InspectorTest.addResult("NOT FOUND: " + golden[i]);
+                    TestRunner.addResult("NOT FOUND: " + golden[i]);
             }
             for (i = 0; i < antiGolden.length; ++i) {
                 if (suggestions.has(antiGolden[i]))
-                    InspectorTest.addResult("FOUND: " + antiGolden[i]);
+                    TestRunner.addResult("FOUND: " + antiGolden[i]);
             }
             proxyElement.remove();
             callback();

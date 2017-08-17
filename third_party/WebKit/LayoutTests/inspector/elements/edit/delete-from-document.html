@@ -12,20 +12,20 @@ function removeDoctype()
 
 function test()
 {
-    InspectorTest.expandElementsTree(step1);
+    ElementsTestRunner.expandElementsTree(step1);
 
     function step1()
     {
-        InspectorTest.addResult("Before remove doctype");
-        InspectorTest.dumpElementsTree(null, 1);
-        InspectorTest.evaluateInPage("removeDoctype()", step2);
+        TestRunner.addResult("Before remove doctype");
+        ElementsTestRunner.dumpElementsTree(null, 1);
+        TestRunner.evaluateInPage("removeDoctype()", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("After remove doctype");
-        InspectorTest.dumpElementsTree(null, 1);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After remove doctype");
+        ElementsTestRunner.dumpElementsTree(null, 1);
+        TestRunner.completeTest();
     }
 }
 

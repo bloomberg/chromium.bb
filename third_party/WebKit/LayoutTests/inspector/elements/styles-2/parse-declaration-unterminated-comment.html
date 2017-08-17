@@ -7,18 +7,18 @@
 function test()
 {
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected1", dumpStylesFirst);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected1", dumpStylesFirst);
 
     function dumpStylesFirst()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.selectNodeAndWaitForStyles("inspected2", dumpStylesSecond);
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected2", dumpStylesSecond);
     }
 
     function dumpStylesSecond()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 </script>

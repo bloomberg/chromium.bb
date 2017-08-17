@@ -6,13 +6,13 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", pasteFirstProperty);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", pasteFirstProperty);
 
     function pasteFirstProperty()
     {
-        InspectorTest.addResult("Before pasting:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        var section = InspectorTest.inlineStyleSection();
+        TestRunner.addResult("Before pasting:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        var section = ElementsTestRunner.inlineStyleSection();
 
         var treeElement = section.addNewBlankProperty(0);
         pasteProperty(treeElement, "margin-left: 1px", pasteTwoProperties);
@@ -20,28 +20,28 @@ function test()
 
     function pasteTwoProperties()
     {
-        InspectorTest.addResult("After pasting 'margin-left: 1px':");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After pasting 'margin-left: 1px':");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        var treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
+        var treeElement = ElementsTestRunner.inlineStyleSection().addNewBlankProperty(2);
         pasteProperty(treeElement, "margin-top: 1px; color: red;", pasteOverExistingProperty);
     }
 
     function pasteOverExistingProperty()
     {
-        InspectorTest.addResult("After pasting 'margin-top: 1px; color: red;':");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After pasting 'margin-top: 1px; color: red;':");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        var treeElement = InspectorTest.getElementStylePropertyTreeItem("margin-top");
+        var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("margin-top");
         pasteProperty(treeElement, "foo: bar; moo: zoo", dumpAndComplete);
     }
 
     function dumpAndComplete()
     {
-        InspectorTest.addResult("After pasting 'foo: bar; moo: zoo' over 'margin-top':");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After pasting 'foo: bar; moo: zoo' over 'margin-top':");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function pasteProperty(treeElement, propertyText, callback)
@@ -51,16 +51,16 @@ function test()
 
         document.execCommand("SelectAll");
         document.execCommand("Copy");
-        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, callback));
+        ElementsTestRunner.waitForStyleApplied(reloadStyles.bind(this, callback));
         document.execCommand("Paste");
     }
 
     function reloadStyles(callback) {
-        InspectorTest.selectNodeAndWaitForStyles("other", otherCallback);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", otherCallback);
 
         function otherCallback()
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", callback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", callback);
         }
     }
 }

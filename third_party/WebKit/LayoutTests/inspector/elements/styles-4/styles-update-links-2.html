@@ -21,10 +21,10 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("container", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
         },
 
         function testEditSelector(next)
@@ -32,15 +32,15 @@ function test()
             var section = UI.panels.elements._stylesWidget._sectionBlocks[0].sections[3];
             section.startEditingSelector();
             section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
-            InspectorTest.waitForSelectorCommitted(onSelectorEdited);
-            section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            ElementsTestRunner.waitForSelectorCommitted(onSelectorEdited);
+            section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
             function onSelectorEdited()
             {
-                InspectorTest.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
-                var rules = InspectorTest.getMatchedRules();
-                InspectorTest.validateRuleRanges("container", rules, next);
+                TestRunner.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+                var rules = ElementsTestRunner.getMatchedRules();
+                ElementsTestRunner.validateRuleRanges("container", rules, next);
             }
         }
     ]);

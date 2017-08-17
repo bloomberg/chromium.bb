@@ -7,23 +7,23 @@
 
 function test()
 {
-    InspectorTest.nodeWithId("inspect", onNode);
+    ElementsTestRunner.nodeWithId("inspect", onNode);
 
     function onNode(node)
     {
         var commentNode = node.nextSibling;
-        InspectorTest.selectNode(commentNode)
+        ElementsTestRunner.selectNode(commentNode)
             .then(onNodeSelected);
     }
 
     function onNodeSelected()
     {
-        InspectorTest.addResult("HTML comments shown:");
-        InspectorTest.dumpElementsTree();
+        TestRunner.addResult("HTML comments shown:");
+        ElementsTestRunner.dumpElementsTree();
         Common.settingForTest("showHTMLComments").set(false);
-        InspectorTest.addResult("\nHTML comments hidden:");
-        InspectorTest.dumpElementsTree();
-        InspectorTest.completeTest();
+        TestRunner.addResult("\nHTML comments hidden:");
+        ElementsTestRunner.dumpElementsTree();
+        TestRunner.completeTest();
     }
 }
 

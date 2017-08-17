@@ -11,66 +11,66 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testEditInvisibleCharsAsHTML(next)
         {
-            InspectorTest.domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
 
             function testBody(node, done)
             {
-                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeOutline.toggleEditAsHTML(node);
-                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
+                TestRunner.deprecatedRunAfterPendingDispatches(step2);
 
                 function step2()
                 {
                     var editor = treeElement._editing.editor;
-                    InspectorTest.addResult(editor.text());
+                    TestRunner.addResult(editor.text());
                     editor.setText(editor.text().replace(/&/g, '#'));
-                    var event = InspectorTest.createKeyEvent("Enter");
+                    var event = TestRunner.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
                     editor.widget().element.dispatchEvent(event);
-                    InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                    TestRunner.deprecatedRunAfterPendingDispatches(ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
                 }
             }
         },
 
         function testEditScript(next)
         {
-            InspectorTest.domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "var i = 0;\n    var j = 0;\n", done);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-text-node", "var i = 0;\n    var j = 0;\n", done);
             }
         },
 
         function testEditSVGAttribute(next)
         {
-            InspectorTest.domActionTestForNodeId("testEditSVG", "node-to-edit-svg-attribute", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testEditSVG", "node-to-edit-svg-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeOutline.toggleEditAsHTML(node);
-                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
+                TestRunner.deprecatedRunAfterPendingDispatches(step2);
 
                 function step2()
                 {
                     var value = treeElement._editing.editor._codeMirror.getValue();
-                    InspectorTest.addResult(value);
+                    TestRunner.addResult(value);
                     treeElement._editing.editor.setText(value.replace("100", "110"));
-                    var event = InspectorTest.createKeyEvent("Enter");
+                    var event = TestRunner.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
                     treeElement._editing.editor.widget().element.dispatchEvent(event);
-                    InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                    TestRunner.deprecatedRunAfterPendingDispatches(ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
                 }
             }
         }

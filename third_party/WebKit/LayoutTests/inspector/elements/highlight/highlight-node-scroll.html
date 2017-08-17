@@ -44,11 +44,11 @@ function onload()
 
 function test()
 {
-    InspectorTest.dumpInspectorHighlightJSON("inspectedElement1", testNode2);
+    ElementsTestRunner.dumpInspectorHighlightJSON("inspectedElement1", testNode2);
 
     function testNode2()
     {
-        InspectorTest.dumpInspectorHighlightJSON("inspectedElement2", InspectorTest.completeTest.bind(InspectorTest));
+        ElementsTestRunner.dumpInspectorHighlightJSON("inspectedElement2", TestRunner.completeTest.bind(InspectorTest));
     }
 }
 

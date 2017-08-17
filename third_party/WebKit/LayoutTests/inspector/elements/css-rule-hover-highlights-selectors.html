@@ -28,15 +28,15 @@ function buildShadowDOM()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function setupProxyOverlay(next)
         {
-            InspectorTest.evaluateFunctionInOverlay(drawHighlightProxy, next);
+            TestRunner.evaluateFunctionInOverlay(drawHighlightProxy, next);
         },
 
         function testRegularNodeSelection(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", onSelected);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", onSelected);
 
             function onSelected()
             {
@@ -45,9 +45,9 @@ function test()
 
             function onHighlightCountReset()
             {
-                var section = InspectorTest.firstMatchedStyleSection();
+                var section = ElementsTestRunner.firstMatchedStyleSection();
                 section._highlight();
-                InspectorTest.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
+                TestRunner.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
             }
 
             function onHighlighted()
@@ -58,7 +58,7 @@ function test()
 
         function testShadowDOMNodeSelection(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected-shadow", onSelected);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected-shadow", onSelected);
 
             function onSelected()
             {
@@ -67,9 +67,9 @@ function test()
 
             function onHighlightCountReset()
             {
-                var section = InspectorTest.firstMatchedStyleSection();
+                var section = ElementsTestRunner.firstMatchedStyleSection();
                 section._highlight();
-                InspectorTest.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
+                TestRunner.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
             }
 
             function onHighlighted()
@@ -101,18 +101,18 @@ function test()
 
     function dumpHighlightCount(next)
     {
-        InspectorTest.evaluateFunctionInOverlay(reportHighlights, onResults);
+        TestRunner.evaluateFunctionInOverlay(reportHighlights, onResults);
 
         function onResults(count)
         {
-            InspectorTest.addResult("Highlights drawn: " + count);
+            TestRunner.addResult("Highlights drawn: " + count);
             next();
         }
     }
 
     function resetHighlightCount(next)
     {
-        InspectorTest.evaluateFunctionInOverlay(reportHighlights, next);
+        TestRunner.evaluateFunctionInOverlay(reportHighlights, next);
     }
 }
 

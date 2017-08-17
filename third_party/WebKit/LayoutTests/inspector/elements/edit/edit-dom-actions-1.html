@@ -11,51 +11,51 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testRemove(next)
         {
-            InspectorTest.domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
 
             function testBody(node, done)
             {
-                var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
+                var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
                 treeElement.remove();
-                InspectorTest.deprecatedRunAfterPendingDispatches(done);
+                TestRunner.deprecatedRunAfterPendingDispatches(done);
             }
         },
 
         function testSetNodeName(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
             }
         },
 
         function testSetNodeNameInput(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
             }
         },
 
         function testSetNodeValue(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
             }
         },
     ]);

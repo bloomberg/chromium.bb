@@ -23,20 +23,20 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        InspectorTest.addResult("==== All styles (should be no computed) ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.computedStyleWidget().doUpdate().then(step2);
+        TestRunner.addResult("==== All styles (should be no computed) ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        ElementsTestRunner.computedStyleWidget().doUpdate().then(step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("==== All styles (computed should be there) ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.completeTest();
+        TestRunner.addResult("==== All styles (computed should be there) ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        TestRunner.completeTest();
     }
 }
 </script>

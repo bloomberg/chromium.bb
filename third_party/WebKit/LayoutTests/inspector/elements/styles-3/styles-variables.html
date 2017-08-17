@@ -28,48 +28,48 @@ body {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("id1", step1);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id1", step1);
     function step1(node)
     {
-        InspectorTest.addResult("==== Computed style for ID1 ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.cssModel.computedStylePromise(node.id).then(
+        TestRunner.addResult("==== Computed style for ID1 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        TestRunner.cssModel.computedStylePromise(node.id).then(
             function(style) {
-                InspectorTest.addResult("value of --a: " + style.get("--a"));
-                InspectorTest.selectNodeAndWaitForStylesWithComputed("id2", step2);
+                TestRunner.addResult("value of --a: " + style.get("--a"));
+                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id2", step2);
             });
     }
 
     function step2(node)
     {
-        InspectorTest.addResult("==== Computed style for ID2 ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.cssModel.computedStylePromise(node.id).then(
+        TestRunner.addResult("==== Computed style for ID2 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        TestRunner.cssModel.computedStylePromise(node.id).then(
             function(style) {
-                InspectorTest.addResult("value of --b: " + style.get("--b"));
-                InspectorTest.selectNodeAndWaitForStylesWithComputed("id3", step3);
+                TestRunner.addResult("value of --b: " + style.get("--b"));
+                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id3", step3);
             });
     }
 
     function step3(node)
     {
-        InspectorTest.addResult("==== Computed style for ID3 ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.cssModel.computedStylePromise(node.id).then(
+        TestRunner.addResult("==== Computed style for ID3 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        TestRunner.cssModel.computedStylePromise(node.id).then(
             function(style) {
-                InspectorTest.addResult("value of --b: " + style.get("--b"));
-                InspectorTest.selectNodeAndWaitForStylesWithComputed("id4", step4);
+                TestRunner.addResult("value of --b: " + style.get("--b"));
+                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id4", step4);
             });
     }
 
     function step4(node)
     {
-        InspectorTest.addResult("==== Computed style for ID4 ====");
-        InspectorTest.dumpSelectedElementStyles(false, false);
-        InspectorTest.cssModel.computedStylePromise(node.id).then(
+        TestRunner.addResult("==== Computed style for ID4 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, false);
+        TestRunner.cssModel.computedStylePromise(node.id).then(
             function(style) {
-                InspectorTest.addResult("value of --a: " + style.get("--a"));
-                InspectorTest.completeTest();
+                TestRunner.addResult("value of --a: " + style.get("--a"));
+                TestRunner.completeTest();
             });
     }
 }

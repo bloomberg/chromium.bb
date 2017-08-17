@@ -30,26 +30,26 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("main", step0);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("main", step0);
 
     function step0()
     {
-        InspectorTest.addResult("Main frame style:");
-        InspectorTest.dumpSelectedElementStyles();
-        InspectorTest.evaluateInPage("loadIframe()");
-        InspectorTest.addConsoleSniffer(step1);
+        TestRunner.addResult("Main frame style:");
+        ElementsTestRunner.dumpSelectedElementStyles();
+        TestRunner.evaluateInPage("loadIframe()");
+        ConsoleTestRunner.addConsoleSniffer(step1);
     }
 
     function step1()
     {
-        InspectorTest.selectNodeAndWaitForStylesWithComputed("iframeBody", step2);
+        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("iframeBody", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("iframe style:");
-        InspectorTest.dumpSelectedElementStyles();
-        InspectorTest.completeTest();
+        TestRunner.addResult("iframe style:");
+        ElementsTestRunner.dumpSelectedElementStyles();
+        TestRunner.completeTest();
     }
 }
 </script>

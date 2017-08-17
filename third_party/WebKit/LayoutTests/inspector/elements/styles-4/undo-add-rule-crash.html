@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
@@ -15,22 +15,22 @@ function test()
 
     function step2()
     {
-        InspectorTest.domModel.undo();
-        InspectorTest.waitForStyles("other", step3);
+        TestRunner.domModel.undo();
+        ElementsTestRunner.waitForStyles("other", step3);
     }
 
     function step3()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function addNewRuleAndSelectNode(nodeId, next)
     {
-        InspectorTest.addNewRule(null, ruleAdded);
+        ElementsTestRunner.addNewRule(null, ruleAdded);
 
         function ruleAdded()
         {
-            InspectorTest.selectNodeAndWaitForStyles(nodeId, next);
+            ElementsTestRunner.selectNodeAndWaitForStyles(nodeId, next);
         }
     }
 }

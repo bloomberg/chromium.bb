@@ -12,7 +12,7 @@ var test = function() {
   // Make sure the sidebar is loaded
 
   // make sure the tree is loaded
-  InspectorTest.selectNodeAndWaitForStyles("node-to-select",nodeSelected);
+  ElementsTestRunner.selectNodeAndWaitForStyles("node-to-select",nodeSelected);
   function nodeSelected() {
     eventSender.keyDown("Tab");
     var startElement = document.deepActiveElement();
@@ -22,9 +22,9 @@ var test = function() {
       elements++;
     } while (startElement !== document.deepActiveElement() && elements < maxElements)
 
-    InspectorTest.addResult('')
-    InspectorTest.addResult('Shift+Tab:')
-    InspectorTest.addResult('')
+    TestRunner.addResult('')
+    TestRunner.addResult('Shift+Tab:')
+    TestRunner.addResult('')
     startElement = document.deepActiveElement();
     do {
       dumpFocus();
@@ -33,15 +33,15 @@ var test = function() {
     } while (startElement !== document.deepActiveElement() && elements < maxElements)
 
     if (elements >= maxElements)
-      InspectorTest.addResult("FAIL: Unable to complete tab stop cycle.")
+      TestRunner.addResult("FAIL: Unable to complete tab stop cycle.")
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
   }
 
   function dumpFocus() {
     var element = document.deepActiveElement();
     if (!element) {
-      InspectorTest.addResult("null");
+      TestRunner.addResult("null");
       return;
     }
     var name = element.tagName;
@@ -56,7 +56,7 @@ var test = function() {
     }
     else if (element.className)
       name += "." + element.className.split(" ").join(".");
-    InspectorTest.addResult(name);
+    TestRunner.addResult(name);
   }
 }
 </script>

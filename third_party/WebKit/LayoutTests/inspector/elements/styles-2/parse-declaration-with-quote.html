@@ -7,12 +7,12 @@
 function test()
 {
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", dumpStyles);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", dumpStyles);
 
     function dumpStyles()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 </script>

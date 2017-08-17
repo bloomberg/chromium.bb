@@ -9,11 +9,11 @@ var test = function()
 {
 
     var treeElement;
-    InspectorTest.nodeWithId("image", step1);
+    ElementsTestRunner.nodeWithId("image", step1);
 
     function step1(node)
     {
-        InspectorTest.firstElementsTreeOutline()._loadDimensionsForNode(node).then(step2);
+        ElementsTestRunner.firstElementsTreeOutline()._loadDimensionsForNode(node).then(step2);
     }
 
     function step2(dimensions)
@@ -22,15 +22,15 @@ var test = function()
         const EXPECTED_HEIGHT = 174;
 
         if (!dimensions)
-            InspectorTest.addResult("FAILED, no dimensions on treeElement.");
+            TestRunner.addResult("FAILED, no dimensions on treeElement.");
         else {
             if (dimensions.offsetWidth === dimensions.naturalWidth && dimensions.offsetHeight == dimensions.naturalHeight
                 && dimensions.offsetWidth === EXPECTED_WIDTH && dimensions.offsetHeight === EXPECTED_HEIGHT)
-                InspectorTest.addResult("PASSED, image dimensions for tooltip: " + EXPECTED_WIDTH + "x" + EXPECTED_HEIGHT + ".");
+                TestRunner.addResult("PASSED, image dimensions for tooltip: " + EXPECTED_WIDTH + "x" + EXPECTED_HEIGHT + ".");
             else
-                InspectorTest.addResult("FAILED, image dimensions for tooltip: " + formatDimensions(dimensions) + " (should be " + EXPECTED_WIDTH + "x" + EXPECTED_HEIGHT + ").");
+                TestRunner.addResult("FAILED, image dimensions for tooltip: " + formatDimensions(dimensions) + " (should be " + EXPECTED_WIDTH + "x" + EXPECTED_HEIGHT + ").");
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function formatDimensions(dimensions)

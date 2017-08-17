@@ -18,7 +18,7 @@ function loaded()
 function test()
 {
     Common.settingForTest("showUAShadowDOM").set(true);
-    InspectorTest.expandElementsTree(step0);
+    ElementsTestRunner.expandElementsTree(step0);
 
     function step0()
     {
@@ -27,28 +27,28 @@ function test()
 
     function step1()
     {
-        InspectorTest.dumpBreadcrumb("User-agent shadow root breadcrumb");
+        ElementsTestRunner.dumpBreadcrumb("User-agent shadow root breadcrumb");
         selectNode(matchOpenShadowRoot, step2);
     }
 
     function step2()
     {
-        InspectorTest.dumpBreadcrumb("Open shadow root breadcrumb");
+        ElementsTestRunner.dumpBreadcrumb("Open shadow root breadcrumb");
         selectNode(matchClosedShadowRoot, step3);
     }
 
     function step3()
     {
-        InspectorTest.dumpBreadcrumb("Closed shadow root breadcrumb");
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpBreadcrumb("Closed shadow root breadcrumb");
+        TestRunner.completeTest();
     }
 
     function selectNode(matchFunction, next)
     {
-        InspectorTest.findNode(matchFunction, callback);
+        ElementsTestRunner.findNode(matchFunction, callback);
         function callback(node)
         {
-            InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", next);
+            TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", next);
             Common.Revealer.revealPromise(node);
         }
     }

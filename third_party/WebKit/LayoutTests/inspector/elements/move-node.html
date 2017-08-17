@@ -8,35 +8,35 @@ function test()
 {
     var containerNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
+                containerNode = ElementsTestRunner.expandedNodeWithId("container");
 
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.expandElementsTree(callback);
+            ElementsTestRunner.expandElementsTree(callback);
         },
 
         function testDragAndDrop(next)
         {
-            var treeOutline = InspectorTest.firstElementsTreeOutline();
+            var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
             treeOutline.addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
 
             function selectionChanged()
             {
-                InspectorTest.addResult("===== Moved child2 =====");
-                InspectorTest.dumpElementsTree(containerNode);
-                InspectorTest.addResult("Selection: " + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
+                TestRunner.addResult("===== Moved child2 =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
+                TestRunner.addResult("Selection: " + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
                 next();
             }
 
-            var child2 = InspectorTest.expandedNodeWithId("child2");
-            var child4 = InspectorTest.expandedNodeWithId("child4");
+            var child2 = ElementsTestRunner.expandedNodeWithId("child2");
+            var child4 = ElementsTestRunner.expandedNodeWithId("child4");
             treeOutline._treeElementBeingDragged = child2[treeOutline._treeElementSymbol];
             var treeElementToDropOn = child4[treeOutline._treeElementSymbol];
             treeOutline._doMove(treeElementToDropOn);

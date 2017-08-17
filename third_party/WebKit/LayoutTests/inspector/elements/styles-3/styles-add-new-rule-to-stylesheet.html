@@ -7,29 +7,29 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspect", fetchStyleSheet);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspect", fetchStyleSheet);
 
     function fetchStyleSheet()
     {
-        var styleSheets = InspectorTest.cssModel.allStyleSheets();
+        var styleSheets = TestRunner.cssModel.allStyleSheets();
         for (var i = 0; i < styleSheets.length; ++i) {
             var styleSheetHeader = styleSheets[i];
             if (styleSheetHeader.sourceURL.indexOf("different-rule-types.css") === -1)
                 continue;
-            InspectorTest.addNewRuleInStyleSheet(styleSheetHeader, "#other, div", onRuleAdded);
+            ElementsTestRunner.addNewRuleInStyleSheet(styleSheetHeader, "#other, div", onRuleAdded);
             return;
         }
     }
 
     function onRuleAdded()
     {
-        InspectorTest.selectNodeAndWaitForStyles("other", onNodeSelected);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", onNodeSelected);
     }
 
     function onNodeSelected()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 

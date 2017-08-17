@@ -33,12 +33,12 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("main", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("main", step1);
 
     function step1()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 

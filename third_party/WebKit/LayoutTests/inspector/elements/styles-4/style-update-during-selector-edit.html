@@ -11,8 +11,8 @@ function addStyleClass()
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-    var treeOutline = InspectorTest.firstElementsTreeOutline();
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
+    var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
     var seenRebuildUpdate;
     var seenAttrModified;
     var modifiedAttrNodes = [];
@@ -31,22 +31,22 @@ function test()
 
     function step1()
     {
-        InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
-        InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, attributeChanged, this);
+        TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
+        TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, attributeChanged, this);
         // Click "Add new rule".
         UI.panels.elements._stylesWidget.contentElement.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".largeicon-add").click();
-        InspectorTest.evaluateInPage("addStyleClass()", step2);
+        TestRunner.evaluateInPage("addStyleClass()", step2);
     }
 
     function step2()
     {
         if (!seenAttrModified)
-            InspectorTest.addResult("FAIL: AttrModified event not received.");
+            TestRunner.addResult("FAIL: AttrModified event not received.");
         else if (seenRebuildUpdate)
-            InspectorTest.addResult("FAIL: Styles pane updated while a selector editor was active.");
+            TestRunner.addResult("FAIL: Styles pane updated while a selector editor was active.");
         else
-            InspectorTest.addResult("SUCCESS: Styles pane not updated.");
-        InspectorTest.completeTest();
+            TestRunner.addResult("SUCCESS: Styles pane not updated.");
+        TestRunner.completeTest();
     }
 }
 

@@ -13,19 +13,19 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testSetAuthorShadowDOMElementAttribute(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetAuthorShadowDOMElementAttribute", "shadow-node-to-set-attribute", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetAuthorShadowDOMElementAttribute", "shadow-node-to-set-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
             }
         },
     ]);

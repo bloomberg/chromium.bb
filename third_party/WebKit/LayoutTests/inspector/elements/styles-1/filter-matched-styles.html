@@ -16,30 +16,30 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testSimpleFiltering(next)
         {
-            InspectorTest.filterMatchedStyles("padding");
-            InspectorTest.dumpRenderedMatchedStyles();
+            ElementsTestRunner.filterMatchedStyles("padding");
+            ElementsTestRunner.dumpRenderedMatchedStyles();
             next();
         },
 
         function testLonghandsAreAutoExpanded(next)
         {
-            InspectorTest.filterMatchedStyles("-top");
-            InspectorTest.dumpRenderedMatchedStyles();
+            ElementsTestRunner.filterMatchedStyles("-top");
+            ElementsTestRunner.dumpRenderedMatchedStyles();
             next();
         },
 
         function testAutoExpandedLonghandsAreCollapsed(next)
         {
-            InspectorTest.filterMatchedStyles(null);
-            InspectorTest.dumpRenderedMatchedStyles();
+            ElementsTestRunner.filterMatchedStyles(null);
+            ElementsTestRunner.dumpRenderedMatchedStyles();
             next();
         }
     ]);

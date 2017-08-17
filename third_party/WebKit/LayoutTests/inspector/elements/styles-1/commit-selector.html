@@ -11,35 +11,35 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        InspectorTest.addResult("=== Before selector modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        var section = InspectorTest.firstMatchedStyleSection();
+        TestRunner.addResult("=== Before selector modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         section.startEditingSelector();
         section._selectorElement.textContent = "hr, #inspected ";
-        InspectorTest.waitForSelectorCommitted(step2);
-        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForSelectorCommitted(step2);
+        section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
     }
 
     function step2()
     {
-        InspectorTest.addResult("=== After non-affecting selector modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        var section = InspectorTest.firstMatchedStyleSection();
+        TestRunner.addResult("=== After non-affecting selector modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         section.startEditingSelector();
         section._selectorElement.textContent = "#inspectedChanged";
-        InspectorTest.waitForSelectorCommitted(step3);
-        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForSelectorCommitted(step3);
+        section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
     }
 
     function step3()
     {
-        InspectorTest.addResult("=== After affecting selector modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("=== After affecting selector modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 

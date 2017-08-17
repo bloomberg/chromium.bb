@@ -15,12 +15,12 @@ function setupEventListeners()
 function test()
 {
     Common.settingForTest("showEventListenersForAncestors").set(true);
-    InspectorTest.selectNodeWithId("node", step1);
+    ElementsTestRunner.selectNodeWithId("node", step1);
 
     function step1()
     {
-        InspectorTest.showEventListenersWidget();
-        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(this));
+        ElementsTestRunner.showEventListenersWidget();
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(this));
     }
 }
 

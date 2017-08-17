@@ -10,7 +10,7 @@ var initialize_AdditionalPreload = function() {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     var treeElement;
     var hasResourceChanged;
@@ -19,51 +19,51 @@ function test()
     var testFinished = false;
     var displayName = null;
 
-    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
+    TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
 
     function step1()
     {
         // Click "Add new rule".
-        InspectorTest.addNewRule("foo, div#inspected, bar", step2);
+        ElementsTestRunner.addNewRule("foo, div#inspected, bar", step2);
     }
 
     function step2()
     {
-        var section = InspectorTest.firstMatchedStyleSection();
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         textInputController.insertText("color");
-        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         textInputController.insertText("maroon");
-        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.selectNodeAndWaitForStyles("other", step3);
+        newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step3);
     }
 
     function step3()
     {
         // Click "Add new rule".
-        InspectorTest.addNewRule(null, onRuleAdded);
+        ElementsTestRunner.addNewRule(null, onRuleAdded);
 
         function onRuleAdded()
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", step4);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step4);
         }
     }
 
     function step4()
     {
-        InspectorTest.addResult("After adding new rule (inspected):");
-        InspectorTest.dumpSelectedElementStyles(true, false, true, true);
-        InspectorTest.selectNodeAndWaitForStyles("other", step5);
+        TestRunner.addResult("After adding new rule (inspected):");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step5);
     }
 
     function step5()
     {
-        InspectorTest.addResult("After adding new rule (other):");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        TestRunner.addResult("After adding new rule (other):");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-        InspectorTest.waitForStylesForClass("my-class", onStylesReceived);
-        InspectorTest.nodeWithClass("my-class", onNodeFound);
+        ElementsTestRunner.waitForStylesForClass("my-class", onStylesReceived);
+        ElementsTestRunner.nodeWithClass("my-class", onNodeFound);
         function onNodeFound(node)
         {
             Common.Revealer.reveal(node);
@@ -71,16 +71,16 @@ function test()
 
         function onStylesReceived()
         {
-            InspectorTest.addNewRule(null, step6);
+            ElementsTestRunner.addNewRule(null, step6);
         }
     }
 
     function step6()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-        InspectorTest.waitForStylesForClass("class-1", onStylesReceived);
-        InspectorTest.nodeWithClass("class-1", onNodeFound);
+        ElementsTestRunner.waitForStylesForClass("class-1", onStylesReceived);
+        ElementsTestRunner.nodeWithClass("class-1", onNodeFound);
         function onNodeFound(node)
         {
             Common.Revealer.reveal(node);
@@ -88,8 +88,8 @@ function test()
 
         function onStylesReceived()
         {
-            InspectorTest.addNewRule(null, function() {
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.addNewRule(null, function() {
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
                 testFinished = true;
                 maybeCompleteTest();
             });
@@ -100,8 +100,8 @@ function test()
     {
         if (!revisionAdded || !testFinished)
             return;
-        InspectorTest.addResult("Revision added: " + displayName);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Revision added: " + displayName);
+        TestRunner.completeTest();
     }
 
     function onRevisionAdded(revision)

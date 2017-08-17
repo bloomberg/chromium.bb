@@ -12,13 +12,13 @@ function addStyle()
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
-    InspectorTest.evaluateInPage("addStyle()");
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
+    TestRunner.evaluateInPage("addStyle()");
 
     function stylesheetAdded()
     {
-        InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+        TestRunner.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
     }
 
     var treeElement;
@@ -26,26 +26,26 @@ function test()
 
     function step1()
     {
-        InspectorTest.addNewRule("inspected", step2);
+        ElementsTestRunner.addNewRule("inspected", step2);
     }
 
     function step2()
     {
-        var section = InspectorTest.firstMatchedStyleSection();
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         newProperty.nameElement.textContent = "color";
-        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         newProperty.valueElement.textContent = "maroon";
-        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyles("inspected", step3);
+        newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyles("inspected", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("After adding new rule:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After adding new rule:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 

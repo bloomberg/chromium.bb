@@ -12,27 +12,27 @@ function removeInspectedNode()
 function test()
 {
     var stylesSidebarPane = UI.panels.elements._stylesWidget;
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInspectedNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function startEditingAndReloadPage(next)
         {
-            var treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
+            var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("color");
             var currentDocumentId = stylesSidebarPane.node().ownerDocument.id;
             treeElement.startEditing(treeElement.valueElement);
             var nodeRebuiltHappened = false;
             var pageReloadHappened = false;
-            InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
-            InspectorTest.reloadPage(reloadedCallback);
+            TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
+            TestRunner.reloadPage(reloadedCallback);
 
             function onNodeRebuilt(node, rebuild)
             {
                 if (!node || node.ownerDocument.id === currentDocumentId) {
-                    InspectorTest.addResult("ERROR: A rebuild update happened for the same node.");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("ERROR: A rebuild update happened for the same node.");
+                    TestRunner.completeTest();
                     return;
                 }
                 nodeRebuiltHappened = true;
@@ -55,8 +55,8 @@ function test()
         function onPageReloaded(next)
         {
             if (stylesSidebarPane._isEditingStyle) {
-                InspectorTest.addResult("StylesSidebarPane should not be locked in editing on page reload.");
-                InspectorTest.completeTest();
+                TestRunner.addResult("StylesSidebarPane should not be locked in editing on page reload.");
+                TestRunner.completeTest();
                 return;
             }
             next();

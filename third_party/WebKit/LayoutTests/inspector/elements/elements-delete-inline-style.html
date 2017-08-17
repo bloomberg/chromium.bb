@@ -6,21 +6,21 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1(node)
     {
-        InspectorTest.addResult("Before style property removal:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("Before style property removal:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
         node.removeAttribute("style");
-        InspectorTest.waitForStyles("inspected", step2);
+        ElementsTestRunner.waitForStyles("inspected", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("After style property removal:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After style property removal:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 

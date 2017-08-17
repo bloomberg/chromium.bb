@@ -20,43 +20,43 @@ function test()
 {
     var targetNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
                 targetNode = node;
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(targetNode);
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.selectNodeWithId("node", callback);
+            ElementsTestRunner.selectNodeWithId("node", callback);
         },
 
         function testAttributeUpdated(next)
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
-                InspectorTest.addResult("===== On attribute set =====");
-                InspectorTest.dumpElementsTree(targetNode);
+                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
+                TestRunner.addResult("===== On attribute set =====");
+                ElementsTestRunner.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
-            InspectorTest.evaluateInPage("setAttribute('http://www.w3.org/1999/xlink', 'xlink:href', 'changed-url')");
+            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
+            TestRunner.evaluateInPage("setAttribute('http://www.w3.org/1999/xlink', 'xlink:href', 'changed-url')");
         },
 
         function testAttributeRemoved(next)
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
-                InspectorTest.addResult("=== On attribute removed ===");
-                InspectorTest.dumpElementsTree(targetNode);
+                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
+                TestRunner.addResult("=== On attribute removed ===");
+                ElementsTestRunner.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
-            InspectorTest.evaluateInPage("removeAttribute('xlink:href')");
+            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
+            TestRunner.evaluateInPage("removeAttribute('xlink:href')");
         },
     ]);
 }

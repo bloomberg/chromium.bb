@@ -14,35 +14,35 @@ function onload()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.setUpTestSuite(next);
+            ElementsTestRunner.setUpTestSuite(next);
         },
 
         function testChangeCharacterData(next)
         {
-            InspectorTest.patchOuterHTMLUseUndo("Getting involved", "Getting not involved", next);
+            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "Getting not involved", next);
         },
 
         function testChangeAttributes(next)
         {
-            InspectorTest.patchOuterHTMLUseUndo("<a href", "<a foo=\"bar\" href", next);
+            ElementsTestRunner.patchOuterHTMLUseUndo("<a href", "<a foo=\"bar\" href", next);
         },
 
         function testRemoveLastChild(next)
         {
-            InspectorTest.patchOuterHTMLUseUndo("Getting involved", "", next);
+            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "", next);
         },
 
         function testSplitNode(next)
         {
-            InspectorTest.patchOuterHTMLUseUndo("Getting involved", "Getting</h2><h2>involved", next);
+            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "Getting</h2><h2>involved", next);
         },
 
         function testChangeNodeName(next)
         {
-            InspectorTest.patchOuterHTMLUseUndo("<h2>Getting involved</h2>", "<h3>Getting involved</h3>", next);
+            ElementsTestRunner.patchOuterHTMLUseUndo("<h2>Getting involved</h2>", "<h3>Getting involved</h3>", next);
         }
     ]);
 }

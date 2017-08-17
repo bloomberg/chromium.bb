@@ -6,18 +6,18 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        var treeElement = InspectorTest.getElementStylePropertyTreeItem("background");
-        InspectorTest.addResult("Viewing 'background' value in Styles:");
-        InspectorTest.addResult(treeElement.valueElement.textContent);
+        var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("background");
+        TestRunner.addResult("Viewing 'background' value in Styles:");
+        TestRunner.addResult(treeElement.valueElement.textContent);
 
         treeElement.startEditing(treeElement.valueElement);
-        InspectorTest.addResult("Editing 'background' value in Styles:");
-        InspectorTest.addResult(treeElement.valueElement.textContent);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Editing 'background' value in Styles:");
+        TestRunner.addResult(treeElement.valueElement.textContent);
+        TestRunner.completeTest();
     }
 }
 

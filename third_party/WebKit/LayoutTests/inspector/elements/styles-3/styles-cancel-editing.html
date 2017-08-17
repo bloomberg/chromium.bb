@@ -6,19 +6,19 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     var treeElement;
     var section;
 
     function step1()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("color");
 
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         // Update incrementally, do not commit.
         treeElement.valueElement.textContent = "green";
@@ -26,30 +26,30 @@ function test()
 
         // Cancel editing.
         treeElement.valueElement.firstChild.select();
-        InspectorTest.waitForStyleApplied(onStyleApplied);
+        ElementsTestRunner.waitForStyleApplied(onStyleApplied);
 
         function onStyleApplied()
         {
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
-            InspectorTest.waitForStyleApplied(onStyleReverted);
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Escape"));
+            ElementsTestRunner.waitForStyleApplied(onStyleReverted);
         }
 
         function onStyleReverted()
         {
-            InspectorTest.selectNodeWithId("other", step2);
+            ElementsTestRunner.selectNodeWithId("other", step2);
         }
     }
 
     function step2()
     {
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step3);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("After append:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After append:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 

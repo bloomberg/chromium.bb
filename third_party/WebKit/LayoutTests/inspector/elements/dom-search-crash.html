@@ -4,15 +4,15 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.domModel.requestDocument(next);
+            TestRunner.domModel.requestDocument(next);
         },
 
         function testNoCrash(next)
         {
-            InspectorTest.domModel.performSearch("FooBar", false).then(next);
+            TestRunner.domModel.performSearch("FooBar", false).then(next);
         }
     ]);
 }

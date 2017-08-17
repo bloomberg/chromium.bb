@@ -21,37 +21,37 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        InspectorTest.addResult("=== Before media text modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        var section = InspectorTest.firstMatchedStyleSection();
-        var mediaTextElement = InspectorTest.firstMediaTextElementInSection(section);
+        TestRunner.addResult("=== Before media text modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        var section = ElementsTestRunner.firstMatchedStyleSection();
+        var mediaTextElement = ElementsTestRunner.firstMediaTextElementInSection(section);
         mediaTextElement.click();
         mediaTextElement.textContent = "screen and (max-device-width: 99999px)";
-        InspectorTest.waitForMediaTextCommitted(step2);
-        mediaTextElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForMediaTextCommitted(step2);
+        mediaTextElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
     }
 
     function step2()
     {
-        InspectorTest.addResult("=== After valid media text modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        var section = InspectorTest.firstMatchedStyleSection();
-        var mediaTextElement = InspectorTest.firstMediaTextElementInSection(section);
+        TestRunner.addResult("=== After valid media text modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        var section = ElementsTestRunner.firstMatchedStyleSection();
+        var mediaTextElement = ElementsTestRunner.firstMediaTextElementInSection(section);
         mediaTextElement.click();
         mediaTextElement.textContent = "something is wrong here";
-        InspectorTest.waitForMediaTextCommitted(step3);
-        mediaTextElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForMediaTextCommitted(step3);
+        mediaTextElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
     }
 
     function step3()
     {
-        InspectorTest.addResult("=== After invalid media text modification ===");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("=== After invalid media text modification ===");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 

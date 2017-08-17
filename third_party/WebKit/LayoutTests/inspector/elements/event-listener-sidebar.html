@@ -38,28 +38,28 @@ function setupEventListeners()
 function test()
 {
     Common.settingForTest("showEventListenersForAncestors").set(true);
-    InspectorTest.selectNodeWithId("node", step1);
+    ElementsTestRunner.selectNodeWithId("node", step1);
 
     function step1()
     {
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
     }
 
     function step2()
     {
-        InspectorTest.selectNodeWithId("node-without-listeners", step3);
+        ElementsTestRunner.selectNodeWithId("node-without-listeners", step3);
     }
 
     function step3()
     {
         Common.settingForTest("showEventListenersForAncestors").set(false);
-        InspectorTest.addResult("Listeners for selected node only(should be no listeners):");
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
+        TestRunner.addResult("Listeners for selected node only(should be no listeners):");
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
     }
 
     function step4()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

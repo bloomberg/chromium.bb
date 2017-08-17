@@ -9,11 +9,11 @@
 
 function test()
 {
-    InspectorTest.expandElementsTree(step1);
+    ElementsTestRunner.expandElementsTree(step1);
 
     function step1()
     {
-        var innerMapping = InspectorTest.domModel._idToDOMNode;
+        var innerMapping = TestRunner.domModel._idToDOMNode;
 
         var outputLines = [];
         for (var nodeId in innerMapping) {
@@ -43,8 +43,8 @@ function test()
                 outputLines.push(node.resolveURL(node.getAttribute("href")));
         }
         outputLines.sort();
-        InspectorTest.addResult(outputLines.join("\n"));
-        InspectorTest.completeTest();
+        TestRunner.addResult(outputLines.join("\n"));
+        TestRunner.completeTest();
     }
 }
 

@@ -6,10 +6,10 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function init(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected1", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected1", next);
         },
 
         function editKeywordAsOriginal(next)
@@ -32,7 +32,7 @@ function test()
             startEditingAndDumpValue(Common.Color.Format.RGB, "border", onValueDumped);
             function onValueDumped()
             {
-                InspectorTest.selectNodeAndWaitForStyles("inspected2", next);
+                ElementsTestRunner.selectNodeAndWaitForStyles("inspected2", next);
             }
         },
 
@@ -58,21 +58,21 @@ function test()
 
         function editNewProperty(next)
         {
-            var section = InspectorTest.inlineStyleSection();
+            var section = ElementsTestRunner.inlineStyleSection();
 
             treeElement = section.addNewBlankProperty(0);
             treeElement.startEditing();
             treeElement.nameElement.textContent = "border-color";
-            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
             treeElement.valueElement.textContent = "hsl(120, 100%, 25%)";
             treeElement.kickFreeFlowStyleEditForTest();
-            InspectorTest.waitForStyleApplied(kicked);
+            ElementsTestRunner.waitForStyleApplied(kicked);
 
             function kicked()
             {
-                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Tab", false, false, true));
-                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
-                InspectorTest.addResult(treeElement.valueElement.textContent);
+                treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Tab", false, false, true));
+                treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Tab"));
+                TestRunner.addResult(treeElement.valueElement.textContent);
                 next();
             }
         }
@@ -90,10 +90,10 @@ function test()
 
         function onFormatSet()
         {
-            var treeElement = InspectorTest.getElementStylePropertyTreeItem(propertyName);
+            var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem(propertyName);
             treeElement.startEditing(treeElement.valueElement);
-            InspectorTest.addResult(treeElement.valueElement.textContent);
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
+            TestRunner.addResult(treeElement.valueElement.textContent);
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Escape"));
             next();
         }
     }

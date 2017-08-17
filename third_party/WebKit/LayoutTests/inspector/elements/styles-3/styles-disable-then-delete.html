@@ -6,44 +6,44 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("container", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("container", step1);
 
     function step1()
     {
         // Disable property
-        InspectorTest.addResult("Before disable");
-        InspectorTest.dumpSelectedElementStyles(true, true);
-        InspectorTest.toggleStyleProperty("font-weight", false);
-        InspectorTest.waitForStyleApplied(step2);
+        TestRunner.addResult("Before disable");
+        ElementsTestRunner.dumpSelectedElementStyles(true, true);
+        ElementsTestRunner.toggleStyleProperty("font-weight", false);
+        ElementsTestRunner.waitForStyleApplied(step2);
     }
 
     function step2()
     {
         // Delete style
-        InspectorTest.addResult("After disable");
-        InspectorTest.dumpSelectedElementStyles(true, true);
+        TestRunner.addResult("After disable");
+        ElementsTestRunner.dumpSelectedElementStyles(true, true);
 
-        var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
+        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("font-weight");
         treeItem.applyStyleText("", false);
 
-        InspectorTest.waitForStyleApplied(step3);
+        ElementsTestRunner.waitForStyleApplied(step3);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("other", step4);
+        ElementsTestRunner.selectNodeWithId("other", step4);
     }
 
     function step4()
     {
-        InspectorTest.selectNodeAndWaitForStyles("container", step5);
+        ElementsTestRunner.selectNodeAndWaitForStyles("container", step5);
     }
 
     function step5(node)
     {
-        InspectorTest.addResult("After delete");
-        InspectorTest.dumpSelectedElementStyles(true, true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After delete");
+        ElementsTestRunner.dumpSelectedElementStyles(true, true);
+        TestRunner.completeTest();
     }
 }
 </script>

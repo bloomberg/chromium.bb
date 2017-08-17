@@ -5,14 +5,14 @@
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild");
+    var result = await TestRunner.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild");
 
-    var spanWrapper = InspectorTest.runtimeModel.createRemoteObject(result);
-    var node = await InspectorTest.domModel.pushObjectAsNodeToFrontend(spanWrapper);
-    InspectorTest.assertTrue(node, "Node object should be resovled");
+    var spanWrapper = TestRunner.runtimeModel.createRemoteObject(result);
+    var node = await TestRunner.domModel.pushObjectAsNodeToFrontend(spanWrapper);
+    TestRunner.assertTrue(node, "Node object should be resovled");
     var remoteObject = await node.resolveToObject();
-    InspectorTest.addResult("Alien node should resolve to null: " + remoteObject);
-    InspectorTest.completeTest();
+    TestRunner.addResult("Alien node should resolve to null: " + remoteObject);
+    TestRunner.completeTest();
 }
 
 </script>

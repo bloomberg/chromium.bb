@@ -10,41 +10,41 @@ function test()
 
     function testSetUp(next)
     {
-        InspectorTest.addResult("Setting up");
-        InspectorTest.expandElementsTree(callback);
+        TestRunner.addResult("Setting up");
+        ElementsTestRunner.expandElementsTree(callback);
 
         function callback()
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         }
     }
     testSuite.push(testSetUp);
 
     function testSetAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-set-attribute");
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-set-attribute");
         node.setAttribute("foo", "bar=\"edited attribute\"", callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testSetAttribute));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testSetAttribute));
 
 
     function testRemoveAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-remove-attribute");
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-remove-attribute");
         node.removeAttribute("foo").then(callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testRemoveAttribute));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testRemoveAttribute));
 
 
     function testAddAttribute(callback)
     {
-        var node = InspectorTest.expandedNodeWithId("node-to-add-attribute");
+        var node = ElementsTestRunner.expandedNodeWithId("node-to-add-attribute");
         node.setAttribute("", "newattr=\"new-value\"", callback);
     }
-    testSuite.push(InspectorTest.generateUndoTest(testAddAttribute));
+    testSuite.push(ElementsTestRunner.generateUndoTest(testAddAttribute));
 
 
-    InspectorTest.runTestSuite(testSuite);
+    TestRunner.runTestSuite(testSuite);
 }
 
 </script>

@@ -47,19 +47,19 @@ function test()
     var childTestNode;
     var textTestNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
-                attrTestNode = InspectorTest.expandedNodeWithId("attrTest");
-                childTestNode = InspectorTest.expandedNodeWithId("childTest");
-                textTestNode = InspectorTest.expandedNodeWithId("textTest");
+                attrTestNode = ElementsTestRunner.expandedNodeWithId("attrTest");
+                childTestNode = ElementsTestRunner.expandedNodeWithId("childTest");
+                textTestNode = ElementsTestRunner.expandedNodeWithId("textTest");
                 next();
             }
-            InspectorTest.addResult("========= Original ========");
-            InspectorTest.dumpDOMUpdateHighlights(null);
-            InspectorTest.expandElementsTree(callback);
+            TestRunner.addResult("========= Original ========");
+            ElementsTestRunner.dumpDOMUpdateHighlights(null);
+            ElementsTestRunner.expandElementsTree(callback);
         },
 
         function testSetAttributeOtherValue(next)
@@ -88,7 +88,7 @@ function test()
             function callback()
             {
                 // Expand the #childTest node.
-                InspectorTest.expandElementsTree(next);
+                ElementsTestRunner.expandElementsTree(next);
             }
         },
 
@@ -142,16 +142,16 @@ function test()
     function runAndDumpHighlights(script, root, next)
     {
         dumpHighlights(root, next);
-        InspectorTest.evaluateInPage(script);
+        TestRunner.evaluateInPage(script);
     }
 
     function dumpHighlights(root, next)
     {
-        InspectorTest.dumpDOMUpdateHighlights(root, callback);
+        ElementsTestRunner.dumpDOMUpdateHighlights(root, callback);
 
         function callback()
         {
-            var treeOutline = InspectorTest.firstElementsTreeOutline();
+            var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
             var highlights = treeOutline._element.getElementsByClassName("dom-update-highlight");
             for (var i = 0; i < highlights.length; ++i)
                 highlights[i].classList.remove("dom-update-highlight");

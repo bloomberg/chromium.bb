@@ -7,24 +7,24 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", onStylesSelected);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", onStylesSelected);
 
     function onStylesSelected(node)
     {
         Workspace.workspace.addEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
-        InspectorTest.addNewRule("#inspected", new Function());
+        ElementsTestRunner.addNewRule("#inspected", new Function());
     }
 
     function onWorkingCopyCommitted(event)
     {
         Workspace.workspace.removeEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
         var uiSourceCode = event.data.uiSourceCode;
-        InspectorTest.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
+        TestRunner.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
         uiSourceCode.requestContent().then(printContent(onContent))
 
         function onContent()
         {
-            InspectorTest.addResult("\nSetting new content");
+            TestRunner.addResult("\nSetting new content");
             uiSourceCode.setWorkingCopy("#inspected { background-color: green; }");
             uiSourceCode.commitWorkingCopy();
             onUpdatedWorkingCopy(uiSourceCode);
@@ -36,13 +36,13 @@ function test()
         uiSourceCode.requestContent().then(printContent(selectNode));
         function selectNode()
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", dumpStyles);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", dumpStyles);
         }
 
         function dumpStyles()
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
-            InspectorTest.completeTest();
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+            TestRunner.completeTest();
         }
     }
 
@@ -50,8 +50,8 @@ function test()
     {
         function result(content)
         {
-            InspectorTest.addResult("Inspector stylesheet content:");
-            InspectorTest.addResult(content);
+            TestRunner.addResult("Inspector stylesheet content:");
+            TestRunner.addResult(content);
             if (next)
                 next();
         }

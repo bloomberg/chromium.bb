@@ -11,54 +11,54 @@
 function test()
 {
     var treeElement;
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function addNewProperty(next)
         {
-            var section = InspectorTest.firstMatchedStyleSection();
+            var section = ElementsTestRunner.firstMatchedStyleSection();
             var newProperty = section.addNewBlankProperty();
             newProperty.startEditing();
             newProperty.nameElement.textContent = "color";
-            newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
             newProperty.valueElement.textContent = "blue";
-            newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.waitForStyleApplied(next);
+            newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+            ElementsTestRunner.waitForStyleApplied(next);
         },
 
         function editProperty(next)
         {
-            treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
             treeElement.startEditing();
             treeElement.nameElement.textContent = "color";
-            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
             // Update incrementally, do not commit.
             treeElement.valueElement.textContent = "red";
             treeElement.kickFreeFlowStyleEditForTest();
-            InspectorTest.waitForStyleApplied(next);
+            ElementsTestRunner.waitForStyleApplied(next);
         },
 
         function cancelEditing(next)
         {
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Escape"));
-            InspectorTest.waitForStyleApplied(next);
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Escape"));
+            ElementsTestRunner.waitForStyleApplied(next);
         },
 
         function undoStyles(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
-            InspectorTest.domModel.undo();
-            InspectorTest.waitForStyles("inspected", next, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+            TestRunner.domModel.undo();
+            ElementsTestRunner.waitForStyles("inspected", next, true);
         },
 
         function onUndoedProperty(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
             next();
         }
     ]);

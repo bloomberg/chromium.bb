@@ -11,18 +11,18 @@ function whitespaceChild()
 
 function test()
 {
-    InspectorTest.evaluateInPage("whitespaceChild()", childCallback);
+    TestRunner.evaluateInPage("whitespaceChild()", childCallback);
 
     function childCallback(childObject)
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
         Common.Revealer.reveal(childObject);
     }
 
     function selectedNodeChanged(event) {
         var node = event.data.node;
-        InspectorTest.addResult("SelectedNodeChanged: " + node.localName());
-        InspectorTest.completeTest();
+        TestRunner.addResult("SelectedNodeChanged: " + node.localName());
+        TestRunner.completeTest();
     }
 }
 </script>

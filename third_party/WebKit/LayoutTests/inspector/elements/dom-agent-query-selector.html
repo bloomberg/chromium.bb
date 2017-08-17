@@ -7,32 +7,32 @@
 
 function test()
 {
-    InspectorTest.selectNodeWithId("container", step1);
+    ElementsTestRunner.selectNodeWithId("container", step1);
 
     function step1(node)
     {
         var containerId = node.id;
         var documentId = node.ownerDocument.id;
 
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testDocumentQuerySelector(next)
             {
-                InspectorTest.DOMAgent.querySelector(documentId, "div.foo").then(dumpNodes.bind(null, next));
+                TestRunner.DOMAgent.querySelector(documentId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testDocumentQuerySelectorAll(next)
             {
-                InspectorTest.DOMAgent.querySelectorAll(documentId, "div.foo").then(dumpNodes.bind(null, next));
+                TestRunner.DOMAgent.querySelectorAll(documentId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testQuerySelector(next)
             {
-                InspectorTest.DOMAgent.querySelector(containerId, "div.foo").then(dumpNodes.bind(null, next));
+                TestRunner.DOMAgent.querySelector(containerId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testQuerySelectorAll(next)
             {
-                InspectorTest.DOMAgent.querySelectorAll(containerId, "div.foo").then(dumpNodes.bind(null, next));
+                TestRunner.DOMAgent.querySelectorAll(containerId, "div.foo").then(dumpNodes.bind(null, next));
             }
         ]);
     }
@@ -49,10 +49,10 @@ function test()
 
         for (var i = 0; i < nodeIds.length; ++i) {
             if (!nodeIds[i])
-                InspectorTest.addResult("no results");
+                TestRunner.addResult("no results");
             else {
-                var node = InspectorTest.domModel.nodeForId(nodeIds[i]);
-                InspectorTest.addResult("node id: " + node.getAttribute("id"));
+                var node = TestRunner.domModel.nodeForId(nodeIds[i]);
+                TestRunner.addResult("node id: " + node.getAttribute("id"));
             }
         }
         next();

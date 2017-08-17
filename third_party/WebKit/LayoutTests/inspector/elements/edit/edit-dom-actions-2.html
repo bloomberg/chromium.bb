@@ -11,50 +11,50 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testSetAttribute(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
             }
         },
 
         function testSetScriptableAttribute(next)
         {
-            InspectorTest.domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
          
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
             }
         },
 
         function testRemoveAttribute(next)
         {
-            InspectorTest.domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
+            ElementsTestRunner.domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
 
             function testBody(node, done)
             {
-                InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "", done, true);
+                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "", done, true);
             }
         },
 
         function testAddAttribute(next)
         {
-            InspectorTest.doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
+            ElementsTestRunner.doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
         },
 
         function testAddAttributeUnquotedValue(next)
         {
-            InspectorTest.doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
+            ElementsTestRunner.doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
         },
     ]);
 }

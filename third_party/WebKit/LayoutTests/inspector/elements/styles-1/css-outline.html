@@ -67,9 +67,9 @@ function test()
     function onRulesParsed(isLastChunk, rules)
     {
         for (var i = 0; i < rules.length; ++i)
-            InspectorTest.addObject(rules[i]);
+            TestRunner.addObject(rules[i]);
         if (isLastChunk)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 
     function onStyleFetched(result)
@@ -77,7 +77,7 @@ function test()
         Formatter.formatterWorkerPool().parseCSS(result.value, onRulesParsed);
     }
 
-    InspectorTest.evaluateInPage("getCSS()", onStyleFetched);
+    TestRunner.evaluateInPage("getCSS()", onStyleFetched);
 }
 
 </script>
