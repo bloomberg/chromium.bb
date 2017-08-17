@@ -45,9 +45,8 @@ class TestServiceImpl : public mojom::TestService {
  public:
   explicit TestServiceImpl(mojom::TestServiceRequest request)
       : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(
-        base::Bind(&TestServiceImpl::OnConnectionError,
-                   base::Unretained(this)));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &TestServiceImpl::OnConnectionError, base::Unretained(this)));
   }
 
   ~TestServiceImpl() override {}

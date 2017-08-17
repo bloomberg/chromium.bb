@@ -118,15 +118,15 @@ void MockScreenOrientationClient::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
     std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockScreenOrientationClient::UpdateLockSync,
-                 base::Unretained(this), orientation, base::Passed(&callback)));
+      FROM_HERE, base::BindOnce(&MockScreenOrientationClient::UpdateLockSync,
+                                base::Unretained(this), orientation,
+                                base::Passed(&callback)));
 }
 
 void MockScreenOrientationClient::UnlockOrientation() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockScreenOrientationClient::ResetLockSync,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MockScreenOrientationClient::ResetLockSync,
+                                base::Unretained(this)));
 }
 
 void MockScreenOrientationClient::UpdateLockSync(

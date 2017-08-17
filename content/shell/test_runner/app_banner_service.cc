@@ -31,8 +31,8 @@ void AppBannerService::SendBannerPromptRequest(
   binding_.Bind(mojo::MakeRequest(&proxy));
   controller_->BannerPromptRequest(
       std::move(proxy), mojo::MakeRequest(&event_), platforms,
-      base::Bind(&AppBannerService::OnBannerPromptReply, base::Unretained(this),
-                 callback));
+      base::BindOnce(&AppBannerService::OnBannerPromptReply,
+                     base::Unretained(this), callback));
 }
 
 void AppBannerService::DisplayAppBanner(bool user_gesture) { /* do nothing */

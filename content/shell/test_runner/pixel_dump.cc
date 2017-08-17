@@ -155,8 +155,8 @@ void PrintFrameAsync(blink::WebLocalFrame* web_frame,
   DCHECK(!callback.is_null());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CapturePixelsForPrinting, base::Unretained(web_frame),
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&CapturePixelsForPrinting, base::Unretained(web_frame),
+                     base::Passed(std::move(callback))));
 }
 
 base::OnceCallback<void(const SkBitmap&)>
@@ -171,8 +171,8 @@ CreateSelectionBoundsRectDrawingCallback(
   if (wr.IsEmpty())
     return original_callback;
 
-  return base::Bind(&DrawSelectionRect, wr,
-                    base::Passed(std::move(original_callback)));
+  return base::BindOnce(&DrawSelectionRect, wr,
+                        base::Passed(std::move(original_callback)));
 }
 
 void CopyImageAtAndCapturePixels(

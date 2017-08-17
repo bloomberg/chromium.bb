@@ -533,9 +533,9 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
   printer_->AddErrorMessage(
       base::StringPrintf("#CRASHED - plugin (pid %" CrPRIdPid ")", plugin_pid));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&BlinkTestController::DiscardMainWindow),
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(
+                                    &BlinkTestController::DiscardMainWindow),
+                                base::Unretained(this)));
 }
 
 void BlinkTestController::RenderFrameCreated(
@@ -780,8 +780,8 @@ void BlinkTestController::OnInitiateLayoutDump() {
 
     ++number_of_messages;
     GetLayoutTestControlPtr(rfh)->DumpFrameLayout(
-        base::Bind(&BlinkTestController::OnDumpFrameLayoutResponse,
-                   base::Unretained(this), rfh->GetFrameTreeNodeId()));
+        base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
+                       base::Unretained(this), rfh->GetFrameTreeNodeId()));
   }
 
   pending_layout_dumps_ = number_of_messages;
@@ -1041,8 +1041,8 @@ mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
     frame->GetRemoteAssociatedInterfaces()->GetInterface(
         &layout_test_control_map_[frame]);
     layout_test_control_map_[frame].set_connection_error_handler(
-        base::Bind(&BlinkTestController::HandleLayoutTestControlError,
-                   base::Unretained(this), frame));
+        base::BindOnce(&BlinkTestController::HandleLayoutTestControlError,
+                       base::Unretained(this), frame));
   }
   DCHECK(layout_test_control_map_[frame].get());
   return layout_test_control_map_[frame].get();

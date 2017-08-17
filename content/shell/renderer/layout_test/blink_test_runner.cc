@@ -894,8 +894,8 @@ void BlinkTestRunner::CaptureDumpContinued() {
 
     interfaces->TestRunner()->DumpPixelsAsync(
         render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
-        base::Bind(&BlinkTestRunner::OnPixelsDumpCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
+                       base::Unretained(this)));
     return;
   }
 
