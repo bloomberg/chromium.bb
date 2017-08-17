@@ -179,6 +179,11 @@ const char kAppListAppLaunchedFullscreen[] =
 const char kAppListStateTransitionSourceHistogram[] =
     "Apps.AppListStateTransitionSource";
 
+// The UMA histogram that logs the source of vertical page switcher usage in the
+// app list.
+const char kAppListPageSwitcherSourceHistogram[] =
+    "Apps.AppListPageSwitcherSource";
+
 // The UMA histogram that logs usage of the original and redesigned folders.
 const char kAppListFolderOpenedHistogram[] = "Apps.AppListFolderOpened";
 

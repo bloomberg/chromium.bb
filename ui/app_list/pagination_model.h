@@ -30,9 +30,7 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   // Holds info for transition animation and touch scroll.
   struct Transition {
     Transition(int target_page, double progress)
-        : target_page(target_page),
-          progress(progress) {
-    }
+        : target_page(target_page), progress(progress) {}
 
     bool Equals(const Transition& rhs) const {
       return target_page == rhs.target_page && progress == rhs.progress;
@@ -59,6 +57,9 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
 
   // Selects a page by relative |delta|.
   void SelectPageRelative(int delta, bool animate);
+
+  // Whether the page relative |delta| is valid.
+  bool IsValidPageRelative(int delta) const;
 
   // Immediately completes all queued animations, jumping directly to the final
   // target page.
@@ -107,9 +108,7 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   void NotifyTransitionStarted();
   void NotifyTransitionChanged();
 
-  void clear_transition() {
-    SetTransition(Transition(-1, 0));
-  }
+  void clear_transition() { SetTransition(Transition(-1, 0)); }
 
   // Calculates a target page number by combining current page and |delta|.
   // When there is no transition, current page is the currently selected page.

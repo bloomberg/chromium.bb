@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
@@ -240,6 +241,12 @@ void PageSwitcherVertical::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   for (int i = 0; i < buttons_->child_count(); ++i) {
     if (sender == static_cast<views::Button*>(buttons_->child_at(i))) {
+      if (model_->selected_page() == i)
+        break;
+      UMA_HISTOGRAM_ENUMERATION(
+          kAppListPageSwitcherSourceHistogram,
+          event.IsGestureEvent() ? kTouchPageIndicator : kClickPageIndicator,
+          kMaxAppListPageSwitcherSource);
       model_->SelectPage(i, true /* animate */);
       break;
     }

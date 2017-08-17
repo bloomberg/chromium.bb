@@ -168,6 +168,14 @@ TEST_F(PaginationModelTest, SelectPage) {
   EXPECT_EQ(std::string("2 4 3 1"), observer_.selected_pages());
 }
 
+TEST_F(PaginationModelTest, IsValidPageRelative) {
+  pagination_.SelectPage(0, false /*animate*/);
+  ASSERT_FALSE(pagination_.IsValidPageRelative(-1));
+  ASSERT_FALSE(pagination_.IsValidPageRelative(5));
+  ASSERT_TRUE(pagination_.IsValidPageRelative(1));
+  ASSERT_TRUE(pagination_.IsValidPageRelative(4));
+}
+
 TEST_F(PaginationModelTest, SelectPageAnimated) {
   const int kStartPage = 0;
 

@@ -10,6 +10,7 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -1884,6 +1885,8 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
 void AppsGridView::OnPageFlipTimer() {
   DCHECK(pagination_model_.is_valid_page(page_flip_target_));
   pagination_model_.SelectPage(page_flip_target_, true);
+  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
+                            kDragAppToBorder, kMaxAppListPageSwitcherSource);
 }
 
 void AppsGridView::MoveItemInModel(AppListItemView* item_view,

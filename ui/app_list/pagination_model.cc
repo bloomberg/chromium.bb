@@ -18,11 +18,9 @@ PaginationModel::PaginationModel()
       pending_selected_page_(-1),
       transition_duration_ms_(0),
       overscroll_transition_duration_ms_(0),
-      last_overscroll_target_page_(0) {
-}
+      last_overscroll_target_page_(0) {}
 
-PaginationModel::~PaginationModel() {
-}
+PaginationModel::~PaginationModel() {}
 
 void PaginationModel::SetTotalPages(int total_pages) {
   if (total_pages == total_pages_)
@@ -53,7 +51,7 @@ void PaginationModel::SelectPage(int page, bool animate) {
         if (page == last_overscroll_target_page_) {
           const int kMinOverScrollTimeGapInMs = 500;
           const base::TimeDelta time_elapsed =
-               now - last_overscroll_animation_start_time_;
+              now - last_overscroll_animation_start_time_;
           if (time_elapsed.InMilliseconds() < kMinOverScrollTimeGapInMs)
             return;
         }
@@ -100,6 +98,13 @@ void PaginationModel::SelectPageRelative(int delta, bool animate) {
   SelectPage(CalculateTargetPage(delta), animate);
 }
 
+bool PaginationModel::IsValidPageRelative(int delta) const {
+  DCHECK_GT(total_pages_, 0);
+  const int target_page = SelectedTargetPage() + delta;
+
+  return target_page >= 0 && target_page <= (total_pages_ - 1);
+}
+
 void PaginationModel::FinishAnimation() {
   SelectPage(SelectedTargetPage(), false);
 }
@@ -139,8 +144,8 @@ void PaginationModel::UpdateScroll(double delta) {
 
   // Updates transition progress.
   int transition_dir = transition_.target_page > selected_page_ ? 1 : -1;
-  double progress = transition_.progress +
-      fabs(delta) * page_change_dir * transition_dir;
+  double progress =
+      transition_.progress + fabs(delta) * page_change_dir * transition_dir;
 
   if (progress < 0) {
     if (transition_.progress) {
@@ -238,8 +243,9 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   transition_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   transition_animation_->Reset(transition_.progress);
 
-  const int duration = is_valid_page(transition_.target_page) ?
-      transition_duration_ms_ : overscroll_transition_duration_ms_;
+  const int duration = is_valid_page(transition_.target_page)
+                           ? transition_duration_ms_
+                           : overscroll_transition_duration_ms_;
   if (duration)
     transition_animation_->SetSlideDuration(duration);
 

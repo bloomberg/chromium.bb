@@ -163,9 +163,24 @@ enum AppListStateTransitionSource {
   kMaxAppListStateTransition = 11,
 };
 
+// The different ways to change pages in the app list's app grid. These values
+// are written to logs.  New enum values can be added, but existing enums must
+// never be renumbered or deleted and reused.
+enum AppListPageSwitcherSource {
+  kTouchPageIndicator = 0,
+  kClickPageIndicator = 1,
+  kSwipeAppGrid = 2,
+  kFlingAppGrid = 3,
+  kMouseWheelScroll = 4,
+  kMousePadScroll = 5,
+  kDragAppToBorder = 6,
+  kMaxAppListPageSwitcherSource = 7,
+};
+
 APP_LIST_EXPORT extern const char kAppListAppLaunched[];
 APP_LIST_EXPORT extern const char kAppListAppLaunchedFullscreen[];
 APP_LIST_EXPORT extern const char kAppListStateTransitionSourceHistogram[];
+APP_LIST_EXPORT extern const char kAppListPageSwitcherSourceHistogram[];
 APP_LIST_EXPORT extern const char kAppListFolderOpenedHistogram[];
 APP_LIST_EXPORT extern const char kAppListPeekingToFullscreenHistogram[];
 APP_LIST_EXPORT extern const char kAppListToggleMethodHistogram[];

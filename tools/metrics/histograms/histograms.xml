@@ -1660,6 +1660,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListPageSwitcherSource"
+    enum="AppListPageSwitcherSource">
+  <owner>newcomer@chromium.org</owner>
+  <summary>
+    The source used to switch pages in the app list's app grid. Logged when the
+    page switch succeeds.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListPeekingToFullscreenSource"
     enum="AppListPeekingToFullscreenSource">
   <owner>newcomer@chromium.org</owner>
