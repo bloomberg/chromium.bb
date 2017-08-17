@@ -316,7 +316,7 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
       GetControlButtonBackgroundColor(item_->GetShownContents()));
   control_buttons_view_->ShowSettingsButton(
       item_->IsOpeningSettingsSupported());
-  control_buttons_view_->ShowCloseButton(!item_->GetPinned());
+  control_buttons_view_->ShowCloseButton(!notification_view->GetPinned());
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -415,18 +415,6 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
     floating_control_buttons_widget_->Show();
   else
     floating_control_buttons_widget_->Hide();
-}
-
-void ArcNotificationContentView::UpdatePinnedState() {
-  if (!item_)
-    return;
-
-  // Surface is not attached yet.
-  if (!control_buttons_view_)
-    return;
-
-  control_buttons_view_->ShowCloseButton(!item_->GetPinned());
-  Layout();
 }
 
 void ArcNotificationContentView::UpdateSnapshot() {
@@ -648,7 +636,6 @@ void ArcNotificationContentView::OnItemDestroying() {
 
 void ArcNotificationContentView::OnItemUpdated() {
   UpdateAccessibleName();
-  UpdatePinnedState();
   UpdateSnapshot();
   if (control_buttons_view_) {
     DCHECK(floating_control_buttons_widget_);

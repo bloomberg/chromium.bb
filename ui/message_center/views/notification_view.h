@@ -86,6 +86,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   void CreateOrUpdateSmallIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
+  // TODO(yoshiki): Move this to message_center::MessageView
   void UpdateControlButtonsVisibilityWithNotification(
       const Notification& notification);
 

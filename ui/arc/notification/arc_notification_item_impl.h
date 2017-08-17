@@ -42,7 +42,6 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   void RemoveObserver(Observer* observer) override;
   void IncrementWindowRefCount() override;
   void DecrementWindowRefCount() override;
-  bool GetPinned() const override;
   const gfx::ImageSkia& GetSnapshot() const override;
   mojom::ArcNotificationExpandState GetExpandState() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
@@ -57,8 +56,6 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   ArcNotificationManager* const manager_;
   message_center::MessageCenter* const message_center_;
 
-  // The pinned state of the latest notification.
-  bool pinned_ = false;
   // The snapshot of the latest notification.
   gfx::ImageSkia snapshot_;
   // The expand state of the latest notification.

@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -44,6 +45,8 @@ ArcNotificationView::ArcNotificationView(
         contents_view_->background()->get_color());
   }
 
+  UpdateControlButtonsVisibilityWithNotification(notification);
+
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
@@ -56,6 +59,13 @@ void ArcNotificationView::OnContentFocused() {
 
 void ArcNotificationView::OnContentBlured() {
   SchedulePaint();
+}
+
+void ArcNotificationView::UpdateWithNotification(
+    const message_center::Notification& notification) {
+  message_center::MessageView::UpdateWithNotification(notification);
+
+  UpdateControlButtonsVisibilityWithNotification(notification);
 }
 
 void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
@@ -174,6 +184,20 @@ bool ArcNotificationView::HandleAccessibleAction(
   if (contents_view_)
     return contents_view_->HandleAccessibleAction(action);
   return false;
+}
+
+// TODO(yoshiki): move this to MessageView and share the code among
+// NotificationView and NotificationViewMD.
+void ArcNotificationView::UpdateControlButtonsVisibilityWithNotification(
+    const message_center::Notification& notification) {
+  if (!GetControlButtonsView())
+    return;
+
+  GetControlButtonsView()->ShowSettingsButton(
+      notification.delegate() &&
+      notification.delegate()->ShouldDisplaySettingsButton());
+  GetControlButtonsView()->ShowCloseButton(!GetPinned());
+  UpdateControlButtonsVisibility();
 }
 
 }  // namespace message_center

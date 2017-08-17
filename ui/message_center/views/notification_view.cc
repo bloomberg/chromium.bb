@@ -652,7 +652,7 @@ void NotificationView::UpdateControlButtonsVisibilityWithNotification(
   control_buttons_view_->ShowSettingsButton(
       notification.delegate() &&
       notification.delegate()->ShouldDisplaySettingsButton());
-  control_buttons_view_->ShowCloseButton(!notification.pinned());
+  control_buttons_view_->ShowCloseButton(!GetPinned());
   UpdateControlButtonsVisibility();
 }
 

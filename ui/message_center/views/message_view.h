@@ -74,15 +74,20 @@ class MESSAGE_CENTER_EXPORT MessageView
   void OnSlideChanged() override;
   void OnSlideOut() override;
 
+  bool GetPinned() const;
+
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
   NotifierId notifier_id() { return notifier_id_; }
   const base::string16& display_source() const { return display_source_; }
-  bool pinned() const { return pinned_; }
-
   void set_controller(MessageCenterController* controller) {
     controller_ = controller;
   }
+
+#if defined(OS_CHROMEOS)
+  // By calling this, all notifications are treated as non-pinned forcibly.
+  void set_force_disable_pinned() { force_disable_pinned_ = true; }
+#endif
 
  protected:
   // Creates and add close button to view hierarchy when necessary. Derived
@@ -108,7 +113,12 @@ class MESSAGE_CENTER_EXPORT MessageView
   base::string16 accessible_name_;
 
   base::string16 display_source_;
+
+  // Flag if the notification is set to pinned or not.
   bool pinned_ = false;
+  // Flag if pin is forcibly disabled on this view. If true, the view is never
+  // pinned regardless of the value of |pinned_|.
+  bool force_disable_pinned_ = false;
 
   std::unique_ptr<views::Painter> focus_painter_;
 

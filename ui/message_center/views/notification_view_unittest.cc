@@ -749,11 +749,31 @@ TEST_F(NotificationViewTest, SlideOutPinned) {
   EXPECT_FALSE(IsRemoved(notification_id));
 }
 
+TEST_F(NotificationViewTest, SlideOutForceDisablePinned) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  notification()->set_pinned(true);
+  notification_view()->set_force_disable_pinned();
+  UpdateNotificationViews();
+  std::string notification_id = notification()->id();
+
+  BeginScroll();
+  ScrollBy(-200);
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(-200.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_TRUE(IsRemoved(notification_id));
+}
+
 TEST_F(NotificationViewTest, Pinned) {
   notification()->set_pinned(true);
-
   UpdateNotificationViews();
   EXPECT_EQ(NULL, GetCloseButton());
+
+  notification_view()->set_force_disable_pinned();
+  UpdateNotificationViews();
+  EXPECT_TRUE(GetCloseButton());
 }
 
 #endif // defined(OS_CHROMEOS)

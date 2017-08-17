@@ -645,7 +645,7 @@ void MessageCenterView::EnableCloseAllIfAppropriate() {
   if (mode_ == Mode::NOTIFICATIONS) {
     bool no_closable_views = true;
     for (const auto& view : notification_views_) {
-      if (!view.second->pinned()) {
+      if (!view.second->GetPinned()) {
         no_closable_views = false;
         break;
       }
@@ -678,11 +678,11 @@ void MessageCenterView::UpdateNotification(const std::string& id) {
     if ((*iter)->id() == id) {
       int old_width = view->width();
       int old_height = view->height();
-      bool old_pinned = view->pinned();
+      bool old_pinned = view->GetPinned();
       message_list_view_->UpdateNotification(view, **iter);
       if (view->GetHeightForWidth(old_width) != old_height) {
         Update(true /* animate */);
-      } else if (view->pinned() != old_pinned) {
+      } else if (view->GetPinned() != old_pinned) {
         // Animate flag is false, since the pinned flag transition doesn't need
         // animation.
         Update(false /* animate */);
