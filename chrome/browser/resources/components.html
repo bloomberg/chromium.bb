@@ -5,10 +5,6 @@
 <title i18n-content="componentsTitle"></title>
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
 <link rel="stylesheet" href="components.css">
-<if expr="chromeos">
-  <link rel="stylesheet"
-      href="chrome://resources/css/chromeos/ui_account_tweaks.css">
-</if>
 </head>
 <body>
 <div id="body-container" style="visibility:hidden">
@@ -60,8 +56,8 @@
             <span jscontent="status" jsvalues=".id: 'status-' + id">
             <span>
           </div>
-          <div class="component-actions" guest-visibility="disabled">
-            <button class="button-check-update"
+          <div class="component-actions">
+            <button class="button-check-update" guest-disabled
                 jsvalues=".id:id" i18n-content="checkUpdate">
             </button>
           </div>
@@ -73,10 +69,6 @@
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://components/components.js"></script>
-<if expr="chromeos">
-  <script src="chrome://resources/js/chromeos/ui_account_tweaks.js"></script>
-</if>
-
 <script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 <script src="chrome://components/strings.js"></script>

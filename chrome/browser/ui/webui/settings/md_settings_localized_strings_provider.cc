@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #include "components/user_manager/user_manager.h"
@@ -300,13 +299,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
-void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
-                               Profile* profile) {
-  base::DictionaryValue localized_values;
-  chromeos::AddAccountUITweaksLocalizedValues(&localized_values, profile);
-  html_source->AddLocalizedStrings(localized_values);
-}
-
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"androidAppsPageTitle", arc::IsPlayStoreAvailable()
@@ -2034,7 +2026,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
-  AddAccountUITweaksStrings(html_source, profile);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);

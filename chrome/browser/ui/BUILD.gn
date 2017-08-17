@@ -333,8 +333,6 @@ split_static_library("ui") {
     "webui/chromeos/slow_trace_ui.h",
     "webui/chromeos/slow_ui.cc",
     "webui/chromeos/slow_ui.h",
-    "webui/chromeos/ui_account_tweaks.cc",
-    "webui/chromeos/ui_account_tweaks.h",
     "webui/components_ui.cc",
     "webui/components_ui.h",
     "webui/constrained_web_dialog_ui.cc",

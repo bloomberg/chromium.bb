@@ -67,12 +67,11 @@ function returnComponentsData(componentsData) {
     };
   }
 
-  if (cr.isChromeOS) {
-    // Disable some controls for Guest in ChromeOS.
-    uiAccountTweaks.UIAccountTweaks.applyGuestSessionVisibility(document);
-
-    // Disable some controls for Public session in ChromeOS.
-    uiAccountTweaks.UIAccountTweaks.applyPublicSessionVisibility(document);
+  // Disable some controls for Guest mode in ChromeOS.
+  if (cr.isChromeOS && loadTimeData.getBoolean('isGuest')) {
+    document.querySelectorAll('[guest-disabled]').forEach(function(element) {
+      element.disabled = true;
+    });
   }
 
   bodyContainer.style.visibility = 'visible';
