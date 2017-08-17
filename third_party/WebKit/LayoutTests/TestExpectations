@@ -3451,3 +3451,11 @@ crbug.com/755405 [ Android ] paint/invalidation/shadow-multiple.html [ Failure ]
 crbug.com/755405 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ Failure ]
 crbug.com/755405 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 crbug.com/755405 [ Android ] transforms/transformed-caret.html [ Failure ]
+
+# ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
+crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
+crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
