@@ -1163,7 +1163,16 @@ public class BottomSheet
             setSheetState(SHEET_STATE_FULL, false);
         }
 
-        mBottomSheetContentContainer.requestLayout();
+        // RequestLayout is wrapped in a runnable for the sake of Android J.
+        // TODO(mdjones): We request too many layouts. This function itself is called inside of a
+        // layout cycle and calls requestLayout. Now that the sheet content fills the entire screen,
+        // we should no longer need to do this. https://crbug.com/725730
+        post(new Runnable() {
+            @Override
+            public void run() {
+                mBottomSheetContentContainer.requestLayout();
+            }
+        });
     }
 
     /**
