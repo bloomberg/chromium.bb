@@ -78,7 +78,6 @@ struct wet_head_tracker {
 struct wet_compositor {
 	struct weston_config *config;
 	struct wet_output_config *parsed_options;
-	struct wl_listener pending_output_listener;
 	bool drm_use_current_mode;
 	struct wl_listener heads_changed_listener;
 	int (*simple_output_configure)(struct weston_output *output);
@@ -359,16 +358,6 @@ static struct wet_compositor *
 to_wet_compositor(struct weston_compositor *compositor)
 {
 	return weston_compositor_get_user_data(compositor);
-}
-
-static void
-wet_set_pending_output_handler(struct weston_compositor *ec,
-			       wl_notify_func_t handler)
-{
-	struct wet_compositor *compositor = to_wet_compositor(ec);
-
-	compositor->pending_output_listener.notify = handler;
-	wl_signal_add(&ec->output_pending_signal, &compositor->pending_output_listener);
 }
 
 static struct wet_output_config *
@@ -1105,6 +1094,12 @@ simple_head_enable(struct weston_compositor *compositor, struct weston_head *hea
 	struct weston_output *output;
 	int ret = 0;
 
+	/* Workaround for repeated DRM backend "off" setting.
+	 * For any other case, we should not have an attached head that is not
+	 * enabled. */
+	if (weston_head_get_output(head))
+		return;
+
 	output = weston_compositor_create_output_with_head(compositor, head);
 	if (!output) {
 		weston_log("Could not create an output for head \"%s\".\n",
@@ -1124,6 +1119,10 @@ simple_head_enable(struct weston_compositor *compositor, struct weston_head *hea
 
 		return;
 	}
+
+	/* Escape hatch for DRM backend "off" setting. */
+	if (ret > 0)
+		return;
 
 	if (weston_output_enable(output) < 0) {
 		weston_log("Enabling output \"%s\" failed.\n",
@@ -1218,10 +1217,9 @@ configure_input_device(struct weston_compositor *compositor,
 	}
 }
 
-static void
-drm_backend_output_configure(struct wl_listener *listener, void *data)
+static int
+drm_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	struct weston_config *wc = wet_get_config(output->compositor);
 	struct wet_compositor *wet = to_wet_compositor(output->compositor);
 	struct weston_config_section *section;
@@ -1236,7 +1234,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 
 	if (!api) {
 		weston_log("Cannot use weston_drm_output_api.\n");
-		return;
+		return -1;
 	}
 
 	section = weston_config_get_section(wc, "output", "name", output->name);
@@ -1245,7 +1243,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 	if (strcmp(s, "off") == 0) {
 		weston_output_disable(output);
 		free(s);
-		return;
+		return 1;
 	} else if (wet->drm_use_current_mode || strcmp(s, "current") == 0) {
 		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
 	} else if (strcmp(s, "preferred") != 0) {
@@ -1257,7 +1255,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 	if (api->set_mode(output, mode, modeline) < 0) {
 		weston_log("Cannot configure an output using weston_drm_output_api.\n");
 		free(modeline);
-		return;
+		return -1;
 	}
 	free(modeline);
 
@@ -1275,7 +1273,7 @@ drm_backend_output_configure(struct wl_listener *listener, void *data)
 	api->set_seat(output, seat);
 	free(seat);
 
-	weston_output_enable(output);
+	return 0;
 }
 
 static int
@@ -1310,10 +1308,10 @@ load_drm_backend(struct weston_compositor *c,
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
 	config.configure_device = configure_input_device;
 
+	wet_set_simple_head_configurator(c, drm_backend_output_configure);
+
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_DRM,
 					     &config.base);
-
-	wet_set_pending_output_handler(c, drm_backend_output_configure);
 
 	free(config.gbm_format);
 	free(config.seat_id);
