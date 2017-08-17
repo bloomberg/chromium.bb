@@ -8,6 +8,7 @@
 #include "ash/highlighter/highlighter_result_view.h"
 #include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/highlighter/highlighter_view.h"
+#include "ash/public/cpp/scale_utility.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -39,12 +40,7 @@ gfx::RectF AdjustHorizontalStroke(const gfx::RectF& box,
 // of points separated by the distance of 1, and measuring the distance between
 // the transformed points.
 float GetScreenshotScale(aura::Window* window) {
-  const gfx::Transform transform = window->GetHost()->GetRootTransform();
-  gfx::Point3F p1(0, 0, 0);
-  gfx::Point3F p2(1, 0, 0);
-  transform.TransformPoint(&p1);
-  transform.TransformPoint(&p2);
-  return (p2 - p1).Length();
+  return GetScaleFactorForTransform(window->GetHost()->GetRootTransform());
 }
 
 }  // namespace
