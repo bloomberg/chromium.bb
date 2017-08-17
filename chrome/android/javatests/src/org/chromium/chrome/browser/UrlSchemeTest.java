@@ -33,7 +33,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Callable;
 
 /** Test suite for different Android URL schemes. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -221,12 +220,8 @@ public class UrlSchemeTest {
     }
 
     private String getTitleOnUiThread() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getActivityTab().getTitle());
     }
 
     /**

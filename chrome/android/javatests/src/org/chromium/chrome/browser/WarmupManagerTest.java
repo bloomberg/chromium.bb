@@ -55,27 +55,19 @@ public class WarmupManagerTest {
         mContext = InstrumentationRegistry.getInstrumentation()
                            .getTargetContext()
                            .getApplicationContext();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
-                } catch (Exception e) {
-                    Assert.fail();
-                }
-                mWarmupManager = WarmupManager.getInstance();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
+            } catch (Exception e) {
+                Assert.fail();
             }
+            mWarmupManager = WarmupManager.getInstance();
         });
     }
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.destroySpareWebContents();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mWarmupManager.destroySpareWebContents());
     }
 
     @Test
@@ -94,26 +86,23 @@ public class WarmupManagerTest {
         final AtomicBoolean isRenderViewReady = new AtomicBoolean();
         final AtomicReference<WebContents> webContentsReference = new AtomicReference<>();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.createSpareWebContents();
-                Assert.assertTrue(mWarmupManager.hasSpareWebContents());
-                WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
-                Assert.assertNotNull(webContents);
-                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
-                WebContentsObserver observer = new WebContentsObserver(webContents) {
-                    @Override
-                    public void renderViewReady() {
-                        isRenderViewReady.set(true);
-                    }
-                };
+        ThreadUtils.runOnUiThread(() -> {
+            mWarmupManager.createSpareWebContents();
+            Assert.assertTrue(mWarmupManager.hasSpareWebContents());
+            WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
+            Assert.assertNotNull(webContents);
+            Assert.assertFalse(mWarmupManager.hasSpareWebContents());
+            WebContentsObserver observer = new WebContentsObserver(webContents) {
+                @Override
+                public void renderViewReady() {
+                    isRenderViewReady.set(true);
+                }
+            };
 
-                // This is not racy because {@link WebContentsObserver} methods are called on the UI
-                // thread by posting a task. See {@link RenderViewHostImpl::PostRenderViewReady}.
-                webContents.addObserver(observer);
-                webContentsReference.set(webContents);
-            }
+            // This is not racy because {@link WebContentsObserver} methods are called on the UI
+            // thread by posting a task. See {@link RenderViewHostImpl::PostRenderViewReady}.
+            webContents.addObserver(observer);
+            webContentsReference.set(webContents);
         });
         CriteriaHelper.pollUiThread(new Criteria("Spare renderer is not initialized") {
             @Override
@@ -121,12 +110,7 @@ public class WarmupManagerTest {
                 return isRenderViewReady.get();
             }
         });
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webContentsReference.get().destroy();
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> webContentsReference.get().destroy());
     }
 
     /** Tests that taking a spare WebContents makes it unavailable to subsequent callers. */
@@ -235,13 +219,8 @@ public class WarmupManagerTest {
             server.start();
 
             final String url = server.getURL("/hello_world.html");
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mWarmupManager.maybePreconnectUrlAndSubResources(
-                            Profile.getLastUsedProfile(), url);
-                }
-            });
+            ThreadUtils.runOnUiThread(() -> mWarmupManager.maybePreconnectUrlAndSubResources(
+                    Profile.getLastUsedProfile(), url));
             if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
                 // Starts at -1.
                 int actualConnections = connectionsSemaphore.availablePermits() + 1;

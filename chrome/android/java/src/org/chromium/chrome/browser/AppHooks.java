@@ -78,12 +78,7 @@ public abstract class AppHooks {
      * @param callback Callback that should receive the results of the AndroidEdu device check.
      */
     public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onSchoolCheckDone(false);
-            }
-        });
+        new Handler(Looper.getMainLooper()).post(() -> callback.onSchoolCheckDone(false));
     }
 
     /**

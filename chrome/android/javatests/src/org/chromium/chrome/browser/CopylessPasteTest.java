@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -69,31 +68,16 @@ public class CopylessPasteTest {
 
         mCallbackHelper = new CopylessHelper();
 
-        AppIndexingUtil.setCallbackForTesting(new Callback<WebPage>() {
-            @Override
-            public void onResult(WebPage webpage) {
-                mCallbackHelper.notifyCalled(webpage);
-            }
-        });
+        AppIndexingUtil.setCallbackForTesting(webpage -> mCallbackHelper.notifyCalled(webpage));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         AppIndexingUtil.setCallbackForTesting(null);
     }
 

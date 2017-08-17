@@ -28,8 +28,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.Callable;
-
 /**
  * Instrumentation tests for ChromeActivity.
  */
@@ -67,20 +65,17 @@ public class ChromeActivityTest {
     public void testTabVisibility() {
         // Create two tabs - tab[0] in the foreground and tab[1] in the background.
         final Tab[] tabs = new Tab[2];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Foreground tab.
-                ChromeTabCreator tabCreator =
-                        mActivityTestRule.getActivity().getCurrentTabCreator();
-                tabs[0] = tabCreator.createNewTab(
-                        new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                TabLaunchType.FROM_CHROME_UI, null);
-                // Background tab.
-                tabs[1] = tabCreator.createNewTab(
-                        new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Foreground tab.
+            ChromeTabCreator tabCreator =
+                    mActivityTestRule.getActivity().getCurrentTabCreator();
+            tabs[0] = tabCreator.createNewTab(
+                    new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
+                    TabLaunchType.FROM_CHROME_UI, null);
+            // Background tab.
+            tabs[1] = tabCreator.createNewTab(
+                    new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
+                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
         });
 
         // Verify that the front tab is in the 'visible' state.
@@ -88,47 +83,19 @@ public class ChromeActivityTest {
         Assert.assertTrue(tabs[1].isHidden());
 
         // Fake sending the activity to background.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onPause();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onStop();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onWindowFocusChanged(false);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onPause());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onStop());
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().onWindowFocusChanged(false));
         // Verify that both Tabs are hidden.
         Assert.assertTrue(tabs[0].isHidden());
         Assert.assertTrue(tabs[1].isHidden());
 
         // Fake bringing the activity back to foreground.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onWindowFocusChanged(true);
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onStart();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onResume();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().onWindowFocusChanged(true));
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onStart());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onResume());
         // Verify that the front tab is in the 'visible' state.
         Assert.assertFalse(tabs[0].isHidden());
         Assert.assertTrue(tabs[1].isHidden());
@@ -138,14 +105,9 @@ public class ChromeActivityTest {
     @SmallTest
     public void testTabAnimationsCorrectlyEnabled() {
         boolean animationsEnabled = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return mActivityTestRule.getActivity()
-                                .getLayoutManager()
-                                .animationsEnabled();
-                    }
-                });
+                () -> mActivityTestRule.getActivity()
+                        .getLayoutManager()
+                        .animationsEnabled());
         Assert.assertEquals(animationsEnabled, DeviceClassManager.enableAnimations());
     }
 }

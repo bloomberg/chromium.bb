@@ -33,7 +33,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.media.MediaSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -60,12 +59,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     private void waitForContentsFullscreenState(boolean fullscreenValue)
             throws InterruptedException {
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(fullscreenValue, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws InterruptedException, TimeoutException {
-                        return DOMUtils.isFullscreen(getWebContents());
-                    }
-                }));
+                Criteria.equals(fullscreenValue, () -> DOMUtils.isFullscreen(getWebContents())));
     }
 
     private boolean isScreenOrientationLocked() {

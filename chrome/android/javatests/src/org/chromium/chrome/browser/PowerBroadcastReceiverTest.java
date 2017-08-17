@@ -26,8 +26,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests for the PowerBroadcastReceiver.
  */
@@ -99,13 +97,9 @@ public class PowerBroadcastReceiverTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityFromLauncher();
-        mReceiver = ThreadUtils.runOnUiThreadBlocking(new Callable<PowerBroadcastReceiver>() {
-            @Override
-            public PowerBroadcastReceiver call() throws Exception {
-                return ChromeActivitySessionTracker.getInstance()
-                        .getPowerBroadcastReceiverForTesting();
-            }
-        });
+        mReceiver = ThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeActivitySessionTracker.getInstance()
+                        .getPowerBroadcastReceiverForTesting());
 
         // Set up our mock runnable.
         mRunnable = new MockServiceRunnable();

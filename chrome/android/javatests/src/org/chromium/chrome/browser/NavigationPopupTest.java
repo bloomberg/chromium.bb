@@ -50,12 +50,7 @@ public class NavigationPopupTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mProfile = Profile.getLastUsedProfile();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mProfile = Profile.getLastUsedProfile());
     }
 
     // Exists solely to expose protected methods to this test.
@@ -235,20 +230,17 @@ public class NavigationPopupTest {
     public void testFaviconFetching() {
         final TestNavigationController controller = new TestNavigationController();
         final AtomicReference<NavigationPopup> popupReference = new AtomicReference<>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                NavigationPopup popup = new NavigationPopup(
-                        mProfile, mActivityTestRule.getActivity(), controller, true);
-                popup.setWidth(300);
-                popup.setHeight(300);
-                popup.setAnchorView(mActivityTestRule.getActivity()
-                                            .getCurrentContentViewCore()
-                                            .getContainerView());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            NavigationPopup popup = new NavigationPopup(
+                    mProfile, mActivityTestRule.getActivity(), controller, true);
+            popup.setWidth(300);
+            popup.setHeight(300);
+            popup.setAnchorView(mActivityTestRule.getActivity()
+                    .getCurrentContentViewCore()
+                    .getContainerView());
 
-                popup.show();
-                popupReference.set(popup);
-            }
+            popup.show();
+            popupReference.set(popup);
         });
 
         CriteriaHelper.pollUiThread(new Criteria("All favicons did not get updated.") {
@@ -264,12 +256,7 @@ public class NavigationPopupTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                popupReference.get().dismiss();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> popupReference.get().dismiss());
     }
 
     @Test
@@ -278,28 +265,21 @@ public class NavigationPopupTest {
     public void testItemSelection() {
         final TestNavigationController controller = new TestNavigationController();
         final AtomicReference<NavigationPopup> popupReference = new AtomicReference<>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                NavigationPopup popup = new NavigationPopup(
-                        mProfile, mActivityTestRule.getActivity(), controller, true);
-                popup.setWidth(300);
-                popup.setHeight(300);
-                popup.setAnchorView(mActivityTestRule.getActivity()
-                                            .getCurrentContentViewCore()
-                                            .getContainerView());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            NavigationPopup popup = new NavigationPopup(
+                    mProfile, mActivityTestRule.getActivity(), controller, true);
+            popup.setWidth(300);
+            popup.setHeight(300);
+            popup.setAnchorView(mActivityTestRule.getActivity()
+                    .getCurrentContentViewCore()
+                    .getContainerView());
 
-                popup.show();
-                popupReference.set(popup);
-            }
+            popup.show();
+            popupReference.set(popup);
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                popupReference.get().performItemClick(1);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> popupReference.get().performItemClick(1));
 
         Assert.assertFalse("Popup did not hide as expected.", popupReference.get().isShowing());
         Assert.assertEquals(

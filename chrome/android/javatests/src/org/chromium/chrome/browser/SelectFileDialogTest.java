@@ -97,17 +97,14 @@ public class SelectFileDialogTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL(DATA_URL);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityWindowAndroidForTest =
-                        new ActivityWindowAndroidForTest(mActivityTestRule.getActivity());
-                SelectFileDialog.setWindowAndroidForTests(mActivityWindowAndroidForTest);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityWindowAndroidForTest =
+                    new ActivityWindowAndroidForTest(mActivityTestRule.getActivity());
+            SelectFileDialog.setWindowAndroidForTests(mActivityWindowAndroidForTest);
 
-                mContentViewCore = mActivityTestRule.getActivity().getCurrentContentViewCore();
-                // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
-                mActivityTestRule.assertWaitForPageScaleFactorMatch(2);
-            }
+            mContentViewCore = mActivityTestRule.getActivity().getCurrentContentViewCore();
+            // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
+            mActivityTestRule.assertWaitForPageScaleFactorMatch(2);
         });
         DOMUtils.waitForNonZeroNodeBounds(mContentViewCore.getWebContents(), "input_file");
     }
@@ -191,13 +188,9 @@ public class SelectFileDialogTest {
     }
 
     private void resetActivityWindowAndroidForTest() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityWindowAndroidForTest.lastCallback.onIntentCompleted(
-                        mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityWindowAndroidForTest.lastCallback.onIntentCompleted(
+                        mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null));
         mActivityWindowAndroidForTest.lastCallback = null;
         mActivityWindowAndroidForTest.lastIntent = null;
     }

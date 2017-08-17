@@ -124,12 +124,9 @@ public class OSKOverscrollTest {
 
         final AtomicReference<ContentViewCore> viewCoreRef = new AtomicReference<ContentViewCore>();
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
-                webContentsRef.set(viewCoreRef.get().getWebContents());
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
+            webContentsRef.set(viewCoreRef.get().getWebContents());
         });
 
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");

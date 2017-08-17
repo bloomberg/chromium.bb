@@ -88,20 +88,17 @@ public class FullscreenActivityTest {
      */
     private void moveTabToActivity(final Activity fromActivity, final Tab tab,
             final Class<? extends ChromeActivity> targetClass) throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(fromActivity, targetClass);
-                intent.putExtra(
-                        IntentHandler.EXTRA_PARENT_COMPONENT, fromActivity.getComponentName());
-                intent.putExtra(Browser.EXTRA_APPLICATION_ID, fromActivity.getPackageName());
+        mUiThreadTestRule.runOnUiThread(() -> {
+            Intent intent = new Intent(fromActivity, targetClass);
+            intent.putExtra(
+                    IntentHandler.EXTRA_PARENT_COMPONENT, fromActivity.getComponentName());
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, fromActivity.getPackageName());
 
-                if (targetClass == FullscreenActivity.class) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
-
-                tab.detachAndStartReparenting(intent, null, null);
+            if (targetClass == FullscreenActivity.class) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
+
+            tab.detachAndStartReparenting(intent, null, null);
         });
     }
 
@@ -149,12 +146,7 @@ public class FullscreenActivityTest {
     public void testExitOnBack() throws Throwable {
         Activity original = mActivity;
         final FullscreenActivity fullscreenActivity = enterFullscreen();
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                fullscreenActivity.onBackPressed();
-            }
-        });
+        mUiThreadTestRule.runOnUiThread(() -> fullscreenActivity.onBackPressed());
 
         ChromeTabbedActivity activity = waitForActivity(ChromeTabbedActivity.class);
 

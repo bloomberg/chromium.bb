@@ -110,13 +110,10 @@ public class FullscreenActivity extends SingleTabActivity {
             tab.getFullscreenManager().setTab(null);
         }
 
-        Runnable setFullscreen = new Runnable() {
-            @Override
-            public void run() {
-                // The Tab's FullscreenManager changes when it is moved.
-                tab.getFullscreenManager().setTab(tab);
-                tab.toggleFullscreenMode(enableFullscreen);
-            }
+        Runnable setFullscreen = () -> {
+            // The Tab's FullscreenManager changes when it is moved.
+            tab.getFullscreenManager().setTab(tab);
+            tab.toggleFullscreenMode(enableFullscreen);
         };
 
         Intent intent = new Intent();

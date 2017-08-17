@@ -252,13 +252,10 @@ public class PopularUrlsTest {
             }
         });
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Tab tab = mActivityTestRule.getActivity().getActivityTab();
-                int pageTransition = PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
-                tab.loadUrl(new LoadUrlParams(url, pageTransition));
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            Tab tab1 = mActivityTestRule.getActivity().getActivityTab();
+            int pageTransition = PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
+            tab1.loadUrl(new LoadUrlParams(url, pageTransition));
         });
         // There are a combination of events ordering in a failure case.
         // There might be TAB_CRASHED with or without PAGE_LOAD_FINISHED preceding it.
@@ -310,12 +307,8 @@ public class PopularUrlsTest {
             mFailed = true;
         }
         // Try to stop page load.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getActivityTab().stopLoading();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mActivityTestRule.getActivity().getActivityTab().stopLoading());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 

@@ -32,7 +32,6 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 
 /**
  * Tests whether popup windows appear.
@@ -59,12 +58,7 @@ public class PopupTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(getNumInfobarsShowing() == 0);
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> Assert.assertTrue(getNumInfobarsShowing() == 0));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
@@ -81,12 +75,7 @@ public class PopupTest {
     @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return getNumInfobarsShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
     }
 
     @Test
@@ -97,12 +86,7 @@ public class PopupTest {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
 
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return getNumInfobarsShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
         Assert.assertEquals(1, selector.getTotalTabCount());
         final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
         ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
