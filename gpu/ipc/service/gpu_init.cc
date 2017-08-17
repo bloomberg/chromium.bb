@@ -234,10 +234,10 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   // browser process, for example.
   bool gl_initialized = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (!gl_initialized)
-    gl_initialized = gl::init::InitializeGLOneOff();
+    gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
 
   if (!gl_initialized) {
-    VLOG(1) << "gl::init::InitializeGLOneOff failed";
+    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return false;
   }
 
@@ -267,6 +267,15 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
     base::CommandLine* cmd_line = const_cast<base::CommandLine*>(&command_line);
     cmd_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                 gpu::IntSetToString(workarounds, ','));
+  }
+  if (!gpu_feature_info_.disabled_extensions.empty()) {
+    gl::init::SetDisabledExtensionsPlatform(
+        gpu_feature_info_.disabled_extensions);
+  }
+  gl_initialized = gl::init::InitializeExtensionSettingsOneOffPlatform();
+  if (!gl_initialized) {
+    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+    return false;
   }
 
   base::TimeDelta initialize_one_off_time =

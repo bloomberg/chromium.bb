@@ -536,6 +536,15 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   if (g_display == EGL_NO_DISPLAY)
     return false;
 
+  initialized_ = true;
+  return true;
+}
+
+// static
+bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
+  if (!initialized_)
+    return false;
+
   // Must be called after InitializeDisplay().
   g_driver_egl.InitializeExtensionBindings();
 
@@ -603,8 +612,6 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
     }
   }
 #endif
-  initialized_ = true;
-
   return true;
 }
 

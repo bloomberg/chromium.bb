@@ -32,6 +32,9 @@ base::LazyInstance<base::ThreadLocalPointer<GLContext>>::Leaky
     current_real_context_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
+// static
+base::subtle::Atomic32 GLContext::total_gl_contexts_ = 0;
+
 GLContext::ScopedReleaseCurrent::ScopedReleaseCurrent() : canceled_(false) {}
 
 GLContext::ScopedReleaseCurrent::~ScopedReleaseCurrent() {
@@ -48,6 +51,7 @@ GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
     share_group_ = new gl::GLShareGroup();
   share_group_->AddContext(this);
+  base::subtle::NoBarrier_AtomicIncrement(&total_gl_contexts_, 1);
 }
 
 GLContext::~GLContext() {
@@ -56,12 +60,21 @@ GLContext::~GLContext() {
     SetCurrent(nullptr);
     SetCurrentGL(nullptr);
   }
+  base::subtle::Atomic32 after_value =
+      base::subtle::NoBarrier_AtomicIncrement(&total_gl_contexts_, -1);
+  DCHECK(after_value >= 0);
+}
+
+// static
+int32_t GLContext::TotalGLContexts() {
+  return static_cast<int32_t>(
+      base::subtle::NoBarrier_Load(&total_gl_contexts_));
 }
 
 GLApi* GLContext::CreateGLApi(DriverGL* driver) {
   real_gl_api_ = new RealGLApi;
   real_gl_api_->set_gl_workarounds(gl_workarounds_);
-  real_gl_api_->SetDisabledGLExtensions(disabled_gl_extensions_);
+  real_gl_api_->SetDisabledExtensions(disabled_gl_extensions_);
   real_gl_api_->Initialize(driver);
   return real_gl_api_;
 }
