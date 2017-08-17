@@ -37,12 +37,13 @@ class TestGpuService : public mojom::GpuService {
   }
 
   void SatisfyAllocationRequest(gfx::GpuMemoryBufferId id, int client_id) {
-    for (const auto& req : allocation_requests_) {
+    for (auto& req : allocation_requests_) {
       if (req.id == id && req.client_id == client_id) {
         gfx::GpuMemoryBufferHandle handle;
         handle.id = id;
         handle.type = gfx::SHARED_MEMORY_BUFFER;
-        req.callback.Run(handle);
+        DCHECK(req.callback);
+        std::move(req.callback).Run(handle);
         return;
       }
     }
@@ -50,11 +51,10 @@ class TestGpuService : public mojom::GpuService {
   }
 
   // mojom::GpuService:
-  void EstablishGpuChannel(
-      int32_t client_id,
-      uint64_t client_tracing_id,
-      bool is_gpu_host,
-      const EstablishGpuChannelCallback& callback) override {}
+  void EstablishGpuChannel(int32_t client_id,
+                           uint64_t client_tracing_id,
+                           bool is_gpu_host,
+                           EstablishGpuChannelCallback callback) override {}
 
   void CloseChannel(int32_t client_id) override {}
 
@@ -64,16 +64,15 @@ class TestGpuService : public mojom::GpuService {
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
 
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      int client_id,
-      gpu::SurfaceHandle surface_handle,
-      const CreateGpuMemoryBufferCallback& callback) override {
+  void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                             const gfx::Size& size,
+                             gfx::BufferFormat format,
+                             gfx::BufferUsage usage,
+                             int client_id,
+                             gpu::SurfaceHandle surface_handle,
+                             CreateGpuMemoryBufferCallback callback) override {
     allocation_requests_.push_back(
-        {id, size, format, usage, client_id, callback});
+        {id, size, format, usage, client_id, std::move(callback)});
   }
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -83,16 +82,16 @@ class TestGpuService : public mojom::GpuService {
   }
 
   void GetVideoMemoryUsageStats(
-      const GetVideoMemoryUsageStatsCallback& callback) override {}
+      GetVideoMemoryUsageStatsCallback callback) override {}
 
   void RequestCompleteGpuInfo(
-      const RequestCompleteGpuInfoCallback& callback) override {}
+      RequestCompleteGpuInfoCallback callback) override {}
 
   void LoadedShader(const std::string& key, const std::string& data) override {}
 
   void DestroyingVideoSurface(
       int32_t surface_id,
-      const DestroyingVideoSurfaceCallback& callback) override {}
+      DestroyingVideoSurfaceCallback callback) override {}
 
   void WakeUpGpu() override {}
 
@@ -106,7 +105,7 @@ class TestGpuService : public mojom::GpuService {
 
   void ThrowJavaException() override {}
 
-  void Stop(const StopCallback& callback) override {}
+  void Stop(StopCallback callback) override {}
 
  private:
   struct AllocationRequest {
@@ -115,7 +114,7 @@ class TestGpuService : public mojom::GpuService {
     const gfx::BufferFormat format;
     const gfx::BufferUsage usage;
     const int client_id;
-    const CreateGpuMemoryBufferCallback callback;
+    CreateGpuMemoryBufferCallback callback;
   };
   std::vector<AllocationRequest> allocation_requests_;
 
