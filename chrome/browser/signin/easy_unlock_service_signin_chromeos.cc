@@ -373,6 +373,10 @@ bool EasyUnlockServiceSignin::IsEnabled() const {
   return pref_manager_->IsEasyUnlockEnabled();
 }
 
+bool EasyUnlockServiceSignin::IsChromeOSLoginEnabled() const {
+  return pref_manager_ && pref_manager_->IsChromeOSLoginEnabled();
+}
+
 void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
   // This code path should only be exercised for the lock screen, not for the
   // sign-in screen.

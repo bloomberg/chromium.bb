@@ -1631,10 +1631,12 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
   if (user_context.GetKey()->GetSecret().empty())
     return;
 
-  const base::ListValue* device_list = NULL;
+  const base::ListValue* device_list = nullptr;
   EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
   if (easy_unlock_service) {
-    device_list = easy_unlock_service->GetRemoteDevices();
+    device_list = easy_unlock_service->IsChromeOSLoginEnabled()
+                      ? easy_unlock_service->GetRemoteDevices()
+                      : nullptr;
     easy_unlock_service->SetHardlockState(
         EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
   }

@@ -159,6 +159,9 @@ class EasyUnlockService : public KeyedService {
   // override for testing.
   virtual bool IsEnabled() const;
 
+  // Returns true if ChromeOS login is enabled by the user.
+  virtual bool IsChromeOSLoginEnabled() const;
+
   // Sets the hardlock state for the associated user.
   void SetHardlockState(EasyUnlockScreenlockStateHandler::HardlockState state);
 
