@@ -1329,10 +1329,16 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   }
 
   // backward optimize the level-k map
+  int eob_fix = 0;
   for (int si = txb_info->eob - 1; si >= 0; --si) {
+    const int coeff_idx = scan[si];
+    if (eob_fix == 1 && txb_info->qcoeff[coeff_idx] == 1) {
+      // when eob is fixed, there is not need to optimize again when
+      // abs(qc) == 1
+      continue;
+    }
     LevelDownStats stats;
     try_level_down_facade(&stats, si, txb_cache, txb_costs, txb_info);
-    const int coeff_idx = scan[si];
     if (stats.update) {
 #if TEST_OPTIMIZE_TXB
 // printf("si %d low_qc %d cost_diff %d dist_diff %ld rd_diff %ld eob %d new_eob
@@ -1346,6 +1352,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
       update_level_down(coeff_idx, txb_cache, txb_info);
       set_eob(txb_info, stats.new_eob);
     }
+    if (eob_fix == 0 && txb_info->qcoeff[coeff_idx] != 0) eob_fix = 1;
     if (si > txb_info->eob) si = txb_info->eob;
   }
 #if TEST_OPTIMIZE_TXB
