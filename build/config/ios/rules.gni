@@ -1773,6 +1773,9 @@ template("ios_xcuitest_test_runner_bundle") {
     # (and signed) for the XCUITest to run, so install them using
     # extra_system_frameworks.
     extra_system_frameworks = [ "$ios_sdk_platform_path/Developer/Library/Frameworks/XCTest.framework" ]
+    if (xcode_version_int >= 900) {
+      extra_system_frameworks += [ "$ios_sdk_platform_path/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework" ]
+    }
 
     bundle_deps = [
       ":$_info_plist_bundle",
