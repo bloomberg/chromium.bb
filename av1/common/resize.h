@@ -71,9 +71,15 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst);
 #endif  // CONFIG_HIGHBITDEPTH
 
-YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
-                                               YV12_BUFFER_CONFIG *unscaled,
-                                               YV12_BUFFER_CONFIG *scaled);
+#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HIGHBITDEPTH
+void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
+                                            YV12_BUFFER_CONFIG *dst, int bd);
+#else
+void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
+                                            YV12_BUFFER_CONFIG *dst);
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_FRAME_SUPERRES
 
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
