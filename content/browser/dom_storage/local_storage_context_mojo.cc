@@ -93,7 +93,7 @@ void MigrateStorageHelper(
         LocalStorageContextMojo::MigrateString(it.second.string());
   }
   reply_task_runner->PostTask(FROM_HERE,
-                              base::Bind(callback, base::Passed(&values)));
+                              base::BindOnce(callback, base::Passed(&values)));
 }
 
 // Helper to convert from OnceCallback to Callback.
@@ -239,8 +239,8 @@ class LocalStorageContextMojo::LevelDBWrapperHolder
       deleted_old_data_ = true;
       context_->task_runner_->PostShutdownBlockingTask(
           FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::Bind(base::IgnoreResult(&sql::Connection::Delete),
-                     sql_db_path()));
+          base::BindOnce(base::IgnoreResult(&sql::Connection::Delete),
+                         sql_db_path()));
     }
 
     context_->OnCommitResult(error);
@@ -250,7 +250,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder
     if (context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
       context_->task_runner_->PostShutdownBlockingTask(
           FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::Bind(
+          base::BindOnce(
               &MigrateStorageHelper, sql_db_path(),
               base::ThreadTaskRunnerHandle::Get(),
               base::Bind(&CallMigrationCalback, base::Passed(&callback))));
@@ -340,12 +340,12 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin) {
     // Renderer process expects |source| to always be two newline separated
     // strings.
     found->second->level_db_wrapper()->DeleteAll("\n",
-                                                 base::Bind(&NoOpSuccess));
+                                                 base::BindOnce(&NoOpSuccess));
     found->second->level_db_wrapper()->ScheduleImmediateCommit();
   } else if (database_) {
     std::vector<leveldb::mojom::BatchedOperationPtr> operations;
     AddDeleteOriginOperations(&operations, origin);
-    database_->Write(std::move(operations), base::Bind(&NoOpDatabaseError));
+    database_->Write(std::move(operations), base::BindOnce(&NoOpDatabaseError));
   }
 }
 
@@ -572,15 +572,15 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
     connector_->BindInterface(file::mojom::kServiceName, &file_system_);
     file_system_->GetSubDirectory(
         subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
-        base::Bind(&LocalStorageContextMojo::OnDirectoryOpened,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalStorageContextMojo::OnDirectoryOpened,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
     connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
     leveldb_service_->OpenInMemory(
         memory_dump_id_, MakeRequest(&database_),
-        base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
-                   weak_ptr_factory_.GetWeakPtr(), true));
+        base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
+                       weak_ptr_factory_.GetWeakPtr(), true));
   }
 }
 
@@ -615,8 +615,8 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
       memory_dump_id_, MakeRequest(&database_),
-      base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
-                 weak_ptr_factory_.GetWeakPtr(), false));
+      base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
+                     weak_ptr_factory_.GetWeakPtr(), false));
 }
 
 void LocalStorageContextMojo::OnDatabaseOpened(
@@ -644,9 +644,10 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 
   // Verify DB schema version.
   if (database_) {
-    database_->Get(leveldb::StdStringToUint8Vector(kVersionKey),
-                   base::Bind(&LocalStorageContextMojo::OnGotDatabaseVersion,
-                              weak_ptr_factory_.GetWeakPtr()));
+    database_->Get(
+        leveldb::StdStringToUint8Vector(kVersionKey),
+        base::BindOnce(&LocalStorageContextMojo::OnGotDatabaseVersion,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -748,8 +749,8 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
   if (directory_.is_bound()) {
     leveldb_service_->Destroy(
         std::move(directory_), "leveldb",
-        base::Bind(&LocalStorageContextMojo::OnDBDestroyed,
-                   weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
+        base::BindOnce(&LocalStorageContextMojo::OnDBDestroyed,
+                       weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {
     // No directory, so nothing to destroy. Retrying to recreate will probably
     // fail, but try anyway.
@@ -818,8 +819,8 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
 
   database_->GetPrefixed(
       std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix)),
-      base::Bind(&LocalStorageContextMojo::OnGotMetaData,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void LocalStorageContextMojo::OnGotMetaData(
@@ -887,9 +888,10 @@ void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
   }
 
   if (!operations.empty()) {
-    database_->Write(std::move(operations),
-                     base::Bind(&LocalStorageContextMojo::OnShutdownComplete,
-                                base::Unretained(this)));
+    database_->Write(
+        std::move(operations),
+        base::BindOnce(&LocalStorageContextMojo::OnShutdownComplete,
+                       base::Unretained(this)));
   } else {
     OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
   }

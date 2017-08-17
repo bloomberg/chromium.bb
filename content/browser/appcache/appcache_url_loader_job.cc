@@ -216,7 +216,7 @@ void AppCacheURLLoaderJob::SetSubresourceLoadInfo(
   subresource_load_info_ = std::move(subresource_load_info);
 
   binding_.Bind(std::move(subresource_load_info_->url_loader_request));
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
 
   client_ = std::move(subresource_load_info_->client);
@@ -230,7 +230,7 @@ void AppCacheURLLoaderJob::BindRequest(mojom::URLLoaderClientPtr client,
 
   client_ = std::move(client);
 
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
 }
 
@@ -278,7 +278,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     if (IsResourceTypeFrame(request_.resource_type) &&
         main_resource_loader_callback_) {
       std::move(main_resource_loader_callback_)
-          .Run(base::Bind(&AppCacheURLLoaderJob::Start, StaticAsWeakPtr(this)));
+          .Run(base::BindOnce(&AppCacheURLLoaderJob::Start,
+                              StaticAsWeakPtr(this)));
     }
 
     response_body_stream_ = std::move(data_pipe_.producer_handle);

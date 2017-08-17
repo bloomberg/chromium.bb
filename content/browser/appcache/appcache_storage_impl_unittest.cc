@@ -290,8 +290,8 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
         base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&MockQuotaManager::CallCallback,
-                                  base::Unretained(this), callback));
+            FROM_HERE, base::BindOnce(&MockQuotaManager::CallCallback,
+                                      base::Unretained(this), callback));
         return;
       }
       CallCallback(callback);
@@ -379,8 +379,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // on the IO thread prior to running the test. Its guaranteed to be
     // queued by this time.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
-                              base::Unretained(this), method));
+        FROM_HERE, base::BindOnce(&AppCacheStorageImplTest::RunMethod<Method>,
+                                  base::Unretained(this), method));
   }
 
   static void SetUpTestCase() {
@@ -411,8 +411,9 @@ class AppCacheStorageImplTest : public testing::Test {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::MethodWrapper<Method>,
-                              base::Unretained(this), method));
+        FROM_HERE,
+        base::BindOnce(&AppCacheStorageImplTest::MethodWrapper<Method>,
+                       base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 
@@ -446,8 +447,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // based objects get deleted.
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&AppCacheStorageImplTest::TestFinishedUnwound,
+                                  base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -484,8 +485,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // scheduled on that thread have been performed prior to return.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    runner->PostTask(FROM_HERE,
-                     base::Bind(&AppCacheStorageImplTest::SignalEvent, &event));
+    runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheStorageImplTest::SignalEvent, &event));
     event.Wait();
   }
 
@@ -1752,8 +1754,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // on the current thread.
     FlushAllTasks();
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::Continue_Reinitialize,
-                              base::Unretained(this), test_case));
+        FROM_HERE,
+        base::BindOnce(&AppCacheStorageImplTest::Continue_Reinitialize,
+                       base::Unretained(this), test_case));
   }
 
   void Continue_Reinitialize(ReinitTestCase test_case) {

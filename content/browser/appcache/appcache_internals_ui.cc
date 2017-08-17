@@ -146,7 +146,7 @@ void AppCacheInternalsUI::Proxy::Initialize(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&Proxy::Initialize, this, chrome_appcache_service));
+        base::BindOnce(&Proxy::Initialize, this, chrome_appcache_service));
     return;
   }
   appcache_service_ = chrome_appcache_service->AsWeakPtr();
@@ -161,7 +161,7 @@ AppCacheInternalsUI::Proxy::~Proxy() {
 void AppCacheInternalsUI::Proxy::Shutdown() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&Proxy::Shutdown, this));
+                            base::BindOnce(&Proxy::Shutdown, this));
     return;
   }
   shutdown_called_ = true;
@@ -174,8 +174,9 @@ void AppCacheInternalsUI::Proxy::Shutdown() {
 
 void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&Proxy::RequestAllAppCacheInfo, this));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
     return;
   }
   if (appcache_service_) {
@@ -192,8 +193,8 @@ void AppCacheInternalsUI::Proxy::OnAllAppCacheInfoReady(
     int net_result_code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AppCacheInternalsUI::OnAllAppCacheInfoReady,
-                 appcache_internals_ui_, collection, partition_path_));
+      base::BindOnce(&AppCacheInternalsUI::OnAllAppCacheInfoReady,
+                     appcache_internals_ui_, collection, partition_path_));
 }
 
 void AppCacheInternalsUI::Proxy::DeleteAppCache(
@@ -201,7 +202,7 @@ void AppCacheInternalsUI::Proxy::DeleteAppCache(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&Proxy::DeleteAppCache, this, manifest_url));
+        base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
     return;
   }
   if (appcache_service_) {
@@ -216,9 +217,9 @@ void AppCacheInternalsUI::Proxy::OnAppCacheInfoDeleted(
     int net_result_code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AppCacheInternalsUI::OnAppCacheInfoDeleted,
-                 appcache_internals_ui_, partition_path_, manifest_url,
-                 net_result_code == net::OK));
+      base::BindOnce(&AppCacheInternalsUI::OnAppCacheInfoDeleted,
+                     appcache_internals_ui_, partition_path_, manifest_url,
+                     net_result_code == net::OK));
 }
 
 void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
@@ -226,7 +227,7 @@ void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&Proxy::RequestAppCacheDetails, this, manifest_url));
+        base::BindOnce(&Proxy::RequestAppCacheDetails, this, manifest_url));
     return;
   }
 
@@ -246,9 +247,10 @@ void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AppCacheInternalsUI::OnAppCacheDetailsReady,
-                 appcache_internals_ui_, partition_path_, manifest_gurl.spec(),
-                 base::Passed(&resource_info_vector)));
+      base::BindOnce(&AppCacheInternalsUI::OnAppCacheDetailsReady,
+                     appcache_internals_ui_, partition_path_,
+                     manifest_gurl.spec(),
+                     base::Passed(&resource_info_vector)));
 }
 
 void AppCacheInternalsUI::Proxy::RequestFileDetails(
@@ -256,7 +258,7 @@ void AppCacheInternalsUI::Proxy::RequestFileDetails(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&Proxy::RequestFileDetails, this, response_enquiry));
+        base::BindOnce(&Proxy::RequestFileDetails, this, response_enquiry));
     return;
   }
   DCHECK(!shutdown_called_);
@@ -313,14 +315,15 @@ void AppCacheInternalsUI::Proxy::OnResponseDataReadComplete(
   if (!response_info || net_result_code < 0) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&AppCacheInternalsUI::OnFileDetailsFailed,
-                   appcache_internals_ui_, response_enquiry, net_result_code));
+        base::BindOnce(&AppCacheInternalsUI::OnFileDetailsFailed,
+                       appcache_internals_ui_, response_enquiry,
+                       net_result_code));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&AppCacheInternalsUI::OnFileDetailsReady,
-                   appcache_internals_ui_, response_enquiry, response_info,
-                   response_data, net_result_code));
+        base::BindOnce(&AppCacheInternalsUI::OnFileDetailsReady,
+                       appcache_internals_ui_, response_enquiry, response_info,
+                       response_data, net_result_code));
   }
   preparing_response_ = false;
   HandleFileDetailsRequest();

@@ -72,8 +72,8 @@ void AppCacheUpdateJob::UpdateURLRequest::Read() {
   if (bytes_read != net::ERR_IO_PENDING) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&AppCacheUpdateJob::UpdateURLRequest::OnReadCompleted,
-                   weak_factory_.GetWeakPtr(), request_.get(), bytes_read));
+        base::BindOnce(&AppCacheUpdateJob::UpdateURLRequest::OnReadCompleted,
+                       weak_factory_.GetWeakPtr(), request_.get(), bytes_read));
   }
 }
 

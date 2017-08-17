@@ -47,16 +47,14 @@ void DOMStorageMessageFilter::UninitializeInSequence() {
 
 void DOMStorageMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageMessageFilter::InitializeInSequence, this));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageMessageFilter::InitializeInSequence, this));
 }
 
 void DOMStorageMessageFilter::OnFilterRemoved() {
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageMessageFilter::UninitializeInSequence, this));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageMessageFilter::UninitializeInSequence, this));
 }
 
 base::TaskRunner* DOMStorageMessageFilter::OverrideTaskRunnerForMessage(

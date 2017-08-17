@@ -86,8 +86,8 @@ void GetSessionStorageUsageHelper(
       new std::vector<SessionStorageUsageInfo>;
   context->GetSessionStorageUsage(infos);
   reply_task_runner->PostTask(
-      FROM_HERE, base::Bind(&InvokeSessionStorageUsageCallbackHelper, callback,
-                            base::Owned(infos)));
+      FROM_HERE, base::BindOnce(&InvokeSessionStorageUsageCallbackHelper,
+                                callback, base::Owned(infos)));
 }
 
 }  // namespace
@@ -172,18 +172,18 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
                                       got_local_storage_usage))));
     context_->task_runner()->PostShutdownBlockingTask(
         FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-        base::Bind(&GetLocalStorageUsageHelper,
-                   base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                   base::RetainedRef(context_),
-                   base::Bind(&CollectLocalStorageUsage, infos_ptr,
-                              got_local_storage_usage)));
+        base::BindOnce(&GetLocalStorageUsageHelper,
+                       base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                       base::RetainedRef(context_),
+                       base::Bind(&CollectLocalStorageUsage, infos_ptr,
+                                  got_local_storage_usage)));
     return;
   }
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetLocalStorageUsageHelper,
-                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                 base::RetainedRef(context_), callback));
+      base::BindOnce(&GetLocalStorageUsageHelper,
+                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                     base::RetainedRef(context_), callback));
 }
 
 void DOMStorageContextWrapper::GetSessionStorageUsage(
@@ -191,9 +191,9 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetSessionStorageUsageHelper,
-                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                 base::RetainedRef(context_), callback));
+      base::BindOnce(&GetSessionStorageUsageHelper,
+                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                     base::RetainedRef(context_), callback));
 }
 
 void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
@@ -201,8 +201,9 @@ void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin,
-                 context_, origin));
+      base::BindOnce(
+          &DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin, context_,
+          origin));
   if (mojo_state_) {
     // base::Unretained is safe here, because the mojo_state_ won't be deleted
     // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -218,9 +219,9 @@ void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
 void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::DeleteLocalStorage, context_, origin));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageContextImpl::DeleteLocalStorage, context_,
+                     origin));
   if (mojo_state_) {
     // base::Unretained is safe here, because the mojo_state_ won't be deleted
     // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -237,10 +238,9 @@ void DOMStorageContextWrapper::DeleteSessionStorage(
     const SessionStorageUsageInfo& usage_info) {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::DeleteSessionStorage,
-                 context_, usage_info));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageContextImpl::DeleteSessionStorage, context_,
+                     usage_info));
 }
 
 void DOMStorageContextWrapper::SetSaveSessionStorageOnDisk() {
@@ -258,18 +258,18 @@ DOMStorageContextWrapper::RecreateSessionStorage(
 void DOMStorageContextWrapper::StartScavengingUnusedSessionStorage() {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::StartScavengingUnusedSessionStorage,
-                 context_));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(
+          &DOMStorageContextImpl::StartScavengingUnusedSessionStorage,
+          context_));
 }
 
 void DOMStorageContextWrapper::SetForceKeepSessionState() {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::SetForceKeepSessionState, context_));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageContextImpl::SetForceKeepSessionState,
+                     context_));
   if (mojo_state_) {
     // base::Unretained is safe here, because the mojo_state_ won't be deleted
     // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -292,9 +292,8 @@ void DOMStorageContextWrapper::Shutdown() {
   }
   memory_pressure_listener_.reset();
   context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::Shutdown, context_));
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::BindOnce(&DOMStorageContextImpl::Shutdown, context_));
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
   }
@@ -305,7 +304,7 @@ void DOMStorageContextWrapper::Flush() {
 
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::Flush, context_));
+      base::BindOnce(&DOMStorageContextImpl::Flush, context_));
   if (mojo_state_) {
     // base::Unretained is safe here, because the mojo_state_ won't be deleted
     // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
@@ -364,8 +363,8 @@ void DOMStorageContextWrapper::OnPurgeMemory() {
 void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption
     purge_option) {
   context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::PurgeMemory, context_, purge_option));
+      FROM_HERE, base::BindOnce(&DOMStorageContextImpl::PurgeMemory, context_,
+                                purge_option));
   if (mojo_state_ && purge_option == DOMStorageContextImpl::PURGE_AGGRESSIVE) {
     // base::Unretained is safe here, because the mojo_state_ won't be deleted
     // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and

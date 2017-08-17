@@ -249,8 +249,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheURLRequestJobTest::MethodWrapper<Method>,
-                              base::Unretained(this), method));
+        FROM_HERE,
+        base::BindOnce(&AppCacheURLRequestJobTest::MethodWrapper<Method>,
+                       base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 
@@ -301,8 +302,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // based objects get deleted.
     DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheURLRequestJobTest::TestFinishedUnwound,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&AppCacheURLRequestJobTest::TestFinishedUnwound,
+                       base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
