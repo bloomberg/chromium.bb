@@ -4,8 +4,8 @@
 
 module viz.mojom;
 
-import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
+import "services/viz/public/interfaces/compositing/shared_quad_state.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -136,7 +136,7 @@ struct DrawQuad {
 
   // Optionally holds a SharedQuadState (transforms etc) shared by multiple
   // quads.
-  cc.mojom.SharedQuadState? sqs;
+  SharedQuadState? sqs;
 
   DrawQuadState draw_quad_state;
 };

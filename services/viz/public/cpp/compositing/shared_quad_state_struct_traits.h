@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
-#define CC_IPC_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/shared_quad_state.mojom-shared.h"
 #include "cc/quads/shared_quad_state.h"
+#include "services/viz/public/interfaces/compositing/shared_quad_state.mojom-shared.h"
 
 namespace mojo {
 
@@ -15,7 +15,7 @@ struct OptSharedQuadState {
 };
 
 template <>
-struct StructTraits<cc::mojom::SharedQuadStateDataView, OptSharedQuadState> {
+struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   static bool IsNull(const OptSharedQuadState& input) { return !input.sqs; }
 
   static void SetToNull(OptSharedQuadState* output) { output->sqs = nullptr; }
@@ -56,7 +56,7 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, OptSharedQuadState> {
 };
 
 template <>
-struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
+struct StructTraits<viz::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
   static const gfx::Transform& quad_to_target_transform(
       const cc::SharedQuadState& sqs) {
     return sqs.quad_to_target_transform;
@@ -89,7 +89,7 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
     return sqs.sorting_context_id;
   }
 
-  static bool Read(cc::mojom::SharedQuadStateDataView data,
+  static bool Read(viz::mojom::SharedQuadStateDataView data,
                    cc::SharedQuadState* out) {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
         !data.ReadQuadLayerRect(&out->quad_layer_rect) ||
@@ -110,4 +110,4 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
 
 }  // namespace mojo
 
-#endif  // CC_IPC_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SHARED_QUAD_STATE_STRUCT_TRAITS_H_

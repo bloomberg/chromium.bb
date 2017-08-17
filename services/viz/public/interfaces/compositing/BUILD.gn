@@ -16,6 +16,7 @@ mojom("compositing") {
     "returned_resource.mojom",
     "selection.mojom",
     "shared_bitmap_allocation_notifier.mojom",
+    "shared_quad_state.mojom",
     "surface_info.mojom",
     "surface_sequence.mojom",
     "transferable_resource.mojom",

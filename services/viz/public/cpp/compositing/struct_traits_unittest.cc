@@ -11,7 +11,6 @@
 #include "cc/ipc/filter_operations_struct_traits.h"
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
-#include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/compositor_frame.h"
@@ -38,6 +37,7 @@
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
+#include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
@@ -163,6 +163,33 @@ TEST_F(StructTraitsTest, Selection) {
   SerializeAndDeserialize<mojom::Selection>(input, &output);
   EXPECT_EQ(start, output.start);
   EXPECT_EQ(end, output.end);
+}
+
+TEST_F(StructTraitsTest, SharedQuadState) {
+  const gfx::Transform quad_to_target_transform(1.f, 2.f, 3.f, 4.f, 5.f, 6.f,
+                                                7.f, 8.f, 9.f, 10.f, 11.f, 12.f,
+                                                13.f, 14.f, 15.f, 16.f);
+  const gfx::Rect layer_rect(1234, 5678);
+  const gfx::Rect visible_layer_rect(12, 34, 56, 78);
+  const gfx::Rect clip_rect(123, 456, 789, 101112);
+  const bool is_clipped = true;
+  const float opacity = 0.9f;
+  const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
+  const int sorting_context_id = 1337;
+  cc::SharedQuadState input_sqs;
+  input_sqs.SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
+                   clip_rect, is_clipped, opacity, blend_mode,
+                   sorting_context_id);
+  cc::SharedQuadState output_sqs;
+  SerializeAndDeserialize<mojom::SharedQuadState>(input_sqs, &output_sqs);
+  EXPECT_EQ(quad_to_target_transform, output_sqs.quad_to_target_transform);
+  EXPECT_EQ(layer_rect, output_sqs.quad_layer_rect);
+  EXPECT_EQ(visible_layer_rect, output_sqs.visible_quad_layer_rect);
+  EXPECT_EQ(clip_rect, output_sqs.clip_rect);
+  EXPECT_EQ(is_clipped, output_sqs.is_clipped);
+  EXPECT_EQ(opacity, output_sqs.opacity);
+  EXPECT_EQ(blend_mode, output_sqs.blend_mode);
+  EXPECT_EQ(sorting_context_id, output_sqs.sorting_context_id);
 }
 
 TEST_F(StructTraitsTest, SurfaceSequence) {

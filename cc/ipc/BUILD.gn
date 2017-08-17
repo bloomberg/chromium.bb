@@ -45,7 +45,6 @@ mojom("interfaces") {
     "filter_operations.mojom",
     "frame_sink_id.mojom",
     "local_surface_id.mojom",
-    "shared_quad_state.mojom",
     "surface_id.mojom",
     "texture_mailbox.mojom",
     "texture_mailbox_releaser.mojom",

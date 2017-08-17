@@ -8,7 +8,6 @@ import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/copy_output_result.mojom";
 import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/filter_operations.mojom";
-import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/texture_mailbox.mojom";
 
@@ -26,9 +25,6 @@ interface TraitsTestService {
 
   [Sync]
   EchoFilterOperations(FilterOperations f) => (FilterOperations pass);
-
-  [Sync]
-  EchoSharedQuadState(SharedQuadState s) => (SharedQuadState pass);
 
   [Sync]
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);

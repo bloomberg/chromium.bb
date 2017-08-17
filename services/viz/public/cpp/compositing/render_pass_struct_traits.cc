@@ -6,7 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/ipc/shared_quad_state_struct_traits.h"
+#include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
 
 namespace mojo {
 
@@ -53,7 +53,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
       return false;
 
     // Read the SharedQuadState.
-    cc::mojom::SharedQuadStateDataView sqs_data_view;
+    viz::mojom::SharedQuadStateDataView sqs_data_view;
     quad_data_view.GetSqsDataView(&sqs_data_view);
     // If there is no seralized SharedQuadState then used the last deseriaized
     // one.
