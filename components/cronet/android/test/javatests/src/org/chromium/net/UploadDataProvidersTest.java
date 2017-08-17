@@ -9,6 +9,7 @@ import android.os.ParcelFileDescriptor;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.CronetTestFramework;
 
 import java.io.File;
 import java.io.FileOutputStream;

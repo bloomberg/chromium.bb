@@ -4,10 +4,14 @@
 
 package org.chromium.net;
 
+import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
+import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
+
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetTestBase.RequiresMinApi;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
+import org.chromium.net.CronetTestRule.RequiresMinApi;
 
 /**
  * Simple test for Brotli support.

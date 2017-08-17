@@ -7,6 +7,9 @@ package org.chromium.net;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.CronetTestFramework;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
+import org.chromium.net.CronetTestRule.RequiresMinApi;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.impl.JavaCronetEngine;
 

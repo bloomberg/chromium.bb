@@ -4,13 +4,14 @@
 
 package org.chromium.net;
 
-import android.content.Context;
-import android.support.test.filters.SmallTest;
-
 import static org.chromium.net.CronetProvider.PROVIDER_NAME_APP_PACKAGED;
 import static org.chromium.net.CronetProvider.PROVIDER_NAME_FALLBACK;
 
+import android.content.Context;
+import android.support.test.filters.SmallTest;
+
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class CronetEngineBuilderTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    @CronetTestBase.OnlyRunNativeCronet
+    @OnlyRunNativeCronet
     public void testVersionComparison() {
         assertVersionIsHigher("22.44", "22.43.12");
         assertVersionIsLower("22.43.12", "022.124");

@@ -5,14 +5,14 @@ package org.chromium.net.impl;
 
 import static android.os.Process.THREAD_PRIORITY_LOWEST;
 
-import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
-
 import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISABLED;
 import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK;
 import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP;
 import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
+
+import android.content.Context;
+import android.support.annotation.IntDef;
+import android.support.annotation.VisibleForTesting;
 
 import org.chromium.net.CronetEngine;
 import org.chromium.net.ICronetEngineBuilder;

@@ -4,6 +4,8 @@
 
 package org.chromium.net;
 
+import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
+
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.ConditionVariable;
@@ -14,12 +16,13 @@ import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
 
-import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
-
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.CronetTestFramework;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
+import org.chromium.net.CronetTestRule.RequiresMinApi;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetEngineBuilderImpl;
 import org.chromium.net.impl.CronetLibraryLoader;

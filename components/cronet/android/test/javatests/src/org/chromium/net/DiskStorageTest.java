@@ -9,6 +9,7 @@ import android.support.test.filters.SmallTest;
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 
 import java.io.BufferedReader;
 import java.io.File;
