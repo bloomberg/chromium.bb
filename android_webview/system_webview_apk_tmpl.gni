@@ -56,5 +56,6 @@ template("system_webview_apk_tmpl") {
       ]
       png_to_webp = true
     }
+    command_line_flags_file = "webview-command-line"
   }
 }
