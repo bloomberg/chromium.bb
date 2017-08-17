@@ -165,7 +165,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
   source->SetSrc(GetDocument()->Url());
 
   if (DocumentLoader* loader = GetDocument()->Loader())
-    source->setType(loader->ResponseMIMEType());
+    source->setType(loader->MimeType());
 
   media->AppendChild(source);
 

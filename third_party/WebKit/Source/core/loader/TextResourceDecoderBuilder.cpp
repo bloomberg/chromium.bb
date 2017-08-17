@@ -99,15 +99,10 @@ TextResourceDecoderOptions::ContentType DetermineContentType(
 
 }  // namespace
 
-TextResourceDecoderBuilder::TextResourceDecoderBuilder(
+std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
+    Document* document,
     const AtomicString& mime_type,
-    const AtomicString& encoding)
-    : mime_type_(mime_type), encoding_(encoding) {}
-
-TextResourceDecoderBuilder::~TextResourceDecoderBuilder() {}
-
-std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
-    Document* document) {
+    const AtomicString& encoding) {
   const WTF::TextEncoding encoding_from_domain =
       GetEncodingFromDomain(document->Url());
 
@@ -136,10 +131,10 @@ std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
                   frame->GetSettings()->GetDefaultTextEncodingName());
     // Disable autodetection for XML/JSON to honor the default encoding (UTF-8)
     // for unlabelled documents.
-    if (DOMImplementation::IsXMLMIMEType(mime_type_)) {
+    if (DOMImplementation::IsXMLMIMEType(mime_type)) {
       decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kXMLContent, default_encoding));
-    } else if (DOMImplementation::IsJSONMIMEType(mime_type_)) {
+    } else if (DOMImplementation::IsJSONMIMEType(mime_type)) {
       decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kJSONContent, default_encoding));
     } else {
@@ -149,17 +144,17 @@ std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
         hint_encoding = parent_frame->GetDocument()->Encoding();
       decoder = TextResourceDecoder::Create(
           TextResourceDecoderOptions::CreateWithAutoDetection(
-              DetermineContentType(mime_type_), default_encoding, hint_encoding,
+              DetermineContentType(mime_type), default_encoding, hint_encoding,
               document->Url()));
     }
   } else {
     decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
-        DetermineContentType(mime_type_), encoding_from_domain));
+        DetermineContentType(mime_type), encoding_from_domain));
   }
   DCHECK(decoder);
 
-  if (!encoding_.IsEmpty()) {
-    decoder->SetEncoding(WTF::TextEncoding(encoding_.GetString()),
+  if (!encoding.IsEmpty()) {
+    decoder->SetEncoding(WTF::TextEncoding(encoding.GetString()),
                          TextResourceDecoder::kEncodingFromHTTPHeader);
   } else if (use_hint_encoding) {
     decoder->SetEncoding(parent_frame->GetDocument()->Encoding(),
@@ -167,10 +162,6 @@ std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
   }
 
   return decoder;
-}
-
-void TextResourceDecoderBuilder::Clear() {
-  encoding_ = g_null_atom;
 }
 
 }  // namespace blink
