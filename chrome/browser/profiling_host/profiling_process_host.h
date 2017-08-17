@@ -35,7 +35,7 @@ namespace profiling {
 //
 // Not thread safe. Should be used on the browser UI thread only.
 //
-// The profing process host can be started normally while Chrome is running,
+// The profiling process host can be started normally while Chrome is running,
 // but can also start in a partial mode where the memory logging connections
 // are active but the Mojo control channel has not yet been connected. This is
 // to support starting the profiling process very early in the startup

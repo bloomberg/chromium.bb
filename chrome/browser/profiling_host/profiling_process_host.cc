@@ -166,7 +166,7 @@ void ProfilingProcessHost::LaunchAsService() {
   connector_->BindInterface(mojom::kServiceName, &memlog_);
 
   mojo::edk::PlatformChannelPair data_channel;
-  // Unretained is safe because this class is a leaaky singleton that owns the
+  // Unretained is safe because this class is a leaky singleton that owns the
   // client object.
   memlog_->AddSender(
       base::Process::Current().Pid(),

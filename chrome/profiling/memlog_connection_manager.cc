@@ -57,7 +57,7 @@ void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
   scoped_refptr<MemlogReceiverPipe> new_pipe =
       new MemlogReceiverPipe(std::move(file));
   // Task to post to clean up the connection. Don't need to retain |this| since
-  // it wil be called by objects owned by the MemlogConnectionManager.
+  // it will be called by objects owned by the MemlogConnectionManager.
   AllocationTracker::CompleteCallback complete_cb = base::BindOnce(
       &MemlogConnectionManager::OnConnectionCompleteThunk,
       base::Unretained(this), base::MessageLoop::current()->task_runner(), pid);
