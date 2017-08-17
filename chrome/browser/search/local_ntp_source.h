@@ -68,6 +68,10 @@ class LocalNtpSource : public content::URLDataSource,
 
   void SetDefaultSearchProviderIsGoogleOnIOThread(bool is_google);
 
+  void GoogleBaseUrlChanged(const GURL& google_base_url);
+
+  void SetGoogleBaseUrlOnIOThread(const GURL& google_base_url);
+
   Profile* const profile_;
 
   OneGoogleBarService* one_google_bar_service_;
@@ -81,6 +85,10 @@ class LocalNtpSource : public content::URLDataSource,
   bool default_search_provider_is_google_;
   // A copy of |default_search_provider_is_google_| for use on the IO thread.
   bool default_search_provider_is_google_io_thread_;
+
+  GURL google_base_url_;
+  // A copy of |google_base_url_| for use on the IO thread.
+  GURL google_base_url_io_thread_;
 
   base::WeakPtrFactory<LocalNtpSource> weak_ptr_factory_;
 
