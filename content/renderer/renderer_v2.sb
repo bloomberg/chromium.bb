@@ -135,6 +135,10 @@
 (if (< os-version 1012)
   (allow mach-lookup (global-name "com.apple.FontServer")))
 
+; crbug.com/756145
+(if (= os-version 1011)
+  (allow mach-lookup (global-name "com.apple.FontObjectsServer")))
+
 ; sysctl
 (if (= os-version 1009)
   (allow sysctl-read)
