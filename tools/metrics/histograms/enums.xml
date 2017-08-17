@@ -9033,6 +9033,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Upload Requested"/>
 </enum>
 
+<enum name="DragContent">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Image"/>
+  <int value="2" label="URL"/>
+  <int value="3" label="Text"/>
+</enum>
+
 <enum name="DragDropEventSource">
   <int value="0" label="Mouse"/>
   <int value="1" label="Touch"/>
