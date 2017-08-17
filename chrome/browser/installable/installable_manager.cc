@@ -139,7 +139,7 @@ void InstallableManager::GetData(const InstallableParams& params,
 
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
-  bool was_active = task_queue_.is_active_;
+  bool was_active = !task_queue_.IsEmpty();
   task_queue_.Insert({params, callback});
   if (was_active)
     return;
@@ -367,7 +367,7 @@ void InstallableManager::RunCallback(const Task& task,
 }
 
 void InstallableManager::StartNextTask() {
-  DCHECK(task_queue_.is_active_);
+  DCHECK(!task_queue_.IsEmpty());
   WorkOnTask();
 }
 
@@ -590,7 +590,7 @@ void InstallableManager::OnRegistrationStored(const GURL& pattern) {
     return;
   }
 
-  bool was_active = task_queue_.is_active_;
+  bool was_active = !task_queue_.IsEmpty();
   task_queue_.UnpauseAll();
 
   // Start the pipeline again if it was not running. This will call
@@ -626,18 +626,16 @@ bool InstallableManager::is_installable() const {
   return valid_manifest_->is_valid && worker_->has_worker;
 }
 
-InstallableManager::TaskQueue::TaskQueue() : is_active_(false) {}
+InstallableManager::TaskQueue::TaskQueue() {}
 InstallableManager::TaskQueue::~TaskQueue() {}
 
 void InstallableManager::TaskQueue::Insert(Task task) {
   tasks_.push_back(task);
-  is_active_ = true;
 }
 
 void InstallableManager::TaskQueue::Reset() {
   tasks_.clear();
   paused_tasks_.clear();
-  is_active_ = false;
 }
 
 bool InstallableManager::TaskQueue::HasPaused() const {
@@ -664,8 +662,6 @@ void InstallableManager::TaskQueue::PauseCurrent() {
 void InstallableManager::TaskQueue::Next() {
   DCHECK(!tasks_.empty());
   tasks_.erase(tasks_.begin());
-  if (IsEmpty())
-    is_active_ = false;
 }
 
 bool InstallableManager::TaskQueue::IsEmpty() const {
