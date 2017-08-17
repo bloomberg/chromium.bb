@@ -65,8 +65,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   void CheckCurrentUrl();
   void NotifyResult();
 
-  ActivationDecision ComputeActivation(
-      Configuration::ActivationOptions* options);
+  ActivationDecision ComputeActivation(Configuration* configuration);
 
   // Returns whether a main-frame navigation to the given |url| satisfies the
   // activation |conditions| of a given configuration, except for |priority|.
