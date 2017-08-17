@@ -70,7 +70,8 @@ void MouseLockController::RequestToLockMouse(WebContents* web_contents,
   // Lock mouse.
   if (fake_mouse_lock_for_test_ ||
       web_contents->GotResponseToLockMouseRequest(true)) {
-    if (last_unlocked_by_target) {
+    if (last_unlocked_by_target &&
+        web_contents_granted_silent_mouse_lock_permission_ == web_contents) {
       mouse_lock_state_ = MOUSELOCK_LOCKED_SILENTLY;
     } else {
       mouse_lock_state_ = MOUSELOCK_LOCKED;
@@ -160,9 +161,13 @@ void MouseLockController::UnlockMouse() {
 }
 
 void MouseLockController::OnBubbleHidden(
-    WebContents*,
+    WebContents* web_contents,
     ExclusiveAccessBubbleHideReason reason) {
   if (bubble_hide_callback_for_test_)
     bubble_hide_callback_for_test_.Run(reason);
-  // TODO(chongz): Add silent mouse logic.
+
+  // Allow silent mouse lock if the bubble has been display for a period of
+  // time and dismissed due to timeout.
+  if (reason == ExclusiveAccessBubbleHideReason::kTimeout)
+    web_contents_granted_silent_mouse_lock_permission_ = web_contents;
 }

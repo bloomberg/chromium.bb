@@ -487,6 +487,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 // with no UI distraction for users.
 IN_PROC_BROWSER_TEST_P(ParamaterizedFullscreenControllerInteractiveTest,
                        MAYBE_MouseLockSilentAfterTargetUnlock) {
+  SetWebContentsGrantedSilentMouseLockPermission();
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kFullscreenMouseLockHTML));

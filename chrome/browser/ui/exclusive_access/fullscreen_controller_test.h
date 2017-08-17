@@ -48,6 +48,7 @@ class FullscreenControllerTest : public InProcessBrowserTest {
 
   void RequestToLockMouse(bool user_gesture,
                           bool last_unlocked_by_target);
+  void SetWebContentsGrantedSilentMouseLockPermission();
   void LostMouseLock();
   bool SendEscapeToFullscreenController();
   bool IsFullscreenForBrowser();
@@ -64,6 +65,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   ExclusiveAccessManager* GetExclusiveAccessManager();
 
   void OnBubbleHidden(ExclusiveAccessBubbleHideReason);
+
+  int InitialBubbleDelayMs() const;
 
   std::vector<ExclusiveAccessBubbleHideReason>
       mouse_lock_bubble_hide_reason_recorder_;

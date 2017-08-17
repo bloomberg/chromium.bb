@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -52,6 +53,14 @@ void FullscreenControllerTest::RequestToLockMouse(
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
   mouse_lock_controller->set_fake_mouse_lock_for_test(false);
+}
+
+void FullscreenControllerTest::
+    SetWebContentsGrantedSilentMouseLockPermission() {
+  GetExclusiveAccessManager()
+      ->mouse_lock_controller()
+      ->set_web_contents_granted_silent_mouse_lock_permission_for_test(
+          browser()->tab_strip_model()->GetActiveWebContents());
 }
 
 FullscreenController* FullscreenControllerTest::GetFullscreenController() {
@@ -119,4 +128,8 @@ void FullscreenControllerTest::EnterActiveTabFullscreen() {
 void FullscreenControllerTest::OnBubbleHidden(
     ExclusiveAccessBubbleHideReason reason) {
   mouse_lock_bubble_hide_reason_recorder_.push_back(reason);
+}
+
+int FullscreenControllerTest::InitialBubbleDelayMs() const {
+  return ExclusiveAccessBubble::kInitialDelayMs;
 }
