@@ -95,6 +95,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
       : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {}
 
   ~AutocompleteActionPredictorTest() override {
+    // Wait for all pending tasks on the DB sequence.
+    content::RunAllBlockingPoolTasksUntilIdle();
     // Since we instantiated the predictor instead of going through a factory
     // and dependencies, no one else is going to call Shutdown(), which is
     // supposed to be called as part of being a KeyedService. The behavior of
