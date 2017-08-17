@@ -88,8 +88,8 @@ class AppCacheResponseTest : public testing::Test {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheResponseTest::MethodWrapper<Method>,
-                              base::Unretained(this), method));
+        FROM_HERE, base::BindOnce(&AppCacheResponseTest::MethodWrapper<Method>,
+                                  base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 
@@ -129,8 +129,8 @@ class AppCacheResponseTest : public testing::Test {
     // based objects get deleted.
     DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheResponseTest::TestFinishedUnwound,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&AppCacheResponseTest::TestFinishedUnwound,
+                                  base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -749,8 +749,9 @@ class AppCacheResponseTest : public testing::Test {
 
     // Wait a moment to verify no callbacks.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AppCacheResponseTest::VerifyNoCallbacks,
-                              base::Unretained(this)),
+        FROM_HERE,
+        base::BindOnce(&AppCacheResponseTest::VerifyNoCallbacks,
+                       base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(10));
   }
 

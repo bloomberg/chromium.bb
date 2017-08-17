@@ -20,8 +20,8 @@ DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context)
       should_persist_(false) {
   context->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::CreateSessionNamespace,
-                 context_, namespace_id_, persistent_namespace_id_));
+      base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace, context_,
+                     namespace_id_, persistent_namespace_id_));
 }
 
 DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context,
@@ -32,8 +32,8 @@ DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context,
       should_persist_(false) {
   context->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::CreateSessionNamespace,
-                 context_, namespace_id_, persistent_namespace_id_));
+      base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace, context_,
+                     namespace_id_, persistent_namespace_id_));
 }
 
 void DOMStorageSession::SetShouldPersist(bool should_persist) {
@@ -59,8 +59,8 @@ DOMStorageSession* DOMStorageSession::CloneFrom(DOMStorageContextImpl* context,
   std::string persistent_clone_id = context->AllocatePersistentSessionId();
   context->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::CloneSessionNamespace,
-                 context, namepace_id_to_clone, clone_id, persistent_clone_id));
+      base::BindOnce(&DOMStorageContextImpl::CloneSessionNamespace, context,
+                     namepace_id_to_clone, clone_id, persistent_clone_id));
   return new DOMStorageSession(context, clone_id, persistent_clone_id);
 }
 
@@ -76,9 +76,8 @@ DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context,
 
 DOMStorageSession::~DOMStorageSession() {
   context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageContextImpl::DeleteSessionNamespace,
-                 context_, namespace_id_, should_persist_));
+      FROM_HERE, base::BindOnce(&DOMStorageContextImpl::DeleteSessionNamespace,
+                                context_, namespace_id_, should_persist_));
 }
 
 }  // namespace content

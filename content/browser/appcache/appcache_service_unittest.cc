@@ -79,8 +79,9 @@ class MockResponseReader : public AppCacheResponseReader {
  private:
   void ScheduleUserCallback(int result) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockResponseReader::InvokeUserCompletionCallback,
-                              weak_factory_.GetWeakPtr(), result));
+        FROM_HERE,
+        base::BindOnce(&MockResponseReader::InvokeUserCompletionCallback,
+                       weak_factory_.GetWeakPtr(), result));
   }
 
   std::unique_ptr<net::HttpResponseInfo> info_;

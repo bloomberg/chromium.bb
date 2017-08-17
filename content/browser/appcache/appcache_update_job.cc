@@ -251,8 +251,8 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
 
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AppCacheUpdateJob::FetchManifest, weak_factory_.GetWeakPtr(),
-                 true));
+      base::BindOnce(&AppCacheUpdateJob::FetchManifest,
+                     weak_factory_.GetWeakPtr(), true));
 }
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {

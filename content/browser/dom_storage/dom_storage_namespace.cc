@@ -88,11 +88,11 @@ DOMStorageNamespace* DOMStorageNamespace::Clone(
   // And clone the on-disk structures, too.
   if (session_storage_database_.get()) {
     task_runner_->PostShutdownBlockingTask(
-        FROM_HERE,
-        DOMStorageTaskRunner::COMMIT_SEQUENCE,
-        base::Bind(base::IgnoreResult(&SessionStorageDatabase::CloneNamespace),
-                   session_storage_database_.get(), persistent_namespace_id_,
-                   clone_persistent_namespace_id));
+        FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+        base::BindOnce(
+            base::IgnoreResult(&SessionStorageDatabase::CloneNamespace),
+            session_storage_database_.get(), persistent_namespace_id_,
+            clone_persistent_namespace_id));
   }
   return clone;
 }

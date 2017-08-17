@@ -341,9 +341,8 @@ void DOMStorageArea::Shutdown() {
     return;
 
   bool success = task_runner_->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::COMMIT_SEQUENCE,
-      base::Bind(&DOMStorageArea::ShutdownInCommitSequence, this));
+      FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+      base::BindOnce(&DOMStorageArea::ShutdownInCommitSequence, this));
   DCHECK(success);
 }
 
@@ -435,7 +434,7 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
     commit_batch_.reset(new CommitBatch());
     BrowserThread::PostAfterStartupTask(
         FROM_HERE, task_runner_,
-        base::Bind(&DOMStorageArea::StartCommitTimer, this));
+        base::BindOnce(&DOMStorageArea::StartCommitTimer, this));
   }
   return commit_batch_.get();
 }
@@ -457,7 +456,7 @@ void DOMStorageArea::StartCommitTimer() {
     return;
 
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
+      FROM_HERE, base::BindOnce(&DOMStorageArea::OnCommitTimer, this),
       ComputeCommitDelay());
 }
 
@@ -500,10 +499,9 @@ void DOMStorageArea::PostCommitTask() {
   // a task for immediate execution on the commit sequence.
   task_runner_->AssertIsRunningOnPrimarySequence();
   bool success = task_runner_->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::COMMIT_SEQUENCE,
-      base::Bind(&DOMStorageArea::CommitChanges, this,
-                 base::Owned(commit_batch_.release())));
+      FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+      base::BindOnce(&DOMStorageArea::CommitChanges, this,
+                     base::Owned(commit_batch_.release())));
   ++commit_batches_in_flight_;
   DCHECK(success);
 }
@@ -516,8 +514,7 @@ void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
   // TODO(michaeln): what if CommitChanges returns false (e.g., we're trying to
   // commit to a DB which is in an inconsistent state?)
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageArea::OnCommitComplete, this));
+      FROM_HERE, base::BindOnce(&DOMStorageArea::OnCommitComplete, this));
 }
 
 void DOMStorageArea::OnCommitComplete() {
@@ -529,7 +526,7 @@ void DOMStorageArea::OnCommitComplete() {
   if (commit_batch_.get() && !commit_batches_in_flight_) {
     // More changes have accrued, restart the timer.
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
+        FROM_HERE, base::BindOnce(&DOMStorageArea::OnCommitTimer, this),
         ComputeCommitDelay());
   }
 }

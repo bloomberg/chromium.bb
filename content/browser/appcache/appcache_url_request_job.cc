@@ -119,8 +119,8 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
     // Start asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheURLRequestJob::BeginDelivery,
-                              StaticAsWeakPtr(this)));
+        FROM_HERE, base::BindOnce(&AppCacheURLRequestJob::BeginDelivery,
+                                  StaticAsWeakPtr(this)));
   }
 }
 

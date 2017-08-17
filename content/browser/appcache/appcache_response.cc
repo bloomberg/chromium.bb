@@ -109,8 +109,8 @@ AppCacheResponseIO::~AppCacheResponseIO() {
 
 void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AppCacheResponseIO::OnIOComplete,
-                            weak_factory_.GetWeakPtr(), result));
+      FROM_HERE, base::BindOnce(&AppCacheResponseIO::OnIOComplete,
+                                weak_factory_.GetWeakPtr(), result));
 }
 
 void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {

@@ -109,10 +109,9 @@ DOMStorageContextImpl::~DOMStorageContextImpl() {
     to_release->AddRef();
     session_storage_database_ = NULL;
     task_runner_->PostShutdownBlockingTask(
-        FROM_HERE,
-        DOMStorageTaskRunner::COMMIT_SEQUENCE,
-        base::Bind(&SessionStorageDatabase::Release,
-                   base::Unretained(to_release)));
+        FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+        base::BindOnce(&SessionStorageDatabase::Release,
+                       base::Unretained(to_release)));
   }
 }
 
@@ -297,9 +296,8 @@ void DOMStorageContextImpl::Shutdown() {
     // commit sequence after area shutdown tasks have cycled
     // thru that sequence (and closed their database files).
     bool success = task_runner_->PostShutdownBlockingTask(
-        FROM_HERE,
-        DOMStorageTaskRunner::COMMIT_SEQUENCE,
-        base::Bind(&DOMStorageContextImpl::ClearSessionOnlyOrigins, this));
+        FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+        base::BindOnce(&DOMStorageContextImpl::ClearSessionOnlyOrigins, this));
     DCHECK(success);
   }
 }
@@ -390,12 +388,10 @@ void DOMStorageContextImpl::DeleteSessionNamespace(int64_t namespace_id,
   if (session_storage_database_.get()) {
     if (!should_persist_data) {
       task_runner_->PostShutdownBlockingTask(
-          FROM_HERE,
-          DOMStorageTaskRunner::COMMIT_SEQUENCE,
-          base::Bind(
+          FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+          base::BindOnce(
               base::IgnoreResult(&SessionStorageDatabase::DeleteNamespace),
-              session_storage_database_,
-              persistent_namespace_id));
+              session_storage_database_, persistent_namespace_id));
     } else {
       // Ensure that the data gets committed before we shut down.
       it->second->Shutdown();
@@ -472,8 +468,8 @@ void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
 void DOMStorageContextImpl::StartScavengingUnusedSessionStorage() {
   if (session_storage_database_.get()) {
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DOMStorageContextImpl::FindUnusedNamespaces,
-                              this),
+        FROM_HERE,
+        base::BindOnce(&DOMStorageContextImpl::FindUnusedNamespaces, this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
 }
@@ -581,9 +577,9 @@ void DOMStorageContextImpl::FindUnusedNamespaces() {
   protected_persistent_session_ids.swap(protected_persistent_session_ids_);
   task_runner_->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
-      base::Bind(
-          &DOMStorageContextImpl::FindUnusedNamespacesInCommitSequence,
-          this, namespace_ids_in_use, protected_persistent_session_ids));
+      base::BindOnce(
+          &DOMStorageContextImpl::FindUnusedNamespacesInCommitSequence, this,
+          namespace_ids_in_use, protected_persistent_session_ids));
 }
 
 void DOMStorageContextImpl::FindUnusedNamespacesInCommitSequence(
@@ -605,9 +601,8 @@ void DOMStorageContextImpl::FindUnusedNamespacesInCommitSequence(
   }
   if (!deletable_persistent_namespace_ids_.empty()) {
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(
-            &DOMStorageContextImpl::DeleteNextUnusedNamespace,
-            this),
+        FROM_HERE,
+        base::BindOnce(&DOMStorageContextImpl::DeleteNextUnusedNamespace, this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
 }
@@ -616,10 +611,10 @@ void DOMStorageContextImpl::DeleteNextUnusedNamespace() {
   if (is_shutdown_)
     return;
   task_runner_->PostShutdownBlockingTask(
-        FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
-        base::Bind(
-            &DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence,
-            this));
+      FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
+      base::BindOnce(
+          &DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence,
+          this));
 }
 
 void DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence() {
@@ -630,9 +625,8 @@ void DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence() {
   deletable_persistent_namespace_ids_.pop_back();
   if (!deletable_persistent_namespace_ids_.empty()) {
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(
-            &DOMStorageContextImpl::DeleteNextUnusedNamespace,
-            this),
+        FROM_HERE,
+        base::BindOnce(&DOMStorageContextImpl::DeleteNextUnusedNamespace, this),
         base::TimeDelta::FromSeconds(kSessionStoraceScavengingSeconds));
   }
 }

@@ -70,7 +70,7 @@ class AppCacheServiceImpl::AsyncHelper
     if (!callback_.is_null()) {
       // Defer to guarantee async completion.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&DeferredCallback, callback_, rv));
+          FROM_HERE, base::BindOnce(&DeferredCallback, callback_, rv));
     }
     callback_.Reset();
   }

@@ -54,8 +54,8 @@ class DOMStorageAreaTest : public testing::Test {
     // that.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask2,
-                   base::Unretained(this), area));
+        base::BindOnce(&DOMStorageAreaTest::InjectedCommitSequencingTask2,
+                       base::Unretained(this), area));
   }
 
   void InjectedCommitSequencingTask2(
@@ -287,9 +287,8 @@ TEST_F(DOMStorageAreaTest, CommitTasks) {
   // that a new commit batch is created for that additional change.
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask1,
-                 base::Unretained(this),
-                 area));
+      base::BindOnce(&DOMStorageAreaTest::InjectedCommitSequencingTask1,
+                     base::Unretained(this), area));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(area->HasOneRef());
   EXPECT_FALSE(area->HasUncommittedChanges());

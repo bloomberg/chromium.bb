@@ -201,8 +201,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&AppCacheRequestHandlerTest::MethodWrapper<Method>,
-                   base::Unretained(this), method));
+        base::BindOnce(&AppCacheRequestHandlerTest::MethodWrapper<Method>,
+                       base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 
@@ -244,8 +244,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // based objects get deleted.
     DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheRequestHandlerTest::TestFinishedUnwound,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&AppCacheRequestHandlerTest::TestFinishedUnwound,
+                       base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {

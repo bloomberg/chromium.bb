@@ -626,7 +626,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(method, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(method, base::Unretained(this)));
 
     // Wait until task is done before exiting the test.
     event_->Wait();
@@ -3031,8 +3031,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     // We unwind the stack prior to finishing up to let stack-based objects
     // get deleted.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
+                                  base::Unretained(this)));
   }
 
   void UpdateFinishedUnwound() {

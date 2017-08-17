@@ -20,8 +20,8 @@ void MockAppCacheService::DeleteAppCachesForOrigin(
     const GURL& origin, const net::CompletionCallback& callback) {
   ++delete_called_count_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DeferredCallCallback, callback,
-                            mock_delete_appcaches_for_origin_result_));
+      FROM_HERE, base::BindOnce(&DeferredCallCallback, callback,
+                                mock_delete_appcaches_for_origin_result_));
 }
 
 }  // namespace content

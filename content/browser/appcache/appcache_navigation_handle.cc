@@ -27,9 +27,10 @@ AppCacheNavigationHandle::AppCacheNavigationHandle(
   appcache_host_id_ = g_next_appcache_host_id--;
   core_.reset(new AppCacheNavigationHandleCore(
       weak_factory_.GetWeakPtr(), appcache_service, appcache_host_id_));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AppCacheNavigationHandleCore::Initialize,
-                                     base::Unretained(core_.get())));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
+                     base::Unretained(core_.get())));
 }
 
 AppCacheNavigationHandle::~AppCacheNavigationHandle() {
