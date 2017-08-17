@@ -391,12 +391,11 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
       AddDevice(device_path);
 
   base::DictionaryValue* properties = GetDeviceProperties(device_path);
-  properties->SetStringWithoutPathExpansion(shill::kTypeProperty, type);
-  properties->SetStringWithoutPathExpansion(shill::kNameProperty, name);
-  properties->SetStringWithoutPathExpansion(shill::kDBusObjectProperty,
-                                            device_path);
-  properties->SetStringWithoutPathExpansion(
-      shill::kDBusServiceProperty, modemmanager::kModemManager1ServiceName);
+  properties->SetKey(shill::kTypeProperty, base::Value(type));
+  properties->SetKey(shill::kNameProperty, base::Value(name));
+  properties->SetKey(shill::kDBusObjectProperty, base::Value(device_path));
+  properties->SetKey(shill::kDBusServiceProperty,
+                     base::Value(modemmanager::kModemManager1ServiceName));
   if (type == shill::kTypeCellular) {
     properties->SetKey(shill::kCellularAllowRoamingProperty,
                        base::Value(false));
@@ -500,8 +499,7 @@ void FakeShillDeviceClient::SetSimLockStatus(const std::string& device_path,
         base::MakeUnique<base::DictionaryValue>());
   }
   simlock_dict->Clear();
-  simlock_dict->SetStringWithoutPathExpansion(shill::kSIMLockTypeProperty,
-                                              status.type);
+  simlock_dict->SetKey(shill::kSIMLockTypeProperty, base::Value(status.type));
   simlock_dict->SetKey(shill::kSIMLockRetriesLeftProperty,
                        base::Value(status.retries_left));
   simlock_dict->SetKey(shill::kSIMLockEnabledProperty,

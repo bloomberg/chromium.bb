@@ -620,21 +620,21 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
   // IPConfigs
   base::DictionaryValue ipconfig_v4_dictionary;
-  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kAddressProperty, "100.0.0.1");
-  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kGatewayProperty, "100.0.0.2");
+  ipconfig_v4_dictionary.SetKey(shill::kAddressProperty,
+                                base::Value("100.0.0.1"));
+  ipconfig_v4_dictionary.SetKey(shill::kGatewayProperty,
+                                base::Value("100.0.0.2"));
   ipconfig_v4_dictionary.SetKey(shill::kPrefixlenProperty, base::Value(1));
-  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kMethodProperty, shill::kTypeIPv4);
-  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
-      shill::kWebProxyAutoDiscoveryUrlProperty, "http://wpad.com/wpad.dat");
+  ipconfig_v4_dictionary.SetKey(shill::kMethodProperty,
+                                base::Value(shill::kTypeIPv4));
+  ipconfig_v4_dictionary.SetKey(shill::kWebProxyAutoDiscoveryUrlProperty,
+                                base::Value("http://wpad.com/wpad.dat"));
   ip_configs->AddIPConfig("ipconfig_v4_path", ipconfig_v4_dictionary);
   base::DictionaryValue ipconfig_v6_dictionary;
-  ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
-      shill::kAddressProperty, "0:0:0:0:100:0:0:1");
-  ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
-      shill::kMethodProperty, shill::kTypeIPv6);
+  ipconfig_v6_dictionary.SetKey(shill::kAddressProperty,
+                                base::Value("0:0:0:0:100:0:0:1"));
+  ipconfig_v6_dictionary.SetKey(shill::kMethodProperty,
+                                base::Value(shill::kTypeIPv6));
   ip_configs->AddIPConfig("ipconfig_v6_path", ipconfig_v6_dictionary);
 
   bool enabled;
@@ -852,14 +852,14 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                  base::Value(shill_roaming_state));
 
     base::DictionaryValue apn;
-    apn.SetStringWithoutPathExpansion(shill::kApnProperty, "testapn");
-    apn.SetStringWithoutPathExpansion(shill::kApnNameProperty, "Test APN");
-    apn.SetStringWithoutPathExpansion(shill::kApnLocalizedNameProperty,
-                                      "Localized Test APN");
-    apn.SetStringWithoutPathExpansion(shill::kApnUsernameProperty, "User1");
-    apn.SetStringWithoutPathExpansion(shill::kApnPasswordProperty, "password");
+    apn.SetKey(shill::kApnProperty, base::Value("testapn"));
+    apn.SetKey(shill::kApnNameProperty, base::Value("Test APN"));
+    apn.SetKey(shill::kApnLocalizedNameProperty,
+               base::Value("Localized Test APN"));
+    apn.SetKey(shill::kApnUsernameProperty, base::Value("User1"));
+    apn.SetKey(shill::kApnPasswordProperty, base::Value("password"));
     base::DictionaryValue apn2;
-    apn2.SetStringWithoutPathExpansion(shill::kApnProperty, "testapn2");
+    apn2.SetKey(shill::kApnProperty, base::Value("testapn2"));
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kCellularApnProperty, apn);
     services->SetServiceProperty(kCellularServicePath,

@@ -212,47 +212,45 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
           new base::DictionaryValue());
       if (entry.has_type()) {
         if (entry.has_account_id()) {
-          entry_dict->SetStringWithoutPathExpansion(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
-              entry.account_id());
+          entry_dict->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+                             base::Value(entry.account_id()));
         }
         entry_dict->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
                            base::Value(entry.type()));
         if (entry.kiosk_app().has_app_id()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-              entry.kiosk_app().app_id());
+              base::Value(entry.kiosk_app().app_id()));
         }
         if (entry.kiosk_app().has_update_url()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-              entry.kiosk_app().update_url());
+              base::Value(entry.kiosk_app().update_url()));
         }
         if (entry.android_kiosk_app().has_package_name()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
-              entry.android_kiosk_app().package_name());
+              base::Value(entry.android_kiosk_app().package_name()));
         }
         if (entry.android_kiosk_app().has_class_name()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
-              entry.android_kiosk_app().class_name());
+              base::Value(entry.android_kiosk_app().class_name()));
         }
         if (entry.android_kiosk_app().has_action()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
-              entry.android_kiosk_app().action());
+              base::Value(entry.android_kiosk_app().action()));
         }
         if (entry.android_kiosk_app().has_display_name()) {
-          entry_dict->SetStringWithoutPathExpansion(
+          entry_dict->SetKey(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
-              entry.android_kiosk_app().display_name());
+              base::Value(entry.android_kiosk_app().display_name()));
         }
       } else if (entry.has_deprecated_public_session_id()) {
         // Deprecated public session specification.
-        entry_dict->SetStringWithoutPathExpansion(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
-            entry.deprecated_public_session_id());
+        entry_dict->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+                           base::Value(entry.deprecated_public_session_id()));
         entry_dict->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
             base::Value(DeviceLocalAccount::TYPE_PUBLIC_SESSION));

@@ -146,38 +146,36 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
   for (std::vector<DeviceLocalAccount>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
     std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    entry->SetStringWithoutPathExpansion(
-        chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
-        it->account_id);
+    entry->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+                  base::Value(it->account_id));
     entry->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
                   base::Value(it->type));
     if (it->type == DeviceLocalAccount::TYPE_KIOSK_APP) {
-      entry->SetStringWithoutPathExpansion(
-          chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-          it->kiosk_app_id);
+      entry->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                    base::Value(it->kiosk_app_id));
       if (!it->kiosk_app_update_url.empty()) {
-        entry->SetStringWithoutPathExpansion(
+        entry->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-            it->kiosk_app_update_url);
+            base::Value(it->kiosk_app_update_url));
       }
     } else if (it->type == DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
-      entry->SetStringWithoutPathExpansion(
+      entry->SetKey(
           chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
-          it->arc_kiosk_app_info.package_name());
+          base::Value(it->arc_kiosk_app_info.package_name()));
       if (!it->arc_kiosk_app_info.class_name().empty()) {
-        entry->SetStringWithoutPathExpansion(
+        entry->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
-            it->arc_kiosk_app_info.class_name());
+            base::Value(it->arc_kiosk_app_info.class_name()));
       }
       if (!it->arc_kiosk_app_info.action().empty()) {
-        entry->SetStringWithoutPathExpansion(
+        entry->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
-            it->arc_kiosk_app_info.action());
+            base::Value(it->arc_kiosk_app_info.action()));
       }
       if (!it->arc_kiosk_app_info.display_name().empty()) {
-        entry->SetStringWithoutPathExpansion(
+        entry->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
-            it->arc_kiosk_app_info.display_name());
+            base::Value(it->arc_kiosk_app_info.display_name()));
       }
     }
     list.Append(std::move(entry));

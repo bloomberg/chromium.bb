@@ -390,17 +390,14 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigPersistence) {
   EXPECT_FALSE(DoesConfigExist(kTestConfig));
 
   base::DictionaryValue properties;
-  properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                           shill::kTypeVPN);
-  properties.SetStringWithoutPathExpansion(shill::kNameProperty, kTestConfig);
-  properties.SetStringWithoutPathExpansion(shill::kProviderHostProperty,
-                                           extension_id_);
-  properties.SetStringWithoutPathExpansion(shill::kObjectPathSuffixProperty,
-                                           GetKey(kTestConfig));
-  properties.SetStringWithoutPathExpansion(shill::kProviderTypeProperty,
-                                           shill::kProviderThirdPartyVpn);
-  properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                           kNetworkProfilePath);
+  properties.SetKey(shill::kTypeProperty, base::Value(shill::kTypeVPN));
+  properties.SetKey(shill::kNameProperty, base::Value(kTestConfig));
+  properties.SetKey(shill::kProviderHostProperty, base::Value(extension_id_));
+  properties.SetKey(shill::kObjectPathSuffixProperty,
+                    base::Value(GetKey(kTestConfig)));
+  properties.SetKey(shill::kProviderTypeProperty,
+                    base::Value(shill::kProviderThirdPartyVpn));
+  properties.SetKey(shill::kProfileProperty, base::Value(kNetworkProfilePath));
   NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(

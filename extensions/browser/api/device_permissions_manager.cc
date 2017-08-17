@@ -326,16 +326,16 @@ std::unique_ptr<base::Value> DevicePermissionEntry::ToValue() const {
           .Build());
 
   if (!manufacturer_string_.empty()) {
-    entry_dict->SetStringWithoutPathExpansion(kDeviceManufacturerString,
-                                              manufacturer_string_);
+    entry_dict->SetKey(kDeviceManufacturerString,
+                       base::Value(manufacturer_string_));
   }
   if (!product_string_.empty()) {
-    entry_dict->SetStringWithoutPathExpansion(kDeviceProductString,
-                                              product_string_);
+    entry_dict->SetKey(kDeviceProductString, base::Value(product_string_));
   }
   if (!last_used_.is_null()) {
-    entry_dict->SetStringWithoutPathExpansion(
-        kDeviceLastUsed, base::Int64ToString(last_used_.ToInternalValue()));
+    entry_dict->SetKey(
+        kDeviceLastUsed,
+        base::Value(base::Int64ToString(last_used_.ToInternalValue())));
   }
 
   return std::move(entry_dict);

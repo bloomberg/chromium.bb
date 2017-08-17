@@ -432,7 +432,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
         EXPECT_EQ("hello", out);
       },
       [](ScopedDictionaryPrefUpdate* update) {
-        (*update)->SetStringWithoutPathExpansion("key.for.string", "prefs!");
+        (*update)->SetKey("key.for.string", base::Value("prefs!"));
         std::string out;
         ASSERT_TRUE(
             (*update)->GetStringWithoutPathExpansion("key.for.string", &out));
@@ -445,8 +445,8 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
         EXPECT_EQ(base::ASCIIToUTF16("hello"), out);
       },
       [](ScopedDictionaryPrefUpdate* update) {
-        (*update)->SetStringWithoutPathExpansion("key.for.string16",
-                                                 base::ASCIIToUTF16("prefs!"));
+        (*update)->SetKey("key.for.string16",
+                          base::Value(base::ASCIIToUTF16("prefs!")));
         base::string16 out;
         ASSERT_TRUE(
             (*update)->GetStringWithoutPathExpansion("key.for.string16", &out));

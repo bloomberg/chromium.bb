@@ -71,8 +71,8 @@ bool ManagedState::InitialPropertiesReceived(
 }
 
 void ManagedState::GetStateProperties(base::DictionaryValue* dictionary) const {
-  dictionary->SetStringWithoutPathExpansion(shill::kNameProperty, name());
-  dictionary->SetStringWithoutPathExpansion(shill::kTypeProperty, type());
+  dictionary->SetKey(shill::kNameProperty, base::Value(name()));
+  dictionary->SetKey(shill::kTypeProperty, base::Value(type()));
 }
 
 bool ManagedState::ManagedStatePropertyChanged(const std::string& key,

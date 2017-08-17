@@ -51,7 +51,7 @@ std::string BuildPolicy(const base::DictionaryValue& mandatory,
   root_dict.SetWithoutPathExpansion(policyType, std::move(policy_type_dict));
   root_dict.SetWithoutPathExpansion("managed_users",
                                     std::move(managed_users_list));
-  root_dict.SetStringWithoutPathExpansion("policy_user", account_id);
+  root_dict.SetKey("policy_user", base::Value(account_id));
   root_dict.SetKey("current_key_index", base::Value(0));
 
   std::string json_policy;

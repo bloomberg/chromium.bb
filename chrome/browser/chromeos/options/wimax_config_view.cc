@@ -151,10 +151,9 @@ bool WimaxConfigView::Login() {
     return true;  // Close dialog
   }
   base::DictionaryValue properties;
-  properties.SetStringWithoutPathExpansion(
-      shill::kEapIdentityProperty, GetEapIdentity());
-  properties.SetStringWithoutPathExpansion(
-      shill::kEapPasswordProperty, GetEapPassphrase());
+  properties.SetKey(shill::kEapIdentityProperty, base::Value(GetEapIdentity()));
+  properties.SetKey(shill::kEapPasswordProperty,
+                    base::Value(GetEapPassphrase()));
   properties.SetKey(shill::kSaveCredentialsProperty,
                     base::Value(GetSaveCredentials()));
 

@@ -224,9 +224,9 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kEventTypeKey, (*it)->request_type);
-  dict.SetStringWithoutPathExpansion(kObjectRefKey, (*it)->object_ref);
-  dict.SetStringWithoutPathExpansion(kStateKey, kState);
+  dict.SetKey(kEventTypeKey, base::Value((*it)->request_type));
+  dict.SetKey(kObjectRefKey, base::Value((*it)->object_ref));
+  dict.SetKey(kStateKey, base::Value(kState));
 
   std::string body;
   base::JSONWriter::Write(dict, &body);

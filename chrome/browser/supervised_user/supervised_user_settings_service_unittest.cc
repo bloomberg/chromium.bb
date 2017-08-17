@@ -82,7 +82,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   }
 
   void UploadSplitItem(const std::string& key, const std::string& value) {
-    split_items_.SetStringWithoutPathExpansion(key, value);
+    split_items_.SetKey(key, base::Value(value));
     settings_service_.UploadItem(
         SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName, key),
         std::unique_ptr<base::Value>(new base::Value(value)));

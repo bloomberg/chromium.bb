@@ -905,24 +905,9 @@ TEST(ValuesTest, DictionarySetReturnsPointer) {
 
   {
     DictionaryValue dict;
-    Value* string_ptr = dict.SetStringWithoutPathExpansion("foo.bar", "bar");
-    EXPECT_EQ(Value::Type::STRING, string_ptr->type());
-    EXPECT_EQ("bar", string_ptr->GetString());
-  }
-
-  {
-    DictionaryValue dict;
     Value* string16_ptr = dict.SetString("foo.bar", ASCIIToUTF16("baz"));
     EXPECT_EQ(Value::Type::STRING, string16_ptr->type());
     EXPECT_EQ("baz", string16_ptr->GetString());
-  }
-
-  {
-    DictionaryValue dict;
-    Value* string16_ptr =
-        dict.SetStringWithoutPathExpansion("foo.bar", ASCIIToUTF16("qux"));
-    EXPECT_EQ(Value::Type::STRING, string16_ptr->type());
-    EXPECT_EQ("qux", string16_ptr->GetString());
   }
 
   {

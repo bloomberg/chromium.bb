@@ -330,7 +330,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
     base::Base64Encode(value, &encoded);
     DictionaryPrefUpdate update(g_browser_process->local_state(),
                                 prefs::kEasyUnlockLocalStateTpmKeys);
-    update->SetStringWithoutPathExpansion(account_id.GetUserEmail(), encoded);
+    update->SetKey(account_id.GetUserEmail(), base::Value(encoded));
   }
 
  protected:

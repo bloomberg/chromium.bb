@@ -65,8 +65,8 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         new ExistingUserController(mock_login_display_host_.get()));
 
     std::unique_ptr<base::DictionaryValue> account(new base::DictionaryValue);
-    account->SetStringWithoutPathExpansion(
-        kAccountsPrefDeviceLocalAccountsKeyId, auto_login_user_id_);
+    account->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                    base::Value(auto_login_user_id_));
     account->SetKey(
         kAccountsPrefDeviceLocalAccountsKeyType,
         base::Value(policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));

@@ -256,8 +256,8 @@ TEST_F(GsmSMSClientTest, Get) {
   response_ = response.get();
   // Create expected result.
   base::DictionaryValue expected_result;
-  expected_result.SetStringWithoutPathExpansion(kNumberKey, kExampleNumber);
-  expected_result.SetStringWithoutPathExpansion(kTextKey, kExampleText);
+  expected_result.SetKey(kNumberKey, base::Value(kExampleNumber));
+  expected_result.SetKey(kTextKey, base::Value(kExampleText));
   expected_result_ = &expected_result;
   // Call Get.
   client_->Get(kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
@@ -296,8 +296,8 @@ TEST_F(GsmSMSClientTest, List) {
   // Create expected result.
   base::ListValue expected_result;
   auto sms = base::MakeUnique<base::DictionaryValue>();
-  sms->SetStringWithoutPathExpansion(kNumberKey, kExampleNumber);
-  sms->SetStringWithoutPathExpansion(kTextKey, kExampleText);
+  sms->SetKey(kNumberKey, base::Value(kExampleNumber));
+  sms->SetKey(kTextKey, base::Value(kExampleText));
   expected_result.Append(std::move(sms));
   expected_result_ = &expected_result;
   // Call List.

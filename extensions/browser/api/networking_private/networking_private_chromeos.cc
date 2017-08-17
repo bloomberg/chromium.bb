@@ -237,10 +237,10 @@ void SetProxyEffectiveValue(base::DictionaryValue* dict,
   // differentiate between policy types. TODO(stevenjb): Eliminate UIProxyConfig
   // and instead generate a proper ONC dictionary with the correct policy source
   // preserved. crbug.com/662529.
-  dict->SetStringWithoutPathExpansion(::onc::kAugmentationEffectiveSetting,
-                                      state == ProxyPrefs::CONFIG_EXTENSION
-                                          ? ::onc::kAugmentationActiveExtension
-                                          : ::onc::kAugmentationUserPolicy);
+  dict->SetKey(::onc::kAugmentationEffectiveSetting,
+               base::Value(state == ProxyPrefs::CONFIG_EXTENSION
+                               ? ::onc::kAugmentationActiveExtension
+                               : ::onc::kAugmentationUserPolicy));
   if (state != ProxyPrefs::CONFIG_EXTENSION) {
     std::unique_ptr<base::Value> value_copy(value->CreateDeepCopy());
     dict->SetWithoutPathExpansion(::onc::kAugmentationUserPolicy,
@@ -835,8 +835,8 @@ void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kVpnProvider) &&
         extension->id() == extension_id) {
-      third_party_vpn->SetStringWithoutPathExpansion(
-          ::onc::third_party_vpn::kProviderName, extension->name());
+      third_party_vpn->SetKey(::onc::third_party_vpn::kProviderName,
+                              base::Value(extension->name()));
       break;
     }
   }

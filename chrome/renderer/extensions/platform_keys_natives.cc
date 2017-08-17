@@ -49,7 +49,7 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   const blink::WebCryptoAlgorithmInfo* info =
       blink::WebCryptoAlgorithm::LookupAlgorithmInfo(algorithm.Id());
-  dict->SetStringWithoutPathExpansion("name", info->name);
+  dict->SetKey("name", base::Value(info->name));
 
   const blink::WebCryptoAlgorithm* hash = nullptr;
 
@@ -83,7 +83,7 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
         blink::WebCryptoAlgorithm::LookupAlgorithmInfo(hash->Id());
 
     std::unique_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
-    hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
+    hash_dict->SetKey("name", base::Value(hash_info->name));
     dict->SetWithoutPathExpansion("hash", std::move(hash_dict));
   }
   // Otherwise, |algorithm| is missing support here or no parameters were

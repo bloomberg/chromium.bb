@@ -117,8 +117,7 @@ static void SetAccessTokenOnUIThread(const GURL& server_url,
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               prefs::kGeolocationAccessToken);
   base::DictionaryValue* access_token_dictionary = update.Get();
-  access_token_dictionary->SetStringWithoutPathExpansion(server_url.spec(),
-                                                         token);
+  access_token_dictionary->SetKey(server_url.spec(), base::Value(token));
 }
 
 void ChromeAccessTokenStore::SaveAccessToken(

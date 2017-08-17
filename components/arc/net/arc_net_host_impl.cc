@@ -500,20 +500,18 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
     return;
   }
 
-  properties->SetStringWithoutPathExpansion(onc::network_config::kType,
-                                            onc::network_config::kWiFi);
-  wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID,
-                                           cfg->hexssid.value());
+  properties->SetKey(onc::network_config::kType,
+                     base::Value(onc::network_config::kWiFi));
+  wifi_dict->SetKey(onc::wifi::kHexSSID, base::Value(cfg->hexssid.value()));
   wifi_dict->SetKey(onc::wifi::kAutoConnect, base::Value(details->autoconnect));
   if (cfg->security.empty()) {
-    wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
-                                             onc::wifi::kSecurityNone);
+    wifi_dict->SetKey(onc::wifi::kSecurity,
+                      base::Value(onc::wifi::kSecurityNone));
   } else {
-    wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
-                                             cfg->security);
+    wifi_dict->SetKey(onc::wifi::kSecurity, base::Value(cfg->security));
     if (details->passphrase.has_value()) {
-      wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kPassphrase,
-                                               details->passphrase.value());
+      wifi_dict->SetKey(onc::wifi::kPassphrase,
+                        base::Value(details->passphrase.value()));
     }
   }
   properties->SetWithoutPathExpansion(onc::network_config::kWiFi,

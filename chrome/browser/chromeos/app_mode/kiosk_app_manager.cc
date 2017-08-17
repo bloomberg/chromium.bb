@@ -78,7 +78,7 @@ void ScheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id,
   // We are using cryptohome::Identification here because it cannot change
   // before actual removal will take place. (Possible cryptohome migration
   // happens only on session start, but deletion should happen before it.)
-  dict_update->SetStringWithoutPathExpansion(id.id(), app_id);
+  dict_update->SetKey(id.id(), base::Value(app_id));
   local_state->CommitPendingWrite();
 }
 
@@ -649,9 +649,9 @@ void KioskAppManager::InstallSecondaryApps(
   for (const std::string& id : ids) {
     std::unique_ptr<base::DictionaryValue> extension_entry(
         new base::DictionaryValue);
-    extension_entry->SetStringWithoutPathExpansion(
+    extension_entry->SetKey(
         extensions::ExternalProviderImpl::kExternalUpdateUrl,
-        extension_urls::GetWebstoreUpdateUrl().spec());
+        base::Value(extension_urls::GetWebstoreUpdateUrl().spec()));
     extension_entry->SetBoolean(
         extensions::ExternalProviderImpl::kIsFromWebstore, true);
     prefs->Set(id, std::move(extension_entry));

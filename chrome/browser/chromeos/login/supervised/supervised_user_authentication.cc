@@ -137,7 +137,7 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
   if (schema == SCHEMA_SALT_HASHED) {
     password_data->SetKey(kSchemaVersion, base::Value(schema));
     std::string salt = CreateSalt();
-    password_data->SetStringWithoutPathExpansion(kSalt, salt);
+    password_data->SetKey(kSalt, base::Value(salt));
     int revision = kMinPasswordRevision;
     password_data->SetKey(kPasswordRevision, base::Value(revision));
     Key key(password);
@@ -146,15 +146,12 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
     const std::string base64_signature_key = BuildRawHMACKey();
     const std::string base64_signature =
         BuildPasswordSignature(salted_password, revision, base64_signature_key);
-    password_data->SetStringWithoutPathExpansion(kEncryptedPassword,
-                                                 salted_password);
-    password_data->SetStringWithoutPathExpansion(kPasswordSignature,
-                                                 base64_signature);
+    password_data->SetKey(kEncryptedPassword, base::Value(salted_password));
+    password_data->SetKey(kPasswordSignature, base::Value(base64_signature));
 
-    extra_data->SetStringWithoutPathExpansion(kPasswordEncryptionKey,
-                                              BuildRawHMACKey());
-    extra_data->SetStringWithoutPathExpansion(kPasswordSignatureKey,
-                                              base64_signature_key);
+    extra_data->SetKey(kPasswordEncryptionKey, base::Value(BuildRawHMACKey()));
+    extra_data->SetKey(kPasswordSignatureKey,
+                       base::Value(base64_signature_key));
     return true;
   }
   NOTREACHED();

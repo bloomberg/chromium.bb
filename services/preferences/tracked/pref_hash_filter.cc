@@ -338,10 +338,10 @@ PrefFilter::OnWriteCallbackPair PrefHashFilter::GetOnWriteSynchronousCallbacks(
       case TrackedPreferenceType::ATOMIC: {
         const base::Value* new_value = nullptr;
         pref_store_contents->Get(changed_path, &new_value);
-        changed_paths_macs->SetStringWithoutPathExpansion(
+        changed_paths_macs->SetKey(
             changed_path,
-            external_validation_hash_store_pair_->first->ComputeMac(
-                changed_path, new_value));
+            base::Value(external_validation_hash_store_pair_->first->ComputeMac(
+                changed_path, new_value)));
         break;
       }
       case TrackedPreferenceType::SPLIT: {

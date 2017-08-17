@@ -420,8 +420,8 @@ class MergeToAugmented : public MergeToEffective {
     }
 
     if (!which_effective.empty()) {
-      augmented_value->SetStringWithoutPathExpansion(
-          ::onc::kAugmentationEffectiveSetting, which_effective);
+      augmented_value->SetKey(::onc::kAugmentationEffectiveSetting,
+                              base::Value(which_effective));
     }
 
     // Prevent credentials from being forwarded in cleartext to

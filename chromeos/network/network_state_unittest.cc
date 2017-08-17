@@ -207,10 +207,10 @@ TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
   EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "VPN"));
 
   std::unique_ptr<base::DictionaryValue> provider(new base::DictionaryValue);
-  provider->SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                          shill::kProviderThirdPartyVpn);
-  provider->SetStringWithoutPathExpansion(
-      shill::kHostProperty, "third-party-vpn-provider-extension-id");
+  provider->SetKey(shill::kTypeProperty,
+                   base::Value(shill::kProviderThirdPartyVpn));
+  provider->SetKey(shill::kHostProperty,
+                   base::Value("third-party-vpn-provider-extension-id"));
   EXPECT_TRUE(SetProperty(shill::kProviderProperty, std::move(provider)));
   SignalInitialPropertiesReceived();
   EXPECT_EQ(network_state_.vpn_provider_type(), shill::kProviderThirdPartyVpn);

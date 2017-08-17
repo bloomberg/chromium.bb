@@ -149,7 +149,7 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kUrlKey, (*it)->url.spec());
+  dict.SetKey(kUrlKey, base::Value((*it)->url.spec()));
 
   std::string body;
   base::JSONWriter::Write(dict, &body);

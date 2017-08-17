@@ -97,8 +97,8 @@ void RestoreOfTypeFromProtobuf(
   for (const auto& key_digest : key_digest_pairs) {
     if (!key_digest.has_key() || !key_digest.has_digest())
       continue;
-    type_dict->SetStringWithoutPathExpansion(
-        key_digest.key(), base::UintToString(key_digest.digest()));
+    type_dict->SetKey(key_digest.key(),
+                      base::Value(base::UintToString(key_digest.digest())));
   }
 }
 

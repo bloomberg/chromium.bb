@@ -378,11 +378,10 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
     // Add IPConfigs
     base::DictionaryValue ipconfig;
-    ipconfig.SetStringWithoutPathExpansion(shill::kAddressProperty, "0.0.0.0");
-    ipconfig.SetStringWithoutPathExpansion(shill::kGatewayProperty, "0.0.0.1");
+    ipconfig.SetKey(shill::kAddressProperty, base::Value("0.0.0.0"));
+    ipconfig.SetKey(shill::kGatewayProperty, base::Value("0.0.0.1"));
     ipconfig.SetKey(shill::kPrefixlenProperty, base::Value(0));
-    ipconfig.SetStringWithoutPathExpansion(shill::kMethodProperty,
-                                           shill::kTypeIPv4);
+    ipconfig.SetKey(shill::kMethodProperty, base::Value(shill::kTypeIPv4));
     ip_config_test->AddIPConfig(kIPConfigPath, ipconfig);
 
     // Add Devices
@@ -424,8 +423,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     service_test_->SetServiceProperty(kWifi1ServicePath, shill::kDeviceProperty,
                                       base::Value(kWifiDevicePath));
     base::DictionaryValue static_ipconfig;
-    static_ipconfig.SetStringWithoutPathExpansion(shill::kAddressProperty,
-                                                  "1.2.3.4");
+    static_ipconfig.SetKey(shill::kAddressProperty, base::Value("1.2.3.4"));
     service_test_->SetServiceProperty(
         kWifi1ServicePath, shill::kStaticIPConfigProperty, static_ipconfig);
     base::ListValue frequencies1;

@@ -192,34 +192,31 @@ void SetShillProperties(const ConfigType cert_config_type,
       return;
     }
     case CONFIG_TYPE_OPENVPN: {
-      properties->SetStringWithoutPathExpansion(shill::kOpenVPNPinProperty,
-                                                kDefaultTPMPin);
-      properties->SetStringWithoutPathExpansion(
-          shill::kOpenVPNClientCertIdProperty, pkcs11_id);
+      properties->SetKey(shill::kOpenVPNPinProperty,
+                         base::Value(kDefaultTPMPin));
+      properties->SetKey(shill::kOpenVPNClientCertIdProperty,
+                         base::Value(pkcs11_id));
       break;
     }
     case CONFIG_TYPE_IPSEC: {
-      properties->SetStringWithoutPathExpansion(shill::kL2tpIpsecPinProperty,
-                                                kDefaultTPMPin);
-      properties->SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertSlotProperty, base::IntToString(tpm_slot));
-      properties->SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, pkcs11_id);
+      properties->SetKey(shill::kL2tpIpsecPinProperty,
+                         base::Value(kDefaultTPMPin));
+      properties->SetKey(shill::kL2tpIpsecClientCertSlotProperty,
+                         base::Value(base::IntToString(tpm_slot)));
+      properties->SetKey(shill::kL2tpIpsecClientCertIdProperty,
+                         base::Value(pkcs11_id));
       break;
     }
     case CONFIG_TYPE_EAP: {
-      properties->SetStringWithoutPathExpansion(shill::kEapPinProperty,
-                                                kDefaultTPMPin);
+      properties->SetKey(shill::kEapPinProperty, base::Value(kDefaultTPMPin));
       std::string key_id =
           base::StringPrintf("%i:%s", tpm_slot, pkcs11_id.c_str());
 
       // Shill requires both CertID and KeyID for TLS connections, despite the
       // fact that by convention they are the same ID, because one identifies
       // the certificate and the other the private key.
-      properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                                key_id);
-      properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
-                                                key_id);
+      properties->SetKey(shill::kEapCertIdProperty, base::Value(key_id));
+      properties->SetKey(shill::kEapKeyIdProperty, base::Value(key_id));
       break;
     }
   }
@@ -232,31 +229,28 @@ void SetEmptyShillProperties(const ConfigType cert_config_type,
       return;
     }
     case CONFIG_TYPE_OPENVPN: {
-      properties->SetStringWithoutPathExpansion(shill::kOpenVPNPinProperty,
-                                                std::string());
-      properties->SetStringWithoutPathExpansion(
-          shill::kOpenVPNClientCertIdProperty, std::string());
+      properties->SetKey(shill::kOpenVPNPinProperty,
+                         base::Value(std::string()));
+      properties->SetKey(shill::kOpenVPNClientCertIdProperty,
+                         base::Value(std::string()));
       break;
     }
     case CONFIG_TYPE_IPSEC: {
-      properties->SetStringWithoutPathExpansion(shill::kL2tpIpsecPinProperty,
-                                                std::string());
-      properties->SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertSlotProperty, std::string());
-      properties->SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, std::string());
+      properties->SetKey(shill::kL2tpIpsecPinProperty,
+                         base::Value(std::string()));
+      properties->SetKey(shill::kL2tpIpsecClientCertSlotProperty,
+                         base::Value(std::string()));
+      properties->SetKey(shill::kL2tpIpsecClientCertIdProperty,
+                         base::Value(std::string()));
       break;
     }
     case CONFIG_TYPE_EAP: {
-      properties->SetStringWithoutPathExpansion(shill::kEapPinProperty,
-                                                std::string());
+      properties->SetKey(shill::kEapPinProperty, base::Value(std::string()));
       // Shill requires both CertID and KeyID for TLS connections, despite the
       // fact that by convention they are the same ID, because one identifies
       // the certificate and the other the private key.
-      properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                                std::string());
-      properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
-                                                std::string());
+      properties->SetKey(shill::kEapCertIdProperty, base::Value(std::string()));
+      properties->SetKey(shill::kEapKeyIdProperty, base::Value(std::string()));
       break;
     }
   }

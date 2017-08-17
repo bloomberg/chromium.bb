@@ -159,7 +159,7 @@ void GetMetaInfo(const BookmarkNode& node,
   if (meta_info) {
     BookmarkNode::MetaInfoMap::const_iterator itr;
     for (itr = meta_info->begin(); itr != meta_info->end(); ++itr) {
-      value->SetStringWithoutPathExpansion(itr->first, itr->second);
+      value->SetKey(itr->first, base::Value(itr->second));
     }
   }
   id_to_meta_info_map->Set(base::Int64ToString(node.id()), std::move(value));

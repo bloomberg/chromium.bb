@@ -30,9 +30,8 @@ void ExtensionMigrator::StartLoading() {
       IsAppPresent(old_id_) || IsAppPresent(new_id_);
   if (should_have_extension) {
     std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-    entry->SetStringWithoutPathExpansion(
-        ExternalProviderImpl::kExternalUpdateUrl,
-        extension_urls::GetWebstoreUpdateUrl().spec());
+    entry->SetKey(ExternalProviderImpl::kExternalUpdateUrl,
+                  base::Value(extension_urls::GetWebstoreUpdateUrl().spec()));
 
     prefs_->SetWithoutPathExpansion(new_id_, std::move(entry));
   }

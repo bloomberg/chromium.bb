@@ -1394,8 +1394,7 @@ void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
        it != quic_server_info_map.rend(); ++it) {
     const QuicServerId& server_id = it->first;
     auto quic_server_pref_dict = base::MakeUnique<base::DictionaryValue>();
-    quic_server_pref_dict->SetStringWithoutPathExpansion(kServerInfoKey,
-                                                         it->second);
+    quic_server_pref_dict->SetKey(kServerInfoKey, base::Value(it->second));
     quic_servers_dict->SetWithoutPathExpansion(
         server_id.ToString(), std::move(quic_server_pref_dict));
   }
@@ -1449,13 +1448,13 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
         base::DictionaryValue* entry_dict = nullptr;
         bool result = json_list->GetDictionary(json_list_index, &entry_dict);
         DCHECK(result);
-        entry_dict->SetStringWithoutPathExpansion(
-            kBrokenUntilKey, base::Int64ToString(expiration_int64));
+        entry_dict->SetKey(kBrokenUntilKey,
+                           base::Value(base::Int64ToString(expiration_int64)));
       } else {
         base::DictionaryValue entry_dict;
         AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
-        entry_dict.SetStringWithoutPathExpansion(
-            kBrokenUntilKey, base::Int64ToString(expiration_int64));
+        entry_dict.SetKey(kBrokenUntilKey,
+                          base::Value(base::Int64ToString(expiration_int64)));
         json_list->GetList().push_back(std::move(entry_dict));
       }
     }

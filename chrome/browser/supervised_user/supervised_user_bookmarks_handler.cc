@@ -172,7 +172,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
     for (const auto& folder : folders) {
       std::unique_ptr<base::DictionaryValue> node(new base::DictionaryValue);
       node->SetKey(kId, base::Value(folder.id));
-      node->SetStringWithoutPathExpansion(kName, folder.name);
+      node->SetKey(kName, base::Value(folder.name));
       node->SetWithoutPathExpansion(kChildren,
                                     base::MakeUnique<base::ListValue>());
       if (!AddNodeToTree(folder.parent_id, std::move(node)))
@@ -198,8 +198,8 @@ void SupervisedUserBookmarksHandler::AddLinksToTree() {
       LOG(WARNING) << "Got invalid URL: " << link.url;
       continue;
     }
-    node->SetStringWithoutPathExpansion(kUrl, url.spec());
-    node->SetStringWithoutPathExpansion(kName, link.name);
+    node->SetKey(kUrl, base::Value(url.spec()));
+    node->SetKey(kName, base::Value(link.name));
     if (!AddNodeToTree(link.parent_id, std::move(node))) {
       LOG(WARNING) << "SupervisedUserBookmarksHandler::AddLinksToTree"
                    << " failed to add link (url,name,parent): "

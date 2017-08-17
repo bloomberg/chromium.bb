@@ -112,10 +112,9 @@ scoped_refptr<extensions::Extension> CreateTestExtension(
     const std::string& extension_id) {
   base::DictionaryValue manifest;
   std::string error;
-  manifest.SetStringWithoutPathExpansion(extensions::manifest_keys::kVersion,
-                                         "1");
-  manifest.SetStringWithoutPathExpansion(extensions::manifest_keys::kName,
-                                         "TestExtension");
+  manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1"));
+  manifest.SetKey(extensions::manifest_keys::kName,
+                  base::Value("TestExtension"));
   return extensions::Extension::Create(
       base::FilePath(), extensions::Manifest::UNPACKED, manifest,
       extensions::Extension::NO_FLAGS, extension_id, &error);

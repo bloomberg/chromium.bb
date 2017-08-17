@@ -112,7 +112,7 @@ void SetPerDisplayPref(PrefService* prefs,
     display_prefs_weak = display_prefs.get();
     shelf_prefs->Set(display_key, std::move(display_prefs));
   }
-  display_prefs_weak->SetStringWithoutPathExpansion(pref_key, value);
+  display_prefs_weak->SetKey(pref_key, base::Value(value));
 }
 
 ShelfAlignment AlignmentFromPref(const std::string& value) {

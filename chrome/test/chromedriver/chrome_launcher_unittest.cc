@@ -170,10 +170,10 @@ TEST(PrepareUserDataDir, CustomPrefs) {
 
   base::DictionaryValue prefs;
   prefs.SetString("myPrefsKey", "ok");
-  prefs.SetStringWithoutPathExpansion("pref.sub", "1");
+  prefs.SetKey("pref.sub", base::Value("1"));
   base::DictionaryValue local_state;
   local_state.SetString("myLocalKey", "ok");
-  local_state.SetStringWithoutPathExpansion("local.state.sub", "2");
+  local_state.SetKey("local.state.sub", base::Value("2"));
   Status status =
       internal::PrepareUserDataDir(temp_dir.GetPath(), &prefs, &local_state);
   ASSERT_EQ(kOk, status.code());

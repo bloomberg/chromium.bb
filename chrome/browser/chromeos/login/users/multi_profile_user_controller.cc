@@ -214,8 +214,7 @@ void MultiProfileUserController::SetCachedValue(
     const std::string& behavior) {
   DictionaryPrefUpdate update(local_state_,
                               prefs::kCachedMultiProfileUserBehavior);
-  update->SetStringWithoutPathExpansion(user_email,
-                                        SanitizeBehaviorValue(behavior));
+  update->SetKey(user_email, base::Value(SanitizeBehaviorValue(behavior)));
 }
 
 void MultiProfileUserController::CheckSessionUsers() {

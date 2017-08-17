@@ -180,8 +180,8 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
 
   // Create the expected value.
   auto property_dict_value = base::MakeUnique<base::DictionaryValue>();
-  property_dict_value->SetStringWithoutPathExpansion(
-      shill::kGeoMacAddressProperty, "01:23:45:67:89:AB");
+  property_dict_value->SetKey(shill::kGeoMacAddressProperty,
+                              base::Value("01:23:45:67:89:AB"));
   auto type_entry_value = base::MakeUnique<base::ListValue>();
   type_entry_value->Append(std::move(property_dict_value));
   base::DictionaryValue type_dict_value;

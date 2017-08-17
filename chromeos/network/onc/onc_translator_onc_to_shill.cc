@@ -124,8 +124,7 @@ void LocalTranslator::TranslateEthernet() {
   const char* shill_type = shill::kTypeEthernet;
   if (authentication == ::onc::ethernet::k8021X)
     shill_type = shill::kTypeEthernetEap;
-  shill_dictionary_->SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                                   shill_type);
+  shill_dictionary_->SetKey(shill::kTypeProperty, base::Value(shill_type));
 
   CopyFieldsAccordingToSignature();
 }
@@ -165,8 +164,8 @@ void LocalTranslator::TranslateOpenVPN() {
                                                &cert_kus)) {
     cert_kus->GetString(0, &cert_ku);
   }
-  shill_dictionary_->SetStringWithoutPathExpansion(
-      shill::kOpenVPNRemoteCertKUProperty, cert_ku);
+  shill_dictionary_->SetKey(shill::kOpenVPNRemoteCertKUProperty,
+                            base::Value(cert_ku));
 
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
@@ -208,8 +207,8 @@ void LocalTranslator::TranslateVPN() {
     if (onc_third_party_vpn &&
         onc_third_party_vpn->GetStringWithoutPathExpansion(
             ::onc::third_party_vpn::kExtensionID, &onc_extension_id)) {
-      shill_dictionary_->SetStringWithoutPathExpansion(
-          shill::kProviderHostProperty, onc_extension_id);
+      shill_dictionary_->SetKey(shill::kProviderHostProperty,
+                                base::Value(onc_extension_id));
     }
   } else {
     CopyFieldFromONCToShill(::onc::vpn::kHost, shill::kProviderHostProperty);
@@ -225,14 +224,14 @@ void LocalTranslator::TranslateWiFi() {
     TranslateWithTableAndSet(security, kWiFiSecurityTable,
                              shill::kSecurityClassProperty);
     if (security == ::onc::wifi::kWEP_8021X) {
-      shill_dictionary_->SetStringWithoutPathExpansion(
-          shill::kEapKeyMgmtProperty, shill::kKeyManagementIEEE8021X);
+      shill_dictionary_->SetKey(shill::kEapKeyMgmtProperty,
+                                base::Value(shill::kKeyManagementIEEE8021X));
     }
   }
 
   // We currently only support managed and no adhoc networks.
-  shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,
-                                                   shill::kModeManaged);
+  shill_dictionary_->SetKey(shill::kModeProperty,
+                            base::Value(shill::kModeManaged));
 
   bool allow_gateway_arp_polling;
   if (onc_object_->GetBooleanWithoutPathExpansion(
@@ -273,12 +272,12 @@ void LocalTranslator::TranslateEAP() {
     std::string pkcs11_id;
     onc_object_->GetStringWithoutPathExpansion(
         ::onc::client_cert::kClientCertPKCS11Id, &pkcs11_id);
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kEapPinProperty, chromeos::client_cert::kDefaultTPMPin);
-    shill_dictionary_->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
-                                                     pkcs11_id);
-    shill_dictionary_->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
-                                                     pkcs11_id);
+    shill_dictionary_->SetKey(
+        shill::kEapPinProperty,
+        base::Value(chromeos::client_cert::kDefaultTPMPin));
+    shill_dictionary_->SetKey(shill::kEapCertIdProperty,
+                              base::Value(pkcs11_id));
+    shill_dictionary_->SetKey(shill::kEapKeyIdProperty, base::Value(pkcs11_id));
   }
 
   CopyFieldsAccordingToSignature();
@@ -319,8 +318,8 @@ void LocalTranslator::TranslateNetworkConfiguration() {
         ConvertOncProxySettingsToProxyConfig(*proxy_settings);
     std::string proxy_config_str;
     base::JSONWriter::Write(*proxy_config.get(), &proxy_config_str);
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kProxyConfigProperty, proxy_config_str);
+    shill_dictionary_->SetKey(shill::kProxyConfigProperty,
+                              base::Value(proxy_config_str));
   }
 
   CopyFieldsAccordingToSignature();
@@ -381,8 +380,7 @@ void LocalTranslator::TranslateWithTableAndSet(
     const std::string& shill_property_name) {
   std::string shill_value;
   if (TranslateStringToShill(table, onc_value, &shill_value)) {
-    shill_dictionary_->SetStringWithoutPathExpansion(shill_property_name,
-                                                     shill_value);
+    shill_dictionary_->SetKey(shill_property_name, base::Value(shill_value));
     return;
   }
   // As we previously validate ONC, this case should never occur. If it still

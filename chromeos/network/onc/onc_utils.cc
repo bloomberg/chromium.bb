@@ -250,7 +250,7 @@ void ExpandField(const std::string& fieldname,
                                        email);
   }
 
-  onc_object->SetStringWithoutPathExpansion(fieldname, user_string);
+  onc_object->SetKey(fieldname, base::Value(user_string));
 }
 
 void ExpandStringsInOncObject(
@@ -326,9 +326,9 @@ void FillInHexSSIDField(base::DictionaryValue* wifi_fields) {
     NET_LOG(ERROR) << "Found empty SSID field.";
     return;
   }
-  wifi_fields->SetStringWithoutPathExpansion(
+  wifi_fields->SetKey(
       ::onc::wifi::kHexSSID,
-      base::HexEncode(ssid_string.c_str(), ssid_string.size()));
+      base::Value(base::HexEncode(ssid_string.c_str(), ssid_string.size())));
 }
 
 namespace {
@@ -589,7 +589,7 @@ bool ResolveSingleCertRef(const CertPEMsByGUIDMap& certs_by_guid,
     return false;
 
   onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
-  onc_object->SetStringWithoutPathExpansion(key_pem, pem_encoded);
+  onc_object->SetKey(key_pem, base::Value(pem_encoded));
   return true;
 }
 
@@ -914,7 +914,7 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
   // Only prefix the host with a non-default scheme.
   if (server.scheme() != default_scheme)
     host = SchemeToString(server.scheme()) + "://" + host;
-  url_dict->SetStringWithoutPathExpansion(::onc::proxy::kHost, host);
+  url_dict->SetKey(::onc::proxy::kHost, base::Value(host));
   url_dict->SetKey(::onc::proxy::kPort,
                    base::Value(server.host_port_pair().port()));
   dict->SetWithoutPathExpansion(onc_scheme, std::move(url_dict));
@@ -980,22 +980,21 @@ std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
     return nullptr;
   switch (mode) {
     case ProxyPrefs::MODE_DIRECT: {
-      proxy_settings->SetStringWithoutPathExpansion(::onc::proxy::kType,
-                                                    ::onc::proxy::kDirect);
+      proxy_settings->SetKey(::onc::proxy::kType,
+                             base::Value(::onc::proxy::kDirect));
       break;
     }
     case ProxyPrefs::MODE_AUTO_DETECT: {
-      proxy_settings->SetStringWithoutPathExpansion(::onc::proxy::kType,
-                                                    ::onc::proxy::kWPAD);
+      proxy_settings->SetKey(::onc::proxy::kType,
+                             base::Value(::onc::proxy::kWPAD));
       break;
     }
     case ProxyPrefs::MODE_PAC_SCRIPT: {
-      proxy_settings->SetStringWithoutPathExpansion(::onc::proxy::kType,
-                                                    ::onc::proxy::kPAC);
+      proxy_settings->SetKey(::onc::proxy::kType,
+                             base::Value(::onc::proxy::kPAC));
       std::string pac_url;
       proxy_config->GetPacUrl(&pac_url);
-      proxy_settings->SetStringWithoutPathExpansion(::onc::proxy::kPAC,
-                                                    pac_url);
+      proxy_settings->SetKey(::onc::proxy::kPAC, base::Value(pac_url));
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
@@ -1213,11 +1212,9 @@ void ImportNetworksForUser(const user_manager::User* user,
     ui_data->FillDictionary(&ui_data_dict);
     std::string ui_data_json;
     base::JSONWriter::Write(ui_data_dict, &ui_data_json);
-    shill_dict->SetStringWithoutPathExpansion(shill::kUIDataProperty,
-                                              ui_data_json);
+    shill_dict->SetKey(shill::kUIDataProperty, base::Value(ui_data_json));
 
-    shill_dict->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                              profile->path);
+    shill_dict->SetKey(shill::kProfileProperty, base::Value(profile->path));
 
     std::string type;
     shill_dict->GetStringWithoutPathExpansion(shill::kTypeProperty, &type);

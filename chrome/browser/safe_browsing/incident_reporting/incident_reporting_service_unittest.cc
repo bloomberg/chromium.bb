@@ -1313,10 +1313,10 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   std::unique_ptr<base::DictionaryValue> incidents_sent(
       new base::DictionaryValue());
   auto type_dict = base::MakeUnique<base::DictionaryValue>();
-  type_dict->SetStringWithoutPathExpansion("foo", "47");
+  type_dict->SetKey("foo", base::Value("47"));
   incidents_sent->SetWithoutPathExpansion(omnibox_type, std::move(type_dict));
   type_dict = base::MakeUnique<base::DictionaryValue>();
-  type_dict->SetStringWithoutPathExpansion("bar", "43");
+  type_dict->SetKey("bar", base::Value("43"));
   incidents_sent->SetWithoutPathExpansion(preference_type,
                                           std::move(type_dict));
 

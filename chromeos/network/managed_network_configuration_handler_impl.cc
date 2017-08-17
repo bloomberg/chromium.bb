@@ -288,9 +288,9 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   // included for ONC validation and translation to Shill properties.
   std::unique_ptr<base::DictionaryValue> user_settings_copy(
       user_settings.DeepCopy());
-  user_settings_copy->SetStringWithoutPathExpansion(
+  user_settings_copy->SetKey(
       ::onc::network_config::kType,
-      network_util::TranslateShillTypeToONC(state->type()));
+      base::Value(network_util::TranslateShillTypeToONC(state->type())));
   user_settings_copy->MergeDictionary(&user_settings);
 
   // Validate the ONC dictionary. We are liberal and ignore unknown field
@@ -632,8 +632,7 @@ void ManagedNetworkConfigurationHandlerImpl::
                       existing_properties));
     return;
   }
-  shill_properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                 profile);
+  shill_properties.SetKey(shill::kProfileProperty, base::Value(profile));
 
   if (!shill_property_util::CopyIdentifyingProperties(
           existing_properties,
@@ -833,8 +832,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
 
   // Get the hardware MAC address from the DeviceState.
   if (!device_state->mac_address().empty()) {
-    properties->SetStringWithoutPathExpansion(
-        shill::kAddressProperty, device_state->mac_address());
+    properties->SetKey(shill::kAddressProperty,
+                       base::Value(device_state->mac_address()));
   }
 
   // Convert IPConfig dictionary to a ListValue.
@@ -863,8 +862,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
         network_state_handler_->GetNetworkState(service_path);
     if (state && !state->guid().empty()) {
       guid = state->guid();
-      shill_properties_copy->SetStringWithoutPathExpansion(shill::kGuidProperty,
-                                                           guid);
+      shill_properties_copy->SetKey(shill::kGuidProperty, base::Value(guid));
     } else {
       LOG(ERROR) << "Network has no GUID specified: " << service_path;
     }

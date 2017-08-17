@@ -138,8 +138,7 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
       << "Shared profile must be added before any user profile.";
 
   auto profile = base::MakeUnique<ProfileProperties>();
-  profile->properties.SetStringWithoutPathExpansion(shill::kUserHashProperty,
-                                                    userhash);
+  profile->properties.SetKey(shill::kUserHashProperty, base::Value(userhash));
   profile->path = profile_path;
   profiles_.emplace_back(std::move(profile));
 

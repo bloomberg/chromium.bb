@@ -48,12 +48,11 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
             "%02X:%02X:%02X:%02X:%02X:%02X", i, j, 3, 4, 5, 6);
         std::string channel = base::IntToString(i * 10 + j);
         std::string strength = base::IntToString(i * 100 + j);
-        properties.SetStringWithoutPathExpansion(shill::kGeoMacAddressProperty,
-                                                 mac_address);
-        properties.SetStringWithoutPathExpansion(shill::kGeoChannelProperty,
-                                                 channel);
-        properties.SetStringWithoutPathExpansion(
-            shill::kGeoSignalStrengthProperty, strength);
+        properties.SetKey(shill::kGeoMacAddressProperty,
+                          base::Value(mac_address));
+        properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
+        properties.SetKey(shill::kGeoSignalStrengthProperty,
+                          base::Value(strength));
         manager_test_->AddGeoNetwork(shill::kGeoWifiAccessPointsProperty,
                                      properties);
       }

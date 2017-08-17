@@ -46,7 +46,7 @@ void StateStore::Transaction::MarkAsReported(IncidentType type,
     type_dict = incidents_sent->SetDictionaryWithoutPathExpansion(
         type_string, base::MakeUnique<base::DictionaryValue>());
   }
-  type_dict->SetStringWithoutPathExpansion(key, base::UintToString(digest));
+  type_dict->SetKey(key, base::Value(base::UintToString(digest)));
 }
 
 void StateStore::Transaction::Clear(IncidentType type, const std::string& key) {

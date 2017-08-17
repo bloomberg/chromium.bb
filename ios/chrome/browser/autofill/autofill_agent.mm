@@ -815,8 +815,8 @@ void GetFormAndField(autofill::FormData* form,
 
   const std::vector<autofill::FormFieldData>& fields = form.fields;
   for (const auto& fieldData : fields) {
-    fieldsData->SetStringWithoutPathExpansion(base::UTF16ToUTF8(fieldData.name),
-                                              fieldData.value);
+    fieldsData->SetKey(base::UTF16ToUTF8(fieldData.name),
+                       base::Value(fieldData.value));
   }
   formData->Set("fields", std::move(fieldsData));
 
@@ -869,8 +869,8 @@ void GetFormAndField(autofill::FormData* form,
       autofill::AutofillType type(field->Type());
       if (type.IsUnknown())
         continue;
-      formJSONData->SetStringWithoutPathExpansion(
-          base::UTF16ToUTF8(field->name), type.ToString());
+      formJSONData->SetKey(base::UTF16ToUTF8(field->name),
+                           base::Value(type.ToString()));
     }
     predictionData.SetWithoutPathExpansion(base::UTF16ToUTF8(formData.name),
                                            std::move(formJSONData));
