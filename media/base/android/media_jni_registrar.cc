@@ -10,7 +10,6 @@
 
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/android/audio_record_input.h"
-#include "media/audio/android/audio_track_output_stream.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_drm_storage_bridge.h"
 #include "media/base/android/media_player_bridge.h"
@@ -22,8 +21,6 @@ namespace media {
 static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     {"AudioManagerAndroid", AudioManagerAndroid::RegisterAudioManager},
     {"AudioRecordInput", AudioRecordInputStream::RegisterAudioRecordInput},
-    {"AudioTrackOutputStream",
-     AudioTrackOutputStream::RegisterAudioTrackOutputStream},
     {"MediaDrmBridge", MediaDrmBridge::RegisterMediaDrmBridge},
     {"MediaDrmStorageBridge",
      MediaDrmStorageBridge::RegisterMediaDrmStorageBridge},

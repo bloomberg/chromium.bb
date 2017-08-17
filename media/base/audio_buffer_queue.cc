@@ -60,41 +60,6 @@ int AudioBufferQueue::InternalRead(int frames,
                                    int source_frame_offset,
                                    int dest_frame_offset,
                                    AudioBus* dest) {
-  if (buffers_.empty())
-    return 0;
-
-  if ((*current_buffer_)->IsBitstreamFormat()) {
-    // For compressed bitstream formats, a partial compressed audio frame is
-    // less useful, since it can't generate any PCM frame out of it. Also, we
-    // want to keep the granularity as fine as possible so that discarding a
-    // small chunk of PCM frames is still possible. Thus, we only transfer a
-    // complete AudioBuffer at a time.
-    DCHECK(!dest_frame_offset ||
-           dest_frame_offset == dest->GetBitstreamFrames());
-    DCHECK(!source_frame_offset);
-
-    scoped_refptr<AudioBuffer> buffer = *current_buffer_;
-    int taken = buffer->frame_count();
-
-    // if |dest| is NULL, there's no need to copy.
-    if (dest)
-      buffer->ReadFrames(buffer->frame_count(), 0, dest_frame_offset, dest);
-
-    if (advance_position) {
-      // Update the appropriate values since |taken| frames have been copied
-      // out.
-      frames_ -= taken;
-      DCHECK_GE(frames_, 0);
-
-      // Remove any buffers before the current buffer as there is no going
-      // backwards.
-      buffers_.pop_front();
-      current_buffer_ = buffers_.begin();
-    }
-
-    return taken;
-  }
-
   // Counts how many frames are actually read from the buffer queue.
   int taken = 0;
   BufferQueue::iterator current_buffer = current_buffer_;

@@ -72,7 +72,6 @@ AudioSyncReader::AudioSyncReader(
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
   output_bus_ = AudioBus::WrapMemory(params, buffer->audio);
   output_bus_->Zero();
-  output_bus_->set_is_bitstream_format(params.IsBitstreamFormat());
 }
 
 AudioSyncReader::~AudioSyncReader() {
@@ -200,21 +199,10 @@ void AudioSyncReader::Read(AudioBus* dest) {
 
   trailing_renderer_missed_callback_count_ = 0;
 
-  // Zeroed buffers may be discarded immediately when outputing compressed
-  // bitstream.
-  if (mute_audio_ && !output_bus_->is_bitstream_format()) {
+  if (mute_audio_)
     dest->Zero();
-    return;
-  }
-
-  if (output_bus_->is_bitstream_format()) {
-    // For bitstream formats, we need the real data size and PCM frame count.
-    AudioOutputBuffer* buffer =
-        reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
-    output_bus_->SetBitstreamDataSize(buffer->params.bitstream_data_size);
-    output_bus_->SetBitstreamFrames(buffer->params.bitstream_frames);
-  }
-  output_bus_->CopyTo(dest);
+  else
+    output_bus_->CopyTo(dest);
 }
 
 void AudioSyncReader::Close() {

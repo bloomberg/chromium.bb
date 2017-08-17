@@ -463,7 +463,6 @@ void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
   output_bus_ = AudioBus::WrapMemory(audio_parameters_, buffer->audio);
-  output_bus_->set_is_bitstream_format(audio_parameters_.IsBitstreamFormat());
 }
 
 // Called whenever we receive notifications about pending data.
@@ -501,11 +500,6 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
   // memory.
   render_callback_->Render(delay, delay_timestamp, frames_skipped,
                            output_bus_.get());
-
-  if (audio_parameters_.IsBitstreamFormat()) {
-    buffer->params.bitstream_data_size = output_bus_->GetBitstreamDataSize();
-    buffer->params.bitstream_frames = output_bus_->GetBitstreamFrames();
-  }
 }
 
 bool AudioOutputDevice::AudioThreadCallback::

@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "jni/AudioManagerAndroid_jni.h"
 #include "media/audio/android/audio_record_input.h"
-#include "media/audio/android/audio_track_output_stream.h"
 #include "media/audio/android/opensles_input.h"
 #include "media/audio/android/opensles_output.h"
 #include "media/audio/audio_device_description.h"
@@ -241,8 +240,9 @@ AudioOutputStream* AudioManagerAndroid::MakeBitstreamOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DCHECK(params.IsBitstreamFormat());
-  return new AudioTrackOutputStream(this, params);
+  // TODO(tsunghung): add output stream for audio bitstream formats.
+  NOTREACHED();
+  return nullptr;
 }
 
 AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(

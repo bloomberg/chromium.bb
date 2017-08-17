@@ -249,27 +249,6 @@ TEST(AudioBufferTest, FrameSize) {
   EXPECT_EQ(2, buffer->frame_count());  // now 4 channels of 32-bit data
 }
 
-TEST(AudioBufferTest, ReadBitstream) {
-  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
-  const int channels = ChannelLayoutToChannelCount(channel_layout);
-  const int frames = 1024;
-  const size_t data_size = frames / 2;
-  const base::TimeDelta start_time;
-
-  scoped_refptr<AudioBuffer> buffer = MakeBitstreamAudioBuffer(
-      kSampleFormatEac3, channel_layout, channels, kSampleRate, 1, 1, frames,
-      data_size, start_time);
-  EXPECT_TRUE(buffer->IsBitstreamFormat());
-
-  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
-  buffer->ReadFrames(frames, 0, 0, bus.get());
-
-  EXPECT_TRUE(bus->is_bitstream_format());
-  EXPECT_EQ(frames, bus->GetBitstreamFrames());
-  EXPECT_EQ(data_size, bus->GetBitstreamDataSize());
-  VerifyBitstreamAudioBus(bus.get(), data_size, 1, 1);
-}
-
 TEST(AudioBufferTest, ReadU8) {
   const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
   const int channels = ChannelLayoutToChannelCount(channel_layout);
