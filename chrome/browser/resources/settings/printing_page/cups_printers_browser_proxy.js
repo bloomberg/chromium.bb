@@ -8,6 +8,22 @@
  */
 
 /**
+ * Enumeration of setup methods.
+ * @enum {string}
+ */
+var SetupMethod = {MANUAL: 'manual', AUTOMATIC: 'automatic'};
+
+/**
+ * @typedef {{
+ *   usbVendorId: number,
+ *   usbProductId: number,
+ *   usbVendorName: string,
+ *   usbProductName: string,
+ * }}
+ */
+var CupsUsbInfo;
+
+/**
  * @typedef {{
  *   ppdManufacturer: string,
  *   ppdModel: string,
@@ -23,6 +39,7 @@
  *   printerProtocol: string,
  *   printerQueue: string,
  *   printerStatus: string,
+ *   printerUsbInfo: (undefined|!CupsUsbInfo),
  * }}
  */
 var CupsPrinterInfo;
@@ -101,9 +118,10 @@ cr.define('settings', function() {
     getCupsPrinterPPDPath() {}
 
     /**
+     * @param {!SetupMethod} setupMethod
      * @param {!CupsPrinterInfo} newPrinter
      */
-    addCupsPrinter(newPrinter) {}
+    addCupsPrinter(setupMethod, newPrinter) {}
 
     startDiscoveringPrinters() {}
     stopDiscoveringPrinters() {}
@@ -130,11 +148,6 @@ cr.define('settings', function() {
      * @return {!Promise<!PrinterPpdMakeModel>}
      */
     getPrinterPpdManufacturerAndModel(printerId) {}
-
-    /**
-     * @param{string} printerId
-     */
-    addDiscoveredPrinter(printerId) {}
   }
 
   /**
@@ -157,8 +170,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    addCupsPrinter(newPrinter) {
-      chrome.send('addCupsPrinter', [newPrinter]);
+    addCupsPrinter(setupMethod, newPrinter) {
+      chrome.send('addCupsPrinter', [setupMethod, newPrinter]);
     }
 
     /** @override */
@@ -194,11 +207,6 @@ cr.define('settings', function() {
     /** @override */
     getPrinterPpdManufacturerAndModel(printerId) {
       return cr.sendWithPromise('getPrinterPpdManufacturerAndModel', printerId);
-    }
-
-    /** @override */
-    addDiscoveredPrinter(printerId) {
-      chrome.send('addDiscoveredPrinter', [printerId]);
     }
   }
 

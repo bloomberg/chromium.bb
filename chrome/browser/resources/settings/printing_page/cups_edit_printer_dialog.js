@@ -61,7 +61,7 @@ Polymer({
   onSaveTap_: function() {
     if (this.needsReconfigured_) {
       settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-          this.activePrinter);
+          SetupMethod.MANUAL, this.activePrinter);
     } else {
       settings.CupsPrintersBrowserProxyImpl.getInstance().updateCupsPrinter(
           this.activePrinter.printerId, this.activePrinter.printerName);

@@ -156,13 +156,16 @@ TEST_F(PrinterEventTrackerTest, InstalledPrinterUserPpd) {
 }
 
 TEST_F(PrinterEventTrackerTest, InstalledUsbPrinter) {
-  PrinterDetector::DetectedPrinter usb_printer;
-  usb_printer.ppd_search_data.usb_vendor_id = kVendorId;
-  usb_printer.ppd_search_data.usb_product_id = kProductId;
-  usb_printer.printer.set_manufacturer(kUsbManufacturer);
-  usb_printer.printer.set_model(kUsbModel);
-  usb_printer.printer.mutable_ppd_reference()->effective_make_and_model =
+  Printer test_printer;
+  test_printer.mutable_ppd_reference()->effective_make_and_model =
       kEffectiveMakeAndModel;
+
+  UsbPrinter usb_printer;
+  usb_printer.vendor_id = kVendorId;
+  usb_printer.model_id = kProductId;
+  usb_printer.manufacturer = kUsbManufacturer;
+  usb_printer.model = kUsbModel;
+  usb_printer.printer = test_printer;
 
   tracker_.RecordUsbPrinterInstalled(usb_printer,
                                      PrinterEventTracker::SetupMode::kUser);
@@ -209,11 +212,11 @@ TEST_F(PrinterEventTrackerTest, AbandonedNetworkPrinter) {
 }
 
 TEST_F(PrinterEventTrackerTest, AbandonedUsbPrinter) {
-  PrinterDetector::DetectedPrinter usb_printer;
-  usb_printer.ppd_search_data.usb_vendor_id = kVendorId;
-  usb_printer.ppd_search_data.usb_product_id = kProductId;
-  usb_printer.printer.set_manufacturer(kUsbManufacturer);
-  usb_printer.printer.set_model(kUsbModel);
+  UsbPrinter usb_printer;
+  usb_printer.vendor_id = kVendorId;
+  usb_printer.model_id = kProductId;
+  usb_printer.manufacturer = kUsbManufacturer;
+  usb_printer.model = kUsbModel;
 
   tracker_.RecordUsbSetupAbandoned(usb_printer);
 

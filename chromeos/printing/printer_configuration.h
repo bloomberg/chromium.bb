@@ -39,9 +39,6 @@ class CHROMEOS_EXPORT Printer {
 
     // True if the printer should be auto-configured and a PPD is unnecessary.
     bool autoconf = false;
-
-    // Explicitly support equivalence, to detect if a reference has changed.
-    bool operator==(const PpdReference& other) const;
   };
 
   // The location where the printer is stored.
