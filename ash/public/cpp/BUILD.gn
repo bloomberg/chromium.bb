@@ -27,6 +27,8 @@ component("ash_public_cpp") {
     "mus_property_mirror_ash.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
+    "scale_utility.cc",
+    "scale_utility.h",
     "session_types.h",
     "shelf_item.cc",
     "shelf_item.h",
