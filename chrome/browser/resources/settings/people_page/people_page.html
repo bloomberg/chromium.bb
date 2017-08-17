@@ -144,15 +144,21 @@
 </if>
           </template>
         </div>
-        <div class="settings-box two-line"
-            hidden="[[!showSignin_(syncStatus)]]">
-          <div>
-            $i18n{syncOverview}
-            <a target="_blank" href="$i18n{syncLearnMoreUrl}">
-              $i18n{learnMore}
-            </a>
+
+        <template is="dom-if" if="[[!syncStatus.signedIn]]">
+          <div class="settings-box two-line"
+              hidden="[[!syncStatus.signinAllowed]]">
+            <div class="start">
+              $i18n{syncOverview}
+              <a target="_blank" href="$i18n{syncLearnMoreUrl}">
+                $i18n{learnMore}
+              </a>
+            </div>
           </div>
-        </div>
+          <div class="settings-box" hidden="[[syncStatus.signinAllowed]]">
+            $i18n{syncDisabledByAdministrator}
+          </div>
+        </template>
 
 <if expr="not chromeos">
         <template is="dom-if" if="[[syncStatus.domain]]">

@@ -1266,6 +1266,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
 #endif  // defined(OS_CHROMEOS)
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
+    {"syncDisabledByAdministrator",
+     IDS_SETTINGS_SYNC_DISABLED_BY_ADMINISTRATOR},
     {"syncSignin", IDS_SETTINGS_SYNC_SIGNIN},
     {"syncDisconnect", IDS_SETTINGS_SYNC_DISCONNECT},
     {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
