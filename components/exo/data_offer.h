@@ -8,11 +8,17 @@
 #include <cstdint>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "ui/base/class_property.h"
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace ui {
 class OSExchangeData;
@@ -57,7 +63,9 @@ class DataOffer : public ui::PropertyHandler {
 
  private:
   DataOfferDelegate* const delegate_;
-  base::flat_set<std::string> mime_types_;
+
+  // Map between mime type and drop data bytes.
+  base::flat_map<std::string, scoped_refptr<base::RefCountedMemory>> drop_data_;
   base::flat_set<DndAction> source_actions_;
   DndAction dnd_action_;
   base::ObserverList<DataOfferObserver> observers_;

@@ -4,12 +4,48 @@
 
 #include "components/exo/data_offer.h"
 
+#include "base/files/file_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/exo/data_offer_delegate.h"
 #include "components/exo/data_offer_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 namespace exo {
+namespace {
+
+class RefCountedString16 : public base::RefCountedMemory {
+ public:
+  static scoped_refptr<RefCountedString16> TakeString(
+      base::string16&& to_destroy) {
+    scoped_refptr<RefCountedString16> self(new RefCountedString16);
+    to_destroy.swap(self->data_);
+    return self;
+  }
+
+  // Overridden from base::RefCountedMemory:
+  const unsigned char* front() const override {
+    return reinterpret_cast<const unsigned char*>(data_.data());
+  }
+  size_t size() const override { return data_.size() * sizeof(base::char16); }
+
+ protected:
+  ~RefCountedString16() override {}
+
+ private:
+  base::string16 data_;
+};
+
+void WriteFileDescriptor(base::ScopedFD fd,
+                         scoped_refptr<base::RefCountedMemory> memory) {
+  if (!base::WriteFileDescriptor(fd.get(),
+                                 reinterpret_cast<const char*>(memory->front()),
+                                 memory->size()))
+    DLOG(ERROR) << "Failed to write drop data";
+}
+
+}  // namespace
 
 DataOffer::DataOffer(DataOfferDelegate* delegate) : delegate_(delegate) {}
 
@@ -33,7 +69,15 @@ void DataOffer::Accept(const std::string& mime_type) {
 }
 
 void DataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
-  NOTIMPLEMENTED();
+  const auto it = drop_data_.find(mime_type);
+  if (it == drop_data_.end()) {
+    DLOG(ERROR) << "Unexpected mime type is requested";
+    return;
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&WriteFileDescriptor, std::move(fd), it->second));
 }
 
 void DataOffer::Finish() {
@@ -53,11 +97,16 @@ void DataOffer::SetSourceActions(
 }
 
 void DataOffer::SetDropData(const ui::OSExchangeData& data) {
-  DCHECK_EQ(0u, mime_types_.size());
-  if (data.HasString())
-    mime_types_.insert(ui::Clipboard::kMimeTypeText);
-  for (const std::string& mime_type : mime_types_) {
-    delegate_->OnOffer(mime_type);
+  DCHECK_EQ(0u, drop_data_.size());
+  if (data.HasString()) {
+    base::string16 string_content;
+    data.GetString(&string_content);
+    drop_data_.emplace(
+        std::string(ui::Clipboard::kMimeTypeText),
+        RefCountedString16::TakeString(std::move(string_content)));
+  }
+  for (const auto& pair : drop_data_) {
+    delegate_->OnOffer(pair.first);
   }
 }
 
