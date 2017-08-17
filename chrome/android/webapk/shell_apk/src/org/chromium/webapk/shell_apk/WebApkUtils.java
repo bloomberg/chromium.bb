@@ -158,6 +158,20 @@ public class WebApkUtils {
             return defaultBrowser;
         }
 
+        // If there is only one browser supporting WebAPK, and we can't decide which browser to use
+        // by looking up cache, metadata and default browser, open with that browser.
+        int availableBrowserCounter = 0;
+        String lastSupportedBrowser = null;
+        for (String packageName : installedBrowsers) {
+            if (availableBrowserCounter > 1) break;
+            if (sBrowsersSupportingWebApk.contains(packageName)) {
+                availableBrowserCounter++;
+                lastSupportedBrowser = packageName;
+            }
+        }
+        if (availableBrowserCounter == 1) {
+            return lastSupportedBrowser;
+        }
         return null;
     }
 
