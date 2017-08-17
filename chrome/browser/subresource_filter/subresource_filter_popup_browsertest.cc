@@ -31,18 +31,24 @@ const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
 
 // Tests for the subresource_filter popup blocker.
 class SubresourceFilterPopupBrowserTest : public SubresourceFilterBrowserTest {
+  void SetUpOnMainThread() override {
+    SubresourceFilterBrowserTest::SetUpOnMainThread();
+    Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
+    config.activation_options.should_strengthen_popup_blocker = true;
+    ResetConfiguration(std::move(config));
+    // Only necessary so we have a valid ruleset.
+    ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        NoConfiguration_AllowCreatingNewWindows) {
+  ResetConfiguration(Configuration::MakePresetForLiveRunOnPhishingSites());
   base::HistogramTester tester;
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   // Only configure |a_url| as a phishing URL.
   ConfigureAsPhishingURL(a_url);
-
-  // Only necessary so we have a valid ruleset.
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
   // Navigate to a_url, should not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -58,18 +64,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        BlockCreatingNewWindows) {
-  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
   base::HistogramTester tester;
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
   // Only configure |a_url| as a phishing URL.
   ConfigureAsPhishingURL(a_url);
-
-  // Only necessary so we have a valid ruleset.
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
   // Navigate to a_url, should trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -96,10 +96,26 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
+IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
+                       BlockCreatingNewWindows_LogsToConsole) {
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kDisallowNewWindowMessage);
+  web_contents()->SetDelegate(&console_observer);
+  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  ConfigureAsPhishingURL(a_url);
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool opened_window = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "openWindow()", &opened_window));
+  EXPECT_FALSE(opened_window);
+  console_observer.Wait();
+  EXPECT_EQ(kDisallowNewWindowMessage, console_observer.message());
+}
+
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
-  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
   base::HistogramTester tester;
   const char kWindowOpenPath[] =
       "/subresource_filter/window_open_spoof_click.html";
@@ -107,9 +123,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
   GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
   // Only configure |a_url| as a phishing URL.
   ConfigureAsPhishingURL(a_url);
-
-  // Only necessary so we have a valid ruleset.
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
   // Navigate to a_url, should trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -139,16 +152,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        BlockOpenURLFromTabInIframe) {
-  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
   const char popup_path[] = "/subresource_filter/iframe_spoof_click_popup.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", popup_path));
   // Only configure |a_url| as a phishing URL.
   ConfigureAsPhishingURL(a_url);
-
-  // Only necessary so we have a valid ruleset.
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
   // Navigate to a_url, should not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -164,15 +171,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        TraditionalWindowOpen_NotBlocked) {
-  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
   GURL url(GetTestUrl("/title2.html"));
   ConfigureAsPhishingURL(url);
   ui_test_utils::NavigateToURL(browser(), GetTestUrl("/title1.html"));
-
-  // Only necessary so we have a valid ruleset.
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
 
   // Should not trigger the popup blocker because internally opens the tab with
   // a user gesture.
