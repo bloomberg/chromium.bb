@@ -31,8 +31,6 @@ void AppCacheDispatcherHost::OnChannelConnected(int32_t peer_pid) {
 
   backend_impl_.Initialize(appcache_service_.get(), &frontend_proxy_,
                            process_id_);
-  swap_cache_callback_ = base::Bind(&AppCacheDispatcherHost::SwapCacheCallback,
-                                    weak_factory_.GetWeakPtr());
 }
 
 bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
@@ -212,8 +210,11 @@ void AppCacheDispatcherHost::OnSwapCache(int host_id, IPC::Message* reply_msg) {
 
   pending_reply_msg_.reset(reply_msg);
   if (appcache_service_.get()) {
-    if (!backend_impl_.SwapCacheWithCallback(host_id, swap_cache_callback_,
-                                             reply_msg)) {
+    if (!backend_impl_.SwapCacheWithCallback(
+            host_id,
+            base::BindOnce(&AppCacheDispatcherHost::SwapCacheCallback,
+                           weak_factory_.GetWeakPtr()),
+            reply_msg)) {
       bad_message::ReceivedBadMessage(this, bad_message::ACDH_SWAP_CACHE);
     }
     return;

@@ -27,9 +27,6 @@ class AppCacheHostTest : public testing::Test {
   AppCacheHostTest() {
     get_status_callback_ = base::BindRepeating(
         &AppCacheHostTest::GetStatusCallback, base::Unretained(this));
-    swap_cache_callback_ =
-        base::Bind(&AppCacheHostTest::SwapCacheCallback,
-                   base::Unretained(this));
   }
 
   class MockFrontend : public AppCacheFrontend {
@@ -152,7 +149,6 @@ class AppCacheHostTest : public testing::Test {
 
   // Mock callbacks we expect to receive from the 'host'
   content::GetStatusCallback get_status_callback_;
-  content::SwapCacheCallback swap_cache_callback_;
 
   AppCacheStatus last_status_result_;
   bool last_swap_result_;
@@ -186,7 +182,10 @@ TEST_F(AppCacheHostTest, Basic) {
   EXPECT_EQ(reinterpret_cast<void*>(2), last_callback_param_);
 
   last_swap_result_ = true;
-  host.SwapCacheWithCallback(swap_cache_callback_, reinterpret_cast<void*>(3));
+  host.SwapCacheWithCallback(
+      base::BindOnce(&AppCacheHostTest::SwapCacheCallback,
+                     base::Unretained(this)),
+      reinterpret_cast<void*>(3));
   EXPECT_FALSE(last_swap_result_);
   EXPECT_EQ(reinterpret_cast<void*>(3), last_callback_param_);
 }
