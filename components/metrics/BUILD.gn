@@ -132,6 +132,26 @@ static_library("metrics") {
   }
 }
 
+# The component metrics provider is a separate target because it depends upon
+# (the large) component_updater code, and is not needed for some entities that
+# depend on :metrics.
+static_library("component_metrics") {
+  sources = [
+    "component_metrics_provider.cc",
+    "component_metrics_provider.h",
+  ]
+
+  public_deps = [
+    "//components/metrics/proto",
+  ]
+
+  deps = [
+    ":metrics",
+    "//base",
+    "//components/component_updater",
+  ]
+}
+
 if (!is_ios) {
   static_library("gpu") {
     sources = [
@@ -374,6 +394,7 @@ source_set("unit_tests") {
   deps = [
     ":call_stack_profile_params",
     ":child_call_stacks",
+    ":component_metrics",
     ":metrics",
     ":net",
     ":profiler",

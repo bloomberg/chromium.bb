@@ -48,9 +48,13 @@ enum UpdateType {
 
 namespace component_updater {
 
-ComponentInfo::ComponentInfo(const std::string& id, const base::string16& name,
+ComponentInfo::ComponentInfo(const std::string& id,
+                             const std::string& fingerprint,
+                             const base::string16& name,
                              const base::Version& version)
-    : id(id), name(name), version(version) {}
+    : id(id), fingerprint(fingerprint), name(name), version(version) {}
+ComponentInfo::ComponentInfo(const ComponentInfo& other) = default;
+ComponentInfo::ComponentInfo(ComponentInfo&& other) = default;
 ComponentInfo::~ComponentInfo() {}
 
 CrxUpdateService::CrxUpdateService(
@@ -198,9 +202,20 @@ std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
   auto* const component = GetComponent(it->second);
   if (!component)
     return nullptr;
-  return base::MakeUnique<ComponentInfo>(GetCrxComponentID(*component),
-                                         base::UTF8ToUTF16(component->name),
-                                         component->version);
+  return base::MakeUnique<ComponentInfo>(
+      GetCrxComponentID(*component), component->fingerprint,
+      base::UTF8ToUTF16(component->name), component->version);
+}
+
+std::vector<ComponentInfo> CrxUpdateService::GetComponents() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::vector<ComponentInfo> result;
+  for (const auto& it : components_) {
+    result.push_back(ComponentInfo(it.first, it.second.fingerprint,
+                                   base::UTF8ToUTF16(it.second.name),
+                                   it.second.version));
+  }
+  return result;
 }
 
 OnDemandUpdater& CrxUpdateService::GetOnDemandUpdater() {
