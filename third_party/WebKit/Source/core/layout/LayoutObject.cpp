@@ -2357,16 +2357,19 @@ void LayoutObject::ComputeLayerHitTestRects(
 
   if (!HasLayer()) {
     LayoutObject* container = this->Container();
-    current_layer = container->EnclosingLayer();
-    if (container && current_layer->GetLayoutObject() != container) {
-      layer_offset.Move(container->OffsetFromAncestorContainer(
-          &current_layer->GetLayoutObject()));
-      // If the layer itself is scrolled, we have to undo the subtraction of its
-      // scroll offset since we want the offset relative to the scrolling
-      // content, not the element itself.
-      if (current_layer->GetLayoutObject().HasOverflowClip())
-        layer_offset.Move(
-            current_layer->GetLayoutBox()->ScrolledContentOffset());
+    if (container) {
+      current_layer = container->EnclosingLayer();
+      if (current_layer->GetLayoutObject() != container) {
+        layer_offset.Move(container->OffsetFromAncestorContainer(
+            &current_layer->GetLayoutObject()));
+        // If the layer itself is scrolled, we have to undo the subtraction of
+        // its scroll offset since we want the offset relative to the scrolling
+        // content, not the element itself.
+        if (current_layer->GetLayoutObject().HasOverflowClip()) {
+          layer_offset.Move(
+              current_layer->GetLayoutBox()->ScrolledContentOffset());
+        }
+      }
     }
   }
 
