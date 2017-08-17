@@ -674,11 +674,11 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
 }
 
-// PlzNavigate: Test that a renderer-initiated user-initiated navigation is NOT
+// PlzNavigate: Test that a renderer-initiated user-initiated navigation is
 // canceled if a renderer-initiated non-user-initiated request is issued in the
 // meantime.
 TEST_F(NavigatorTestWithBrowserSideNavigation,
-       RendererNonUserInitiatedNavigationDoesntCancelRendererUserInitiated) {
+       RendererNonUserInitiatedNavigationCancelsRendererUserInitiated) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
@@ -705,32 +705,20 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
     EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   }
 
-  // Now receive a renderer-initiated non-user-initiated request. Nothing should
-  // change.
-  {
-    CommonNavigationParams common_params;
-    common_params.url = kUrl2;
-    common_params.referrer = Referrer(kUrl0, blink::kWebReferrerPolicyDefault);
-    common_params.transition = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-    BeginNavigationParams begin_params(
-        std::string(),     // headers
-        net::LOAD_NORMAL,  // load_flags
-        false,             // has_user_gesture
-        false,             // skip_service_worker
-        REQUEST_CONTEXT_TYPE_SCRIPT,
-        blink::WebMixedContentContextType::kBlockable,
-        false,  // is_form_submission
-        url::Origin(kUrl0));
-    main_test_rfh()->OnMessageReceived(FrameHostMsg_BeginNavigation(
-        main_test_rfh()->GetRoutingID(), common_params, begin_params));
-  }
+  // Now receive a renderer-initiated non-user-initiated request. The previous
+  // navigation should be replaced.
+  auto non_user_initiated_navigation =
+      NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
+  non_user_initiated_navigation->SetTransition(ui::PAGE_TRANSITION_LINK);
+  non_user_initiated_navigation->SetHasUserGesture(false);
+  non_user_initiated_navigation->Start();
+
   NavigationRequest* request2 = node->navigation_request();
   ASSERT_TRUE(request2);
-  EXPECT_EQ(request1, request2);
-  EXPECT_EQ(kUrl1, request2->common_params().url);
+  EXPECT_NE(request1, request2);
+  EXPECT_EQ(kUrl2, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
-  EXPECT_TRUE(request2->begin_params().has_user_gesture);
+  EXPECT_FALSE(request2->begin_params().has_user_gesture);
   if (AreAllSitesIsolatedForTesting()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
@@ -738,7 +726,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   }
 
   // Have the RenderFrameHost commit the navigation.
-  user_initiated_navigation->ReadyToCommit();
+  non_user_initiated_navigation->ReadyToCommit();
   if (AreAllSitesIsolatedForTesting()) {
     EXPECT_TRUE(
         DidRenderFrameHostRequestCommit(GetSpeculativeRenderFrameHost(node)));
@@ -747,8 +735,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   }
 
   // Commit the navigation.
-  user_initiated_navigation->Commit();
-  EXPECT_EQ(kUrl1, contents()->GetLastCommittedURL());
+  non_user_initiated_navigation->Commit();
+  EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
 }
 
 // PlzNavigate: Test that a browser-initiated navigation is NOT canceled if a
