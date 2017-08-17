@@ -147,7 +147,6 @@ class _V8RuntimeStatsBrowsingBenchmark(_v8BrowsingBenchmarkBaseClass):
 
 
 @benchmark.Owner(emails=['ulan@chromium.org'])
-@benchmark.Disabled('android')
 class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
   PLATFORM = 'desktop'
 
@@ -157,7 +156,6 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
 
 
 @benchmark.Owner(emails=['ulan@chromium.org'])
-@benchmark.Enabled('android')
 class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
   PLATFORM = 'mobile'
 
@@ -166,7 +164,6 @@ class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
     return 'v8.browsing_mobile'
 
 
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['mythria@chromium.org'])
 class V8RuntimeStatsDesktopBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):
@@ -177,7 +174,6 @@ class V8RuntimeStatsDesktopBrowsingBenchmark(
     return 'v8.runtimestats.browsing_desktop'
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['mythria@chromium.org'])
 class V8RuntimeStatsMobileBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):

@@ -34,7 +34,6 @@ class _OortOnlineMeasurement(legacy_page_test.LegacyPageTest):
             important=True, improvement_direction=improvement_direction.UP))
 
 
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class OortOnline(perf_benchmark.PerfBenchmark):
   """OortOnline benchmark that measures WebGL and V8 performance.
@@ -53,7 +52,9 @@ class OortOnline(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # http://oortonline.gl/#run not disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE], 'Desktop Benchmark')
+
     return StoryExpectations()
 
 # Disabled on Linux due to timeouts; crbug.com/727850

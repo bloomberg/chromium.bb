@@ -193,7 +193,6 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
     return not _IGNORED_STATS_RE.search(value.name)
 
 
-@benchmark.Disabled('all')  # crbug/676345
 @benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
                  component='Internals>Media')
 class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):

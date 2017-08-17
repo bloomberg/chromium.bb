@@ -55,7 +55,6 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM)
 
 
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['charliea@chromium.org', 'nednguyen@chromium.org'])
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
@@ -69,7 +68,6 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
     return page_sets.SystemHealthDesktopCommonExpectations()
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['charliea@chromium.org', 'nednguyen@chromium.org'])
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
@@ -116,7 +114,6 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Owner(emails=['perezju@chromium.org'])
-@benchmark.Disabled('android')
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   PLATFORM = 'desktop'
@@ -129,7 +126,6 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
     return page_sets.SystemHealthDesktopMemoryExpectations()
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
@@ -152,7 +148,6 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     return page_sets.SystemHealthMobileMemoryExpectations()
 
 
-@benchmark.Enabled('android-webview')
 @benchmark.Owner(emails=['perezju@chromium.org', 'torne@chromium.org'])
 class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Webview startup time benchmark

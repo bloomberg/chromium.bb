@@ -34,7 +34,6 @@ class _ThreadTimes(perf_benchmark.PerfBenchmark):
     return thread_times.ThreadTimes(options.report_silk_details)
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
 class ThreadTimesKeySilkCases(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on key silk
@@ -48,6 +47,8 @@ class ThreadTimesKeySilkCases(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('https://polymer-topeka.appspot.com/',
                           [story.expectations.ALL], 'crbug.com/507865')
         self.DisableStory('http://plus.google.com/app/basic/stream',
@@ -57,10 +58,6 @@ class ThreadTimesKeySilkCases(_ThreadTimes):
     return StoryExpectations()
 
 
-# This benchmark runs only on android & linux, but is disabled because the page
-# set uses deprecated web platform features.  See http://crbug.com/750876
-# @benchmark.Enabled('android', 'linux')
-@benchmark.Disabled('all')
 class ThreadTimesKeyHitTestCases(_ThreadTimes):
   """Measure timeline metrics while performing smoothness action on key hit
   testing cases."""
@@ -73,11 +70,16 @@ class ThreadTimesKeyHitTestCases(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MAC, story.expectations.ALL_WIN],
+            'Android and Linux Benchmark')
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL],
+            'Disabled on all platforms due to use of deprecated web platform '
+            'features. Crbug.com/750876.')
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 class ThreadTimesFastPathMobileSites(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on
   key mobile sites labeled with fast-path tag.
@@ -92,7 +94,8 @@ class ThreadTimesFastPathMobileSites(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         # TODO(rnephew): Uncomment when these stories is rerecorded.
         # self.DisableStory(
         #     'http://forecast.io', [story.expectations.ALL],
@@ -105,7 +108,6 @@ class ThreadTimesFastPathMobileSites(_ThreadTimes):
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
 class ThreadTimesSimpleMobileSites(_ThreadTimes):
   """Measures timeline metric using smoothness action on simple mobile sites
@@ -119,6 +121,8 @@ class ThreadTimesSimpleMobileSites(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('https://www.flickr.com/', [story.expectations.ALL],
                           'crbug.com/752228')
     return StoryExpectations()
@@ -147,7 +151,6 @@ class ThreadTimesCompositorCases(_ThreadTimes):
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['skyostil@chromium.org'])
 class ThreadTimesKeyIdlePowerCases(_ThreadTimes):
   """Measures timeline metrics for sites that should be idle in foreground
@@ -166,11 +169,11 @@ class ThreadTimesKeyIdlePowerCases(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 class ThreadTimesKeyNoOpCases(_ThreadTimes):
   """Measures timeline metrics for common interactions and behaviors that should
   have minimal cost. The metrics are per-second rather than per-frame."""
@@ -188,7 +191,8 @@ class ThreadTimesKeyNoOpCases(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
     return StoryExpectations()
 
 
