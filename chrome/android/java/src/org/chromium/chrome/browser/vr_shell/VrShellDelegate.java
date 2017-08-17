@@ -244,9 +244,7 @@ public class VrShellDelegate
         if (wrapper == null) return;
         nativeOnLibraryAvailable();
 
-        if (sInstance != null) {
-            sInstance.cancelStartupAnimationIfNeeded();
-        }
+        if (sInstance != null) sInstance.cancelStartupAnimationIfNeeded();
     }
 
     @VisibleForTesting
@@ -809,7 +807,6 @@ public class VrShellDelegate
             mVSyncEstimator.resume();
         }
 
-        maybeSetPresentResult(true, donSuceeded);
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
         removeBlackOverlayView(mActivity);
         if (!donSuceeded && !mAutopresentWebVr && isDaydreamCurrentViewer()) {
@@ -829,6 +826,7 @@ public class VrShellDelegate
                 }
             }, EXPECT_DON_TIMEOUT_MS);
         }
+        maybeSetPresentResult(true, donSuceeded);
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
