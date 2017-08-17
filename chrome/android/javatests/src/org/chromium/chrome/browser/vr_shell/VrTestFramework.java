@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import org.junit.Assert;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -22,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Rule containing the test framework for WebVR testing, which requires back-and-forth
+ * Class containing the test framework for WebVR testing, which requires back-and-forth
  * communication with JavaScript running in the browser.
  *
  * The general test flow is:
@@ -41,31 +39,29 @@ import java.util.concurrent.TimeoutException;
  * are processed, the JavaScript code will automatically signal the Java code,
  * which can then grab the results and pass/fail the instrumentation test.
  */
-public class VrTestRule extends ChromeTabbedActivityTestRule {
+public class VrTestFramework {
     public static final int PAGE_LOAD_TIMEOUT_S = 10;
     public static final int POLL_CHECK_INTERVAL_SHORT_MS = 50;
     public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
     public static final int POLL_TIMEOUT_SHORT_MS = 1000;
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
 
-    private static final String TAG = "VrTestRule";
+    private static final String TAG = "VrTestFramework";
     static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";
 
+    private ChromeActivityTestRule mRule;
     private WebContents mFirstTabWebContents;
     private ContentViewCore mFirstTabCvc;
 
-    @Override
-    public Statement apply(final Statement base, Description desc) {
-        return super.apply(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                startMainActivityOnBlankPage();
-                mFirstTabWebContents = getActivity().getActivityTab().getWebContents();
-                mFirstTabCvc = getActivity().getActivityTab().getContentViewCore();
-                Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
-                base.evaluate();
-            }
-        }, desc);
+    /**
+     * Must be constructed after the rule has been applied (e.g. in whatever method is
+     * tagged with @Before)
+     */
+    public VrTestFramework(ChromeActivityTestRule rule) {
+        mRule = rule;
+        mFirstTabWebContents = mRule.getActivity().getActivityTab().getWebContents();
+        mFirstTabCvc = mRule.getActivity().getActivityTab().getContentViewCore();
+        Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
     }
 
     public WebContents getFirstTabWebContents() {
@@ -74,6 +70,10 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
 
     public ContentViewCore getFirstTabCvc() {
         return mFirstTabCvc;
+    }
+
+    public ChromeActivityTestRule getRule() {
+        return mRule;
     }
 
     /**
@@ -95,10 +95,10 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      */
     public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
             throws InterruptedException {
-        int result = loadUrl(url, timeoutSec);
+        int result = mRule.loadUrl(url, timeoutSec);
         Assert.assertTrue("JavaScript initialization successful",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_SHORT_MS,
-                        getActivity().getActivityTab().getWebContents()));
+                        mRule.getActivity().getActivityTab().getWebContents()));
         return result;
     }
 

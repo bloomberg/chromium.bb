@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
@@ -38,24 +39,28 @@ import java.util.concurrent.TimeoutException;
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=VrShell",
         "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
-
 public class VrFeedbackInfoBarTest {
+    // We explicitly instantiate a rule here instead of using parameterization since this class
+    // only ever runs in ChromeTabbedActivity.
     @Rule
-    public VrTestRule mVrTestRule = new VrTestRule();
+    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
+
+    private VrTestFramework mVrTestFramework;
 
     private static final String TEST_PAGE_2D_URL =
-            VrTestRule.getHtmlTestFile("test_navigation_2d_page");
+            VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
     private static final String TEST_PAGE_WEBVR_URL =
-            VrTestRule.getHtmlTestFile("test_requestPresent_enters_vr");
+            VrTestFramework.getHtmlTestFile("test_requestPresent_enters_vr");
 
     @Before
     public void setUp() throws Exception {
+        mVrTestFramework = new VrTestFramework(mVrTestRule);
         Assert.assertFalse(VrFeedbackStatus.getFeedbackOptOut());
     }
 
     private void assertState(boolean isInVr, boolean isInfobarVisible) {
         Assert.assertEquals("Browser is in VR", isInVr, VrShellDelegate.isInVr());
-        VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, isInfobarVisible);
+        VrInfoBarUtils.expectInfoBarPresent(mVrTestFramework, isInfobarVisible);
     }
 
     private void enterThenExitVr() {
@@ -71,14 +76,14 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     public void testFeedbackFrequency() throws InterruptedException, TimeoutException {
-        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         // Set frequency of infobar to every 2nd time.
         VrShellDelegateUtils.getDelegateInstance().setFeedbackFrequencyForTesting(2);
 
         // Verify that the Feedback infobar is visible when exiting VR.
         enterThenExitVr();
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
-        VrInfoBarUtils.clickInfobarCloseButton(mVrTestRule);
+        VrInfoBarUtils.clickInfobarCloseButton(mVrTestFramework);
 
         // Feedback infobar shouldn't show up this time.
         enterThenExitVr();
@@ -87,7 +92,7 @@ public class VrFeedbackInfoBarTest {
         // Feedback infobar should show up again.
         enterThenExitVr();
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
-        VrInfoBarUtils.clickInfobarCloseButton(mVrTestRule);
+        VrInfoBarUtils.clickInfobarCloseButton(mVrTestFramework);
     }
 
     /**
@@ -96,7 +101,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     public void testFeedbackOptOut() throws InterruptedException, TimeoutException {
-        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         // Show infobar every time.
         VrShellDelegateUtils.getDelegateInstance().setFeedbackFrequencyForTesting(1);
@@ -106,7 +111,7 @@ public class VrFeedbackInfoBarTest {
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
 
         // Opt-out of seeing the infobar.
-        VrInfoBarUtils.clickInfoBarButton(VrInfoBarUtils.Button.SECONDARY, mVrTestRule);
+        VrInfoBarUtils.clickInfoBarButton(VrInfoBarUtils.Button.SECONDARY, mVrTestFramework);
         Assert.assertTrue(VrFeedbackStatus.getFeedbackOptOut());
 
         // The infobar should not show because the user opted out.
@@ -121,11 +126,11 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     public void testFeedbackOnlyOnVrBrowsing() throws InterruptedException, TimeoutException {
         // Enter VR presentation mode.
-        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found",
-                mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
+                mVrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
         VrTransitionUtils.enterPresentationAndWait(
-                mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
+                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
@@ -142,11 +147,11 @@ public class VrFeedbackInfoBarTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testExitPresentationInVr() throws InterruptedException, TimeoutException {
         // Enter VR presentation mode.
-        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found",
-                mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
+                mVrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
         VrTransitionUtils.enterPresentationAndWait(
-                mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
+                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
@@ -155,9 +160,9 @@ public class VrFeedbackInfoBarTest {
                 mVrTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
-                        mVrTestRule.runJavaScriptOrFail(
+                        mVrTestFramework.runJavaScriptOrFail(
                                 "window.location.href = '" + TEST_PAGE_2D_URL + "';",
-                                POLL_TIMEOUT_SHORT_MS, mVrTestRule.getFirstTabWebContents());
+                                POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents());
                     }
                 }, POLL_TIMEOUT_LONG_MS);
 
