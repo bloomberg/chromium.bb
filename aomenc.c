@@ -474,29 +474,17 @@ static const arg_def_t max_gf_interval = ARG_DEF(
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
 
 static const struct arg_enum_list color_space_enum[] = {
-  { "unknown", AOM_CS_UNKNOWN },
-  { "bt601", AOM_CS_BT_601 },
-  { "bt709", AOM_CS_BT_709 },
-  { "smpte170", AOM_CS_SMPTE_170 },
-  { "smpte240", AOM_CS_SMPTE_240 },
-#if CONFIG_COLORSPACE_HEADERS
-  { "bt2020ncl", AOM_CS_BT_2020_NCL },
-  { "bt2020cl", AOM_CS_BT_2020_CL },
-  { "sRGB", AOM_CS_SRGB },
-  { "ICtCp", AOM_CS_ICTCP },
-#else
-  { "bt2020", AOM_CS_BT_2020 },
-  { "reserved", AOM_CS_RESERVED },
-  { "sRGB", AOM_CS_SRGB },
-#endif
-  { NULL, 0 }
+  { "unknown", AOM_CS_UNKNOWN },     { "bt601", AOM_CS_BT_601 },
+  { "bt709", AOM_CS_BT_709 },        { "smpte170", AOM_CS_SMPTE_170 },
+  { "smpte240", AOM_CS_SMPTE_240 },  { "bt2020ncl", AOM_CS_BT_2020_NCL },
+  { "bt2020cl", AOM_CS_BT_2020_CL }, { "sRGB", AOM_CS_SRGB },
+  { "ICtCp", AOM_CS_ICTCP },         { NULL, 0 }
 };
 
 static const arg_def_t input_color_space =
     ARG_DEF_ENUM(NULL, "color-space", 1, "The color space of input content:",
                  color_space_enum);
 
-#if CONFIG_COLORSPACE_HEADERS
 static const struct arg_enum_list transfer_function_enum[] = {
   { "unknown", AOM_TF_UNKNOWN },
   { "bt709", AOM_TF_BT_709 },
@@ -520,7 +508,6 @@ static const arg_def_t input_chroma_sample_position =
     ARG_DEF_ENUM(NULL, "chroma-sample-position", 1,
                  "The chroma sample position when chroma 4:2:0 is signaled:",
                  chroma_sample_position_enum);
-#endif
 
 static const struct arg_enum_list tune_content_enum[] = {
   { "default", AOM_CONTENT_DEFAULT },
@@ -584,10 +571,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &noise_sens,
                                        &tune_content,
                                        &input_color_space,
-#if CONFIG_COLORSPACE_HEADERS
                                        &input_transfer_function,
                                        &input_chroma_sample_position,
-#endif
                                        &min_gf_interval,
                                        &max_gf_interval,
 #if CONFIG_EXT_PARTITION
@@ -643,10 +628,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_NOISE_SENSITIVITY,
                                         AV1E_SET_TUNE_CONTENT,
                                         AV1E_SET_COLOR_SPACE,
-#if CONFIG_COLORSPACE_HEADERS
                                         AV1E_SET_TRANSFER_FUNCTION,
                                         AV1E_SET_CHROMA_SAMPLE_POSITION,
-#endif
                                         AV1E_SET_MIN_GF_INTERVAL,
                                         AV1E_SET_MAX_GF_INTERVAL,
 #if CONFIG_EXT_PARTITION

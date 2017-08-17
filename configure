@@ -342,6 +342,7 @@ EXPERIMENT_LIST="
     no_frame_context_signaling
     txmg
     hash_me
+    colorspace_headers
 "
 CONFIG_LIST="
     dependency_tracking
@@ -388,7 +389,6 @@ CONFIG_LIST="
     highbitdepth
     experimental
     size_limit
-    colorspace_headers
     ${EXPERIMENT_LIST}
     analyzer
 "

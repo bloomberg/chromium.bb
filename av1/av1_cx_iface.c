@@ -75,10 +75,8 @@ struct av1_extracfg {
   aom_bit_depth_t bit_depth;
   aom_tune_content content;
   aom_color_space_t color_space;
-#if CONFIG_COLORSPACE_HEADERS
   aom_transfer_function_t transfer_function;
   aom_chroma_sample_position_t chroma_sample_position;
-#endif
   int color_range;
   int render_width;
   int render_height;
@@ -138,14 +136,12 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_EXT_DELTA_Q
   NO_DELTA_Q,  // deltaq_mode
 #endif
-  CONFIG_XIPHRC,        // frame_periodic_delta_q
-  AOM_BITS_8,           // Bit depth
-  AOM_CONTENT_DEFAULT,  // content
-  AOM_CS_UNKNOWN,       // color space
-#if CONFIG_COLORSPACE_HEADERS
-  AOM_TF_UNKNOWN,   // transfer function
-  AOM_CSP_UNKNOWN,  // chroma sample position
-#endif
+  CONFIG_XIPHRC,                // frame_periodic_delta_q
+  AOM_BITS_8,                   // Bit depth
+  AOM_CONTENT_DEFAULT,          // content
+  AOM_CS_UNKNOWN,               // color space
+  AOM_TF_UNKNOWN,               // transfer function
+  AOM_CSP_UNKNOWN,              // chroma sample position
   0,                            // color range
   0,                            // render width
   0,                            // render height
@@ -561,10 +557,17 @@ static aom_codec_err_t set_encoder_config(
 #endif
 
   oxcf->color_space = extra_cfg->color_space;
+
 #if CONFIG_COLORSPACE_HEADERS
   oxcf->transfer_function = extra_cfg->transfer_function;
   oxcf->chroma_sample_position = extra_cfg->chroma_sample_position;
+#else
+  if (extra_cfg->transfer_function != AOM_TF_UNKNOWN)
+    return AOM_CODEC_UNSUP_FEATURE;
+  if (extra_cfg->chroma_sample_position != AOM_CSP_UNKNOWN)
+    return AOM_CODEC_UNSUP_FEATURE;
 #endif
+
   oxcf->color_range = extra_cfg->color_range;
   oxcf->render_width = extra_cfg->render_width;
   oxcf->render_height = extra_cfg->render_height;
@@ -630,39 +633,7 @@ static aom_codec_err_t set_encoder_config(
 #endif
 
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
-
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
-  /*
-  printf("Current AV1 Settings: \n");
-  printf("target_bandwidth: %d\n", oxcf->target_bandwidth);
-  printf("noise_sensitivity: %d\n", oxcf->noise_sensitivity);
-  printf("sharpness: %d\n",    oxcf->sharpness);
-  printf("cpu_used: %d\n",  oxcf->cpu_used);
-  printf("Mode: %d\n",     oxcf->mode);
-  printf("auto_key: %d\n",  oxcf->auto_key);
-  printf("key_freq: %d\n", oxcf->key_freq);
-  printf("end_usage: %d\n", oxcf->end_usage);
-  printf("under_shoot_pct: %d\n", oxcf->under_shoot_pct);
-  printf("over_shoot_pct: %d\n", oxcf->over_shoot_pct);
-  printf("starting_buffer_level: %d\n", oxcf->starting_buffer_level);
-  printf("optimal_buffer_level: %d\n",  oxcf->optimal_buffer_level);
-  printf("maximum_buffer_size: %d\n", oxcf->maximum_buffer_size);
-  printf("fixed_q: %d\n",  oxcf->fixed_q);
-  printf("worst_allowed_q: %d\n", oxcf->worst_allowed_q);
-  printf("best_allowed_q: %d\n", oxcf->best_allowed_q);
-  printf("allow_spatial_resampling: %d\n", oxcf->allow_spatial_resampling);
-  printf("scaled_frame_width: %d\n", oxcf->scaled_frame_width);
-  printf("scaled_frame_height: %d\n", oxcf->scaled_frame_height);
-  printf("two_pass_vbrbias: %d\n",  oxcf->two_pass_vbrbias);
-  printf("two_pass_vbrmin_section: %d\n", oxcf->two_pass_vbrmin_section);
-  printf("two_pass_vbrmax_section: %d\n", oxcf->two_pass_vbrmax_section);
-  printf("lag_in_frames: %d\n", oxcf->lag_in_frames);
-  printf("enable_auto_arf: %d\n", oxcf->enable_auto_arf);
-  printf("Version: %d\n", oxcf->Version);
-  printf("error resilient: %d\n", oxcf->error_resilient_mode);
-  printf("frame parallel detokenization: %d\n",
-         oxcf->frame_parallel_decoding_mode);
-  */
   return AOM_CODEC_OK;
 }
 
@@ -1486,22 +1457,32 @@ static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_COLORSPACE_HEADERS
 static aom_codec_err_t ctrl_set_transfer_function(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
+#if CONFIG_COLORSPACE_HEADERS
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.transfer_function = CAST(AV1E_SET_TRANSFER_FUNCTION, args);
   return update_extra_cfg(ctx, &extra_cfg);
+#else
+  (void)ctx;
+  (void)args;
+  return AOM_CODEC_UNSUP_FEATURE;
+#endif
 }
 
 static aom_codec_err_t ctrl_set_chroma_sample_position(
     aom_codec_alg_priv_t *ctx, va_list args) {
+#if CONFIG_COLORSPACE_HEADERS
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.chroma_sample_position =
       CAST(AV1E_SET_CHROMA_SAMPLE_POSITION, args);
   return update_extra_cfg(ctx, &extra_cfg);
-}
+#else
+  (void)ctx;
+  (void)args;
+  return AOM_CODEC_UNSUP_FEATURE;
 #endif
+}
 
 static aom_codec_err_t ctrl_set_color_range(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
@@ -1589,10 +1570,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
   { AV1E_SET_COLOR_SPACE, ctrl_set_color_space },
-#if CONFIG_COLORSPACE_HEADERS
   { AV1E_SET_TRANSFER_FUNCTION, ctrl_set_transfer_function },
   { AV1E_SET_CHROMA_SAMPLE_POSITION, ctrl_set_chroma_sample_position },
-#endif
   { AV1E_SET_COLOR_RANGE, ctrl_set_color_range },
   { AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },
   { AV1E_SET_MIN_GF_INTERVAL, ctrl_set_min_gf_interval },
