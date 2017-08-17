@@ -16,6 +16,22 @@ ChromeBrowserMainExtraPartsProfiling::~ChromeBrowserMainExtraPartsProfiling() =
 void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  if (cmdline.HasSwitch(switches::kMemlog))
-    profiling::ProfilingProcessHost::EnsureStarted(connection);
+  if (!cmdline.HasSwitch(switches::kMemlog))
+    return;
+
+  std::string profiling_mode =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kMemlog);
+  if (profiling_mode == switches::kMemlogModeAll) {
+    profiling::ProfilingProcessHost::EnsureStarted(
+        connection, profiling::ProfilingProcessHost::Mode::kAll);
+    return;
+  }
+  if (profiling_mode == switches::kMemlogModeBrowser) {
+    profiling::ProfilingProcessHost::EnsureStarted(
+        connection, profiling::ProfilingProcessHost::Mode::kBrowser);
+    return;
+  }
+  LOG(ERROR) << "Unsupported value: \"" << profiling_mode << "\" passed to --"
+             << switches::kMemlog;
 }

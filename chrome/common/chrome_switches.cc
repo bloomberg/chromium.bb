@@ -1057,6 +1057,8 @@ const char kUseSystemDefaultPrinter[] = "use-system-default-printer";
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 // Enables the out-of-process memory logging.
 const char kMemlog[] = "memlog";
+const char kMemlogModeAll[] = "all";
+const char kMemlogModeBrowser[] = "browser";
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
