@@ -435,6 +435,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STYLUS_TOOLS_METALAYER_MODE" desc="Title of the metalayer mode in the stylus tools. Clicking this button opens up the voice interaction overlay. The overlay remains active until the user completes the interaction.">
         Assistant
       </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_METALAYER_MODE_LOADING" desc="Title of the metalayer mode in the stylus tools, displayed while the Assistant is still loading.">
+        Assistant (loading...)
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_METALAYER_TOAST_LOADING" desc="Message content on the toast that appears when the user presses the stylus button to activate the Assistant but it is still loading.">
+        Assistant is loading...
+      </message>
       <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
         Stylus tools
       </message>
