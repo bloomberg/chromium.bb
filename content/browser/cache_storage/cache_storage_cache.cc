@@ -1484,6 +1484,9 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
       storage::QuotaClient::kServiceWorkerCache, origin_,
       storage::kStorageTypeTemporary, size_delta);
 
+  if (cache_storage_)
+    cache_storage_->NotifyCacheContentChanged(cache_name_);
+
   if (cache_observer_)
     cache_observer_->CacheSizeUpdated(this);
 
