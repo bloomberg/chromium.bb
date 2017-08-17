@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -87,6 +88,8 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.handles_to_inherit = handle_passing_info;
+#elif defined(OS_FUCHSIA)
+  options.handles_to_transfer = handle_passing_info;
 #elif defined(OS_POSIX)
   options.fds_to_remap = handle_passing_info;
 #endif
