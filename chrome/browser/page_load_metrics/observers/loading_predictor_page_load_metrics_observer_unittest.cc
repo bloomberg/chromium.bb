@@ -15,6 +15,7 @@
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using predictors::LoadingDataCollector;
@@ -42,6 +43,10 @@ class LoadingPredictorPageLoadMetricsObserverTest
     predictor_ =
         base::MakeUnique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());
+    // The base class of MockResourcePrefetchPredictor constructs the
+    // PredictorDatabase for the profile. The PredictorDatabase is initialized
+    // asynchronously and we have to wait for the initialization completion.
+    content::RunAllBlockingPoolTasksUntilIdle();
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
     collector_ = base::MakeUnique<LoadingDataCollector>(predictor_.get(),
                                                         nullptr, config);

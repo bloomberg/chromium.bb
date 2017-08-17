@@ -197,6 +197,11 @@ void ResourcePrefetchPredictorTest::SetUp() {
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS));
   // Initialize the predictor with empty data.
   ResetPredictor();
+  // The first creation of the LoadingPredictor constructs the PredictorDatabase
+  // for the |profile_|. The PredictorDatabase is initialized asynchronously and
+  // we have to wait for the initialization completion even though the database
+  // object is later replaced by a mock object.
+  content::RunAllBlockingPoolTasksUntilIdle();
   CHECK_EQ(predictor_->initialization_state_,
            ResourcePrefetchPredictor::NOT_INITIALIZED);
   InitializePredictor();
