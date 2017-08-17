@@ -25,13 +25,13 @@ class RenderWidgetHost;
 }
 
 namespace device {
-class GvrDelegate;
-class GvrDeviceProvider;
+class VRDevice;
 }
 
 namespace vr_shell {
 
 class DelegateWebContentsObserver;
+class VrShell;
 
 class VrShellDelegate : public device::GvrDelegateProvider {
  public:
@@ -44,7 +44,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jdelegate);
 
-  void SetDelegate(device::GvrDelegate* delegate, gvr::ViewerType viewer_type);
+  void SetDelegate(VrShell* vr_shell, gvr::ViewerType viewer_type);
   void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env,
@@ -66,10 +66,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                               const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  device::GvrDeviceProvider* device_provider() { return device_provider_; }
-
   void OnWebContentsFocused(content::RenderWidgetHost* host);
   void OnWebContentsLostFocus(content::RenderWidgetHost* host);
+
+  device::VRDevice* GetDevice();
 
   // device::GvrDelegateProvider implementation.
   void ExitWebVRPresent() override;
@@ -79,12 +79,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
  private:
   // device::GvrDelegateProvider implementation.
-  void SetDeviceProvider(device::GvrDeviceProvider* device_provider) override;
-  void ClearDeviceProvider() override;
+  void SetDeviceId(unsigned int device_id) override;
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
                            device::mojom::VRPresentationProviderRequest request,
                            const base::Callback<void(bool)>& callback) override;
-  device::GvrDelegate* GetDelegate() override;
   void OnDisplayAdded(device::VRDisplayImpl* display) override;
   void OnDisplayRemoved(device::VRDisplayImpl* display) override;
   void OnListeningForActivateChanged(device::VRDisplayImpl* display) override;
@@ -102,8 +100,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
-  device::GvrDeviceProvider* device_provider_ = nullptr;
-  device::GvrDelegate* gvr_delegate_ = nullptr;
+  unsigned int device_id_ = 0;
+  VrShell* vr_shell_ = nullptr;
   base::Callback<void(bool)> present_callback_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
