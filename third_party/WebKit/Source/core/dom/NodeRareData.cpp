@@ -72,8 +72,8 @@ DEFINE_TRACE_WRAPPERS(NodeRareData) {
 }
 
 DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(NodeRareData) {
-  visitor->TraceWrappersWithManualWriteBarrier(node_lists_);
-  visitor->TraceWrappersWithManualWriteBarrier(mutation_observer_data_);
+  visitor->TraceWrappers(node_lists_);
+  visitor->TraceWrappers(mutation_observer_data_);
 }
 
 void NodeRareData::FinalizeGarbageCollectedObject() {
