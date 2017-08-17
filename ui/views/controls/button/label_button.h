@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_theme_delegate.h"
@@ -26,8 +26,7 @@ class LabelButtonBorder;
 class LabelButtonLabel;
 
 // LabelButton is a button with text and an icon, it's not focusable by default.
-class VIEWS_EXPORT LabelButton : public CustomButton,
-                                 public NativeThemeDelegate {
+class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
   // The length of the hover fade animation.
   static const int kHoverAnimationDurationMs;
@@ -130,7 +129,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
-  // CustomButton:
+  // Button:
   void StateChanged(ButtonState old_state) override;
 
   // Fills |params| with information about the button.
@@ -181,7 +180,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void ResetCachedPreferredSize();
 
   // Updates additional state related to focus or default status, rather than
-  // merely the CustomButton::state(). E.g. ensures the label text color is
+  // merely the Button::state(). E.g. ensures the label text color is
   // correct for the current background.
   void ResetLabelEnabledColor();
 

@@ -38,7 +38,7 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
 
   ~FrameSizeButton() override;
 
-  // views::CustomButton overrides:
+  // views::Button overrides:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;

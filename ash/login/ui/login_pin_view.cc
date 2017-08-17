@@ -69,10 +69,10 @@ int GetViewIdForPinNumber(int number) {
 }
 
 // A base class for pin button in the pin keyboard.
-class BasePinButton : public views::CustomButton, public views::ButtonListener {
+class BasePinButton : public views::Button, public views::ButtonListener {
  public:
   explicit BasePinButton(const base::Closure& on_press)
-      : views::CustomButton(this), on_press_(on_press) {
+      : views::Button(this), on_press_(on_press) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetPreferredSize(
         gfx::Size(LoginPinView::kButtonSizeDp, LoginPinView::kButtonSizeDp));

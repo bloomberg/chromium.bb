@@ -855,7 +855,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
  private:
   friend class ComboboxTest;
-  friend class CustomButtonTest;
+  friend class ButtonTest;
   friend class TextfieldTest;
   friend class ViewAuraTest;
 

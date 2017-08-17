@@ -71,9 +71,9 @@ void SearchResultActionsView::CreateImageButton(
   button->SetAccessibleName(action.tooltip_text);
   button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                             views::ImageButton::ALIGN_MIDDLE);
-  button->SetImage(views::CustomButton::STATE_NORMAL, &action.base_image);
-  button->SetImage(views::CustomButton::STATE_HOVERED, &action.hover_image);
-  button->SetImage(views::CustomButton::STATE_PRESSED, &action.pressed_image);
+  button->SetImage(views::Button::STATE_NORMAL, &action.base_image);
+  button->SetImage(views::Button::STATE_HOVERED, &action.hover_image);
+  button->SetImage(views::Button::STATE_PRESSED, &action.pressed_image);
   button->SetTooltipText(action.tooltip_text);
   AddChildView(button);
 }

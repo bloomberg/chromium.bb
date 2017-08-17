@@ -7,15 +7,15 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 class GlassBrowserFrameView;
 
-class Windows10CaptionButton : public views::CustomButton {
+class Windows10CaptionButton : public views::Button {
  public:
   Windows10CaptionButton(GlassBrowserFrameView* frame_view, ViewID button_type);
 
-  // views::CustomButton:
+  // views::Button:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;

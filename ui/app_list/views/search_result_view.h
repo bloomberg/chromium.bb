@@ -17,7 +17,7 @@
 #include "ui/app_list/search_result_observer.h"
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace gfx {
 class RenderText;
@@ -40,7 +40,7 @@ class SearchResultActionsView;
 
 // SearchResultView displays a SearchResult.
 class APP_LIST_EXPORT SearchResultView
-    : public views::CustomButton,
+    : public views::Button,
       public views::ButtonListener,
       public views::ContextMenuController,
       public SearchResultObserver,

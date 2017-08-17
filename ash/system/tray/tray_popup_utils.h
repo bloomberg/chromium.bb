@@ -15,7 +15,7 @@
 
 namespace views {
 class ButtonListener;
-class CustomButton;
+class Button;
 class ImageView;
 class InkDrop;
 class InkDropRipple;
@@ -121,7 +121,7 @@ class TrayPopupUtils {
   static std::unique_ptr<views::Painter> CreateFocusPainter();
 
   // Common setup for various buttons in the system menu.
-  static void ConfigureTrayPopupButton(views::CustomButton* button);
+  static void ConfigureTrayPopupButton(views::Button* button);
 
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);

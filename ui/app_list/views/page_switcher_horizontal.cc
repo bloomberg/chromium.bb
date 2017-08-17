@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -31,10 +31,10 @@ const int kButtonHeight = 6;
 const int kButtonCornerRadius = 2;
 const int kButtonStripPadding = 20;
 
-class PageSwitcherButton : public views::CustomButton {
+class PageSwitcherButton : public views::Button {
  public:
   explicit PageSwitcherButton(views::ButtonListener* listener)
-      : views::CustomButton(listener),
+      : views::Button(listener),
         button_width_(kMaxButtonWidth),
         selected_range_(0) {}
   ~PageSwitcherButton() override {}
@@ -62,13 +62,13 @@ class PageSwitcherButton : public views::CustomButton {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
-    CustomButton::OnGestureEvent(event);
+    Button::OnGestureEvent(event);
 
     if (event->type() == ui::ET_GESTURE_TAP_DOWN)
-      SetState(views::CustomButton::STATE_HOVERED);
+      SetState(views::Button::STATE_HOVERED);
     else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
              event->type() == ui::ET_GESTURE_TAP)
-      SetState(views::CustomButton::STATE_NORMAL);
+      SetState(views::Button::STATE_NORMAL);
     SchedulePaint();
   }
 
@@ -168,14 +168,14 @@ void PageSwitcherHorizontal::UpdateUIForDragPoint(const gfx::Point& point) {
   if (page >= 0 && page < button_count) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(page));
-    button->SetState(views::CustomButton::STATE_HOVERED);
+    button->SetState(views::Button::STATE_HOVERED);
     return;
   }
 
   for (int i = 0; i < button_count; ++i) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));
-    button->SetState(views::CustomButton::STATE_NORMAL);
+    button->SetState(views::Button::STATE_NORMAL);
   }
 }
 

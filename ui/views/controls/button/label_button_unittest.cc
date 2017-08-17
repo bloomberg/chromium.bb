@@ -64,7 +64,7 @@ class LabelButtonTest : public test::WidgetTest {
   TestLabelButton* AddStyledButton(const char* label, bool is_default) {
     TestLabelButton* button = new TestLabelButton;
     button->SetText(ASCIIToUTF16(label));
-    button->SetStyleDeprecated(CustomButton::STYLE_BUTTON);
+    button->SetStyleDeprecated(Button::STYLE_BUTTON);
     if (is_default)
       button->SetIsDefault(true);
     button_->GetWidget()->GetContentsView()->AddChildView(button);
@@ -474,7 +474,7 @@ class InkDropLabelButtonTest : public ViewsTestBase {
         switches::kTopChromeMD, switches::kTopChromeMDMaterial);
     ViewsTestBase::SetUp();
 
-    // Create a widget so that the CustomButton can query the hover state
+    // Create a widget so that the Button can query the hover state
     // correctly.
     widget_.reset(new Widget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);

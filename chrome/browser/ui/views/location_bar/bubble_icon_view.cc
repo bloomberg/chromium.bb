@@ -115,7 +115,7 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* &event */);
-  // As with CustomButton, return activates on key down and space activates on
+  // As with Button, return activates on key down and space activates on
   // key up.
   if (event.key_code() == ui::VKEY_RETURN)
     ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);

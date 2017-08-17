@@ -26,7 +26,7 @@ namespace tray {
 ButtonFromView::ButtonFromView(views::View* content,
                                views::ButtonListener* listener,
                                TrayPopupInkDropStyle ink_drop_style)
-    : CustomButton(listener),
+    : Button(listener),
       content_(content),
       ink_drop_style_(ink_drop_style),
       button_hovered_(false),
@@ -56,8 +56,8 @@ void ButtonFromView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  views::CustomButton::GetAccessibleNodeData(node_data);
-  // If no label has been explicitly set via CustomButton::SetAccessibleName(),
+  views::Button::GetAccessibleNodeData(node_data);
+  // If no label has been explicitly set via Button::SetAccessibleName(),
   // use the content's label.
   if (node_data->GetStringAttribute(ui::AX_ATTR_NAME).empty()) {
     ui::AXNodeData content_data;
@@ -67,7 +67,7 @@ void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ButtonFromView::Layout() {
-  CustomButton::Layout();
+  Button::Layout();
   if (ink_drop_container_)
     ink_drop_container_->SetBoundsRect(GetLocalBounds());
 }

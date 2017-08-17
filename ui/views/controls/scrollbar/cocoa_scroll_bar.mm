@@ -103,11 +103,11 @@ CocoaScrollBarThumb::CocoaScrollBarThumb(CocoaScrollBar* scroll_bar)
 CocoaScrollBarThumb::~CocoaScrollBarThumb() {}
 
 bool CocoaScrollBarThumb::IsStateHovered() const {
-  return GetState() == CustomButton::STATE_HOVERED;
+  return GetState() == Button::STATE_HOVERED;
 }
 
 bool CocoaScrollBarThumb::IsStatePressed() const {
-  return GetState() == CustomButton::STATE_PRESSED;
+  return GetState() == Button::STATE_PRESSED;
 }
 
 gfx::Size CocoaScrollBarThumb::CalculatePreferredSize() const {
@@ -154,8 +154,8 @@ void CocoaScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
   // The thumb should remain pressed when dragged, even if the mouse leaves
   // the scrollview. The thumb will be set back to its hover or normal state
   // when the mouse is released.
-  if (GetState() != CustomButton::STATE_PRESSED)
-    SetState(CustomButton::STATE_NORMAL);
+  if (GetState() != Button::STATE_PRESSED)
+    SetState(Button::STATE_NORMAL);
 }
 
 //////////////////////////////////////////////////////////////////

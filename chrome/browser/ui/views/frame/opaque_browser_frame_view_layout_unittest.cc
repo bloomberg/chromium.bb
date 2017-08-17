@@ -136,7 +136,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     views::ImageButton* button = new views::ImageButton(nullptr);
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
-    button->SetImage(views::CustomButton::STATE_NORMAL, &image);
+    button->SetImage(views::Button::STATE_NORMAL, &image);
     button->set_id(view_id);
     root_view_->AddChildView(button);
     return button;

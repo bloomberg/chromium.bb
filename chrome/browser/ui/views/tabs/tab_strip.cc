@@ -1133,7 +1133,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     active_tab->Paint(paint_info);
 
   // Paint the New Tab button.
-  if (new_tab_button_->state() == views::CustomButton::STATE_PRESSED) {
+  if (new_tab_button_->state() == views::Button::STATE_PRESSED) {
     new_tab_button_->Paint(paint_info);
   } else {
     // Match the inactive tab opacity for non-pressed states.  See comments in

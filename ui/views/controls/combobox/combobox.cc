@@ -32,7 +32,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/focus_ring.h"
@@ -119,10 +119,10 @@ gfx::Rect PositionArrowWithinContainer(const gfx::Rect& container_bounds,
 }
 
 // The transparent button which holds a button state but is not rendered.
-class TransparentButton : public CustomButton {
+class TransparentButton : public Button {
  public:
   TransparentButton(ButtonListener* listener, bool animate_state_change)
-      : CustomButton(listener) {
+      : Button(listener) {
     set_animate_on_state_change(animate_state_change);
     if (animate_state_change)
       SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
@@ -142,7 +142,7 @@ class TransparentButton : public CustomButton {
     // platforms they do.
     parent()->RequestFocus();
 #endif
-    return CustomButton::OnMousePressed(mouse_event);
+    return Button::OnMousePressed(mouse_event);
   }
 
   double GetAnimationValue() const {

@@ -22,7 +22,7 @@ class TrayAccessibilityTest;
 
 namespace views {
 class Button;
-class CustomButton;
+class Button;
 class View;
 }
 
@@ -57,8 +57,8 @@ class AccessibilityDetailedView : public TrayDetailsView {
   views::View* high_contrast_view_ = nullptr;
   views::View* screen_magnifier_view_ = nullptr;
   views::View* large_cursor_view_ = nullptr;
-  views::CustomButton* help_view_ = nullptr;
-  views::CustomButton* settings_view_ = nullptr;
+  views::Button* help_view_ = nullptr;
+  views::Button* settings_view_ = nullptr;
   views::View* autoclick_view_ = nullptr;
   views::View* virtual_keyboard_view_ = nullptr;
   views::View* mono_audio_view_ = nullptr;

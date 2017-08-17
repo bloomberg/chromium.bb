@@ -148,7 +148,7 @@ bool MessageView::OnKeyPressed(const ui::KeyEvent& event) {
 
 bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
   // Space key handling is triggerred at key-release timing. See
-  // ui/views/controls/buttons/custom_button.cc for why.
+  // ui/views/controls/buttons/button.cc for why.
   if (event.flags() != ui::EF_NONE || event.key_code() != ui::VKEY_SPACE)
     return false;
 

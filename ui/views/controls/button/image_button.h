@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 
@@ -19,7 +19,7 @@ namespace views {
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain, unless in accessibility mode. Call
 // SetFocusForPlatform() to make it part of the focus chain.
-class VIEWS_EXPORT ImageButton : public CustomButton {
+class VIEWS_EXPORT ImageButton : public Button {
  public:
   static const char kViewClassName[];
 
@@ -75,7 +75,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
 
  protected:
-  // Overridden from CustomButton:
+  // Overridden from Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Returns the image to paint. This is invoked from paint and returns a value

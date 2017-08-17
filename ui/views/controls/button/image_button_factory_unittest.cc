@@ -26,8 +26,8 @@ TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
 TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon) {
   ImageButton* button = CreateVectorImageButton(nullptr);
   SetImageFromVectorIcon(button, vector_icons::kCloseIcon, SK_ColorRED);
-  EXPECT_FALSE(button->GetImage(CustomButton::STATE_NORMAL).isNull());
-  EXPECT_FALSE(button->GetImage(CustomButton::STATE_DISABLED).isNull());
+  EXPECT_FALSE(button->GetImage(Button::STATE_NORMAL).isNull());
+  EXPECT_FALSE(button->GetImage(Button::STATE_DISABLED).isNull());
   EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorRED),
             button->GetInkDropBaseColor());
 

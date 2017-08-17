@@ -57,7 +57,7 @@ TEST_F(ImageButtonTest, Basics) {
 
   // Set a normal image.
   gfx::ImageSkia normal_image = CreateTestImage(10, 20);
-  button.SetImage(CustomButton::STATE_NORMAL, &normal_image);
+  button.SetImage(Button::STATE_NORMAL, &normal_image);
 
   // Image uses normal image for painting.
   EXPECT_FALSE(button.GetImageToPaint().isNull());
@@ -69,7 +69,7 @@ TEST_F(ImageButtonTest, Basics) {
 
   // Set a pushed image.
   gfx::ImageSkia pushed_image = CreateTestImage(11, 21);
-  button.SetImage(CustomButton::STATE_PRESSED, &pushed_image);
+  button.SetImage(Button::STATE_PRESSED, &pushed_image);
 
   // By convention, preferred size doesn't change, even though pushed image
   // is bigger.
@@ -118,7 +118,7 @@ TEST_F(ImageButtonTest, SetAndGetImage) {
 TEST_F(ImageButtonTest, ImagePositionWithBorder) {
   ImageButton button(NULL);
   gfx::ImageSkia image = CreateTestImage(20, 30);
-  button.SetImage(CustomButton::STATE_NORMAL, &image);
+  button.SetImage(Button::STATE_NORMAL, &image);
 
   // The image should be painted at the top-left corner.
   EXPECT_EQ(gfx::Point().ToString(),
@@ -152,7 +152,7 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
 TEST_F(ImageButtonTest, LeftAlignedMirrored) {
   ImageButton button(NULL);
   gfx::ImageSkia image = CreateTestImage(20, 30);
-  button.SetImage(CustomButton::STATE_NORMAL, &image);
+  button.SetImage(Button::STATE_NORMAL, &image);
   button.SetBounds(0, 0, 50, 30);
   button.SetImageAlignment(ImageButton::ALIGN_LEFT,
                            ImageButton::ALIGN_BOTTOM);
@@ -167,7 +167,7 @@ TEST_F(ImageButtonTest, LeftAlignedMirrored) {
 TEST_F(ImageButtonTest, RightAlignedMirrored) {
   ImageButton button(NULL);
   gfx::ImageSkia image = CreateTestImage(20, 30);
-  button.SetImage(CustomButton::STATE_NORMAL, &image);
+  button.SetImage(Button::STATE_NORMAL, &image);
   button.SetBounds(0, 0, 50, 30);
   button.SetImageAlignment(ImageButton::ALIGN_RIGHT,
                            ImageButton::ALIGN_BOTTOM);
@@ -184,18 +184,18 @@ TEST_F(ImageButtonTest, PreferredSizeInvalidation) {
   ImageButton button(nullptr);
   gfx::ImageSkia first_image = CreateTestImage(20, 30);
   gfx::ImageSkia second_image = CreateTestImage(50, 50);
-  button.SetImage(CustomButton::STATE_NORMAL, &first_image);
+  button.SetImage(Button::STATE_NORMAL, &first_image);
   parent.AddChildView(&button);
   ASSERT_EQ(0, parent.pref_size_changed_calls());
 
-  button.SetImage(CustomButton::STATE_NORMAL, &first_image);
+  button.SetImage(Button::STATE_NORMAL, &first_image);
   EXPECT_EQ(0, parent.pref_size_changed_calls());
 
-  button.SetImage(CustomButton::STATE_HOVERED, &second_image);
+  button.SetImage(Button::STATE_HOVERED, &second_image);
   EXPECT_EQ(0, parent.pref_size_changed_calls());
 
   // Changing normal state image size leads to a change in preferred size.
-  button.SetImage(CustomButton::STATE_NORMAL, &second_image);
+  button.SetImage(Button::STATE_NORMAL, &second_image);
   EXPECT_EQ(1, parent.pref_size_changed_calls());
 }
 

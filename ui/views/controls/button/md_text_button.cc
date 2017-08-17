@@ -43,7 +43,7 @@ LabelButton* CreateButton(ButtonListener* listener,
     return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
 
   LabelButton* button = new LabelButton(listener, text, style::CONTEXT_BUTTON);
-  button->SetStyleDeprecated(CustomButton::STYLE_BUTTON);
+  button->SetStyleDeprecated(Button::STYLE_BUTTON);
   return button;
 }
 

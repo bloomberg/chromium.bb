@@ -16,7 +16,7 @@ namespace payments {
 PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
                                              bool clickable,
                                              const gfx::Insets& insets)
-    : views::CustomButton(listener),
+    : views::Button(listener),
       clickable_(clickable),
       insets_(insets),
       previous_row_(nullptr) {
@@ -60,7 +60,7 @@ void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
   }
 }
 
-// views::CustomButton:
+// views::Button:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
   if (!clickable())
     return;

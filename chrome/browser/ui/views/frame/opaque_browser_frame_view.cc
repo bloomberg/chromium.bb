@@ -246,9 +246,9 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void OpaqueBrowserFrameView::ResetWindowControls() {
-  restore_button_->SetState(views::CustomButton::STATE_NORMAL);
-  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
-  maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
+  restore_button_->SetState(views::Button::STATE_NORMAL);
+  minimize_button_->SetState(views::Button::STATE_NORMAL);
+  maximize_button_->SetState(views::Button::STATE_NORMAL);
   // The close button isn't affected by this constraint.
 }
 
@@ -461,11 +461,11 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
     ViewID view_id) {
   views::ImageButton* button = new views::ImageButton(this);
   const ui::ThemeProvider* tp = frame()->GetThemeProvider();
-  button->SetImage(views::CustomButton::STATE_NORMAL,
+  button->SetImage(views::Button::STATE_NORMAL,
                    tp->GetImageSkiaNamed(normal_image_id));
-  button->SetImage(views::CustomButton::STATE_HOVERED,
+  button->SetImage(views::Button::STATE_HOVERED,
                    tp->GetImageSkiaNamed(hot_image_id));
-  button->SetImage(views::CustomButton::STATE_PRESSED,
+  button->SetImage(views::Button::STATE_PRESSED,
                    tp->GetImageSkiaNamed(pushed_image_id));
   if (browser_view()->IsBrowserTypeNormal()) {
     button->SetBackgroundImage(

@@ -21,7 +21,7 @@ class LinearAnimation;
 }
 
 namespace views {
-class CustomButton;
+class Button;
 }
 
 namespace message_center {
@@ -59,8 +59,8 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   bool IsSettingsButtonFocused() const;
 
   // Methods for retrieving the control buttons directly.
-  views::CustomButton* close_button() const;
-  views::CustomButton* settings_button() const;
+  views::Button* close_button() const;
+  views::Button* settings_button() const;
 
   // views::View
   const char* GetClassName() const override;

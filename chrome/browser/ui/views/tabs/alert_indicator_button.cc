@@ -145,7 +145,7 @@ void AlertIndicatorButton::UpdateEnabledForMuteToggle() {
   // hovering.  If it is, enter a dormant period where extra user clicks are
   // prevented from having an effect (i.e., before the user has realized the
   // button has become enabled underneath their cursor).
-  if (!was_enabled && state() == views::CustomButton::STATE_HOVERED)
+  if (!was_enabled && state() == views::Button::STATE_HOVERED)
     EnterDormantPeriod();
   else if (!enabled())
     ExitDormantPeriod();
@@ -171,8 +171,8 @@ bool AlertIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
   // pressed or when any modifier keys are being held down.  Instead, the Tab
   // should react (e.g., middle-click for close, right-click for context menu).
   if (!event.IsOnlyLeftMouseButton() || IsShiftOrControlDown(event)) {
-    if (state() != views::CustomButton::STATE_DISABLED)
-      SetState(views::CustomButton::STATE_NORMAL);  // Turn off hover.
+    if (state() != views::Button::STATE_DISABLED)
+      SetState(views::Button::STATE_NORMAL);  // Turn off hover.
     return false;  // Event to be handled by Tab.
   }
   return ImageButton::OnMousePressed(event);
@@ -181,17 +181,16 @@ bool AlertIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
 bool AlertIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
   const ButtonState previous_state = state();
   const bool ret = ImageButton::OnMouseDragged(event);
-  if (previous_state != views::CustomButton::STATE_NORMAL &&
-      state() == views::CustomButton::STATE_NORMAL)
+  if (previous_state != views::Button::STATE_NORMAL &&
+      state() == views::Button::STATE_NORMAL)
     base::RecordAction(UserMetricsAction("AlertIndicatorButton_Dragged"));
   return ret;
 }
 
 void AlertIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, do not turn on hover.
-  if (state() != views::CustomButton::STATE_DISABLED &&
-      IsShiftOrControlDown(event)) {
-    SetState(views::CustomButton::STATE_NORMAL);
+  if (state() != views::Button::STATE_DISABLED && IsShiftOrControlDown(event)) {
+    SetState(views::Button::STATE_NORMAL);
     return;
   }
   ImageButton::OnMouseEntered(event);
@@ -204,9 +203,8 @@ void AlertIndicatorButton::OnMouseExited(const ui::MouseEvent& event) {
 
 void AlertIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, turn off hover.
-  if (state() != views::CustomButton::STATE_DISABLED &&
-      IsShiftOrControlDown(event)) {
-    SetState(views::CustomButton::STATE_NORMAL);
+  if (state() != views::Button::STATE_DISABLED && IsShiftOrControlDown(event)) {
+    SetState(views::Button::STATE_NORMAL);
     return;
   }
   ImageButton::OnMouseMoved(event);
@@ -284,7 +282,7 @@ void AlertIndicatorButton::PaintButtonContents(gfx::Canvas* canvas) {
 
 gfx::ImageSkia AlertIndicatorButton::GetImageToPaint() {
   if (is_dormant())
-    return views::ImageButton::images_[views::CustomButton::STATE_NORMAL];
+    return views::ImageButton::images_[views::Button::STATE_NORMAL];
   return views::ImageButton::GetImageToPaint();
 }
 
@@ -297,12 +295,12 @@ void AlertIndicatorButton::ResetImages(TabAlertState state) {
   SkColor color = parent_tab_->button_color();
   gfx::ImageSkia indicator_image =
       chrome::GetTabAlertIndicatorImage(state, color).AsImageSkia();
-  SetImage(views::CustomButton::STATE_NORMAL, &indicator_image);
-  SetImage(views::CustomButton::STATE_DISABLED, &indicator_image);
+  SetImage(views::Button::STATE_NORMAL, &indicator_image);
+  SetImage(views::Button::STATE_DISABLED, &indicator_image);
   gfx::ImageSkia affordance_image =
       chrome::GetTabAlertIndicatorAffordanceImage(state, color).AsImageSkia();
-  SetImage(views::CustomButton::STATE_HOVERED, &affordance_image);
-  SetImage(views::CustomButton::STATE_PRESSED, &affordance_image);
+  SetImage(views::Button::STATE_HOVERED, &affordance_image);
+  SetImage(views::Button::STATE_PRESSED, &affordance_image);
 }
 
 void AlertIndicatorButton::EnterDormantPeriod() {

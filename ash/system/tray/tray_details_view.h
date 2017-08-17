@@ -21,7 +21,7 @@ struct VectorIcon;
 
 namespace views {
 class BoxLayout;
-class CustomButton;
+class Button;
 class ProgressBar;
 class ScrollView;
 }  // namespace views
@@ -107,8 +107,8 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Helper functions which create and return the settings and help buttons,
   // respectively, used in the material design top-most header row. The caller
   // assumes ownership of the returned buttons.
-  views::CustomButton* CreateSettingsButton(int setting_accessible_name_id);
-  views::CustomButton* CreateHelpButton();
+  views::Button* CreateSettingsButton(int setting_accessible_name_id);
+  views::Button* CreateHelpButton();
 
   TriView* tri_view() { return tri_view_; }
   views::ScrollView* scroller() const { return scroller_; }

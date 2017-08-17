@@ -9,7 +9,7 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "base/macros.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -20,7 +20,7 @@ namespace ash {
 
 // Display the user's profile icon, name, and a menu icon in various layout
 // styles.
-class ASH_EXPORT LoginUserView : public views::CustomButton,
+class ASH_EXPORT LoginUserView : public views::Button,
                                  public views::ButtonListener {
  public:
   // TestApi is used for tests to get internal implementation details.
@@ -54,7 +54,7 @@ class ASH_EXPORT LoginUserView : public views::CustomButton,
 
   const mojom::UserInfoPtr& current_user() const { return current_user_; }
 
-  // views::CustomButton:
+  // views::Button:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
 

@@ -74,7 +74,7 @@ using bookmarks::BookmarkModel;
 using content::WebContents;
 using ui::ButtonMenuItemModel;
 using ui::MenuModel;
-using views::CustomButton;
+using views::Button;
 using views::ImageButton;
 using views::Label;
 using views::LabelButton;
@@ -153,7 +153,7 @@ class InMenuButtonBackground : public views::Background {
 
   // Overridden from views::Background.
   void Paint(gfx::Canvas* canvas, View* view) const override {
-    CustomButton* button = CustomButton::AsCustomButton(view);
+    Button* button = Button::AsButton(view);
     int h = view->height();
 
     // Draw leading border if desired.
@@ -340,7 +340,7 @@ class AppMenuView : public views::View,
     AddChildView(button);
     // all buttons on menu should must be a custom button in order for
     // the keyboard nativigation work.
-    DCHECK(CustomButton::AsCustomButton(button));
+    DCHECK(Button::AsButton(button));
     return button;
   }
 
@@ -501,7 +501,7 @@ class AppMenu::ZoomView : public AppMenuView {
     fullscreen_button_ = new FullscreenButton(this);
     // all buttons on menu should must be a custom button in order for
     // the keyboard navigation work.
-    DCHECK(CustomButton::AsCustomButton(fullscreen_button_));
+    DCHECK(Button::AsButton(fullscreen_button_));
     gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);

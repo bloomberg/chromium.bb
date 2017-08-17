@@ -585,7 +585,7 @@ void ContentSettingBubbleContents::StyleLearnMoreButton(
   SkColor text_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
   learn_more_button_->SetImage(
-      views::CustomButton::STATE_NORMAL,
+      views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(vector_icons::kHelpOutlineIcon, 16,
                             color_utils::DeriveDefaultIconColor(text_color)));
   learn_more_button_->set_ink_drop_base_color(text_color);

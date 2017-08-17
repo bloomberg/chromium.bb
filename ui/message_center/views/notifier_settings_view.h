@@ -56,8 +56,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
  private:
   FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestLearnMoreButton);
 
-  class MESSAGE_CENTER_EXPORT NotifierButton : public views::CustomButton,
-                         public views::ButtonListener {
+  class MESSAGE_CENTER_EXPORT NotifierButton : public views::Button,
+                                               public views::ButtonListener {
    public:
     NotifierButton(NotifierSettingsProvider* provider,
                    std::unique_ptr<Notifier> notifier,

@@ -408,7 +408,7 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
 }
 
-views::CustomButton* TrayDetailsView::CreateSettingsButton(
+views::Button* TrayDetailsView::CreateSettingsButton(
     int setting_accessible_name_id) {
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
@@ -418,7 +418,7 @@ views::CustomButton* TrayDetailsView::CreateSettingsButton(
   return button;
 }
 
-views::CustomButton* TrayDetailsView::CreateHelpButton() {
+views::Button* TrayDetailsView::CreateHelpButton() {
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);

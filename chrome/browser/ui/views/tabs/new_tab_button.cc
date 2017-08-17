@@ -106,7 +106,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
       return;
 
     destroyed_ = NULL;
-    SetState(views::CustomButton::STATE_NORMAL);
+    SetState(views::Button::STATE_NORMAL);
     return;
   }
   views::ImageButton::OnMouseReleased(event);
@@ -125,7 +125,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   const int visible_height = GetLayoutSize(NEW_TAB_BUTTON).height();
   canvas->Translate(gfx::Vector2d(0, height() - visible_height));
 
-  const bool pressed = state() == views::CustomButton::STATE_PRESSED;
+  const bool pressed = state() == views::Button::STATE_PRESSED;
   const float scale = canvas->image_scale();
 
   // Fill.

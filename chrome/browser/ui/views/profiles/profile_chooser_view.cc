@@ -233,7 +233,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
     UpdateColors();
   }
 
-  // views::CustomButton:
+  // views::Button:
   void StateChanged(ButtonState old_state) override {
     LabelButton::StateChanged(old_state);
 
@@ -396,7 +396,7 @@ class EditableProfilePhoto : public views::LabelButton {
   }
 
  private:
-  // views::CustomButton:
+  // views::Button:
   void StateChanged(ButtonState old_state) override {
     if (photo_overlay_) {
       photo_overlay_->SetVisible(

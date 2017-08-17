@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 
@@ -17,7 +17,7 @@ class Shelf;
 class ShelfView;
 
 // Shelf overflow chevron button.
-class ASH_EXPORT OverflowButton : public views::CustomButton {
+class ASH_EXPORT OverflowButton : public views::Button {
  public:
   // |shelf_view| is the view containing this button.
   OverflowButton(ShelfView* shelf_view, Shelf* shelf);
@@ -42,7 +42,7 @@ class ASH_EXPORT OverflowButton : public views::CustomButton {
   // Updates the chevron image according to GetChevronDirection().
   void UpdateChevronImage();
 
-  // views::CustomButton:
+  // views::Button:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;

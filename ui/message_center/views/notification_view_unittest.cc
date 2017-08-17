@@ -167,11 +167,11 @@ class NotificationViewTest : public views::ViewsTestBase,
     }
   }
 
-  views::CustomButton* GetCloseButton() {
+  views::Button* GetCloseButton() {
     return notification_view()->control_buttons_view_->close_button();
   }
 
-  views::CustomButton* GetSettingsButton() {
+  views::Button* GetSettingsButton() {
     return notification_view()->control_buttons_view_->settings_button();
   }
 
@@ -481,7 +481,7 @@ TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
   notification_view()->UpdateWithNotification(*notification());
   widget()->Show();
 
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
@@ -493,12 +493,12 @@ TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
-  EXPECT_EQ(views::CustomButton::STATE_HOVERED,
+  EXPECT_EQ(views::Button::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());
 
   notification_view()->UpdateWithNotification(*notification());
 
-  EXPECT_EQ(views::CustomButton::STATE_HOVERED,
+  EXPECT_EQ(views::Button::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
@@ -508,7 +508,7 @@ TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
 }
 
@@ -517,9 +517,9 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   notification_view()->UpdateWithNotification(*notification());
   widget()->Show();
 
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[1]->state());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
@@ -533,15 +533,15 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
       views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
   EXPECT_FALSE(details.dispatcher_destroyed);
 
-  EXPECT_EQ(views::CustomButton::STATE_HOVERED,
+  EXPECT_EQ(views::Button::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[1]->state());
 
   notification()->set_buttons(CreateButtons(1));
   notification_view()->UpdateWithNotification(*notification());
 
-  EXPECT_EQ(views::CustomButton::STATE_HOVERED,
+  EXPECT_EQ(views::Button::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());
   EXPECT_EQ(1u, notification_view()->action_buttons_.size());
 
@@ -552,7 +552,7 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+  EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
 }
 
@@ -570,7 +570,7 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
   widget()->Show();
 
   EXPECT_TRUE(NULL != GetSettingsButton());
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
 
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
@@ -583,7 +583,7 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
       views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
   EXPECT_FALSE(details.dispatcher_destroyed);
 
-  EXPECT_EQ(views::CustomButton::STATE_HOVERED, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, GetSettingsButton()->state());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
@@ -592,7 +592,7 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
-  EXPECT_EQ(views::CustomButton::STATE_NORMAL, GetSettingsButton()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
 }
 
 TEST_F(NotificationViewTest, ViewOrderingTest) {

@@ -95,7 +95,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Overridden from LabelButton:
   gfx::Rect GetChildAreaBounds() override;
 
-  // Overridden from CustomButton:
+  // Overridden from Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void StateChanged(ButtonState old_state) override;

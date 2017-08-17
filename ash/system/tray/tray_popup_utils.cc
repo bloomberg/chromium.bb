@@ -259,7 +259,7 @@ std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
       kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF());
 }
 
-void TrayPopupUtils::ConfigureTrayPopupButton(views::CustomButton* button) {
+void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
   button->SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   button->SetFocusForPlatform();
 

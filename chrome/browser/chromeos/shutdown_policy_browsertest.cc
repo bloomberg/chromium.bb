@@ -42,7 +42,6 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 
 namespace em = enterprise_management;

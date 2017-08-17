@@ -2447,7 +2447,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
 TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressRelease) {
   InitBrowserButtonInkDrop();
 
-  views::CustomButton* button = browser_button_;
+  views::Button* button = browser_button_;
   gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
@@ -2474,7 +2474,7 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressRelease) {
 TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressDragReleaseOutside) {
   InitBrowserButtonInkDrop();
 
-  views::CustomButton* button = browser_button_;
+  views::Button* button = browser_button_;
   gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
@@ -2521,7 +2521,7 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressDragReleaseOutside) {
 TEST_F(ShelfViewInkDropTest, ShelfButtonWithoutMenuPressDragReleaseInside) {
   InitBrowserButtonInkDrop();
 
-  views::CustomButton* button = browser_button_;
+  views::Button* button = browser_button_;
   gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,
@@ -2572,7 +2572,7 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
   model_->SetShelfItemDelegate(model_->items()[1].id,
                                base::MakeUnique<ListMenuShelfItemDelegate>());
 
-  views::CustomButton* button = browser_button_;
+  views::Button* button = browser_button_;
   gfx::Point mouse_location = button->GetLocalBounds().CenterPoint();
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, mouse_location,

@@ -40,7 +40,7 @@ const char LabelButton::kViewClassName[] = "LabelButton";
 LabelButton::LabelButton(ButtonListener* listener,
                          const base::string16& text,
                          int button_context)
-    : CustomButton(listener),
+    : Button(listener),
       image_(new ImageView()),
       label_(new LabelButtonLabel(text, button_context)),
       ink_drop_container_(new InkDropContainerView()),
@@ -298,7 +298,7 @@ void LabelButton::Layout() {
   }
 
   label_->SetBoundsRect(label_bounds);
-  CustomButton::Layout();
+  Button::Layout();
 }
 
 const char* LabelButton::GetClassName() const {
@@ -306,7 +306,7 @@ const char* LabelButton::GetClassName() const {
 }
 
 void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
-  CustomButton::EnableCanvasFlippingForRTLUI(flip);
+  Button::EnableCanvasFlippingForRTLUI(flip);
   image_->EnableCanvasFlippingForRTLUI(flip);
 }
 
@@ -339,13 +339,13 @@ bool LabelButton::ShouldUseFloodFillInkDrop() const {
 }
 
 void LabelButton::OnFocus() {
-  CustomButton::OnFocus();
+  Button::OnFocus();
   // Typically the border renders differently when focused.
   SchedulePaint();
 }
 
 void LabelButton::OnBlur() {
-  CustomButton::OnBlur();
+  Button::OnBlur();
   // Typically the border renders differently when focused.
   SchedulePaint();
 }
@@ -376,7 +376,7 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
   return ShouldUseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
-                                     : CustomButton::CreateInkDrop();
+                                     : Button::CreateInkDrop();
 }
 
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {

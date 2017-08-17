@@ -135,9 +135,9 @@ class TestButtonListener : public ButtonListener {
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_sender_ = sender;
-    CustomButton* custom_button = CustomButton::AsCustomButton(sender);
-    DCHECK(custom_button);
-    last_sender_state_ = custom_button->state();
+    Button* button = Button::AsButton(sender);
+    DCHECK(button);
+    last_sender_state_ = button->state();
     last_event_type_ = event.type();
   }
 
@@ -163,9 +163,9 @@ class TestMenuButtonListener : public MenuButtonListener {
                            const gfx::Point& point,
                            const ui::Event* event) override {
     last_source_ = source;
-    CustomButton* custom_button = CustomButton::AsCustomButton(source);
-    DCHECK(custom_button);
-    last_source_state_ = custom_button->state();
+    Button* button = Button::AsButton(source);
+    DCHECK(button);
+    last_source_state_ = button->state();
   }
 
   View* last_source() { return last_source_; }

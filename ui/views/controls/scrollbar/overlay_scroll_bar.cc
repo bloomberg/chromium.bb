@@ -101,12 +101,12 @@ void OverlayScrollBar::Thumb::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
   scroll_bar_->Show();
   // Don't start the hide countdown if the thumb is still hovered or pressed.
-  if (GetState() == CustomButton::STATE_NORMAL)
+  if (GetState() == Button::STATE_NORMAL)
     scroll_bar_->StartHideCountdown();
 }
 
 void OverlayScrollBar::Thumb::OnStateChanged() {
-  if (GetState() == CustomButton::STATE_NORMAL) {
+  if (GetState() == Button::STATE_NORMAL) {
     gfx::Transform translation;
     const int direction = base::i18n::IsRTL() ? -1 : 1;
     translation.Translate(

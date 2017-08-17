@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/view.h"
 
@@ -57,9 +57,9 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
 
-  CustomButton::ButtonState GetState() const;
+  Button::ButtonState GetState() const;
   // Update our state and schedule a repaint when the mouse moves over us.
-  void SetState(CustomButton::ButtonState state);
+  void SetState(Button::ButtonState state);
   virtual void OnStateChanged();
 
   bool IsHorizontal() const;
@@ -77,7 +77,7 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   int mouse_offset_;
 
   // The current state of the thumb button.
-  CustomButton::ButtonState state_;
+  Button::ButtonState state_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScrollBarThumb);
 };

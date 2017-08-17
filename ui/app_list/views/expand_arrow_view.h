@@ -6,7 +6,6 @@
 #define UI_APP_LIST_VIEWS_EXPAND_ARROW_VIEW_H_
 
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/custom_button.h"
 
 namespace views {
 class ImageView;
@@ -22,8 +21,7 @@ class AppListView;
 class ContentsView;
 
 // A tile item for the expand arrow on the start page.
-class ExpandArrowView : public views::CustomButton,
-                        public views::ButtonListener {
+class ExpandArrowView : public views::Button, public views::ButtonListener {
  public:
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
@@ -31,7 +29,7 @@ class ExpandArrowView : public views::CustomButton,
   bool selected() { return selected_; }
   void SetSelected(bool selected);
 
-  // Overridden from views::CustomButton:
+  // Overridden from views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Overridden from views::ButtonListener:

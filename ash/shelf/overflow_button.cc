@@ -22,7 +22,7 @@
 namespace ash {
 
 OverflowButton::OverflowButton(ShelfView* shelf_view, Shelf* shelf)
-    : CustomButton(nullptr),
+    : Button(nullptr),
       upward_image_(gfx::CreateVectorIcon(kShelfOverflowIcon, kShelfIconColor)),
       chevron_image_(nullptr),
       shelf_view_(shelf_view),
@@ -129,11 +129,11 @@ bool OverflowButton::ShouldEnterPushedState(const ui::Event& event) {
   if (shelf_view_->IsShowingOverflowBubble())
     return false;
 
-  return CustomButton::ShouldEnterPushedState(event);
+  return Button::ShouldEnterPushedState(event);
 }
 
 void OverflowButton::NotifyClick(const ui::Event& event) {
-  CustomButton::NotifyClick(event);
+  Button::NotifyClick(event);
   shelf_view_->ButtonPressed(this, event, GetInkDrop());
 }
 

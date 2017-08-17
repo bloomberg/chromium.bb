@@ -175,7 +175,7 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
       profile_observer_(this),
       button_style_(button_style),
       widget_observer_(this) {
-  set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+  set_notify_action(Button::NOTIFY_ON_PRESS);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
   set_animate_on_state_change(false);
@@ -270,9 +270,9 @@ void AvatarButton::AddedToWidget() {
 
 void AvatarButton::OnGestureEvent(ui::GestureEvent* event) {
   // TODO(wjmaclean): The check for ET_GESTURE_LONG_PRESS is done here since
-  // no other UI button based on CustomButton appears to handle mouse
+  // no other UI button based on Button appears to handle mouse
   // right-click. If other cases are identified, it may make sense to move this
-  // check to CustomButton.
+  // check to Button.
   if (event->type() == ui::ET_GESTURE_LONG_PRESS)
     NotifyClick(*event);
   else

@@ -63,7 +63,7 @@ CredentialsItemView::CredentialsItemView(
     SkColor hover_color,
     const autofill::PasswordForm* form,
     net::URLRequestContextGetter* request_context)
-    : CustomButton(button_listener),
+    : Button(button_listener),
       form_(form),
       upper_label_(nullptr),
       lower_label_(nullptr),

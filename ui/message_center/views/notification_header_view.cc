@@ -132,7 +132,7 @@ base::string16 FormatToRelativeTime(base::Time past) {
 NotificationHeaderView::NotificationHeaderView(
     NotificationControlButtonsView* control_buttons_view,
     views::ButtonListener* listener)
-    : views::CustomButton(listener) {
+    : views::Button(listener) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_animate_on_state_change(true);

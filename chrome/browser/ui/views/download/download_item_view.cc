@@ -883,7 +883,7 @@ void DownloadItemView::SetDropdownState(State new_state) {
   // Avoid extra SchedulePaint()s if the state is going to be the same and
   // |dropdown_button_| has already been initialized.
   if (dropdown_state_ == new_state &&
-      !dropdown_button_->GetImage(views::CustomButton::STATE_NORMAL).isNull())
+      !dropdown_button_->GetImage(views::Button::STATE_NORMAL).isNull())
     return;
 
   if (new_state != dropdown_state_) {

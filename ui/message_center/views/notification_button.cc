@@ -18,7 +18,7 @@
 namespace message_center {
 
 NotificationButton::NotificationButton(views::ButtonListener* listener)
-    : views::CustomButton(listener), icon_(NULL), title_(NULL) {
+    : views::Button(listener), icon_(NULL), title_(NULL) {
   SetFocusForPlatform();
   // Create a background so that it does not change when the MessageView
   // background changes to show touch feedback
@@ -81,7 +81,7 @@ int NotificationButton::GetHeightForWidth(int width) const {
 }
 
 void NotificationButton::OnFocus() {
-  views::CustomButton::OnFocus();
+  views::Button::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
 }
 
