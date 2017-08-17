@@ -72,6 +72,10 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   DCHECK(task.enqueue_order_set());
 #endif
 
+  // Temporary check for crbug.com/752914.
+  // TODO(skyostil): Remove this.
+  CHECK(task.task);
+
   // Amoritized O(1).
   work_queue_.push_back(std::move(task));
 

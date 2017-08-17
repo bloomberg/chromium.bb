@@ -348,6 +348,11 @@ TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
   base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   TaskQueueImpl::TaskDeque queue;
   queue.Swap(immediate_incoming_queue());
+  // Temporary check for crbug.com/752914. Ideally we'd check the entire queue
+  // but that would be too expensive.
+  // TODO(skyostil): Remove this.
+  if (!queue.empty())
+    CHECK(queue.front().task);
   return queue;
 }
 

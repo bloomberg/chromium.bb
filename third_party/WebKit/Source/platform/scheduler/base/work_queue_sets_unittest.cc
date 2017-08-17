@@ -43,8 +43,8 @@ class WorkQueueSetsTest : public ::testing::Test {
   }
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
-    TaskQueueImpl::Task fake_task(FROM_HERE, base::Closure(), base::TimeTicks(),
-                                  0, true);
+    TaskQueueImpl::Task fake_task(FROM_HERE, base::Bind([] {}),
+                                  base::TimeTicks(), 0, true);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
