@@ -4,14 +4,10 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Notification;
@@ -44,7 +40,6 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
 
         mMediaNotificationInfoBuilder.setMetadata(new MediaMetadata("title", "artist", "album"));
         mMediaNotificationInfoBuilder.setOrigin("https://example.com/");
-        mMediaNotificationInfoBuilder.setPrivate(false);
 
         MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
         Notification notification = updateNotificationBuilderAndBuild(info);
@@ -65,7 +60,6 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
 
         mMediaNotificationInfoBuilder.setMetadata(new MediaMetadata("title", "", ""));
         mMediaNotificationInfoBuilder.setOrigin("https://example.com/");
-        mMediaNotificationInfoBuilder.setPrivate(false);
 
         MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
         Notification notification = updateNotificationBuilderAndBuild(info);
@@ -85,7 +79,6 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
 
         mMediaNotificationInfoBuilder.setMetadata(new MediaMetadata("title", "", ""));
         mMediaNotificationInfoBuilder.setOrigin("https://example.com/");
-        mMediaNotificationInfoBuilder.setPrivate(false);
 
         MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
         Notification notification = updateNotificationBuilderAndBuild(info);
@@ -103,38 +96,12 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
     public void updateNotificationBuilderDisplaysCorrectLargeIcon_WithLargeIcon() {
         Bitmap largeIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
         mMediaNotificationInfoBuilder.setNotificationLargeIcon(largeIcon);
-        mMediaNotificationInfoBuilder.setPrivate(false);
 
         MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
         Notification notification = updateNotificationBuilderAndBuild(info);
 
         if (hasNApis()) {
             assertTrue(largeIcon.sameAs(iconToBitmap(
-                    notification.extras.getParcelable(Notification.EXTRA_LARGE_ICON))));
-        }
-    }
-
-    @Test
-    public void updateNotificationBuilderDisplaysCorrectLargeIcon_IncognitoNotification() {
-        Bitmap largeIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-        mMediaNotificationInfoBuilder.setNotificationLargeIcon(largeIcon);
-        mMediaNotificationInfoBuilder.setMetadata(new MediaMetadata("title", "artist", "album"));
-        mMediaNotificationInfoBuilder.setOrigin("https://example.com/");
-        mMediaNotificationInfoBuilder.setPrivate(true);
-
-        MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
-        Notification notification = updateNotificationBuilderAndBuild(info);
-
-        ShadowNotification shadowNotification = Shadows.shadowOf(notification);
-
-        assertThat(shadowNotification.getContentTitle().toString(), not(containsString("title")));
-        String contentText = shadowNotification.getContentText().toString();
-        assertThat(contentText, not(containsString("artist")));
-        assertThat(contentText, not(containsString("album")));
-        if (hasNApis()) {
-            assertNotEquals("https://example.com/",
-                    notification.extras.getString(Notification.EXTRA_SUB_TEXT));
-            assertTrue(getManager().mDefaultNotificationLargeIcon.sameAs(iconToBitmap(
                     notification.extras.getParcelable(Notification.EXTRA_LARGE_ICON))));
         }
     }

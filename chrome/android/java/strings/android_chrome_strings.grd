@@ -2696,9 +2696,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>
-      <message name="IDS_MEDIA_NOTIFICATION_INCOGNITO" desc="Message on media notifications from incognito tabs.">
-        Media playing in an incognito tab
-      </message>
       <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT" desc="Text to be shown as a notification when screen capture is in progress.">
         <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph> is sharing your screen
       </message>
