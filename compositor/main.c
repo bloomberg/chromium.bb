@@ -1487,10 +1487,9 @@ out:
 	return ret;
 }
 
-static void
-fbdev_backend_output_configure(struct wl_listener *listener, void *data)
+static int
+fbdev_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	struct weston_config *wc = wet_get_config(output->compositor);
 	struct weston_config_section *section;
 
@@ -1499,7 +1498,7 @@ fbdev_backend_output_configure(struct wl_listener *listener, void *data)
 	wet_output_set_transform(output, section, WL_OUTPUT_TRANSFORM_NORMAL, UINT32_MAX);
 	weston_output_set_scale(output, 1);
 
-	weston_output_enable(output);
+	return 0;
 }
 
 static int
@@ -1523,16 +1522,12 @@ load_fbdev_backend(struct weston_compositor *c,
 	config.base.struct_size = sizeof(struct weston_fbdev_backend_config);
 	config.configure_device = configure_input_device;
 
+	wet_set_simple_head_configurator(c, fbdev_backend_output_configure);
+
 	/* load the actual wayland backend and configure it */
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_FBDEV,
 					     &config.base);
 
-	if (ret < 0)
-		goto out;
-
-	wet_set_pending_output_handler(c, fbdev_backend_output_configure);
-
-out:
 	free(config.device);
 	return ret;
 }
