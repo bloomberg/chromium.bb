@@ -81,10 +81,22 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         cookies_allowed: YES
         cookies_store: "user"
         setting: "This feature cannot be disabled."
-        policy_exception_justification:
-          "Not implemented, without this type of request, Chrome would be "
-          "unable to navigate to websites."
-      })");
+        chrome_policy {
+          URLBlacklist {
+            URLBlacklist: { entries: '*' }
+          }
+        }
+        chrome_policy {
+          URLWhitelist {
+            URLWhitelist { }
+          }
+        }
+      }
+      comments:
+        "Chrome would be unable to navigate to websites without this type of "
+        "request. Using either URLBlacklist or URLWhitelist policies (or a "
+        "combination of both) limits the scope of these requests."
+      )");
 
 }  // namespace
 
