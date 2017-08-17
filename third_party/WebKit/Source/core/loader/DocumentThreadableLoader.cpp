@@ -187,8 +187,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       fetch_request_mode_(WebURLRequest::kFetchRequestModeSameOrigin),
       fetch_credentials_mode_(WebURLRequest::kFetchCredentialsModeOmit),
       timeout_timer_(
-          TaskRunnerHelper::Get(TaskType::kNetworking,
-                                loading_context_->GetExecutionContext()),
+          TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()),
           this,
           &DocumentThreadableLoader::DidTimeout),
       request_started_seconds_(0.0),
@@ -236,8 +235,8 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
   // corresponds to this line, but divert |cors_flag_| here for convenience.
   if (cors_flag_ && request.GetFetchRequestMode() ==
                         WebURLRequest::kFetchRequestModeSameOrigin) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
-                                                                 client_);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(
+        GetExecutionContext(), client_);
     ThreadableLoaderClient* client = client_;
     Clear();
     ResourceError error = ResourceError::CancelledDueToAccessCheckError(
@@ -245,7 +244,7 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
         "Cross origin requests are not supported.");
     const String message = "Failed to load " + error.FailingURL() + ": " +
                            error.LocalizedDescription();
-    loading_context_->GetExecutionContext()->AddConsoleMessage(
+    GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
     client->DidFail(error);
     return;
@@ -389,8 +388,8 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   // send a request, preflighted or not, that's guaranteed to be denied.
   if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
           request.Url().Protocol())) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
-                                                                 client_);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(
+        GetExecutionContext(), client_);
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(
             request.Url(), ResourceRequestBlockedReason::kOther,
@@ -402,8 +401,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   // Non-secure origins may not make "external requests":
   // https://wicg.github.io/cors-rfc1918/#integration-fetch
   String error_message;
-  if (!loading_context_->GetExecutionContext()->IsSecureContext(
-          error_message) &&
+  if (!GetExecutionContext()->IsSecureContext(error_message) &&
       request.IsExternalRequest()) {
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(
@@ -463,7 +461,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   } else {
     // Prevent use of the CORS preflight cache when instructed by the DevTools
     // not to use caches.
-    probe::shouldForceCORSPreflight(GetDocument(),
+    probe::shouldForceCORSPreflight(GetExecutionContext(),
                                     &should_ignore_preflight_cache);
   }
 
@@ -622,12 +620,12 @@ bool DocumentThreadableLoader::RedirectReceived(
 
   --cors_redirect_limit_;
 
-  if (GetDocument() && GetDocument()->GetFrame()) {
-    probe::didReceiveCORSRedirectResponse(
-        GetDocument()->GetFrame(), resource->Identifier(),
-        GetDocument()->GetFrame()->Loader().GetDocumentLoader(),
-        redirect_response, resource);
-  }
+  probe::didReceiveCORSRedirectResponse(
+      GetExecutionContext(), resource->Identifier(),
+      GetDocument() && GetDocument()->GetFrame()
+          ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
+          : nullptr,
+      redirect_response, resource);
 
   WebCORS::RedirectStatus redirect_status =
       WebCORS::CheckRedirectLocation(new_url);
@@ -851,8 +849,8 @@ void DocumentThreadableLoader::ReportResponseReceived(
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  probe::didReceiveResourceResponse(GetDocument(), identifier, loader, response,
-                                    GetResource());
+  probe::didReceiveResourceResponse(GetExecutionContext(), identifier, loader,
+                                    response, GetResource());
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);
 }
 
@@ -1065,7 +1063,7 @@ void DocumentThreadableLoader::DispatchDidFailAccessControlCheck(
     const ResourceError& error) {
   const String message = "Failed to load " + error.FailingURL() + ": " +
                          error.LocalizedDescription();
-  loading_context_->GetExecutionContext()->AddConsoleMessage(
+  GetExecutionContext()->AddConsoleMessage(
       ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
 
   ThreadableLoaderClient* client = client_;
@@ -1108,8 +1106,8 @@ void DocumentThreadableLoader::LoadRequestAsync(
     SetResource(RawResource::Fetch(new_params, fetcher));
 
   if (!GetResource()) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
-                                                                 client_);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(
+        GetExecutionContext(), client_);
     ThreadableLoaderClient* client = client_;
     Clear();
     // setResource() might call notifyFinished() and thus clear()
@@ -1119,7 +1117,7 @@ void DocumentThreadableLoader::LoadRequestAsync(
       return;
     String message =
         String("Failed to start loading ") + request.Url().GetString();
-    loading_context_->GetExecutionContext()->AddConsoleMessage(
+    GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
     client->DidFail(ResourceError::CancelledError(request.Url()));
     return;
@@ -1127,11 +1125,11 @@ void DocumentThreadableLoader::LoadRequestAsync(
 
   if (GetResource()->IsLoading()) {
     unsigned long identifier = GetResource()->Identifier();
-    probe::documentThreadableLoaderStartedLoadingForClient(GetDocument(),
-                                                           identifier, client_);
+    probe::documentThreadableLoaderStartedLoadingForClient(
+        GetExecutionContext(), identifier, client_);
   } else {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
-                                                                 client_);
+    probe::documentThreadableLoaderFailedToStartLoadingForClient(
+        GetExecutionContext(), client_);
   }
 }
 
@@ -1151,7 +1149,7 @@ void DocumentThreadableLoader::LoadRequestSync(
   ResourceError error =
       resource ? resource->GetResourceError() : ResourceError();
 
-  probe::documentThreadableLoaderStartedLoadingForClient(GetDocument(),
+  probe::documentThreadableLoaderStartedLoadingForClient(GetExecutionContext(),
                                                          identifier, client_);
   ThreadableLoaderClient* client = client_;
 
@@ -1262,11 +1260,15 @@ SecurityOrigin* DocumentThreadableLoader::GetSecurityOrigin() const {
 }
 
 Document* DocumentThreadableLoader::GetDocument() const {
-  DCHECK(loading_context_);
-  ExecutionContext* context = loading_context_->GetExecutionContext();
+  ExecutionContext* context = GetExecutionContext();
   if (context->IsDocument())
     return ToDocument(context);
   return nullptr;
+}
+
+ExecutionContext* DocumentThreadableLoader::GetExecutionContext() const {
+  DCHECK(loading_context_);
+  return loading_context_->GetExecutionContext();
 }
 
 DEFINE_TRACE(DocumentThreadableLoader) {

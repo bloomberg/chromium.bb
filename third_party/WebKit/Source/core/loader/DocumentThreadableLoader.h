@@ -54,6 +54,8 @@ class SecurityOrigin;
 class ThreadableLoaderClient;
 class ThreadableLoadingContext;
 
+// TODO(horo): We are using this class not only in documents, but also in
+// workers. We should change the name to ThreadableLoaderImpl.
 class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                                    private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
@@ -195,8 +197,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   SecurityOrigin* GetSecurityOrigin() const;
 
+  // Returns null if the loader is not associated with Document.
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
+
+  ExecutionContext* GetExecutionContext() const;
 
   ThreadableLoaderClient* client_;
   Member<ThreadableLoadingContext> loading_context_;

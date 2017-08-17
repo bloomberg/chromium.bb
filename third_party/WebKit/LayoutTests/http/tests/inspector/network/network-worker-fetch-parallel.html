@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function makeFetchesInWorker(urls)
+{
+    return new Promise((resolve) => {
+        var worker = new Worker('/inspector/network/resources/fetch-parallel-worker.js');
+        worker.onmessage = (event) => {
+            resolve(JSON.stringify(event.data));
+        };
+        worker.postMessage(urls);
+    });
+}
+
+function test()
+{
+    InspectorTest.recordNetwork();
+
+    InspectorTest.callFunctionInPageAsync("makeFetchesInWorker", [['./resource.php?1', './resource.php?2']])
+        .then((result) => {
+              InspectorTest.addResult('Parallel fetch in worker result: ' + result.value);
+              var requests = InspectorTest.networkRequests();
+              requests.forEach((request) => {
+                  InspectorTest.addResult(request.url());
+                  InspectorTest.addResult("resource.type: " + request.resourceType());
+                  InspectorTest.addResult("request.failed: " + !!request.failed);
+              });
+              InspectorTest.completeTest();
+        });
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that parallel fetches in worker should not cause crash.</p>
+</body>
+</html>

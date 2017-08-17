@@ -109,8 +109,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                         double monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length);
-  void DidReceiveCORSRedirectResponse(LocalFrame*,
-                                      unsigned long identifier,
+  void DidReceiveCORSRedirectResponse(unsigned long identifier,
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
