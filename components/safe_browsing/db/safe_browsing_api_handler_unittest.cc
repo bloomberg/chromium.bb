@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing/db/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing_db/metadata.pb.h"
-#include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,6 @@ class SafeBrowsingApiHandlerUtilTest : public ::testing::Test {
     meta_ = ThreatMetadata();
     return ParseJsonFromGMSCore(json, &threat_, &meta_);
   }
-
 };
 
 TEST_F(SafeBrowsingApiHandlerUtilTest, BadJson) {

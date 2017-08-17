@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/android/safe_browsing_api_handler_bridge.h"
+#include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
+#include "components/safe_browsing/db/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SafeBrowsingApiBridge_jni.h"

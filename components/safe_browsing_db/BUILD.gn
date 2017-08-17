@@ -46,16 +46,6 @@ group("safe_browsing_db") {
   ]
 }
 
-# This target is for the mobile version.
-group("safe_browsing_db_mobile") {
-  deps = [
-    ":remote_database_manager",
-    ":safe_browsing_api_handler",
-    ":safe_browsing_api_handler_util",
-    ":safe_browsing_db_shared",
-  ]
-}
-
 static_library("database_manager") {
   sources = [
     "database_manager.cc",
@@ -99,58 +89,6 @@ static_library("prefix_set") {
     "prefix_set.h",
   ]
   deps = [
-    ":util",
-    "//base",
-  ]
-}
-
-static_library("remote_database_manager") {
-  sources = [
-    "remote_database_manager.cc",
-    "remote_database_manager.h",
-  ]
-  deps = [
-    ":database_manager",
-    ":safe_browsing_api_handler",
-    ":v4_get_hash_protocol_manager",
-    ":v4_protocol_manager_util",
-    "//base:base",
-    "//components/variations",
-    "//content/public/browser",
-    "//net",
-    "//url",
-  ]
-}
-
-source_set("safe_browsing_api_handler") {
-  sources = [
-    "safe_browsing_api_handler.cc",
-    "safe_browsing_api_handler.h",
-  ]
-  deps = [
-    ":safe_browsing_api_handler_util",
-    ":util",
-    "//base",
-    "//content/public/browser:browser",
-    "//url",
-  ]
-
-  if (is_android) {
-    deps += [ "//components/safe_browsing_db/android:jni_headers" ]
-    sources += [
-      "android/safe_browsing_api_handler_bridge.cc",
-      "android/safe_browsing_api_handler_bridge.h",
-    ]
-  }
-}
-
-static_library("safe_browsing_api_handler_util") {
-  sources = [
-    "safe_browsing_api_handler_util.cc",
-    "safe_browsing_api_handler_util.h",
-  ]
-  deps = [
-    ":metadata_proto",
     ":util",
     "//base",
   ]
@@ -478,32 +416,6 @@ source_set("unit_tests_desktop") {
     "//crypto",
     "//net",
     "//net:test_support",
-    "//testing/gtest",
-    "//url",
-  ]
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
-  }
-}
-
-source_set("unit_tests_mobile") {
-  testonly = true
-  sources = [
-    "remote_database_manager_unittest.cc",
-    "safe_browsing_api_handler_unittest.cc",
-  ]
-  deps = [
-    ":metadata_proto",
-    ":remote_database_manager",
-    ":safe_browsing_api_handler",
-    ":safe_browsing_api_handler_util",
-    ":unit_tests_shared",
-    ":util",
-    ":v4_test_util",
-    "//base",
-    "//components/variations",
-    "//content/test:test_support",
     "//testing/gtest",
     "//url",
   ]

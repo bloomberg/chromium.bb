@@ -3,7 +3,7 @@ include_rules = [
   "+components/minidump_uploader/android/javatests",
   "+components/policy/android/java",
   "+components/policy/android/javatests",
-  "+components/safe_browsing_db/android/java",
+  "+components/safe_browsing/android/java",
   "+components/variations/android/java",
   "+content/public/android/java",
   "+content/public/test/android/javatests",

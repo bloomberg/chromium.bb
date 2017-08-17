@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/safe_browsing_db/remote_database_manager.h"
+#include "components/safe_browsing/db/remote_database_manager.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "content/public/browser/browser_context.h"

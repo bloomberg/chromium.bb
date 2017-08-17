@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/remote_database_manager.h"
+#include "components/safe_browsing/db/remote_database_manager.h"
 
 #include <memory>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/safe_browsing_db/safe_browsing_api_handler.h"
+#include "components/safe_browsing/db/safe_browsing_api_handler.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -37,7 +37,6 @@ void LogPendingChecks(size_t current_requests_size) {
 }
 
 }  // namespace
-
 
 //
 // RemoteSafeBrowsingDatabaseManager::ClientRequest methods
@@ -329,8 +328,8 @@ bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
 }
 
 void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) {
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
   enabled_ = true;

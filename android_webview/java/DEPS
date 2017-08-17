@@ -5,7 +5,7 @@ include_rules = [
   "+components/minidump_uploader/android/java",
   "+components/navigation_interception/android/java",
   "+components/policy/android/java",
-  "+components/safe_browsing_db/android/java",
+  "+components/safe_browsing/android/java",
   "+components/web_contents_delegate_android/android/java",
   "+components/variations/android/java",
   "+device/gamepad/android/java",
