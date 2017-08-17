@@ -90,19 +90,19 @@ function logToConsole()
 
 function test()
 {
-    InspectorTest.evaluateInPage("logToConsole()", step2);
+    TestRunner.evaluateInPage("logToConsole()", step2);
 
     function step2()
     {
-        InspectorTest.dumpConsoleMessages(false, true);
-        InspectorTest.addResult("Expanded all messages");
-        InspectorTest.expandConsoleMessages(step3);
+        ConsoleTestRunner.dumpConsoleMessages(false, true);
+        TestRunner.addResult("Expanded all messages");
+        ConsoleTestRunner.expandConsoleMessages(step3);
     }
 
     function step3()
     {
-        InspectorTest.dumpConsoleMessages(false, true);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, true);
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -95,26 +95,26 @@ function promiseTest9()
 
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
+    ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
     Common.console.showPromise();
 
     checkConsoleMessages();
 
     function checkConsoleMessages()
     {
-        InspectorTest.evaluateInPage("runNextPromiseTest()", callback);
+        TestRunner.evaluateInPage("runNextPromiseTest()", callback);
 
         function callback(result)
         {
             if (!result.value)
-                InspectorTest.expandConsoleMessages(dump);
+                ConsoleTestRunner.expandConsoleMessages(dump);
         }
     }
 
     function dump()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

@@ -13,25 +13,25 @@ function startWorker()
 
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
-    InspectorTest.evaluateInPage("setTimeout(startWorker, 0)");
+    ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
+    TestRunner.evaluateInPage("setTimeout(startWorker, 0)");
 
     function checkConsoleMessages()
     {
-        var count = InspectorTest.consoleMessagesCount();
+        var count = ConsoleTestRunner.consoleMessagesCount();
         if (count === 2)
             Common.console.showPromise().then(expand);
     }
 
     function expand()
     {
-        InspectorTest.expandConsoleMessages(dump);
+        ConsoleTestRunner.expandConsoleMessages(dump);
     }
 
     function dump()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

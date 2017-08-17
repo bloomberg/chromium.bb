@@ -118,7 +118,7 @@ function testOverriddenToString(obj, overrideThrow)
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function evaluateInConsole(next)
         {
             var expressions = [
@@ -146,31 +146,31 @@ function test()
             {
                 var expr = expressions.shift();
                 if (!expr) {
-                    InspectorTest.deprecatedRunAfterPendingDispatches(next);
+                    TestRunner.deprecatedRunAfterPendingDispatches(next);
                     return;
                 }
-                InspectorTest.evaluateInConsole(expr, iterate);
+                ConsoleTestRunner.evaluateInConsole(expr, iterate);
             }
             iterate();
         },
 
         async function testRuntimeAgentCallFunctionOn(next)
         {
-            var result = await InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })");
+            var result = await TestRunner.RuntimeAgent.evaluate("({ a : 1, b : 2 })");
 
             function sum()
             {
                 return this.a + this.b;
             }
-            result = await InspectorTest.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
+            result = await TestRunner.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
 
-            InspectorTest.assertEquals(3, result.value);
+            TestRunner.assertEquals(3, result.value);
             next();
         },
 
         function dumpConsoleMessages(next)
         {
-            InspectorTest.dumpConsoleMessages();
+            ConsoleTestRunner.dumpConsoleMessages();
             next();
         }
     ]);

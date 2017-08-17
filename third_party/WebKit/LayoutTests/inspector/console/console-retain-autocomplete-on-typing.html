@@ -9,43 +9,43 @@ window.foobaz = "foobaz";
 
 function test()
 {
-    InspectorTest.waitUntilConsoleEditorLoaded().then(onConsoleEditorLoaded);
+    ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(onConsoleEditorLoaded);
 
     var consoleEditor;
     function onConsoleEditorLoaded(editor)
     {
         consoleEditor = editor;
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
         function testSummonSuggestBox(next)
         {
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
-            InspectorTest.typeIn(consoleEditor, "f");
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
+            SourcesTestRunner.typeIn(consoleEditor, "f");
 
             function onSuggestionsShown()
             {
-                InspectorTest.addResult("Suggestions shown.");
+                TestRunner.addResult("Suggestions shown.");
                 next();
             }
         },
 
         function testTypeText(next)
         {
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onCursorActivityHandledForTest", onCursorActivityHandled);
-            InspectorTest.typeIn(consoleEditor, "o");
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onCursorActivityHandledForTest", onCursorActivityHandled);
+            SourcesTestRunner.typeIn(consoleEditor, "o");
 
             function onSuggestionsHidden()
             {
-                InspectorTest.addResult("FAIL: suggestbox is hidden during typing.");
-                InspectorTest.completeTest();
+                TestRunner.addResult("FAIL: suggestbox is hidden during typing.");
+                TestRunner.completeTest();
             }
 
             function onCursorActivityHandled()
             {
-                InspectorTest.addResult("SUCCESS: suggestbox is not hidden during typing.");
+                TestRunner.addResult("SUCCESS: suggestbox is not hidden during typing.");
                 next();
             }
         }

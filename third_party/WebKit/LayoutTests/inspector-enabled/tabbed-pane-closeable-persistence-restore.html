@@ -12,9 +12,9 @@ function onload()
 function test()
 {
     var drawer = UI.inspectorView._drawerTabbedLocation.tabbedPane();
-    InspectorTest.addResult("Has sensors tab: " + drawer.hasTab("sensors"));
-    InspectorTest.addResult("Has rendering tab: " + drawer.hasTab("rendering"));
-    InspectorTest.completeTest();
+    TestRunner.addResult("Has sensors tab: " + drawer.hasTab("sensors"));
+    TestRunner.addResult("Has rendering tab: " + drawer.hasTab("rendering"));
+    TestRunner.completeTest();
 }
 
 </script>

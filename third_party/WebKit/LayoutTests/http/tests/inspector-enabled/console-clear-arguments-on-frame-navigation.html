@@ -26,9 +26,9 @@ function test()
 {
     for (var message of ConsoleModel.consoleModel.messages()) {
         var args = (message.parameters || []).map((arg) => arg.type);
-        InspectorTest.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
+        TestRunner.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 

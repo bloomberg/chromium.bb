@@ -16,28 +16,28 @@ function substituteConsole()
 
 var test = function()
 {
-    InspectorTest.evaluateInConsole("deleteConsole()", step1);
+    ConsoleTestRunner.evaluateInConsole("deleteConsole()", step1);
 
     function step1()
     {
-        InspectorTest.evaluateInConsole("1", step2);
+        ConsoleTestRunner.evaluateInConsole("1", step2);
     }
 
     function step2(result)
     {
-        InspectorTest.addResult(result);
-        InspectorTest.evaluateInConsole("substituteConsole()", step3);
+        TestRunner.addResult(result);
+        ConsoleTestRunner.evaluateInConsole("substituteConsole()", step3);
     }
 
     function step3(result)
     {
-        InspectorTest.evaluateInConsole("2", step4);
+        ConsoleTestRunner.evaluateInConsole("2", step4);
     }
 
     function step4(result)
     {
-        InspectorTest.addResult(result);
-        InspectorTest.completeTest();
+        TestRunner.addResult(result);
+        TestRunner.completeTest();
     }
 }
 

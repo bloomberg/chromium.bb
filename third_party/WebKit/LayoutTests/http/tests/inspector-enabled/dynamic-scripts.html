@@ -41,11 +41,11 @@ function scriptLoaded()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step2);
+    SourcesTestRunner.startDebuggerTest(step2);
 
     function step2()
     {
-        InspectorTest.deprecatedRunAfterPendingDispatches(step3);
+        TestRunner.deprecatedRunAfterPendingDispatches(step3);
     }
 
     function step3()
@@ -67,10 +67,10 @@ function test()
         }
         urls = urls.filter(filter);
 
-        InspectorTest.addResult("UISourceCodes:");
+        TestRunner.addResult("UISourceCodes:");
         for (var i = 0; i < urls.length; ++i)
-            InspectorTest.addResult("    " + urls[i]);
-        InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("    " + urls[i]);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

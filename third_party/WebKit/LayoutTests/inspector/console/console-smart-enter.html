@@ -6,7 +6,7 @@
 function test()
 {
     var prompt = Console.ConsoleView.instance()._prompt;
-    InspectorTest.waitUntilConsoleEditorLoaded().then(step1);
+    ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(step1);
 
     function step1()
     {
@@ -43,7 +43,7 @@ function test()
             () => pressEnterAfter("var doubleQ = \""),
             () => pressEnterAfter("var singleQ = '"),
             () => pressEnterAfter("var singleQ = 'str'")
-        ]).then(InspectorTest.completeTest);
+        ]).then(TestRunner.completeTest);
     }
 
     function sequential(tests)
@@ -58,20 +58,20 @@ function test()
     {
         var fulfill;
         var promise = new Promise(x => fulfill = x);
-        InspectorTest.addSniffer(Console.ConsolePrompt.prototype, "_enterProcessedForTest", enterProcessed);
+        TestRunner.addSniffer(Console.ConsolePrompt.prototype, "_enterProcessedForTest", enterProcessed);
 
         prompt.setText(text);
         prompt.moveCaretToEndOfPrompt();
-        prompt._enterKeyPressed(InspectorTest.createKeyEvent("Enter"));
+        prompt._enterKeyPressed(TestRunner.createKeyEvent("Enter"));
         return promise;
 
         function enterProcessed()
         {
-            InspectorTest.addResult("Text Before Enter:");
-            InspectorTest.addResult(text.replace(/ /g, "."));
-            InspectorTest.addResult("Text After Enter:");
-            InspectorTest.addResult(prompt.text().replace(/ /g, ".") || "<empty>");
-            InspectorTest.addResult("");
+            TestRunner.addResult("Text Before Enter:");
+            TestRunner.addResult(text.replace(/ /g, "."));
+            TestRunner.addResult("Text After Enter:");
+            TestRunner.addResult(prompt.text().replace(/ /g, ".") || "<empty>");
+            TestRunner.addResult("");
             fulfill();
         }
     }

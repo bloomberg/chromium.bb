@@ -47,11 +47,11 @@ function setupPromise2()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.addResult("----console messages start----");
-    InspectorTest.dumpConsoleMessages();
-    InspectorTest.addResult("----console messages end----");
-    InspectorTest.completeTest();
+    ConsoleTestRunner.expandConsoleMessages();
+    TestRunner.addResult("----console messages start----");
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.addResult("----console messages end----");
+    TestRunner.completeTest();
 }
 </script>
 </head>

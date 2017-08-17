@@ -91,12 +91,12 @@ ArrayLike.prototype.splice = function() {};
 
 function test()
 {
-    InspectorTest.evaluateInPage("logToConsole()", callback);
+    TestRunner.evaluateInPage("logToConsole()", callback);
 
     function callback()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

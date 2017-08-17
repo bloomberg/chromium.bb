@@ -19,10 +19,10 @@ console.log(object);
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(step1);
+    ConsoleTestRunner.expandConsoleMessages(step1);
     function step1() {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+        TestRunner.completeTest();
     }
 }
 

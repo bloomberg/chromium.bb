@@ -11,40 +11,40 @@ obj[brokenSurrogate] = "foo";
 
 function test()
 {
-    InspectorTest.evaluateInConsole("obj");
-    InspectorTest.evaluateInConsole("[obj]");
-    InspectorTest.evaluateInConsole("obj.foo");
-    InspectorTest.evaluateInConsole("[obj.foo]");
-    InspectorTest.deprecatedRunAfterPendingDispatches(step1);
+    ConsoleTestRunner.evaluateInConsole("obj");
+    ConsoleTestRunner.evaluateInConsole("[obj]");
+    ConsoleTestRunner.evaluateInConsole("obj.foo");
+    ConsoleTestRunner.evaluateInConsole("[obj.foo]");
+    TestRunner.deprecatedRunAfterPendingDispatches(step1);
 
     function step1()
     {
-        InspectorTest.waitForRemoteObjectsConsoleMessages(step2);
+        ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step2);
     }
 
     function step2()
     {
-        InspectorTest.expandConsoleMessages(step3);
+        ConsoleTestRunner.expandConsoleMessages(step3);
     }
 
     function step3()
     {
-        InspectorTest.expandConsoleMessages(step4, expandFirstArrayIndexFilter);
+        ConsoleTestRunner.expandConsoleMessages(step4, expandFirstArrayIndexFilter);
     }
 
     function step4()
     {
-        InspectorTest.evaluateInPage("obj.foo", step5);
+        TestRunner.evaluateInPage("obj.foo", step5);
     }
 
     function step5(result)
     {
         var text = result.description;
-        InspectorTest.assertEquals(15, text.length, "text length");
-        InspectorTest.assertEquals(8, countTextNodes(text), "nodes count");
-        InspectorTest.assertEquals(1, countTextNodes("\"" + text + "\""), "nodes with quoted text count");
-        InspectorTest.addResult("PASS: Found all nodes with the broken text");
-        InspectorTest.completeTest();
+        TestRunner.assertEquals(15, text.length, "text length");
+        TestRunner.assertEquals(8, countTextNodes(text), "nodes count");
+        TestRunner.assertEquals(1, countTextNodes("\"" + text + "\""), "nodes with quoted text count");
+        TestRunner.addResult("PASS: Found all nodes with the broken text");
+        TestRunner.completeTest();
     }
 
     function expandFirstArrayIndexFilter(treeElement)
@@ -55,7 +55,7 @@ function test()
 
     function countTextNodes(textContent)
     {
-        InspectorTest.disableConsoleViewport();
+        ConsoleTestRunner.disableConsoleViewport();
 
         var count = 0;
         var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;

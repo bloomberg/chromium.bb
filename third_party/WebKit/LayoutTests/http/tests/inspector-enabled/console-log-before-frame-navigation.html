@@ -26,15 +26,15 @@ function receiveMessage(event) {
 
 function test()
 {
-    var messages = InspectorTest.consoleModel.messages();
-    InspectorTest.addResult("Received console messages:");
+    var messages = TestRunner.consoleModel.messages();
+    TestRunner.addResult("Received console messages:");
     for (var i = 0; i < messages.length; ++i) {
         var m = messages[i];
-        InspectorTest.addResult("Message[" + i + "]:");
-        InspectorTest.addResult("Message: " + Bindings.displayNameForURL(m.url) + ":" + m.line + " " + m.messageText);
+        TestRunner.addResult("Message[" + i + "]:");
+        TestRunner.addResult("Message: " + Bindings.displayNameForURL(m.url) + ":" + m.line + " " + m.messageText);
     }
-    InspectorTest.addResult("TEST COMPLETE.");
-    InspectorTest.completeTest();
+    TestRunner.addResult("TEST COMPLETE.");
+    TestRunner.completeTest();
 }
 
 </script>

@@ -10,13 +10,13 @@ function startWorker()
 
 function test()
 {
-    InspectorTest.addSniffer(SDK.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
-    InspectorTest.evaluateInPage("startWorker()");
+    TestRunner.addSniffer(SDK.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
+    TestRunner.evaluateInPage("startWorker()");
 
     function contextCreated()
     {
-        InspectorTest.changeExecutionContext("\u2699 worker.js");
-        InspectorTest.evaluateInConsole("\
+        ConsoleTestRunner.changeExecutionContext("\u2699 worker.js");
+        ConsoleTestRunner.evaluateInConsole("\
             function foo()\n\
             {\n\
                 throw {a:239};\n\
@@ -30,13 +30,13 @@ function test()
 
     function step2()
     {
-        InspectorTest.expandConsoleMessages(step3);
+        ConsoleTestRunner.expandConsoleMessages(step3);
     }
 
     function step3()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 };
 </script>

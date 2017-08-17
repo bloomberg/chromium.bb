@@ -11,17 +11,17 @@ var bar = {
 
 function test()
 {
-    InspectorTest.evaluateInConsole("foo", step1);
+    ConsoleTestRunner.evaluateInConsole("foo", step1);
 
     function step1()
     {
-        InspectorTest.evaluateInConsole("bar", step2);
+        ConsoleTestRunner.evaluateInConsole("bar", step2);
     }
 
     function step2()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

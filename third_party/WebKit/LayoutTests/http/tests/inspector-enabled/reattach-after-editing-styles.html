@@ -32,85 +32,85 @@ function initTest()
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("window.didReopen");
+    var result = await TestRunner.RuntimeAgent.evaluate("window.didReopen");
 
     if (result.type !== "number") {
-        InspectorTest.addResult("Opening front-end for the first time");
-        InspectorTest.addResult("Dump initial styles:");
+        TestRunner.addResult("Opening front-end for the first time");
+        TestRunner.addResult("Dump initial styles:");
         dump(onStylesDumped);
     } else {
-        InspectorTest.addResult("Opening front-end second time");
-        InspectorTest.addResult("Dump styles after inspector was reopened:");
-        dump(InspectorTest.completeTest);
+        TestRunner.addResult("Opening front-end second time");
+        TestRunner.addResult("Dump styles after inspector was reopened:");
+        dump(TestRunner.completeTest);
     }
 
     function onStylesDumped()
     {
-        treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         // Commit editing.
         treeElement.valueElement.textContent = "green";
         treeElement.valueElement.firstChild.select();
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(onStyleSheetPropertyEdited);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(onStyleSheetPropertyEdited);
     }
 
     function onStyleSheetPropertyEdited()
     {
-        treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-family");
+        treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("font-family");
         treeElement.startEditing();
         treeElement.nameElement.textContent = "font-family";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         // Commit editing.
         treeElement.valueElement.textContent = "Helvetica";
         treeElement.valueElement.firstChild.select();
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(onStyleTagPropertyEdited);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(onStyleTagPropertyEdited);
     }
 
     function onStyleTagPropertyEdited()
     {
-        InspectorTest.addNewRule("#testDiv, my-custom-tag", onFirstRuleAdded);
+        ElementsTestRunner.addNewRule("#testDiv, my-custom-tag", onFirstRuleAdded);
     }
 
     function onFirstRuleAdded()
     {
-        InspectorTest.addNewRule("#testDiv, another-custom-tag", onSecondRuleAdded);
+        ElementsTestRunner.addNewRule("#testDiv, another-custom-tag", onSecondRuleAdded);
     }
 
     function onSecondRuleAdded()
     {
-        InspectorTest.domModel.undo().then(onRuleRemoved);
+        TestRunner.domModel.undo().then(onRuleRemoved);
     }
 
     function onRuleRemoved()
     {
-        InspectorTest.selectNodeAndWaitForStyles("other", step4);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("Dump styles after editing:");
+        TestRunner.addResult("Dump styles after editing:");
         dump(reopenInspector);
     }
 
     function reopenInspector()
     {
-        InspectorTest.flushResults();
-        InspectorTest.evaluateInPage("reopenWebInspector()");
+        TestRunner.flushResults();
+        TestRunner.evaluateInPage("reopenWebInspector()");
     }
 
     function dump(callback)
     {
-        InspectorTest.selectNodeAndWaitForStyles("testDiv", step2);
+        ElementsTestRunner.selectNodeAndWaitForStyles("testDiv", step2);
 
         function step2()
         {
-            InspectorTest.dumpSelectedElementStyles(true);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             callback();
         }
     }

@@ -7,42 +7,42 @@ function test()
 {
     function dumpMessages(next, message)
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
 
-        InspectorTest.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
+        TestRunner.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
         Console.ConsoleView.clearConsole();
 
         function afterCleared()
         {
-            InspectorTest.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
+            TestRunner.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
             next();
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testThrowUndefined(next)
         {
-            InspectorTest.evaluateInConsole('throw undefined', dumpMessages.bind(null, next));
+            ConsoleTestRunner.evaluateInConsole('throw undefined', dumpMessages.bind(null, next));
         },
 
         function testThrowNumber(next)
         {
-            InspectorTest.evaluateInConsole('throw 1', dumpMessages.bind(null, next));
+            ConsoleTestRunner.evaluateInConsole('throw 1', dumpMessages.bind(null, next));
         },
 
         function testThrowString(next)
         {
-            InspectorTest.evaluateInConsole('throw \'asdf\'', dumpMessages.bind(null, next));
+            ConsoleTestRunner.evaluateInConsole('throw \'asdf\'', dumpMessages.bind(null, next));
         },
 
         function testThrowObject(next)
         {
-            InspectorTest.evaluateInConsole('throw {a:42}', dumpMessages.bind(null, next));
+            ConsoleTestRunner.evaluateInConsole('throw {a:42}', dumpMessages.bind(null, next));
         },
 
         function testThrowError(next)
         {
-            InspectorTest.evaluateInConsole('throw new Error(\'asdf\')', dumpMessages.bind(null, next));
+            ConsoleTestRunner.evaluateInConsole('throw new Error(\'asdf\')', dumpMessages.bind(null, next));
         }
     ]);
 }

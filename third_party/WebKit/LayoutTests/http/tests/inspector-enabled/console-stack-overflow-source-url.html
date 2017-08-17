@@ -24,10 +24,10 @@ function showInspectorAndRunTest()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.dumpConsoleMessages();
-    InspectorTest.addResult("TEST COMPLETE");
-    InspectorTest.completeTest();
+    ConsoleTestRunner.expandConsoleMessages();
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.addResult("TEST COMPLETE");
+    TestRunner.completeTest();
 }
 </script>
 </head>

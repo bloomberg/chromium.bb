@@ -5,12 +5,12 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInConsole("foo().", step1);
+    ConsoleTestRunner.evaluateInConsole("foo().", step1);
 
     function step1()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

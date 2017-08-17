@@ -6,18 +6,18 @@
 
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(addMessage, true);
-    InspectorTest.evaluateInPage("loadIframe()");
+    ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
+    TestRunner.evaluateInPage("loadIframe()");
     function addMessage(viewMessage)
     {
         if (viewMessage.element().deepTextContent().indexOf("setTimeout") !== -1)
-            InspectorTest.expandConsoleMessages(onExpanded);
+            ConsoleTestRunner.expandConsoleMessages(onExpanded);
     }
 
     function onExpanded()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

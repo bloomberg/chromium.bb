@@ -8,9 +8,9 @@ alert({toString: function() { throw "Exception in toString()."; }});
 <script>
 function test()
 {
-    InspectorTest.reloadPage(function() {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+    TestRunner.reloadPage(function() {
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     });
 }
 </script>

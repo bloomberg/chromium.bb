@@ -5,22 +5,22 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInConsole("Math.random", step1);
+    ConsoleTestRunner.evaluateInConsole("Math.random", step1);
 
     function step1()
     {
-        InspectorTest.evaluateInConsole("document.appendChild", step2);
+        ConsoleTestRunner.evaluateInConsole("document.appendChild", step2);
     }
 
     function step2()
     {
-        InspectorTest.expandConsoleMessages(onExpanded);
+        ConsoleTestRunner.expandConsoleMessages(onExpanded);
     }
 
     function onExpanded()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -20,37 +20,37 @@ function handleSomeRejections()
 
 function test()
 {
-    var messageAddedListener = InspectorTest.wrapListener(messageAdded);
-    InspectorTest.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
+    var messageAddedListener = ConsoleTestRunner.wrapListener(messageAdded);
+    TestRunner.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
 
-    InspectorTest.addResult("Creating promise");
-    InspectorTest.evaluateInPageWithTimeout("createPromises()");
+    TestRunner.addResult("Creating promise");
+    TestRunner.evaluateInPageWithTimeout("createPromises()");
 
     var messageNumber = 0;
     function messageAdded(event)
     {
-        InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        TestRunner.addResult("Message added: " + event.data.level + " " + event.data.type);
         if (++messageNumber < 3)
             return;
         messageNumber = 0;
 
-        InspectorTest.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
-        InspectorTest.addResult("");
+        TestRunner.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
+        TestRunner.addResult("");
 
         // Process array as a batch.
-        InspectorTest.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
-        InspectorTest.dumpConsoleCounters();
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Handling promise");
-        InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
+        TestRunner.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
+        ConsoleTestRunner.dumpConsoleCounters();
+        TestRunner.addResult("");
+        TestRunner.addResult("Handling promise");
+        TestRunner.evaluateInPageWithTimeout("handleSomeRejections()");
     }
 
     function messageUpdated()
     {
         if (++messageNumber < 2)
             return;
-        InspectorTest.dumpConsoleCounters();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleCounters();
+        TestRunner.completeTest();
     }
 }
 

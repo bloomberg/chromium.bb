@@ -70,17 +70,17 @@ console.log("Error broken stack #6\n    at foob.js foob.js:40:70");
 <script>
 function test()
 {
-    InspectorTest.evaluateInPageWithTimeout("failure()");
-    InspectorTest.waitUntilMessageReceived(waitForUISourceCode);
+    TestRunner.evaluateInPageWithTimeout("failure()");
+    ConsoleTestRunner.waitUntilMessageReceived(waitForUISourceCode);
     function waitForUISourceCode()
     {
-        InspectorTest.waitForUISourceCode("stack-with-sourceMap.coffee").then(dumpMessages);
+        TestRunner.waitForUISourceCode("stack-with-sourceMap.coffee").then(dumpMessages);
     }
 
     function dumpMessages()
     {
-        InspectorTest.dumpConsoleMessages(false, true);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, true);
+        TestRunner.completeTest();
     }
 }
 </script>

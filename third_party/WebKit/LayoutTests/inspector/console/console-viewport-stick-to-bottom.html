@@ -18,7 +18,7 @@ function populateConsoleWithMessages(count)
 function test()
 {
     var viewportHeight = 200;
-    InspectorTest.fixConsoleViewportDimensions(600, viewportHeight);
+    ConsoleTestRunner.fixConsoleViewportDimensions(600, viewportHeight);
     var consoleView = Console.ConsoleView.instance();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;
@@ -26,7 +26,7 @@ function test()
     const middleMessage = messagesCount / 2;
     var viewportMessagesCount;
 
-    logMessagesToConsole(messagesCount, () => InspectorTest.runTestSuite(testSuite));
+    logMessagesToConsole(messagesCount, () => TestRunner.runTestSuite(testSuite));
 
     var testSuite = [
         function verifyViewportIsTallEnough(next)
@@ -35,11 +35,11 @@ function test()
             viewport.forceScrollItemToBeFirst(0);
             viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
             if (viewportMessagesCount < minimumViewportMessagesCount) {
-                InspectorTest.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
-                InspectorTest.completeTest();
+                TestRunner.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
+                TestRunner.completeTest();
                 return;
             }
-            InspectorTest.addResult(String.sprintf("Viewport contains %d messages", viewportMessagesCount));
+            TestRunner.addResult(String.sprintf("Viewport contains %d messages", viewportMessagesCount));
             next();
         },
 
@@ -61,7 +61,7 @@ function test()
 
         function testSmoothScrollDoesNotStickToBottom(next)
         {
-            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateTimeout);
+            TestRunner.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateTimeout);
             sendPageUp();
 
             function onUpdateTimeout()
@@ -72,14 +72,14 @@ function test()
 
         function testEscShouldNotJumpToBottom(next)
         {
-            var keyEvent = InspectorTest.createKeyEvent("Escape");
+            var keyEvent = TestRunner.createKeyEvent("Escape");
             viewport._contentElement.dispatchEvent(keyEvent);
             dumpAndContinue(next);
         },
 
         function testChangingPromptTextShouldJumpToBottom(next)
         {
-            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_promptTextChangedForTest", onContentChanged);
+            TestRunner.addSniffer(Console.ConsoleView.prototype, "_promptTextChangedForTest", onContentChanged);
             var editorElement = consoleView._prompt.setText("a");
 
             function onContentChanged() {
@@ -105,17 +105,17 @@ function test()
             consoleView._updateStickToBottomOnMouseDown();
             viewport.element.scrollTop -= 10;
 
-            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMessageAdded);
-            InspectorTest.evaluateInConsole("1 + 1");
+            TestRunner.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMessageAdded);
+            ConsoleTestRunner.evaluateInConsole("1 + 1");
 
             /**
              * @param {boolean} muted
              */
             function onMessageAdded(muted)
             {
-                InspectorTest.addResult("New messages were muted: " + muted);
-                InspectorTest.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMouseUpScheduledRefresh);
-                InspectorTest.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateStickiness);
+                TestRunner.addResult("New messages were muted: " + muted);
+                TestRunner.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMouseUpScheduledRefresh);
+                TestRunner.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateStickiness);
                 consoleView._updateStickToBottomOnMouseUp();
             }
 
@@ -124,7 +124,7 @@ function test()
              */
             function onMouseUpScheduledRefresh(muted)
             {
-                InspectorTest.addResult("Refresh was scheduled after dirty state");
+                TestRunner.addResult("Refresh was scheduled after dirty state");
             }
 
             function onUpdateStickiness()
@@ -142,7 +142,7 @@ function test()
             consoleView._prompt.setText(text);
             viewport.element.scrollTop -= 10;
 
-            var keyEvent = InspectorTest.createKeyEvent("a");
+            var keyEvent = TestRunner.createKeyEvent("a");
             viewport._contentElement.dispatchEvent(keyEvent);
             consoleView._promptElement.dispatchEvent(new Event('input'));
 
@@ -152,7 +152,7 @@ function test()
 
     function sendPageUp()
     {
-        var keyEvent = InspectorTest.createKeyEvent("PageUp");
+        var keyEvent = TestRunner.createKeyEvent("PageUp");
         consoleView._prompt.element.dispatchEvent(keyEvent);
         viewport.element.scrollTop -= 10;
     }
@@ -160,7 +160,7 @@ function test()
     function dumpAndContinue(callback)
     {
         viewport.refresh();
-        InspectorTest.addResult("Is at bottom: " + viewport.element.isScrolledToBottom() + ", should stick: " + viewport.stickToBottom());
+        TestRunner.addResult("Is at bottom: " + viewport.element.isScrolledToBottom() + ", should stick: " + viewport.stickToBottom());
         callback();
     }
 
@@ -172,11 +172,11 @@ function test()
             if (!--awaitingMessagesCount)
                 callback();
             else
-                InspectorTest.addConsoleSniffer(messageAdded, false);
+                ConsoleTestRunner.addConsoleSniffer(messageAdded, false);
         }
 
-        InspectorTest.addConsoleSniffer(messageAdded, false);
-        InspectorTest.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", count));
+        ConsoleTestRunner.addConsoleSniffer(messageAdded, false);
+        TestRunner.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", count));
     }
 }
 </script>

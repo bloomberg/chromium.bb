@@ -27,10 +27,10 @@ var test = function()
     var sourceFrame;
     var scriptFormatter;
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetup(next)
         {
-            InspectorTest.scriptFormatter().then(function(sf) {
+            SourcesTestRunner.scriptFormatter().then(function(sf) {
                 scriptFormatter = sf;
                 next();
             });
@@ -38,30 +38,30 @@ var test = function()
 
         function testConsoleMessagesForFormattedScripts(next)
         {
-            InspectorTest.showScriptSource("script-formatter-console.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("script-formatter-console.html", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
-                InspectorTest.evaluateInPage("f1()", didEvaluate);
+                TestRunner.evaluateInPage("f1()", didEvaluate);
             }
 
             function didEvaluate()
             {
                 dumpConsoleMessageURLs();
-                InspectorTest.addResult("Pre-format row message list:");
-                InspectorTest.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
+                TestRunner.addResult("Pre-format row message list:");
+                TestRunner.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
                 var name = panel.visibleView.uiSourceCode().name();
                 scriptFormatter._toggleFormatScriptSource();
-                InspectorTest.showScriptSource(name + ":formatted", uiSourceCodeScriptFormatted);
+                SourcesTestRunner.showScriptSource(name + ":formatted", uiSourceCodeScriptFormatted);
             }
 
             function uiSourceCodeScriptFormatted()
             {
                 dumpConsoleMessageURLs();
-                InspectorTest.addResult("Post-format row message list:");
+                TestRunner.addResult("Post-format row message list:");
                 var formattedSourceFrame = panel.visibleView;
-                InspectorTest.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
+                TestRunner.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
                 next();
             }
         }
@@ -73,7 +73,7 @@ var test = function()
         for (var i = 0; i < messages.length; ++i) {
             var element = messages[i].toMessageElement();
             var anchor = element.querySelector(".console-message-anchor");
-            InspectorTest.addResult(anchor.textContent);
+            TestRunner.addResult(anchor.textContent);
         }
     }
 }

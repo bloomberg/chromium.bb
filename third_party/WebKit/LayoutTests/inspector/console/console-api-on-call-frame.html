@@ -16,28 +16,28 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.evaluateInConsole("dir + clear + inspect", step3);
+        ConsoleTestRunner.evaluateInConsole("dir + clear + inspect", step3);
     }
 
     function step3(result)
     {
-        InspectorTest.addResult("Evaluated in console in the top frame context: dir + clear + inspect = " + result);
-        InspectorTest.evaluateInConsole("typeof $$", step4);
+        TestRunner.addResult("Evaluated in console in the top frame context: dir + clear + inspect = " + result);
+        ConsoleTestRunner.evaluateInConsole("typeof $$", step4);
     }
 
     function step4(result)
     {
-        InspectorTest.addResult("Evaluated in console in the top frame context: typeof $$ = " + result);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Evaluated in console in the top frame context: typeof $$ = " + result);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

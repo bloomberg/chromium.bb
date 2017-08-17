@@ -112,8 +112,8 @@ function domException()
 <script>
 function test()
 {
-    InspectorTest.hideInspectorView();
-    InspectorTest.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
+    TestRunner.hideInspectorView();
+    TestRunner.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
 
     function loopOverGlobals(current, total)
     {
@@ -121,30 +121,30 @@ function test()
         {
             var next = current + 1;
             if (next == total.description)
-                InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
+                ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
             else
                 loopOverGlobals(next, total);
         }
 
         function onRemoteObjectsLoaded()
         {
-            InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-            InspectorTest.addResult("Expanded all messages");
-            InspectorTest.expandConsoleMessages(InspectorTest.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) { return section.element.firstChild.textContent !== "#text"; });
+            ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+            TestRunner.addResult("Expanded all messages");
+            ConsoleTestRunner.expandConsoleMessages(ConsoleTestRunner.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) { return section.element.firstChild.textContent !== "#text"; });
         }
 
         function finish()
         {
-            InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+            TestRunner.completeTest();
         }
 
-        InspectorTest.evaluateInPage("log(" + current + ")");
-        InspectorTest.deprecatedRunAfterPendingDispatches(evalInConsole);
+        TestRunner.evaluateInPage("log(" + current + ")");
+        TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
         function evalInConsole()
         {
-            InspectorTest.evaluateInConsole("globals[" + current + "]");
-            InspectorTest.deprecatedRunAfterPendingDispatches(advance);
+            ConsoleTestRunner.evaluateInConsole("globals[" + current + "]");
+            TestRunner.deprecatedRunAfterPendingDispatches(advance);
         }
     }
 }

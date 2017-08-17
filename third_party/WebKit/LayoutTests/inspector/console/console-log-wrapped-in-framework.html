@@ -16,12 +16,12 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.evaluateInPage("runLogs()");
-    InspectorTest.deprecatedRunAfterPendingDispatches(callback);
+    TestRunner.evaluateInPage("runLogs()");
+    TestRunner.deprecatedRunAfterPendingDispatches(callback);
     function callback()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

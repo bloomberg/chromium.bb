@@ -5,22 +5,22 @@
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("document.all", "console", false);
+    var result = await TestRunner.RuntimeAgent.evaluate("document.all", "console", false);
     if (!result) {
-        InspectorTest.addResult("FAILED: " + error);
-        InspectorTest.completeTest();
+        TestRunner.addResult("FAILED: " + error);
+        TestRunner.completeTest();
         return;
     }
-    var htmlAllCollection = InspectorTest.runtimeModel.createRemoteObject(result);
+    var htmlAllCollection = TestRunner.runtimeModel.createRemoteObject(result);
     htmlAllCollection.callFunctionJSON("function(collection) { return this.length + collection.length; }", [{objectId: htmlAllCollection.objectId}], didGetLength.bind(this));
 
     function didGetLength(len)
     {
         if (!len || typeof len !== "number")
-            InspectorTest.addResult("FAILED: unexpected document.all.length: " + len);
+            TestRunner.addResult("FAILED: unexpected document.all.length: " + len);
         else
-            InspectorTest.addResult("PASSED: retrieved length of document.all");
-        InspectorTest.completeTest();
+            TestRunner.addResult("PASSED: retrieved length of document.all");
+        TestRunner.completeTest();
     }
 }
 

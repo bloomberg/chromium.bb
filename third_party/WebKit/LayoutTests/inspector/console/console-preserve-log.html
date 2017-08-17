@@ -5,12 +5,12 @@
 <script>
 function test()
 {
-    InspectorTest.consoleModel.addMessage(new ConsoleModel.ConsoleMessage(InspectorTest.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, ConsoleModel.ConsoleMessage.MessageLevel.Info, "PASS"));
+    TestRunner.consoleModel.addMessage(new ConsoleModel.ConsoleMessage(TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other, ConsoleModel.ConsoleMessage.MessageLevel.Info, "PASS"));
     Common.settingForTest("preserveConsoleLog").set(true);
-    InspectorTest.reloadPage(function() {
-        InspectorTest.dumpConsoleMessages();
+    TestRunner.reloadPage(function() {
+        ConsoleTestRunner.dumpConsoleMessages();
         Common.settingForTest("preserveConsoleLog").set(false);
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     });
 }
 </script>
