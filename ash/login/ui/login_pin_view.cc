@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -38,6 +39,12 @@ const char* kLoginPinViewClassName = "LoginPinView";
 
 // View ids. Useful for the test api.
 const int kBackspaceButtonId = -1;
+
+// How long does the user have to long-press the backspace button before it
+// auto-submits?
+const int kInitialBackspaceDelayMs = 500;
+// After the first auto-submit, how long until the next backspace event fires?
+const int kRepeatingBackspaceDelayMs = 150;
 
 // An alpha value for button's sub label.
 // In specs this is listed as 34% = 0x57 / 0xFF.
@@ -133,13 +140,14 @@ class BasePinButton : public views::Button, public views::ButtonListener {
             kInkDropHighlightColor, LoginPinView::kButtonSizeDp / 2));
   }
 
- private:
+ protected:
   base::Closure on_press_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };
 
-// A pin button that displays a digit number and corresponding letter mapping.
+// A PIN button that displays a digit number and corresponding letter mapping.
 class DigitPinButton : public BasePinButton {
  public:
   DigitPinButton(int value, const LoginPinView::OnPinKey& on_key)
@@ -179,10 +187,13 @@ class DigitPinButton : public BasePinButton {
   DISALLOW_COPY_AND_ASSIGN(DigitPinButton);
 };
 
-// A pin button that displays backspace icon.
+// A PIN button that displays backspace icon.
 class BackspacePinButton : public BasePinButton {
  public:
-  BackspacePinButton(const base::Closure& on_press) : BasePinButton(on_press) {
+  BackspacePinButton(const base::Closure& on_press)
+      : BasePinButton(on_press),
+        delay_timer_(base::MakeUnique<base::OneShotTimer>()),
+        repeat_timer_(base::MakeUnique<base::RepeatingTimer>()) {
     views::ImageView* image = new views::ImageView();
     // TODO: Change icon color when enabled/disabled.
     image->SetImage(
@@ -197,7 +208,57 @@ class BackspacePinButton : public BasePinButton {
 
   ~BackspacePinButton() override = default;
 
+  void SetTimersForTesting(std::unique_ptr<base::Timer> delay_timer,
+                           std::unique_ptr<base::Timer> repeat_timer) {
+    delay_timer_ = std::move(delay_timer);
+    repeat_timer_ = std::move(repeat_timer);
+  }
+
+  // BasePinButton:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    did_autosubmit_ = false;
+
+    if (IsTriggerableEvent(event) && enabled() &&
+        HitTestPoint(event.location())) {
+      delay_timer_->Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kInitialBackspaceDelayMs),
+          base::Bind(&BackspacePinButton::DispatchRepeatablePressEvent,
+                     base::Unretained(this)));
+    }
+
+    return BasePinButton::OnMousePressed(event);
+  }
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    delay_timer_->Stop();
+    repeat_timer_->Stop();
+    BasePinButton::OnMouseReleased(event);
+  }
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
+    if (did_autosubmit_)
+      return;
+    BasePinButton::ButtonPressed(sender, event);
+  }
+
  private:
+  void DispatchRepeatablePressEvent() {
+    // Start repeat timer if this was fired by the initial delay timer.
+    if (!repeat_timer_->IsRunning()) {
+      repeat_timer_->Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kRepeatingBackspaceDelayMs),
+          base::Bind(&BackspacePinButton::DispatchRepeatablePressEvent,
+                     base::Unretained(this)));
+    }
+
+    did_autosubmit_ = true;
+    on_press_.Run();
+  }
+
+  bool did_autosubmit_ = false;
+  std::unique_ptr<base::Timer> delay_timer_;
+  std::unique_ptr<base::Timer> repeat_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(BackspacePinButton);
 };
 
@@ -218,6 +279,14 @@ views::View* LoginPinView::TestApi::GetButton(int number) const {
 
 views::View* LoginPinView::TestApi::GetBackspaceButton() const {
   return view_->GetViewByID(kBackspaceButtonId);
+}
+
+void LoginPinView::TestApi::SetBackspaceTimers(
+    std::unique_ptr<base::Timer> delay_timer,
+    std::unique_ptr<base::Timer> repeat_timer) {
+  BackspacePinButton* button =
+      static_cast<BackspacePinButton*>(GetBackspaceButton());
+  button->SetTimersForTesting(std::move(delay_timer), std::move(repeat_timer));
 }
 
 LoginPinView::LoginPinView(const OnPinKey& on_key,
