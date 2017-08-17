@@ -622,7 +622,8 @@ class PermissionContextBaseTests
     TestPermissionContext permission_context(profile(), content_settings_type);
     GURL url;
     ASSERT_FALSE(url.is_valid());
-    SetUpUrl(url);
+    controller().LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+                         std::string());
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),

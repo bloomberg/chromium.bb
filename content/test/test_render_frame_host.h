@@ -142,6 +142,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Creates a WebBluetooth Service with a dummy InterfaceRequest.
   WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();
 
+  bool last_commit_was_error_page() const {
+    return last_commit_was_error_page_;
+  }
+
  private:
   void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
