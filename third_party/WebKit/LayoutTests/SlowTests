@@ -112,6 +112,8 @@ crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-
 webkit.org/b/90488 [ Debug ] http/tests/devtools/ [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/mojo-loading/http/tests/devtools/ [ Slow ]
 crbug.com/451577 http/tests/devtools/console [ Slow ]
+crbug.com/450493 http/tests/devtools/sources/ [ Slow ]
+crbug.com/450493 virtual/mojo-loading/http/tests/devtools/sources/ [ Slow ]
 
 #############################################################
 
