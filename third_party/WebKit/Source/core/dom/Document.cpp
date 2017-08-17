@@ -6979,6 +6979,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->TraceWrappers(implementation_);
   visitor->TraceWrappers(style_sheet_list_);
   visitor->TraceWrappers(style_engine_);
+  visitor->TraceWrappers(script_runner_);
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
   visitor->TraceWrappersWithManualWriteBarrier(

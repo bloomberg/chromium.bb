@@ -27,6 +27,8 @@
 #define ScriptRunner_h
 
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
@@ -40,7 +42,8 @@ class ScriptLoader;
 class WebTaskRunner;
 
 class CORE_EXPORT ScriptRunner final
-    : public GarbageCollectedFinalized<ScriptRunner> {
+    : public GarbageCollectedFinalized<ScriptRunner>,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ScriptRunner);
 
  public:
@@ -66,6 +69,7 @@ class CORE_EXPORT ScriptRunner final
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   class Task;
@@ -94,12 +98,12 @@ class CORE_EXPORT ScriptRunner final
 
   Member<Document> document_;
 
-  HeapDeque<Member<ScriptLoader>> pending_in_order_scripts_;
-  HeapHashSet<Member<ScriptLoader>> pending_async_scripts_;
+  HeapDeque<TraceWrapperMember<ScriptLoader>> pending_in_order_scripts_;
+  HeapHashSet<TraceWrapperMember<ScriptLoader>> pending_async_scripts_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-  HeapDeque<Member<ScriptLoader>> async_scripts_to_execute_soon_;
-  HeapDeque<Member<ScriptLoader>> in_order_scripts_to_execute_soon_;
+  HeapDeque<TraceWrapperMember<ScriptLoader>> async_scripts_to_execute_soon_;
+  HeapDeque<TraceWrapperMember<ScriptLoader>> in_order_scripts_to_execute_soon_;
 
   RefPtr<WebTaskRunner> task_runner_;
 
