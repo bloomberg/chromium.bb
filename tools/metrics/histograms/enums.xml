@@ -16067,6 +16067,56 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2066" label="StyleSheetListNonNullAnonymousNamedGetter"/>
   <int value="2067" label="OffMainThreadFetch"/>
   <int value="2068" label="HTMLOptionsCollectionNamedGetterReturnsNodeList"/>
+  <int value="2069" label="ARIAActiveDescendantAttribute"/>
+  <int value="2070" label="ARIAAtomicAttribute"/>
+  <int value="2071" label="ARIAAutocompleteAttribute"/>
+  <int value="2072" label="ARIABusyAttribute"/>
+  <int value="2073" label="ARIACheckedAttribute"/>
+  <int value="2074" label="ARIAColCountAttribute"/>
+  <int value="2075" label="ARIAColIndexAttribute"/>
+  <int value="2076" label="ARIAColSpanAttribute"/>
+  <int value="2077" label="ARIAControlsAttribute"/>
+  <int value="2078" label="ARIACurrentAttribute"/>
+  <int value="2079" label="ARIADescribedByAttribute"/>
+  <int value="2080" label="ARIADetailsAttribute"/>
+  <int value="2081" label="ARIADisabledAttribute"/>
+  <int value="2082" label="ARIADropEffectAttribute"/>
+  <int value="2083" label="ARIAErrorMessageAttribute"/>
+  <int value="2084" label="ARIAExpandedAttribute"/>
+  <int value="2085" label="ARIAFlowToAttribute"/>
+  <int value="2086" label="ARIAGrabbedAttribute"/>
+  <int value="2087" label="ARIAHasPopupAttribute"/>
+  <int value="2088" label="ARIAHelpAttribute"/>
+  <int value="2089" label="ARIAHiddenAttribute"/>
+  <int value="2090" label="ARIAInvalidAttribute"/>
+  <int value="2091" label="ARIAKeyShortcutsAttribute"/>
+  <int value="2092" label="ARIALabelAttribute"/>
+  <int value="2093" label="ARIALabeledByAttribute"/>
+  <int value="2094" label="ARIALabelledByAttribute"/>
+  <int value="2095" label="ARIALevelAttribute"/>
+  <int value="2096" label="ARIALiveAttribute"/>
+  <int value="2097" label="ARIAModalAttribute"/>
+  <int value="2098" label="ARIAMultilineAttribute"/>
+  <int value="2099" label="ARIAMultiselectableAttribute"/>
+  <int value="2100" label="ARIAOrientationAttribute"/>
+  <int value="2101" label="ARIAOwnsAttribute"/>
+  <int value="2102" label="ARIAPlaceholderAttribute"/>
+  <int value="2103" label="ARIAPosInSetAttribute"/>
+  <int value="2104" label="ARIAPressedAttribute"/>
+  <int value="2105" label="ARIAReadOnlyAttribute"/>
+  <int value="2106" label="ARIARelevantAttribute"/>
+  <int value="2107" label="ARIARequiredAttribute"/>
+  <int value="2108" label="ARIARoleDescriptionAttribute"/>
+  <int value="2109" label="ARIARowCountAttribute"/>
+  <int value="2110" label="ARIARowIndexAttribute"/>
+  <int value="2111" label="ARIARowSpanAttribute"/>
+  <int value="2112" label="ARIASelectedAttribute"/>
+  <int value="2113" label="ARIASetSizeAttribute"/>
+  <int value="2114" label="ARIASortAttribute"/>
+  <int value="2115" label="ARIAValueMaxAttribute"/>
+  <int value="2116" label="ARIAValueMinAttribute"/>
+  <int value="2117" label="ARIAValueNowAttribute"/>
+  <int value="2118" label="ARIAValueTextAttribute"/>
 </enum>
 
 <enum name="FeedbackSource">
