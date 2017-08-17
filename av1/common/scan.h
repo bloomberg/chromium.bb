@@ -109,6 +109,9 @@ static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
   // use the DCT_DCT scan order for MRC_DCT for now
   if (tx_type == MRC_DCT) tx_type = DCT_DCT;
 #endif  // CONFIG_MRC_TX
+#if CONFIG_LGT_FROM_PRED
+  if (mbmi->use_lgt) tx_type = DCT_DCT;
+#endif
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_ADAPT_SCAN
   (void)mbmi;

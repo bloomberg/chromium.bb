@@ -329,6 +329,7 @@ EXPERIMENT_LIST="
     smooth_hv
     var_refs
     lgt
+    lgt_from_pred
     sbl_symbol
     ncobmc_adapt_weight
     bgsprite
@@ -575,6 +576,8 @@ post_process_cmdline() {
     enabled ext_comp_refs && enable_feature ext_refs
     enabled ext_comp_refs && enable_feature one_sided_compound
     enabled rect_tx_ext && enable_feature rect_tx
+    enabled lgt_from_pred && enable_feature ext_tx
+    enabled lgt_from_pred && disable_feature mrc_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
     enabled new_multisymbol && enable_feature restrict_compressed_hdr

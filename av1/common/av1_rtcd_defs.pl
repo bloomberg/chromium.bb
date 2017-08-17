@@ -456,6 +456,10 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/void av1_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, int log_scale";
   }
 
+  if (aom_config("CONFIG_LGT_FROM_PRED") eq "yes") {
+    add_proto qw/void flgt2d_from_pred/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+  }
+
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
     # ENCODEMB INVOKE

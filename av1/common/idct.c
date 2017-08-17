@@ -205,10 +205,21 @@ static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
 #endif  // CONFIG_EXT_TX && CONFIG_TX64X64
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_LGT
+#if CONFIG_LGT || CONFIG_LGT_FROM_PRED
 void ilgt4(const tran_low_t *input, tran_low_t *output,
            const tran_high_t *lgtmtx) {
   if (!lgtmtx) assert(0);
+#if CONFIG_LGT_FROM_PRED
+  // For DCT/ADST, use butterfly implementations
+  if (lgtmtx[0] == DCT4) {
+    aom_idct4_c(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST4) {
+    aom_iadst4_c(input, output);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
+
   // evaluate s[j] = sum of all lgtmtx[j]*input[i] over i=1,...,4
   tran_high_t s[4] = { 0 };
   for (int i = 0; i < 4; ++i)
@@ -220,6 +231,17 @@ void ilgt4(const tran_low_t *input, tran_low_t *output,
 void ilgt8(const tran_low_t *input, tran_low_t *output,
            const tran_high_t *lgtmtx) {
   if (!lgtmtx) assert(0);
+#if CONFIG_LGT_FROM_PRED
+  // For DCT/ADST, use butterfly implementations
+  if (lgtmtx[0] == DCT8) {
+    aom_idct8_c(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST8) {
+    aom_iadst8_c(input, output);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
+
   // evaluate s[j] = sum of all lgtmtx[j]*input[i] over i=1,...,8
   tran_high_t s[8] = { 0 };
   for (int i = 0; i < 8; ++i)
@@ -227,7 +249,9 @@ void ilgt8(const tran_low_t *input, tran_low_t *output,
 
   for (int i = 0; i < 8; ++i) output[i] = WRAPLOW(dct_const_round_shift(s[i]));
 }
+#endif  // CONFIG_LGT || CONFIG_LGT_FROM_PRED
 
+#if CONFIG_LGT
 // get_lgt4 and get_lgt8 return 1 and pick a lgt matrix if LGT is chosen to
 // apply. Otherwise they return 0
 int get_lgt4(const TxfmParam *txfm_param, int is_col,
@@ -260,6 +284,427 @@ int get_lgt8(const TxfmParam *txfm_param, int is_col,
   return 0;
 }
 #endif  // CONFIG_LGT
+
+#if CONFIG_LGT_FROM_PRED
+void ilgt16up(const tran_low_t *input, tran_low_t *output,
+              const tran_high_t *lgtmtx) {
+  if (lgtmtx[0] == DCT16) {
+    aom_idct16_c(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST16) {
+    aom_iadst16_c(input, output);
+    return;
+  } else if (lgtmtx[0] == DCT32) {
+    aom_idct32_c(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST32) {
+    ihalfright32_c(input, output);
+    return;
+  } else {
+    assert(0);
+  }
+}
+
+void get_discontinuity_1d(uint8_t *arr, int n, int *idx_max_diff) {
+  *idx_max_diff = -1;
+
+  int temp = 0, max_diff = 0, min_diff = INT_MAX;
+  for (int i = 1; i < n; ++i) {
+    temp = abs(arr[i] - arr[i - 1]);
+    if (temp > max_diff) {
+      max_diff = temp;
+      *idx_max_diff = i;
+    }
+    if (temp < min_diff) min_diff = temp;
+  }
+}
+
+void get_discontinuity_2d(uint8_t *dst, int stride, int n, int is_col,
+                          int *idx_max_diff, int ntx) {
+  *idx_max_diff = -1;
+
+  int diff = 0, temp = 0, max_diff = 0, min_diff = INT_MAX;
+  for (int i = 1; i < n; ++i) {
+    temp = 0;
+    for (int j = 0; j < ntx; ++j) {
+      if (is_col)  // vertical diff
+        diff = dst[i * stride + j] - dst[(i - 1) * stride + j];
+      else  // horizontal diff
+        diff = dst[j * stride + i] - dst[j * stride + i - 1];
+      temp += diff * diff;
+    }
+    // temp/w is the i-th avg square diff
+    if (temp > max_diff) {
+      max_diff = temp;
+      *idx_max_diff = i;
+    }
+    if (temp < min_diff) min_diff = temp;
+  }
+}
+
+int idx_selfloop_wrt_mode(PREDICTION_MODE mode, int is_col) {
+  // 0: no self-loop
+  // 1: small self-loop
+  // 2: medium self-loop
+  // 3: large self-loop
+  switch (mode) {
+    case DC_PRED:
+    case SMOOTH_PRED:
+      // predition is good for both directions: large SLs for row and col
+      return 3;
+    case TM_PRED: return 0;
+#if CONFIG_SMOOTH_HV
+    case SMOOTH_H_PRED:
+#endif
+    case H_PRED:
+      // prediction is good for H direction: large SL for row only
+      return is_col ? 0 : 3;
+#if CONFIG_SMOOTH_HV
+    case SMOOTH_V_PRED:
+#endif
+    case V_PRED:
+      // prediction is good for V direction: large SL for col only
+      return is_col ? 3 : 0;
+#if LGT_SL_INTRA
+    // directional mode: choose SL based on the direction
+    case D45_PRED: return is_col ? 2 : 0;
+    case D63_PRED: return is_col ? 3 : 0;
+    case D117_PRED: return is_col ? 3 : 1;
+    case D135_PRED: return 2;
+    case D153_PRED: return is_col ? 1 : 3;
+    case D207_PRED: return is_col ? 0 : 3;
+#else
+    case D45_PRED:
+    case D63_PRED:
+    case D117_PRED: return is_col ? 3 : 0;
+    case D135_PRED:
+    case D153_PRED:
+    case D207_PRED: return is_col ? 0 : 3;
+#endif
+    // inter: no SL
+    default: return 0;
+  }
+}
+
+void get_lgt4_from_pred(const TxfmParam *txfm_param, int is_col,
+                        const tran_high_t **lgtmtx, int ntx) {
+  PREDICTION_MODE mode = txfm_param->mode;
+  int stride = txfm_param->stride;
+  uint8_t *dst = txfm_param->dst;
+  int bp = -1;
+  uint8_t arr[4];
+
+  // Each lgt4mtx_arr[k][i] corresponds to a line graph with a self-loop on
+  // the first node, and possibly a weak edge within the line graph. i is
+  // the index of the weak edge (between the i-th and (i+1)-th pixels, i=0
+  // means no weak edge). k corresponds to the first self-loop's weight
+  const tran_high_t *lgt4mtx_arr[4][4] = {
+    { &lgt4_000[0][0], &lgt4_000w1[0][0], &lgt4_000w2[0][0],
+      &lgt4_000w3[0][0] },
+    { &lgt4_060[0][0], &lgt4_060_000w1[0][0], &lgt4_060_000w2[0][0],
+      &lgt4_060_000w3[0][0] },
+    { &lgt4_100[0][0], &lgt4_100_000w1[0][0], &lgt4_100_000w2[0][0],
+      &lgt4_100_000w3[0][0] },
+    { &lgt4_150[0][0], &lgt4_150_000w1[0][0], &lgt4_150_000w2[0][0],
+      &lgt4_150_000w3[0][0] },
+  };
+
+  // initialize to DCT or some LGTs, and then change later if necessary
+  int idx_sl = idx_selfloop_wrt_mode(mode, is_col);
+  lgtmtx[0] = lgt4mtx_arr[idx_sl][0];
+
+  // find the break point and replace the line graph by the one with a
+  // break point
+  if (mode == DC_PRED || mode == SMOOTH_PRED) {
+    // Do not use break point, since 1) is_left_available and is_top_available
+    // in DC_PRED are not known by txfm_param for now, so accessing
+    // both boundaries anyway may cause a mismatch 2) DC prediciton
+    // typically yields very smooth residues so having the break point
+    // does not usually improve the RD result.
+    return;
+  } else if (mode == TM_PRED) {
+    // TM_PRED: use both 1D top boundary and 1D left boundary
+    if (is_col)
+      for (int i = 0; i < 4; ++i) arr[i] = dst[i * stride];
+    else
+      for (int i = 0; i < 4; ++i) arr[i] = dst[i];
+    get_discontinuity_1d(&arr[0], 4, &bp);
+  } else if (mode == V_PRED) {
+    // V_PRED: use 1D top boundary only
+    if (is_col) return;
+    for (int i = 0; i < 4; ++i) arr[i] = dst[i];
+    get_discontinuity_1d(&arr[0], 4, &bp);
+  } else if (mode == H_PRED) {
+    // H_PRED: use 1D left boundary only
+    if (!is_col) return;
+    for (int i = 0; i < 4; ++i) arr[i] = dst[i * stride];
+    get_discontinuity_1d(&arr[0], 4, &bp);
+#if CONFIG_SMOOTH_HV
+  } else if (mode == SMOOTH_V_PRED) {
+    if (is_col) return;
+    for (int i = 0; i < 4; ++i) arr[i] = dst[-stride + i];
+    get_discontinuity_1d(&arr[0], 4, &bp);
+  } else if (mode == SMOOTH_H_PRED) {
+    if (!is_col) return;
+    for (int i = 0; i < 4; ++i) arr[i] = dst[i * stride - 1];
+    get_discontinuity_1d(&arr[0], 4, &bp);
+#endif
+  } else if (mode == D45_PRED || mode == D63_PRED || mode == D117_PRED) {
+    // directional modes closer to vertical (maybe include D135 later)
+    if (!is_col) get_discontinuity_2d(dst, stride, 4, 0, &bp, ntx);
+  } else if (mode == D135_PRED || mode == D153_PRED || mode == D207_PRED) {
+    // directional modes closer to horizontal
+    if (is_col) get_discontinuity_2d(dst, stride, 4, 1, &bp, ntx);
+  } else if (mode > TM_PRED) {
+    // inter
+    get_discontinuity_2d(dst, stride, 4, is_col, &bp, ntx);
+  }
+
+#if LGT_SL_INTRA
+  if (bp != -1) lgtmtx[0] = lgt4mtx_arr[idx_sl][bp];
+#else
+  if (bp != -1) lgtmtx[0] = lgt4mtx_arr[0][bp];
+#endif
+}
+
+void get_lgt8_from_pred(const TxfmParam *txfm_param, int is_col,
+                        const tran_high_t **lgtmtx, int ntx) {
+  PREDICTION_MODE mode = txfm_param->mode;
+  int stride = txfm_param->stride;
+  uint8_t *dst = txfm_param->dst;
+  int bp = -1;
+  uint8_t arr[8];
+
+  const tran_high_t *lgt8mtx_arr[4][8] = {
+    { &lgt8_000[0][0], &lgt8_000w1[0][0], &lgt8_000w2[0][0], &lgt8_000w3[0][0],
+      &lgt8_000w4[0][0], &lgt8_000w5[0][0], &lgt8_000w6[0][0],
+      &lgt8_000w7[0][0] },
+    { &lgt8_060[0][0], &lgt8_060_000w1[0][0], &lgt8_060_000w2[0][0],
+      &lgt8_060_000w3[0][0], &lgt8_060_000w4[0][0], &lgt8_060_000w5[0][0],
+      &lgt8_060_000w6[0][0], &lgt8_060_000w7[0][0] },
+    { &lgt8_100[0][0], &lgt8_100_000w1[0][0], &lgt8_100_000w2[0][0],
+      &lgt8_100_000w3[0][0], &lgt8_100_000w4[0][0], &lgt8_100_000w5[0][0],
+      &lgt8_100_000w6[0][0], &lgt8_100_000w7[0][0] },
+    { &lgt8_150[0][0], &lgt8_150_000w1[0][0], &lgt8_150_000w2[0][0],
+      &lgt8_150_000w3[0][0], &lgt8_150_000w4[0][0], &lgt8_150_000w5[0][0],
+      &lgt8_150_000w6[0][0], &lgt8_150_000w7[0][0] },
+  };
+
+  int idx_sl = idx_selfloop_wrt_mode(mode, is_col);
+  lgtmtx[0] = lgt8mtx_arr[idx_sl][0];
+
+  if (mode == DC_PRED || mode == SMOOTH_PRED) {
+    return;
+  } else if (mode == TM_PRED) {
+    if (is_col)
+      for (int i = 0; i < 8; ++i) arr[i] = dst[i * stride];
+    else
+      for (int i = 0; i < 8; ++i) arr[i] = dst[i];
+    get_discontinuity_1d(&arr[0], 8, &bp);
+  } else if (mode == V_PRED) {
+    if (is_col) return;
+    for (int i = 0; i < 8; ++i) arr[i] = dst[i];
+    get_discontinuity_1d(&arr[0], 8, &bp);
+  } else if (mode == H_PRED) {
+    if (!is_col) return;
+    for (int i = 0; i < 8; ++i) arr[i] = dst[i * stride];
+    get_discontinuity_1d(&arr[0], 8, &bp);
+#if CONFIG_SMOOTH_HV
+  } else if (mode == SMOOTH_V_PRED) {
+    if (is_col) return;
+    for (int i = 0; i < 8; ++i) arr[i] = dst[-stride + i];
+    get_discontinuity_1d(&arr[0], 8, &bp);
+  } else if (mode == SMOOTH_H_PRED) {
+    if (!is_col) return;
+    for (int i = 0; i < 8; ++i) arr[i] = dst[i * stride - 1];
+    get_discontinuity_1d(&arr[0], 8, &bp);
+#endif
+  } else if (mode == D45_PRED || mode == D63_PRED || mode == D117_PRED) {
+    if (!is_col) get_discontinuity_2d(dst, stride, 8, 0, &bp, ntx);
+  } else if (mode == D135_PRED || mode == D153_PRED || mode == D207_PRED) {
+    if (is_col) get_discontinuity_2d(dst, stride, 8, 1, &bp, ntx);
+  } else if (mode > TM_PRED) {
+    get_discontinuity_2d(dst, stride, 8, is_col, &bp, ntx);
+  }
+
+#if LGT_SL_INTRA
+  if (bp != -1) lgtmtx[0] = lgt8mtx_arr[idx_sl][bp];
+#else
+  if (bp != -1) lgtmtx[0] = lgt8mtx_arr[0][bp];
+#endif
+}
+
+// Since LGTs with length >8 are not implemented now, the following function
+// will just call DCT or ADST
+void get_lgt16up_from_pred(const TxfmParam *txfm_param, int is_col,
+                           const tran_high_t **lgtmtx, int ntx) {
+  int tx_length = is_col ? tx_size_high[txfm_param->tx_size]
+                         : tx_size_wide[txfm_param->tx_size];
+  assert(tx_length == 16 || tx_length == 32);
+  PREDICTION_MODE mode = txfm_param->mode;
+
+  (void)ntx;
+  const tran_high_t *dctmtx =
+      tx_length == 16 ? &lgt16_000[0][0] : &lgt32_000[0][0];
+  const tran_high_t *adstmtx =
+      tx_length == 16 ? &lgt16_200[0][0] : &lgt32_200[0][0];
+
+  switch (mode) {
+    case DC_PRED:
+    case TM_PRED:
+    case SMOOTH_PRED:
+      // prediction from both top and left -> ADST
+      lgtmtx[0] = adstmtx;
+      break;
+    case V_PRED:
+    case D45_PRED:
+    case D63_PRED:
+    case D117_PRED:
+#if CONFIG_SMOOTH_HV
+    case SMOOTH_V_PRED:
+#endif
+      // prediction from the top more than from the left -> ADST
+      lgtmtx[0] = is_col ? adstmtx : dctmtx;
+      break;
+    case H_PRED:
+    case D135_PRED:
+    case D153_PRED:
+    case D207_PRED:
+#if CONFIG_SMOOTH_HV
+    case SMOOTH_H_PRED:
+#endif
+      // prediction from the left more than from the top -> DCT
+      lgtmtx[0] = is_col ? dctmtx : adstmtx;
+      break;
+    default: lgtmtx[0] = dctmtx; break;
+  }
+}
+
+typedef void (*IlgtFunc)(const tran_low_t *input, tran_low_t *output,
+                         const tran_high_t *lgtmtx);
+
+static IlgtFunc ilgt_func[4] = { ilgt4, ilgt8, ilgt16up, ilgt16up };
+
+typedef void (*GetLgtFunc)(const TxfmParam *txfm_param, int is_col,
+                           const tran_high_t **lgtmtx, int ntx);
+
+static GetLgtFunc get_lgt_func[4] = { get_lgt4_from_pred, get_lgt8_from_pred,
+                                      get_lgt16up_from_pred,
+                                      get_lgt16up_from_pred };
+
+// this inline function corresponds to the up scaling before the transpose
+// operation in the av1_iht* functions
+static INLINE tran_low_t inv_upscale_wrt_txsize(const tran_high_t val,
+                                                const TX_SIZE tx_size) {
+  switch (tx_size) {
+    case TX_4X4:
+    case TX_8X8:
+    case TX_4X16:
+    case TX_16X4:
+    case TX_8X32:
+    case TX_32X8: return (tran_low_t)val;
+    case TX_4X8:
+    case TX_8X4:
+    case TX_8X16:
+    case TX_16X8: return (tran_low_t)dct_const_round_shift(val * Sqrt2);
+    default: assert(0); break;
+  }
+  return 0;
+}
+
+// This inline function corresponds to the bit shift before summing with the
+// destination in the av1_iht* functions
+static INLINE tran_low_t inv_downscale_wrt_txsize(const tran_low_t val,
+                                                  const TX_SIZE tx_size) {
+  switch (tx_size) {
+    case TX_4X4: return ROUND_POWER_OF_TWO(val, 4);
+    case TX_4X8:
+    case TX_8X4:
+    case TX_8X8:
+    case TX_4X16:
+    case TX_16X4: return ROUND_POWER_OF_TWO(val, 5);
+    case TX_8X16:
+    case TX_16X8:
+    case TX_8X32:
+    case TX_32X8: return ROUND_POWER_OF_TWO(val, 6);
+    default: assert(0); break;
+  }
+  return 0;
+}
+
+void ilgt2d_from_pred_add(const tran_low_t *input, uint8_t *dest, int stride,
+                          const TxfmParam *txfm_param) {
+  const TX_SIZE tx_size = txfm_param->tx_size;
+  const int w = tx_size_wide[tx_size];
+  const int h = tx_size_high[tx_size];
+  const int wlog2 = tx_size_wide_log2[tx_size];
+  const int hlog2 = tx_size_high_log2[tx_size];
+  assert(w <= 8 || h <= 8);
+
+  int i, j;
+  // largest 1D size allowed for LGT: 32
+  // largest 2D size allowed for LGT: 8x32=256
+  tran_low_t tmp[256], out[256], temp1d[32];
+  const tran_high_t *lgtmtx_col[1];
+  const tran_high_t *lgtmtx_row[1];
+  get_lgt_func[hlog2 - 2](txfm_param, 1, lgtmtx_col, w);
+  get_lgt_func[wlog2 - 2](txfm_param, 0, lgtmtx_row, h);
+
+// for inverse transform, to be consistent with av1_iht functions, we always
+// apply row transforms first and column transforms second, but both
+// row-first and column-first versions are implemented here for future
+// tests (use different lgtmtx_col[i], and choose row or column tx first
+// depending on transforms).
+#if 1
+  // inverse column transforms
+  for (i = 0; i < w; ++i) {
+    // transpose
+    for (j = 0; j < h; ++j) tmp[i * h + j] = input[j * w + i];
+    ilgt_func[hlog2 - 2](&tmp[i * h], temp1d, lgtmtx_col[0]);
+    // upscale, and store in place
+    for (j = 0; j < h; ++j)
+      tmp[i * h + j] = inv_upscale_wrt_txsize(temp1d[j], tx_size);
+  }
+  // inverse row transforms
+  for (i = 0; i < h; ++i) {
+    for (j = 0; j < w; ++j) temp1d[j] = tmp[j * h + i];
+    ilgt_func[wlog2 - 2](temp1d, &out[i * w], lgtmtx_row[0]);
+  }
+  // downscale + sum with the destination
+  for (i = 0; i < h; ++i) {
+    for (j = 0; j < w; ++j) {
+      int d = i * stride + j;
+      int s = i * w + j;
+      dest[d] =
+          clip_pixel_add(dest[d], inv_downscale_wrt_txsize(out[s], tx_size));
+    }
+  }
+#else
+  // inverse row transforms
+  for (i = 0; i < h; ++i) {
+    ilgt_func[wlog2 - 2](input, temp1d, lgtmtx_row[0]);
+    // upscale and transpose (tmp[j*h+i] <--> tmp[j][i])
+    for (j = 0; j < w; ++j)
+      tmp[j * h + i] = inv_upscale_wrt_txsize(temp1d[j], tx_size);
+    input += w;
+  }
+  // inverse column transforms
+  for (i = 0; i < w; ++i)
+    ilgt_func[hlog2 - 2](&tmp[i * h], &out[i * h], lgtmtx_col[0]);
+  // here, out[] is the transpose of 2D block of transform coefficients
+
+  // downscale + transform + sum with dest
+  for (i = 0; i < h; ++i) {
+    for (j = 0; j < w; ++j) {
+      int d = i * stride + j;
+      int s = j * h + i;
+      dest[d] =
+          clip_pixel_add(dest[d], inv_downscale_wrt_txsize(out[s], tx_size));
+    }
+  }
+#endif
+}
+#endif  // CONFIG_LGT_FROM_PRED
 
 void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          const TxfmParam *txfm_param) {
@@ -2453,6 +2898,13 @@ static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
 void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       TxfmParam *txfm_param) {
   const TX_SIZE tx_size = txfm_param->tx_size;
+#if CONFIG_LGT_FROM_PRED
+  if (txfm_param->use_lgt) {
+    assert(is_lgt_allowed(txfm_param->mode, tx_size));
+    ilgt2d_from_pred_add(input, dest, stride, txfm_param);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
   switch (tx_size) {
 #if CONFIG_TX64X64
     case TX_64X64: inv_txfm_add_64x64(input, dest, stride, txfm_param); break;
@@ -2499,6 +2951,9 @@ static void init_txfm_param(const MACROBLOCKD *xd, TX_SIZE tx_size,
 #if CONFIG_LGT
   txfm_param->is_inter = is_inter_block(&xd->mi[0]->mbmi);
 #endif
+#if CONFIG_LGT_FROM_PRED
+  txfm_param->use_lgt = xd->mi[0]->mbmi.use_lgt;
+#endif
 #if CONFIG_ADAPT_SCAN
   txfm_param->eob_threshold =
       (const int16_t *)&xd->eob_threshold_md[tx_size][tx_type][0];
@@ -2515,7 +2970,7 @@ static InvTxfmFunc inv_txfm_func[2] = { av1_inv_txfm_add,
 
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  const tran_low_t *dqcoeff,
-#if CONFIG_LGT
+#if CONFIG_LGT_FROM_PRED
                                  PREDICTION_MODE mode,
 #endif
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
@@ -2541,15 +2996,17 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   init_txfm_param(xd, tx_size, tx_type, eob, &txfm_param);
 #if CONFIG_LGT || CONFIG_MRC_TX
   txfm_param.is_inter = is_inter_block(&xd->mi[0]->mbmi);
-  txfm_param.dst = dst;
-  txfm_param.stride = stride;
+#endif  // CONFIG_LGT || CONFIG_MRC_TX
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   txfm_param.mask = mrc_mask;
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-#if CONFIG_LGT
+#if CONFIG_LGT_FROM_PRED || CONFIG_MRC_TX
+  txfm_param.dst = dst;
+  txfm_param.stride = stride;
+#if CONFIG_LGT_FROM_PRED
   txfm_param.mode = mode;
-#endif  // CONFIG_LGT
-#endif  // CONFIG_LGT || CONFIG_MRC_TX
+#endif  // CONFIG_LGT_FROM_PRED
+#endif  // CONFIG_LGT_FROM_PRED || CONFIG_MRC_TX
 
   const int is_hbd = get_bitdepth_data_path_index(xd);
 #if CONFIG_TXMG
@@ -2595,9 +3052,9 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_LGT
+#if CONFIG_LGT_FROM_PRED
                               xd->mi[0]->mbmi.mode,
-#endif  // CONFIG_LGT
+#endif  // CONFIG_LGT_FROM_PRED
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK

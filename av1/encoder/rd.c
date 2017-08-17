@@ -210,6 +210,22 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                NULL);
 
 #if CONFIG_EXT_TX
+#if CONFIG_LGT_FROM_PRED
+  if (LGT_FROM_PRED_INTRA) {
+    for (i = 0; i < LGT_SIZES; ++i) {
+      for (j = 0; j < INTRA_MODES; ++j) {
+        x->intra_lgt_cost[i][j][0] = av1_cost_bit(fc->intra_lgt_prob[i][j], 0);
+        x->intra_lgt_cost[i][j][1] = av1_cost_bit(fc->intra_lgt_prob[i][j], 1);
+      }
+    }
+  }
+  if (LGT_FROM_PRED_INTER) {
+    for (i = 0; i < LGT_SIZES; ++i) {
+      x->inter_lgt_cost[i][0] = av1_cost_bit(fc->inter_lgt_prob[i], 0);
+      x->inter_lgt_cost[i][1] = av1_cost_bit(fc->inter_lgt_prob[i], 1);
+    }
+  }
+#endif  // CONFIG_LGT_FROM_PRED
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     int s;
     for (s = 1; s < EXT_TX_SETS_INTER; ++s) {

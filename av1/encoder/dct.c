@@ -1070,10 +1070,20 @@ static void get_masked_residual32(const int16_t **input, int *input_stride,
 }
 #endif  // CONFIG_MRC_TX
 
-#if CONFIG_LGT
+#if CONFIG_LGT || CONFIG_LGT_FROM_PRED
 static void flgt4(const tran_low_t *input, tran_low_t *output,
                   const tran_high_t *lgtmtx) {
   if (!lgtmtx) assert(0);
+#if CONFIG_LGT_FROM_PRED
+  // For DCT/ADST, use butterfly implementations
+  if (lgtmtx[0] == DCT4) {
+    fdct4(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST4) {
+    fadst4(input, output);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
 
   // evaluate s[j] = sum of all lgtmtx[j][i]*input[i] over i=1,...,4
   tran_high_t s[4] = { 0 };
@@ -1086,6 +1096,16 @@ static void flgt4(const tran_low_t *input, tran_low_t *output,
 static void flgt8(const tran_low_t *input, tran_low_t *output,
                   const tran_high_t *lgtmtx) {
   if (!lgtmtx) assert(0);
+#if CONFIG_LGT_FROM_PRED
+  // For DCT/ADST, use butterfly implementations
+  if (lgtmtx[0] == DCT8) {
+    fdct8(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST8) {
+    fadst8(input, output);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
 
   // evaluate s[j] = sum of all lgtmtx[j][i]*input[i] over i=1,...,8
   tran_high_t s[8] = { 0 };
@@ -1094,7 +1114,140 @@ static void flgt8(const tran_low_t *input, tran_low_t *output,
 
   for (int i = 0; i < 8; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
 }
-#endif  // CONFIG_LGT
+#endif  // CONFIG_LGT || CONFIG_LGT_FROM_PRED
+
+#if CONFIG_LGT_FROM_PRED
+static void flgt16up(const tran_low_t *input, tran_low_t *output,
+                     const tran_high_t *lgtmtx) {
+  if (lgtmtx[0] == DCT16) {
+    fdct16(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST16) {
+    fadst16(input, output);
+    return;
+  } else if (lgtmtx[0] == DCT32) {
+    fdct32(input, output);
+    return;
+  } else if (lgtmtx[0] == ADST32) {
+    fhalfright32(input, output);
+    return;
+  } else {
+    assert(0);
+  }
+}
+
+typedef void (*FlgtFunc)(const tran_low_t *input, tran_low_t *output,
+                         const tran_high_t *lgtmtx);
+
+static FlgtFunc flgt_func[4] = { flgt4, flgt8, flgt16up, flgt16up };
+
+typedef void (*GetLgtFunc)(const TxfmParam *txfm_param, int is_col,
+                           const tran_high_t *lgtmtx[], int ntx);
+
+static GetLgtFunc get_lgt_func[4] = { get_lgt4_from_pred, get_lgt8_from_pred,
+                                      get_lgt16up_from_pred,
+                                      get_lgt16up_from_pred };
+
+// this inline function corresponds to the up scaling before the first
+// transform in the av1_fht* functions
+static INLINE tran_low_t fwd_upscale_wrt_txsize(const tran_high_t val,
+                                                const TX_SIZE tx_size) {
+  switch (tx_size) {
+    case TX_4X4: return (tran_low_t)val << 4;
+    case TX_8X8:
+    case TX_4X16:
+    case TX_16X4:
+    case TX_8X32:
+    case TX_32X8: return (tran_low_t)val << 2;
+    case TX_4X8:
+    case TX_8X4:
+    case TX_8X16:
+    case TX_16X8: return (tran_low_t)fdct_round_shift(val * 4 * Sqrt2);
+    default: assert(0); break;
+  }
+  return 0;
+}
+
+// This inline function corresponds to the bit shift after the second
+// transform in the av1_fht* functions
+static INLINE tran_low_t fwd_downscale_wrt_txsize(const tran_low_t val,
+                                                  const TX_SIZE tx_size) {
+  switch (tx_size) {
+    case TX_4X4: return (val + 1) >> 2;
+    case TX_4X8:
+    case TX_8X4:
+    case TX_8X8:
+    case TX_4X16:
+    case TX_16X4: return (val + (val < 0)) >> 1;
+    case TX_8X16:
+    case TX_16X8: return val;
+    case TX_8X32:
+    case TX_32X8: return ROUND_POWER_OF_TWO_SIGNED(val, 2);
+    default: assert(0); break;
+  }
+  return 0;
+}
+
+void flgt2d_from_pred_c(const int16_t *input, tran_low_t *output, int stride,
+                        TxfmParam *txfm_param) {
+  const TX_SIZE tx_size = txfm_param->tx_size;
+  const int w = tx_size_wide[tx_size];
+  const int h = tx_size_high[tx_size];
+  const int wlog2 = tx_size_wide_log2[tx_size];
+  const int hlog2 = tx_size_high_log2[tx_size];
+  assert(w <= 8 || h <= 8);
+
+  int i, j;
+  tran_low_t out[256];  // max size: 8x32 and 32x8
+  tran_low_t temp_in[32], temp_out[32];
+  const tran_high_t *lgtmtx_col[1];
+  const tran_high_t *lgtmtx_row[1];
+  get_lgt_func[hlog2 - 2](txfm_param, 1, lgtmtx_col, w);
+  get_lgt_func[wlog2 - 2](txfm_param, 0, lgtmtx_row, h);
+
+  // For forward transforms, to be consistent with av1_fht functions, we apply
+  // short transform first and long transform second.
+  if (w < h) {
+    // Row transforms
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; ++j)
+        temp_in[j] = fwd_upscale_wrt_txsize(input[i * stride + j], tx_size);
+      flgt_func[wlog2 - 2](temp_in, temp_out, lgtmtx_row[0]);
+      // right shift of 2 bits here in fht8x16 and fht16x8
+      for (j = 0; j < w; ++j)
+        out[j * h + i] = (tx_size == TX_16X8 || tx_size == TX_8X16)
+                             ? ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2)
+                             : temp_out[j];
+    }
+    // Column transforms
+    for (i = 0; i < w; ++i) {
+      for (j = 0; j < h; ++j) temp_in[j] = out[j + i * h];
+      flgt_func[hlog2 - 2](temp_in, temp_out, lgtmtx_col[0]);
+      for (j = 0; j < h; ++j)
+        output[j * w + i] = fwd_downscale_wrt_txsize(temp_out[j], tx_size);
+    }
+  } else {
+    // Column transforms
+    for (i = 0; i < w; ++i) {
+      for (j = 0; j < h; ++j)
+        temp_in[j] = fwd_upscale_wrt_txsize(input[j * stride + i], tx_size);
+      flgt_func[hlog2 - 2](temp_in, temp_out, lgtmtx_col[0]);
+      // fht8x16 and fht16x8 have right shift of 2 bits here
+      for (j = 0; j < h; ++j)
+        out[j * w + i] = (tx_size == TX_16X8 || tx_size == TX_8X16)
+                             ? ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2)
+                             : temp_out[j];
+    }
+    // Row transforms
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; ++j) temp_in[j] = out[j + i * w];
+      flgt_func[wlog2 - 2](temp_in, temp_out, lgtmtx_row[0]);
+      for (j = 0; j < w; ++j)
+        output[j + i * w] = fwd_downscale_wrt_txsize(temp_out[j], tx_size);
+    }
+  }
+}
+#endif  // CONFIG_LGT_FROM_PRED
 
 #if CONFIG_EXT_TX
 // TODO(sarahparker) these functions will be removed once the highbitdepth

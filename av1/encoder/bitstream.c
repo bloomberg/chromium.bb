@@ -1581,6 +1581,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       // is no need to send the tx_type
       assert(eset > 0);
       assert(av1_ext_tx_used[tx_set_type][tx_type]);
+#if !CONFIG_LGT_FROM_PRED
       if (is_inter) {
         aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
@@ -1591,8 +1592,41 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
             ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
             av1_num_ext_tx_set[tx_set_type]);
       }
-    }
 #else
+      // only signal tx_type when lgt is not allowed or not selected
+      if (is_inter) {
+        if (LGT_FROM_PRED_INTER) {
+          if (is_lgt_allowed(mbmi->mode, tx_size) && !cm->reduced_tx_set_used)
+            aom_write(w, mbmi->use_lgt, ec_ctx->inter_lgt_prob[square_tx_size]);
+          if (!mbmi->use_lgt)
+            aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
+                             ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+                             av1_num_ext_tx_set[tx_set_type]);
+        } else {
+          aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
+                           ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+                           av1_num_ext_tx_set[tx_set_type]);
+        }
+      } else if (ALLOW_INTRA_EXT_TX) {
+        if (LGT_FROM_PRED_INTRA) {
+          if (is_lgt_allowed(mbmi->mode, tx_size) && !cm->reduced_tx_set_used)
+            aom_write(w, mbmi->use_lgt,
+                      ec_ctx->intra_lgt_prob[square_tx_size][mbmi->mode]);
+          if (!mbmi->use_lgt)
+            aom_write_symbol(
+                w, av1_ext_tx_ind[tx_set_type][tx_type],
+                ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+                av1_num_ext_tx_set[tx_set_type]);
+        } else {
+          aom_write_symbol(
+              w, av1_ext_tx_ind[tx_set_type][tx_type],
+              ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+              av1_num_ext_tx_set[tx_set_type]);
+        }
+      }
+#endif  // CONFIG_LGT_FROM_PRED
+    }
+#else  // CONFIG_EXT_TX
     if (tx_size < TX_32X32 &&
         ((!cm->seg.enabled && cm->base_qindex > 0) ||
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&

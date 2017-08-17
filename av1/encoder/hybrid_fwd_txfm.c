@@ -555,6 +555,14 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
                   TxfmParam *txfm_param) {
   const TX_SIZE tx_size = txfm_param->tx_size;
+#if CONFIG_LGT_FROM_PRED
+  if (txfm_param->use_lgt) {
+    // if use_lgt is 1, it will override tx_type
+    assert(is_lgt_allowed(txfm_param->mode, tx_size));
+    flgt2d_from_pred_c(src_diff, coeff, diff_stride, txfm_param);
+    return;
+  }
+#endif  // CONFIG_LGT_FROM_PRED
   switch (tx_size) {
 #if CONFIG_TX64X64
     case TX_64X64:

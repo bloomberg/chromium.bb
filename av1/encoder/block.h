@@ -283,6 +283,10 @@ struct macroblock {
 #endif  // CONFIG_CFL
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
 #if CONFIG_EXT_TX
+#if CONFIG_LGT_FROM_PRED
+  int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];
+  int inter_lgt_cost[LGT_SIZES][2];
+#endif
   int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   int intra_tx_type_costs[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                          [TX_TYPES];

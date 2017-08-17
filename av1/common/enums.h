@@ -771,6 +771,15 @@ typedef enum {
 } OBU_TYPE;
 #endif
 
+#if CONFIG_LGT_FROM_PRED
+#define LGT_SIZES 2
+// Note: at least one of LGT_FROM_PRED_INTRA and LGT_FROM_PRED_INTER must be 1
+#define LGT_FROM_PRED_INTRA 1
+#define LGT_FROM_PRED_INTER 1
+// LGT_SL_INTRA: LGTs with a mode-dependent first self-loop and a break point
+#define LGT_SL_INTRA 0
+#endif  // CONFIG_LGT_FROM_PRED
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

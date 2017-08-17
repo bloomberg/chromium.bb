@@ -6186,6 +6186,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int eset =
         get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
     if (eset > 0) {
+#if !CONFIG_LGT_FROM_PRED
       const TxSetType tx_set_type = get_ext_tx_set_type(
           tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       if (is_inter) {
@@ -6205,6 +6206,44 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
             av1_ext_tx_ind[tx_set_type][tx_type],
             av1_num_ext_tx_set[tx_set_type]);
       }
+#else
+      (void)tx_type;
+      (void)fc;
+      if (is_inter) {
+        if (LGT_FROM_PRED_INTER) {
+          if (is_lgt_allowed(mbmi->mode, tx_size) && !cm->reduced_tx_set_used)
+            ++counts->inter_lgt[txsize_sqr_map[tx_size]][mbmi->use_lgt];
+#if CONFIG_ENTROPY_STATS
+          if (!mbmi->use_lgt)
+            ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
+          else
+#endif  // CONFIG_ENTROPY_STATS
+            mbmi->tx_type = DCT_DCT;
+        } else {
+#if CONFIG_ENTROPY_STATS
+          ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
+#endif  // CONFIG_ENTROPY_STATS
+        }
+      } else {
+        if (LGT_FROM_PRED_INTRA) {
+          if (is_lgt_allowed(mbmi->mode, tx_size) && !cm->reduced_tx_set_used)
+            ++counts->intra_lgt[txsize_sqr_map[tx_size]][mbmi->mode]
+                               [mbmi->use_lgt];
+#if CONFIG_ENTROPY_STATS
+          if (!mbmi->use_lgt)
+            ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
+                                  [tx_type];
+          else
+#endif  // CONFIG_ENTROPY_STATS
+            mbmi->tx_type = DCT_DCT;
+        } else {
+#if CONFIG_ENTROPY_STATS
+          ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
+                                [tx_type];
+#endif  // CONFIG_ENTROPY_STATS
+        }
+      }
+#endif  // CONFIG_LGT_FROM_PRED
     }
   }
 #else
