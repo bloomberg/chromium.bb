@@ -677,7 +677,7 @@ bool FrameFetchContext::IsControlledByServiceWorker() const {
   auto* service_worker_network_provider =
       MasterDocumentLoader()->GetServiceWorkerNetworkProvider();
   return service_worker_network_provider &&
-         service_worker_network_provider->IsControlledByServiceWorker();
+         service_worker_network_provider->HasControllerServiceWorker();
 }
 
 int64_t FrameFetchContext::ServiceWorkerID() const {
@@ -686,7 +686,7 @@ int64_t FrameFetchContext::ServiceWorkerID() const {
   auto* service_worker_network_provider =
       MasterDocumentLoader()->GetServiceWorkerNetworkProvider();
   return service_worker_network_provider
-             ? service_worker_network_provider->ServiceWorkerID()
+             ? service_worker_network_provider->ControllerServiceWorkerID()
              : -1;
 }
 

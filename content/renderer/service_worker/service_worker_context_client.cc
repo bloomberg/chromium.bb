@@ -121,7 +121,7 @@ class WebServiceWorkerNetworkProviderImpl
     return nullptr;
   }
 
-  int GetProviderID() const override { return provider_->provider_id(); }
+  int ProviderID() const override { return provider_->provider_id(); }
 
  private:
   static bool IsScriptRequest(const WebURLRequest& request) {

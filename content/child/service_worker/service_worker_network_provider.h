@@ -64,7 +64,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
 
   ~ServiceWorkerNetworkProvider();
 
-  int provider_id() const { return provider_id_; }
+  int provider_id() const;
   ServiceWorkerProviderContext* context() const { return context_.get(); }
 
   mojom::URLLoaderFactory* script_loader_factory() {
@@ -91,7 +91,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   explicit ServiceWorkerNetworkProvider(
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
-  const int provider_id_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
   mojom::ServiceWorkerProviderHostAssociatedPtr provider_host_;

@@ -54,7 +54,10 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
   else
     controllee_state_ = base::MakeUnique<ControlleeState>();
 
-  dispatcher->AddProviderContext(this);
+  // |dispatcher| may be null in tests.
+  // TODO(falken): Figure out how to make a dispatcher in tests.
+  if (dispatcher)
+    dispatcher->AddProviderContext(this);
 }
 
 ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
