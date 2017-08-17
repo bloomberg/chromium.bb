@@ -91,7 +91,7 @@
             },
             {
                 "domain": "Network",
-                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookie", "setCookie", "setCookies", "canEmulateNetworkConditions",
+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
                             "setRequestInterceptionEnabled", "continueInterceptedRequest"],
                 "async": ["getResponseBody"]
             },
