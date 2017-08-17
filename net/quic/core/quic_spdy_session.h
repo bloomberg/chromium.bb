@@ -15,6 +15,7 @@
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/spdy/core/http2_frame_decoder_adapter.h"
 
 namespace net {
 
@@ -76,7 +77,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
                                    size_t frame_len,
                                    const QuicHeaderList& header_list);
 
-  // Sends contents of |iov| to spdy_framer_, returns number of bytes processd.
+  // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov, QuicTime timestamp);
 
   // Writes |headers| for the stream |id| to the dedicated headers stream.
@@ -154,7 +155,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // Sets how much encoded data the hpack decoder of spdy_framer_ is willing to
   // buffer.
   void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    spdy_framer_.set_max_decode_buffer_size_bytes(max_decode_buffer_size_bytes);
+    h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
   }
 
   // TODO(dahollings): Move to private upon deprecation of
@@ -198,7 +200,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       std::unique_ptr<QuicHpackDebugVisitor> visitor);
 
   // Sets the maximum size of the header compression table spdy_framer_ is
-  // willing to use to decode header blocks.
+  // willing to use to encode header blocks.
   void UpdateHeaderEncoderTableSize(uint32_t value);
 
   // Called when SETTINGS_ENABLE_PUSH is received, only supported on
@@ -288,6 +290,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   QuicTime prev_max_timestamp_;
 
   SpdyFramer spdy_framer_;
+  Http2DecoderAdapter h2_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdySession);
