@@ -84,6 +84,7 @@ void WelcomeHandler::RegisterMessages() {
 void WelcomeHandler::GoToNewTabPage() {
   chrome::NavigateParams params(GetBrowser(), GURL(chrome::kChromeUINewTabURL),
                                 ui::PageTransition::PAGE_TRANSITION_LINK);
+  params.source_contents = web_ui()->GetWebContents();
   chrome::Navigate(&params);
 }
 
