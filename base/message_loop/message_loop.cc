@@ -261,10 +261,6 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   task_observers_.RemoveObserver(task_observer);
 }
 
-bool MessageLoop::HasHighResolutionTasks() {
-  return incoming_task_queue_->HasHighResolutionTasks();
-}
-
 bool MessageLoop::IsIdleForTesting() {
   // We only check the incoming queue, since we don't want to lock the work
   // queue.
