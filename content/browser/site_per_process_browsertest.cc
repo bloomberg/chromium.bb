@@ -39,7 +39,6 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -48,6 +47,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -7506,7 +7506,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       shell(),
       "document.getElementsByName('frame1')[0].style.visibility = 'hidden'"));
   ASSERT_TRUE(hide_observer.WaitUntilSatisfied());
-  EXPECT_TRUE(first_child_view->FrameConnectorForTesting()->is_hidden());
+  EXPECT_TRUE(first_child_view->FrameConnectorForTesting()->IsHidden());
 
   // Verify that only the second view can become visible now.
   EXPECT_FALSE(first_child_view->CanBecomeVisible());

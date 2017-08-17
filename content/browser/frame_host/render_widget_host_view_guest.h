@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"

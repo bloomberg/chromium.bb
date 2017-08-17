@@ -14,9 +14,9 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -108,7 +108,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
 }
 
 void RenderFrameProxyHost::SetChildRWHView(RenderWidgetHostView* view) {
-  cross_process_frame_connector_->set_view(
+  cross_process_frame_connector_->SetView(
       static_cast<RenderWidgetHostViewChildFrame*>(view));
 }
 

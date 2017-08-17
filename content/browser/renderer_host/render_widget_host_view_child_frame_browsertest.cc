@@ -45,9 +45,7 @@ class RenderWidgetHostViewChildFrameTest : public ContentBrowserTest {
     EXPECT_EQ(expected_screen_width_, width);
   }
 
-  void set_expected_screen_width(int width) {
-    expected_screen_width_ = width;
-  }
+  void set_expected_screen_width(int width) { expected_screen_width_ = width; }
 
  private:
   int expected_screen_width_;
@@ -61,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
   NavigateToURL(shell(), main_url);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()->root();
+                            ->GetFrameTree()
+                            ->root();
 
   // Load cross-site page into iframe.
   GURL cross_site_url(
@@ -70,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
 
   int main_frame_screen_width = 0;
   ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-      "window.screen.width")->GetAsInteger(&main_frame_screen_width);
+                           "window.screen.width")
+      ->GetAsInteger(&main_frame_screen_width);
   set_expected_screen_width(main_frame_screen_width);
   EXPECT_FALSE(main_frame_screen_width == 0);
 
