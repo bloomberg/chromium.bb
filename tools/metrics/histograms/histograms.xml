@@ -27126,6 +27126,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Installer.Recovery.Count" units="count">
+  <obsolete>
+    Superseded by Installer.Recovery.Reason in 8/2017.
+  </obsolete>
   <owner>ahassani@chromium.org</owner>
   <summary>
     The number of times the device has been recovered.
