@@ -331,6 +331,38 @@ class DeviceParser(object):
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 
 
+class _AppendOption(argparse.Action):
+  """Append the command line option (with no arguments) to dest.
+
+  parser.add_argument('-b', '--barg', dest='out', action='append_option')
+  options = parser.parse_args(['-b', '--barg'])
+  options.out == ['-b', '--barg']
+  """
+  def __init__(self, option_strings, dest, **kwargs):
+    if 'nargs' in kwargs:
+      raise ValueError('nargs is not supported for append_option action')
+    super(_AppendOption, self).__init__(
+        option_strings, dest, nargs=0, **kwargs)
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    if getattr(namespace, self.dest, None) is None:
+      setattr(namespace, self.dest, [])
+    getattr(namespace, self.dest).append(option_string)
+
+
+class _AppendOptionValue(argparse.Action):
+  """Append the command line option to dest. Useful for pass along arguments.
+
+  parser.add_argument('-b', '--barg', dest='out', action='append_option_value')
+  options = parser.parse_args(['--barg', 'foo', '-b', 'bar'])
+  options.out == ['-barg', 'foo', '-b', 'bar']
+  """
+  def __call__(self, parser, namespace, values, option_string=None):
+    if getattr(namespace, self.dest, None) is None:
+      setattr(namespace, self.dest, [])
+    getattr(namespace, self.dest).extend([option_string, str(values)])
+
+
 class _SplitExtendAction(argparse.Action):
   """Callback to split the argument and extend existing value.
 
@@ -357,6 +389,8 @@ VALID_TYPES = {
 }
 
 VALID_ACTIONS = {
+    'append_option': _AppendOption,
+    'append_option_value': _AppendOptionValue,
     'split_extend': _SplitExtendAction,
 }
 

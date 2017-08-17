@@ -240,6 +240,62 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
                            hostname='foo_host')
 
 
+class AppendOptionTest(cros_test_lib.TestCase):
+  """Verify append_option/append_option_value actions."""
+
+  def setUp(self):
+    """Create a standard parser for the tests."""
+    self.parser = commandline.ArgumentParser()
+    self.parser.add_argument('--flag', action='append_option')
+    self.parser.add_argument('--value', action='append_option_value')
+    self.parser.add_argument('-x', '--shared_flag', dest='shared',
+                             action='append_option')
+    self.parser.add_argument('-y', '--shared_value', dest='shared',
+                             action='append_option_value')
+
+  def testNone(self):
+    """Test results when no arguments are passed in."""
+    result = self.parser.parse_args([])
+    self.assertDictContainsSubset(
+        {'flag': None, 'value': None, 'shared': None},
+        vars(result),
+    )
+
+  def testSingles(self):
+    """Test results when no argument is used more than once."""
+    result = self.parser.parse_args(
+        ['--flag', '--value', 'foo', '--shared_flag', '--shared_value', 'bar']
+    )
+
+    self.assertDictContainsSubset(
+        {
+            'flag': ['--flag'],
+            'value': ['--value', 'foo'],
+            'shared': ['--shared_flag', '--shared_value', 'bar'],
+        },
+        vars(result),
+    )
+
+  def testMultiples(self):
+    """Test results when no arguments are used more than once."""
+    result = self.parser.parse_args([
+        '--flag', '--value', 'v1',
+        '-x', '-y', 's1',
+        '--shared_flag', '--shared_value', 's2',
+        '--flag', '--value', 'v2',
+    ])
+
+    self.assertDictContainsSubset(
+        {
+            'flag': ['--flag', '--flag'],
+            'value': ['--value', 'v1', '--value', 'v2'],
+            'shared': ['-x', '-y', 's1', '--shared_flag',
+                       '--shared_value', 's2'],
+        },
+        vars(result),
+    )
+
+
 class SplitExtendActionTest(cros_test_lib.TestCase):
   """Verify _SplitExtendAction/split_extend action."""
 
