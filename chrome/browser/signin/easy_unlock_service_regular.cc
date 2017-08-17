@@ -100,6 +100,7 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
       weak_ptr_factory_(this) {}
 
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
+  registrar_.RemoveAll();
 }
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
@@ -363,25 +364,7 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
     pairing_update->SetWithoutPathExpansion(
         kKeyDevices, base::MakeUnique<base::Value>(devices));
 
-#if defined(OS_CHROMEOS)
-  // TODO(tengs): Investigate if we can determine if the remote devices were set
-  // from sync or from the setup app.
-  if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
-    // We may already have the password cached, so proceed to create the
-    // cryptohome keys for sign-in or the system will be hardlocked.
-    chromeos::UserSessionManager::GetInstance()
-        ->GetEasyUnlockKeyManager()
-        ->RefreshKeys(
-            *short_lived_user_context_->user_context(), devices,
-            base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
-  } else {
-    CheckCryptohomeKeysAndMaybeHardlock();
-  }
-#else
-  CheckCryptohomeKeysAndMaybeHardlock();
-#endif
+  RefreshCryptohomeKeysIfPossible();
 }
 
 // This method is called from easyUnlock.setRemoteDevice JS API. It's used
@@ -529,6 +512,12 @@ void EasyUnlockServiceRegular::InitializeInternal() {
     LoadRemoteDevices();
     StartPromotionManager();
   }
+
+  registrar_.Init(profile()->GetPrefs());
+  registrar_.Add(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
+      base::Bind(&EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible,
+                 weak_ptr_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -580,6 +569,10 @@ bool EasyUnlockServiceRegular::IsEnabled() const {
 #else
   return false;
 #endif
+}
+
+bool EasyUnlockServiceRegular::IsChromeOSLoginEnabled() const {
+  return pref_manager_ && pref_manager_->IsChromeOSLoginEnabled();
 }
 
 void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
@@ -727,6 +720,7 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
   SetTurnOffFlowStatus(IDLE);
   pref_manager_->SetIsEasyUnlockEnabled(false);
   ResetScreenlockState();
+  registrar_.RemoveAll();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
@@ -758,4 +752,25 @@ EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
           ->GetCryptAuthDeviceManager();
   DCHECK(manager);
   return manager;
+}
+
+void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
+#if defined(OS_CHROMEOS)
+  if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
+    // If the user reauthed on the settings page, then the UserContext will be
+    // cached.
+    chromeos::UserSessionManager::GetInstance()
+        ->GetEasyUnlockKeyManager()
+        ->RefreshKeys(
+            *short_lived_user_context_->user_context(),
+            IsChromeOSLoginEnabled() ? *GetRemoteDevices() : base::ListValue(),
+            base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
+  } else {
+    CheckCryptohomeKeysAndMaybeHardlock();
+  }
+#else
+  CheckCryptohomeKeysAndMaybeHardlock();
+#endif
 }

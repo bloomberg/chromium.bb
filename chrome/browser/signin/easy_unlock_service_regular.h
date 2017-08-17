@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
 #if defined(OS_CHROMEOS)
@@ -100,6 +101,7 @@ class EasyUnlockServiceRegular
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
   bool IsEnabled() const override;
+  bool IsChromeOSLoginEnabled() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
 #if defined(OS_CHROMEOS)
@@ -155,6 +157,10 @@ class EasyUnlockServiceRegular
   // synced devices from CryptAuth.
   cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
 
+  // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
+  // Otherwise, hardlock the device.
+  void RefreshCryptohomeKeysIfPossible();
+
   TurnOffFlowStatus turn_off_flow_status_;
   std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
 
@@ -202,6 +208,9 @@ class EasyUnlockServiceRegular
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
   // notification.
   bool shown_pairing_changed_notification_;
+
+  // Listens to pref changes.
+  PrefChangeRegistrar registrar_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 

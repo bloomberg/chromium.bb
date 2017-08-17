@@ -35,6 +35,7 @@ class EasyUnlockRefreshKeysOperation {
 
  private:
   void OnKeysCreated(bool success);
+  void RemoveKeysStartingFromIndex(size_t key_index);
   void OnKeysRemoved(bool success);
 
   UserContext user_context_;

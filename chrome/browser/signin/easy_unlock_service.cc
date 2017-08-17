@@ -332,6 +332,10 @@ bool EasyUnlockService::IsEnabled() const {
   return false;
 }
 
+bool EasyUnlockService::IsChromeOSLoginEnabled() const {
+  return false;
+}
+
 void EasyUnlockService::OpenSetupApp() {
   app_manager_->LaunchSetup();
 }
