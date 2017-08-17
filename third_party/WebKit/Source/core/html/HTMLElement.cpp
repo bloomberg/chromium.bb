@@ -111,6 +111,8 @@ bool IsEditable(const Node& node) {
   return !node.IsElementNode() && node.parentNode()->IsHTMLElement();
 }
 
+const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
+
 }  // anonymous namespace
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
@@ -426,6 +428,92 @@ const AtomicString& HTMLElement::EventNameForAttributeName(
   return attribute_name_to_event_name_map.at(attr_name.LocalName());
 }
 
+WebFeature HTMLElement::WebFeatureForAttributeName(
+    const QualifiedName& attr_name) {
+  if (!attr_name.NamespaceURI().IsNull())
+    return kNoWebFeature;
+
+  // Don't count usage of attributes in user agent shadow DOM.
+  if (ShadowRoot* shadow = ContainingShadowRoot()) {
+    if (shadow->GetType() == ShadowRootType::kUserAgent)
+      return kNoWebFeature;
+  }
+
+  typedef HashMap<AtomicString, WebFeature> StringToWebFeatureMap;
+  DEFINE_STATIC_LOCAL(StringToWebFeatureMap, attribute_name_to_web_feature_map,
+                      ());
+  if (!attribute_name_to_web_feature_map.size()) {
+    struct AttrToWebFeature {
+      const QualifiedName& attr;
+      WebFeature web_feature;
+    };
+    AttrToWebFeature attr_to_web_feature[] = {
+        {aria_activedescendantAttr, WebFeature::kARIAActiveDescendantAttribute},
+        {aria_atomicAttr, WebFeature::kARIAAtomicAttribute},
+        {aria_autocompleteAttr, WebFeature::kARIAAutocompleteAttribute},
+        {aria_busyAttr, WebFeature::kARIABusyAttribute},
+        {aria_checkedAttr, WebFeature::kARIACheckedAttribute},
+        {aria_colcountAttr, WebFeature::kARIAColCountAttribute},
+        {aria_colindexAttr, WebFeature::kARIAColIndexAttribute},
+        {aria_colspanAttr, WebFeature::kARIAColSpanAttribute},
+        {aria_controlsAttr, WebFeature::kARIAControlsAttribute},
+        {aria_currentAttr, WebFeature::kARIACurrentAttribute},
+        {aria_describedbyAttr, WebFeature::kARIADescribedByAttribute},
+        {aria_detailsAttr, WebFeature::kARIADetailsAttribute},
+        {aria_disabledAttr, WebFeature::kARIADisabledAttribute},
+        {aria_dropeffectAttr, WebFeature::kARIADropEffectAttribute},
+        {aria_errormessageAttr, WebFeature::kARIAErrorMessageAttribute},
+        {aria_expandedAttr, WebFeature::kARIAExpandedAttribute},
+        {aria_flowtoAttr, WebFeature::kARIAFlowToAttribute},
+        {aria_grabbedAttr, WebFeature::kARIAGrabbedAttribute},
+        {aria_haspopupAttr, WebFeature::kARIAHasPopupAttribute},
+        {aria_helpAttr, WebFeature::kARIAHelpAttribute},
+        {aria_hiddenAttr, WebFeature::kARIAHiddenAttribute},
+        {aria_invalidAttr, WebFeature::kARIAInvalidAttribute},
+        {aria_keyshortcutsAttr, WebFeature::kARIAKeyShortcutsAttribute},
+        {aria_labelAttr, WebFeature::kARIALabelAttribute},
+        {aria_labeledbyAttr, WebFeature::kARIALabeledByAttribute},
+        {aria_labelledbyAttr, WebFeature::kARIALabelledByAttribute},
+        {aria_levelAttr, WebFeature::kARIALevelAttribute},
+        {aria_liveAttr, WebFeature::kARIALiveAttribute},
+        {aria_modalAttr, WebFeature::kARIAModalAttribute},
+        {aria_multilineAttr, WebFeature::kARIAMultilineAttribute},
+        {aria_multiselectableAttr, WebFeature::kARIAMultiselectableAttribute},
+        {aria_orientationAttr, WebFeature::kARIAOrientationAttribute},
+        {aria_ownsAttr, WebFeature::kARIAOwnsAttribute},
+        {aria_placeholderAttr, WebFeature::kARIAPlaceholderAttribute},
+        {aria_posinsetAttr, WebFeature::kARIAPosInSetAttribute},
+        {aria_pressedAttr, WebFeature::kARIAPressedAttribute},
+        {aria_readonlyAttr, WebFeature::kARIAReadOnlyAttribute},
+        {aria_relevantAttr, WebFeature::kARIARelevantAttribute},
+        {aria_requiredAttr, WebFeature::kARIARequiredAttribute},
+        {aria_roledescriptionAttr, WebFeature::kARIARoleDescriptionAttribute},
+        {aria_rowcountAttr, WebFeature::kARIARowCountAttribute},
+        {aria_rowindexAttr, WebFeature::kARIARowIndexAttribute},
+        {aria_rowspanAttr, WebFeature::kARIARowSpanAttribute},
+        {aria_selectedAttr, WebFeature::kARIASelectedAttribute},
+        {aria_setsizeAttr, WebFeature::kARIASetSizeAttribute},
+        {aria_sortAttr, WebFeature::kARIASortAttribute},
+        {aria_valuemaxAttr, WebFeature::kARIAValueMaxAttribute},
+        {aria_valueminAttr, WebFeature::kARIAValueMinAttribute},
+        {aria_valuenowAttr, WebFeature::kARIAValueNowAttribute},
+        {aria_valuetextAttr, WebFeature::kARIAValueTextAttribute},
+        {inertAttr, WebFeature::kInertAttribute},
+    };
+
+    for (const auto& item : attr_to_web_feature) {
+      attribute_name_to_web_feature_map.Set(item.attr.LocalName(),
+                                            item.web_feature);
+    }
+  }
+
+  const auto& iter =
+      attribute_name_to_web_feature_map.find(attr_name.LocalName());
+  if (iter != attribute_name_to_web_feature_map.end())
+    return iter->value;
+  return kNoWebFeature;
+}
+
 void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
   Element::AttributeChanged(params);
   if (params.reason != AttributeModificationReason::kDirectly)
@@ -465,7 +553,6 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
   } else if (params.name == langAttr) {
     PseudoStateChanged(CSSSelector::kPseudoLang);
   } else if (params.name == inertAttr) {
-    UseCounter::Count(GetDocument(), WebFeature::kInertAttribute);
     UpdateDistribution();
     if (GetDocument().GetFrame()) {
       GetDocument().GetFrame()->SetIsInert(
@@ -483,6 +570,10 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
                                        EventParameterName()));
     }
   }
+
+  WebFeature web_feature = WebFeatureForAttributeName(params.name);
+  if (web_feature != kNoWebFeature)
+    UseCounter::Count(GetDocument(), web_feature);
 }
 
 DocumentFragment* HTMLElement::TextToFragment(const String& text,

@@ -33,6 +33,9 @@ class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
 class KeyboardEvent;
+namespace mojom {
+enum class WebFeature : int32_t;
+}  // namespace mojom
 
 enum TranslateAttributeMode {
   kTranslateAttributeYes,
@@ -100,6 +103,8 @@ class CORE_EXPORT HTMLElement : public Element {
 
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);
+
+  mojom::WebFeature WebFeatureForAttributeName(const QualifiedName& attr_name);
 
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
