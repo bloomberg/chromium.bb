@@ -5,7 +5,6 @@
 #include "ash/accessibility_types.h"
 #include "ash/login_status.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -113,7 +113,7 @@ class TrayAccessibilityTest
   void SetShowAccessibilityOptionsInSystemTrayMenu(bool value) {
     if (GetParam() == PREF_SERVICE) {
       PrefService* prefs = GetProfile()->GetPrefs();
-      prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, value);
+      prefs->SetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu, value);
     } else if (GetParam() == POLICY) {
       policy::PolicyMap policy_map;
       policy_map.Set(policy::key::kShowAccessibilityOptionsInSystemTrayMenu,
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   AccessibilityManager::Get()->EnableTapDragging(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
-  // Confirms that ash::prefs::kShouldAlwaysShowAccessibilityMenu doesn't affect
+  // Confirms that prefs::kShouldAlwaysShowAccessibilityMenu doesn't affect
   // the icon on the tray.
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
   AccessibilityManager::Get()->EnableHighContrast(true);

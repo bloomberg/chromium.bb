@@ -6,7 +6,6 @@
 
 #include "ash/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -78,20 +78,19 @@ PrefService* prefs() {
 }
 
 void SetScreenMagnifierEnabledPref(bool enabled) {
-  prefs()->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                      enabled);
+  prefs()->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled, enabled);
 }
 
 void SetScreenMagnifierTypePref(ash::MagnifierType type) {
-  prefs()->SetInteger(ash::prefs::kAccessibilityScreenMagnifierType, type);
+  prefs()->SetInteger(prefs::kAccessibilityScreenMagnifierType, type);
 }
 
 void SetFullScreenMagnifierScalePref(double scale) {
-  prefs()->SetDouble(ash::prefs::kAccessibilityScreenMagnifierScale, scale);
+  prefs()->SetDouble(prefs::kAccessibilityScreenMagnifierScale, scale);
 }
 
 bool GetScreenMagnifierEnabledFromPref() {
-  return prefs()->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled);
+  return prefs()->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled);
 }
 
 // Creates and logs into a profile with account |account_id|, and makes sure

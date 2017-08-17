@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -33,24 +33,30 @@ RecommendationRestorer::RecommendationRestorer(Profile* profile)
     return;
 
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityLargeCursorEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityHighContrastEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityScreenMagnifierType,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityVirtualKeyboardEnabled,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityLargeCursorEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilitySpokenFeedbackEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityHighContrastEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityScreenMagnifierEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityScreenMagnifierType,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
+  pref_change_registrar_.Add(
+      prefs::kAccessibilityVirtualKeyboardEnabled,
+      base::Bind(
+          &RecommendationRestorer::Restore, base::Unretained(this), true));
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -115,12 +121,12 @@ void RecommendationRestorer::Restore(bool allow_delay,
 }
 
 void RecommendationRestorer::RestoreAll() {
-  Restore(false, ash::prefs::kAccessibilityLargeCursorEnabled);
-  Restore(false, ash::prefs::kAccessibilitySpokenFeedbackEnabled);
-  Restore(false, ash::prefs::kAccessibilityHighContrastEnabled);
-  Restore(false, ash::prefs::kAccessibilityScreenMagnifierEnabled);
-  Restore(false, ash::prefs::kAccessibilityScreenMagnifierType);
-  Restore(false, ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+  Restore(false, prefs::kAccessibilityLargeCursorEnabled);
+  Restore(false, prefs::kAccessibilitySpokenFeedbackEnabled);
+  Restore(false, prefs::kAccessibilityHighContrastEnabled);
+  Restore(false, prefs::kAccessibilityScreenMagnifierEnabled);
+  Restore(false, prefs::kAccessibilityScreenMagnifierType);
+  Restore(false, prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
 void RecommendationRestorer::StartTimer() {
