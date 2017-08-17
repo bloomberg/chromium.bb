@@ -1741,6 +1741,30 @@
             ]
         }
     ],
+    "NoStatePrefetchValidation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "NoStatePrefetchWithoutInstant",
+                    "params": {
+                        "instant_mode": "simple_load",
+                        "mode": "no_state_prefetch",
+                        "omnibox_mode": "no_state_prefetch"
+                    },
+                    "enable_features": [
+                        "NoStatePrefetch"
+                    ]
+                }
+            ]
+        }
+    ],
     "NonDelayableThrottlesDelayable": [
         {
             "platforms": [
