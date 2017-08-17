@@ -1544,24 +1544,40 @@ TEST(MessageLoopTest, HighResolutionTimer) {
   MessageLoop message_loop;
   Time::EnableHighResolutionTimer(true);
 
-  const TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
-  const TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
+  constexpr TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
+  constexpr TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
 
-  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
-  // Post a fast task to enable the high resolution timers.
-  message_loop.task_runner()->PostDelayedTask(
-      FROM_HERE, BindOnce(&PostNTasksThenQuit, 1), kFastTimer);
-  EXPECT_TRUE(message_loop.HasHighResolutionTasks());
-  RunLoop().Run();
-  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
+  {
+    // Post a fast task to enable the high resolution timers.
+    RunLoop run_loop;
+    message_loop.task_runner()->PostDelayedTask(
+        FROM_HERE,
+        BindOnce(
+            [](RunLoop* run_loop) {
+              EXPECT_TRUE(Time::IsHighResolutionTimerInUse());
+              run_loop->QuitWhenIdle();
+            },
+            &run_loop),
+        kFastTimer);
+    run_loop.Run();
+  }
   EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
-  // Check that a slow task does not trigger the high resolution logic.
-  message_loop.task_runner()->PostDelayedTask(
-      FROM_HERE, BindOnce(&PostNTasksThenQuit, 1), kSlowTimer);
-  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
-  RunLoop().Run();
-  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
+  {
+    // Check that a slow task does not trigger the high resolution logic.
+    RunLoop run_loop;
+    message_loop.task_runner()->PostDelayedTask(
+        FROM_HERE,
+        BindOnce(
+            [](RunLoop* run_loop) {
+              EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
+              run_loop->QuitWhenIdle();
+            },
+            &run_loop),
+        kSlowTimer);
+    run_loop.Run();
+  }
   Time::EnableHighResolutionTimer(false);
+  Time::ResetHighResolutionTimerUsage();
 }
 
 #endif  // defined(OS_WIN)
