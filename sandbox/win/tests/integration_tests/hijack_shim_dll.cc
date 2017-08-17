@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/integration_tests/hijack_shim_dll.h"
 
 // Function definition from hijack dll.
 bool GetPathOnDisk(wchar_t* buffer);

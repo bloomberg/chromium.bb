@@ -235,14 +235,14 @@ shared_library("sbox_integration_test_hijack_dll") {
   sources = [
     "tests/integration_tests/hijack_dll.cc",
     "tests/integration_tests/hijack_dll.def",
-    "tests/integration_tests/hijack_dlls.h",
   ]
 }
 
 loadable_module("sbox_integration_test_hijack_shim_dll") {
   sources = [
-    "tests/integration_tests/hijack_dlls.h",
     "tests/integration_tests/hijack_shim_dll.cc",
+    "tests/integration_tests/hijack_shim_dll.def",
+    "tests/integration_tests/hijack_shim_dll.h",
   ]
 
   # Implicitly linking hijack_dll as loader import resolution required.
