@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -249,12 +250,14 @@ class CupsPrintersManagerTest : public testing::Test,
  public:
   CupsPrintersManagerTest()
       : observed_printers_(CupsPrintersManager::kNumPrinterClasses),
-        ppd_provider_(new FakePpdProvider),
-        manager_(CupsPrintersManager::Create(&synced_printers_manager_,
-                                             &usb_detector_,
-                                             &zeroconf_detector_,
-                                             ppd_provider_,
-                                             &event_tracker_)) {
+        ppd_provider_(new FakePpdProvider) {
+    // Zeroconf detector ownership is taken by the manager, so we have
+    // to keep a raw pointer to it.
+    auto zeroconf_detector = base::MakeUnique<FakePrinterDetector>();
+    zeroconf_detector_ = zeroconf_detector.get();
+    manager_ = CupsPrintersManager::Create(
+        &synced_printers_manager_, &usb_detector_, std::move(zeroconf_detector),
+        ppd_provider_, &event_tracker_);
     manager_->AddObserver(this);
   }
 
@@ -284,7 +287,7 @@ class CupsPrintersManagerTest : public testing::Test,
   // Backend fakes driving the CupsPrintersManager.
   FakeSyncedPrintersManager synced_printers_manager_;
   FakePrinterDetector usb_detector_;
-  FakePrinterDetector zeroconf_detector_;
+  FakePrinterDetector* zeroconf_detector_;
   scoped_refptr<FakePpdProvider> ppd_provider_;
 
   // This is unused, it's just here for memory ownership.
@@ -348,8 +351,8 @@ TEST_F(CupsPrintersManagerTest, GetUsbPrinters) {
 
 // Same as GetUsbPrinters, only for Zeroconf printers.
 TEST_F(CupsPrintersManagerTest, GetZeroconfPrinters) {
-  zeroconf_detector_.AddDetections({MakeDiscoveredPrinter("DiscoveredPrinter"),
-                                    MakeAutomaticPrinter("AutomaticPrinter")});
+  zeroconf_detector_->AddDetections({MakeDiscoveredPrinter("DiscoveredPrinter"),
+                                     MakeAutomaticPrinter("AutomaticPrinter")});
   synced_printers_manager_.AddConfiguredPrinters(
       {Printer("Foo"), Printer("Bar")});
 
@@ -363,10 +366,11 @@ TEST_F(CupsPrintersManagerTest, GetZeroconfPrinters) {
 // Test that printers that appear in either a Configured or Enterprise set do
 // *not* appear in Discovered or Automatic, even if they are detected as such.
 TEST_F(CupsPrintersManagerTest, SyncedPrintersTrumpDetections) {
-  zeroconf_detector_.AddDetections({MakeDiscoveredPrinter("DiscoveredPrinter0"),
-                                    MakeDiscoveredPrinter("DiscoveredPrinter1"),
-                                    MakeAutomaticPrinter("AutomaticPrinter0"),
-                                    MakeAutomaticPrinter("AutomaticPrinter1")});
+  zeroconf_detector_->AddDetections(
+      {MakeDiscoveredPrinter("DiscoveredPrinter0"),
+       MakeDiscoveredPrinter("DiscoveredPrinter1"),
+       MakeAutomaticPrinter("AutomaticPrinter0"),
+       MakeAutomaticPrinter("AutomaticPrinter1")});
   scoped_task_environment_.RunUntilIdle();
   // Before we muck with anything else, check that automatic and discovered
   // classes are what we intended to set up.
@@ -399,7 +403,7 @@ TEST_F(CupsPrintersManagerTest, UpdateConfiguredPrinter) {
   Printer existing_configured("Configured");
   synced_printers_manager_.AddConfiguredPrinters({existing_configured});
   usb_detector_.AddDetections({MakeDiscoveredPrinter("Discovered")});
-  zeroconf_detector_.AddDetections({MakeAutomaticPrinter("Automatic")});
+  zeroconf_detector_->AddDetections({MakeAutomaticPrinter("Automatic")});
   scoped_task_environment_.RunUntilIdle();
 
   // Sanity check that we do, indeed, have one printer in each class.
@@ -446,7 +450,7 @@ TEST_F(CupsPrintersManagerTest, GetPrinter) {
   synced_printers_manager_.AddConfiguredPrinters({Printer("Configured")});
   synced_printers_manager_.AddEnterprisePrinters({Printer("Enterprise")});
   usb_detector_.AddDetections({MakeDiscoveredPrinter("Discovered")});
-  zeroconf_detector_.AddDetections({MakeAutomaticPrinter("Automatic")});
+  zeroconf_detector_->AddDetections({MakeAutomaticPrinter("Automatic")});
   scoped_task_environment_.RunUntilIdle();
 
   for (const std::string& id :
