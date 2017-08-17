@@ -358,9 +358,7 @@ public class DownloadManagerService
      * Called when browser activity is launched. For background resumption and cancellation, this
      * will not be called.
      */
-    public void onActivityLaunched() {
-        DownloadNotificationService.clearResumptionAttemptLeft();
-    }
+    public void onActivityLaunched() {}
 
     /**
      * Broadcast that a download was successful.

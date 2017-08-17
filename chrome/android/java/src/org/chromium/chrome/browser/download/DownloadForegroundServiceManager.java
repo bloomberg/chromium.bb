@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  * Manager to stop and start the foreground service associated with downloads.
  */
 public class DownloadForegroundServiceManager {
-    public enum DownloadStatus { START, PAUSE, RESUME, CANCEL, COMPLETE }
+    public enum DownloadStatus { PAUSE, CANCEL, COMPLETE, IN_PROGRESS, FAIL }
     private static class DownloadUpdate {
         int mNotificationId;
         Notification mNotification;
@@ -135,7 +135,7 @@ public class DownloadForegroundServiceManager {
     }
 
     private boolean isActive(DownloadStatus downloadStatus) {
-        return downloadStatus == DownloadStatus.START || downloadStatus == DownloadStatus.RESUME;
+        return downloadStatus == DownloadStatus.IN_PROGRESS;
     }
 
     private void cleanDownloadUpdateQueue() {
