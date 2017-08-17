@@ -38,14 +38,7 @@ from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_results
 from webkitpy.tool import grammar
 
-
 _log = logging.getLogger(__name__)
-
-
-TestExpectations = test_expectations.TestExpectations
-
-# Export this so callers don't need to know about message pools.
-WorkerException = message_pool.WorkerException
 
 
 class TestRunInterruptedException(Exception):
@@ -74,6 +67,7 @@ class LayoutTestRunner(object):
         self._expectations = None
         self._test_inputs = []
         self._retry_attempt = 0
+        self._shards_to_redo = []
 
         self._current_run_results = None
 
@@ -81,7 +75,6 @@ class LayoutTestRunner(object):
         self._expectations = expectations
         self._test_inputs = test_inputs
         self._retry_attempt = retry_attempt
-        self._shards_to_redo = []
 
         test_run_results = TestRunResults(self._expectations, len(test_inputs) + len(tests_to_skip))
         self._current_run_results = test_run_results
@@ -97,9 +90,11 @@ class LayoutTestRunner(object):
             test_run_results.add(result, expected=True, test_is_slow=self._test_is_slow(test_name))
 
         self._printer.write_update('Sharding tests ...')
-        locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs,
-                                                                   int(self._options.child_processes), self._options.fully_parallel,
-                                                                   self._options.run_singly or (self._options.batch_size == 1))
+        locked_shards, unlocked_shards = self._sharder.shard_tests(
+            test_inputs,
+            int(self._options.child_processes),
+            self._options.fully_parallel,
+            self._options.run_singly or (self._options.batch_size == 1))
 
         # We don't have a good way to coordinate the workers so that they don't
         # try to run the shards that need a lock. The easiest solution is to
@@ -158,8 +153,7 @@ class LayoutTestRunner(object):
                 test_run_results.add(result, expected=False, test_is_slow=self._test_is_slow(test_input.test_name))
 
     def _interrupt_if_at_failure_limits(self, test_run_results):
-        # Note: The messages in this method are constructed to match old-run-webkit-tests
-        # so that existing buildbot grep rules work.
+
         def interrupt_if_at_failure_limit(limit, failure_count, test_run_results, message):
             if limit and failure_count >= limit:
                 message += ' %d tests run.' % (test_run_results.expected + test_run_results.unexpected)
@@ -175,22 +169,24 @@ class LayoutTestRunner(object):
             self._options.exit_after_n_crashes_or_timeouts,
             test_run_results.unexpected_crashes + test_run_results.unexpected_timeouts,
             test_run_results,
-            # This differs from ORWT because it does not include WebProcess crashes.
             'Exiting early after %d crashes and %d timeouts.' % (
                 test_run_results.unexpected_crashes, test_run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, test_run_results, result):
         expected = self._expectations.matches_an_expected_result(
-            result.test_name, result.type, self._options.pixel_tests or result.reftest_type, self._options.enable_sanitizer)
-        exp_str = self._expectations.get_expectations_string(result.test_name)
-        got_str = self._expectations.expectation_to_string(result.type)
+            result.test_name,
+            result.type,
+            self._options.pixel_tests or result.reftest_type,
+            self._options.enable_sanitizer)
+        expectation_string = self._expectations.get_expectations_string(result.test_name)
+        actual_string = self._expectations.expectation_to_string(result.type)
 
         if result.device_failed:
-            self._printer.print_finished_test(result, False, exp_str, 'Aborted')
+            self._printer.print_finished_test(result, False, expectation_string, 'Aborted')
             return
 
         test_run_results.add(result, expected, self._test_is_slow(result.test_name))
-        self._printer.print_finished_test(result, expected, exp_str, got_str)
+        self._printer.print_finished_test(result, expected, expectation_string, actual_string)
         self._interrupt_if_at_failure_limits(test_run_results)
 
     def handle(self, name, source, *args):
@@ -199,14 +195,15 @@ class LayoutTestRunner(object):
             return method(source, *args)
         raise AssertionError('unknown message %s received from %s, args=%s' % (name, source, repr(args)))
 
-    # The _handle_* methods below are called indirectly by handle().
+    # The _handle_* methods below are called indirectly by handle(),
+    # and may not use all of their arguments - pylint: disable=unused-argument
     def _handle_started_test(self, worker_name, test_input):
         self._printer.print_started_test(test_input.test_name)
 
     def _handle_finished_test_list(self, worker_name, list_name):
         pass
 
-    def _handle_finished_test(self, worker_name, result, log_messages=None):  # pylint: disable=unused-argument
+    def _handle_finished_test(self, worker_name, result, log_messages=None):
         self._update_summary_with_result(self._current_run_results, result)
 
     def _handle_device_failed(self, worker_name, list_name, remaining_tests):
@@ -351,7 +348,8 @@ class TestShard(object):
         self.requires_lock = test_inputs[0].requires_lock
 
     def __repr__(self):
-        return "TestShard(name='%s', test_inputs=%s, requires_lock=%s'" % (self.name, self.test_inputs, self.requires_lock)
+        return 'TestShard(name=%r, test_inputs=%r, requires_lock=%r)' % (
+            self.name, self.test_inputs, self.requires_lock)
 
     def __eq__(self, other):
         return self.name == other.name and self.test_inputs == other.test_inputs
@@ -383,7 +381,7 @@ class Sharder(object):
         return self._shard_by_directory(test_inputs)
 
     def _shard_in_two(self, test_inputs):
-        """Returns two lists of shards, one with all the tests requiring a lock and one with the rest.
+        """Returns two lists of shards: tests requiring a lock and all others.
 
         This is used when there's only one worker, to minimize the per-shard overhead.
         """
@@ -507,5 +505,7 @@ class Sharder(object):
         remaining_shards = old_shards
         while remaining_shards:
             some_shards, remaining_shards = split_at(remaining_shards, num_old_per_new)
-            new_shards.append(TestShard('%s_%d' % (shard_name_prefix, len(new_shards) + 1), extract_and_flatten(some_shards)))
+            new_shards.append(
+                TestShard('%s_%d' % (shard_name_prefix, len(new_shards) + 1),
+                          extract_and_flatten(some_shards)))
         return new_shards
