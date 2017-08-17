@@ -26,6 +26,11 @@ media::AudioParameters GetMixerOutputParams(
     const media::AudioParameters& input_params,
     const media::AudioParameters& hardware_params,
     media::AudioLatency::LatencyType latency) {
+  // For a compressed bitstream, no audio post processing is allowed, hence the
+  // output parameters should be the same as input parameters.
+  if (input_params.IsBitstreamFormat())
+    return input_params;
+
   int output_sample_rate, preferred_output_buffer_size;
   if (!hardware_params.IsValid() ||
       hardware_params.format() == media::AudioParameters::AUDIO_FAKE) {

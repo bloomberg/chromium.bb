@@ -153,6 +153,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Sample rate of audio stream.
   int samples_per_second_;
 
+  // Is compressed audio output
+  bool is_bitstream_format_;
+
   // Buffered audio data.
   AudioBufferQueue audio_buffer_;
 

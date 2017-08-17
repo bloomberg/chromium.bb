@@ -48,6 +48,8 @@ const char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
 const char kUnauthorizedDeviceId[] = "unauthorized-device-id";
 const int kAuthTimeoutForTestingMs = 500;
 const int kOutputDelayMs = 20;
+const uint32_t kBitstreamFrames = 1024;
+const size_t kBitstreamDataSize = 512;
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -61,6 +63,16 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
                    AudioBus* dest));
   MOCK_METHOD0(OnRenderError, void());
 };
+
+void RenderAudioBus(base::TimeDelta delay,
+                    base::TimeTicks timestamp,
+                    int prior_frames_skipped,
+                    AudioBus* dest) {
+  if (dest->is_bitstream_format()) {
+    dest->SetBitstreamFrames(kBitstreamFrames);
+    dest->SetBitstreamDataSize(kBitstreamDataSize);
+  }
+}
 
 class MockAudioOutputIPC : public AudioOutputIPC {
  public:
@@ -109,6 +121,7 @@ class AudioOutputDeviceTest
   AudioOutputDeviceTest();
   ~AudioOutputDeviceTest();
 
+  void SetupBitstreamParameters();
   void ReceiveAuthorization(OutputDeviceStatus device_status);
   void StartAudioDevice();
   void CreateStream();
@@ -118,6 +131,7 @@ class AudioOutputDeviceTest
   void CreateDevice(const std::string& device_id);
   void SetDevice(const std::string& device_id);
   void CheckDeviceStatus(OutputDeviceStatus device_status);
+  void VerifyBitstreamFields();
 
  protected:
   // Used to clean up TLS pointers that the test(s) will initialize.
@@ -258,7 +272,7 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   EXPECT_CALL(
       callback_,
       Render(base::TimeDelta::FromMilliseconds(kOutputDelayMs), _, _, _))
-      .WillOnce(DoAll(QuitLoop(io_loop_.task_runner()),
+      .WillOnce(DoAll(Invoke(RenderAudioBus), QuitLoop(io_loop_.task_runner()),
                       Return(kNumberOfFramesToProcess)));
 }
 
@@ -276,6 +290,19 @@ void AudioOutputDeviceTest::StopAudioDevice() {
 
   audio_device_->Stop();
   base::RunLoop().RunUntilIdle();
+}
+
+void AudioOutputDeviceTest::SetupBitstreamParameters() {
+  default_audio_parameters_.Reset(AudioParameters::AUDIO_BITSTREAM_EAC3,
+                                  CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
+  SetDevice(kNonDefaultDeviceId);
+}
+
+void AudioOutputDeviceTest::VerifyBitstreamFields() {
+  AudioOutputBuffer* buffer =
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
+  EXPECT_EQ(kBitstreamDataSize, buffer->params.bitstream_data_size);
+  EXPECT_EQ(kBitstreamFrames, buffer->params.bitstream_frames);
 }
 
 TEST_P(AudioOutputDeviceTest, Initialize) {
@@ -382,6 +409,16 @@ TEST_P(AudioOutputDeviceTest, AuthorizationTimedOut) {
 
   audio_device_->Stop();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(AudioOutputDeviceTest, BitstreamFormatTest) {
+  SetupBitstreamParameters();
+  StartAudioDevice();
+  ExpectRenderCallback();
+  CreateStream();
+  WaitUntilRenderCallback();
+  VerifyBitstreamFields();
+  StopAudioDevice();
 }
 
 INSTANTIATE_TEST_CASE_P(Render, AudioOutputDeviceTest, Values(false));
