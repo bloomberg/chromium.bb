@@ -23,11 +23,16 @@ if (enable_oop_heap_profiling) {
       "profiling_constants.h",
     ]
 
-    deps = [
+    public_deps = [
       ":interfaces",
+    ]
+    deps = [
       "//base",
       "//base:debugging_flags",
+      "//base/allocator:features",
       "//chrome/common:constants",
+      "//content/public/common",
+      "//mojo/edk/system",
     ]
   }
 
