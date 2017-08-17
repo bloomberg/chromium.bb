@@ -515,8 +515,6 @@ source_set("browser") {
     "child_process_launcher_helper_android.cc",
     "child_process_launcher_helper_linux.cc",
     "child_process_launcher_helper_mac.cc",
-    "child_process_launcher_helper_posix.cc",
-    "child_process_launcher_helper_posix.h",
     "child_process_launcher_helper_win.cc",
     "child_process_security_policy_impl.cc",
     "child_process_security_policy_impl.h",
@@ -1644,15 +1642,18 @@ source_set("browser") {
     ]
   }
 
-  if (is_posix) {
+  if (is_fuchsia) {
     sources += [
+      "child_process_launcher_helper_fuchsia.cc",
+      "memory/memory_monitor_fuchsia.cc",
+    ]
+  } else if (is_posix) {
+    sources += [
+      "child_process_launcher_helper_posix.cc",
+      "child_process_launcher_helper_posix.h",
       "posix_file_descriptor_info_impl.cc",
       "posix_file_descriptor_info_impl.h",
     ]
-  }
-
-  if (is_fuchsia) {
-    sources += [ "memory/memory_monitor_fuchsia.cc" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
