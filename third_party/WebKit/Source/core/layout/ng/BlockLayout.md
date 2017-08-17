@@ -2,9 +2,87 @@
 
 This document can be viewed in formatted form [here](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/layout/ng/BlockLayout.md).
 
+## BFC & BFC Offsets ##
+
+A block formatting context (BFC) can be thought of as a completely new and
+separate block flow layout. BFCs cannot interfere with other BFCs within the
+page.
+
+Concretely this means that margins do not collapse across BFC boundaries (see
+below) and floats do not intrude, the exclusion space is completely separate.
+
+Our block layout implementation is based on the principle that children place
+*themselves* within the block formatting context. This information is
+communicated with the optional [NGLayoutResult::BfcOffset](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/layout/ng/ng_layout_result.h).
+
+A child's BFCOffset is optional as empty blocks cannot place themselves within
+the BFC. They may be affected by siblings.
+
+Additionally when we start performing layout on a child, we don't know if it
+will be an empty block.
+
+---
+
+When a child can determine its BFCOffset, (we call this informally "resolving
+the BFC offset"), a parent can also determine its BFCOffset. Once a BFCOffset
+is resolved it *might* "bubble" up the ancestor chain.
+
+The calculation we perform to when the BFCOffset is "bubbled up" to the
+ancestor which already knows its BFCOffset.
+
 ## Floats ##
 
-TODO.
+Floats add a lot of complexity to block layout. Broadly there are two types of
+floats that we need to consider.
+
+ 1. Unpositioned floats - floats which we cannot position immediately.
+
+ 2. Positioned floats - floats which we can position immediately.
+
+```html
+<div id="bfc" style="width: 100px;">
+  <div id="float1" style="float: right; width: 50px; height: 50px;"></div>
+  <div id="container">
+    <div id="float2" style="float: right; width: 50px; height: 50px;"></div>
+    <!-- margin-top here affects where #float2 will be placed. -->
+    <div id="inflow" style="margin-top: 40px; margin-top: 60px;">
+       text
+    </div>
+  </div>
+</div>
+```
+
+In the above example we can position #float1 immediately as its parent knows
+its BFCOffset.
+
+We can't position #float2 immediately as #inflow's margins will affect
+where #container is placed. This is an *unpositioned float*. Depending on
+what #inflow's margins will be, #float2 may be positioned beside #float1, or
+below #float1.
+
+Once something resolves its BFCOffset (in the above case the "text" will be the
+first node which can resolve its BFCOffset) we abort the layout telling the
+ancestor chain about the new BFCOffset, and restart layout. Inside this second
+pass, all unpositioned floats now position themselves immediately based on a
+FloatsBFCOffset.
+
+---
+
+Once a float is positioned, everything else float related is handled by the
+[ExclusionSpace](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/layout/ng/ng_exclusion_space.h).
+
+Mutating the exclusion space only happens by adding additional exclusions.
+
+The exclusion space supports a few queries related to floats.
+
+  1. Finding a layout opportunity of a minimum size. This is used for
+     positioning other floats inside the exclusion space, placing line boxes,
+     and positioning new formatting contexts (things which avoid floats).
+
+  2. The clearance block offset, for clearing left, right, or both floats.
+
+  3. The start block offset of the last float positioned in the exclusion
+     space. This is used for the "top edge alignment rule" for floats.
 
 ## An introduction to margin collapsing ##
 
