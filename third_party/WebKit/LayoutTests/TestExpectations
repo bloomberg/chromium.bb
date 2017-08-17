@@ -618,16 +618,8 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-004.html [ Failure
 # ====== DevTools test migration failures from here ======
 # Temporary failures (these tests are moves from html to js)
 # See crbug.com/667560 for details
-crbug.com/667560 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await1.js [ Skip ]
-crbug.com/667560 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await2.js [ Skip ]
-crbug.com/667560 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await3.js [ Skip ]
-crbug.com/667560 http/tests/devtools/sources/debugger-async/async-await/async-pause-on-exception.js [ Skip ]
 
 ### virtual/mojo-loading/http/tests/devtools
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await1.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await2.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await3.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-async/async-await/async-pause-on-exception.js [ Skip ]
 
 ### Manually fix after migration
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-dir.js [ NeedsManualRebaseline ]

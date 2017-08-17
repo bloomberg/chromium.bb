@@ -1,94 +1,78 @@
-<html>
-<head>
-<script src="../../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../../http/tests/inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function createPromise()
-{
-    var result = {};
-    var p = new Promise(function(resolve, reject) {
+(async function() {
+  TestRunner.addResult(`Tests that pause on promise rejection works.\n`);
+
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+    function createPromise()
+    {
+      var result = {};
+      var p = new Promise(function(resolve, reject) {
         result.resolve = resolve;
         result.reject = reject;
-    });
-    result.promise = p;
-    return result;
-}
+      });
+      result.promise = p;
+      return result;
+    }
 
-async function asyncCaught(promise) {
-    try {
+    async function asyncCaught(promise) {
+      try {
         await promise;
-    } catch (e) { }
-}
-
-async function asyncUncaught(promise) {
-    await promise;
-}
-
-function testFunction()
-{
-    var caught = createPromise();
-    var uncaught = createPromise();
-
-    asyncCaught(caught.promise);
-    asyncUncaught(uncaught.promise);
-
-    caught.reject(new Error("caught"));
-    uncaught.reject(new Error("uncaught"));
-}
-
-var test = function()
-{
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
-
-    function waitUntilPausedNTimes(count, callback)
-    {
-        function inner()
-        {
-            if (count--)
-                InspectorTest.waitUntilPausedAndDumpStackAndResume(inner);
-            else
-                callback();
-        }
-        inner();
+      } catch (e) { }
     }
 
-    function step1()
-    {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        InspectorTest.showScriptSource("async-pause-on-exception.html", step2);
+    async function asyncUncaught(promise) {
+      await promise;
     }
 
-    function step2()
+    function testFunction()
     {
-        InspectorTest.addResult("=== Pausing only on uncaught exceptions ===");
-        InspectorTest.runTestFunction();
-        waitUntilPausedNTimes(1, step3);
+      var caught = createPromise();
+      var uncaught = createPromise();
+
+      asyncCaught(caught.promise);
+      asyncUncaught(uncaught.promise);
+
+      caught.reject(new Error("caught"));
+      uncaught.reject(new Error("uncaught"));
     }
+  `);
 
-    function step3()
-    {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        InspectorTest.addResult("\n=== Pausing on all exceptions ===");
-        InspectorTest.runTestFunction();
-        waitUntilPausedNTimes(2, step4);
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function waitUntilPausedNTimes(count, callback) {
+    function inner() {
+      if (count--) SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(inner);
+      else callback();
     }
+    inner();
+  }
 
-    function step4()
-    {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.completeDebuggerTest();
-    }
-}
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    SourcesTestRunner.showScriptSource('async-pause-on-exception.js', step2);
+  }
 
-</script>
-</head>
+  function step2() {
+    TestRunner.addResult('=== Pausing only on uncaught exceptions ===');
+    SourcesTestRunner.runTestFunction();
+    waitUntilPausedNTimes(1, step3);
+  }
 
-<body onload="runTest()">
-<p>
-Tests that pause on promise rejection works.
-</p>
+  function step3() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+    TestRunner.addResult('\n=== Pausing on all exceptions ===');
+    SourcesTestRunner.runTestFunction();
+    waitUntilPausedNTimes(2, step4);
+  }
 
-</body>
-</html>
+  function step4() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+})();
