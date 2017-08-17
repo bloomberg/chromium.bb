@@ -31,12 +31,6 @@ For first-time Android Studio users:
       `//third_party/android_tools`.
     * To skip it, select "Cancel" when it comes up.
 
-For those upgrading from Android Studio 2.2 to 2.3:
-
-* Use `gn clean` and `gn gen`
-* Clean up in `//third_party/android_tools` with `git clean -ffd`.
-* Remove project from android studio and regenerate with `generate_gradle.py`.
-
 To import the project:
 
 * Use "Import Project", and select the directory containing the generated
@@ -49,6 +43,10 @@ You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
     * Button with two arrows on the right side of the top strip.
     * Help -&gt; Find Action -&gt; "Sync Project with Gradle Files"
     * After `gn clean` you may need to restart Android Studio.
+
+* You can try out Android Studio canary by adding `--canary` to your
+  `generate_gradle.py` call, but as it is canary, expect to have to make manual
+  adjustments when building/syncing.
 
 ## How It Works
 
