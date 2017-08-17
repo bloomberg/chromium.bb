@@ -394,6 +394,10 @@ void LayerTreeHost::UpdateDeferCommitsInternal() {
                            !local_surface_id_.is_valid()));
 }
 
+bool LayerTreeHost::IsUsingLayerLists() const {
+  return settings_.use_layer_lists;
+}
+
 void LayerTreeHost::CommitComplete() {
   source_frame_number_++;
   client_->DidCommit();
@@ -690,7 +694,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                                                   device_scale_factor_);
     // The HUD layer is managed outside the layer list sent to LayerTreeHost
     // and needs to have its property tree state set.
-    if (settings_.use_layer_lists && root_layer_.get()) {
+    if (IsUsingLayerLists() && root_layer_.get()) {
       hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
       hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
       hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
@@ -712,9 +716,9 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
         TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
         "LayerTreeHostInProcessCommon::ComputeVisibleRectsWithPropertyTrees");
     PropertyTrees* property_trees = &property_trees_;
-    if (!settings_.use_layer_lists) {
-      // If use_layer_lists is set, then the property trees should have been
-      // built by the client already.
+    if (!IsUsingLayerLists()) {
+      // In SPv2 the property trees should have been built by the
+      // client already.
       PropertyTreeBuilder::BuildPropertyTrees(
           root_layer, page_scale_layer, inner_viewport_scroll_layer(),
           outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
@@ -1361,7 +1365,7 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
                                             ElementListType list_type,
                                             const FilterOperations& filters) {
-  if (settings_.use_layer_lists) {
+  if (IsUsingLayerLists()) {
     // In SPv2 we always have property trees and can set the filter
     // directly on the effect node.
     property_trees_.effect_tree.OnFilterAnimated(element_id, filters);
@@ -1379,7 +1383,7 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   DCHECK_GE(opacity, 0.f);
   DCHECK_LE(opacity, 1.f);
 
-  if (settings_.use_layer_lists) {
+  if (IsUsingLayerLists()) {
     property_trees_.effect_tree.OnOpacityAnimated(element_id, opacity);
     return;
   }
@@ -1405,7 +1409,7 @@ void LayerTreeHost::SetElementTransformMutated(
     ElementId element_id,
     ElementListType list_type,
     const gfx::Transform& transform) {
-  if (settings_.use_layer_lists) {
+  if (IsUsingLayerLists()) {
     property_trees_.transform_tree.OnTransformAnimated(element_id, transform);
     return;
   }

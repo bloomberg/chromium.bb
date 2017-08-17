@@ -657,8 +657,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
   bool needs_show_scrollbars_ : 1;
-  // Whether the nodes referred to by *_tree_index_
-  // "belong" to this layer. Only applicable if use_layer_lists is false.
+  // Whether the nodes referred to by *_tree_index_ "belong" to this
+  // layer. Only applicable if LayerTreeSettings.use_layer_lists is
+  // false.
   bool has_transform_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
