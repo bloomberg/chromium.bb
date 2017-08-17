@@ -37,8 +37,6 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/DoubleOrScrollTimelineAutoKeyword.h",
   "$bindings_core_v8_output_dir/DoubleOrString.cpp",
   "$bindings_core_v8_output_dir/DoubleOrString.h",
-  "$bindings_core_v8_output_dir/DoubleOrStringOrStringArray.cpp",
-  "$bindings_core_v8_output_dir/DoubleOrStringOrStringArray.h",
   "$bindings_core_v8_output_dir/DoubleOrStringOrStringSequence.cpp",
   "$bindings_core_v8_output_dir/DoubleOrStringOrStringSequence.h",
   "$bindings_core_v8_output_dir/EventListenerOptionsOrBoolean.cpp",

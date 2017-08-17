@@ -54,8 +54,6 @@ void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
   enum_member_ = testing_dictionary.enumMember();
   enum_member_with_default_ = testing_dictionary.enumMemberWithDefault();
   enum_or_null_member_ = testing_dictionary.enumOrNullMember();
-  if (testing_dictionary.hasEnumArrayMember())
-    enum_array_member_ = testing_dictionary.enumArrayMember();
   if (testing_dictionary.hasElementMember())
     element_member_ = testing_dictionary.elementMember();
   if (testing_dictionary.hasElementOrNullMember())
@@ -110,8 +108,6 @@ void DictionaryTest::get(InternalDictionary& result) {
   result.setEnumMember(enum_member_);
   result.setEnumMemberWithDefault(enum_member_with_default_);
   result.setEnumOrNullMember(enum_or_null_member_);
-  if (enum_array_member_)
-    result.setEnumArrayMember(enum_array_member_.Get());
   if (element_member_)
     result.setElementMember(element_member_);
   if (element_or_null_member_)
@@ -215,7 +211,6 @@ void DictionaryTest::Reset() {
   enum_member_ = String();
   enum_member_with_default_ = String();
   enum_or_null_member_ = String();
-  enum_array_member_ = nullptr;
   element_member_ = nullptr;
   element_or_null_member_ = nullptr;
   object_member_ = ScriptValue();

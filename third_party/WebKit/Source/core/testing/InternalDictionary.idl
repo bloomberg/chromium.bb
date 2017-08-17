@@ -26,7 +26,6 @@ dictionary InternalDictionary {
     InternalEnum enumMember;
     InternalEnum enumMemberWithDefault = "foo";
     InternalEnum? enumOrNullMember;
-    InternalEnum[] enumArrayMember;
     Element elementMember;
     Element? elementOrNullMember;
     object objectMember;

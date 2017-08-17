@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 230: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 226: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -22,7 +22,6 @@ PASS dict.stringSequenceOrNullMember is null
 PASS dict.elementMember is undefined.
 PASS dict.elementOrNullMember is null
 PASS dict.enumMember is undefined.
-PASS dict.enumArrayMember is undefined.
 PASS dict.enumMemberWithDefault is "foo"
 PASS dict.enumOrNullMember is null
 PASS dict.objectMember is undefined.
@@ -73,7 +72,6 @@ PASS dict.elementOrNullMember is null
 PASS dict.enumMember is "foo"
 PASS dict.enumMemberWithDefault is "bar"
 PASS dict.enumOrNullMember is "baz"
-PASS dict.enumArrayMember is ["foo", "bar", "baz"]
 PASS dict.objectMember is testObject1
 PASS dict.objectOrNullMemberWithDefault is testObject2
 PASS dict.doubleOrStringMember is 3.14
@@ -110,7 +108,6 @@ Test for setting invalid USVString value
 PASS dict.usvStringMember is "_�_�_��_"
 Test for setting invalid enum value
 PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
-PASS dictionaryTest.set({enumArrayMember: ['foo', 'invalid', 'baz']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
 
 Test for setting invalid object value
 PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..

@@ -8,39 +8,40 @@
 
 namespace blink {
 
-void UnionTypesTest::doubleOrStringOrStringArrayAttribute(
-    DoubleOrStringOrStringArray& double_or_string_or_string_array) {
+void UnionTypesTest::doubleOrStringOrStringSequenceAttribute(
+    DoubleOrStringOrStringSequence& double_or_string_or_string_sequence) {
   switch (attribute_type_) {
     case kSpecificTypeNone:
       // Default value is zero (of double).
-      double_or_string_or_string_array.setDouble(0);
+      double_or_string_or_string_sequence.setDouble(0);
       break;
     case kSpecificTypeDouble:
-      double_or_string_or_string_array.setDouble(attribute_double_);
+      double_or_string_or_string_sequence.setDouble(attribute_double_);
       break;
     case kSpecificTypeString:
-      double_or_string_or_string_array.setString(attribute_string_);
+      double_or_string_or_string_sequence.setString(attribute_string_);
       break;
-    case kSpecificTypeStringArray:
-      double_or_string_or_string_array.setStringArray(attribute_string_array_);
+    case kSpecificTypeStringSequence:
+      double_or_string_or_string_sequence.setStringSequence(
+          attribute_string_sequence_);
       break;
     default:
       NOTREACHED();
   }
 }
 
-void UnionTypesTest::setDoubleOrStringOrStringArrayAttribute(
-    const DoubleOrStringOrStringArray& double_or_string_or_string_array) {
-  if (double_or_string_or_string_array.isDouble()) {
-    attribute_double_ = double_or_string_or_string_array.getAsDouble();
+void UnionTypesTest::setDoubleOrStringOrStringSequenceAttribute(
+    const DoubleOrStringOrStringSequence& double_or_string_or_string_sequence) {
+  if (double_or_string_or_string_sequence.isDouble()) {
+    attribute_double_ = double_or_string_or_string_sequence.getAsDouble();
     attribute_type_ = kSpecificTypeDouble;
-  } else if (double_or_string_or_string_array.isString()) {
-    attribute_string_ = double_or_string_or_string_array.getAsString();
+  } else if (double_or_string_or_string_sequence.isString()) {
+    attribute_string_ = double_or_string_or_string_sequence.getAsString();
     attribute_type_ = kSpecificTypeString;
-  } else if (double_or_string_or_string_array.isStringArray()) {
-    attribute_string_array_ =
-        double_or_string_or_string_array.getAsStringArray();
-    attribute_type_ = kSpecificTypeStringArray;
+  } else if (double_or_string_or_string_sequence.isStringSequence()) {
+    attribute_string_sequence_ =
+        double_or_string_or_string_sequence.getAsStringSequence();
+    attribute_type_ = kSpecificTypeStringSequence;
   } else {
     NOTREACHED();
   }
@@ -70,13 +71,13 @@ String UnionTypesTest::doubleOrInternalEnumArg(
   return String();
 }
 
-String UnionTypesTest::doubleOrStringArrayArg(
-    HeapVector<DoubleOrString>& array) {
-  if (!array.size())
+String UnionTypesTest::doubleOrStringSequenceArg(
+    HeapVector<DoubleOrString>& sequence) {
+  if (!sequence.size())
     return "";
 
   StringBuilder builder;
-  for (DoubleOrString& double_or_string : array) {
+  for (DoubleOrString& double_or_string : sequence) {
     DCHECK(!double_or_string.isNull());
     if (double_or_string.isDouble()) {
       builder.Append("double: ");
@@ -91,11 +92,6 @@ String UnionTypesTest::doubleOrStringArrayArg(
     builder.Append(", ");
   }
   return builder.Substring(0, builder.length() - 2);
-}
-
-String UnionTypesTest::doubleOrStringSequenceArg(
-    HeapVector<DoubleOrString>& sequence) {
-  return doubleOrStringArrayArg(sequence);
 }
 
 String UnionTypesTest::nodeListOrElementArg(
@@ -114,33 +110,6 @@ String UnionTypesTest::nodeListOrElementOrNullArg(
     return "element is passed";
   NOTREACHED();
   return String();
-}
-
-String UnionTypesTest::doubleOrStringOrStringArrayArg(
-    const DoubleOrStringOrStringArray& double_or_string_or_string_array) {
-  if (double_or_string_or_string_array.isNull())
-    return "null";
-
-  if (double_or_string_or_string_array.isDouble())
-    return "double: " + String::NumberToStringECMAScript(
-                            double_or_string_or_string_array.getAsDouble());
-
-  if (double_or_string_or_string_array.isString())
-    return "string: " + double_or_string_or_string_array.getAsString();
-
-  DCHECK(double_or_string_or_string_array.isStringArray());
-  const Vector<String>& array =
-      double_or_string_or_string_array.getAsStringArray();
-  if (!array.size())
-    return "array: []";
-  StringBuilder builder;
-  builder.Append("array: [");
-  for (const String& item : array) {
-    DCHECK(!item.IsNull());
-    builder.Append(item);
-    builder.Append(", ");
-  }
-  return builder.Substring(0, builder.length() - 2) + "]";
 }
 
 String UnionTypesTest::doubleOrStringOrStringSequenceArg(

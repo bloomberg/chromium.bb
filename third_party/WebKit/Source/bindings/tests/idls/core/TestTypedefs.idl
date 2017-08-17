@@ -36,9 +36,9 @@ typedef boolean                    BooleanType;
 typedef float                      Float;
 typedef unsigned long long         ULongLong;
 typedef TestInterfaceEmpty         TestInterfaceEmptyType;
-typedef long[]                     ArrayOfLongs;
+typedef sequence<long>             LongSequence;
 typedef DOMString                  String;
-typedef DOMString[]                ArrayOfStrings;
+typedef FrozenArray<DOMString>     FrozenStringArray;
 typedef TestCallbackInterface      TestCallbackInterfaceType;
 typedef TestInterfaceConstructor   T;
 typedef (TestInterface or TestInterfaceEmpty) TestInterfaceOrTestInterfaceEmpty;
@@ -56,7 +56,7 @@ typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTyped
     attribute T tAttribute;
     attribute DOMStringOrDouble? domStringOrDoubleOrNullAttribute;
 
-    void voidMethodArrayOfLongsArg(optional ArrayOfLongs arrayOfLongsArg);
+    void voidMethodLongSequenceArg(optional LongSequence longSequenceArg);
 
     void voidMethodFloatArgStringArg(Float floatArg, String stringArg);
     void voidMethodTestCallbackInterfaceTypeArg(TestCallbackInterfaceType testCallbackInterfaceTypeArg);
@@ -65,8 +65,7 @@ typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTyped
     TestInterfaceOrTestInterfaceEmpty testInterfaceOrTestInterfaceEmptyMethod();
     DOMStringOrDouble domStringOrDoubleMethod();
 
-    ArrayOfStrings arrayOfStringsMethodArrayOfStringsArg(ArrayOfStrings arrayOfStringsArg);
-    String[] stringArrayMethodStringArrayArg(String[] stringArrayArg);
+    FrozenStringArray arrayOfStringsMethodArrayOfStringsArg(FrozenStringArray frozenStringArrayArg);
 
     void methodTakingRecord(SomeRecordType arg);
     void methodTakingOilpanValueRecord(RecordWithOilpanValueType arg);

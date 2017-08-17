@@ -78,7 +78,6 @@ class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>,
   String enum_member_;
   String enum_member_with_default_;
   String enum_or_null_member_;
-  Nullable<Vector<String>> enum_array_member_;
   Member<Element> element_member_;
   Member<Element> element_or_null_member_;
   ScriptValue object_member_;

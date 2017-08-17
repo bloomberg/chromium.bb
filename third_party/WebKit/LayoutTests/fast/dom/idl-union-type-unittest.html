@@ -13,21 +13,21 @@ if (window.internals) {
     var unionTypesTest = internals.unionTypesTest();
 
     debug('Tests for attributes');
-    shouldBe('unionTypesTest.doubleOrStringOrStringArrayAttribute', '0');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = 3.14;
-    shouldBe('unionTypesTest.doubleOrStringOrStringArrayAttribute', '3.14');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = "foo";
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayAttribute', 'foo');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = undefined;
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayAttribute', 'undefined');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = null;
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayAttribute', 'null');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = {};
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayAttribute', '[object Object]');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = [];
-    shouldBeEqualToString('JSON.stringify(unionTypesTest.doubleOrStringOrStringArrayAttribute)', '[]');
-    unionTypesTest.doubleOrStringOrStringArrayAttribute = ['a', 3.14];
-    shouldBeEqualToString('JSON.stringify(unionTypesTest.doubleOrStringOrStringArrayAttribute)', '["a","3.14"]');
+    shouldBe('unionTypesTest.doubleOrStringOrStringSequenceAttribute', '0');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = 3.14;
+    shouldBe('unionTypesTest.doubleOrStringOrStringSequenceAttribute', '3.14');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = "foo";
+    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceAttribute', 'foo');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = undefined;
+    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceAttribute', 'undefined');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = null;
+    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceAttribute', 'null');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = {};
+    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceAttribute', '[object Object]');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = [];
+    shouldBeEqualToString('JSON.stringify(unionTypesTest.doubleOrStringOrStringSequenceAttribute)', '[]');
+    unionTypesTest.doubleOrStringOrStringSequenceAttribute = ['a', 3.14];
+    shouldBeEqualToString('JSON.stringify(unionTypesTest.doubleOrStringOrStringSequenceAttribute)', '["a","3.14"]');
     debug('');
 
     debug('Tests for method arguments');
@@ -53,15 +53,6 @@ if (window.internals) {
     shouldThrow('unionTypesTest.doubleOrInternalEnumArg(null)');
     shouldThrow('unionTypesTest.doubleOrInternalEnumArg({})');
     shouldThrow('unionTypesTest.doubleOrInternalEnumArg([])');
-    debug('');
-
-    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([])', '');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([3.14, "foo"])', 'double: 3.14, string: foo');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([1, "foo", "bar", 2])', 'double: 1, string: foo, string: bar, double: 2');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([null, undefined, {}, []])', 'string: null, string: undefined, string: [object Object], string: ');
-    shouldThrow('unionTypesTest.doubleOrStringArrayArg(null)');
-    shouldThrow('unionTypesTest.doubleOrStringArrayArg(undefined)');
-    shouldThrow('unionTypesTest.doubleOrStringArrayArg({})');
     debug('');
 
     shouldBeEqualToString('unionTypesTest.doubleOrStringSequenceArg([])', '');
@@ -103,17 +94,7 @@ if (window.internals) {
     shouldBeEqualToString('unionTypesTest.nodeListOrElementArg(element)', 'element is passed');
     debug('');
 
-    debug('Tests for method arguments with array/sequence members');
-    shouldThrow('unionTypesTest.doubleOrStringOrStringArrayArg()');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg("abc")', 'string: abc');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(3.14)', 'double: 3.14');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(true)', 'string: true');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(null)', 'string: null');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(undefined)', 'string: undefined');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg([])', 'array: []');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(["a", 3.14])', 'array: [a, 3.14]');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayArg(new Array(3))', 'array: [undefined, undefined, undefined]');
-
+    debug('Tests for method arguments with sequence members');
     shouldThrow('unionTypesTest.doubleOrStringOrStringSequenceArg()');
     shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceArg("abc")', 'string: abc');
     shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceArg(3.14)', 'double: 3.14');
@@ -125,17 +106,7 @@ if (window.internals) {
     shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceArg(new Array(3))', 'sequence: [undefined, undefined, undefined]');
     debug('');
 
-    debug('Tests for nullable method arguments with array/sequence members');
-    shouldThrow('unionTypesTest.doubleOrStringOrStringArrayNullableArg()');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg("abc")', 'string: abc');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(3.14)', 'double: 3.14');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(true)', 'string: true');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(null)', 'null');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(undefined)', 'null');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg([])', 'array: []');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(["a", 3.14])', 'array: [a, 3.14]');
-    shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringArrayNullableArg(new Array(3))', 'array: [undefined, undefined, undefined]');
-
+    debug('Tests for nullable method arguments with sequence members');
     shouldThrow('unionTypesTest.doubleOrStringOrStringSequenceNullableArg()');
     shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceNullableArg("abc")', 'string: abc');
     shouldBeEqualToString('unionTypesTest.doubleOrStringOrStringSequenceNullableArg(3.14)', 'double: 3.14');
