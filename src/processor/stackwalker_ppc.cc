@@ -34,6 +34,7 @@
 // Author: Mark Mentovai
 
 
+#include "common/scoped_ptr.h"
 #include "processor/stackwalker_ppc.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/memory_region.h"
@@ -121,7 +122,7 @@ StackFrame* StackwalkerPPC::GetCallerFrame(const CallStack* stack,
     return NULL;
   }
 
-  StackFramePPC* frame = new StackFramePPC();
+  scoped_ptr<StackFramePPC> frame(new StackFramePPC());
 
   frame->context = last_frame->context;
   frame->context.srr0 = instruction;
@@ -147,7 +148,7 @@ StackFrame* StackwalkerPPC::GetCallerFrame(const CallStack* stack,
   // return address value may access the context.srr0 field of StackFramePPC.
   frame->instruction = frame->context.srr0 - 4;
 
-  return frame;
+  return frame.release();
 }
 
 
