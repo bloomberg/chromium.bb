@@ -137,6 +137,7 @@ RenderProcessImpl::RenderProcessImpl(
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
+  SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
   SetV8FlagIfNotFeature(features::kWebAssembly,
                         "--wasm-disable-structured-cloning");
   SetV8FlagIfFeature(features::kSharedArrayBuffer,

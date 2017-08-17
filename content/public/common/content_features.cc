@@ -19,7 +19,7 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
 // Enables asm.js to WebAssembly V8 backend.
 // http://asmjs.org/spec/latest/
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables async wheel events.
 const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
