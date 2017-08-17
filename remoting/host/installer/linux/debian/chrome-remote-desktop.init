@@ -60,7 +60,7 @@ run_and_ignore_error() {
   set +e
   if [ "$action" = "--start" ]; then
     if [ "$(whoami)" = "root" ]; then
-      "$USER_SESSION_PATH" start "$user"
+      "$USER_SESSION_PATH" start --user "$user"
     else
       "$USER_SESSION_PATH" start
     fi
