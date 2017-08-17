@@ -259,10 +259,14 @@ def _FindDebugBinary(entry, file_mapping):
 
   # We change directory into /system/ before running the target executable, so
   # all paths are relative to "/system/", and will typically start with "./".
-  path_prefix = './'
-  if not binary.startswith(path_prefix):
-    return None
-  binary = binary[len(path_prefix):]
+  # Some crashes still uses the full filesystem path, so cope with that as well.
+  system_prefix = '/system/'
+  cwd_prefix = './'
+  if binary.startswith(cwd_prefix):
+    binary = binary[len(cwd_prefix):]
+  elif binary.startswith(system_prefix):
+    binary = binary[len(system_prefix)]
+  # Allow any other paths to pass-through; sometimes neither prefix is present.
 
   if binary in file_mapping:
     return file_mapping[binary]
