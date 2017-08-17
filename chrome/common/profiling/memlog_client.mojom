@@ -4,9 +4,6 @@
 
 module profiling.mojom;
 
-// The profiling process is still in prototype stage, and is behind a
-// compile-time flag. There will be a security review before removing the
-// compile-time flag. https://crbug.com/751759.
 interface MemlogClient {
   // Start recording allocations and sending them to the profiling process via
   // |sender_pipe|. There is currently no mechanism to stop recording
