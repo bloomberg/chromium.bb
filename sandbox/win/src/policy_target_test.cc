@@ -361,10 +361,31 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   temp_policy = nullptr;
 }
 
+// Creates multiple policies, with alternate desktops on both local and
+// alternate winstations.
+TEST(PolicyTargetTest, BothLocalAndAlternateWinstationDesktop) {
+  BrokerServices* broker = GetBroker();
+
+  scoped_refptr<TargetPolicy> policy1 = broker->CreatePolicy();
+  scoped_refptr<TargetPolicy> policy2 = broker->CreatePolicy();
+  scoped_refptr<TargetPolicy> policy3 = broker->CreatePolicy();
+
+  ResultCode result;
+  result = policy1->SetAlternateDesktop(false);
+  EXPECT_EQ(SBOX_ALL_OK, result);
+  result = policy2->SetAlternateDesktop(true);
+  EXPECT_EQ(SBOX_ALL_OK, result);
+  result = policy3->SetAlternateDesktop(false);
+  EXPECT_EQ(SBOX_ALL_OK, result);
+
+  policy1->DestroyAlternateDesktop();
+  policy2->DestroyAlternateDesktop();
+  policy3->DestroyAlternateDesktop();
+}
+
 // Launches the app in the sandbox and share a handle with it. The app should
 // be able to use the handle.
 TEST(PolicyTargetTest, ShareHandleTest) {
-
   BrokerServices* broker = GetBroker();
   ASSERT_TRUE(broker != NULL);
 
