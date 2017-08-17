@@ -614,6 +614,9 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
   // If the shift key is pressed, it should starts drag selection.
   if (event.shiftKey)
     return true;
+  // We don't support drag selection by touch.
+  if (event.sourceCapabilities && event.sourceCapabilities.firesTouchEvents)
+    return false;
 
   // If the position values are negative, it points the out of list.
   // It should start the drag selection.
