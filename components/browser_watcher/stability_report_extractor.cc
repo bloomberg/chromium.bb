@@ -79,6 +79,18 @@ void CollectUserData(
         }
 
         collected_value.set_string_value(value.data(), value.size());
+
+        // Promote version information to the global key value store.
+        if (report) {
+          bool should_promote =
+              key == kStabilityProduct || key == kStabilityChannel ||
+              key == kStabilityPlatform || key == kStabilityVersion;
+          if (should_promote) {
+            (*report->mutable_global_data())[key].Swap(&collected_value);
+            continue;
+          }
+        }
+
         break;
       }
       case ActivityUserData::STRING_VALUE_REFERENCE: {
@@ -100,6 +112,13 @@ void CollectUserData(
         break;
       case ActivityUserData::SIGNED_VALUE:
         collected_value.set_signed_value(recorded_value.GetInt());
+
+        // Promote the execution timestamp to the global key value store.
+        if (report && key == kStabilityStartTimestamp) {
+          (*report->mutable_global_data())[key].Swap(&collected_value);
+          continue;
+        }
+
         break;
       case ActivityUserData::UNSIGNED_VALUE:
         collected_value.set_unsigned_value(recorded_value.GetUint());
@@ -216,51 +235,37 @@ void CollectThread(
   }
 }
 
-}  // namespace
+bool SetProcessType(ProcessState* process_state) {
+  DCHECK(process_state);
+  google::protobuf::Map<std::string, TypedValue>* process_data =
+      process_state->mutable_data();
 
-CollectionStatus Extract(const base::FilePath& stability_file,
-                         StabilityReport* report) {
+  const auto it = process_data->find(kStabilityProcessType);
+  if (it == process_data->end())
+    return false;
+
+  const TypedValue& value = it->second;
+  if (value.value_case() != TypedValue::kSignedValue)
+    return false;
+
+  process_state->set_process_type(
+      static_cast<browser_watcher::ProcessState_Type>(value.signed_value()));
+  process_data->erase(it);
+  return true;
+}
+
+void CollectProcess(int64_t pid,
+                    GlobalActivityAnalyzer* analyzer,
+                    StabilityReport* report) {
+  DCHECK(analyzer);
   DCHECK(report);
 
-  // Create a global analyzer.
-  std::unique_ptr<GlobalActivityAnalyzer> global_analyzer =
-      GlobalActivityAnalyzer::CreateWithFile(stability_file);
-  if (!global_analyzer)
-    return ANALYZER_CREATION_FAILED;
-
-  // Extract data for only the first process.
-  // TODO(manzagop): Extend this to all processes.
-  int64_t pid = global_analyzer->GetFirstProcess();
-
-  // Early exit if there is no data.
-  std::vector<std::string> log_messages = global_analyzer->GetLogMessages();
-  ActivityUserData::Snapshot process_data_snapshot =
-      global_analyzer->GetProcessDataSnapshot(pid);
-
-  ThreadActivityAnalyzer* thread_analyzer =
-      global_analyzer->GetFirstAnalyzer(pid);
-  if (log_messages.empty() && process_data_snapshot.empty() &&
-      !thread_analyzer) {
-    return DEBUG_FILE_NO_DATA;
-  }
-
-  report->set_is_complete(global_analyzer->IsDataComplete());
-
-  // Collect log messages.
-  for (const std::string& message : log_messages) {
-    report->add_log_messages(message);
-  }
-
-  // Collect global user data.
-  google::protobuf::Map<std::string, TypedValue>& global_data =
-      *(report->mutable_global_data());
-  CollectUserData(process_data_snapshot, &global_data, report);
+  ProcessState* process_state = report->add_process_states();
 
   // Collect thread activity data.
-  // Note: a single process is instrumented.
-  ProcessState* process_state = report->add_process_states();
+  ThreadActivityAnalyzer* thread_analyzer = analyzer->GetFirstAnalyzer(pid);
   for (; thread_analyzer != nullptr;
-       thread_analyzer = global_analyzer->GetNextAnalyzer()) {
+       thread_analyzer = analyzer->GetNextAnalyzer()) {
     // Only valid analyzers are expected per contract of GetFirstAnalyzer /
     // GetNextAnalyzer.
     DCHECK(thread_analyzer->IsValid());
@@ -276,8 +281,40 @@ CollectionStatus Extract(const base::FilePath& stability_file,
     CollectThread(thread_analyzer->activity_snapshot(), thread_state);
   }
 
+  // Collect global user data.
+  ActivityUserData::Snapshot process_data_snapshot =
+      analyzer->GetProcessDataSnapshot(pid);
+  CollectUserData(process_data_snapshot, process_state->mutable_data(), report);
+  SetProcessType(process_state);
+
   // Collect module information.
-  CollectModuleInformation(global_analyzer->GetModules(), process_state);
+  CollectModuleInformation(analyzer->GetModules(pid), process_state);
+}
+
+}  // namespace
+
+CollectionStatus Extract(const base::FilePath& stability_file,
+                         StabilityReport* report) {
+  DCHECK(report);
+
+  // Create a global analyzer.
+  std::unique_ptr<GlobalActivityAnalyzer> global_analyzer =
+      GlobalActivityAnalyzer::CreateWithFile(stability_file);
+  if (!global_analyzer)
+    return ANALYZER_CREATION_FAILED;
+  report->set_is_complete(global_analyzer->IsDataComplete());
+
+  // Collect process data.
+  for (int64_t pid = global_analyzer->GetFirstProcess(); pid != 0;
+       pid = global_analyzer->GetNextProcess()) {
+    CollectProcess(pid, global_analyzer.get(), report);
+  }
+
+  // Collect log messages.
+  std::vector<std::string> log_messages = global_analyzer->GetLogMessages();
+  for (const std::string& message : log_messages) {
+    report->add_log_messages(message);
+  }
 
   return SUCCESS;
 }

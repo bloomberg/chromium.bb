@@ -37,6 +37,7 @@
 #include "components/browser_watcher/stability_debugging.h"
 #include "components/browser_watcher/stability_metrics.h"
 #include "components/browser_watcher/stability_paths.h"
+#include "components/browser_watcher/stability_report.pb.h"
 #endif
 
 #if defined(OS_WIN)
@@ -168,6 +169,8 @@ void SetupStabilityDebugging() {
 #endif
     proc_data.SetInt(browser_watcher::kStabilityStartTimestamp,
                      base::Time::Now().ToInternalValue());
+    proc_data.SetInt(browser_watcher::kStabilityProcessType,
+                     browser_watcher::ProcessState::BROWSER_PROCESS);
 
     // Record information about chrome's module. We want this to be done early.
     RecordChromeModuleInfo(global_tracker);

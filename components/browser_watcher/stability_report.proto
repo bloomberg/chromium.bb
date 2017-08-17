@@ -87,7 +87,7 @@ message TypedValue {
 }
 
 // An activity represents information about something of interest on a thread.
-// Next id: 14
+// Next id: 18
 message Activity {
   enum Type {
     UNKNOWN = 0;
@@ -136,7 +136,7 @@ message Activity {
   // An arbitrary value used for information purposes.
   optional int32 generic_data = 13;
 
-  // Tag id 10 is reserved for server side augmentation.
+  // Tag ids 10 and 14-17 are reserved for server side augmentation.
 
   // A key-value store.
   map<string, TypedValue> user_data = 9;
@@ -171,8 +171,14 @@ message ThreadState {
 }
 
 // The state of a process.
-// Next id: 5
+// Next id: 7
 message ProcessState {
+  enum Type {
+    UNKNOWN_PROCESS = 0;
+    BROWSER_PROCESS = 1;
+    WATCHER_PROCESS = 2;
+  }
+
   message MemoryState {
     message WindowsMemory {
       // The private byte usage of the process. Unit is 4K pages.
@@ -190,14 +196,17 @@ message ProcessState {
 
   // The identifier of the process.
   optional int64 process_id = 3;
+  optional Type process_type = 5;
 
   // Note: likely only a subset of modules of interest (e.g. Chromium's own
   // modules).
   repeated CodeModule modules = 1;
   repeated ThreadState threads = 2;
-  // TODO(manzagop): add experiment state.
 
   optional MemoryState memory_state = 4;
+
+  // A key-value store global to the process.
+  map<string, TypedValue> data = 6;
 }
 
 // Description of a field trial or experiment that the user is currently
@@ -230,22 +239,26 @@ message SystemMemoryState {
 // A stability report contains information pertaining to the execution of a
 // single logical instance of a "chrome browser". It is comprised of information
 // about the system state and about the chrome browser's processes.
-// Next id: 8
+// Next id: 9
 message StabilityReport {
   // Whether the report is complete. Reports can be incomplete when the
   // recording size quota is hit.
   optional bool is_complete = 6;
 
+  // The process identifier of the crashed process.
+  optional int64 crashed_process_id = 8;
+
+  // State pertaining to the system.
   optional SystemState system_state = 1;
-  // TODO(manzagop): revisit whether a single repeated field should contain all
-  //     processes, or whether it's preferable to have separate fields per type.
-  // TODO(manzagop): add information about the type of process, pid, process
-  //     times (e.g. start time), hierarchical relationships (e.g. parent pid),
-  //     command line, etc.
+
+  // State pertaining to Chrome's processes.
   repeated ProcessState process_states = 2;
-  // TODO(manzagop): if/when reports contain multiple processes, attribute and
-  //     relocate these to their process (and perhaps thread).
+
+  // Log messages. This is empty on official builds.
+  // TODO(manzagop): attribute messages to their process.
   repeated string log_messages = 3;
+
+  // A global key-value store.
   map<string, TypedValue> global_data = 4;
 
   // The field trials the user is currently enrolled in.

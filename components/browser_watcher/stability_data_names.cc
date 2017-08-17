@@ -10,6 +10,7 @@ const char kStabilityChannel[] = "channel";
 const char kStabilityExecutionPhase[] = "stability-execution-phase";
 const char kStabilityKeepAlive[] = "keep-alive";
 const char kStabilityPlatform[] = "platform";
+const char kStabilityProcessType[] = "ptype";
 const char kStabilityProduct[] = "product";
 const char kStabilityReporterChannel[] = "reporter-channel";
 const char kStabilityReporterPlatform[] = "reporter-platform";

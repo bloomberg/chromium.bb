@@ -140,8 +140,25 @@ void PrintActivity(FILE* out,
 
 void PrintProcessState(FILE* out,
                        const browser_watcher::ProcessState& process) {
-  fprintf(out, "Process %lld (%d threads)\n", process.process_id(),
-          process.threads_size());
+  std::string process_type;
+  switch (process.process_type()) {
+    case browser_watcher::ProcessState::UNKNOWN_PROCESS:
+      process_type = "unknown type";
+      break;
+    case browser_watcher::ProcessState::BROWSER_PROCESS:
+      process_type = "browser";
+      break;
+    case browser_watcher::ProcessState::WATCHER_PROCESS:
+      process_type = "watcher";
+      break;
+    default:
+      base::SStringPrintf(&process_type, "process type %d",
+                          process.process_type());
+      break;
+  }
+
+  fprintf(out, "Process %lld (%s, %d threads)\n", process.process_id(),
+          process_type.c_str(), process.threads_size());
 
   if (process.has_memory_state() &&
       process.memory_state().has_windows_memory()) {
@@ -163,12 +180,15 @@ void PrintProcessState(FILE* out,
               windows_memory.process_allocation_attempt());
     }
   }
+
   for (const browser_watcher::ThreadState& thread : process.threads()) {
     fprintf(out, "Thread %lld (%s) : %d activities\n", thread.thread_id(),
             thread.thread_name().c_str(), thread.activity_count());
     for (const browser_watcher::Activity& activity : thread.activities())
       PrintActivity(out, 1, activity);
   }
+
+  PrintUserData(out, 1, process.data());
 }
 
 // TODO(manzagop): flesh out as StabilityReport gets fleshed out.

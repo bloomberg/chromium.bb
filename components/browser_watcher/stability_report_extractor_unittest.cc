@@ -341,8 +341,11 @@ TEST_F(StabilityReportExtractorTest, ProcessUserDataCollection) {
   StabilityReport report;
   ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
 
-  // Validate the report's user data.
-  const auto& collected_data = report.global_data();
+  // We expect a single process.
+  ASSERT_EQ(1, report.process_states_size());
+
+  // Validate the report contains the process' data.
+  const auto& collected_data = report.process_states(0).data();
   ASSERT_EQ(kInternalProcessDatums + 8U, collected_data.size());
 
   ASSERT_TRUE(base::ContainsKey(collected_data, "raw"));
@@ -396,6 +399,7 @@ TEST_F(StabilityReportExtractorTest, FieldTrialCollection) {
   // Collect the stability report.
   StabilityReport report;
   ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(1, report.process_states_size());
 
   // Validate the report's experiment and global data.
   ASSERT_EQ(2, report.field_trials_size());
@@ -406,7 +410,7 @@ TEST_F(StabilityReportExtractorTest, FieldTrialCollection) {
             report.field_trials(1).group_id());
 
   // Expect 1 key/value pair.
-  const auto& collected_data = report.global_data();
+  const auto& collected_data = report.process_states(0).data();
   EXPECT_EQ(kInternalProcessDatums + 1U, collected_data.size());
   EXPECT_TRUE(base::ContainsKey(collected_data, "string"));
 }

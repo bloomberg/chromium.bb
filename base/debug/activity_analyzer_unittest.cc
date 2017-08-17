@@ -370,9 +370,9 @@ TEST_F(ActivityAnalyzerTest, GlobalUserDataTest) {
 
 TEST_F(ActivityAnalyzerTest, GlobalModulesTest) {
   GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
+  GlobalActivityTracker* global = GlobalActivityTracker::Get();
 
-  PersistentMemoryAllocator* allocator =
-      GlobalActivityTracker::Get()->allocator();
+  PersistentMemoryAllocator* allocator = global->allocator();
   GlobalActivityAnalyzer global_analyzer(
       std::make_unique<PersistentMemoryAllocator>(
           const_cast<void*>(allocator->data()), allocator->size(), 0, 0, "",
@@ -389,9 +389,9 @@ TEST_F(ActivityAnalyzerTest, GlobalModulesTest) {
   info1.file = "anything";
   info1.debug_file = "elsewhere";
 
-  GlobalActivityTracker::Get()->RecordModuleInfo(info1);
+  global->RecordModuleInfo(info1);
   std::vector<GlobalActivityTracker::ModuleInfo> modules1;
-  modules1 = global_analyzer.GetModules();
+  modules1 = global_analyzer.GetModules(global_analyzer.GetFirstProcess());
   ASSERT_EQ(1U, modules1.size());
   GlobalActivityTracker::ModuleInfo& stored1a = modules1[0];
   EXPECT_EQ(info1.is_loaded, stored1a.is_loaded);
@@ -405,8 +405,8 @@ TEST_F(ActivityAnalyzerTest, GlobalModulesTest) {
   EXPECT_EQ(info1.debug_file, stored1a.debug_file);
 
   info1.is_loaded = false;
-  GlobalActivityTracker::Get()->RecordModuleInfo(info1);
-  modules1 = global_analyzer.GetModules();
+  global->RecordModuleInfo(info1);
+  modules1 = global_analyzer.GetModules(global_analyzer.GetFirstProcess());
   ASSERT_EQ(1U, modules1.size());
   GlobalActivityTracker::ModuleInfo& stored1b = modules1[0];
   EXPECT_EQ(info1.is_loaded, stored1b.is_loaded);
@@ -430,9 +430,9 @@ TEST_F(ActivityAnalyzerTest, GlobalModulesTest) {
   info2.file = "nothing";
   info2.debug_file = "farewell";
 
-  GlobalActivityTracker::Get()->RecordModuleInfo(info2);
+  global->RecordModuleInfo(info2);
   std::vector<GlobalActivityTracker::ModuleInfo> modules2;
-  modules2 = global_analyzer.GetModules();
+  modules2 = global_analyzer.GetModules(global_analyzer.GetFirstProcess());
   ASSERT_EQ(2U, modules2.size());
   GlobalActivityTracker::ModuleInfo& stored2 = modules2[1];
   EXPECT_EQ(info2.is_loaded, stored2.is_loaded);
