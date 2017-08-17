@@ -357,12 +357,10 @@ if (is_mac) {
     sources = [
       "$root_gen_dir/extensions/shell/app_shell_resources.pak",
       "$root_out_dir/extensions_shell_and_test.pak",
-      "$root_out_dir/v8_context_snapshot.bin",
     ]
     public_deps = [
       ":resources_grit",
       "//extensions:shell_and_test_pak",
-      "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
     if (icu_use_data_file) {
       sources += [ "$root_out_dir/icudtl.dat" ]
