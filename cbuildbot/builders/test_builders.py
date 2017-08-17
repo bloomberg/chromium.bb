@@ -7,12 +7,14 @@
 from __future__ import print_function
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import parallel
 
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import android_stages
+from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -90,6 +92,12 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
 
 class VMInformationalBuilder(simple_builders.SimpleBuilder):
   """Builder that runs vm test for informational purpose."""
+  def _RunDebugSymbolStages(self, builder_run, board):
+    self._RunStage(android_stages.DownloadAndroidDebugSymbolsStage,
+                   board, builder_run=builder_run)
+    self._RunStage(artifact_stages.DebugSymbolsStage, board,
+                   builder_run=builder_run)
+
   def RunStages(self):
     assert len(self._run.config.boards) == 1
     board = self._run.config.boards[0]
@@ -103,4 +111,8 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
     self._RunStage(android_stages.AndroidMetadataStage)
     self._RunStage(build_stages.BuildPackagesStage, board)
     self._RunStage(build_stages.BuildImageStage, board)
-    self._RunStage(test_stages.VMTestStage, board)
+
+    parallel.RunParallelSteps([
+        lambda: self._RunStage(test_stages.VMTestStage, board),
+        lambda: self._RunDebugSymbolStages(self._run, board),
+    ])
