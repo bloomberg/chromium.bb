@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -22,6 +24,7 @@ namespace cc {
 
 class MutatorEvents;
 class MutatorHostClient;
+class LayerTreeMutator;
 
 // A MutatorHost owns all the animation and mutation effects.
 // There is just one MutatorHost for LayerTreeHost on main renderer thread
@@ -46,6 +49,9 @@ class MutatorHost {
 
   virtual void SetMutatorHostClient(MutatorHostClient* client) = 0;
 
+  virtual void SetLayerTreeMutator(
+      std::unique_ptr<LayerTreeMutator> mutator) = 0;
+
   virtual void PushPropertiesTo(MutatorHost* host_impl) = 0;
 
   virtual void SetSupportsScrollAnimations(bool supports_scroll_animations) = 0;
@@ -53,8 +59,21 @@ class MutatorHost {
 
   virtual bool ActivateAnimations() = 0;
   virtual bool TickAnimations(base::TimeTicks monotonic_time) = 0;
+  // Tick animations that depends on scroll offset.
+  virtual void TickScrollAnimations(base::TimeTicks monotonic_time) = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
+
+  // Returns a callback which is responsible for applying layer tree mutations
+  // to DOM elements. The callback are transfered to main thread when we begin
+  // main frame and should only be invoked on the main thread.
+  //
+  // TODO(majidvp): http://crbug.com/756539 Eliminate this. Once we implement
+  // syncing animation local times from animation worklet to cc then we should
+  // not directly send mutations to main thread and eliminate of this method.
+  // Instead the animation local times should be send to main thread via
+  // existing cc->main plumbing for animations which is |SetAnimationEvents|.
+  virtual base::Closure TakeMutations() = 0;
 
   virtual std::unique_ptr<MutatorEvents> CreateEvents() = 0;
   virtual void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) = 0;

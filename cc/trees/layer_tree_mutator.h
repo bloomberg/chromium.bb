@@ -11,8 +11,6 @@
 
 namespace cc {
 
-class LayerTreeImpl;
-
 class LayerTreeMutatorClient {
  public:
   // This is necessary because it forces an impl frame. We couldn't, for
@@ -27,7 +25,7 @@ class CC_EXPORT LayerTreeMutator {
   virtual ~LayerTreeMutator() {}
 
   // Returns true if the mutator should be rescheduled.
-  virtual bool Mutate(base::TimeTicks now, LayerTreeImpl* tree_impl) = 0;
+  virtual bool Mutate(base::TimeTicks now) = 0;
   virtual void SetClient(LayerTreeMutatorClient* client) = 0;
 
   // Returns a callback which is responsible for applying layer tree mutations

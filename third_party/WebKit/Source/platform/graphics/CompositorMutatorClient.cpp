@@ -32,11 +32,7 @@ CompositorMutatorClient::~CompositorMutatorClient() {
                "CompositorMutatorClient::~CompositorMutatorClient");
 }
 
-bool CompositorMutatorClient::Mutate(base::TimeTicks monotonic_time,
-                                     cc::LayerTreeImpl* tree_impl) {
-  // TODO(majidvp): At the moment we do not ever use the |tree_impl| or produce
-  // any mutations. However we expect to use the tree and produce mutations for
-  // AnimationWorklets. Remove these if that plan changes.
+bool CompositorMutatorClient::Mutate(base::TimeTicks monotonic_time) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
   double monotonic_time_now = (monotonic_time - base::TimeTicks()).InSecondsF();
   bool should_reinvoke = mutator_->Mutate(monotonic_time_now);

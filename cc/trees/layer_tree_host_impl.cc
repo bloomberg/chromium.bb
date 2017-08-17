@@ -241,7 +241,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       has_valid_layer_tree_frame_sink_(false),
-      mutator_(nullptr),
       scroll_animating_latched_node_id_(ScrollTree::kInvalidNodeId),
       has_scrolled_by_wheel_(false),
       has_scrolled_by_touch_(false),
@@ -485,8 +484,6 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   did_animate |= AnimateBrowserControls(monotonic_time);
 
   if (active_tree) {
-    did_animate |= Mutate(monotonic_time);
-
     // Animating stuff can change the root scroll offset, so inform the
     // synchronous input handler.
     UpdateRootLayerStateForSynchronousInputHandler();
@@ -498,19 +495,6 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   }
 }
 
-bool LayerTreeHostImpl::Mutate(base::TimeTicks monotonic_time) {
-  if (!mutator_)
-    return false;
-  TRACE_EVENT0("compositor-worker", "LayerTreeHostImpl::Mutate");
-  if (mutator_->Mutate(monotonic_time, active_tree()))
-    client_->SetNeedsOneBeginImplFrameOnImplThread();
-  return true;
-}
-
-void LayerTreeHostImpl::SetNeedsMutate() {
-  TRACE_EVENT0("compositor-worker", "LayerTreeHostImpl::SetNeedsMutate");
-  client_->SetNeedsOneBeginImplFrameOnImplThread();
-}
 
 bool LayerTreeHostImpl::PrepareTiles() {
   if (!tile_priorities_dirty_)
@@ -2211,10 +2195,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     // If we commit to the active tree directly, this is already done during
     // commit.
     ActivateAnimations();
-
-    // Compositor worker operates on the active tree so we have to run again
-    // after activation.
-    Mutate(CurrentBeginFrameArgs().frame_time);
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
   }
@@ -2449,12 +2429,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
 
 void LayerTreeHostImpl::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
-  if (mutator == mutator_)
-    return;
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "LayerTreeHostImpl::SetLayerTreeMutator");
-  mutator_ = std::move(mutator);
-  mutator_->SetClient(this);
+  mutator_host_->SetLayerTreeMutator(std::move(mutator));
 }
 
 LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
@@ -3599,8 +3574,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     UpdateRootLayerStateForSynchronousInputHandler();
   }
 
-  // Update compositor worker mutations which may respond to scrolling.
-  Mutate(CurrentBeginFrameArgs().frame_time);
+  // Run animations which need to respond to updated scroll offset.
+  mutator_host_->TickScrollAnimations(CurrentBeginFrameArgs().frame_time);
 
   return scroll_result;
 }
@@ -3772,11 +3747,9 @@ void LayerTreeHostImpl::PinchGestureEnd() {
 std::unique_ptr<BeginFrameCallbackList>
 LayerTreeHostImpl::ProcessLayerTreeMutations() {
   std::unique_ptr<BeginFrameCallbackList> callbacks(new BeginFrameCallbackList);
-  if (mutator_) {
-    const base::Closure& callback = mutator_->TakeMutations();
-    if (!callback.is_null())
-      callbacks->push_back(callback);
-  }
+  const base::Closure& callback = mutator_host_->TakeMutations();
+  if (!callback.is_null())
+    callbacks->push_back(callback);
   return callbacks;
 }
 
@@ -3899,7 +3872,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   // still request an extra SetNeedsAnimate here.
   if (animated)
     SetNeedsOneBeginImplFrame();
-  // TODO(crbug.com/551138): We could return true only if the animations are on
+  // TODO(crbug.com/551138): We could return true only if the animaitons are on
   // the active tree. There's no need to cause a draw to take place from
   // animations starting/ticking on the pending tree.
   return animated;
@@ -4331,8 +4304,8 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
       property_trees->element_id_to_scroll_node_index[element_id];
   property_trees->scroll_tree.OnScrollOffsetAnimated(
       element_id, scroll_node_index, scroll_offset, tree);
-  // Run mutation callbacks to respond to updated scroll offset.
-  Mutate(CurrentBeginFrameArgs().frame_time);
+  // Run animations which need to respond to updated scroll offset.
+  mutator_host_->TickScrollAnimations(CurrentBeginFrameArgs().frame_time);
 }
 
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
