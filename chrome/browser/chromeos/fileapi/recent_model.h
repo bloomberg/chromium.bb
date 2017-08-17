@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -53,6 +54,9 @@ class RecentModel : public KeyedService {
 
  private:
   friend class RecentModelFactory;
+  FRIEND_TEST_ALL_PREFIXES(RecentModelTest, GetRecentFiles_UmaStats);
+
+  static const char kLoadHistogramName[];
 
   explicit RecentModel(Profile* profile);
   explicit RecentModel(std::vector<std::unique_ptr<RecentSource>> sources);
@@ -68,6 +72,9 @@ class RecentModel : public KeyedService {
 
   // Timer to clear the cache.
   base::OneShotTimer cache_clear_timer_;
+
+  // Time when the build started.
+  base::TimeTicks build_start_time_;
 
   // While a recent file list is built, this vector contains callbacks to be
   // invoked with the new list.

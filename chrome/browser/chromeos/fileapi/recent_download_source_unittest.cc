@@ -4,12 +4,14 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
@@ -26,7 +28,8 @@
 #include "url/gurl.h"
 
 namespace chromeos {
-namespace {
+
+using RecentFileList = RecentDownloadSource::RecentFileList;
 
 class RecentDownloadSourceTest : public testing::Test {
  public:
@@ -72,6 +75,27 @@ class RecentDownloadSourceTest : public testing::Test {
     return file.SetTimes(time, time);
   }
 
+  RecentFileList GetRecentFiles() {
+    std::vector<storage::FileSystemURL> files;
+
+    base::RunLoop run_loop;
+
+    source_->GetRecentFiles(
+        RecentContext(file_system_context_.get(), origin_),
+        base::BindOnce(
+            [](base::RunLoop* run_loop,
+               std::vector<storage::FileSystemURL>* out_files,
+               std::vector<storage::FileSystemURL> files) {
+              run_loop->Quit();
+              *out_files = std::move(files);
+            },
+            &run_loop, &files));
+
+    run_loop.Run();
+
+    return files;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   const GURL origin_;
   std::unique_ptr<TestingProfile> profile_;
@@ -87,23 +111,21 @@ TEST_F(RecentDownloadSourceTest, GetRecentFiles) {
   ASSERT_TRUE(CreateEmptyFile("3.jpg", 3));
   ASSERT_TRUE(CreateEmptyFile("4.jpg", 4));  // Newest
 
-  base::RunLoop run_loop;
+  std::vector<storage::FileSystemURL> files = GetRecentFiles();
 
-  source_->GetRecentFiles(
-      RecentContext(file_system_context_.get(), origin_),
-      base::BindOnce(
-          [](base::RunLoop* run_loop,
-             std::vector<storage::FileSystemURL> files) {
-            run_loop->Quit();
-            ASSERT_EQ(3u, files.size());
-            EXPECT_EQ("2.jpg", files[0].path().BaseName().value());
-            EXPECT_EQ("3.jpg", files[1].path().BaseName().value());
-            EXPECT_EQ("4.jpg", files[2].path().BaseName().value());
-          },
-          &run_loop));
-
-  run_loop.Run();
+  ASSERT_EQ(3u, files.size());
+  EXPECT_EQ("2.jpg", files[0].path().BaseName().value());
+  EXPECT_EQ("3.jpg", files[1].path().BaseName().value());
+  EXPECT_EQ("4.jpg", files[2].path().BaseName().value());
 }
 
-}  // namespace
+TEST_F(RecentDownloadSourceTest, GetRecentFiles_UmaStats) {
+  base::HistogramTester histogram_tester;
+
+  GetRecentFiles();
+
+  histogram_tester.ExpectTotalCount(RecentDownloadSource::kLoadHistogramName,
+                                    1);
+}
+
 }  // namespace chromeos

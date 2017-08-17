@@ -11,8 +11,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_download_source.h"
 #include "chrome/browser/chromeos/fileapi/recent_drive_source.h"
@@ -41,6 +41,8 @@ std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
 }  // namespace
 
 const size_t kMaxFilesFromSingleSource = 1000;
+
+const char RecentModel::kLoadHistogramName[] = "FileBrowser.Recent.LoadTotal";
 
 // static
 RecentModel* RecentModel::GetForProfile(Profile* profile) {
@@ -85,6 +87,9 @@ void RecentModel::GetRecentFiles(RecentContext context,
   // Start building a recent file list.
   DCHECK_EQ(0, num_inflight_sources_);
   DCHECK(intermediate_files_.empty());
+  DCHECK(build_start_time_.is_null());
+
+  build_start_time_ = base::TimeTicks::Now();
 
   num_inflight_sources_ = sources_.size();
   if (sources_.empty()) {
@@ -118,12 +123,17 @@ void RecentModel::OnGetRecentFilesCompleted() {
 
   DCHECK_EQ(0, num_inflight_sources_);
   DCHECK(!cached_files_.has_value());
+  DCHECK(!build_start_time_.is_null());
 
   cached_files_ = RecentFileList();
   cached_files_.value().swap(intermediate_files_);
 
   DCHECK(cached_files_.has_value());
   DCHECK(intermediate_files_.empty());
+
+  UMA_HISTOGRAM_TIMES(kLoadHistogramName,
+                      base::TimeTicks::Now() - build_start_time_);
+  build_start_time_ = base::TimeTicks();
 
   // Starts a timer to clear cache.
   cache_clear_timer_.Start(
