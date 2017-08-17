@@ -6,14 +6,14 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("empty.scss", onSourceFrame);
+    SourcesTestRunner.showScriptSource("empty.scss", onSourceFrame);
 
     function onSourceFrame(sourceFrame)
     {
-        InspectorTest.addResult("Source mapping loaded.");
-        InspectorTest.completeTest();
-        dumpSuggestions = InspectorTest.dumpSuggestions.bind(InspectorTest, sourceFrame.textEditor);
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.addResult("Source mapping loaded.");
+        TestRunner.completeTest();
+        dumpSuggestions = SourcesTestRunner.dumpSuggestions.bind(InspectorTest, sourceFrame.textEditor);
+        TestRunner.runTestSuite(testSuite);
     }
 }
 

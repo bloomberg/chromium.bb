@@ -53,7 +53,7 @@ function consoleTimeWithoutConsoleTimeEnd()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimpleConsoleTime(next)
         {
             performActions("simpleConsoleTime()", next);
@@ -81,15 +81,15 @@ function test()
         function dumpName(event, level)
         {
             if (namesToDump.has(event.name))
-                InspectorTest.addResult("----".repeat(level) + "> " + Timeline.TimelineUIUtils.eventTitle(event));
+                TestRunner.addResult("----".repeat(level) + "> " + Timeline.TimelineUIUtils.eventTitle(event));
         }
         function callback()
         {
-            InspectorTest.walkTimelineEventTree(dumpName);
+            PerformanceTestRunner.walkTimelineEventTree(dumpName);
             next();
         }
         UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-        InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback), true);
+        PerformanceTestRunner.evaluateWithTimeline(actions, TestRunner.safeWrap(callback), true);
     }
 }
 

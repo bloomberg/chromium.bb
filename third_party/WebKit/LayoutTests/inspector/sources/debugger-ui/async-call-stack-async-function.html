@@ -26,18 +26,18 @@ async function testFunction()
 <script>
 var test = function()
 {
-    InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200);
+    TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    InspectorTest.startDebuggerTestPromise(/* quiet */ true)
-        .then(() => InspectorTest.runTestFunctionAndWaitUntilPausedPromise())
+    SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
+        .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
         .then(() => dumpCallStackSidebarPane())
-        .then(() => InspectorTest.completeDebuggerTest());
+        .then(() => SourcesTestRunner.completeDebuggerTest());
 
     function dumpCallStackSidebarPane()
     {
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
-            InspectorTest.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
+            TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
     }
 }
 

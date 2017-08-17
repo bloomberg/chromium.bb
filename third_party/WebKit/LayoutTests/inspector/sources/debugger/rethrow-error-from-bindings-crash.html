@@ -29,36 +29,36 @@ var test = function()
 {
     var expectedErrorsCount = 8;
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
         --expectedErrorsCount;
         if (!expectedErrorsCount) {
-            InspectorTest.waitUntilNthMessageReceived(1, step2);
-            InspectorTest.resumeExecution();
+            ConsoleTestRunner.waitUntilNthMessageReceived(1, step2);
+            SourcesTestRunner.resumeExecution();
         } else {
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
         }
     }
 
     function step2()
     {
-        InspectorTest.dumpConsoleMessages();
+        ConsoleTestRunner.dumpConsoleMessages();
         completeTest();
     }
 
     function completeTest()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

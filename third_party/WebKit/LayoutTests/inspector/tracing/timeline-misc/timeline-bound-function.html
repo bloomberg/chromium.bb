@@ -16,19 +16,19 @@ function performActions()
 
 function test()
 {
-    InspectorTest.evaluateWithTimeline("performActions()", finish);
+    PerformanceTestRunner.evaluateWithTimeline("performActions()", finish);
 
     function finish()
     {
-        InspectorTest.timelineModel().mainThreadEvents().forEach(event => {
+        PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
             if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
                 return;
             var data = event.args["data"];
             var scriptName = data.scriptName;
             var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
-            InspectorTest.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
+            TestRunner.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
         });
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

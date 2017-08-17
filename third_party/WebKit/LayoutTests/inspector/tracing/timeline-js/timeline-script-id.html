@@ -26,11 +26,11 @@ function test()
 
     var source = performActions.toString();
     source += "\n//# sourceURL=performActions.js";
-    InspectorTest.evaluateInPage(source, startTimeline);
+    TestRunner.evaluateInPage(source, startTimeline);
 
     function startTimeline()
     {
-        InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+        PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
     }
 
     var linkifier = new Components.Linkifier();
@@ -41,19 +41,19 @@ function test()
         if (!recordTypes.has(event.name))
             return;
 
-        var detailsText = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event));
-        InspectorTest.addResult("detailsTextContent for " + event.name + " event: '" + detailsText + "'");
+        var detailsText = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, PerformanceTestRunner.timelineModel().targetByEvent(event));
+        TestRunner.addResult("detailsTextContent for " + event.name + " event: '" + detailsText + "'");
 
-        var details = Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event), linkifier);
+        var details = Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier);
         if (!details)
             return;
-        InspectorTest.addResult("details.textContent for " + event.name + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
+        TestRunner.addResult("details.textContent for " + event.name + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
     }
 
     function finish()
     {
-        InspectorTest.walkTimelineEventTree(formatter);
-        InspectorTest.completeTest();
+        PerformanceTestRunner.walkTimelineEventTree(formatter);
+        TestRunner.completeTest();
     }
 }
 

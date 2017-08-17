@@ -10,8 +10,8 @@ function injectScript(value)
 
 function test()
 {
-    InspectorTest.evaluateInPage("injectScript(1);");
-    InspectorTest.evaluateInPage("injectScript(2);");
+    TestRunner.evaluateInPage("injectScript(1);");
+    TestRunner.evaluateInPage("injectScript(2);");
 
     Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, reportAdded);
     Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, reportRemoved);
@@ -22,13 +22,13 @@ function test()
     {
         if (event.data.url().indexOf("MyScript.js") === -1)
             return;
-        InspectorTest.addResult("Added: " + event.data.url().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
+        TestRunner.addResult("Added: " + event.data.url().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
         if (event.data.project().type() !== "network")
             return;
         event.data.requestContent().then(function(it, content) {
-            InspectorTest.addResult("Content: " + content);
+            TestRunner.addResult("Content: " + content);
             if (it)
-                InspectorTest.completeTest();
+                TestRunner.completeTest();
         }.bind(null, iteration++));
     }
 
@@ -36,7 +36,7 @@ function test()
     {
         if (event.data.url() !== "MyScript.js")
             return;
-        InspectorTest.addResult("Removed: " + event.data.url() + " from " + event.data.project().type());
+        TestRunner.addResult("Removed: " + event.data.url() + " from " + event.data.project().type());
     }
 }
 

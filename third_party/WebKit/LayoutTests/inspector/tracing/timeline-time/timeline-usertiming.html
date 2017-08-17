@@ -62,7 +62,7 @@ function parentMeasureIsOnTop()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimplePerformanceMeasure(next)
         {
             performActions("simplePerformanceMeasure()", next);
@@ -86,20 +86,20 @@ function test()
 
     function dumpUserTimings()
     {
-        var model = InspectorTest.timelineModel();
+        var model = PerformanceTestRunner.timelineModel();
         var asyncEvents = model.mainThreadAsyncEvents()
 
         asyncEvents.forEach(function(eventGroup) {
             eventGroup.forEach(function(event) {
                 if (event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming))
-                    InspectorTest.addResult(event.name);
+                    TestRunner.addResult(event.name);
             });
         })
     }
 
     function performActions(actions, next)
     {
-        InspectorTest.evaluateWithTimeline(actions, _ => { dumpUserTimings(); next(); });
+        PerformanceTestRunner.evaluateWithTimeline(actions, _ => { dumpUserTimings(); next(); });
 
     }
 }

@@ -9,30 +9,30 @@
 
 function test()
 {
-    InspectorTest.showScriptSource("css-outline-column.css", onSourceShown);
+    SourcesTestRunner.showScriptSource("css-outline-column.css", onSourceShown);
     var textEditor;
     function onSourceShown(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
-        InspectorTest.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
+        TestRunner.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
         UI.panels.sources._sourcesView._showOutlineQuickOpen();
     }
 
     function onQuickOpenFulfilled()
     {
-        InspectorTest.addSniffer(Common.Revealer, "revealPromise", (revealable, omitFocus, promise) => promise.then(revealed));
+        TestRunner.addSniffer(Common.Revealer, "revealPromise", (revealable, omitFocus, promise) => promise.then(revealed));
         this.selectItem(1, "");
     }
 
     function revealed() {
         var selection = textEditor.selection();
         if (!selection.isEmpty()) {
-            InspectorTest.addResult("ERROR: selection is not empty.");
-            InspectorTest.completeTest();
+            TestRunner.addResult("ERROR: selection is not empty.");
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult(String.sprintf("Cursor position: line %d, column %d", selection.startLine, selection.startColumn));
-        InspectorTest.completeTest();
+        TestRunner.addResult(String.sprintf("Cursor position: line %d, column %d", selection.startLine, selection.startColumn));
+        TestRunner.completeTest();
     }
 }
 

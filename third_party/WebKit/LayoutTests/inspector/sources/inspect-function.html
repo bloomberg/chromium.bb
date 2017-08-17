@@ -6,18 +6,18 @@
 function test()
 {
     var revealed = 0;
-    InspectorTest.addSniffer(Sources.SourcesView.prototype, "showSourceLocation", didReveal, true);
-    InspectorTest.evaluateInConsole("function foo() { }; inspect(foo.bind());inspect(foo);");
+    TestRunner.addSniffer(Sources.SourcesView.prototype, "showSourceLocation", didReveal, true);
+    ConsoleTestRunner.evaluateInConsole("function foo() { }; inspect(foo.bind());inspect(foo);");
 
     function didReveal(uiSourceCode, lineNumber, columnNumber)
     {
-        InspectorTest.addResult("Function was revealed:");
-        InspectorTest.addResult("lineNumber: " + lineNumber);
-        InspectorTest.addResult("columnNumber: " + columnNumber);
+        TestRunner.addResult("Function was revealed:");
+        TestRunner.addResult("lineNumber: " + lineNumber);
+        TestRunner.addResult("columnNumber: " + columnNumber);
         if (revealed == 0)
             ++revealed;
         else
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 }
 </script>

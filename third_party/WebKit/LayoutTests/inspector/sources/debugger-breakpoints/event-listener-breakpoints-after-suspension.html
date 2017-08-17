@@ -18,49 +18,49 @@ function addListenerAndClick()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(start);
+    SourcesTestRunner.startDebuggerTest(start);
 
     function start()
     {
-        InspectorTest.setEventListenerBreakpoint("listener:click", true);
-        InspectorTest.waitUntilPaused(paused);
-        InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
+        SourcesTestRunner.waitUntilPaused(paused);
+        TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
     }
 
     function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
     {
         printEventTargetName(auxData);
-        InspectorTest.resumeExecution(suspendAll);
+        SourcesTestRunner.resumeExecution(suspendAll);
     }
 
     function suspendAll()
     {
-        InspectorTest.addResult("Suspend all targets");
+        TestRunner.addResult("Suspend all targets");
         SDK.targetManager.suspendAllTargets();
-        InspectorTest.deprecatedRunAfterPendingDispatches(resumeAll);
+        TestRunner.deprecatedRunAfterPendingDispatches(resumeAll);
     }
 
     function resumeAll()
     {
-        InspectorTest.addResult("Resume all targets");
+        TestRunner.addResult("Resume all targets");
         SDK.targetManager.resumeAllTargets();
-        InspectorTest.waitUntilPaused(finish);
-        InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+        SourcesTestRunner.waitUntilPaused(finish);
+        TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
     }
 
     function finish()
     {
-        InspectorTest.addResult("Successfully paused after suspension and resuming all targets");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Successfully paused after suspension and resuming all targets");
+        SourcesTestRunner.completeDebuggerTest();
     }
 
     function printEventTargetName(auxData)
     {
         var targetName = auxData && auxData.targetName;
         if (targetName)
-            InspectorTest.addResult("Event target: " + targetName);
+            TestRunner.addResult("Event target: " + targetName);
         else
-            InspectorTest.addResult("FAIL: No event target name received!");
+            TestRunner.addResult("FAIL: No event target name received!");
     }
 }
 

@@ -18,18 +18,18 @@ function callback(i)
 
 function test()
 {
-    InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step1);
+    TestRunner.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step1);
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     function step1()
     {
-        InspectorTest.startDebuggerTest(step2, true);
+        SourcesTestRunner.startDebuggerTest(step2, true);
     }
 
     function step2()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step3);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step3);
     }
 
     function step3()
@@ -39,12 +39,12 @@ function test()
             "StepInto", "StepInto", "Print", // entered callback(i)
             "StepOut", "Print"
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step4);
     }
 
     function step4()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

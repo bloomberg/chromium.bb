@@ -50,33 +50,33 @@ function test()
         {"name": "Program", "ts": 2590000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default-devtools.timeline", "args": {}}
     ];
 
-    var model = InspectorTest.createPerformanceModelWithEvents(testData);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
     var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
     view.setModel(model);
     view.updateContents(Timeline.TimelineSelection.fromRange(model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
     function printEventMessage(event, level)
     {
-        InspectorTest.addResult(" ".repeat(level) + event.args["data"].message);
+        TestRunner.addResult(" ".repeat(level) + event.args["data"].message);
     }
 
     function dumpRecords()
     {
-        InspectorTest.walkTimelineEventTreeUnderNode(printEventMessage, view._currentTree);
-        InspectorTest.addResult("");
+        PerformanceTestRunner.walkTimelineEventTreeUnderNode(printEventMessage, view._currentTree);
+        TestRunner.addResult("");
     }
 
-    InspectorTest.addResult("Initial:");
+    TestRunner.addResult("Initial:");
     dumpRecords();
 
-    InspectorTest.addResult("Filtered by 'bar':");
+    TestRunner.addResult("Filtered by 'bar':");
     view._textFilterUI._internalSetValue("bar", true);
     dumpRecords();
 
-    InspectorTest.addResult("Filtered by 'foo':");
+    TestRunner.addResult("Filtered by 'foo':");
     view._textFilterUI._internalSetValue("foo", true);
     dumpRecords();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

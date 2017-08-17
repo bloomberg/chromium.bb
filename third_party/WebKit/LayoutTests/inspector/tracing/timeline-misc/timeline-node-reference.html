@@ -21,8 +21,8 @@ function performActions()
 
 function test()
 {
-    InspectorTest.evaluateInPage("var unused = document.body.offsetWidth;", function() {
-         InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
+    TestRunner.evaluateInPage("var unused = document.body.offsetWidth;", function() {
+         PerformanceTestRunner.evaluateWithTimeline("performActions()", onTimelineRecorded);
     });
 
     async function clickValueLink(event, row)
@@ -40,7 +40,7 @@ function test()
 
     function onTimelineRecorded(records)
     {
-        var layoutEvent = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
+        var layoutEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
         UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
         clickValueLink(layoutEvent, "Layout root");
     }
@@ -52,8 +52,8 @@ function test()
         if (node.nodeName() === "BODY")
             return;
         UI.context.removeFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
-        InspectorTest.addResult("Layout root node id: " + node.getAttribute("id"));
-        InspectorTest.completeTest();
+        TestRunner.addResult("Layout root node id: " + node.getAttribute("id"));
+        TestRunner.completeTest();
     }
 }
 

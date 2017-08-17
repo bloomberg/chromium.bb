@@ -19,9 +19,9 @@ function test()
     Bindings.breakpointManager._storage._breakpoints = {};
     var panel = UI.panels.sources;
 
-    InspectorTest.startDebuggerTest();
+    SourcesTestRunner.startDebuggerTest();
 
-    InspectorTest.showScriptSource("dynamic-scripts-breakpoints.html", didShowScriptSource);
+    SourcesTestRunner.showScriptSource("dynamic-scripts-breakpoints.html", didShowScriptSource);
 
     function pathToFileName(path)
     {
@@ -32,34 +32,34 @@ function test()
     {
         var breakpointManager = Bindings.breakpointManager;
         var breakpoints = breakpointManager._storage._setting.get();
-        InspectorTest.addResult("    Dumping breakpoint storage");
+        TestRunner.addResult("    Dumping breakpoint storage");
         for (var i = 0; i < breakpoints.length; ++i)
-            InspectorTest.addResult("        " + pathToFileName(breakpoints[i].url) + ":" + breakpoints[i].lineNumber);
+            TestRunner.addResult("        " + pathToFileName(breakpoints[i].url) + ":" + breakpoints[i].lineNumber);
     }
 
     function didShowScriptSource(sourceFrame)
     {
-        InspectorTest.addResult("Setting breakpoint:");
-        InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-        InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+        TestRunner.addResult("Setting breakpoint:");
+        TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 11, "", true);
     }
 
     function breakpointResolved(location)
     {
-        InspectorTest.waitUntilPaused(paused);
-        InspectorTest.addResult("Reloading page.");
-        InspectorTest.reloadPage(onPageReloaded);
+        SourcesTestRunner.waitUntilPaused(paused);
+        TestRunner.addResult("Reloading page.");
+        TestRunner.reloadPage(onPageReloaded);
     }
 
     function paused()
     {
         dumpBreakpointStorage();
-        InspectorTest.resumeExecution();
+        SourcesTestRunner.resumeExecution();
     }
 
     function onPageReloaded()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

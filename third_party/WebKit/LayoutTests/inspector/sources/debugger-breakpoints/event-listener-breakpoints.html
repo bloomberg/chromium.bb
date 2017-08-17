@@ -75,92 +75,92 @@ function test()
     var testFunctions = [
         function testClickBreakpoint(next)
         {
-            InspectorTest.setEventListenerBreakpoint("listener:click", true);
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
 
             function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
             {
-                InspectorTest.captureStackTrace(callFrames);
+                SourcesTestRunner.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                InspectorTest.setEventListenerBreakpoint("listener:click", false);
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
+                SourcesTestRunner.resumeExecution(resumed);
             }
 
             function resumed()
             {
-                InspectorTest.evaluateInPage("addListenerAndClick()", next);
+                TestRunner.evaluateInPage("addListenerAndClick()", next);
             }
         },
 
         function testAuxclickBreakpoint(next)
         {
-            InspectorTest.setEventListenerBreakpoint("listener:auxclick", true);
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndAuxclick()");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:auxclick", true);
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPageWithTimeout("addListenerAndAuxclick()");
 
             function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
             {
-                InspectorTest.captureStackTrace(callFrames);
+                SourcesTestRunner.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                InspectorTest.setEventListenerBreakpoint("listener:auxclick", false);
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.setEventListenerBreakpoint("listener:auxclick", false);
+                SourcesTestRunner.resumeExecution(resumed);
             }
 
             function resumed()
             {
-                InspectorTest.evaluateInPage("addListenerAndAuxclick()", next);
+                TestRunner.evaluateInPage("addListenerAndAuxclick()", next);
             }
         },
 
         function testTimerFiredBreakpoint(next)
         {
-            InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout.callback", true);
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPage("setTimeout(timerFired, 10)");
+            SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", true);
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPage("setTimeout(timerFired, 10)");
 
             function paused(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout.callback", false);
-                InspectorTest.resumeExecution(next);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", false);
+                SourcesTestRunner.resumeExecution(next);
             }
         },
 
         function testLoadBreakpointOnXHR(next)
         {
-            InspectorTest.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
-            InspectorTest.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPageWithTimeout("addLoadListeners()");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPageWithTimeout("addLoadListeners()");
 
             function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
             {
-                InspectorTest.captureStackTrace(callFrames);
+                SourcesTestRunner.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                InspectorTest.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
-                InspectorTest.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
+                SourcesTestRunner.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
+                SourcesTestRunner.resumeExecution(resumed);
             }
 
             function resumed()
             {
-                InspectorTest.evaluateInPage("addLoadListeners()", next);
+                TestRunner.evaluateInPage("addLoadListeners()", next);
             }
         },
 
         function testMediaEventBreakpoint(next)
         {
-            InspectorTest.setEventListenerBreakpoint("listener:play", true, "audio");
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPageWithTimeout("playVideo()");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:play", true, "audio");
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPageWithTimeout("playVideo()");
 
             function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
             {
-                InspectorTest.captureStackTrace(callFrames);
+                SourcesTestRunner.captureStackTrace(callFrames);
                 printEventTargetName(auxData);
-                InspectorTest.setEventListenerBreakpoint("listener:play", false, "audio");
-                InspectorTest.resumeExecution(next);
+                SourcesTestRunner.setEventListenerBreakpoint("listener:play", false, "audio");
+                SourcesTestRunner.resumeExecution(next);
             }
         }
     ];
@@ -169,35 +169,35 @@ function test()
         testFunctions.push(
             function testPointerEventBreakpoint(next)
             {
-                InspectorTest.setEventListenerBreakpoint("listener:pointerdown", true);
-                InspectorTest.waitUntilPaused(paused);
-                InspectorTest.evaluateInPageWithTimeout("addListenerAndPointerDown()");
+                SourcesTestRunner.setEventListenerBreakpoint("listener:pointerdown", true);
+                SourcesTestRunner.waitUntilPaused(paused);
+                TestRunner.evaluateInPageWithTimeout("addListenerAndPointerDown()");
 
                 function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
                 {
-                    InspectorTest.captureStackTrace(callFrames);
+                    SourcesTestRunner.captureStackTrace(callFrames);
                     printEventTargetName(auxData);
-                    InspectorTest.setEventListenerBreakpoint("listener:pointerdown", false);
-                    InspectorTest.resumeExecution(resumed);
+                    SourcesTestRunner.setEventListenerBreakpoint("listener:pointerdown", false);
+                    SourcesTestRunner.resumeExecution(resumed);
                 }
 
                 function resumed()
                 {
-                    InspectorTest.evaluateInPage("addListenerAndPointerDown()", next);
+                    TestRunner.evaluateInPage("addListenerAndPointerDown()", next);
                 }
             }
         );
     }
 
-    InspectorTest.runDebuggerTestSuite(testFunctions);
+    SourcesTestRunner.runDebuggerTestSuite(testFunctions);
 
     function printEventTargetName(auxData)
     {
         var targetName = auxData && auxData.targetName;
         if (targetName)
-            InspectorTest.addResult("Event target: " + targetName);
+            TestRunner.addResult("Event target: " + targetName);
         else
-            InspectorTest.addResult("FAIL: No event target name received!");
+            TestRunner.addResult("FAIL: No event target name received!");
     }
 }
 

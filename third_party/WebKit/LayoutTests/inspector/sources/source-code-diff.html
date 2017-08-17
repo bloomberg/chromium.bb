@@ -13,24 +13,24 @@ function test()
 {
     Runtime.experiments.enableForTest("sourceDiff");
     var textAfter;
-    InspectorTest.waitForScriptSource("diff-after.css", uiSourceCode => uiSourceCode.requestContent().then(onAfterContent));
+    SourcesTestRunner.waitForScriptSource("diff-after.css", uiSourceCode => uiSourceCode.requestContent().then(onAfterContent));
 
     function onAfterContent(content)
     {
         textAfter = content;
-        InspectorTest.waitForScriptSource("diff-before.css", onBeforeUISourceCode);
+        SourcesTestRunner.waitForScriptSource("diff-before.css", onBeforeUISourceCode);
     }
 
     function onBeforeUISourceCode(uiSourceCode){
         uiSourceCode.setWorkingCopy(textAfter);
-        InspectorTest.addSniffer(SourceFrame.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
-        InspectorTest.showUISourceCodePromise(uiSourceCode);
+        TestRunner.addSniffer(SourceFrame.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
+        SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
     }
 
     function decorationsSet(decorations)
     {
         Array.from(decorations).sort((a, b) => a[0] - b[0]).forEach(print);
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
 
         function print(decoration)
         {
@@ -43,7 +43,7 @@ function test()
             else if (type === SourceFrame.SourceCodeDiff.GutterDecorationType.Modify)
                 name = "Modify";
 
-            InspectorTest.addResult(decoration[0] + ":" + name)
+            TestRunner.addResult(decoration[0] + ":" + name)
         }
     }
 }

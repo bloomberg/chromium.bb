@@ -26,21 +26,21 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function checkTopFrameFunction(callFrames, expectedName, reason)
     {
         var topFunctionName = callFrames[0].functionName;
         if (expectedName === topFunctionName)
-            InspectorTest.addResult("SUCCESS: Did step into event listener(" + expectedName + ").");
+            TestRunner.addResult("SUCCESS: Did step into event listener(" + expectedName + ").");
         else
-            InspectorTest.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
-        InspectorTest.assertEquals(SDK.DebuggerModel.BreakReason.Other, reason, "FAIL: wrong pause reason: " + reason);
+            TestRunner.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
+        TestRunner.assertEquals(SDK.DebuggerModel.BreakReason.Other, reason, "FAIL: wrong pause reason: " + reason);
     }
 
     var stepCount = 0;
@@ -52,11 +52,11 @@ var test = function()
             checkTopFrameFunction(callFrames, "fooEventHandler2", reason);
 
         if (stepCount < 5) {
-            InspectorTest.addResult("Stepping into...");
-            InspectorTest.stepInto();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
+            TestRunner.addResult("Stepping into...");
+            SourcesTestRunner.stepInto();
+            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step2));
         } else {
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.completeDebuggerTest();
         }
         stepCount++;
     }

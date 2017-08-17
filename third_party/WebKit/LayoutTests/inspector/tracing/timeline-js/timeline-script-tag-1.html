@@ -14,28 +14,28 @@ function performActions()
 function test() 
 {
     UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    InspectorTest.startTimeline(step1);
+    PerformanceTestRunner.startTimeline(step1);
     function step1()
     {
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("performActions()");
+        ConsoleTestRunner.addConsoleSniffer(step2);
+        TestRunner.evaluateInPage("performActions()");
     }
 
     function step2()
     {
-        InspectorTest.stopTimeline(step3);
+        PerformanceTestRunner.stopTimeline(step3);
     }
 
     function step3()
     {
-        InspectorTest.timelineModel().mainThreadEvents().forEach(event => {
+        PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
             if (event.name === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
-                InspectorTest.printTraceEventProperties(event);
+                PerformanceTestRunner.printTraceEventProperties(event);
             } else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp) {
-                InspectorTest.addResult(`----> ${Timeline.TimelineUIUtils.eventTitle(event)}`);
+                TestRunner.addResult(`----> ${Timeline.TimelineUIUtils.eventTitle(event)}`);
             }
         });
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

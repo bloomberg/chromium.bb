@@ -7,11 +7,11 @@
 <script>
 async function test()
 {
-    var uiSourceCode = await InspectorTest.waitForUISourceCode("obfuscated.js");
+    var uiSourceCode = await TestRunner.waitForUISourceCode("obfuscated.js");
     var formatData = await Sources.sourceFormatter.format(uiSourceCode);
     var targetContent = await formatData.formattedSourceCode.requestContent();
 
-    InspectorTest.addResult(`Formatted:\n${targetContent}`);
+    TestRunner.addResult(`Formatted:\n${targetContent}`);
 
     var originalContent = await uiSourceCode.requestContent();
     var text = new TextUtils.Text(originalContent);
@@ -20,22 +20,22 @@ async function test()
       positions.push(text.positionFromOffset(offset));
     var script = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, 0, 0).script();
 
-    InspectorTest.addResult("Location mapping with formatted source:");
+    TestRunner.addResult("Location mapping with formatted source:");
     dumpLocations(positions);
 
     Sources.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
 
-    InspectorTest.addResult("Location mapping without formatted source:");
+    TestRunner.addResult("Location mapping without formatted source:");
     dumpLocations(positions);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function dumpLocations(positions) {
       for (var position of positions) {
-        var rawLocation = InspectorTest.debuggerModel.createRawLocation(script, position.lineNumber, position.columnNumber);
+        var rawLocation = TestRunner.debuggerModel.createRawLocation(script, position.lineNumber, position.columnNumber);
         var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
         var reverseRawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
-        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}` +
+        TestRunner.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}` +
             ` -> ${reverseRawLocation.lineNumber}:${reverseRawLocation.columnNumber}`);
       }
     }

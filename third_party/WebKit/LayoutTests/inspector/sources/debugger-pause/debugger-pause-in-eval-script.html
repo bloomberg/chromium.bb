@@ -12,18 +12,18 @@ var test = function()
                            "}\n" +
                            "setTimeout(testFunction, 0);\n";
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.evaluateInPage(scriptToEvaluate, InspectorTest.addResult.bind(InspectorTest, "Evaluated script in console."));
-        InspectorTest.waitUntilPaused(step2);
+        TestRunner.evaluateInPage(scriptToEvaluate, TestRunner.addResult.bind(InspectorTest, "Evaluated script in console."));
+        SourcesTestRunner.waitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

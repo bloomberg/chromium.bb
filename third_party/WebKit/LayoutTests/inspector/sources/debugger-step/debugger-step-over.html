@@ -22,23 +22,23 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     var stepCount = 0;
     function step2(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
+        SourcesTestRunner.captureStackTrace(callFrames);
         if (stepCount < 2) {
-            InspectorTest.addResult("Stepping over...");
-            InspectorTest.stepOver();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
+            TestRunner.addResult("Stepping over...");
+            SourcesTestRunner.stepOver();
+            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step2));
         } else
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.completeDebuggerTest();
         stepCount++;
     }
 }

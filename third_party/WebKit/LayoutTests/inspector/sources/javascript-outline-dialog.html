@@ -9,11 +9,11 @@
 
 function test()
 {
-    InspectorTest.showScriptSource("javascript-outline-dialog.js", onSourceShown);
+    SourcesTestRunner.showScriptSource("javascript-outline-dialog.js", onSourceShown);
     var provider;
     function onSourceShown(sourceFrame)
     {
-        InspectorTest.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
+        TestRunner.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
         UI.panels.sources._sourcesView._showOutlineQuickOpen();
     }
 
@@ -24,12 +24,12 @@ function test()
         dumpScores("test");
         dumpScores("test(");
         dumpScores("test(arg");
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function dumpScores(query)
     {
-        InspectorTest.addResult(`Scores for query="${query}"`);
+        TestRunner.addResult(`Scores for query="${query}"`);
         var keys = [];
         for (var i = 0; i < provider.itemCount(); ++i) {
             keys.push({
@@ -38,8 +38,8 @@ function test()
             });
         }
         keys.sort((a,b) => b.score - a.score);
-        InspectorTest.addResult(keys.map(a => a.key + " " + a.score).join("\n"));
-        InspectorTest.addResult("");
+        TestRunner.addResult(keys.map(a => a.key + " " + a.score).join("\n"));
+        TestRunner.addResult("");
     }
 }
 

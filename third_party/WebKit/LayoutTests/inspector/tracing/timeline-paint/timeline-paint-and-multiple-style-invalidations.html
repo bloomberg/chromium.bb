@@ -17,19 +17,19 @@ function multipleStyleRecalcsAndDisplay()
 function test()
 {
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
-    InspectorTest.invokeAsyncWithTimeline("multipleStyleRecalcsAndDisplay", testMultipleStyleRecalcs);
+    PerformanceTestRunner.invokeAsyncWithTimeline("multipleStyleRecalcsAndDisplay", testMultipleStyleRecalcs);
 
     function testMultipleStyleRecalcs()
     {
-        InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first style recalc");
-        InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, "second style recalc");
-        InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "first paint");
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first style recalc");
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, "second style recalc");
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "first paint");
 
-        var thirdRecalc = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2);
-        InspectorTest.assertTrue(thirdRecalc === undefined, "There should be no additional style recalc records.");
-        var secondPaint = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint, 1);
-        InspectorTest.assertTrue(secondPaint === undefined, "There should be no additional paint records.");
-        InspectorTest.completeTest();
+        var thirdRecalc = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2);
+        TestRunner.assertTrue(thirdRecalc === undefined, "There should be no additional style recalc records.");
+        var secondPaint = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint, 1);
+        TestRunner.assertTrue(secondPaint === undefined, "There should be no additional paint records.");
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -30,11 +30,11 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
@@ -45,12 +45,12 @@ function test()
             "StepInto", "Print",
             "StepInto", "Print", // Should NOT stop on setTimeout() inside framework
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
     }
 
     function step3()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

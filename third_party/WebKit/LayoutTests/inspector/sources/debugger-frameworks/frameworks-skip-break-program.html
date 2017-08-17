@@ -27,31 +27,31 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout", true);
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout", true);
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
-        InspectorTest.captureStackTrace(callFrames);
+        SourcesTestRunner.captureStackTrace(callFrames);
         completeTest();
     }
 
     function completeTest()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.setEventListenerBreakpoint("instrumentation:setTimeout", false);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout", false);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

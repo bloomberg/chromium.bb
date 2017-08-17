@@ -21,35 +21,35 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
-        InspectorTest.evaluateInConsole("x + y + globalVar.b", step3.bind(null, callFrames));
+        ConsoleTestRunner.evaluateInConsole("x + y + globalVar.b", step3.bind(null, callFrames));
     }
 
     function step3(callFrames, result)
     {
-        InspectorTest.addResult("Evaluated script on the top frame: " + result);
+        TestRunner.addResult("Evaluated script on the top frame: " + result);
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         pane._list.selectItem(pane._list._model.at(1));
-        InspectorTest.deprecatedRunAfterPendingDispatches(step4);
+        TestRunner.deprecatedRunAfterPendingDispatches(step4);
     }
 
     function step4()
     {
-        InspectorTest.evaluateInConsole("localObject.a + globalVar.b", step5);
+        ConsoleTestRunner.evaluateInConsole("localObject.a + globalVar.b", step5);
     }
 
     function step5(result)
     {
-        InspectorTest.addResult("Evaluated script on the calling frame: " + result);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Evaluated script on the calling frame: " + result);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

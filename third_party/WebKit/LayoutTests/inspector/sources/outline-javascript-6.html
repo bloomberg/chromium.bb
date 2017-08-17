@@ -7,18 +7,18 @@
 
 async function test()
 {
-    var test = InspectorTest.testJavascriptOutline;
+    var test = SourcesTestRunner.testJavascriptOutline;
 
-    InspectorTest.markStep('testClassAsNumberLiteralProperty');
+    TestRunner.markStep('testClassAsNumberLiteralProperty');
     await test('var foo = { 42: class { }};');
 
-    InspectorTest.markStep('testClassAsStringLiteralProperty');
+    TestRunner.markStep('testClassAsStringLiteralProperty');
     await test('var foo = { "foo": class { }};');
 
-    InspectorTest.markStep('testClassAsIdentifierProperty');
+    TestRunner.markStep('testClassAsIdentifierProperty');
     await test('var foo = { foo: class { }};');
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

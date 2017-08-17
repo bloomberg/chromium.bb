@@ -35,31 +35,31 @@ function test()
         {"name": "foooooo", "ts": 1099999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"toplevel", "args": {}}
     ];
 
-    var model = InspectorTest.createPerformanceModelWithEvents(testData);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
     var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
     view.setModel(model);
     view.updateContents(Timeline.TimelineSelection.fromRange(model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
     var filtersControl = view._filtersControl;
 
-    InspectorTest.addResult("Original records");
+    TestRunner.addResult("Original records");
     filtersControl._notifyFiltersChanged();
     dumpVisibleRecords();
 
-    InspectorTest.addResult("Visible records when 'loading' is disabled");
+    TestRunner.addResult("Visible records when 'loading' is disabled");
     Timeline.TimelineUIUtils.categories().loading.hidden = true;
     filtersControl._notifyFiltersChanged();
     dumpVisibleRecords();
 
-    InspectorTest.addResult("Visible records when 'scripting' is disabled");
+    TestRunner.addResult("Visible records when 'scripting' is disabled");
     Timeline.TimelineUIUtils.categories().scripting.hidden = true;
     filtersControl._notifyFiltersChanged();
     dumpVisibleRecords();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function dumpVisibleRecords()
     {
-        InspectorTest.walkTimelineEventTreeUnderNode(event => InspectorTest.addResult(event.name), view._currentTree);
+        PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view._currentTree);
     }
 }
 

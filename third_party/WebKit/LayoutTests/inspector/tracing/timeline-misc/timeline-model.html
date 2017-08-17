@@ -51,13 +51,13 @@ function test()
         {"name": "Program", "ts": 2009999, "ph": "E", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default.devtools.timeline"}
     ];
 
-    var tracingTimelineModel = InspectorTest.createPerformanceModelWithEvents(commonMetadata.concat(traceEvents));
-    InspectorTest.forAllEvents(tracingTimelineModel.timelineModel().mainThreadEvents(), (event, stack) => {
+    var tracingTimelineModel = PerformanceTestRunner.createPerformanceModelWithEvents(commonMetadata.concat(traceEvents));
+    PerformanceTestRunner.forAllEvents(tracingTimelineModel.timelineModel().mainThreadEvents(), (event, stack) => {
         const prefix = Array(stack.length + 1).join("----") + (stack.length ? "> " : "");
         const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, null) || "";
-        InspectorTest.addResult(`${prefix}${event.name}: ${details}`);
+        TestRunner.addResult(`${prefix}${event.name}: ${details}`);
     });
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

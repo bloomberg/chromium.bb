@@ -14,16 +14,16 @@ function test()
 {
     var panel = UI.panels.sources;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testRevealFunctionDefinition(next)
         {
-            InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
+            TestRunner.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
             UI.context.flavor(SDK.ExecutionContext).evaluate({expression: "jumpToMe", silent:true}).then(didGetFunction);
 
             function didGetFunction(result)
             {
                 var error = !result.object || !!result.exceptionDetails;
-                InspectorTest.assertTrue(!error);
+                TestRunner.assertTrue(!error);
                 panel._showFunctionDefinition(result.object);
             }
 
@@ -32,29 +32,29 @@ function test()
                 // lineNumber and columnNumber are 0-based
                 ++lineNumber;
                 ++columnNumber;
-                InspectorTest.addResult("Function location revealed: [" + lineNumber + ":" + columnNumber + "]");
+                TestRunner.addResult("Function location revealed: [" + lineNumber + ":" + columnNumber + "]");
                 next();
             }
         },
 
         function testDumpFunctionDefinition(next)
         {
-            InspectorTest.addSniffer(ObjectUI.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
+            TestRunner.addSniffer(ObjectUI.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
             var consoleView = Console.ConsoleView.instance();
             consoleView._prompt._appendCommand("jumpToMe", true);
 
             function onConsoleMessagesReceived()
             {
-                InspectorTest.deprecatedRunAfterPendingDispatches(function() {
+                TestRunner.deprecatedRunAfterPendingDispatches(function() {
                     var messages = [];
-                    InspectorTest.disableConsoleViewport();
+                    ConsoleTestRunner.disableConsoleViewport();
                     var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
                     for (var i = 0; i < viewMessages.length; ++i) {
                         var uiMessage = viewMessages[i];
                         var element = uiMessage.contentElement();
                         messages.push(element.deepTextContent());
                     }
-                    InspectorTest.addResult(messages.join("\n"));
+                    TestRunner.addResult(messages.join("\n"));
                     next();
                 });
             }

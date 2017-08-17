@@ -18,12 +18,12 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_renderDecorations").then(step2);
-        InspectorTest.runTestFunctionAndWaitUntilPaused();
+        TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_renderDecorations").then(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
     }
 
     function step2()
@@ -32,9 +32,9 @@ var test = function()
         var decorations = currentFrame.textEditor._decorations;
         for (var line of decorations.keysArray()) {
             var lineDecorations = Array.from(decorations.get(line)).map(decoration => decoration.element.textContent).join(", ");
-            InspectorTest.addResult(`${line + 1}: ${lineDecorations}`);
+            TestRunner.addResult(`${line + 1}: ${lineDecorations}`);
         }
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

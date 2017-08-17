@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+    var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/javascript");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function trailingCommentsTest(next)
         {
             var mappingQueries = [];
@@ -21,7 +21,7 @@ function test()
         function inlinedScriptFormatting(next)
         {
             var content = "<html><body><script>function f(){}<" + "/script><script>function g(){var a;window.return = 10;if (a) return;}<" + "/script></body></html>";
-            InspectorTest.testPrettyPrint("text/html", content, [], next);
+            SourcesTestRunner.testPrettyPrint("text/html", content, [], next);
         },
 
         function generatorFormatter(next)

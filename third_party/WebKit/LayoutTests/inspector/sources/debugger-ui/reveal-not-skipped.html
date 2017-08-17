@@ -14,73 +14,73 @@ function throwAnException()
 var test = function()
 {
     var panel = UI.panels.sources;
-    InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testRevealAfterPausedOnException(next)
         {
-            InspectorTest.addResult("Showing script1 source...");
-            InspectorTest.showScriptSource("script1.js", step2);
+            TestRunner.addResult("Showing script1 source...");
+            SourcesTestRunner.showScriptSource("script1.js", step2);
 
             function step2()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
-                InspectorTest.addResult("Throwing exception...");
-                InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
-                InspectorTest.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step3);
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Throwing exception...");
+                TestRunner.evaluateInPage("setTimeout(throwAnException, 0)");
+                TestRunner.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step3);
             }
 
             function step3()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
-                InspectorTest.addResult("Reloading page...");
-                InspectorTest.reloadPage(step4);
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Reloading page...");
+                TestRunner.reloadPage(step4);
             }
 
             function step4()
             {
-                InspectorTest.addResult("Showing script1 source...");
-                InspectorTest.showScriptSource("script1.js", step5);
+                TestRunner.addResult("Showing script1 source...");
+                SourcesTestRunner.showScriptSource("script1.js", step5);
             }
 
             function step5()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
-                InspectorTest.addResult("Throwing exception...");
-                InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
-                InspectorTest.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step6);
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Throwing exception...");
+                TestRunner.evaluateInPage("setTimeout(throwAnException, 0)");
+                TestRunner.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step6);
             }
 
             function step6()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 next();
             }
         },
 
         function testRevealAfterPrettyPrintWhenPaused(next)
         {
-            InspectorTest.addResult("Throwing exception...");
-            InspectorTest.waitUntilPaused(step2);
+            TestRunner.addResult("Throwing exception...");
+            SourcesTestRunner.waitUntilPaused(step2);
             function step2()
             {
-                InspectorTest.addResult("Showing script1 source...");
-                InspectorTest.showScriptSource("script1.js", step3);
+                TestRunner.addResult("Showing script1 source...");
+                SourcesTestRunner.showScriptSource("script1.js", step3);
             }
 
             function step3()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
-                InspectorTest.addResult("Formatting...");
-                InspectorTest.scriptFormatter().then(function(scriptFormatter) {
-                    InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Formatting...");
+                SourcesTestRunner.scriptFormatter().then(function(scriptFormatter) {
+                    TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                     scriptFormatter._toggleFormatScriptSource();
                 });
             }
 
             function uiSourceCodeScriptFormatted()
             {
-                InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
+                TestRunner.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 next();
             }
         }

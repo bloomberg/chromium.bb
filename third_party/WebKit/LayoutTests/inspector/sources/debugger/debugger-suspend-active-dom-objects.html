@@ -11,18 +11,18 @@ function testFunction() {
 
 function test()
 {
-    InspectorTest.startDebuggerTest(startDebuggerTestCallback);
+    SourcesTestRunner.startDebuggerTest(startDebuggerTestCallback);
 
     function startDebuggerTestCallback()
     {
-        InspectorTest.evaluateInPage("setTimeout(testFunction, 0)", function(result) {
-            InspectorTest.addResult("Set timer for test function.");
+        TestRunner.evaluateInPage("setTimeout(testFunction, 0)", function(result) {
+            TestRunner.addResult("Set timer for test function.");
         });
 
-        InspectorTest.waitUntilPaused(function(callFrames) {
-            InspectorTest.evaluateInPage("alert(1)", function(result) {
-                InspectorTest.addResult("Shown alert while staying on a breakpoint.");
-                InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.waitUntilPaused(function(callFrames) {
+            TestRunner.evaluateInPage("alert(1)", function(result) {
+                TestRunner.addResult("Shown alert while staying on a breakpoint.");
+                SourcesTestRunner.completeDebuggerTest();
             });
         });
     }

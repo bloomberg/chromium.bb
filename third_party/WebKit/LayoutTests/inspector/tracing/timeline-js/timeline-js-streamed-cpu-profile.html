@@ -158,13 +158,13 @@ function test()
         }
     }];
 
-    var model = InspectorTest.createPerformanceModelWithEvents(rawTraceEvents);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
     var events = model.timelineModel().mainThreadEvents();
     events.filter(e => e.name === "JSFrame").forEach(e => {
-        InspectorTest.addResult(`${e.name}: ${e.startTime.toFixed(3)} / ${(e.duration || 0).toFixed(3)} ${e.args.data.functionName}`);
+        TestRunner.addResult(`${e.name}: ${e.startTime.toFixed(3)} / ${(e.duration || 0).toFixed(3)} ${e.args.data.functionName}`);
     });
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

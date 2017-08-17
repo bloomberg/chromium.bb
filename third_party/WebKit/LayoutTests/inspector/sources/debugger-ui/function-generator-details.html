@@ -44,20 +44,20 @@ function test()
 {
     function performStandardTestCase(pageExpression, next)
     {
-        InspectorTest.evaluateInPage(pageExpression, didEvaluate);
+        TestRunner.evaluateInPage(pageExpression, didEvaluate);
 
         function didEvaluate(remote)
         {
-            InspectorTest.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
+            TestRunner.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
             remote.getOwnPropertiesPromise().then(dumpInternalProperties);
         }
 
         function dumpInternalProperties(properties)
         {
-            InspectorTest.assertTrue(properties && properties.internalProperties, "FAIL: no properties");
+            TestRunner.assertTrue(properties && properties.internalProperties, "FAIL: no properties");
             for (var prop of properties.internalProperties) {
                 if (prop.name !== "[[GeneratorLocation]]")
-                    InspectorTest.addResult(prop.name + " = " + prop.value.description);
+                    TestRunner.addResult(prop.name + " = " + prop.value.description);
                 else
                     dumpLocation(prop.value.value);
             }
@@ -66,9 +66,9 @@ function test()
 
         function dumpLocation(location)
         {
-            InspectorTest.addResult("lineNumber = " + location.lineNumber);
-            InspectorTest.addResult("columnNumber = " + location.columnNumber);
-            InspectorTest.addResult("script is valid: " + (location.scriptId ? "yes" : "no"));
+            TestRunner.addResult("lineNumber = " + location.lineNumber);
+            TestRunner.addResult("columnNumber = " + location.columnNumber);
+            TestRunner.addResult("script is valid: " + (location.scriptId ? "yes" : "no"));
         }
     }
 
@@ -89,7 +89,7 @@ function test()
             "}; " + functionName);
     }
 
-    InspectorTest.runDebuggerTestSuite(expressions.map(createTestSuiteFunction));
+    SourcesTestRunner.runDebuggerTestSuite(expressions.map(createTestSuiteFunction));
 };
 
 </script>

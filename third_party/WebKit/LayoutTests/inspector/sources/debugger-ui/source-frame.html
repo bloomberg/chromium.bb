@@ -19,26 +19,26 @@ function methodForBreakpoint()
 function test()
 {
     UI.viewManager.showView("resources");
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testConsoleMessage(next)
         {
-            InspectorTest.showScriptSource("source-frame.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("source-frame.html", didShowScriptSource);
 
             var shownSourceFrame;
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addResult("Script source was shown.");
+                TestRunner.addResult("Script source was shown.");
                 shownSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
-                InspectorTest.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
-                InspectorTest.evaluateInPage("addErrorToConsole()");
+                TestRunner.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
+                TestRunner.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
+                TestRunner.evaluateInPage("addErrorToConsole()");
             }
 
             function didAddMessage(message)
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Message added to source frame: " + message.text());
+                TestRunner.addResult("Message added to source frame: " + message.text());
                 setImmediate(function() { Console.ConsoleView.clearConsole(); });
             }
 
@@ -46,7 +46,7 @@ function test()
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Message removed from source frame: " + message.text());
+                TestRunner.addResult("Message removed from source frame: " + message.text());
                 next();
             }
         },
@@ -54,9 +54,9 @@ function test()
         function testShowResource(next)
         {
             UI.viewManager.showView("network");
-            InspectorTest.addSniffer(SourceFrame.SourceFrame.prototype, "show", didShowSourceFrame);
+            TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, "show", didShowSourceFrame);
 
-            InspectorTest.resourceTreeModel.forAllResources(visit);
+            TestRunner.resourceTreeModel.forAllResources(visit);
             function visit(resource)
             {
                 if (resource.url.indexOf("debugger-test.js") !== -1) {

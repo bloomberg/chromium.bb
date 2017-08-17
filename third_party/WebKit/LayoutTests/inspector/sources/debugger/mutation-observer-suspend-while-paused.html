@@ -22,40 +22,40 @@ var test = function()
         "};\n" +
         "setTimeout(mutateAndPause, 0);";
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.evaluateInPage(setup, function() {
-            InspectorTest.addResult("DIV and observer setup.");
-            InspectorTest.evaluateInConsoleAndDump("deliveryCount", step2);
+        TestRunner.evaluateInPage(setup, function() {
+            TestRunner.addResult("DIV and observer setup.");
+            ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", step2);
         });
     }
 
     function step2()
     {
-        InspectorTest.evaluateInPage("window.testDiv.setAttribute('foo', 'bar')", function() {
-            InspectorTest.addResult("setAttribute should have triggered delivery.");
-            InspectorTest.evaluateInConsoleAndDump("deliveryCount", step3); 
+        TestRunner.evaluateInPage("window.testDiv.setAttribute('foo', 'bar')", function() {
+            TestRunner.addResult("setAttribute should have triggered delivery.");
+            ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", step3); 
         });
     }
 
     function step3()
     {
-        InspectorTest.evaluateInPage(mutateAndPause, InspectorTest.addResult.bind(InspectorTest, "mutateAndPause invoked."));
-        InspectorTest.waitUntilPaused(step4);
+        TestRunner.evaluateInPage(mutateAndPause, TestRunner.addResult.bind(InspectorTest, "mutateAndPause invoked."));
+        SourcesTestRunner.waitUntilPaused(step4);
     }
 
     function step4() {
-        InspectorTest.addResult("Delivery should not have taken place.");
-        InspectorTest.evaluateInConsoleAndDump("deliveryCount", function() {
-            InspectorTest.resumeExecution(step5);
+        TestRunner.addResult("Delivery should not have taken place.");
+        ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", function() {
+            SourcesTestRunner.resumeExecution(step5);
         });
     }
 
     function step5() {
-        InspectorTest.addResult("Second delivery should now have happened.");
-        InspectorTest.evaluateInConsoleAndDump("deliveryCount", InspectorTest.completeDebuggerTest);
+        TestRunner.addResult("Second delivery should now have happened.");
+        ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", SourcesTestRunner.completeDebuggerTest);
     }
 }
 

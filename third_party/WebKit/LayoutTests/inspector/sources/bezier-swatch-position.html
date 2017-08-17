@@ -9,14 +9,14 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("bezier.css", onSourceFrame);
+    SourcesTestRunner.showScriptSource("bezier.css", onSourceFrame);
 
     function onSourceFrame(sourceFrame)
     {
-        InspectorTest.addResult("Initial swatch positions:");
-        InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        TestRunner.addResult("Initial swatch positions:");
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
 
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testEditBezier(next)
             {
                 var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector("span[is=bezier-swatch]");
@@ -24,7 +24,7 @@ function test()
                 sourceFrame._bezierEditor.setBezier(UI.Geometry.CubicBezier.parse("linear"));
                 sourceFrame._bezierEditor._onchange();
                 sourceFrame._swatchPopoverHelper.hide(true)
-                InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+                SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -32,7 +32,7 @@ function test()
             {
                 var bodyLineEnd = new TextUtils.TextRange(1, 37, 1, 37);
                 sourceFrame.textEditor.editRange(bodyLineEnd, " transition: height 1s cubic-bezier(0, 0.5, 1, 1);");
-                InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+                SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
                 next();
             },
 
@@ -40,7 +40,7 @@ function test()
             {
                 var startParenthesis = new TextUtils.TextRange(1, 67, 1, 68);
                 sourceFrame.textEditor.editRange(startParenthesis, "[");
-                InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+                SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
                 next();
             }
         ]);

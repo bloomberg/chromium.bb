@@ -7,22 +7,22 @@
 <script>
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
             var panel = UI.panels.sources;
             var sourceFrameCount = 0;
 
-            InspectorTest.showScriptSource("script1.js", didShowScriptSources);
+            SourcesTestRunner.showScriptSource("script1.js", didShowScriptSources);
 
             function didShowScriptSources()
             {
-                InspectorTest.reloadPage(didReload);
+                TestRunner.reloadPage(didReload);
             }
 
             function didReload()
             {
-                InspectorTest.showScriptSource("script2.js", didShowScriptSourceAgain);
+                SourcesTestRunner.showScriptSource("script2.js", didShowScriptSourceAgain);
             }
 
             function didShowScriptSourceAgain()
@@ -31,17 +31,17 @@ function test()
                 // There should be 3 breakpoint-added event listeners:
                 //  - BreakpointsSidebarPane
                 //  - 2 shown tabs
-                InspectorTest.addResult("Number of breakpoint-added event listeners is " + listeners.length);
+                TestRunner.addResult("Number of breakpoint-added event listeners is " + listeners.length);
 
                 function dumpListener(listener)
                 {
                     if (!(listener.thisObject instanceof SourceFrame.SourceFrame))
                         return;
                     var sourceFrame = listener.thisObject;
-                    InspectorTest.addResult("    " + sourceFrame._uiSourceCode.name());
+                    TestRunner.addResult("    " + sourceFrame._uiSourceCode.name());
                 }
 
-                InspectorTest.addResult("Dumping SourceFrames listening for breakpoint-added event:");
+                TestRunner.addResult("Dumping SourceFrames listening for breakpoint-added event:");
                 listeners.map(dumpListener);
 
                 next();

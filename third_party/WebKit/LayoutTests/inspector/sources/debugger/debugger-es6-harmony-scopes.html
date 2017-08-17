@@ -52,24 +52,24 @@ function testFunction()
 <script>
 function test()
 {
-    InspectorTest.startDebuggerTest(onTestStarted);
+    SourcesTestRunner.startDebuggerTest(onTestStarted);
 
     function onTestStarted()
     {
-        InspectorTest.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(() => {});
+        TestRunner.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(() => {});
     }
 
     function onSidebarRendered()
     {
-        InspectorTest.expandScopeVariablesSidebarPane(onScopeVariablesExpanded);
+        SourcesTestRunner.expandScopeVariablesSidebarPane(onScopeVariablesExpanded);
     }
 
     function onScopeVariablesExpanded()
     {
-        InspectorTest.addResult("");
-        InspectorTest.dumpScopeVariablesSidebarPane();
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("");
+        SourcesTestRunner.dumpScopeVariablesSidebarPane();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

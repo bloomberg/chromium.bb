@@ -10,15 +10,15 @@ function test()
     var timeline = UI.panels.timeline;
     var overviewPane = timeline._overviewPane;
 
-    InspectorTest.loadTimeline(InspectorTest.timelineData()).then(onTimelineLoaded);
+    PerformanceTestRunner.loadTimeline(PerformanceTestRunner.timelineData()).then(onTimelineLoaded);
 
     function onTimelineLoaded()
     {
         overviewPane._update();
-        InspectorTest.addResult("OverviewPane:");
+        TestRunner.addResult("OverviewPane:");
         overviewPane._overviewCalculator.setDisplayWidth(450);
         dumpDividers(overviewPane._overviewCalculator);
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
 
         dumpFlameChartRecordsCountForRange(0, 1);
         dumpFlameChartRecordsCountForRange(0.25, 0.75);
@@ -26,10 +26,10 @@ function test()
 
         overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
-        InspectorTest.addResult("--------------------------------------------------------");
+        TestRunner.addResult("--------------------------------------------------------");
         var selectionData = timeline._currentModelSelectionData();
-        InspectorTest.addResult("time range = " + selectionData.windowStartTime + " - " + selectionData.windowEndTime);
-        InspectorTest.completeTest();
+        TestRunner.addResult("time range = " + selectionData.windowStartTime + " - " + selectionData.windowEndTime);
+        TestRunner.completeTest();
     }
 
     function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
@@ -38,16 +38,16 @@ function test()
         mainView._muteAnimation = true;
         overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         mainView.update();
-        InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
+        TestRunner.addResult("range = " + windowLeft + " - " + windowRight);
         var selectionData = timeline._currentModelSelectionData();
-        InspectorTest.addResult("time range = " + selectionData.windowStartTime + " - " + selectionData.windowEndTime);
-        InspectorTest.addResult("");
+        TestRunner.addResult("time range = " + selectionData.windowStartTime + " - " + selectionData.windowEndTime);
+        TestRunner.addResult("");
     }
 
     function dumpDividers(calculator)
     {
         var times = PerfUI.TimelineGrid.calculateDividerOffsets(calculator).offsets.map(offset => offset.time - calculator.zeroTime());
-        InspectorTest.addResult("divider offsets: [" + times.join(", ") + "]. We are expecting round numbers.");
+        TestRunner.addResult("divider offsets: [" + times.join(", ") + "]. We are expecting round numbers.");
     }
 }
 

@@ -11,11 +11,11 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step2);
+        TestRunner.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step2);
         var frameworkRegexString = "^framework\\.js$";
         Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
     }
@@ -26,13 +26,13 @@ function test()
             "Print", // "debugger" in testFunction()
             "StepInto", "StepInto", "Print"
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
-        InspectorTest.runTestFunction();
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step4);
+        SourcesTestRunner.runTestFunction();
     }
 
     function step4()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

@@ -7,30 +7,30 @@
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.showScriptSource("source1.js", step2);
+        SourcesTestRunner.showScriptSource("source1.js", step2);
     }
 
     function step2(sourceFrame)
     {
-        InspectorTest.waitBreakpointSidebarPane()
+        SourcesTestRunner.waitBreakpointSidebarPane()
             .then(waitUntilReady)
             .then(onBreakpointsReady);
-        InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 14, "", true);
 
         function onBreakpointsReady()
         {
-            InspectorTest.dumpBreakpointSidebarPane("before reload:");
-            Promise.all([InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady), new Promise(resolve => InspectorTest.reloadPage(resolve))])
+            SourcesTestRunner.dumpBreakpointSidebarPane("before reload:");
+            Promise.all([SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady), new Promise(resolve => TestRunner.reloadPage(resolve))])
                 .then(finishIfReady);
         }
 
         function finishIfReady() {
-            InspectorTest.dumpBreakpointSidebarPane("after reload:");
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.dumpBreakpointSidebarPane("after reload:");
+            SourcesTestRunner.completeDebuggerTest();
         }
     }
 
@@ -41,14 +41,14 @@ var test = function()
         for (var entry of entries) {
             var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
             if (Bindings.CompilerScriptMapping.StubProjectID === uiLocation.uiSourceCode.project().id())
-                return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+                return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
             if (!uiLocation.uiSourceCode.url().endsWith("source1.js"))
-                return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+                return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
             expectedBreakpointLocations =
                 expectedBreakpointLocations.filter((location) => (location[0] != uiLocation.lineNumber && location[1] != uiLocation.columnNumber));
         }
         if (expectedBreakpointLocations.length)
-            return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+            return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
         return Promise.resolve();
     }
 }

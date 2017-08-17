@@ -27,14 +27,14 @@ function performActions()
 
 function test()
 {
-    InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
+    PerformanceTestRunner.evaluateWithTimeline("performActions()", onTimelineRecorded);
     function onTimelineRecorded()
     {
-        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
         var initiator = TimelineModel.TimelineData.forEvent(event).initiator();
-        InspectorTest.addResult("layout invalidated: " + TimelineModel.TimelineData.forEvent(initiator).stackTrace[0].functionName);
-        InspectorTest.addResult("layout forced: " + TimelineModel.TimelineData.forEvent(event).stackTrace[0].functionName);
-        InspectorTest.completeTest();
+        TestRunner.addResult("layout invalidated: " + TimelineModel.TimelineData.forEvent(initiator).stackTrace[0].functionName);
+        TestRunner.addResult("layout forced: " + TimelineModel.TimelineData.forEvent(event).stackTrace[0].functionName);
+        TestRunner.completeTest();
     }
 }
 

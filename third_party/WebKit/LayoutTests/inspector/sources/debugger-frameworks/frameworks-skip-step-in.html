@@ -59,12 +59,12 @@ function test()
 
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     var step = 0;
@@ -73,18 +73,18 @@ function test()
     {
         if (stepInCount < 2) {
             ++stepInCount;
-            InspectorTest.stepInto();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            SourcesTestRunner.stepInto();
+            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
             return;
         }
 
         stepInCount = 0;
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.addResult("");
+        SourcesTestRunner.captureStackTrace(callFrames);
+        TestRunner.addResult("");
         if (++step < totalDebuggerStatements)
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
         else
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.completeDebuggerTest();
     }
 }
 

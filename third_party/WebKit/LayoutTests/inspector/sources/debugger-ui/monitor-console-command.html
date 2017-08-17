@@ -27,8 +27,8 @@ function simpleTestFunction3()
 var test = function()
 {
     var currentSourceFrame;
-    InspectorTest.setQuiet(true);
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSimpleMonitor(next)
         {
             monitorAndRun(next, "simpleTestFunction", "simpleTestFunction();");
@@ -46,36 +46,36 @@ var test = function()
 
         function testSimpleUnmonitor(next)
         {
-            InspectorTest.evaluateInConsole("monitor(simpleTestFunction2)");
-            InspectorTest.evaluateInConsole("unmonitor(simpleTestFunction2)");
+            ConsoleTestRunner.evaluateInConsole("monitor(simpleTestFunction2)");
+            ConsoleTestRunner.evaluateInConsole("unmonitor(simpleTestFunction2)");
             monitorAndRun(next, "simpleTestFunction3", "simpleTestFunction2();");
         },
 
         function testUnmonitorFuntionNotMonitored(next)
         {
-            InspectorTest.evaluateInConsole("monitor(simpleTestFunction)", next);
+            ConsoleTestRunner.evaluateInConsole("monitor(simpleTestFunction)", next);
         }
     ]);
 
     function monitorAndRun(next, functionName, runCmd)
     {
-        InspectorTest.evaluateInConsole("monitor(" + functionName + ")");
-        InspectorTest.addResult("Start monitoring function.");
+        ConsoleTestRunner.evaluateInConsole("monitor(" + functionName + ")");
+        TestRunner.addResult("Start monitoring function.");
 
-        InspectorTest.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
-        InspectorTest.addResult("Set timer for test function.");
-        InspectorTest.waitUntilMessageReceived(didReceive);
+        ConsoleTestRunner.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
+        TestRunner.addResult("Set timer for test function.");
+        ConsoleTestRunner.waitUntilMessageReceived(didReceive);
 
         function didReceive(message)
         {
             if (message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
-                InspectorTest.waitUntilMessageReceived(didReceive);
+                ConsoleTestRunner.waitUntilMessageReceived(didReceive);
                 return;
             }
 
-            InspectorTest.addResult("Console message received: " + message.messageText);
-            InspectorTest.evaluateInConsole("unmonitor(" + functionName + ")");
-            InspectorTest.addResult("Stop monitoring.");
+            TestRunner.addResult("Console message received: " + message.messageText);
+            ConsoleTestRunner.evaluateInConsole("unmonitor(" + functionName + ")");
+            TestRunner.addResult("Stop monitoring.");
             next();
         }
     }

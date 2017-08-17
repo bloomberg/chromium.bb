@@ -28,19 +28,19 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        var events = InspectorTest.timelineModel().mainThreadEvents();
+        var events = PerformanceTestRunner.timelineModel().mainThreadEvents();
         for (var i = 0; i < events.length; ++i) {
             if (events[i].name !== TimelineModel.TimelineModel.RecordType.TimerFire)
                 continue;
-            var functionCallChild = InspectorTest.findChildEvent(events, i, TimelineModel.TimelineModel.RecordType.FunctionCall);
+            var functionCallChild = PerformanceTestRunner.findChildEvent(events, i, TimelineModel.TimelineModel.RecordType.FunctionCall);
             var fnCallSite = functionCallChild.args["data"];
-            InspectorTest.addResult(`${events[i].name} ${fnCallSite.url}:${fnCallSite.lineNumber + 1}`);
+            TestRunner.addResult(`${events[i].name} ${fnCallSite.url}:${fnCallSite.lineNumber + 1}`);
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

@@ -23,18 +23,18 @@ function test()
 {
     UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
 
-    InspectorTest.invokeAsyncWithTimeline("doActions", step1);
+    PerformanceTestRunner.invokeAsyncWithTimeline("doActions", step1);
     function step1()
     {
-        var frames = InspectorTest.timelineFrameModel().frames();
-        var lastFrame = InspectorTest.timelineFrameModel().frames().peekLast();
-        lastFrame.layerTree.layerTreePromise().then(InspectorTest.safeWrap(layerTreeResolved))
+        var frames = PerformanceTestRunner.timelineFrameModel().frames();
+        var lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
+        lastFrame.layerTree.layerTreePromise().then(TestRunner.safeWrap(layerTreeResolved))
     }
 
     function layerTreeResolved(layerTreeModel)
     {
-        InspectorTest.dumpLayerTree(undefined, layerTreeModel.contentRoot());
-        InspectorTest.completeTest();
+        LayersTestRunner.dumpLayerTree(undefined, layerTreeModel.contentRoot());
+        TestRunner.completeTest();
     }
 }
 </script>

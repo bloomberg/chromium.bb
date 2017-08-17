@@ -11,21 +11,21 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.reloadPage(step3);
+        TestRunner.reloadPage(step3);
     }
 
     function step3()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

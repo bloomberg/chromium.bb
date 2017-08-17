@@ -34,12 +34,12 @@ var test = function()
         watchExpressionsPane._createWatchExpression("array");
         watchExpressionsPane._createWatchExpression("func");
         watchExpressionsPane._saveExpressions();
-        InspectorTest.deprecatedRunAfterPendingDispatches(step2);
+        TestRunner.deprecatedRunAfterPendingDispatches(step2);
     });
 
     function step2()
     {
-        InspectorTest.addResult("Watch expressions added.");
+        TestRunner.addResult("Watch expressions added.");
         var expandArray = expandWatchExpression.bind(null, ["array", "[200 \u2026 299]", "299"], step3);
         var expandFunc = expandWatchExpression.bind(null, ["func", "[[Scopes]]", "0", "a"], expandArray);
         expandWatchExpression(["globalObject", "foo", "bar"], expandFunc);
@@ -47,16 +47,16 @@ var test = function()
 
     function step3()
     {
-        InspectorTest.addResult("Watch expressions expanded.");
+        TestRunner.addResult("Watch expressions expanded.");
         dumpWatchExpressions();
-        InspectorTest.reloadPage(step4);
+        TestRunner.reloadPage(step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("Watch expressions after page reload:");
+        TestRunner.addResult("Watch expressions after page reload:");
         dumpWatchExpressions();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function dumpWatchExpressions()
@@ -65,7 +65,7 @@ var test = function()
 
         for (var i = 0; i < pane._watchExpressions.length; i++) {
             var watch = pane._watchExpressions[i];
-            InspectorTest.addResult(watch.expression() + ": " + watch._objectPropertiesSection._object._description);
+            TestRunner.addResult(watch.expression() + ": " + watch._objectPropertiesSection._object._description);
             dumpObjectPropertiesTreeElement(watch._objectPropertiesSection.objectTreeElement(), "  ");
         }
     }
@@ -121,7 +121,7 @@ var test = function()
 
     function addResult(string)
     {
-        InspectorTest.addResult(string.replace("\u2026", ".."));
+        TestRunner.addResult(string.replace("\u2026", ".."));
     }
 }
 

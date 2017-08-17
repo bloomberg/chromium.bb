@@ -14,19 +14,19 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTestPromise(/* quiet */ true)
-        .then(() => InspectorTest.runTestFunctionAndWaitUntilPausedPromise())
+    SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
+        .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
         .then(() => stepIntoPromise())
         .then(() => stepIntoPromise())
-        .then((callFrames) => InspectorTest.captureStackTrace(callFrames))
-        .then(() => InspectorTest.completeDebuggerTest());
+        .then((callFrames) => SourcesTestRunner.captureStackTrace(callFrames))
+        .then(() => SourcesTestRunner.completeDebuggerTest());
 
     function stepIntoPromise()
     {
         var cb;
         var p = new Promise(fullfill => cb = fullfill);
-        InspectorTest.stepInto();
-        InspectorTest.waitUntilResumed(() => InspectorTest.waitUntilPaused(cb));
+        SourcesTestRunner.stepInto();
+        SourcesTestRunner.waitUntilResumed(() => SourcesTestRunner.waitUntilPaused(cb));
         return p;
     }
 }

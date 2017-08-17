@@ -12,43 +12,43 @@ function loadIframe()
 
 function test()
 {
-    var url = InspectorTest.mainTarget.inspectedURL().replace("resource-script-mapping.html", "resources/multiple-scripts.html");
+    var url = TestRunner.mainTarget.inspectedURL().replace("resource-script-mapping.html", "resources/multiple-scripts.html");
     var scripts = [];
     var count = 3;
 
-    InspectorTest.addResult("Waiting for scripts");
-    InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptParsed);
-    InspectorTest.evaluateInPage("loadIframe()");
+    TestRunner.addResult("Waiting for scripts");
+    TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptParsed);
+    TestRunner.evaluateInPage("loadIframe()");
 
     function onScriptParsed(event)
     {
         var script = event.data;
         if (script.sourceURL !== url)
             return;
-        InspectorTest.addResult("Script arrived");
+        TestRunner.addResult("Script arrived");
         scripts.push(script);
         if (!--count) {
-            InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptParsed);
-            InspectorTest.addResult("Waiting for UISourceCode");
-            InspectorTest.waitForUISourceCode(url).then(onUISourceCode);
+            TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptParsed);
+            TestRunner.addResult("Waiting for UISourceCode");
+            TestRunner.waitForUISourceCode(url).then(onUISourceCode);
         }
     }
 
     function onUISourceCode(uiSourceCode)
     {
-        InspectorTest.addResult("UISourceCode arrived");
+        TestRunner.addResult("UISourceCode arrived");
         scripts.sort((s1, s2) => { return s1.lineOffset - s2.lineOffset; });
         for (var script of scripts) {
-            InspectorTest.addResult(`Checking script at (${script.lineOffset}, ${script.columnOffset})`);
+            TestRunner.addResult(`Checking script at (${script.lineOffset}, ${script.columnOffset})`);
             var line = script.lineOffset;
             var column = script.columnOffset + 2;
-            var rawLocation = InspectorTest.debuggerModel.createRawLocation(script, line, column);
+            var rawLocation = TestRunner.debuggerModel.createRawLocation(script, line, column);
             var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
-            InspectorTest.checkUILocation(uiSourceCode, line, column, uiLocation);
+            SourcesTestRunner.checkUILocation(uiSourceCode, line, column, uiLocation);
             var reverseLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, line, column);
-            InspectorTest.checkRawLocation(script, line, column, reverseLocation);
+            SourcesTestRunner.checkRawLocation(script, line, column, reverseLocation);
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 };
 </script>

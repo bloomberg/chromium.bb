@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+    var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/javascript");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function forInFormatting(next)
         {
             var mappingQueries = ["myMap", "print"];
@@ -32,7 +32,7 @@ function test()
 
         function complexScriptFormatting(next)
         {
-            InspectorTest.showScriptSource("obfuscated.js", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("obfuscated.js", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {

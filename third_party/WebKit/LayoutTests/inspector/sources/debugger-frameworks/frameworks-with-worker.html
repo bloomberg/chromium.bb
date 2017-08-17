@@ -14,14 +14,14 @@ function test()
     var frameworkRegexString = "foo\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
     function step1()
     {
         var actions = [
             "StepOver", "StepInto", "Print"
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, () => InspectorTest.completeDebuggerTest());
-        InspectorTest.evaluateInPage("installWorker()");
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, () => SourcesTestRunner.completeDebuggerTest());
+        TestRunner.evaluateInPage("installWorker()");
     }
 }
 </script>

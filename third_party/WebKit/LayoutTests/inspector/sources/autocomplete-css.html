@@ -8,15 +8,15 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("empty.css", onSourceFrame);
+    SourcesTestRunner.showScriptSource("empty.css", onSourceFrame);
 
     var textEditor;
     var dumpSuggestions;
     function onSourceFrame(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
-        dumpSuggestions = InspectorTest.dumpSuggestions.bind(InspectorTest, textEditor);
-        InspectorTest.runTestSuite(testSuite);
+        dumpSuggestions = SourcesTestRunner.dumpSuggestions.bind(InspectorTest, textEditor);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
@@ -88,14 +88,14 @@ function test()
                 "   display"
             ].join("\n"));
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(1, 10));
-            InspectorTest.dumpTextWithSelection(textEditor);
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", suggestionsShown);
-            InspectorTest.typeIn(textEditor, ":");
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", suggestionsShown);
+            SourcesTestRunner.typeIn(textEditor, ":");
 
             function suggestionsShown(words)
             {
-                InspectorTest.addResult("Suggestions displayed on ':' symbol typed in:");
-                InspectorTest.addResult("[" + words.map(item => item.text).join(", ") + "]");
+                TestRunner.addResult("Suggestions displayed on ':' symbol typed in:");
+                TestRunner.addResult("[" + words.map(item => item.text).join(", ") + "]");
                 next();
             }
         },

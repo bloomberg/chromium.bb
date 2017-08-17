@@ -8,13 +8,13 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("empty.scss", onSourceFrame);
+    SourcesTestRunner.showScriptSource("empty.scss", onSourceFrame);
 
     var dumpSuggestions;
     function onSourceFrame(sourceFrame)
     {
-        dumpSuggestions = InspectorTest.dumpSuggestions.bind(InspectorTest, sourceFrame.textEditor);
-        InspectorTest.runTestSuite(testSuite);
+        dumpSuggestions = SourcesTestRunner.dumpSuggestions.bind(InspectorTest, sourceFrame.textEditor);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [

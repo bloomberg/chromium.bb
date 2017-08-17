@@ -19,37 +19,37 @@ function test()
 {
     var framesOpened = 0;
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
             var panel = UI.panels.sources;
 
-            InspectorTest.showScriptSource("source-frame-count.html", function() {});
-            InspectorTest.showScriptSource("script1.js", function() {});
-            InspectorTest.showScriptSource("script2.js", function() {});
-            InspectorTest.showScriptSource("script3.js", function() {});
-            InspectorTest.showScriptSource("script4.js", function() {});
-            InspectorTest.showScriptSource("script5.js", reloadThePage);
+            SourcesTestRunner.showScriptSource("source-frame-count.html", function() {});
+            SourcesTestRunner.showScriptSource("script1.js", function() {});
+            SourcesTestRunner.showScriptSource("script2.js", function() {});
+            SourcesTestRunner.showScriptSource("script3.js", function() {});
+            SourcesTestRunner.showScriptSource("script4.js", function() {});
+            SourcesTestRunner.showScriptSource("script5.js", reloadThePage);
 
             function reloadThePage()
             {
-                InspectorTest.addResult("Reloading page...");
-                InspectorTest.reloadPage(didReload);
+                TestRunner.addResult("Reloading page...");
+                TestRunner.reloadPage(didReload);
                 function didCreateSourceFrame()
                 {
                     framesOpened++;
                 }
-                InspectorTest.addSniffer(SourceFrame.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
+                TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
 
             }
 
             function didReload()
             {
                 if (framesOpened > 3)
-                    InspectorTest.addResult("Too many frames opened: " + framesOpened);
+                    TestRunner.addResult("Too many frames opened: " + framesOpened);
                 else
-                    InspectorTest.addResult("Less than 3 frames opened");
-                InspectorTest.addResult("Visible view: " + panel.visibleView._uiSourceCode.name());
+                    TestRunner.addResult("Less than 3 frames opened");
+                TestRunner.addResult("Visible view: " + panel.visibleView._uiSourceCode.name());
                 next();
             }
         }

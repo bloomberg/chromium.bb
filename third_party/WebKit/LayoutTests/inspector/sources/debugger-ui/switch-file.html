@@ -33,22 +33,22 @@ async function test()
         "bar/foo" ];
     files = files.map(file => 'http://example.com/' + file);
 
-    var page = new InspectorTest.PageMock('http://example.com');
-    InspectorTest.connectToPage('mock-page', page);
+    var page = new TestRunner.PageMock('http://example.com');
+    TestRunner.connectToPage('mock-page', page);
 
     var uiSourceCodes = [];
     for (var i = 0; i < files.length; ++i) {
         page.evalScript(files[i], '', false /* isContentScript */);
-        uiSourceCodes.push(await InspectorTest.waitForUISourceCode(files[i]));
+        uiSourceCodes.push(await TestRunner.waitForUISourceCode(files[i]));
     }
 
-    InspectorTest.addResult("Dumping next file for each file:");
+    TestRunner.addResult("Dumping next file for each file:");
     for (var uiSourceCode of uiSourceCodes) {
         var nextUISourceCode = Sources.SourcesView.SwitchFileActionDelegate._nextFile(uiSourceCode);
         var nextURI = nextUISourceCode ? nextUISourceCode.url() : "<none>";
-        InspectorTest.addResult(`Next file for ${uiSourceCode.url()} is ${nextURI}.`);
+        TestRunner.addResult(`Next file for ${uiSourceCode.url()} is ${nextURI}.`);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

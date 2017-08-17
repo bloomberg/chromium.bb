@@ -34,11 +34,11 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
@@ -49,17 +49,17 @@ var test = function()
             "StepOut", "Print", // should be at fooEventHandler2
             "StepOut", "Print",
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
     }
 
     function step3()
     {
-        InspectorTest.resumeExecution(step4);
+        SourcesTestRunner.resumeExecution(step4);
     }
 
     function step4()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step5);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step5);
     }
 
     function step5()
@@ -68,12 +68,12 @@ var test = function()
             "Print", // debugger;
             "StepOut", "Print", // should be at inner()
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step6);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step6);
     }
 
     function step6()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

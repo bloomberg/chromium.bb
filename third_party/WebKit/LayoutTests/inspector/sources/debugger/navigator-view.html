@@ -7,14 +7,14 @@
 <script>
 async function test()
 {
-    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
-    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
+    Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
-    var pageMock = new InspectorTest.PageMock('mock-url.com/frame.html');
+    var pageMock = new TestRunner.PageMock('mock-url.com/frame.html');
     pageMock.disableDOMCapability();
-    var target2 = InspectorTest.connectToPage('mock-target-100', pageMock);
+    var target2 = TestRunner.connectToPage('mock-target-100', pageMock);
     var networkProject2 = Bindings.NetworkProject.forTarget(target2);
-    var subframe = InspectorTest.mainFrame().childFrames[0];
+    var subframe = TestRunner.mainFrame().childFrames[0];
 
     var sourcesNavigatorView = new Sources.SourcesNavigatorView();
     sourcesNavigatorView.show(UI.inspectorView.element);
@@ -25,11 +25,11 @@ async function test()
     async function addUISourceCode(url, isContentScript, frame)
     {
         if (isContentScript) {
-            var uiSourceCode = await InspectorTest.addScriptUISourceCode(url, '', true, 42);
+            var uiSourceCode = await SourcesTestRunner.addScriptUISourceCode(url, '', true, 42);
             uiSourceCodes.push(uiSourceCode);
             return;
         }
-        InspectorTest.addScriptForFrame(url, '', frame || InspectorTest.mainFrame());
+        TestRunner.addScriptForFrame(url, '', frame || TestRunner.mainFrame());
         var uiSourceCode = await waitForUISourceCodeAdded(url);
         uiSourceCodes.push(uiSourceCode);
     }
@@ -64,31 +64,31 @@ async function test()
 
     var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding first resource:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding first resource:");
     await addUISourceCode(rootURL + "foo/bar/script.js", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding second resource:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding second resource:");
     await addUISourceCode(rootURL + "foo/bar/script.js?a=2", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding resources into another frame:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding resources into another frame:");
     await addUISourceCode(rootURL + "foo/bar/script.js?a=1", false, subframe);
 
     await addUISourceCode(rootURL + "foo/baz/script.js", false, subframe);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding resources into another target:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding resources into another target:");
     await addUISourceCode2(rootURL + "foo/bar/script.js?a=3", false);
     await addUISourceCode2(rootURL + "foo/baz/script.js", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding content scripts and some random resources:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding content scripts and some random resources:");
     await addUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", true);
     await addUISourceCode(rootURL + "foo/bar/contentScript.js?a=2", true);
     await addUISourceCode(rootURL + "foo/bar/contentScript.js?a=1", true);
@@ -100,53 +100,53 @@ async function test()
     await addUISourceCode("http://example.com/path%20with%20spaces/white%20space.html", false);
     await addUISourceCode("?a=b", false);
     await addUISourceCode("very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_url", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
-    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Revealing first resource:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Revealing first resource:");
     revealUISourceCode(uiSourceCodes[0]);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     // Here we keep http://localhost:8080/LayoutTests/inspector/debugger2/ folder collapsed while adding resources into it.
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Adding some resources to change the way debugger folder looks like, first:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Adding some resources to change the way debugger folder looks like, first:");
     var rootURL2 = "http://localhost:8080/LayoutTests/inspector/debugger2/";
     await addUISourceCode(rootURL2 + "foo/bar/script.js", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Second:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Second:");
     await addUISourceCode(rootURL2 + "foo/bar/script.js?a=2", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Others:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Others:");
     await addUISourceCode(rootURL2 + "foo/bar/script.js?a=1", false);
     await addUISourceCode(rootURL2 + "foo/baz/script.js", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
+    TestRunner.addResult("\n\n================================================");
     var rootURL3 = "http://localhost:8080/LayoutTests/inspector/debugger3/";
     await addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/constructor/foo.js", false);
     await addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/foo.js", false);
     await addUISourceCode(rootURL3 + "hasOwnProperty/foo.js", false);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Revealing all resources:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Revealing all resources:");
     for (var i = 0; i < uiSourceCodes.length; ++i)
         revealUISourceCode(uiSourceCodes[i]);
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
-    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
-    InspectorTest.addResult("\n\n================================================");
-    InspectorTest.addResult("Removing all resources:");
+    TestRunner.addResult("\n\n================================================");
+    TestRunner.addResult("Removing all resources:");
     Bindings.NetworkProject.forTarget(target2)._resetForTest();
-    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
-    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 

@@ -16,13 +16,13 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
-    InspectorTest.invokeAsyncWithTimeline("scrollAndDisplay", onRecordingDone);
+    PerformanceTestRunner.invokeAsyncWithTimeline("scrollAndDisplay", onRecordingDone);
 
     function onRecordingDone()
     {
-        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), InspectorTest.InvalidationFormatters, "", "Scroll invalidations");
-        InspectorTest.completeTest();
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        TestRunner.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), PerformanceTestRunner.InvalidationFormatters, "", "Scroll invalidations");
+        TestRunner.completeTest();
     };
 }
 </script>

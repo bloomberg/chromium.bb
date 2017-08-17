@@ -7,12 +7,12 @@
 
 var test = function()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testOpenDevToolsAfterLoad(next)
         {
             var consoleMessagesCount = 2;
 
-            var messages = InspectorTest.consoleModel.messages();
+            var messages = TestRunner.consoleModel.messages();
             for (var i = 0; i < messages.length; ++i)
                 processMessage(messages[i]);
             checkWhenScriptsLoaded();
@@ -32,28 +32,28 @@ var test = function()
             function checkWhenScriptsLoaded()
             {
                 if (consoleMessagesCount) {
-                    InspectorTest.addConsoleSniffer(consoleMessageAppended);
+                    ConsoleTestRunner.addConsoleSniffer(consoleMessageAppended);
                     return;
                 }
 
-                InspectorTest.addResult("Both dynamic scripts were loaded.");
-                var scripts = Object.values(InspectorTest.debuggerModel.scripts);
+                TestRunner.addResult("Both dynamic scripts were loaded.");
+                var scripts = Object.values(TestRunner.debuggerModel.scripts);
 
                 function filterOutInlineAndStandaloneScripts(script)
                 {
                     return !script.isInlineScript() && script.sourceURL.indexOf("dynamic-script-tag.html") !== -1;
                 }
                 scripts = scripts.filter(filterOutInlineAndStandaloneScripts);
-                InspectorTest.addResult("Number of non-inline scripts with document url as a sourceURL: " + scripts.length + ".");
+                TestRunner.addResult("Number of non-inline scripts with document url as a sourceURL: " + scripts.length + ".");
                 next();
             }
         },
 
         function testOpenDevToolsThenReload(next)
         {
-            InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
-            InspectorTest.addResult("Reloading page.");
-            InspectorTest.reloadPage(onPageReloaded);
+            TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
+            TestRunner.addResult("Reloading page.");
+            TestRunner.reloadPage(onPageReloaded);
 
             var eventsCountBeforeNext = 2;
             function onPageReloaded()
@@ -68,9 +68,9 @@ var test = function()
                 if (script.sourceURL.indexOf("dynamic-script-tag.html") !== -1) {
                     // Both dynamic scripts will be loaded before inline script on reload, so we are just checking
                     // that the first one that has document url as a sourceURL is inline.
-                    InspectorTest.addResult("The first script with document url as a sourceURL to be seen is " + (script.isInlineScript() ? "" : "not ") + "inline script.");
-                    InspectorTest.assertTrue(script.isInlineScript(), "Only inline scripts should have document url as a sourceURL.");
-                    InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
+                    TestRunner.addResult("The first script with document url as a sourceURL to be seen is " + (script.isInlineScript() ? "" : "not ") + "inline script.");
+                    TestRunner.assertTrue(script.isInlineScript(), "Only inline scripts should have document url as a sourceURL.");
+                    TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, scriptParsed);
                     if (!--eventsCountBeforeNext)
                         next();            
                 }

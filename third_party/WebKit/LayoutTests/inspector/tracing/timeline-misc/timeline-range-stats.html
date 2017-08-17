@@ -23,7 +23,7 @@ function test()
         {"cat": "disabled-by-default-devtools.timeline", "name": "Layout", "ph": "X", "ts": 107000,"dur":1000, "tid": mainThread, "pid": pid, args:{beginData:{}, endData:{}}},
     ];
 
-    var timelineModel = InspectorTest.createPerformanceModelWithEvents(testData).timelineModel();
+    var timelineModel = PerformanceTestRunner.createPerformanceModelWithEvents(testData).timelineModel();
     for (var startTime = 100000; startTime <= 109000; startTime += 1000) {
         for (var endTime = startTime + 1000; endTime <= 109000; endTime += 1000) {
             dumpStats(startTime, endTime, Timeline.TimelineUIUtils.statsForTimeRange(timelineModel, startTime / 1000, endTime / 1000));
@@ -38,9 +38,9 @@ function test()
             str += `${k}: ${obj[k]} `;
         }
         str += `total: ${total}`;
-        InspectorTest.addResult(`${t1}-${t2}: ${str}`);
+        TestRunner.addResult(`${t1}-${t2}: ${str}`);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

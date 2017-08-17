@@ -13,18 +13,18 @@ function addScript(url)
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testScriptParsedEvent(next)
         {
-            InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
-            InspectorTest.evaluateInPage("addScript('resources/script-failed-to-parse.js')");
+            TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+            TestRunner.evaluateInPage("addScript('resources/script-failed-to-parse.js')");
 
             function scriptFailedToParse(event)
             {
                 var script = event.data;
                 if (script.sourceURL.indexOf("script-failed-to-parse.js") !== -1) {
-                    InspectorTest.addResult("Event with script-failed-to-parse.js received");
-                    InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+                    TestRunner.addResult("Event with script-failed-to-parse.js received");
+                    TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
                     next();
                 }
             }

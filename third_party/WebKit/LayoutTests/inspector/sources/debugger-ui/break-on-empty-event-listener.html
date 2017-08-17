@@ -21,20 +21,20 @@ function addEmptyEventListenerAndClick()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
         var actions = [ "Print" ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step2);
-        InspectorTest.setEventListenerBreakpoint("listener:click", true);
-        InspectorTest.evaluateInPageWithTimeout("addEmptyEventListenerAndClick()");
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step2);
+        SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
+        TestRunner.evaluateInPageWithTimeout("addEmptyEventListenerAndClick()");
     }
 
     function step2()
     {
-        InspectorTest.setEventListenerBreakpoint("listener:click", false);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

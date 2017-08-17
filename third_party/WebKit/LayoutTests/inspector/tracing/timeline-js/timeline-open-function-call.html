@@ -61,10 +61,10 @@ function test()
         "args": {}
     }];
 
-    var model = InspectorTest.createPerformanceModelWithEvents(rawTraceEvents);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
     var event = model.timelineModel().mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
-    InspectorTest.addResult(`${event.startTime} ${event.endTime}`);
-    InspectorTest.completeTest();
+    TestRunner.addResult(`${event.startTime} ${event.endTime}`);
+    TestRunner.completeTest();
 }
 
 </script>

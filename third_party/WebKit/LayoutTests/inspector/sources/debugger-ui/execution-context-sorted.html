@@ -5,10 +5,10 @@
 
 function test()
 {
-    var contexts = InspectorTest.runtimeModel.executionContexts();
+    var contexts = TestRunner.runtimeModel.executionContexts();
     for (var c of contexts)
-        InspectorTest.addResult(InspectorTest.resourceTreeModel.frameForId(c.frameId).displayName());
-    InspectorTest.completeTest();
+        TestRunner.addResult(TestRunner.resourceTreeModel.frameForId(c.frameId).displayName());
+    TestRunner.completeTest();
 }
 
 </script>

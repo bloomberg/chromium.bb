@@ -36,7 +36,7 @@ function test()
     ];
 
     var timeline = UI.panels.timeline;
-    var model = InspectorTest.createPerformanceModelWithEvents(testData);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
     timeline._setModel(model);
     var flameChartView = timeline._flameChart;
     var searchConfig = new UI.SearchableView.SearchConfig('Paint', false, false);
@@ -44,14 +44,14 @@ function test()
     for (var i = 0; i < 7; ++i) {
         var selection = timeline._currentModelSelectionData().selection;
         if (!selection || selection.type() !== Timeline.TimelineSelection.Type.TraceEvent) {
-            InspectorTest.addResult(`Invalid selection type: ${selection && selection.type()}`);
+            TestRunner.addResult(`Invalid selection type: ${selection && selection.type()}`);
             continue;
         }
         var event = selection.object();
-        InspectorTest.addResult(`${event.startTime}: ${event.phase} ${event.name} ${event.thread.name()}`);
+        TestRunner.addResult(`${event.startTime}: ${event.phase} ${event.name} ${event.thread.name()}`);
         flameChartView.jumpToNextSearchResult();
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

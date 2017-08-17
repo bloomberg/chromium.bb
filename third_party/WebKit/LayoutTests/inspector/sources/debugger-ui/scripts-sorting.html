@@ -17,33 +17,33 @@ async function test()
     sourcesNavigatorView = createNavigatorView(Sources.SourcesNavigatorView);
     contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
 
-    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
-    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
+    Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
-    var pageMock = new InspectorTest.PageMock('http://example.com');
+    var pageMock = new TestRunner.PageMock('http://example.com');
     pageMock.disableDOMCapability();
-    InspectorTest.connectToPage('mock-target-1', pageMock);
+    TestRunner.connectToPage('mock-target-1', pageMock);
 
     var uiSourceCodes = [];
     async function addUISourceCode(url, isContentScript)
     {
         pageMock.evalScript(url, '', isContentScript);
-        var uiSourceCode = await InspectorTest.waitForUISourceCode(url);
+        var uiSourceCode = await TestRunner.waitForUISourceCode(url);
         uiSourceCodes.push(uiSourceCode);
     }
 
     function dumpScriptsList()
     {
-        InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
-        InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
+        SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+        SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             sourcesNavigatorView.revealUISourceCode(uiSourceCodes[i]);
             contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[i]);
         }
 
-        InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
-        InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
+        SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+        SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
     }
 
     var scripts = [
@@ -75,7 +75,7 @@ async function test()
         await addUISourceCode(extensions[i], true);
     await addUISourceCode("*Another*Non*URL*path", true);
     dumpScriptsList();
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 

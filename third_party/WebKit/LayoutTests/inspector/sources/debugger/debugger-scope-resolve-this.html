@@ -8,24 +8,24 @@ function test()
 {
     Runtime.experiments.enableForTest("resolveVariableNames");
 
-    InspectorTest.waitForScriptSource("resolve-this.ts", onSourceMapLoaded);
+    SourcesTestRunner.waitForScriptSource("resolve-this.ts", onSourceMapLoaded);
 
     function onSourceMapLoaded()
     {
-        InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
-        InspectorTest.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
+        SourcesTestRunner.startDebuggerTest(() => SourcesTestRunner.runTestFunctionAndWaitUntilPaused());
+        TestRunner.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
     }
 
     function onSidebarRendered()
     {
-        InspectorTest.expandScopeVariablesSidebarPane(onSidebarsExpanded);
+        SourcesTestRunner.expandScopeVariablesSidebarPane(onSidebarsExpanded);
     }
 
     function onSidebarsExpanded()
     {
-        InspectorTest.addResult("");
-        InspectorTest.dumpScopeVariablesSidebarPane();
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("");
+        SourcesTestRunner.dumpScopeVariablesSidebarPane();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

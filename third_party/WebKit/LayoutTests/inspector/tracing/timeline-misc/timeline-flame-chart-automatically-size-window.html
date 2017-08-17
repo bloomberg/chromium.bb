@@ -15,12 +15,12 @@ async function test()
     function requestWindowTimesHook(startTime, endTime)
     {
         if (startTime)
-            InspectorTest.addResult("time delta: " + (endTime - startTime));
+            TestRunner.addResult("time delta: " + (endTime - startTime));
     }
 
     timeline.requestWindowTimes = requestWindowTimesHook;
-    await InspectorTest.loadTimeline(InspectorTest.timelineData());
-    InspectorTest.completeTest();
+    await PerformanceTestRunner.loadTimeline(PerformanceTestRunner.timelineData());
+    TestRunner.completeTest();
 }
 
 </script>

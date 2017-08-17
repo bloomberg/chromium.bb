@@ -10,15 +10,15 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.runDebuggerTestSuite([
         function testRevealAndHighlightExecutionLine(next)
         {
             var executionLineSet = false;
             var executionLineRevealed = false;
-            InspectorTest.addSniffer(SourceFrame.SourceFrame.prototype, "revealPosition", didRevealLine);
-            InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", didSetExecutionLocation);
-            InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+            TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, "revealPosition", didRevealLine);
+            TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", didSetExecutionLocation);
+            SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
 
             function didPause(callFrames)
             {
@@ -45,8 +45,8 @@ var test = function()
             function maybeNext()
             {
                 if (executionLineRevealed && executionLineSet) {
-                    InspectorTest.addResult("Execution line revealed and highlighted.");
-                    InspectorTest.resumeExecution(next);
+                    TestRunner.addResult("Execution line revealed and highlighted.");
+                    SourcesTestRunner.resumeExecution(next);
                 }
             }
         }

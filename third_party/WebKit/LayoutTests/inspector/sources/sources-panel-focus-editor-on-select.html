@@ -5,10 +5,10 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("inspector-test.js", onSourceFrame);
+    SourcesTestRunner.showScriptSource("inspector-test.js", onSourceFrame);
     function onSourceFrame(sourceFrame)
     {
-        InspectorTest.addResult("initial: focused = " + sourceFrame.hasFocus());
+        TestRunner.addResult("initial: focused = " + sourceFrame.hasFocus());
         UI.inspectorView.showPanel("elements")
             .then(() => UI.inspectorView.showPanel("sources"))
             .then(onPanelReselected.bind(null, sourceFrame));
@@ -16,8 +16,8 @@ function test()
 
     function onPanelReselected(sourceFrame)
     {
-        InspectorTest.addResult("after panel reselected: focused = " + sourceFrame.hasFocus());
-        InspectorTest.completeTest();
+        TestRunner.addResult("after panel reselected: focused = " + sourceFrame.hasFocus());
+        TestRunner.completeTest();
     }
 };
 </script>

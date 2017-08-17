@@ -26,19 +26,19 @@ function test()
 {
     var numberOfStepInto = 6;
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.showScriptSource("debugger-step-into-inlined-scripts.html", step2);
+        SourcesTestRunner.showScriptSource("debugger-step-into-inlined-scripts.html", step2);
     }
 
     function step2(sourceFrame)
     {
-        InspectorTest.addResult("Script source was shown.");
-        InspectorTest.setBreakpoint(sourceFrame, 6, "", true);
-        InspectorTest.waitUntilPaused(step3);
-        InspectorTest.reloadPage(completeTest);
+        TestRunner.addResult("Script source was shown.");
+        SourcesTestRunner.setBreakpoint(sourceFrame, 6, "", true);
+        SourcesTestRunner.waitUntilPaused(step3);
+        TestRunner.reloadPage(completeTest);
     }
 
     function step3()
@@ -47,12 +47,12 @@ function test()
         for (var i = 0; i < numberOfStepInto; ++i)
             actions.push("StepInto", "Print");
         actions.push("Resume");
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions);
     }
 
     function completeTest()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

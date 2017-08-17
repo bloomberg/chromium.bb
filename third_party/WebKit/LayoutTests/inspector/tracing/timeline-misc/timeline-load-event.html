@@ -20,33 +20,33 @@ function display()
 function test()
 {
     UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    InspectorTest.startTimeline(function() { InspectorTest.reloadPage(pageReloaded); });
+    PerformanceTestRunner.startTimeline(function() { TestRunner.reloadPage(pageReloaded); });
 
     function pageReloaded()
     {
-        InspectorTest.callFunctionInPageAsync("display").then(displayDone);
+        TestRunner.callFunctionInPageAsync("display").then(displayDone);
     }
 
     function displayDone()
     {
-        InspectorTest.stopTimeline(InspectorTest.safeWrap(finish))
+        PerformanceTestRunner.stopTimeline(TestRunner.safeWrap(finish))
     }
 
     function finish()
     {
-        InspectorTest.addResult("Model records:");
-        InspectorTest.printTimelineRecords("MarkDOMContent");
-        InspectorTest.printTimelineRecords("MarkLoad");
-        InspectorTest.addResult("Timestamp records:");
-        InspectorTest.printTimestampRecords("MarkDOMContent");
-        InspectorTest.printTimestampRecords("MarkLoad");
-        InspectorTest.printTimestampRecords("MarkFirstPaint");
+        TestRunner.addResult("Model records:");
+        PerformanceTestRunner.printTimelineRecords("MarkDOMContent");
+        PerformanceTestRunner.printTimelineRecords("MarkLoad");
+        TestRunner.addResult("Timestamp records:");
+        PerformanceTestRunner.printTimestampRecords("MarkDOMContent");
+        PerformanceTestRunner.printTimestampRecords("MarkLoad");
+        PerformanceTestRunner.printTimestampRecords("MarkFirstPaint");
 
-        var eventDividers = InspectorTest.timelineModel().eventDividers();
+        var eventDividers = PerformanceTestRunner.timelineModel().eventDividers();
         for (var i = 1; i < eventDividers.length; ++i)
-            InspectorTest.assertGreaterOrEqual(eventDividers[i].startTime, eventDividers[i - 1].startTime, "Event divider timestamps should be monotonically non-decreasing");
+            TestRunner.assertGreaterOrEqual(eventDividers[i].startTime, eventDividers[i - 1].startTime, "Event divider timestamps should be monotonically non-decreasing");
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

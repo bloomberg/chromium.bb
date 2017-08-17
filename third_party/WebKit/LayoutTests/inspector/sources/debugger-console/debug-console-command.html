@@ -23,8 +23,8 @@ function simpleTestFunction3() { Math.random(); debugger; }
 var test = function()
 {
     var currentSourceFrame;
-    InspectorTest.setQuiet(true);
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetSimpleBreakpoint(next)
         {
             setBreakpointAndRun(next, "simpleTestFunction", "simpleTestFunction();");
@@ -42,14 +42,14 @@ var test = function()
 
         function testRemoveBreakpoint(next)
         {
-            InspectorTest.evaluateInConsole("debug(simpleTestFunction3); undebug(simpleTestFunction3);");
-            InspectorTest.evaluateInConsole("setTimeout(simpleTestFunction3, 0)");
-            InspectorTest.waitUntilPaused(didPause1);
+            ConsoleTestRunner.evaluateInConsole("debug(simpleTestFunction3); undebug(simpleTestFunction3);");
+            ConsoleTestRunner.evaluateInConsole("setTimeout(simpleTestFunction3, 0)");
+            SourcesTestRunner.waitUntilPaused(didPause1);
 
             function didPause1(callFrames, reason)
             {
-                InspectorTest.addResult("Script execution paused.");
-                InspectorTest.addResult("Reason for pause: " + (reason == SDK.DebuggerModel.BreakReason.DebugCommand ? "debug command" : "debugger statement") + ".");
+                TestRunner.addResult("Script execution paused.");
+                TestRunner.addResult("Reason for pause: " + (reason == SDK.DebuggerModel.BreakReason.DebugCommand ? "debug command" : "debugger statement") + ".");
                 next();
             }
         }
@@ -57,26 +57,26 @@ var test = function()
 
     function setBreakpointAndRun(next, functionName, runCmd)
     {
-        InspectorTest.evaluateInConsole("debug(" + functionName + ")");
+        ConsoleTestRunner.evaluateInConsole("debug(" + functionName + ")");
 
-        InspectorTest.addResult("Breakpoint added.");
-        InspectorTest.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
-        InspectorTest.addResult("Set timer for test function.");
-        InspectorTest.waitUntilPaused(didPause);
+        TestRunner.addResult("Breakpoint added.");
+        ConsoleTestRunner.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
+        TestRunner.addResult("Set timer for test function.");
+        SourcesTestRunner.waitUntilPaused(didPause);
 
         function didPause(callFrames, reason)
         {
-            InspectorTest.addResult("Script execution paused.");
-            InspectorTest.captureStackTrace(callFrames);
-            InspectorTest.evaluateInConsole("undebug(" + functionName + ")");
-            InspectorTest.addResult("Breakpoint removed.");
-            InspectorTest.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
-            InspectorTest.resumeExecution(didResume);
+            TestRunner.addResult("Script execution paused.");
+            SourcesTestRunner.captureStackTrace(callFrames);
+            ConsoleTestRunner.evaluateInConsole("undebug(" + functionName + ")");
+            TestRunner.addResult("Breakpoint removed.");
+            TestRunner.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
+            SourcesTestRunner.resumeExecution(didResume);
         }
 
         function didResume()
         {
-            InspectorTest.addResult("Script execution resumed.");
+            TestRunner.addResult("Script execution resumed.");
             next();
         }
     }

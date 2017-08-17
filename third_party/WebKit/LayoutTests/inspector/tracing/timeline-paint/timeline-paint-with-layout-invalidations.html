@@ -23,25 +23,25 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testLocalFrame(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("display", function() {
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "paint invalidations");
+            PerformanceTestRunner.invokeAsyncWithTimeline("display", function() {
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "paint invalidations");
                 next();
             });
         },
 
         function testSubframe(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
+            PerformanceTestRunner.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
                 // The first paint corresponds to the local frame and should have no invalidations.
-                var firstPaintEvent = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+                var firstPaintEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
                 var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
-                InspectorTest.assertEquals(firstInvalidations, null);
+                TestRunner.assertEquals(firstInvalidations, null);
 
                 // The second paint corresponds to the subframe and should have our layout/style invalidations.
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 1, "second paint invalidations");
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 1, "second paint invalidations");
                 next();
             });
         }

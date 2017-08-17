@@ -36,30 +36,30 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function checkTopFrameFunction(callFrames, expectedName)
     {
         var topFunctionName = callFrames[0].functionName;
         if (expectedName === topFunctionName)
-            InspectorTest.addResult("PASS: Did step into event listener(" + expectedName + ").");
+            TestRunner.addResult("PASS: Did step into event listener(" + expectedName + ").");
         else
-            InspectorTest.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
+            TestRunner.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
     }
 
     function stepOverThenIn(name, callback)
     {
-        InspectorTest.addResult("Stepping to " + name + "...");
-        InspectorTest.stepOver();
-        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, function() {
-            InspectorTest.addResult("Stepping into " + name + "...");
-            InspectorTest.stepInto();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, callback));
+        TestRunner.addResult("Stepping to " + name + "...");
+        SourcesTestRunner.stepOver();
+        SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, function() {
+            TestRunner.addResult("Stepping into " + name + "...");
+            SourcesTestRunner.stepInto();
+            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, callback));
         }));
     }
 
@@ -71,7 +71,7 @@ function test()
     function step3(callFrames)
     {
         checkTopFrameFunction(callFrames, 'createdCallback');
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step4));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step4));
     }
 
     function step4()
@@ -82,7 +82,7 @@ function test()
     function step5(callFrames)
     {
         checkTopFrameFunction(callFrames, 'attributeChangedCallback');
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step6));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step6));
     }
 
     function step6()
@@ -93,7 +93,7 @@ function test()
     function step7(callFrames)
     {
         checkTopFrameFunction(callFrames, 'attachedCallback');
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, step8));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step8));
     }
 
     function step8()
@@ -104,7 +104,7 @@ function test()
     function step9(callFrames)
     {
         checkTopFrameFunction(callFrames, 'detachedCallback');
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

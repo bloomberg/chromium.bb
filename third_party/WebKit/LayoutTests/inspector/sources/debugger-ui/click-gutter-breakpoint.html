@@ -10,8 +10,8 @@ function test()
     {
         var element = Array.from(document.getElementsByClassName("CodeMirror-linenumber")).filter(x => x.textContent === (lineNumber + 1).toString())[0];
         if (!element) {
-            InspectorTest.addResult("CodeMirror Gutter Not Found:" + lineNumber);
-            InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("CodeMirror Gutter Not Found:" + lineNumber);
+            SourcesTestRunner.completeDebuggerTest();
             return Promise.resolve();
         }
         var rect = element.getBoundingClientRect();
@@ -19,7 +19,7 @@ function test()
         eventSender.mouseDown();
         eventSender.mouseUp();
         if (!isRemove)
-            return new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointWasSetForTest", resolve, false));
+            return new Promise(resolve => TestRunner.addSniffer(sourceFrame.__proto__, "_breakpointWasSetForTest", resolve, false));
         return Promise.resolve();
     }
 
@@ -28,7 +28,7 @@ function test()
     var scriptFormatter;
     var formattedSourceFrame;
 
-    InspectorTest.startDebuggerTest(() => InspectorTest.showScriptSource("click-breakpoints.js", didShowScriptSource));
+    SourcesTestRunner.startDebuggerTest(() => SourcesTestRunner.showScriptSource("click-breakpoints.js", didShowScriptSource));
 
 
     function didShowScriptSource(sourceFrame)
@@ -41,10 +41,10 @@ function test()
 
     function runScript()
     {
-        Promise.all([InspectorTest.waitBreakpointSidebarPane(), new Promise(resolve => InspectorTest.waitUntilPaused(resolve))])
-            .then(() => InspectorTest.dumpBreakpointSidebarPane("while paused"))
-            .then(() => InspectorTest.completeDebuggerTest());
-        InspectorTest.evaluateInPageWithTimeout("f2()");
+        Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(), new Promise(resolve => SourcesTestRunner.waitUntilPaused(resolve))])
+            .then(() => SourcesTestRunner.dumpBreakpointSidebarPane("while paused"))
+            .then(() => SourcesTestRunner.completeDebuggerTest());
+        TestRunner.evaluateInPageWithTimeout("f2()");
     }
 }
 </script>

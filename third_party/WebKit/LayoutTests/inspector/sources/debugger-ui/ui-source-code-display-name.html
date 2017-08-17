@@ -6,8 +6,8 @@ async function test()
 {
     async function dumpUISourceCodeDisplayName(url)
     {
-        var uiSourceCode = await InspectorTest.addScriptUISourceCode(url, '');
-        InspectorTest.addResult("UISourceCode display name for url \"" + url + "\" is \"" + Sources.TabbedEditorContainer.prototype._titleForFile(uiSourceCode) + "\".");
+        var uiSourceCode = await SourcesTestRunner.addScriptUISourceCode(url, '');
+        TestRunner.addResult("UISourceCode display name for url \"" + url + "\" is \"" + Sources.TabbedEditorContainer.prototype._titleForFile(uiSourceCode) + "\".");
     }
 
     const baseURL = "http://localhost:8080/folder/";
@@ -16,7 +16,7 @@ async function test()
     await dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?nn=1");
     await dumpUISourceCodeDisplayName(baseURL + "long-filename?parameter=value&nnn=1");
     await dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?parameter=value&nnn=1");
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 };
 </script>
 </head>

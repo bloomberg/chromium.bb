@@ -45,36 +45,36 @@ var test = function()
     var maxAsyncCallStackDepth = 8;
     var numberOfConsoleMessages = 5;
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        TestRunner.DebuggerAgent.setAsyncCallStackDepth(0);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(didPause);
+        TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(didPause);
     }
 
     function didPause()
     {
-        InspectorTest.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
-        InspectorTest.resumeExecution();
+        ConsoleTestRunner.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
+        SourcesTestRunner.resumeExecution();
     }
 
     function expandAndDumpConsoleMessages()
     {
-        InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+        ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
     }
 
     function dumpConsoleMessages()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-        InspectorTest.completeDebuggerTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

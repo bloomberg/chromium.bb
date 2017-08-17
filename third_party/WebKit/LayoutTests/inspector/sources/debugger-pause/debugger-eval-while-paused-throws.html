@@ -25,7 +25,7 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function injectedFunction()
     {
@@ -40,35 +40,35 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.evaluateInPage(String(injectedFunction), step3);
+        TestRunner.evaluateInPage(String(injectedFunction), step3);
     }
 
     function step3()
     {
-        InspectorTest.evaluateInConsole("injectedFunction()", step4);
+        ConsoleTestRunner.evaluateInConsole("injectedFunction()", step4);
     }
 
     function step4()
     {
-        InspectorTest.evaluateInConsole("localObj.func()", step5);
+        ConsoleTestRunner.evaluateInConsole("localObj.func()", step5);
     }
 
     function step5()
     {
-        InspectorTest.evaluateInConsole("globalObj.func()", dumpConsoleMessages);
+        ConsoleTestRunner.evaluateInConsole("globalObj.func()", dumpConsoleMessages);
     }
 
     function dumpConsoleMessages()
     {
-        InspectorTest.deprecatedRunAfterPendingDispatches(() => {
-            InspectorTest.addResult("Dumping console messages:\n");
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeDebuggerTest();
+        TestRunner.deprecatedRunAfterPendingDispatches(() => {
+            TestRunner.addResult("Dumping console messages:\n");
+            ConsoleTestRunner.dumpConsoleMessages();
+            SourcesTestRunner.completeDebuggerTest();
         });
     }
 }

@@ -22,16 +22,16 @@ function callback2()
     (function FAIL_Should_Not_Pause_Here() { debugger; })();
 
     if (window.testRunner)
-        testRunner.evaluateInWebInspector(0, "(InspectorTest.completeDebuggerTest())")
+        testRunner.evaluateInWebInspector(0, "(SourcesTestRunner.completeDebuggerTest())")
 }
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
@@ -41,12 +41,12 @@ var test = function()
             "StepOut",
             "Print",
         ];
-        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, resume);
+        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, resume);
     }
 
     function resume()
     {
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, resume));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, resume));
     }
 }
 

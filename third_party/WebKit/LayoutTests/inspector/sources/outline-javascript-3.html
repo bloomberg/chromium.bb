@@ -7,24 +7,24 @@
 
 async function test()
 {
-    var test = InspectorTest.testJavascriptOutline;
+    var test = SourcesTestRunner.testJavascriptOutline;
 
-    InspectorTest.markStep('testClassConstructor');
+    TestRunner.markStep('testClassConstructor');
     await test('class Test { constructor(foo, bar) { }}');
 
-    InspectorTest.markStep('testClassMethods');
+    TestRunner.markStep('testClassMethods');
     await test('class Test { foo() {} bar() { }}');
 
-    InspectorTest.markStep('testAnonymousClass');
+    TestRunner.markStep('testAnonymousClass');
     await test('var test = class { constructor(foo, bar) { }}');
 
-    InspectorTest.markStep('testClassExtends');
+    TestRunner.markStep('testClassExtends');
     await test('var A = class extends B { foo() { }}');
 
-    InspectorTest.markStep('testStaticMethod');
+    TestRunner.markStep('testStaticMethod');
     await test('class Test { static foo() { }}');
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

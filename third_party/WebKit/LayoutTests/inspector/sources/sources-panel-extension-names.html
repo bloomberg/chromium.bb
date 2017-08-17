@@ -16,12 +16,12 @@ function test()
     };
     var mockContentScriptURL = mockExecutionContext.origin + "/script.js";
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         async function testAddExecutionContextBeforeFile(next)
         {
-            InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
-            await InspectorTest.addScriptUISourceCode(mockContentScriptURL, '', true, 1234567);
-            InspectorTest.dumpNavigatorView(contentScriptsNavigatorView);
+            TestRunner.runtimeModel._executionContextCreated(mockExecutionContext);
+            await SourcesTestRunner.addScriptUISourceCode(mockContentScriptURL, '', true, 1234567);
+            SourcesTestRunner.dumpNavigatorView(contentScriptsNavigatorView);
             next();
         },
     ]);

@@ -17,16 +17,16 @@ function importStyle()
 
 function test()
 {
-    InspectorTest.invokeWithTracing("importStyle", processTracingEvents);
+    PerformanceTestRunner.invokeWithTracing("importStyle", processTracingEvents);
 
     function processTracingEvents()
     {
-        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.ParseAuthorStyleSheet);
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.ParseAuthorStyleSheet);
         if (event)
-            InspectorTest.addResult("SUCCESS: found ParseAuthorStyleSheet record");
+            TestRunner.addResult("SUCCESS: found ParseAuthorStyleSheet record");
         else
-            InspectorTest.addResult("FAIL: ParseAuthorStyleSheet record not found");
-        InspectorTest.completeTest();
+            TestRunner.addResult("FAIL: ParseAuthorStyleSheet record not found");
+        TestRunner.completeTest();
     }
 }
 

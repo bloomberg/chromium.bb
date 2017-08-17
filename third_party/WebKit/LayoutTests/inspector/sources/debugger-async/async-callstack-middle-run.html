@@ -31,18 +31,18 @@ var test = function()
     var totalDebuggerStatements = 3;
     var maxAsyncCallStackDepth = 8;
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     async function step1()
     {
-        await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        await TestRunner.DebuggerAgent.setAsyncCallStackDepth(0);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function resumeExecution()
     {
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
     var step = 0;
@@ -51,18 +51,18 @@ var test = function()
     {
         ++step;
         if (step === 1) {
-            InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(resumeExecution);
+            TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(resumeExecution);
             return;
         }
 
-        callStacksOutput.push(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace) + "\n");
+        callStacksOutput.push(SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace) + "\n");
         if (step < totalDebuggerStatements) {
             resumeExecution();
         } else {
-            InspectorTest.addResult("Captured call stacks in no particular order:");
+            TestRunner.addResult("Captured call stacks in no particular order:");
             callStacksOutput.sort();
-            InspectorTest.addResults(callStacksOutput);
-            InspectorTest.completeDebuggerTest();
+            TestRunner.addResults(callStacksOutput);
+            SourcesTestRunner.completeDebuggerTest();
         }
     }
 }

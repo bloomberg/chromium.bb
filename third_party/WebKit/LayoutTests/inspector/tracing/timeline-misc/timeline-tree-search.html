@@ -51,28 +51,28 @@ async function test()
     ];
 
     Runtime.experiments.enableForTest("timelineMultipleMainViews");
-    var model = InspectorTest.createPerformanceModelWithEvents(testData);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
     var panel = new Timeline.TimelinePanel();
     panel._setModel(model);
     for (var mode of ["BottomUp", "CallTree", "EventLog"]) {
-        InspectorTest.addResult("");
-        InspectorTest.addResult(`Testing mode: ${mode}`);
+        TestRunner.addResult("");
+        TestRunner.addResult(`Testing mode: ${mode}`);
         panel._tabbedPane.selectTab(mode);
         var view = panel._searchableView;
         view.showSearchField();
-        var valueChangedPromise = InspectorTest.addSnifferPromise(view, "_onValueChanged");
+        var valueChangedPromise = TestRunner.addSnifferPromise(view, "_onValueChanged");
         view._searchInputElement.value = "foo";
         view._searchInputElement.dispatchEvent(new Event('input', {'bubbles': true, 'cancelable': true}));
         await valueChangedPromise;
         var count = view._searchProvider.currentSearchMatches;
-        InspectorTest.addResult(count);
+        TestRunner.addResult(count);
         for (var i = 0; i < count + 2; ++i) {
             view._onNextButtonSearch();
             var node = panel._currentView._treeView.lastSelectedNode();
-            InspectorTest.addResult(Timeline.TimelineUIUtils.eventTitle(node.event));
+            TestRunner.addResult(Timeline.TimelineUIUtils.eventTitle(node.event));
         }
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

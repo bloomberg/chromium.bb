@@ -8,9 +8,9 @@
 
 function test()
 {
-    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+    var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/javascript");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function asyncAwaitSupport(next)
         {
             var mappingQueries = ["async", "function", "foo", "return", "Promise", "resolve"];

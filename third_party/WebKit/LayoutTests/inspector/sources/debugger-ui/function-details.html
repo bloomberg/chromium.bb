@@ -50,18 +50,18 @@ function test()
     function dumpFunctionDetails(properties)
     {
         var location = properties.get("[[FunctionLocation]]").value.value;
-        InspectorTest.addResult("Function details: ");
-        InspectorTest.addResult("lineNumber: " + location.lineNumber);
-        InspectorTest.addResult("columnNumber: " + location.columnNumber);
-        InspectorTest.addResult("scriptId is valid: " + !!location.scriptId);
-        InspectorTest.addResult("functionName: " + properties.get("name").value.value);
+        TestRunner.addResult("Function details: ");
+        TestRunner.addResult("lineNumber: " + location.lineNumber);
+        TestRunner.addResult("columnNumber: " + location.columnNumber);
+        TestRunner.addResult("scriptId is valid: " + !!location.scriptId);
+        TestRunner.addResult("functionName: " + properties.get("name").value.value);
         if (properties.has("[[IsGenerator]]"))
-            InspectorTest.addResult("isGenerator: " + properties.get("[[IsGenerator]]").value.value);
+            TestRunner.addResult("isGenerator: " + properties.get("[[IsGenerator]]").value.value);
     }
 
     function dumpFunctionNoScopes()
     {
-        InspectorTest.addResult("scopeChain: n/a");
+        TestRunner.addResult("scopeChain: n/a");
     }
 
     function dumpFunctionScope(pos, type, propertyDescriptors)
@@ -87,7 +87,7 @@ function test()
             varArray.sort();
             variables = varArray.join();
         }
-        InspectorTest.addResult("scopeChain #" + pos + ": " + type + "; " + variables);
+        TestRunner.addResult("scopeChain #" + pos + ": " + type + "; " + variables);
     }
 
     async function loadAndDumpScopeObjects(scopeChain, end)
@@ -98,7 +98,7 @@ function test()
             return;
         }
 
-        var properties = await InspectorTest.RuntimeAgent.getProperties(scopeChain.value.objectId, true);
+        var properties = await TestRunner.RuntimeAgent.getProperties(scopeChain.value.objectId, true);
         var scopes = [];
         for (var prop of properties) {
             if (String(prop.name >>> 0) === prop.name)
@@ -106,7 +106,7 @@ function test()
         }
 
         for (var pos = 0; pos < scopes.length; ++pos) {
-            var propertyDescriptors = await InspectorTest.RuntimeAgent.getProperties(scopes[pos].objectId, true);
+            var propertyDescriptors = await TestRunner.RuntimeAgent.getProperties(scopes[pos].objectId, true);
             dumpFunctionScope(pos, scopes[pos].description, propertyDescriptors);
         }
 
@@ -115,12 +115,12 @@ function test()
 
     function performStandardTestCase(pageExpression, next)
     {
-        InspectorTest.evaluateInPage(pageExpression, didEvaluate);
+        TestRunner.evaluateInPage(pageExpression, didEvaluate);
 
         async function didEvaluate(remote)
         {
-            InspectorTest.addResult(pageExpression + " type = " + remote.type);
-            var response = await InspectorTest.RuntimeAgent.invoke_getProperties({objectId: remote.objectId, isOwnProperty: false});
+            TestRunner.addResult(pageExpression + " type = " + remote.type);
+            var response = await TestRunner.RuntimeAgent.invoke_getProperties({objectId: remote.objectId, isOwnProperty: false});
 
             var propertiesMap = new Map();
             for (var prop of response.internalProperties)
@@ -138,7 +138,7 @@ function test()
         }
     }
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testGetFirstLineFunctionDetails(next)
         {
             performStandardTestCase("firstLineFunction", next);

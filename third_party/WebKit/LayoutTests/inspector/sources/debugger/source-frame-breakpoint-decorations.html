@@ -10,30 +10,30 @@ function test()
 {
     function waitAndDumpDecorations(sourceFrame)
     {
-        return InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
-            .then(() => InspectorTest.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
+        return SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
+            .then(() => SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
     }
 
     Bindings.breakpointManager._storage._breakpoints = {};
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testAddRemoveBreakpoint(next)
         {
             var javaScriptSourceFrame;
-            InspectorTest.showScriptSource("edit-me-breakpoints.js", addBreakpoint);
+            SourcesTestRunner.showScriptSource("edit-me-breakpoints.js", addBreakpoint);
 
             function addBreakpoint(sourceFrame)
             {
                 javaScriptSourceFrame = sourceFrame;              
-                InspectorTest.addResult("Setting breakpoint");
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
+                TestRunner.addResult("Setting breakpoint");
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
                     .then(() => waitAndDumpDecorations(javaScriptSourceFrame))
                     .then(removeBreakpoint);
             }
 
             function removeBreakpoint()
             {
-                InspectorTest.addResult("Toggle breakpoint");
-                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 2);
+                TestRunner.addResult("Toggle breakpoint");
+                SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 2);
                 waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
             }
         },
@@ -41,22 +41,22 @@ function test()
         function testTwoBreakpointsResolvedInOneLine(next)
         {
             var javaScriptSourceFrame;
-            InspectorTest.showScriptSource("edit-me-breakpoints.js", addBreakpoint);
+            SourcesTestRunner.showScriptSource("edit-me-breakpoints.js", addBreakpoint);
 
             function addBreakpoint(sourceFrame)
             {
                 javaScriptSourceFrame = sourceFrame;              
-                InspectorTest.addResult("Setting breakpoint");
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
-                    .then(() => InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 0, "true", true))
+                TestRunner.addResult("Setting breakpoint");
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, "", true)
+                    .then(() => SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, "true", true))
                     .then(() => waitAndDumpDecorations(javaScriptSourceFrame))
                     .then(removeBreakpoint);
             }
 
             function removeBreakpoint()
             {
-                InspectorTest.addResult("Toggle breakpoint");
-                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 2);
+                TestRunner.addResult("Toggle breakpoint");
+                SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 2);
                 waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
             }
         },
@@ -64,56 +64,56 @@ function test()
         function testDecorationInGutter(next)
         {
             var javaScriptSourceFrame;
-            InspectorTest.showScriptSource("edit-me-breakpoints.js", addRegularDisabled);
+            SourcesTestRunner.showScriptSource("edit-me-breakpoints.js", addRegularDisabled);
 
             function addRegularDisabled(sourceFrame)
             {
                 javaScriptSourceFrame = sourceFrame;              
-                InspectorTest.addResult("Adding regular disabled breakpoint");
+                TestRunner.addResult("Adding regular disabled breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(addConditionalDisabled);
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 2, "", false);
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, "", false);
             }
 
             function addConditionalDisabled()
             {
-                InspectorTest.addResult("Adding conditional disabled breakpoint");
+                TestRunner.addResult("Adding conditional disabled breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(addRegularEnabled);
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 0, "true", false);
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, "true", false);
             }
 
             function addRegularEnabled()
             {
-                InspectorTest.addResult("Adding regular enabled breakpoint");
+                TestRunner.addResult("Adding regular enabled breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(addConditionalEnabled);
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 0, "", true);
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, "", true);
             }
 
             function addConditionalEnabled()
             {
-                InspectorTest.addResult("Adding conditional enabled breakpoint");
+                TestRunner.addResult("Adding conditional enabled breakpoint");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(disableAll);
-                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 0, "true", true);                
+                SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, "true", true);                
             }
 
             function disableAll()
             {
-                InspectorTest.addResult("Disable breakpoints");
+                TestRunner.addResult("Disable breakpoints");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(enabledAll);
-                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 2, true);
+                SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 2, true);
             }
 
             function enabledAll()
             {
-                InspectorTest.addResult("Enable breakpoints");
+                TestRunner.addResult("Enable breakpoints");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(removeAll);
-                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 2, true);
+                SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 2, true);
             }
 
             function removeAll()
             {
-                InspectorTest.addResult("Remove breakpoints");
+                TestRunner.addResult("Remove breakpoints");
                 waitAndDumpDecorations(javaScriptSourceFrame).then(next);
-                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 2, false);                
+                SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 2, false);                
             }
         }
     ]);

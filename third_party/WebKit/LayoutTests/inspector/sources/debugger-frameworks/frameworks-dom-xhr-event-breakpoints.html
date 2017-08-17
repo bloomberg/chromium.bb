@@ -75,19 +75,19 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.setQuiet(true);
+    SourcesTestRunner.setQuiet(true);
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testDOMBreakpoint(next)
         {
-            InspectorTest.nodeWithId("rootElement", step1);
+            ElementsTestRunner.nodeWithId("rootElement", step1);
 
             function step1(node)
             {
                 var pane = Components.domBreakpointsSidebarPane;
                 pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
-                InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
-                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+                TestRunner.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
+                SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
             }
         },
 
@@ -95,16 +95,16 @@ function test()
         {
             var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
             pane._setBreakpoint("foo", true);
-            InspectorTest.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
-            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            TestRunner.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
+            SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
         },
 
         function testEventListenerBreakpoint(next)
         {
             var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(false)");
-            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(false)");
+            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
                 "Print", "Resume",
                 "Print", "Resume",
             ], next);
@@ -114,8 +114,8 @@ function test()
         {
             var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
-            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(true)");
+            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
                 "StepOver", "Print",
                 "StepOver", "Print", // should break at the first "remover()"
                 "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
@@ -129,8 +129,8 @@ function test()
         {
             var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
-            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(true)");
+            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print", // should be in testElementClicked()
                 "StepOut", "StepOut", "Print", // again in testElementClicked()
                 "StepOut", "Print",
@@ -142,8 +142,8 @@ function test()
         {
             var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
-            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+            TestRunner.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
+            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print",
                 "StepOut", "Print",
                 "StepOut", "Print",

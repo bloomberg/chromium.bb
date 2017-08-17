@@ -22,19 +22,19 @@ function doActions()
 
 function test()
 {
-    InspectorTest.invokeWithTracing("doActions", onTracingComplete);
+    PerformanceTestRunner.invokeWithTracing("doActions", onTracingComplete);
     function onTracingComplete()
     {
-        var events = InspectorTest.timelineModel().inspectedTargetEvents();
+        var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
             if (events[i].name === TimelineModel.TimelineModel.RecordType.UpdateLayerTree) {
-                InspectorTest.addResult("Got UpdateLayerTree event, phase: " + events[i].phase);
+                TestRunner.addResult("Got UpdateLayerTree event, phase: " + events[i].phase);
                 break;
             }
         }
-        InspectorTest.addResult("Done");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Done");
+        TestRunner.completeTest();
     }
 }
 

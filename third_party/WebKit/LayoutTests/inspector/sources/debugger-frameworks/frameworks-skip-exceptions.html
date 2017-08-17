@@ -19,25 +19,25 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
-        InspectorTest.captureStackTrace(callFrames);
+        SourcesTestRunner.captureStackTrace(callFrames);
         completeTest();
     }
 
     function completeTest()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

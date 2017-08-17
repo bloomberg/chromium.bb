@@ -15,60 +15,60 @@ f4();
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step0, true);
+    SourcesTestRunner.startDebuggerTest(step0, true);
 
     function step0()
     {
-        InspectorTest.evaluateInPage("window.location=\"#hash\"", step1);
+        TestRunner.evaluateInPage("window.location=\"#hash\"", step1);
     }
 
     function step1(loc)
     {
-        InspectorTest.addResult("window.location: " + loc.description);
-        InspectorTest.showScriptSource("debug-inlined-scripts-fragment-id.html", step2);
+        TestRunner.addResult("window.location: " + loc.description);
+        SourcesTestRunner.showScriptSource("debug-inlined-scripts-fragment-id.html", step2);
     }
 
     function step2(sourceFrame)
     {
-        InspectorTest.addResult("Script source was shown.");
-        InspectorTest.setBreakpoint(sourceFrame, 5, "", true);
-        InspectorTest.waitUntilPaused(step3);
-        InspectorTest.reloadPage(InspectorTest.completeDebuggerTest.bind(InspectorTest));
+        TestRunner.addResult("Script source was shown.");
+        SourcesTestRunner.setBreakpoint(sourceFrame, 5, "", true);
+        SourcesTestRunner.waitUntilPaused(step3);
+        TestRunner.reloadPage(SourcesTestRunner.completeDebuggerTest.bind(InspectorTest));
     }
 
     function step3(callFrames)
     {
-        InspectorTest.addResult("Script execution paused.");
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.showScriptSource("debug-inlined-scripts-fragment-id.html", step4);
+        TestRunner.addResult("Script execution paused.");
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.showScriptSource("debug-inlined-scripts-fragment-id.html", step4);
     }
 
     function step4(sourceFrame)
     {
-        InspectorTest.dumpSourceFrameContents(sourceFrame);
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
+        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
     }
 
     function step5(callFrames)
     {
         if (callFrames[0].location.lineNumber !== 9) {
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
+            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
             return;
         }
-        InspectorTest.addResult("Script execution paused.");
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.showScriptSource("debug-inlined-scripts-fragment-id.html", step6);
+        TestRunner.addResult("Script execution paused.");
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.showScriptSource("debug-inlined-scripts-fragment-id.html", step6);
     }
 
     function step6(sourceFrame)
     {
-        InspectorTest.dumpSourceFrameContents(sourceFrame);
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step7));
+        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step7));
     }
 
     function step7()
     {
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
     }
 }
 

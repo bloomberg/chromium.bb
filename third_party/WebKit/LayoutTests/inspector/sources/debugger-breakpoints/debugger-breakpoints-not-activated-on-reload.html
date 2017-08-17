@@ -11,32 +11,32 @@ function testFunction()
 
 var test = function()
 {
-    var testName = InspectorTest.mainTarget.inspectedURL();
+    var testName = TestRunner.mainTarget.inspectedURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.showScriptSource(testName, step2);
+        SourcesTestRunner.showScriptSource(testName, step2);
     }
 
     function step2(sourceFrame)
     {
-        InspectorTest.addResult("Main resource was shown.");
-        InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
+        TestRunner.addResult("Main resource was shown.");
+        SourcesTestRunner.setBreakpoint(sourceFrame, 8, "", true);
         UI.panels.sources._toggleBreakpointsActive();
-        InspectorTest.reloadPage(step3);
+        TestRunner.reloadPage(step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("Main resource was shown.");
+        TestRunner.addResult("Main resource was shown.");
         if (!Bindings.breakpointManager.breakpointsActive())
-            InspectorTest.addResult("Breakpoints are deactivated.");
+            TestRunner.addResult("Breakpoints are deactivated.");
         else
-            InspectorTest.addResult("Error: breakpoints are activated.");
-        InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("Error: breakpoints are activated.");
+        SourcesTestRunner.completeDebuggerTest();
     }
 };
 

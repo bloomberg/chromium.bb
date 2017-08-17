@@ -18,25 +18,25 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
-            InspectorTest.showScriptSource("pause-in-internal-script.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("pause-in-internal-script.html", didShowScriptSource);
 
             var breakpointFunctionFrame = null;
 
             function didShowScriptSource(sourceFrame)
             {
                 breakpointFunctionFrame = sourceFrame;
-                InspectorTest.addResult("Script source was shown.");
-                InspectorTest.setBreakpoint(sourceFrame, 13, "", true);
-                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+                TestRunner.addResult("Script source was shown.");
+                SourcesTestRunner.setBreakpoint(sourceFrame, 13, "", true);
+                SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
             }
 
             function didPause(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.removeBreakpoint(breakpointFunctionFrame, 13);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.removeBreakpoint(breakpointFunctionFrame, 13);
                 next();
             }
         }

@@ -9,43 +9,43 @@ var test = function()
     const scriptSource = "239\n//# sourceURL=test.js";
     const changedScriptSource = "42\n//# sourceURL=test.js";
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.waitForScriptSource("test.js", step2);
-        InspectorTest.evaluateInPage(scriptSource);
+        SourcesTestRunner.waitForScriptSource("test.js", step2);
+        TestRunner.evaluateInPage(scriptSource);
     }
 
     function step2(uiSourceCode)
     {
-        InspectorTest.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => step3(uiSourceCode));
-        InspectorTest.showScriptSource("test.js");
+        TestRunner.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => step3(uiSourceCode));
+        SourcesTestRunner.showScriptSource("test.js");
     }
 
     function step3(uiSourceCode)
     {
-        var debuggerModel = InspectorTest.debuggerModel;
+        var debuggerModel = TestRunner.debuggerModel;
         var scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel);
         if (!scriptFile) {
-            InspectorTest.addResult("[FAIL]: no script file for test.js");
-            InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("[FAIL]: no script file for test.js");
+            SourcesTestRunner.completeDebuggerTest();
             return;
         }
         if (scriptFile.hasDivergedFromVM() || scriptFile.isDivergingFromVM()) {
-            InspectorTest.addResult("[FAIL]: script file is diverged from VM");
-            InspectorTest.completeDebuggerTest();
+            TestRunner.addResult("[FAIL]: script file is diverged from VM");
+            SourcesTestRunner.completeDebuggerTest();
             return;
         }
 
-        InspectorTest.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_didDivergeFromVM").then(dumpDivergeFromVM);
-        InspectorTest.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => InspectorTest.completeDebuggerTest());
-        InspectorTest.evaluateInPage(changedScriptSource);
+        TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_didDivergeFromVM").then(dumpDivergeFromVM);
+        TestRunner.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => SourcesTestRunner.completeDebuggerTest());
+        TestRunner.evaluateInPage(changedScriptSource);
     }
 
     function dumpDivergeFromVM()
     {
-        InspectorTest.addResult("[FAIL]: script file was diverged from VM");
+        TestRunner.addResult("[FAIL]: script file was diverged from VM");
     }
 }
 </script>
