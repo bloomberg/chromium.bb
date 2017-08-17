@@ -25,7 +25,6 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
-#include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
@@ -39,7 +38,6 @@
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
-#include "core/css/properties/CSSPropertyGridUtils.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
@@ -306,35 +304,6 @@ static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
-                                       CSSParserMode css_parser_mode,
-                                       bool use_legacy_parsing) {
-  if (IdentMatches<CSSValueContain, CSSValueCover>(range.Peek().Id()))
-    return ConsumeIdent(range);
-
-  CSSValue* horizontal = ConsumeIdent<CSSValueAuto>(range);
-  if (!horizontal)
-    horizontal = ConsumeLengthOrPercent(range, css_parser_mode, kValueRangeAll,
-                                        UnitlessQuirk::kForbid);
-
-  CSSValue* vertical = nullptr;
-  if (!range.AtEnd()) {
-    if (range.Peek().Id() == CSSValueAuto)  // `auto' is the default
-      range.ConsumeIncludingWhitespace();
-    else
-      vertical = ConsumeLengthOrPercent(range, css_parser_mode, kValueRangeAll,
-                                        UnitlessQuirk::kForbid);
-  } else if (use_legacy_parsing) {
-    // Legacy syntax: "-webkit-background-size: 10px" is equivalent to
-    // "background-size: 10px 10px".
-    vertical = horizontal;
-  }
-  if (!vertical)
-    return horizontal;
-  return CSSValuePair::Create(horizontal, vertical,
-                              CSSValuePair::kKeepIdenticalValues);
-}
-
 static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
                                             CSSParserTokenRange& range,
                                             const CSSParserContext& context) {
@@ -372,11 +341,11 @@ static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
           range, context.Mode());
     case CSSPropertyBackgroundSize:
     case CSSPropertyWebkitMaskSize:
-      return ConsumeBackgroundSize(range, context.Mode(),
-                                   false /* use_legacy_parsing */);
+      return CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
+          range, context.Mode(), ParsingStyle::kNotLegacy);
     case CSSPropertyAliasWebkitBackgroundSize:
-      return ConsumeBackgroundSize(range, context.Mode(),
-                                   true /* use_legacy_parsing */);
+      return CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
+          range, context.Mode(), ParsingStyle::kLegacy);
     case CSSPropertyBackgroundColor:
       return ConsumeColor(range, context.Mode());
     default:
@@ -409,23 +378,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
           range_);
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyWebkitMaskPositionX:
-      return ConsumeCommaSeparatedList(
-          CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
-                                                            CSSValueRight>,
-          range_, context_->Mode());
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyWebkitMaskPositionY:
-      return ConsumeCommaSeparatedList(
-          CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
-                                                            CSSValueBottom>,
-          range_, context_->Mode());
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskSize:
-      return ConsumeCommaSeparatedList(ConsumeBackgroundSize, range_,
-                                       context_->Mode(),
-                                       isPropertyAlias(unresolved_property));
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitMaskClip:
       return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range_,
@@ -437,22 +389,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
       return nullptr;
-    case CSSPropertyGridColumnEnd:
-    case CSSPropertyGridColumnStart:
-    case CSSPropertyGridRowEnd:
-    case CSSPropertyGridRowStart:
-      DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      return CSSPropertyGridUtils::ConsumeGridLine(range_);
-    case CSSPropertyGridAutoColumns:
-    case CSSPropertyGridAutoRows:
-      DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      return CSSPropertyGridUtils::ConsumeGridTrackList(
-          range_, context_->Mode(), CSSPropertyGridUtils::kGridAuto);
-    case CSSPropertyGridTemplateColumns:
-    case CSSPropertyGridTemplateRows:
-      DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      return CSSPropertyGridUtils::ConsumeGridTemplatesRowsOrColumns(
-          range_, context_->Mode());
     default:
       return nullptr;
   }
@@ -772,8 +708,8 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
                    property == CSSPropertyWebkitMaskSize) {
           if (!ConsumeSlashIncludingWhitespace(range_))
             continue;
-          value = ConsumeBackgroundSize(range_, context_->Mode(),
-                                        false /* use_legacy_parsing */);
+          value = CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
+              range_, context_->Mode(), ParsingStyle::kNotLegacy);
           if (!value ||
               !parsed_longhand[i - 1])  // Position must have been
                                         // parsed in the current layer.

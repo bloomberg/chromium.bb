@@ -14,6 +14,8 @@ class CSSParserContext;
 class CSSParserTokenRange;
 class CSSValue;
 
+enum class ParsingStyle { kLegacy, kNotLegacy };
+
 class CSSPropertyBackgroundUtils {
   STATIC_ONLY(CSSPropertyBackgroundUtils);
 
@@ -28,6 +30,9 @@ class CSSPropertyBackgroundUtils {
   static CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
   static CSSValue* ConsumeMaskSourceType(CSSParserTokenRange&);
 
+  static CSSValue* ConsumeBackgroundSize(CSSParserTokenRange&,
+                                         CSSParserMode,
+                                         ParsingStyle);
   static bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                         const CSSParserContext&,
                                         CSSPropertyParserHelpers::UnitlessQuirk,

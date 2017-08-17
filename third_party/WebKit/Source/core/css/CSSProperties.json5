@@ -755,12 +755,14 @@
     {
       name: "background-position-x",
       api_class: "CSSPropertyAPIPositionX",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
     {
       name: "background-position-y",
       api_class: "CSSPropertyAPIPositionY",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -777,6 +779,7 @@
     {
       name: "background-size",
       api_class: "CSSPropertyAPIBackgroundOrMaskSize",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -1406,6 +1409,7 @@
     {
       name: "grid-auto-columns",
       api_class: "CSSPropertyAPIGridAutoLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
       type_name: "Vector<GridTrackSize>",
@@ -1430,6 +1434,7 @@
     {
       name: "grid-auto-rows",
       api_class: "CSSPropertyAPIGridAutoLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
       type_name: "Vector<GridTrackSize>",
@@ -1441,6 +1446,7 @@
     {
       name: "grid-column-end",
       api_class: "CSSPropertyAPIGridLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridPosition",
       runtime_flag: "CSSGridLayout",
       type_name: "GridPosition",
@@ -1462,6 +1468,7 @@
     {
       name: "grid-column-start",
       api_class: "CSSPropertyAPIGridLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridPosition",
       runtime_flag: "CSSGridLayout",
       type_name: "GridPosition",
@@ -1473,6 +1480,7 @@
     {
       name: "grid-row-end",
       api_class: "CSSPropertyAPIGridLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridPosition",
       runtime_flag: "CSSGridLayout",
       type_name: "GridPosition",
@@ -1494,6 +1502,7 @@
     {
       name: "grid-row-start",
       api_class: "CSSPropertyAPIGridLine",
+      api_methods: ["ParseSingleValue"],
       converter: "ConvertGridPosition",
       runtime_flag: "CSSGridLayout",
       type_name: "GridPosition",
@@ -1512,6 +1521,7 @@
     {
       name: "grid-template-columns",
       api_class: "CSSPropertyAPIGridTemplateLine",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       runtime_flag: "CSSGridLayout",
       field_template: "external",
@@ -1523,6 +1533,7 @@
     {
       name: "grid-template-rows",
       api_class: "CSSPropertyAPIGridTemplateLine",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       runtime_flag: "CSSGridLayout",
       field_template: "external",
@@ -3320,12 +3331,14 @@
     {
       name: "-webkit-mask-position-x",
       api_class: "CSSPropertyAPIPositionX",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
     {
       name: "-webkit-mask-position-y",
       api_class: "CSSPropertyAPIPositionY",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -3342,6 +3355,7 @@
     {
       name: "-webkit-mask-size",
       api_class: "CSSPropertyAPIBackgroundOrMaskSize",
+      api_methods: ["ParseSingleValue"],
       custom_all: true,
       interpolable: true,
     },

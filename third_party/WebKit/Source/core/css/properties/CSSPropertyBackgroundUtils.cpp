@@ -7,6 +7,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -60,6 +61,43 @@ CSSValue* CSSPropertyBackgroundUtils::ConsumeMaskSourceType(
   DCHECK(RuntimeEnabledFeatures::CSSMaskSourceTypeEnabled());
   return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueAlpha,
                                                 CSSValueLuminance>(range);
+}
+
+CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
+    CSSParserTokenRange& range,
+    CSSParserMode css_parser_mode,
+    ParsingStyle parsing_style) {
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueContain, CSSValueCover>(
+          range.Peek().Id())) {
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  }
+
+  CSSValue* horizontal =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto>(range);
+  if (!horizontal) {
+    horizontal = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+        range, css_parser_mode, kValueRangeAll,
+        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  }
+
+  CSSValue* vertical = nullptr;
+  if (!range.AtEnd()) {
+    if (range.Peek().Id() == CSSValueAuto) {  // `auto' is the default
+      range.ConsumeIncludingWhitespace();
+    } else {
+      vertical = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+          range, css_parser_mode, kValueRangeAll,
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+    }
+  } else if (parsing_style == ParsingStyle::kLegacy) {
+    // Legacy syntax: "-webkit-background-size: 10px" is equivalent to
+    // "background-size: 10px 10px".
+    vertical = horizontal;
+  }
+  if (!vertical)
+    return horizontal;
+  return CSSValuePair::Create(horizontal, vertical,
+                              CSSValuePair::kKeepIdenticalValues);
 }
 
 bool CSSPropertyBackgroundUtils::ConsumeBackgroundPosition(
