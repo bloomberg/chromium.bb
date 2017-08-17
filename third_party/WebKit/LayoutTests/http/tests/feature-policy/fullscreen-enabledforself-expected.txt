@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Fullscreen enabled for self on URL: resources/feature-policy-fullscreen.html with allowfullscreen = false assert_true: Document.fullscreenEnabled: expected true got false
-PASS Fullscreen enabled for self on URL: resources/feature-policy-fullscreen.html with allowfullscreen = true 
-PASS Fullscreen enabled for self on URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = false 
-PASS Fullscreen enabled for self on URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = true 
-Harness: the test ran to completion.
-

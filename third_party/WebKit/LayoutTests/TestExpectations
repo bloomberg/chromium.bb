@@ -2857,6 +2857,13 @@ crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flexbox_flex-natural-mix
 
 crbug.com/739367 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 
+# Feature Policy changes fullscreen behaviour, tests need updating
+crbug.com/718155 fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
+crbug.com/718155 fullscreen/full-screen-restrictions.html [ Failure Timeout ]
+crbug.com/718155 media/video-controls-fullscreen-iframe-not-allowed.html [ Failure ]
+crbug.com/718155 virtual/android/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
+crbug.com/718155 virtual/android/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
+
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
@@ -2866,10 +2873,14 @@ crbug.com/737643 external/wpt/payment-request/payment-allowed-by-feature-policy.
 crbug.com/737643 external/wpt/payment-request/payment-disabled-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/737643 external/wpt/webusb/usb-allowed-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/737643 external/wpt/webusb/usb-disabled-by-feature-policy.https.sub.html [ Failure ]
+crbug.com/737643 http/tests/feature-policy/fullscreen-disabled.php [ Failure ]
+crbug.com/737643 http/tests/feature-policy/fullscreen-enabledforall.php [ Failure ]
 crbug.com/737643 http/tests/feature-policy/payment-disabled.php [ Failure ]
 crbug.com/737643 http/tests/feature-policy/payment-enabledforall.php [ Failure ]
 crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-disabled.php [ Failure ]
 crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
+crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/fullscreen-disabled.php [ Failure ]
+crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/fullscreen-enabledforall.php [ Failure ]
 crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-disabled.php [ Failure ]
 crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
 

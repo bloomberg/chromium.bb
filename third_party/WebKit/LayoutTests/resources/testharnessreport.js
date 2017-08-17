@@ -73,12 +73,12 @@
         // is web-platform.test.
         const path = location.pathname;
         if (location.hostname == 'web-platform.test' &&
-            /.*-manual(\.https)?\.html$/.test(path)) {
+            /.*-manual(\.sub)?(\.https)?\.html$/.test(path)) {
             return true;
         }
         // If the file is loaded locally via file://, it must include
         // the wpt directory in the path.
-        return /\/external\/wpt\/.*-manual(\.https)?\.html$/.test(path);
+        return /\/external\/wpt\/.*-manual(\.sub)?(\.https)?\.html$/.test(path);
     }
 
     /** Loads the WPT automation script for the current test, if applicable. */

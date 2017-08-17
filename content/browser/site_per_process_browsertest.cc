@@ -753,6 +753,21 @@ class SitePerProcessFeaturePolicyBrowserTest
   }
 };
 
+// SitePerProcessFeaturePolicyDisabledBrowserTest
+
+class SitePerProcessFeaturePolicyDisabledBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessFeaturePolicyDisabledBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
+                                    "FeaturePolicy");
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
                        SubframeLoadsWithCorrectDeviceScaleFactor) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -8914,10 +8929,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif
 
 // Check that out-of-process frames correctly calculate their ability to enter
-// fullscreen. A frame is allowed enter fullscreen if the allowFullscreen
-// attribute is present in all of its ancestor <iframe> elements.  For OOPIF,
-// when a parent frame changes this attribute, the change is replicated to the
-// child frame and its proxies.
+// fullscreen when Feature Policy is disabled. A frame is allowed to enter
+// fullscreen if the allowFullscreen attribute is present in all of its ancestor
+// <iframe> elements.  For OOPIF, when a parent frame changes this attribute,
+// the change is replicated to the child frame and its proxies.
 //
 // The test checks the following cases:
 //
@@ -8925,7 +8940,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 2. Attribute injected dynamically via JavaScript
 // 3. Multiple levels of nesting (A-embed-B-embed-C)
 // 4. Cross-site subframe navigation
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
+//
+// Note that this is testing deprecated behavior that will eventually be
+// removed, once the Fullscreen spec has been updated to integrate with Feature
+// Policy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyDisabledBrowserTest,
+                       AllowFullscreen) {
   // Load a page with a cross-site <iframe allowFullscreen>.
   GURL url_1(embedded_test_server()->GetURL(
       "a.com", "/page_with_allowfullscreen_frame.html"));

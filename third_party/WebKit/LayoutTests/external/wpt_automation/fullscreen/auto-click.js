@@ -44,10 +44,17 @@ for (const button of document.getElementsByTagName('button')) {
   click(button);
 }
 for (const iframe of document.getElementsByTagName('iframe')) {
-  observe(iframe.contentDocument);
-  iframe.addEventListener('load', () => {
+  try {
     observe(iframe.contentDocument);
-  });
+    iframe.addEventListener('load', () => {
+      observe(iframe.contentDocument);
+    });
+  } catch (e) {
+    // Skip cross-origin iframes, but report other errors
+    if (e.name != "SecurityError") {
+        throw e;
+    }
+  }
 }
 
 // Observe future changes.
