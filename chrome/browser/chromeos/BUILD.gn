@@ -718,6 +718,8 @@ source_set("chromeos") {
     "fileapi/recent_context.h",
     "fileapi/recent_download_source.cc",
     "fileapi/recent_download_source.h",
+    "fileapi/recent_drive_source.cc",
+    "fileapi/recent_drive_source.h",
     "fileapi/recent_model.cc",
     "fileapi/recent_model.h",
     "fileapi/recent_model_factory.cc",

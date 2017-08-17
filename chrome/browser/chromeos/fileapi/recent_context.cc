@@ -18,6 +18,13 @@ RecentContext::RecentContext(storage::FileSystemContext* file_system_context,
 
 RecentContext::RecentContext(const RecentContext& other) = default;
 
+RecentContext::RecentContext(RecentContext&& other)
+    : is_valid_(other.is_valid_),
+      file_system_context_(std::move(other.file_system_context_)),
+      origin_(std::move(other.origin_)) {
+  other.is_valid_ = false;
+}
+
 RecentContext::~RecentContext() = default;
 
 RecentContext& RecentContext::operator=(const RecentContext& other) = default;

@@ -19,6 +19,7 @@ class RecentContext {
   RecentContext(storage::FileSystemContext* file_system_context,
                 const GURL& origin);
   RecentContext(const RecentContext& other);
+  RecentContext(RecentContext&& other);
   ~RecentContext();
   RecentContext& operator=(const RecentContext& other);
 
