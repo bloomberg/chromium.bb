@@ -8,7 +8,6 @@ IdlTypeBase
  IdlType
  IdlUnionType
  IdlArrayOrSequenceType
-  IdlArrayType
   IdlSequenceType
   IdlFrozenArrayType
  IdlNullableType
@@ -391,7 +390,7 @@ class IdlUnionType(IdlTypeBase):
 
 
 ################################################################################
-# IdlArrayOrSequenceType, IdlArrayType, IdlSequenceType, IdlFrozenArrayType
+# IdlArrayOrSequenceType, IdlSequenceType, IdlFrozenArrayType
 ################################################################################
 
 # TODO(bashi): Rename this like "IdlArrayTypeBase" or something.
@@ -419,10 +418,6 @@ class IdlArrayOrSequenceType(IdlTypeBase):
         return True
 
     @property
-    def is_array_type(self):
-        return False
-
-    @property
     def is_sequence_type(self):
         return False
 
@@ -442,22 +437,6 @@ class IdlArrayOrSequenceType(IdlTypeBase):
         yield self
         for idl_type in self.element_type.idl_types():
             yield idl_type
-
-
-class IdlArrayType(IdlArrayOrSequenceType):
-    def __init__(self, element_type):
-        super(IdlArrayType, self).__init__(element_type)
-
-    def __str__(self):
-        return '%s[]' % self.element_type
-
-    @property
-    def name(self):
-        return self.element_type.name + 'Array'
-
-    @property
-    def is_array_type(self):
-        return True
 
 
 class IdlSequenceType(IdlArrayOrSequenceType):

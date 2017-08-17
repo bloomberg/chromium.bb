@@ -64,7 +64,6 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import abc
 
-from idl_types import IdlArrayType
 from idl_types import IdlFrozenArrayType
 from idl_types import IdlNullableType
 from idl_types import IdlRecordType
@@ -932,23 +931,13 @@ def clear_constructor_attributes(extended_attributes):
 
 def type_node_to_type(node):
     children = node.GetChildren()
-    if len(children) < 1 or len(children) > 2:
-        raise ValueError('Type node expects 1 or 2 children (type + optional array []), got %s (multi-dimensional arrays are not supported).' % len(children))
+    if len(children) != 1:
+        raise ValueError('Type node expects 1 child, got %d.' % len(children))
 
     base_type = type_node_inner_to_type(children[0])
 
     if node.GetProperty('NULLABLE'):
         base_type = IdlNullableType(base_type)
-
-    if len(children) == 2:
-        array_node = children[1]
-        array_node_class = array_node.GetClass()
-        if array_node_class != 'Array':
-            raise ValueError('Expected Array node as TypeSuffix, got %s node.' % array_node_class)
-        array_type = IdlArrayType(base_type)
-        if array_node.GetProperty('NULLABLE'):
-            return IdlNullableType(array_type)
-        return array_type
 
     return base_type
 

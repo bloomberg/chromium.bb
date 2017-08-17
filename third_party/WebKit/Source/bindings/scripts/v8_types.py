@@ -790,7 +790,7 @@ def v8_conversion_type(idl_type, extended_attributes):
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        return 'FrozenArray' if idl_type.is_frozen_array else 'array'
+        return 'FrozenArray' if idl_type.is_frozen_array else 'sequence'
 
     # Record types.
     if idl_type.is_record_type:
@@ -844,7 +844,7 @@ V8_SET_RETURN_VALUE = {
     'unrestricted double': 'V8SetReturnValue(info, {cpp_value})',
     # No special V8SetReturnValue* function, but instead convert value to V8
     # and then use general V8SetReturnValue.
-    'array': 'V8SetReturnValue(info, {cpp_value})',
+    'sequence': 'V8SetReturnValue(info, {cpp_value})',
     'FrozenArray': 'V8SetReturnValue(info, {cpp_value})',
     'Date': 'V8SetReturnValue(info, {cpp_value})',
     'EventHandler': 'V8SetReturnValue(info, {cpp_value})',
@@ -909,7 +909,8 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = idl_type.v8_conversion_type(extended_attributes)
     # SetReturn-specific overrides
-    if this_v8_conversion_type in ['Date', 'EventHandler', 'NodeFilter', 'ScriptValue', 'SerializedScriptValue', 'array', 'FrozenArray']:
+    if this_v8_conversion_type in ('Date', 'EventHandler', 'NodeFilter', 'ScriptValue',
+                                   'SerializedScriptValue', 'sequence', 'FrozenArray'):
         # Convert value to V8 and then use general V8SetReturnValue
         cpp_value = idl_type.cpp_value_to_v8_value(cpp_value, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
@@ -959,7 +960,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'ScriptValue': '{cpp_value}.V8Value()',
     'SerializedScriptValue': 'V8Deserialize({isolate}, {cpp_value})',
     # General
-    'array': 'ToV8({cpp_value}, {creation_context}, {isolate})',
+    'sequence': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'FrozenArray': 'FreezeV8Object(ToV8({cpp_value}, {creation_context}, {isolate}), {isolate})',
     'DOMWrapper': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     # Passing nullable dictionaries isn't a pattern currently used
@@ -1016,7 +1017,7 @@ def union_literal_cpp_value(idl_type, idl_literal):
 
 
 def array_or_sequence_literal_cpp_value(idl_type, idl_literal):
-    # Only support empty arrays.
+    # Only support empty sequences.
     if idl_literal.value == '[]':
         return cpp_type(idl_type) + '()'
     raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)

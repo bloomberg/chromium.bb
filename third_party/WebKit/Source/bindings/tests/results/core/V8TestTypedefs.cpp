@@ -137,12 +137,12 @@ static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
   impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
 
-static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodArrayOfLongsArg");
+static void voidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodLongSequenceArg");
 
   TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
 
-  Vector<int32_t> arrayOfLongsArg;
+  Vector<int32_t> longSequenceArg;
   int numArgsPassed = info.Length();
   while (numArgsPassed > 0) {
     if (!info[numArgsPassed - 1]->IsUndefined())
@@ -150,14 +150,14 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
     --numArgsPassed;
   }
   if (UNLIKELY(numArgsPassed <= 0)) {
-    impl->voidMethodArrayOfLongsArg();
+    impl->voidMethodLongSequenceArg();
     return;
   }
-  arrayOfLongsArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
+  impl->voidMethodLongSequenceArg(longSequenceArg);
 }
 
 static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -246,30 +246,12 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
     return;
   }
 
-  Vector<String> arrayOfStringsArg;
-  arrayOfStringsArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  Vector<String> frozenStringArrayArg;
+  frozenStringArrayArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  V8SetReturnValue(info, ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
-}
-
-static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "stringArrayMethodStringArrayArg");
-
-  TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  Vector<String> stringArrayArg;
-  stringArrayArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  V8SetReturnValue(info, ToV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
+  V8SetReturnValue(info, FreezeV8Object(ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(frozenStringArrayArg), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
 static void methodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -417,10 +399,10 @@ void V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback(con
   TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestTypedefs::voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodArrayOfLongsArg");
+void V8TestTypedefs::voidMethodLongSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_voidMethodLongSequenceArg");
 
-  TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
+  TestTypedefsV8Internal::voidMethodLongSequenceArgMethod(info);
 }
 
 void V8TestTypedefs::voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -457,12 +439,6 @@ void V8TestTypedefs::arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_arrayOfStringsMethodArrayOfStringsArg");
 
   TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
-}
-
-void V8TestTypedefs::stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_stringArrayMethodStringArrayArg");
-
-  TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
 }
 
 void V8TestTypedefs::methodTakingRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -521,14 +497,13 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[]
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
-    {"voidMethodArrayOfLongsArg", V8TestTypedefs::voidMethodArrayOfLongsArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodLongSequenceArg", V8TestTypedefs::voidMethodLongSequenceArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodFloatArgStringArg", V8TestTypedefs::voidMethodFloatArgStringArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestCallbackInterfaceTypeArg", V8TestTypedefs::voidMethodTestCallbackInterfaceTypeArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"uLongLongMethodTestInterfaceEmptyTypeSequenceArg", V8TestTypedefs::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceOrTestInterfaceEmptyMethod", V8TestTypedefs::testInterfaceOrTestInterfaceEmptyMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"domStringOrDoubleMethod", V8TestTypedefs::domStringOrDoubleMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"arrayOfStringsMethodArrayOfStringsArg", V8TestTypedefs::arrayOfStringsMethodArrayOfStringsArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"stringArrayMethodStringArrayArg", V8TestTypedefs::stringArrayMethodStringArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"methodTakingRecord", V8TestTypedefs::methodTakingRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"methodTakingOilpanValueRecord", V8TestTypedefs::methodTakingOilpanValueRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"unionWithRecordMethod", V8TestTypedefs::unionWithRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

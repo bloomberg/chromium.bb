@@ -1295,87 +1295,6 @@ static void htmlElementAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   V8SetReturnValueFast(info, WTF::GetPtr(impl->htmlElementAttribute()), impl);
 }
 
-static void stringArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  V8SetReturnValue(info, ToV8(impl->stringArrayAttribute(), info.Holder(), info.GetIsolate()));
-}
-
-static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "stringArrayAttribute");
-
-  // Prepare the value to be set.
-  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->setStringArrayAttribute(cppValue);
-}
-
-static void testInterfaceEmptyArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  V8SetReturnValue(info, ToV8(impl->testInterfaceEmptyArrayAttribute(), info.Holder(), info.GetIsolate()));
-}
-
-static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyArrayAttribute");
-
-  // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cppValue = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->setTestInterfaceEmptyArrayAttribute(cppValue);
-}
-
-static void floatArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  V8SetReturnValue(info, ToV8(impl->floatArrayAttribute(), info.Holder(), info.GetIsolate()));
-}
-
-static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "floatArrayAttribute");
-
-  // Prepare the value to be set.
-  Vector<float> cppValue = NativeValueTraits<IDLSequence<IDLFloat>>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->setFloatArrayAttribute(cppValue);
-}
-
 static void stringFrozenArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -2064,7 +1983,7 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedarrayattribute");
-  if (!static_cast<const TestObject*>(impl)->isArrayDirty()) {
+  if (!static_cast<const TestObject*>(impl)->isFrozenArrayDirty()) {
     v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
     if (!v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
@@ -2075,7 +1994,7 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   Vector<String> cppValue(impl->cachedArrayAttribute());
 
   // [CachedAttribute]
-  v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
+  v8::Local<v8::Value> v8Value(FreezeV8Object(ToV8(cppValue, holder, info.GetIsolate()), info.GetIsolate()));
   propertySymbol.Set(holder, v8Value);
 
   V8SetReturnValue(info, v8Value);
@@ -5287,98 +5206,6 @@ static void voidMethodAllowSharedUint8ArrayArgMethod(const v8::FunctionCallbackI
   impl->voidMethodAllowSharedUint8ArrayArg(uint8ArrayArg);
 }
 
-static void longArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  V8SetReturnValue(info, ToV8(impl->longArrayMethod(), info.Holder(), info.GetIsolate()));
-}
-
-static void stringArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  V8SetReturnValue(info, ToV8(impl->stringArrayMethod(), info.Holder(), info.GetIsolate()));
-}
-
-static void testInterfaceEmptyArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  V8SetReturnValue(info, ToV8(impl->testInterfaceEmptyArrayMethod(), info.Holder(), info.GetIsolate()));
-}
-
-static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodArrayLongArg");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  Vector<int32_t> arrayLongArg;
-  arrayLongArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->voidMethodArrayLongArg(arrayLongArg);
-}
-
-static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodArrayStringArg");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  Vector<String> arrayStringArg;
-  arrayStringArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->voidMethodArrayStringArg(arrayStringArg);
-}
-
-static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodArrayTestInterfaceEmptyArg");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
-  arrayTestInterfaceEmptyArg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->voidMethodArrayTestInterfaceEmptyArg(arrayTestInterfaceEmptyArg);
-}
-
-static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodNullableArrayLongArg");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  Nullable<Vector<int32_t>> arrayLongArg;
-  if (!IsUndefinedOrNull(info[0])) {
-    arrayLongArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-    if (exceptionState.HadException())
-      return;
-  }
-
-  impl->voidMethodNullableArrayLongArg(arrayLongArg);
-}
-
 static void longSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -7013,12 +6840,12 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  Vector<int32_t> longArrayArg;
-  longArrayArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  Vector<int32_t> longArraySequence;
+  longArraySequence = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  impl->overloadedMethodD(longArrayArg);
+  impl->overloadedMethodD(longArraySequence);
 }
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -9213,24 +9040,6 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
   impl->voidMethodTestInterfaceGarbageCollectedSequenceArg(testInterfaceGarbageCollectedSequenceArg);
 }
 
-static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodTestInterfaceGarbageCollectedArrayArg");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
-  testInterfaceGarbageCollectedArrayArg = NativeValueTraits<IDLSequence<TestInterfaceGarbageCollected>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
-    return;
-
-  impl->voidMethodTestInterfaceGarbageCollectedArrayArg(testInterfaceGarbageCollectedArrayArg);
-}
-
 static void newObjectTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -10179,48 +9988,6 @@ void V8TestObject::htmlElementAttributeAttributeGetterCallback(const v8::Functio
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_htmlElementAttribute_Getter");
 
   TestObjectV8Internal::htmlElementAttributeAttributeGetter(info);
-}
-
-void V8TestObject::stringArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayAttribute_Getter");
-
-  TestObjectV8Internal::stringArrayAttributeAttributeGetter(info);
-}
-
-void V8TestObject::stringArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayAttribute_Setter");
-
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::stringArrayAttributeAttributeSetter(v8Value, info);
-}
-
-void V8TestObject::testInterfaceEmptyArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayAttribute_Getter");
-
-  TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeGetter(info);
-}
-
-void V8TestObject::testInterfaceEmptyArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayAttribute_Setter");
-
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeSetter(v8Value, info);
-}
-
-void V8TestObject::floatArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatArrayAttribute_Getter");
-
-  TestObjectV8Internal::floatArrayAttributeAttributeGetter(info);
-}
-
-void V8TestObject::floatArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_floatArrayAttribute_Setter");
-
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::floatArrayAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestObject::stringFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -12183,48 +11950,6 @@ void V8TestObject::voidMethodAllowSharedUint8ArrayArgMethodCallback(const v8::Fu
   TestObjectV8Internal::voidMethodAllowSharedUint8ArrayArgMethod(info);
 }
 
-void V8TestObject::longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longArrayMethod");
-
-  TestObjectV8Internal::longArrayMethodMethod(info);
-}
-
-void V8TestObject::stringArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_stringArrayMethod");
-
-  TestObjectV8Internal::stringArrayMethodMethod(info);
-}
-
-void V8TestObject::testInterfaceEmptyArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_testInterfaceEmptyArrayMethod");
-
-  TestObjectV8Internal::testInterfaceEmptyArrayMethodMethod(info);
-}
-
-void V8TestObject::voidMethodArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayLongArg");
-
-  TestObjectV8Internal::voidMethodArrayLongArgMethod(info);
-}
-
-void V8TestObject::voidMethodArrayStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayStringArg");
-
-  TestObjectV8Internal::voidMethodArrayStringArgMethod(info);
-}
-
-void V8TestObject::voidMethodArrayTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayTestInterfaceEmptyArg");
-
-  TestObjectV8Internal::voidMethodArrayTestInterfaceEmptyArgMethod(info);
-}
-
-void V8TestObject::voidMethodNullableArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodNullableArrayLongArg");
-
-  TestObjectV8Internal::voidMethodNullableArrayLongArgMethod(info);
-}
-
 void V8TestObject::longSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_longSequenceMethod");
 
@@ -13252,12 +12977,6 @@ void V8TestObject::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallb
   TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(info);
 }
 
-void V8TestObject::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTestInterfaceGarbageCollectedArrayArg");
-
-  TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethod(info);
-}
-
 void V8TestObject::newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_newObjectTestInterfaceMethod");
 
@@ -13548,12 +13267,6 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
 
     { "htmlElementAttribute", V8TestObject::htmlElementAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
-    { "stringArrayAttribute", V8TestObject::stringArrayAttributeAttributeGetterCallback, V8TestObject::stringArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-
-    { "testInterfaceEmptyArrayAttribute", V8TestObject::testInterfaceEmptyArrayAttributeAttributeGetterCallback, V8TestObject::testInterfaceEmptyArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-
-    { "floatArrayAttribute", V8TestObject::floatArrayAttributeAttributeGetterCallback, V8TestObject::floatArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-
     { "stringFrozenArrayAttribute", V8TestObject::stringFrozenArrayAttributeAttributeGetterCallback, V8TestObject::stringFrozenArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "testInterfaceEmptyFrozenArrayAttribute", V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback, V8TestObject::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
@@ -13822,13 +13535,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodUint8ArrayArg", V8TestObject::voidMethodUint8ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodAllowSharedArrayBufferViewArg", V8TestObject::voidMethodAllowSharedArrayBufferViewArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodAllowSharedUint8ArrayArg", V8TestObject::voidMethodAllowSharedUint8ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"longArrayMethod", V8TestObject::longArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"stringArrayMethod", V8TestObject::stringArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"testInterfaceEmptyArrayMethod", V8TestObject::testInterfaceEmptyArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodArrayLongArg", V8TestObject::voidMethodArrayLongArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodArrayStringArg", V8TestObject::voidMethodArrayStringArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodArrayTestInterfaceEmptyArg", V8TestObject::voidMethodArrayTestInterfaceEmptyArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodNullableArrayLongArg", V8TestObject::voidMethodNullableArrayLongArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"longSequenceMethod", V8TestObject::longSequenceMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"stringSequenceMethod", V8TestObject::stringSequenceMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceEmptySequenceMethod", V8TestObject::testInterfaceEmptySequenceMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
@@ -13987,7 +13693,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", V8TestObject::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"unforgeableVoidMethod", V8TestObject::unforgeableVoidMethodMethodCallback, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestInterfaceGarbageCollectedSequenceArg", V8TestObject::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodTestInterfaceGarbageCollectedArrayArg", V8TestObject::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"newObjectTestInterfaceMethod", V8TestObject::newObjectTestInterfaceMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"RuntimeCallStatsCounterMethod", V8TestObject::RuntimeCallStatsCounterMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"serializerMethod", V8TestObject::serializerMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

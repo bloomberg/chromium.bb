@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/DoubleOrInternalEnum.h"
 #include "bindings/core/v8/DoubleOrString.h"
-#include "bindings/core/v8/DoubleOrStringOrStringArray.h"
 #include "bindings/core/v8/DoubleOrStringOrStringSequence.h"
 #include "bindings/core/v8/NodeListOrElement.h"
 #include "platform/wtf/text/WTFString.h"
@@ -22,19 +21,17 @@ class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
   static UnionTypesTest* Create() { return new UnionTypesTest(); }
   virtual ~UnionTypesTest() {}
 
-  void doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray&);
-  void setDoubleOrStringOrStringArrayAttribute(
-      const DoubleOrStringOrStringArray&);
+  void doubleOrStringOrStringSequenceAttribute(DoubleOrStringOrStringSequence&);
+  void setDoubleOrStringOrStringSequenceAttribute(
+      const DoubleOrStringOrStringSequence&);
 
   String doubleOrStringArg(DoubleOrString&);
   String doubleOrInternalEnumArg(DoubleOrInternalEnum&);
-  String doubleOrStringArrayArg(HeapVector<DoubleOrString>&);
   String doubleOrStringSequenceArg(HeapVector<DoubleOrString>&);
 
   String nodeListOrElementArg(NodeListOrElement&);
   String nodeListOrElementOrNullArg(NodeListOrElement&);
 
-  String doubleOrStringOrStringArrayArg(const DoubleOrStringOrStringArray&);
   String doubleOrStringOrStringSequenceArg(
       const DoubleOrStringOrStringSequence&);
 
@@ -47,12 +44,12 @@ class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
     kSpecificTypeNone,
     kSpecificTypeDouble,
     kSpecificTypeString,
-    kSpecificTypeStringArray,
+    kSpecificTypeStringSequence,
   };
   AttributeSpecificType attribute_type_;
   double attribute_double_;
   String attribute_string_;
-  Vector<String> attribute_string_array_;
+  Vector<String> attribute_string_sequence_;
 };
 
 }  // namespace blink

@@ -4,14 +4,14 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Tests for attributes
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is 0
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is 3.14
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is "foo"
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is "undefined"
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is "null"
-PASS unionTypesTest.doubleOrStringOrStringArrayAttribute is "[object Object]"
-PASS JSON.stringify(unionTypesTest.doubleOrStringOrStringArrayAttribute) is "[]"
-PASS JSON.stringify(unionTypesTest.doubleOrStringOrStringArrayAttribute) is "[\"a\",\"3.14\"]"
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is 0
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is 3.14
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is "foo"
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is "undefined"
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is "null"
+PASS unionTypesTest.doubleOrStringOrStringSequenceAttribute is "[object Object]"
+PASS JSON.stringify(unionTypesTest.doubleOrStringOrStringSequenceAttribute) is "[]"
+PASS JSON.stringify(unionTypesTest.doubleOrStringOrStringSequenceAttribute) is "[\"a\",\"3.14\"]"
 
 Tests for method arguments
 PASS unionTypesTest.doubleOrStringArg(3.14) is "double is passed: 3.14"
@@ -29,14 +29,6 @@ PASS unionTypesTest.doubleOrInternalEnumArg("invalid") threw exception TypeError
 PASS unionTypesTest.doubleOrInternalEnumArg(null) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value 'null' is not a valid enum value of type InternalEnum..
 PASS unionTypesTest.doubleOrInternalEnumArg({}) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value '[object Object]' is not a valid enum value of type InternalEnum..
 PASS unionTypesTest.doubleOrInternalEnumArg([]) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value '' is not a valid enum value of type InternalEnum..
-
-PASS unionTypesTest.doubleOrStringArrayArg([]) is ""
-PASS unionTypesTest.doubleOrStringArrayArg([3.14, "foo"]) is "double: 3.14, string: foo"
-PASS unionTypesTest.doubleOrStringArrayArg([1, "foo", "bar", 2]) is "double: 1, string: foo, string: bar, double: 2"
-PASS unionTypesTest.doubleOrStringArrayArg([null, undefined, {}, []]) is "string: null, string: undefined, string: [object Object], string: "
-PASS unionTypesTest.doubleOrStringArrayArg(null) threw exception TypeError: Failed to execute 'doubleOrStringArrayArg' on 'UnionTypesTest': The provided value cannot be converted to a sequence..
-PASS unionTypesTest.doubleOrStringArrayArg(undefined) threw exception TypeError: Failed to execute 'doubleOrStringArrayArg' on 'UnionTypesTest': The provided value cannot be converted to a sequence..
-PASS unionTypesTest.doubleOrStringArrayArg({}) threw exception TypeError: Failed to execute 'doubleOrStringArrayArg' on 'UnionTypesTest': Iterator getter is not callable..
 
 PASS unionTypesTest.doubleOrStringSequenceArg([]) is ""
 PASS unionTypesTest.doubleOrStringSequenceArg([3.14, "foo"]) is "double: 3.14, string: foo"
@@ -73,16 +65,7 @@ PASS unionTypesTest.nodeListOrElementArg(null) threw exception TypeError: Failed
 PASS unionTypesTest.nodeListOrElementArg(nodeList) is "nodelist is passed"
 PASS unionTypesTest.nodeListOrElementArg(element) is "element is passed"
 
-Tests for method arguments with array/sequence members
-PASS unionTypesTest.doubleOrStringOrStringArrayArg() threw exception TypeError: Failed to execute 'doubleOrStringOrStringArrayArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
-PASS unionTypesTest.doubleOrStringOrStringArrayArg("abc") is "string: abc"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(3.14) is "double: 3.14"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(true) is "string: true"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(null) is "string: null"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(undefined) is "string: undefined"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg([]) is "array: []"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(["a", 3.14]) is "array: [a, 3.14]"
-PASS unionTypesTest.doubleOrStringOrStringArrayArg(new Array(3)) is "array: [undefined, undefined, undefined]"
+Tests for method arguments with sequence members
 PASS unionTypesTest.doubleOrStringOrStringSequenceArg() threw exception TypeError: Failed to execute 'doubleOrStringOrStringSequenceArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
 PASS unionTypesTest.doubleOrStringOrStringSequenceArg("abc") is "string: abc"
 PASS unionTypesTest.doubleOrStringOrStringSequenceArg(3.14) is "double: 3.14"
@@ -93,16 +76,7 @@ PASS unionTypesTest.doubleOrStringOrStringSequenceArg([]) is "sequence: []"
 PASS unionTypesTest.doubleOrStringOrStringSequenceArg(["a", 3.14]) is "sequence: [a, 3.14]"
 PASS unionTypesTest.doubleOrStringOrStringSequenceArg(new Array(3)) is "sequence: [undefined, undefined, undefined]"
 
-Tests for nullable method arguments with array/sequence members
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg() threw exception TypeError: Failed to execute 'doubleOrStringOrStringArrayNullableArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg("abc") is "string: abc"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(3.14) is "double: 3.14"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(true) is "string: true"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(null) is "null"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(undefined) is "null"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg([]) is "array: []"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(["a", 3.14]) is "array: [a, 3.14]"
-PASS unionTypesTest.doubleOrStringOrStringArrayNullableArg(new Array(3)) is "array: [undefined, undefined, undefined]"
+Tests for nullable method arguments with sequence members
 PASS unionTypesTest.doubleOrStringOrStringSequenceNullableArg() threw exception TypeError: Failed to execute 'doubleOrStringOrStringSequenceNullableArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
 PASS unionTypesTest.doubleOrStringOrStringSequenceNullableArg("abc") is "string: abc"
 PASS unionTypesTest.doubleOrStringOrStringSequenceNullableArg(3.14) is "double: 3.14"

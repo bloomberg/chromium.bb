@@ -14,7 +14,6 @@ dictionary TestDictionary {
     TestInterface? testInterfaceOrNullMember;
     TestInterfaceGarbageCollected testInterfaceGarbageCollectedMember;
     TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullMember;
-    DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember = [];
     sequence<TestInterface> testInterfaceSequenceMember = [];
     sequence<TestObject> testObjectSequenceMember;

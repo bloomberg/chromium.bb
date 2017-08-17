@@ -219,20 +219,10 @@ interface MyIFaceBig2 {
  *          StringType(DOMString)
  *    Type()
  *      PrimitiveType(double)
- *  Operation(GetFiveSix)
- *    Arguments()
- *      Argument(arg)
- *        Type()
- *          Typeref(SomeType)
- *    Type()
- *      PrimitiveType(long long)
- *      Array(5)
- *        Array(6)
  */
 interface MyIFaceSpecials {
   setter creator void set(DOMString property);
   getter double (DOMString property);
-  long long [5][6] GetFiveSix(SomeType arg);
 };
 
 /** TREE

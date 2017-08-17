@@ -104,10 +104,6 @@ interface TestObject {
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection htmlCollectionAttribute;
     readonly attribute HTMLElement htmlElementAttribute;
-    // Arrays
-    attribute DOMString[] stringArrayAttribute;
-    attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;
-    attribute float[] floatArrayAttribute;
     // FrozenArrays
     attribute FrozenArray<DOMString> stringFrozenArrayAttribute;
     attribute FrozenArray<TestInterfaceEmpty> testInterfaceEmptyFrozenArrayAttribute;
@@ -138,7 +134,7 @@ interface TestObject {
     [LogActivity=GetterOnly, LogAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
     [LogActivity=SetterOnly, LogAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
-    [CachedAttribute=isArrayDirty] attribute DOMString[] cachedArrayAttribute;
+    [CachedAttribute=isFrozenArrayDirty] attribute FrozenArray<DOMString> cachedArrayAttribute;
     [CachedAttribute=isStringDirty] attribute DOMString? cachedStringOrNoneAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
@@ -232,7 +228,7 @@ interface TestObject {
     // Naming convention:
     // ReturnType returnTypeMethodTypeName1ArgTypeName2Arg(Type1 typeName1Arg, Type2 typeName2Arg);
     // E.g.,
-    // void voidMethodStringArgLongArrayArg(DOMString stringArg, long[] longArrayArg);
+    // void voidMethodStringArgLongSequenceArg(DOMString stringArg, sequence<long> longSequenceArg);
     void voidMethod();
     static void staticVoidMethod();
 
@@ -302,14 +298,6 @@ interface TestObject {
     void voidMethodUint8ArrayArg(Uint8Array uint8ArrayArg);
     void voidMethodAllowSharedArrayBufferViewArg([AllowShared] ArrayBufferView arrayBufferViewArg);
     void voidMethodAllowSharedUint8ArrayArg([AllowShared] Uint8Array uint8ArrayArg);
-    // Arrays
-    long[] longArrayMethod();
-    DOMString[] stringArrayMethod();
-    TestInterfaceEmpty[] testInterfaceEmptyArrayMethod();
-    void voidMethodArrayLongArg(long[] arrayLongArg);
-    void voidMethodArrayStringArg(DOMString[] arrayStringArg);
-    void voidMethodArrayTestInterfaceEmptyArg(TestInterfaceEmpty[] arrayTestInterfaceEmptyArg);
-    void voidMethodNullableArrayLongArg(long[]? arrayLongArg);
     // Sequences
     sequence<long> longSequenceMethod();
     sequence<DOMString> stringSequenceMethod();
@@ -421,7 +409,7 @@ interface TestObject {
     void overloadedMethodC(long longArg);
     void overloadedMethodC(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodD(long longArg);
-    void overloadedMethodD(long[] longArrayArg);
+    void overloadedMethodD(sequence<long> longArraySequence);
     void overloadedMethodE(long longArg);
     void overloadedMethodE(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     void overloadedMethodF(optional DOMString stringArg);
@@ -548,7 +536,6 @@ interface TestObject {
     void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [Default=Undefined] optional Node node2);
     [Unforgeable] void unforgeableVoidMethod();
     void voidMethodTestInterfaceGarbageCollectedSequenceArg(sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceArg);
-    void voidMethodTestInterfaceGarbageCollectedArrayArg(TestInterfaceGarbageCollected[] testInterfaceGarbageCollectedArrayArg);
     [NewObject] TestInterface newObjectTestInterfaceMethod();
     [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();
 
