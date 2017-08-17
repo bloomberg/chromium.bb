@@ -501,7 +501,7 @@ test_screen_render_order(struct test_context *ctx)
 	int32_t length = 0;
 	uint32_t i;
 
-	if (wl_list_empty(&ctx->compositor->output_list))
+	if (!iassert(!wl_list_empty(&ctx->compositor->output_list)))
 		return;
 
 	output = wl_container_of(ctx->compositor->output_list.next, output, link);
@@ -547,7 +547,7 @@ test_screen_bad_render_order(struct test_context *ctx)
 	int32_t length = 0;
 	uint32_t i;
 
-	if (wl_list_empty(&ctx->compositor->output_list))
+	if (!iassert(!wl_list_empty(&ctx->compositor->output_list)))
 		return;
 
 	output = wl_container_of(ctx->compositor->output_list.next, output, link);
@@ -580,7 +580,7 @@ test_screen_add_layers(struct test_context *ctx)
 	int32_t length = 0;
 	uint32_t i;
 
-	if (wl_list_empty(&ctx->compositor->output_list))
+	if (!iassert(!wl_list_empty(&ctx->compositor->output_list)))
 		return;
 
 	output = wl_container_of(ctx->compositor->output_list.next, output, link);
@@ -699,7 +699,7 @@ test_commit_changes_after_render_order_set_layer_destroy(
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 	uint32_t i;
 
-	if (wl_list_empty(&ctx->compositor->output_list))
+	if (!iassert(!wl_list_empty(&ctx->compositor->output_list)))
 		return;
 
 	output = wl_container_of(ctx->compositor->output_list.next, output, link);
