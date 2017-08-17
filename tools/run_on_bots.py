@@ -84,8 +84,8 @@ def archive(isolate_server, script):
 
 
 def run_serial(
-    swarming_server, isolate_server, dimensions, priority, deadline, repeat,
-    isolated_hash, name, bots):
+    swarming_server, isolate_server, dimensions, env, priority, deadline,
+    repeat, isolated_hash, name, bots, args):
   """Runs the task one at a time.
 
   This will be mainly bound by task scheduling latency, especially if the bots
@@ -109,27 +109,27 @@ def run_serial(
       ]
       for k, v in sorted(dimensions.iteritems()):
         cmd.extend(('-d', k, v))
+      for k, v in env:
+        cmd.extend(('--env', k, v))
+      cmd.extend(args)
       r = subprocess.call(cmd, cwd=ROOT_DIR)
       result = max(r, result)
   return result
 
 
 def run_parallel(
-    swarming_server, isolate_server, dimensions, priority, deadline, repeat,
-    isolated_hash, name, bots):
+    swarming_server, isolate_server, dimensions, env, priority, deadline,
+    repeat, isolated_hash, name, bots, args):
   tasks = []
   for i in xrange(repeat):
     suffix = '/%d' % i if repeat > 1 else ''
-    tasks.extend(
-        (
-          parallel_execution.task_to_name(
-              name, {'id': bot}, isolated_hash) + suffix,
-          isolated_hash,
-          {'id': bot},
-        ) for bot in bots)
+    for bot in bots:
+      d = {'id': bot}
+      tname = parallel_execution.task_to_name(name, d, isolated_hash) + suffix
+      d.update(dimensions)
+      tasks.append((tname, isolated_hash, d, env))
   extra_args = ['--priority', priority, '--deadline', deadline]
-  for k, v in sorted(dimensions.iteritems()):
-    extra_args.extend(('-d', k, v))
+  extra_args.extend(args)
   print('Using priority %s' % priority)
   for failed_task in parallel_execution.run_swarming_tasks_parallel(
       swarming_server, isolate_server, extra_args, tasks):
@@ -151,7 +151,7 @@ def main():
            'load test')
   options, args = parser.parse_args()
 
-  if len(args) != 1:
+  if len(args) < 1:
     parser.error(
         'Must pass one python script to run. Use --help for more details')
 
@@ -183,23 +183,27 @@ def main():
         options.swarming,
         options.isolate_server,
         options.dimensions,
+        options.env,
         str(options.priority),
         str(options.deadline),
         options.repeat,
         isolated_hash,
         name,
-        bots)
+        bots,
+        args[1:])
 
   return run_parallel(
       options.swarming,
       options.isolate_server,
       options.dimensions,
+      options.env,
       str(options.priority),
       str(options.deadline),
       options.repeat,
       isolated_hash,
       name,
-      bots)
+      bots,
+      args[1:])
 
 
 if __name__ == '__main__':
