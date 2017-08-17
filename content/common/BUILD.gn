@@ -505,7 +505,7 @@ source_set("common") {
     deps += [ "//third_party/fontconfig" ]
   }
 
-  if (is_mac || is_win || is_android) {
+  if (is_mac || is_win || is_android || is_fuchsia) {
     sources -= [ "font_list_fontconfig.cc" ]
   }
 
