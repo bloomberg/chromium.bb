@@ -482,6 +482,7 @@ split_static_library("ui") {
     "//chrome/browser/devtools",
     "//chrome/browser/engagement:mojo_bindings",
     "//chrome/browser/media:mojo_bindings",
+    "//chrome/browser/profiling_host",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",

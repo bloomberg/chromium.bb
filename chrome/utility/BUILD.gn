@@ -36,6 +36,8 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
+    "//chrome/common/profiling",
+    "//chrome/profiling",
     "//components/payments/content/utility",
     "//components/safe_json/utility",
     "//components/search_engines",
