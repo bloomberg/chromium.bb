@@ -88,10 +88,12 @@ typedef enum {
 // GLOBAL_TRANS_TYPES 7 - up to full homography
 #define GLOBAL_TRANS_TYPES 4
 
+#if GLOBAL_TRANS_TYPES > 4
 // First bit indicates whether using identity or not
 // GLOBAL_TYPE_BITS=ceiling(log2(GLOBAL_TRANS_TYPES-1)) is the
 // number of bits needed to cover the remaining possibilities
 #define GLOBAL_TYPE_BITS (get_msb(2 * GLOBAL_TRANS_TYPES - 3))
+#endif  // GLOBAL_TRANS_TYPES > 4
 
 typedef struct {
 #if CONFIG_GLOBAL_MOTION

@@ -4535,7 +4535,14 @@ static void write_global_motion_params(WarpedMotionParams *params,
   int trans_bits;
   int trans_prec_diff;
   aom_write_bit(w, type != IDENTITY);
-  if (type != IDENTITY) aom_write_literal(w, type - 1, GLOBAL_TYPE_BITS);
+  if (type != IDENTITY) {
+#if GLOBAL_TRANS_TYPES > 4
+    aom_write_literal(w, type - 1, GLOBAL_TYPE_BITS);
+#else
+    aom_write_bit(w, type == ROTZOOM);
+    if (type != ROTZOOM) aom_write_bit(w, type == TRANSLATION);
+#endif  // GLOBAL_TRANS_TYPES > 4
+  }
 
   switch (type) {
     case HOMOGRAPHY:
