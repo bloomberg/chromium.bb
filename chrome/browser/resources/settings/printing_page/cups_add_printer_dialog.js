@@ -99,7 +99,12 @@ Polymer({
    */
   onPrinterDiscovered_: function(printers) {
     this.discovering_ = true;
-    this.discoveredPrinters = printers;
+    if (!this.discoveredPrinters) {
+      this.discoveredPrinters = printers;
+    } else {
+      for (var i = 0; i < printers.length; i++)
+        this.push('discoveredPrinters', printers[i]);
+    }
   },
 
   /** @private */
@@ -136,10 +141,16 @@ Polymer({
   },
 
   /** @private */
-  switchToConfiguringDialog_: function() {
+  switchToManufacturerDialog_: function() {
     this.stopDiscoveringPrinters_();
+    // If we're switching to the manufacturer/model dialog, clear the existing
+    // data we have about the PPD (if any), as we're dropping that in favor of
+    // user selections.
+    this.selectedPrinter.ppdManufacturer = '';
+    this.selectedPrinter.ppdModel = '';
+    this.selectedPrinter.printerPPDPath = '';
     this.$$('add-printer-dialog').close();
-    this.fire('open-configuring-printer-dialog');
+    this.fire('open-manufacturer-model-dialog');
   },
 });
 
@@ -312,9 +323,6 @@ Polymer({
   /** @override */
   ready: function() {
     this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
-    this.addWebUIListener(
-        'on-manually-add-discovered-printer',
-        this.onManuallyAddDiscoveredPrinter_.bind(this));
   },
 
   /** Opens the Add printer discovery dialog. */
@@ -347,10 +355,13 @@ Polymer({
         'showDiscoveryDialog_');
   },
 
-  /** @private */
-  addPrinter_: function() {
+  /**
+   * @param {!SetupMethod} setupMethod
+   * @private
+   */
+  addPrinter_: function(setupMethod) {
     settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-        this.newPrinter);
+        setupMethod, this.newPrinter);
   },
 
   /** @private */
@@ -373,7 +384,7 @@ Polymer({
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
     if (this.newPrinter.printerAutoconf) {
-      this.addPrinter_();
+      this.addPrinter_(SetupMethod.AUTOMATIC);
     } else {
       this.switchToManufacturerDialog_();
     }
@@ -396,12 +407,11 @@ Polymer({
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().addDiscoveredPrinter(
-          this.newPrinter.printerId);
+      this.addPrinter_(SetupMethod.AUTOMATIC);
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
           loadTimeData.getString('selectManufacturerAndModelTitle');
-      this.addPrinter_();
+      this.addPrinter_(SetupMethod.MANUAL);
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersManuallyTitle');
@@ -475,19 +485,6 @@ Polymer({
         this.set(domIfBooleanName, false);
       });
     });
-  },
-
-  /**
-   * Use the given printer as the starting point for a user-driven
-   * add of a printer.  This is called if we can't automatically configure
-   * the printer, and need more information from the user.
-   *
-   * @param {!CupsPrinterInfo} printer
-   * @private
-   */
-  onManuallyAddDiscoveredPrinter_: function(printer) {
-    this.newPrinter = printer;
-    this.switchToManufacturerDialog_();
   },
 
   /**

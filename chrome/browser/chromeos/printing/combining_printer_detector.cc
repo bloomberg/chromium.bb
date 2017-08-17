@@ -108,6 +108,12 @@ class CombiningPrinterDetectorImpl : public CombiningPrinterDetector {
     return ret;
   }
 
+  void Start() override {
+    for (PrinterDetector* detector : detectors_) {
+      detector->Start();
+    }
+  }
+
  private:
   // Map from observer delegate to the most recent list of printers from that
   // observer.
