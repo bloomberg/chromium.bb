@@ -104,7 +104,10 @@ bool ComputeAbsoluteOrientationEulerAnglesFromGravityAndGeomagnetic(
 namespace device {
 
 AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer::
-    AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer() {
+    AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer()
+    : PlatformSensorFusionAlgorithm(
+          mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
+          {mojom::SensorType::ACCELEROMETER, mojom::SensorType::MAGNETOMETER}) {
 }
 
 AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer::
@@ -112,8 +115,8 @@ AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer::
         default;
 
 bool AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer::
-    GetFusedData(mojom::SensorType which_sensor_changed,
-                 SensorReading* fused_reading) {
+    GetFusedDataInternal(mojom::SensorType which_sensor_changed,
+                         SensorReading* fused_reading) {
   // Transform the accelerometer and magnetometer values to W3C draft Euler
   // angles.
   DCHECK(fusion_sensor_);
@@ -125,8 +128,10 @@ bool AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetome
 
   SensorReading gravity_reading;
   SensorReading geomagnetic_reading;
-  if (!fusion_sensor_->GetLatestReading(0, &gravity_reading) ||
-      !fusion_sensor_->GetLatestReading(1, &geomagnetic_reading)) {
+  if (!fusion_sensor_->GetSourceReading(mojom::SensorType::ACCELEROMETER,
+                                        &gravity_reading) ||
+      !fusion_sensor_->GetSourceReading(mojom::SensorType::MAGNETOMETER,
+                                        &geomagnetic_reading)) {
     return false;
   }
 

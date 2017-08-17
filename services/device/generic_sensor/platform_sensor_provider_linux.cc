@@ -238,18 +238,13 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
 void PlatformSensorProviderLinux::CreateLinearAccelerationSensor(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
-  std::vector<mojom::SensorType> source_sensor_types = {
-      mojom::SensorType::ACCELEROMETER};
-
   auto sensor_fusion_algorithm =
       base::MakeUnique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
 
   // If this PlatformSensorFusion object is successfully initialized,
   // |callback| will be run with a reference to this object.
   base::MakeRefCounted<PlatformSensorFusion>(
-      std::move(mapping), this, callback, source_sensor_types,
-      mojom::SensorType::LINEAR_ACCELERATION,
-      std::move(sensor_fusion_algorithm));
+      std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
 }
 
 // For RELATIVE_ORIENTATION_EULER_ANGLES we use a 2-way fallback approach
@@ -260,18 +255,13 @@ void PlatformSensorProviderLinux::CreateLinearAccelerationSensor(
 void PlatformSensorProviderLinux::CreateRelativeOrientationEulerAnglesSensor(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
-  std::vector<mojom::SensorType> source_sensor_types = {
-      mojom::SensorType::ACCELEROMETER};
-
   auto sensor_fusion_algorithm = base::MakeUnique<
       RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
 
   // If this PlatformSensorFusion object is successfully initialized,
   // |callback| will be run with a reference to this object.
   base::MakeRefCounted<PlatformSensorFusion>(
-      std::move(mapping), this, callback, source_sensor_types,
-      mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
-      std::move(sensor_fusion_algorithm));
+      std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
 }
 
 // For RELATIVE_ORIENTATION_QUATERNION we use the following fallback approach:
@@ -279,18 +269,14 @@ void PlatformSensorProviderLinux::CreateRelativeOrientationEulerAnglesSensor(
 void PlatformSensorProviderLinux::CreateRelativeOrientationQuaternionSensor(
     mojo::ScopedSharedBufferMapping mapping,
     const CreateSensorCallback& callback) {
-  std::vector<mojom::SensorType> source_sensor_types = {
-      mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES};
-
   auto sensor_fusion_algorithm =
-      base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>();
+      base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+          false /* absolute */);
 
   // If this PlatformSensorFusion object is successfully initialized,
   // |callback| will be run with a reference to this object.
   base::MakeRefCounted<PlatformSensorFusion>(
-      std::move(mapping), this, callback, source_sensor_types,
-      mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION,
-      std::move(sensor_fusion_algorithm));
+      std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
 }
 
 }  // namespace device

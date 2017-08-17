@@ -103,31 +103,22 @@ void PlatformSensorProviderAndroid::CreateAbsoluteOrientationEulerAnglesSensor(
           env, j_object_,
           static_cast<jint>(
               mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION)))) {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION};
-
-    auto sensor_fusion_algorithm = base::MakeUnique<
-        OrientationEulerAnglesFusionAlgorithmUsingQuaternion>();
+    auto sensor_fusion_algorithm =
+        base::MakeUnique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
+            true /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   } else {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::ACCELEROMETER, mojom::SensorType::MAGNETOMETER};
-
     auto sensor_fusion_algorithm = base::MakeUnique<
         AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   }
 }
 
@@ -151,18 +142,14 @@ void PlatformSensorProviderAndroid::CreateAbsoluteOrientationQuaternionSensor(
 
     callback.Run(concrete_sensor);
   } else {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES};
-
-    auto sensor_fusion_algorithm = base::MakeUnique<
-        OrientationQuaternionFusionAlgorithmUsingEulerAngles>();
+    auto sensor_fusion_algorithm =
+        base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+            true /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   }
 }
 
@@ -181,31 +168,22 @@ void PlatformSensorProviderAndroid::CreateRelativeOrientationEulerAnglesSensor(
           env, j_object_,
           static_cast<jint>(
               mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION)))) {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION};
-
-    auto sensor_fusion_algorithm = base::MakeUnique<
-        OrientationEulerAnglesFusionAlgorithmUsingQuaternion>();
+    auto sensor_fusion_algorithm =
+        base::MakeUnique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
+            false /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   } else {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::ACCELEROMETER};
-
     auto sensor_fusion_algorithm = base::MakeUnique<
         RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   }
 }
 
@@ -229,18 +207,14 @@ void PlatformSensorProviderAndroid::CreateRelativeOrientationQuaternionSensor(
 
     callback.Run(concrete_sensor);
   } else {
-    std::vector<mojom::SensorType> source_sensor_types = {
-        mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES};
-
-    auto sensor_fusion_algorithm = base::MakeUnique<
-        OrientationQuaternionFusionAlgorithmUsingEulerAngles>();
+    auto sensor_fusion_algorithm =
+        base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+            false /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
     // |callback| will be run with a reference to this object.
     base::MakeRefCounted<PlatformSensorFusion>(
-        std::move(mapping), this, callback, source_sensor_types,
-        mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION,
-        std::move(sensor_fusion_algorithm));
+        std::move(mapping), this, callback, std::move(sensor_fusion_algorithm));
   }
 }
 

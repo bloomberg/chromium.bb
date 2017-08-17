@@ -19,10 +19,12 @@ class LinearAccelerationFusionAlgorithmUsingAccelerometer final
   LinearAccelerationFusionAlgorithmUsingAccelerometer();
   ~LinearAccelerationFusionAlgorithmUsingAccelerometer() override;
 
-  bool GetFusedData(mojom::SensorType which_sensor_changed,
-                    SensorReading* fused_reading) override;
   void SetFrequency(double frequency) override;
   void Reset() override;
+
+ protected:
+  bool GetFusedDataInternal(mojom::SensorType which_sensor_changed,
+                            SensorReading* fused_reading) override;
 
  private:
   unsigned long reading_updates_count_;
