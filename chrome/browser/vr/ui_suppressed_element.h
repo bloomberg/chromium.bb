@@ -16,6 +16,7 @@ enum class UiSuppressedElement : int {
   kJavascriptDialog,
   kMediaPermission,
   kPermissionRequest,
+  kQuotaPermission,
 
   // This must be last.
   kCount,
