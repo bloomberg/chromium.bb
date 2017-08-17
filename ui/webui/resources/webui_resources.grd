@@ -496,17 +496,6 @@ without changes to the corresponding grd file. -->
                  file="js/web_ui_listener_behavior.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_WEBUI_RESOURCE_TEST"
                  file="js/webui_resource_test.js" type="chrome_html" />
-      <if expr="chromeos">
-        <structure name="IDR_WEBUI_CSS_UI_ACCOUNT_TWEAKS"
-                   file="css/chromeos/ui_account_tweaks.css"
-                   type="chrome_html" />
-        <structure name="IDR_WEBUI_HTML_UI_ACCOUNT_TWEAKS"
-                   file="html/chromeos/ui_account_tweaks.html"
-                   type="chrome_html" />
-        <structure name="IDR_WEBUI_JS_UI_ACCOUNT_TWEAKS"
-                   file="js/chromeos/ui_account_tweaks.js"
-                   type="chrome_html" />
-      </if>
       <if expr="not is_android">
         <part file="cr_components_resources.grdp" />
         <part file="cr_elements_resources.grdp" />

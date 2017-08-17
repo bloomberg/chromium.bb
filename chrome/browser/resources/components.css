@@ -247,3 +247,7 @@ body.show-tmi-mode .show-in-tmi-mode {
 button {
   font-size: 104%;
 }
+
+button[disabled] {
+  color: #999;
+}

@@ -40,7 +40,6 @@
         '<(DEPTH)/ui/file_manager/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/cr_components/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:*',
-        '<(DEPTH)/ui/webui/resources/js/chromeos/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:*',
       ],

@@ -8,9 +8,6 @@
 @import url(chrome://resources/css/text_defaults.css);
 @import url(i18n_process.css);
 @import url(widgets.css);
-<if expr="chromeos">
-@import url(chromeos/ui_account_tweaks.css);
-</if>
 
 /* Prevent CSS from overriding the hidden property. */
 [hidden] {

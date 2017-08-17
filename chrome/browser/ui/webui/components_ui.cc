@@ -31,7 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using content::WebUIMessageHandler;
@@ -51,12 +51,18 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("statusLabel", IDS_COMPONENTS_STATUS_LABEL);
   source->AddLocalizedString("checkingLabel", IDS_COMPONENTS_CHECKING_LABEL);
 
+  source->AddBoolean(
+      "isGuest",
+#if defined(OS_CHROMEOS)
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()
+#else
+      profile->IsOffTheRecord()
+#endif
+  );
   source->SetJsonPath("strings.js");
   source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
   source->SetDefaultResource(IDR_COMPONENTS_HTML);
-#if defined(OS_CHROMEOS)
-  chromeos::AddAccountUITweaksLocalizedValues(source, profile);
-#endif
   return source;
 }
 
