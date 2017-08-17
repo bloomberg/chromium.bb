@@ -12,6 +12,7 @@
 #include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 
 namespace profiling {
 
@@ -24,6 +25,7 @@ class MemlogSenderPipe {
 
  private:
   base::ScopedPlatformFile file_;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogSenderPipe);
 };

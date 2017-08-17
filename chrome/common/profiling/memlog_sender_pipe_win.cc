@@ -22,6 +22,9 @@ bool MemlogSenderPipe::Send(const void* data, size_t sz) {
   //
   // Note: don't use logging here (CHECK, DCHECK) because they will allocate,
   // and this function is called from within a malloc hook.
+  //
+  // ::WriteFile is not thread-safe, so wrap it in a lock.
+  base::AutoLock lock(lock_);
   DWORD bytes_written = 0;
   if (!::WriteFile(file_.Get(), data, static_cast<DWORD>(sz), &bytes_written,
                    NULL))
