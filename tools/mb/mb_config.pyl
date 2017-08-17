@@ -206,7 +206,7 @@
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
       'Ozone Linux': 'ozone_linux_release_bot',
-      'Out of Process Profiling Android': 'release_bot_out_of_process_profiling',
+      'Out of Process Profiling Android': 'android_release_bot_out_of_process_profiling',
       'Out of Process Profiling Linux': 'release_bot_out_of_process_profiling',
       'Out of Process Profiling Mac': 'release_bot_out_of_process_profiling',
       'Out of Process Profiling Windows': 'release_bot_out_of_process_profiling',
@@ -884,6 +884,10 @@
 
     'android_shared_release_bot_x64': [
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
+    ],
+
+    'android_release_bot_out_of_process_profiling': [
+      'android', 'release_bot', 'out_of_process_profiling',
     ],
 
     'android_release_trybot': [
