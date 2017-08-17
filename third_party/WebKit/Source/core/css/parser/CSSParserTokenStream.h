@@ -18,10 +18,17 @@ class CORE_EXPORT CSSParserTokenStream {
   DISALLOW_NEW();
 
  public:
+  class Iterator {
+    explicit Iterator(size_t index) : index_(index) {}
+
+    size_t index_;
+    friend class CSSParserTokenStream;
+  };
+
   explicit CSSParserTokenStream(CSSTokenizer& tokenizer)
       : tokenizer_(tokenizer), next_index_(0) {
     // TODO(shend): Uncomment the code below once observers work properly with
-    // streams. DCHECK_EQ(tokenizer.tokens_.size(), 0U);
+    // streams. DCHECK_EQ(tokenizer.CurrentSize(), 0U);
   }
 
   // TODO(shend): Remove this method. We should never convert from a range to a
@@ -32,17 +39,17 @@ class CORE_EXPORT CSSParserTokenStream {
   }
 
   const CSSParserToken& Peek() const {
-    if (next_index_ == tokenizer_.tokens_.size()) {
+    if (next_index_ == tokenizer_.CurrentSize()) {
       // Reached end of token buffer, but might not be end of input.
       if (tokenizer_.TokenizeSingle().IsEOF())
         return g_static_eof_token;
     }
-    DCHECK_LT(next_index_, tokenizer_.tokens_.size());
+    DCHECK_LT(next_index_, tokenizer_.CurrentSize());
     return UncheckedPeek();
   }
 
   const CSSParserToken& UncheckedPeek() const {
-    DCHECK_LT(next_index_, tokenizer_.tokens_.size());
+    DCHECK_LT(next_index_, tokenizer_.CurrentSize());
     return tokenizer_.tokens_[next_index_];
   }
 
@@ -51,12 +58,12 @@ class CORE_EXPORT CSSParserTokenStream {
     if (!token.IsEOF())
       next_index_++;
 
-    DCHECK_LE(next_index_, tokenizer_.tokens_.size());
+    DCHECK_LE(next_index_, tokenizer_.CurrentSize());
     return token;
   }
 
   const CSSParserToken& UncheckedConsume() {
-    DCHECK_LE(next_index_, tokenizer_.tokens_.size());
+    DCHECK_LE(next_index_, tokenizer_.CurrentSize());
     return tokenizer_.tokens_[next_index_++];
   }
 
@@ -70,6 +77,21 @@ class CORE_EXPORT CSSParserTokenStream {
     const auto range = tokenizer_.TokenRange();
     return range.MakeSubRange(tokenizer_.tokens_.begin() + next_index_,
                               tokenizer_.tokens_.end());
+  }
+
+  // Range represents all tokens that were consumed between begin and end.
+  CSSParserTokenRange MakeSubRange(Iterator begin, Iterator end) {
+    DCHECK_LE(begin.index_, tokenizer_.CurrentSize());
+    DCHECK_LE(end.index_, tokenizer_.CurrentSize());
+    DCHECK_LE(begin.index_, end.index_);
+    const auto tokens_begin = tokenizer_.tokens_.begin();
+    return CSSParserTokenRange(tokenizer_.tokens_)
+        .MakeSubRange(tokens_begin + begin.index_, tokens_begin + end.index_);
+  }
+
+  Iterator Position() const {
+    DCHECK_LE(next_index_, tokenizer_.CurrentSize());
+    return Iterator(next_index_);
   }
 
   void UncheckedConsumeComponentValue();

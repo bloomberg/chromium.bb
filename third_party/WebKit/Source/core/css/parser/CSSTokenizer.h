@@ -37,6 +37,7 @@ class CORE_EXPORT CSSTokenizer {
  private:
   CSSParserToken TokenizeSingle();
   void EnsureTokenizedToEOF();
+  unsigned CurrentSize() const;
 
   CSSParserToken NextToken();
 

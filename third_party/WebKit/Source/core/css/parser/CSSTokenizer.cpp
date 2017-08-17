@@ -81,6 +81,10 @@ CSSParserTokenRange CSSTokenizer::TokenRange() {
   return tokens_;
 }
 
+unsigned CSSTokenizer::CurrentSize() const {
+  return tokens_.size();
+}
+
 unsigned CSSTokenizer::TokenCount() {
   EnsureTokenizedToEOF();
   return tokens_.size();

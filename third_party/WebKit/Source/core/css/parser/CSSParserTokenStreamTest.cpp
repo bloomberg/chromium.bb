@@ -122,6 +122,48 @@ TEST_P(CSSParserTokenStreamTest, UncheckedConsumeComponentValue) {
   EXPECT_TRUE(stream.AtEnd());
 }
 
+TEST_P(CSSParserTokenStreamTest, MakeSubRangeFromEmptyIterators) {
+  CSSTokenizer tokenizer("");  // kIdent kWhitespace kNumber
+  auto stream = GetStream(tokenizer, GetParam());
+
+  const auto a = stream.Position();
+  const auto b = stream.Position();
+  const auto range = stream.MakeSubRange(a, b);
+
+  EXPECT_TRUE(range.AtEnd());
+}
+
+TEST_P(CSSParserTokenStreamTest, MakeSubRangeFromMultipleIterators) {
+  CSSTokenizer tokenizer("A 1");  // kIdent kWhitespace kNumber
+  auto stream = GetStream(tokenizer, GetParam());
+
+  const auto a = stream.Position();
+  EXPECT_EQ(kIdentToken, stream.Consume().GetType());
+  const auto b = stream.Position();
+  EXPECT_EQ(kWhitespaceToken, stream.Consume().GetType());
+  const auto c = stream.Position();
+  EXPECT_EQ(kNumberToken, stream.Consume().GetType());
+  const auto d = stream.Position();
+
+  const auto range1 = stream.MakeSubRange(a, a);
+  EXPECT_TRUE(range1.AtEnd());
+
+  auto range2 = stream.MakeSubRange(a, d);
+  EXPECT_EQ(kIdentToken, range2.Consume().GetType());
+  EXPECT_EQ(kWhitespaceToken, range2.Consume().GetType());
+  EXPECT_EQ(kNumberToken, range2.Consume().GetType());
+  EXPECT_TRUE(range2.AtEnd());
+
+  auto range3 = stream.MakeSubRange(b, c);
+  EXPECT_EQ(kWhitespaceToken, range3.Consume().GetType());
+  EXPECT_TRUE(range3.AtEnd());
+
+  auto range4 = stream.MakeSubRange(b, d);
+  EXPECT_EQ(kWhitespaceToken, range4.Consume().GetType());
+  EXPECT_EQ(kNumberToken, range4.Consume().GetType());
+  EXPECT_TRUE(range4.AtEnd());
+}
+
 INSTANTIATE_TEST_CASE_P(ShouldTokenizeToEnd,
                         CSSParserTokenStreamTest,
                         ::testing::Bool());
