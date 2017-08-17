@@ -244,8 +244,8 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   DCHECK(paused_frame == paused_frame->LocalFrameRoot());
   paused_ = true;
 
-  if (UserGestureToken* token = UserGestureIndicator::CurrentToken())
-    token->SetTimeoutPolicy(UserGestureToken::kHasPaused);
+  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
+
   // Wait for continue or step command.
   if (client_message_loop_)
     client_message_loop_->Run(paused_frame);

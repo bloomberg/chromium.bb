@@ -1178,7 +1178,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
             ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
         pending_user_gesture_token_ =
             WebUserGestureIndicator::CurrentUserGestureToken();
-        pending_user_gesture_token_.SetOutOfProcess();
+        WebUserGestureIndicator::ExtendTimeout();
       }
 
       // Each input event may generate more than one PP_InputEvent.

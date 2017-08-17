@@ -19,16 +19,6 @@ const double kUserGestureTimeout = 1.0;
 // For out of process tokens we allow a 10 second delay.
 const double kUserGestureOutOfProcessTimeout = 10.0;
 
-// static
-RefPtr<UserGestureToken> UserGestureToken::Adopt(Document* document,
-                                                 UserGestureToken* token) {
-  if (!token || !token->HasGestures())
-    return nullptr;
-  if (document && document->GetFrame())
-    document->GetFrame()->NotifyUserActivation();
-  return token;
-}
-
 UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
       timestamp_(WTF::CurrentTime()),
@@ -125,12 +115,14 @@ UserGestureIndicator::~UserGestureIndicator() {
     root_token_ = nullptr;
 }
 
+// static
 bool UserGestureIndicator::ProcessingUserGesture() {
   if (auto* token = CurrentToken())
     return token->HasGestures();
   return false;
 }
 
+// static
 bool UserGestureIndicator::ProcessingUserGestureThreadSafe() {
   return IsMainThread() && ProcessingUserGesture();
 }
@@ -144,17 +136,27 @@ bool UserGestureIndicator::ConsumeUserGesture() {
   return false;
 }
 
+// static
 bool UserGestureIndicator::ConsumeUserGestureThreadSafe() {
   return IsMainThread() && ConsumeUserGesture();
 }
 
+// static
 UserGestureToken* UserGestureIndicator::CurrentToken() {
   DCHECK(IsMainThread());
   return root_token_;
 }
 
+// static
 UserGestureToken* UserGestureIndicator::CurrentTokenThreadSafe() {
   return IsMainThread() ? CurrentToken() : nullptr;
+}
+
+// static
+void UserGestureIndicator::SetTimeoutPolicy(
+    UserGestureToken::TimeoutPolicy policy) {
+  if (auto* token = CurrentTokenThreadSafe())
+    token->SetTimeoutPolicy(policy);
 }
 
 }  // namespace blink

@@ -354,7 +354,7 @@ bool ChromeClientImpl::OpenJavaScriptAlertDelegate(LocalFrame* frame,
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
     if (WebUserGestureIndicator::IsProcessingUserGesture())
-      WebUserGestureIndicator::CurrentUserGestureToken().SetJavascriptPrompt();
+      WebUserGestureIndicator::DisableTimeout();
     webframe->Client()->RunModalAlertDialog(message);
     return true;
   }
@@ -368,7 +368,7 @@ bool ChromeClientImpl::OpenJavaScriptConfirmDelegate(LocalFrame* frame,
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
     if (WebUserGestureIndicator::IsProcessingUserGesture())
-      WebUserGestureIndicator::CurrentUserGestureToken().SetJavascriptPrompt();
+      WebUserGestureIndicator::DisableTimeout();
     return webframe->Client()->RunModalConfirmDialog(message);
   }
   return false;
@@ -383,7 +383,7 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
     if (WebUserGestureIndicator::IsProcessingUserGesture())
-      WebUserGestureIndicator::CurrentUserGestureToken().SetJavascriptPrompt();
+      WebUserGestureIndicator::DisableTimeout();
     WebString actual_value;
     bool ok = webframe->Client()->RunModalPromptDialog(message, default_value,
                                                        &actual_value);

@@ -88,8 +88,7 @@ void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
                       ("Navigation.Scheduled.MaybeCausedAbort",
                        ScheduledNavigationType::kScheduledLastEntry * 2));
 
-  UserGestureToken* gesture_token = UserGestureIndicator::CurrentToken();
-  int value = gesture_token && gesture_token->HasGestures()
+  int value = UserGestureIndicator::ProcessingUserGesture()
                   ? type + kScheduledLastEntry
                   : type;
   scheduled_navigation_clobber_histogram.Count(value);

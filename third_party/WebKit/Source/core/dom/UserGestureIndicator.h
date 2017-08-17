@@ -13,10 +13,11 @@
 
 namespace blink {
 
-// A UserGestureToken represents a user gesture. It can be referenced and saved
-// for later (see, e.g., DOMTimer, which propagates user gestures to the timer
-// fire in certain situations). Passing it to a UserGestureIndicator will cause
-// it to be considered as currently being processed.
+// A UserGestureToken represents the current state of a user gesture. It can be
+// retrieved from a UserGestureIndicator to save for later (see, e.g., DOMTimer,
+// which propagates user gestures to the timer fire in certain situations).
+// Passing it to a UserGestureIndicator later on will cause it to be considered
+// as currently being processed.
 class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   WTF_MAKE_NONCOPYABLE(UserGestureToken);
   friend class UserGestureIndicator;
@@ -25,17 +26,18 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   enum Status { kNewGesture, kPossiblyExistingGesture };
   enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
 
-  static RefPtr<UserGestureToken> Adopt(Document*, UserGestureToken*);
-
   ~UserGestureToken() {}
+
+  // TODO(mustaq): The only user of this method is PepperPluginInstanceImpl.  We
+  // need to investigate the usecase closely.
   bool HasGestures() const;
-  void SetTimeoutPolicy(TimeoutPolicy);
 
  private:
   UserGestureToken(Status);
 
   void TransferGestureTo(UserGestureToken*);
   bool ConsumeGesture();
+  void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
   bool HasTimedOut() const;
 
@@ -66,6 +68,8 @@ class CORE_EXPORT UserGestureIndicator final {
 
   static UserGestureToken* CurrentToken();
   static UserGestureToken* CurrentTokenThreadSafe();
+
+  static void SetTimeoutPolicy(UserGestureToken::TimeoutPolicy);
 
   explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
 
