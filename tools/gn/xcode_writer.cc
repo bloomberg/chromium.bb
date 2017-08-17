@@ -158,14 +158,14 @@ void AddPBXTargetDependency(const PBXTarget* base_pbxtarget,
   dependent_pbxtarget->AddDependency(std::move(dependency));
 }
 
-// Adds the corresponding test rig application target as dependency of xctest
-// module target in the generated Xcode project.
-void AddDependencyTargetForXCModuleTargets(
+// Adds the corresponding test application target as dependency of xctest or
+// xcuitest module target in the generated Xcode project.
+void AddDependencyTargetForTestModuleTargets(
     const std::vector<const Target*>& targets,
     const TargetToPBXTarget& bundle_target_to_pbxtarget,
     const PBXProject* project) {
   for (const Target* target : targets) {
-    if (!IsXCTestModuleTarget(target))
+    if (!IsXCTestModuleTarget(target) && !IsXCUITestModuleTarget(target))
       continue;
 
     const Target* test_application_target = FindApplicationTargetByName(
@@ -560,11 +560,10 @@ void XcodeWriter::CreateProductsProject(
     }
   }
 
-  // For XCTest, tests are compiled into the application bundle, thus adding
-  // the corresponding test rig application target as a dependency of xctest
-  // module target in the generated Xcode project so that the application target
-  // is re-compiled when compiling the xctest module target.
-  AddDependencyTargetForXCModuleTargets(
+  // Adding the corresponding test application target as a dependency of xctest
+  // or xcuitest module target in the generated Xcode project so that the
+  // application target is re-compiled when compiling the test module target.
+  AddDependencyTargetForTestModuleTargets(
       bundle_targets, bundle_target_to_pbxtarget, main_project.get());
 
   projects_.push_back(std::move(main_project));
