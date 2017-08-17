@@ -12,9 +12,11 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
@@ -38,7 +40,11 @@ class RecentDownloadSource : public RecentSource {
                       GetRecentFilesCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RecentDownloadSourceTest, GetRecentFiles_UmaStats);
+
   struct FileSystemURLWithLastModified;
+
+  static const char kLoadHistogramName[];
 
   void ScanDirectory(const base::FilePath& path);
   void OnReadDirectory(
@@ -60,6 +66,8 @@ class RecentDownloadSource : public RecentSource {
   RecentContext context_;
   GetRecentFilesCallback callback_;
 
+  // Time when the build started.
+  base::TimeTicks build_start_time_;
   // Number of ReadDirectory() calls in flight.
   int inflight_readdirs_ = 0;
   // Number of GetMetadata() calls in flight.

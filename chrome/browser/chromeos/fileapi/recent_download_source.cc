@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,6 +81,9 @@ struct RecentDownloadSource::FileSystemURLWithLastModified {
   }
 };
 
+const char RecentDownloadSource::kLoadHistogramName[] =
+    "FileBrowser.Recent.LoadDownloads";
+
 RecentDownloadSource::RecentDownloadSource(Profile* profile)
     : RecentDownloadSource(profile, kMaxFilesFromSingleSource) {}
 
@@ -101,6 +105,7 @@ void RecentDownloadSource::GetRecentFiles(RecentContext context,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!context_.is_valid());
   DCHECK(callback_.is_null());
+  DCHECK(build_start_time_.is_null());
   DCHECK_EQ(0, inflight_readdirs_);
   DCHECK_EQ(0, inflight_stats_);
   DCHECK(top_entries_.empty());
@@ -110,6 +115,8 @@ void RecentDownloadSource::GetRecentFiles(RecentContext context,
 
   DCHECK(context_.is_valid());
   DCHECK(!callback_.is_null());
+
+  build_start_time_ = base::TimeTicks::Now();
 
   ScanDirectory(base::FilePath());
 }
@@ -191,12 +198,18 @@ void RecentDownloadSource::OnReadOrStatFinished() {
     top_entries_.pop();
   }
 
+  DCHECK(!build_start_time_.is_null());
+  UMA_HISTOGRAM_TIMES(kLoadHistogramName,
+                      base::TimeTicks::Now() - build_start_time_);
+  build_start_time_ = base::TimeTicks();
+
   context_ = RecentContext();
   GetRecentFilesCallback callback;
   std::swap(callback, callback_);
 
   DCHECK(!context_.is_valid());
   DCHECK(callback_.is_null());
+  DCHECK(build_start_time_.is_null());
   DCHECK_EQ(0, inflight_readdirs_);
   DCHECK_EQ(0, inflight_stats_);
   DCHECK(top_entries_.empty());

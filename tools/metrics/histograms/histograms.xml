@@ -23358,6 +23358,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>How quick view was opened.</summary>
 </histogram>
 
+<histogram name="FileBrowser.Recent.LoadDownloads" units="ms">
+  <owner>nya@google.com</owner>
+  <summary>
+    Time to load a recently modified file list from Downloads. It is triggered
+    when the user opens or reloads Recent view in the Files app.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.Recent.LoadTotal" units="ms">
+  <owner>nya@google.com</owner>
+  <summary>
+    Time to load a recently modified file list from all sources. It is triggered
+    when the user opens or reloads Recent view in the Files app.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.SuggestApps.Close"
     enum="SuggestAppsDialogCloseReason">
   <owner>joshwoodward@google.com</owner>
