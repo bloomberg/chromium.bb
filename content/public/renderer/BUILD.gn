@@ -87,7 +87,6 @@ target(link_target_type, "renderer_sources") {
     "//ppapi/features",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/webrtc_overrides",
     "//third_party/widevine/cdm:headers",
     "//ui/base",
     "//ui/base/ime",
@@ -123,14 +122,11 @@ target(link_target_type, "renderer_sources") {
     deps += [
       "//content/public/common:feature_h264_with_openh264_ffmpeg",
       "//content/public/common:features",
+      "//third_party/webrtc_overrides",
     ]
   }
 
   if (enable_plugins) {
     sources += [ "plugin_instance_throttler.h" ]
-  }
-
-  if (enable_webrtc) {
-    sources += [ "//third_party/webrtc_overrides" ]
   }
 }
