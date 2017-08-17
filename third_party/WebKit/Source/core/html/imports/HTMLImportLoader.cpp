@@ -38,7 +38,6 @@
 #include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
-#include "core/loader/DocumentWriter.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
 namespace blink {
@@ -83,14 +82,14 @@ void HTMLImportLoader::ResponseReceived(
 void HTMLImportLoader::DataReceived(Resource*,
                                     const char* data,
                                     size_t length) {
-  writer_->AddData(data, length);
+  document_->Parser()->AppendBytes(data, length);
 }
 
 void HTMLImportLoader::NotifyFinished(Resource* resource) {
-  // The writer instance indicates that a part of the document can be already
-  // loaded.  We don't take such a case as an error because the partially-loaded
-  // document has been visible from script at this point.
-  if (resource->LoadFailedOrCanceled() && !writer_) {
+  // If part of the document was already loaded, we don't treat the load failure
+  // as an error because the partially-loaded  document has been visible from
+  // script at this point.
+  if (resource->LoadFailedOrCanceled() && !document_) {
     SetState(kStateError);
     return;
   }
@@ -105,8 +104,8 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
   document_ = HTMLDocument::Create(
       DocumentInit::CreateWithImportsController(controller_)
           .WithURL(response.Url()));
-  writer_ = DocumentWriter::Create(document_.Get(), kAllowAsynchronousParsing,
-                                   response.MimeType(), "UTF-8");
+  document_->OpenForNavigation(kAllowAsynchronousParsing, response.MimeType(),
+                               "UTF-8");
 
   DocumentParser* parser = document_->Parser();
   DCHECK(parser);
@@ -135,12 +134,12 @@ void HTMLImportLoader::SetState(State state) {
 
   if (state_ == kStateParsed || state_ == kStateError ||
       state_ == kStateWritten) {
-    if (DocumentWriter* writer = writer_.Release())
-      writer->end();
+    if (document_)
+      document_->Parser()->Finish();
   }
 
-  // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer
-  // to m_state here.
+  // Since DocumentParser::Finish() can let setState() reenter, we shouldn't
+  // refer to state_ here.
   if (state == kStateLoaded)
     document_->SetReadyState(Document::kComplete);
   if (state == kStateLoaded || state == kStateError)
@@ -209,7 +208,6 @@ DEFINE_TRACE(HTMLImportLoader) {
   visitor->Trace(controller_);
   visitor->Trace(imports_);
   visitor->Trace(document_);
-  visitor->Trace(writer_);
   visitor->Trace(microtask_queue_);
   DocumentParserClient::Trace(visitor);
   ResourceOwner<RawResource>::Trace(visitor);

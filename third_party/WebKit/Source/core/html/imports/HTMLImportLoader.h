@@ -42,12 +42,11 @@ namespace blink {
 
 class V0CustomElementSyncMicrotaskQueue;
 class Document;
-class DocumentWriter;
 class HTMLImportChild;
 class HTMLImportsController;
 
 // Owning imported Document lifetime. It also implements ResourceClient through
-// ResourceOwner to feed fetched bytes to the DocumentWriter of the imported
+// ResourceOwner to feed fetched bytes to the DocumentParser of the imported
 // document.  HTMLImportLoader is owned by HTMLImportsController.
 class HTMLImportLoader final
     : public GarbageCollectedFinalized<HTMLImportLoader>,
@@ -128,7 +127,6 @@ class HTMLImportLoader final
   HeapVector<Member<HTMLImportChild>> imports_;
   State state_;
   Member<Document> document_;
-  Member<DocumentWriter> writer_;
   Member<V0CustomElementSyncMicrotaskQueue> microtask_queue_;
 };
 

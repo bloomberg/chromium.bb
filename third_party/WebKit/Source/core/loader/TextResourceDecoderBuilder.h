@@ -33,34 +33,16 @@
 
 #include <memory>
 #include "core/html/parser/TextResourceDecoder.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
-#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
 class Document;
-class TextResourceDecoder;
 
-class CORE_EXPORT TextResourceDecoderBuilder {
-  DISALLOW_NEW();
-
- public:
-  TextResourceDecoderBuilder(const AtomicString& mime_type,
-                             const AtomicString& encoding);
-  ~TextResourceDecoderBuilder();
-
-  std::unique_ptr<TextResourceDecoder> BuildFor(Document*);
-
-  const AtomicString& MimeType() const { return mime_type_; }
-  const AtomicString& Encoding() const { return encoding_; }
-
-  void Clear();
-
- private:
-  AtomicString mime_type_;
-  AtomicString encoding_;
-};
+CORE_EXPORT std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
+    Document*,
+    const AtomicString& mime_type,
+    const AtomicString& encoding);
 
 }  // namespace blink
 
