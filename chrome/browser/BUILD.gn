@@ -2135,6 +2135,8 @@ split_static_library("browser") {
       "plugins/flash_temporary_permission_tracker.h",
       "plugins/flash_temporary_permission_tracker_factory.cc",
       "plugins/flash_temporary_permission_tracker_factory.h",
+      "plugins/pdf_iframe_navigation_throttle.cc",
+      "plugins/pdf_iframe_navigation_throttle.h",
       "plugins/plugin_data_remover_helper.cc",
       "plugins/plugin_data_remover_helper.h",
       "plugins/plugin_finder.cc",
