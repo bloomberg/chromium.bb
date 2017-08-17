@@ -1,17 +1,22 @@
 translated
+translated individual
 
 backface hidden
 animated
+animated individual
 opacity
 reflected
 perspective
 preserve3d
 Compositing reasons for #document: root
 Compositing reasons for div#transform3d: assumedOverlap,inlineTransform,transform3D
+Compositing reasons for div#transform3d-individual: assumedOverlap,inlineTransform,transform3D
 Compositing reasons for iframe#iframe: iFrame
 Compositing reasons for div#backface-visibility: assumedOverlap,backfaceVisibilityHidden
 Compositing reasons for div#animation: activeAnimation,assumedOverlap
+Compositing reasons for div#animation-individual: activeAnimation,assumedOverlap
 Compositing reasons for div#transformWithCompositedDescendants: assumedOverlap,inlineTransform,transformWithCompositedDescendants
+Compositing reasons for div#transformWithCompositedDescendants-individual: assumedOverlap,inlineTransform,transformWithCompositedDescendants
 Compositing reasons for div#opacityWithCompositedDescendants: assumedOverlap,opacityWithCompositedDescendants
 Compositing reasons for div#reflectionWithCompositedDescendants: assumedOverlap,filterWithCompositedDescendants,reflectionWithCompositedDescendants
 Compositing reasons for div#perspective: assumedOverlap,perspectiveWith3DDescendants
