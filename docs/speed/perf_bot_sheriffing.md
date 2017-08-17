@@ -337,39 +337,75 @@ If the test is a telemetry test, its name will have a '.' in it, such as
 first dot will be a python file in [tools/perf/benchmarks](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/).
 
 If a telemetry test is failing and there is no clear culprit to revert
-immediately, disable the test. You can do this with the `@benchmark.Disabled`
-decorator. **Always add a comment next to your decorator with the bug id which
-has background on why the test was disabled, and also include a BUG= line in
-the CL.**
+immediately, disable the story on the failing platforms.
 
-Please disable the narrowest set of bots possible; for example, if
-the benchmark only fails on Windows Vista you can use
-`@benchmark.Disabled('vista')`. Supported disabled arguments include:
+For example:
+*  If a single story is failing on a single platform, disable only that story on that platform.
+*  If multiple stories are failing across all platforms, disable those stories on all platforms.
+*  If all stories are failing on a single platform, disable all stories on that platform. 
 
-*   `win`
-*   `mac`
-*   `chromeos`
-*   `linux`
-*   `android`
-*   `vista`
-*   `win7`
-*   `win8`
-*   `yosemite`
-*   `elcapitan`
-*   `all` (please use as a last resort)
+You can do this with [StoryExpectations](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
 
-If the test fails consistently in a very narrow set of circumstances, you may
-consider implementing a `ShouldDisable` method on the benchmark instead.
-[Here](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/power.py&q=svelte%20file:%5Esrc/tools/perf/&sq=package:chromium&type=cs&l=72) is
-and example of disabling a benchmark which OOMs on svelte.
+To determine which stories are failing in a given run, go to the buildbot page
+for that run and search for `Unexpected failures`.
 
-As a last resort, if you need to disable a benchmark on a particular Android
-device, you can do so by checking the return value of
-`possible_browser.platform.GetDeviceTypeName()` in `ShouldDisable`. Here are
-some [examples](https://code.google.com/p/chromium/codesearch#search/&q=ShouldDisable%20GetDeviceTypeName%20lang:py&sq=package:chromium&type=cs)
-of this. The type name of the failing device can be found by searching for the
-value of `ro.product.model` under the `provision_devices` step of the failing
-bot.
+Example:
+On platform P, story foo is failing on benchmark bar. On the same benchmark on
+platform Q, story baz is failing. To disable these stories, go
+to where benchmark bar is declared. Using codesearch, you can look for
+benchmark\_baz which will likely be in bar.py. This is where you can disable the
+story.
+
+Once there, find the benchmark's `GetExpectations()` method. Inside there you
+should see a `SetExpectations()` method. That is where stories are disabled.
+
+Buildbot output for failing run on platform P:
+```
+bar.benchmark_baz
+Bot id: 'buildxxx-xx'
+...
+Unexpected Failures:
+* foo
+```
+
+Buildbot output for failing run on platfromQ
+```
+bar.benchmark_baz
+Bot id: 'buildxxx-xx'
+...
+Unexpected Failures:
+* baz
+```
+
+Code snippet from bar.py benchmark:
+```
+class BarBenchmark(perf_benchmark.PerfBenchmark):
+  ...
+  def Name():
+    return 'bar.benchmark_baz'
+  ...
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+     def SetExpectations(self):
+       self.DisableStory(
+           'foo', [story.expectations.PLATFORM_P], 'crbug.com/1234')
+       self.DisableStory(
+           'baz', [story.expectations.PLATFORM_Q], 'crbug.com/5678')
+```
+
+If a story is failing on multiple platforms, you can add more platforms to the
+list in the second argument to `DisableStory()`. If the story is failing on
+different platforms for different reasons, you can have multiple `DisableStory()`
+declarations for the same story with different reasons listed.
+
+If a particular story isn't applicable to a given platform, it should be
+disabled using [CanRunStory](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/page/shared_page_state.py?type=cs&q=CanRunOnBrowser&l=271).
+
+To find the currently supported disabling conditions view the [expectations file](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
+
+If for some reason you are unable to disable at the granularity you would like,
+disable the test at the lowest granularity possible and contact rnephew@ to
+suggest new disabling criteria.
 
 Disabling CLs can be TBR-ed to anyone in [tools/perf/OWNERS](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/OWNERS),
 but please do **not** submit with NOTRY=true.
