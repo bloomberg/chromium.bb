@@ -6,7 +6,6 @@
 #define ScriptWrappableVisitor_h
 
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/heap/VisitorImpl.h"
 #include "platform/wtf/Deque.h"
@@ -23,6 +22,11 @@ class ScriptWrappableVisitor;
 class TraceWrapperBase;
 template <typename T>
 class TraceWrapperV8Reference;
+
+using HeapObjectHeaderCallback = HeapObjectHeader* (*)(const void*);
+using MissedWriteBarrierCallback = void (*)();
+using TraceWrappersCallback = void (*)(const ScriptWrappableVisitor*,
+                                       const void* self);
 
 #define DECLARE_TRACE_WRAPPERS() \
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const
@@ -53,11 +57,9 @@ class TraceWrapperV8Reference;
 
 class WrapperMarkingData {
  public:
-  WrapperMarkingData(
-      void (*trace_wrappers_callback)(const ScriptWrappableVisitor*,
-                                      const void*),
-      HeapObjectHeader* (*heap_object_header_callback)(const void*),
-      const void* object)
+  WrapperMarkingData(TraceWrappersCallback trace_wrappers_callback,
+                     HeapObjectHeaderCallback heap_object_header_callback,
+                     const void* object)
       : trace_wrappers_callback_(trace_wrappers_callback),
         heap_object_header_callback_(heap_object_header_callback),
         raw_object_pointer_(object) {
@@ -66,38 +68,34 @@ class WrapperMarkingData {
     DCHECK(raw_object_pointer_);
   }
 
+  // Traces wrappers if the underlying object has not yet been invalidated.
   inline void TraceWrappers(ScriptWrappableVisitor* visitor) {
     if (raw_object_pointer_) {
       trace_wrappers_callback_(visitor, raw_object_pointer_);
     }
   }
 
-  // Returns true when object was marked. Ignores (returns true) invalidated
-  // objects.
-  inline bool IsWrapperHeaderMarked() {
-    return !raw_object_pointer_ ||
-           GetHeapObjectHeader()->IsWrapperHeaderMarked();
-  }
-
   inline const void* RawObjectPointer() { return raw_object_pointer_; }
 
- private:
+  // Returns true if the object is currently marked in Oilpan and false
+  // otherwise.
   inline bool ShouldBeInvalidated() {
     return raw_object_pointer_ && !GetHeapObjectHeader()->IsMarked();
   }
 
+  // Invalidates the current wrapper marking data, i.e., calling TraceWrappers
+  // will result in a noop.
   inline void Invalidate() { raw_object_pointer_ = nullptr; }
 
+ private:
   inline const HeapObjectHeader* GetHeapObjectHeader() {
     DCHECK(raw_object_pointer_);
     return heap_object_header_callback_(raw_object_pointer_);
   }
 
-  void (*trace_wrappers_callback_)(const ScriptWrappableVisitor*, const void*);
-  HeapObjectHeader* (*heap_object_header_callback_)(const void*);
+  TraceWrappersCallback trace_wrappers_callback_;
+  HeapObjectHeaderCallback heap_object_header_callback_;
   const void* raw_object_pointer_;
-
-  friend class ScriptWrappableVisitor;
 };
 
 // ScriptWrappableVisitor is used to trace through Blink's heap to find all
@@ -256,10 +254,9 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
 
   virtual void PushToMarkingDeque(
-      void (*trace_wrappers_callback)(const ScriptWrappableVisitor*,
-                                      const void*),
-      HeapObjectHeader* (*heap_object_header_callback)(const void*),
-      void (*missed_write_barrier_callback)(void),
+      TraceWrappersCallback trace_wrappers_callback,
+      HeapObjectHeaderCallback heap_object_header_callback,
+      MissedWriteBarrierCallback missed_write_barrier_callback,
       const void* object) const {
     DCHECK(tracing_in_progress_);
     DCHECK(heap_object_header_callback(object)->IsWrapperHeaderMarked());
@@ -283,11 +280,10 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // Immediately cleans up all wrappers if necessary.
   void PerformCleanup();
 
-  WTF::Deque<WrapperMarkingData>* GetMarkingDeque() { return &marking_deque_; }
-  WTF::Deque<WrapperMarkingData>* GetVerifierDeque() {
-    return &verifier_deque_;
+  WTF::Deque<WrapperMarkingData>* MarkingDeque() const {
+    return &marking_deque_;
   }
-  WTF::Vector<HeapObjectHeader*>* GetHeadersToUnmark() {
+  WTF::Vector<HeapObjectHeader*>* HeadersToUnmark() const {
     return &headers_to_unmark_;
   }
 

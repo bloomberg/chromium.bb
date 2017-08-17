@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"

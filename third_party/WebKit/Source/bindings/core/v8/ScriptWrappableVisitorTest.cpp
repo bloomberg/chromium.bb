@@ -51,20 +51,20 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   HeapObjectHeader* dependency_header =
       HeapObjectHeader::FromPayload(dependency);
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   EXPECT_FALSE(target_header->IsWrapperHeaderMarked());
   EXPECT_FALSE(dependency_header->IsWrapperHeaderMarked());
 
   std::pair<void*, void*> pair = std::make_pair(
       const_cast<WrapperTypeInfo*>(target->GetWrapperTypeInfo()), target);
   visitor->RegisterV8Reference(pair);
-  EXPECT_EQ(visitor->GetMarkingDeque()->size(), 1ul);
+  EXPECT_EQ(visitor->MarkingDeque()->size(), 1ul);
 
   visitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  EXPECT_EQ(visitor->GetMarkingDeque()->size(), 0ul);
+  EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
   EXPECT_TRUE(target_header->IsWrapperHeaderMarked());
   EXPECT_TRUE(dependency_header->IsWrapperHeaderMarked());
 
@@ -155,11 +155,11 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
       V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
   visitor->TracePrologue();
   auto header = HeapObjectHeader::FromPayload(object);
-  visitor->GetHeadersToUnmark()->push_back(header);
+  visitor->HeadersToUnmark()->push_back(header);
 
   PreciselyCollectGarbage();
 
-  EXPECT_FALSE(visitor->GetHeadersToUnmark()->Contains(header));
+  EXPECT_FALSE(visitor->HeadersToUnmark()->Contains(header));
   visitor->AbortTracing();
 }
 
@@ -173,11 +173,11 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
 
   visitor->MarkAndPushToMarkingDeque(object);
 
-  EXPECT_EQ(visitor->GetMarkingDeque()->front().RawObjectPointer(), object);
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
 
   PreciselyCollectGarbage();
 
-  EXPECT_EQ(visitor->GetMarkingDeque()->front().RawObjectPointer(), nullptr);
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), nullptr);
 
   visitor->AbortTracing();
 }
@@ -201,14 +201,14 @@ TEST(ScriptWrappableVisitorTest,
     HeapObjectHeader::FromPayload(dependencies[i])->MarkWrapperHeader();
   }
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
 
   target->SetRawDependency(dependencies[0]);
   target->SetWrappedDependency(dependencies[1]);
   target->AddWrappedVectorDependency(dependencies[2]);
   target->AddWrappedHashMapDependency(dependencies[3], dependencies[4]);
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   visitor->AbortTracing();
 }
 
@@ -228,7 +228,7 @@ TEST(ScriptWrappableVisitorTest,
 
   HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
 
   target->SetRawDependency(dependencies[0]);
   target->SetWrappedDependency(dependencies[1]);
@@ -236,7 +236,7 @@ TEST(ScriptWrappableVisitorTest,
   target->AddWrappedHashMapDependency(dependencies[3], dependencies[4]);
 
   for (int i = 0; i < 5; i++) {
-    EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), dependencies[i]));
+    EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), dependencies[i]));
   }
 
   visitor->AbortTracing();
@@ -404,11 +404,11 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap1) {
 
   visitor->TracePrologue();
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   swap(vector1, vector2);
 
-  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry1));
-  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry2));
+  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry1));
+  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry2));
 
   visitor->AbortTracing();
 }
@@ -427,12 +427,12 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap2) {
 
   visitor->TracePrologue();
 
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   swap(vector1, vector2);
 
   // Only entry2 is held alive by TraceWrapperMember, so we only expect this
   // barrier to fire.
-  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry2));
+  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry2));
 
   visitor->AbortTracing();
 }

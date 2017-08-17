@@ -12,6 +12,7 @@
 #include "core/css/properties/CSSPropertyAPIOffsetPosition.h"
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
