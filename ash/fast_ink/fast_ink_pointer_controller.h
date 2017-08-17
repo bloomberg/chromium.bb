@@ -29,7 +29,7 @@ class ASH_EXPORT FastInkPointerController : public ui::EventHandler {
 
   // Enables/disables the pointer. The user still has to press to see
   // the pointer.
-  void SetEnabled(bool enabled);
+  virtual void SetEnabled(bool enabled);
 
  private:
   // ui::EventHandler:

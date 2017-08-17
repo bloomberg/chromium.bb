@@ -4,6 +4,7 @@
 
 #include "ash/highlighter/highlighter_view.h"
 
+#include "ash/highlighter/highlighter_gesture_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/window.h"
@@ -109,17 +110,17 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point,
 }
 
 void HighlighterView::Animate(const gfx::PointF& pivot,
-                              AnimationMode animation_mode,
+                              HighlighterGestureType gesture_type,
                               const base::Closure& done) {
   animation_timer_ = base::MakeUnique<base::OneShotTimer>();
   animation_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
       base::Bind(&HighlighterView::FadeOut, base::Unretained(this), pivot,
-                 animation_mode, done));
+                 gesture_type, done));
 }
 
 void HighlighterView::FadeOut(const gfx::PointF& pivot,
-                              AnimationMode animation_mode,
+                              HighlighterGestureType gesture_type,
                               const base::Closure& done) {
   ui::Layer* layer = GetWidget()->GetLayer();
 
@@ -134,13 +135,13 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
     layer->SetOpacity(0);
   }
 
-  if (animation_mode != AnimationMode::kFadeout) {
+  if (gesture_type != HighlighterGestureType::kHorizontalStroke) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kStrokeScaleDurationMs));
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
 
-    const float scale = animation_mode == AnimationMode::kInflate
+    const float scale = gesture_type == HighlighterGestureType::kClosedShape
                             ? kStrokeScale
                             : (1 / kStrokeScale);
 

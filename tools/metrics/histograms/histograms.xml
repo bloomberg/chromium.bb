@@ -2603,16 +2603,88 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Shelf.Palette.Assistant.CircledPercentage" units="%">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The percentage of the screen area circled by the Assistant pen. Recorded
+    when the &quot;closed shape&quot; gesture is recognized.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.GestureDuration" units="ms">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The duration of an Assistant pen gesture. Recorded at the end of every
+    gesture.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.GestureInterval" units="ms">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The interval between subsequent Assistant pen gestures within a session.
+    Session is defined as the period while the Assistant tool is enabled.
+    Recorded at the end of each gesture except for the first one in the session.
+    The interval is computed excluding the gesture duration.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.GesturesPerSession">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The number of Assistant pen gestures per session. Session is defined as the
+    period while the Assistant tool is enabled. Recorded at the end of the
+    session.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.GesturesPerSession.Recognized">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The number of recognized Assistant pen gestures per session. Session is
+    defined as the period while the Assistant tool is enabled. Recorded at the
+    end of the session.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.GestureType"
+    enum="AssistantGestureType">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The type of the Assistant pen gesture. Recorded at the end of each gesture.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.Assistant.HighlighterLength" units="dp">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The length of a recognized &quot;horizontal stroke&quot; Assistant pen
+    gesture. Recorded at the and of the gesture.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Palette.InAssistantMode" units="ms">
+  <owner>kaznacheev@chromium.org</owner>
+  <summary>
+    The amount of time spent in Palette Assistant mode. Recorded when the
+    Assistant mode is exited.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Shelf.Palette.InLaserPointerMode" units="ms">
   <owner>xiaoyinh@chromium.org</owner>
   <summary>
-    Tracks the amount of time spend in Palette laser point mode.
+    The amount of time spend in Palette Laser pointer mode. Recorded when the
+    Laser pointer mode is exited.
   </summary>
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.InMagnifyMode" units="ms">
   <owner>xiaoyinh@chromium.org</owner>
-  <summary>Tracks the amount of time spend in Palette Magnify mode.</summary>
+  <summary>
+    The amount of time spend in Palette Magnify mode. Recorded when the Magnify
+    mode is exited.
+  </summary>
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.ModeCancellation"

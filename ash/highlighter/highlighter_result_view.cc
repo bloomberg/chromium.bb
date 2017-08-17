@@ -4,6 +4,8 @@
 
 #include "ash/highlighter/highlighter_result_view.h"
 
+#include "ash/highlighter/highlighter_gesture_util.h"
+#include "ash/highlighter/highlighter_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/compositor/paint_recorder.h"
@@ -183,16 +185,15 @@ HighlighterResultView::HighlighterResultView(aura::Window* root_window) {
 
 HighlighterResultView::~HighlighterResultView() {}
 
-void HighlighterResultView::Animate(
-    const gfx::RectF& bounds,
-    HighlighterView::AnimationMode animation_mode,
-    const base::Closure& done) {
+void HighlighterResultView::Animate(const gfx::RectF& bounds,
+                                    HighlighterGestureType gesture_type,
+                                    const base::Closure& done) {
   ui::Layer* layer = widget_->GetLayer();
 
   base::TimeDelta delay;
   base::TimeDelta duration;
 
-  if (animation_mode == HighlighterView::AnimationMode::kFadeout) {
+  if (gesture_type == HighlighterGestureType::kHorizontalStroke) {
     // The original stroke is fading out in place.
     // Fade in a solid transparent rectangle.
     result_layer_ = base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
@@ -208,7 +209,7 @@ void HighlighterResultView::Animate(
     duration =
         base::TimeDelta::FromMilliseconds(kResultInPlaceFadeinDurationMs);
   } else {
-    DCHECK(animation_mode == HighlighterView::AnimationMode::kInflate);
+    DCHECK(gesture_type == HighlighterGestureType::kClosedShape);
     // The original stroke is fading out and inflating.
     // Fade in the deflating lens overlay.
     result_layer_ = base::MakeUnique<ResultLayer>(gfx::ToEnclosingRect(bounds));

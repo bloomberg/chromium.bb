@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/highlighter/highlighter_view.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/views/view.h"
 
 namespace aura {
@@ -25,6 +25,8 @@ class Widget;
 
 namespace ash {
 
+enum class HighlighterGestureType;
+
 // HighlighterResultView displays an animated shape that represents
 // the result of the selection.
 class HighlighterResultView : public views::View {
@@ -34,7 +36,7 @@ class HighlighterResultView : public views::View {
   ~HighlighterResultView() override;
 
   void Animate(const gfx::RectF& bounds,
-               HighlighterView::AnimationMode animation_mode,
+               HighlighterGestureType gesture_type,
                const base::Closure& done);
 
  private:

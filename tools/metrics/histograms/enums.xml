@@ -1351,6 +1351,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="[80 to 100) (warmest)"/>
 </enum>
 
+<enum name="AssistantGestureType">
+  <int value="0" label="Not recognized"/>
+  <int value="1" label="Horizontal stroke"/>
+  <int value="2" label="Closed shape"/>
+</enum>
+
 <enum name="AsyncDNSConfigParsePosix">
   <int value="0" label="OK"/>
   <int value="1" label="RES_INIT_FAILED"/>

@@ -14,16 +14,20 @@ namespace ash {
 
 class FastInkPoints;
 
-// Returns true if |box| is sufficiently long horizontally and short vertically.
-bool ASH_EXPORT DetectHorizontalStroke(const gfx::RectF& box,
-                                       const gfx::SizeF& pen_tip_size);
+// Highlighter gesture recognition result type. This enum is used to back
+// an UMA histogram and should be treated as append-only.
+enum class HighlighterGestureType {
+  kNotRecognized = 0,
+  kHorizontalStroke,
+  kClosedShape,
+  kGestureCount
+};
 
-// Returns true if |points| is forming a "closed shape" which is defined as a
-// sequence of points sweeping at least of 80% of a full circle around the
-// center of |box|, and going in one direction (clockwise or counterclockwise),
-// with a little noise tolerated.
-bool ASH_EXPORT DetectClosedShape(const gfx::RectF& box,
-                                  const FastInkPoints& points);
+// Returns the recognized gesture type.
+HighlighterGestureType ASH_EXPORT
+DetectHighlighterGesture(const gfx::RectF& box,
+                         const gfx::SizeF& pen_tip_size,
+                         const FastInkPoints& points);
 
 }  // namespace ash
 

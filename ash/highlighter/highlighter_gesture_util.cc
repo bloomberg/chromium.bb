@@ -10,6 +10,8 @@
 
 namespace ash {
 
+namespace {
+
 constexpr float kHorizontalStrokeLengthThreshold = 20;
 constexpr float kHorizontalStrokeThicknessThreshold = 2;
 constexpr float kHorizontalStrokeFlatnessThreshold = 0.1;
@@ -79,6 +81,20 @@ bool DetectClosedShape(const gfx::RectF& box, const FastInkPoints& points) {
   }
 
   return true;
+}
+
+}  // namespace
+
+HighlighterGestureType DetectHighlighterGesture(const gfx::RectF& box,
+                                                const gfx::SizeF& pen_tip_size,
+                                                const FastInkPoints& points) {
+  if (DetectHorizontalStroke(box, pen_tip_size))
+    return HighlighterGestureType::kHorizontalStroke;
+
+  if (DetectClosedShape(box, points))
+    return HighlighterGestureType::kClosedShape;
+
+  return HighlighterGestureType::kNotRecognized;
 }
 
 }  // namespace ash
