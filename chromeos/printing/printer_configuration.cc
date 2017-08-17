@@ -58,4 +58,11 @@ Printer::PrinterProtocol Printer::GetProtocol() const {
   return PrinterProtocol::kUnknown;
 }
 
+bool Printer::PpdReference::operator==(
+    const Printer::PpdReference& other) const {
+  return user_supplied_ppd_url == other.user_supplied_ppd_url &&
+         effective_make_and_model == other.effective_make_and_model &&
+         autoconf == other.autoconf;
+}
+
 }  // namespace chromeos

@@ -29,8 +29,6 @@ class FakePrinterDetector : public PrinterDetector {
 
   ~FakePrinterDetector() override = default;
 
-  void Start() override {}
-
   // Add these printers to the list of detected printers, and notify
   // downstream observers.
   void AddPrinters(const std::vector<std::string>& ids) {
@@ -115,7 +113,6 @@ class PrintingCombiningPrinterDetectorTest : public testing::Test,
       test_owned = !test_owned;
     }
     combining_detector_->AddObserver(this);
-    combining_detector_->Start();
     printers_ = combining_detector_->GetPrinters();
   }
 
