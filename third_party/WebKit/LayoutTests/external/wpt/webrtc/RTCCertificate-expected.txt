@@ -4,7 +4,7 @@ FAIL Calling setConfiguration with different set of certs should reject with Inv
         pc.setConfiguration({
           certificates: [cert2]
         })" did not throw
-FAIL RTCCertificate should have at least one fingerprint assert_own_property: expected property "getFingerprints" missing
+FAIL RTCCertificate should have at least one fingerprint promise_test: Unhandled rejection with value: object "TypeError: fingerprints[0] is not iterable"
 FAIL RTCPeerConnection({ certificates }) should generate offer SDP with fingerprint of provided certificate promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
 FAIL RTCPeerConnection({ certificates }) should generate offer SDP with fingerprint of all provided certificates promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
 Harness: the test ran to completion.
