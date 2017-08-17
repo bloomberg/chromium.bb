@@ -31,9 +31,11 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
     return TERMINATION_STATUS_NORMAL_TERMINATION;
   }
   if (!process_info.started) {
+    *exit_code = 0;
     return TERMINATION_STATUS_LAUNCH_FAILED;
   }
   if (!process_info.exited) {
+    *exit_code = 0;
     return TERMINATION_STATUS_STILL_RUNNING;
   }
 
