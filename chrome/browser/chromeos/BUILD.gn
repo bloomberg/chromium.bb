@@ -1380,6 +1380,8 @@ source_set("chromeos") {
     "printing/usb_printer_detector_factory.h",
     "printing/usb_printer_util.cc",
     "printing/usb_printer_util.h",
+    "printing/zeroconf_printer_detector.cc",
+    "printing/zeroconf_printer_detector.h",
     "profiles/avatar_menu_actions_chromeos.cc",
     "profiles/avatar_menu_actions_chromeos.h",
     "profiles/avatar_menu_chromeos.cc",
