@@ -2002,7 +2002,8 @@ void Node::RemoveAllEventListenersRecursively() {
 }
 
 using EventTargetDataMap =
-    PersistentHeapHashMap<WeakMember<Node>, Member<EventTargetData>>;
+    PersistentHeapHashMap<WeakMember<Node>,
+                          TraceWrapperMember<EventTargetData>>;
 static EventTargetDataMap& GetEventTargetDataMap() {
   DEFINE_STATIC_LOCAL(EventTargetDataMap, map, ());
   return map;
@@ -2639,6 +2640,7 @@ DEFINE_TRACE(Node) {
     visitor->Trace(RareData());
 
   visitor->Trace(tree_scope_);
+  // EventTargetData is traced through EventTargetDataMap.
   EventTarget::Trace(visitor);
 }
 
@@ -2648,6 +2650,8 @@ DEFINE_TRACE_WRAPPERS(Node) {
   visitor->TraceWrappers(next_);
   if (HasRareData())
     visitor->TraceWrappersWithManualWriteBarrier(RareData());
+  visitor->TraceWrappersWithManualWriteBarrier(
+      const_cast<Node*>(this)->GetEventTargetData());
   EventTarget::TraceWrappers(visitor);
 }
 

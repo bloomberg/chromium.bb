@@ -27,6 +27,7 @@
 
 #include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventListener.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -55,6 +56,7 @@ class RegisteredEventListener {
         passive_specified_(options.PassiveSpecified()) {}
 
   DEFINE_INLINE_TRACE() { visitor->Trace(listener_); }
+  DEFINE_INLINE_TRACE_WRAPPERS() { visitor->TraceWrappers(listener_); }
 
   AddEventListenerOptionsResolved Options() const {
     AddEventListenerOptionsResolved result;
@@ -108,7 +110,7 @@ class RegisteredEventListener {
   }
 
  private:
-  Member<EventListener> listener_;
+  TraceWrapperMember<EventListener> listener_;
   unsigned use_capture_ : 1;
   unsigned passive_ : 1;
   unsigned once_ : 1;

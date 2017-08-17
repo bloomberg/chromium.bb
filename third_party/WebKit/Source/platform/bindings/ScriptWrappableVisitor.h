@@ -170,13 +170,21 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // Member and |TraceWrappersWithManualWriteBarrier()|. See below.
   template <typename T>
   void TraceWrappers(const TraceWrapperMember<T>& t) const {
-    TraceWrappers(t.Get());
+    MarkAndTraceWrappers(t.Get());
+  }
+
+  // Enable partial tracing of objects. This is used when tracing interior
+  // objects without their own header.
+  template <typename T>
+  void TraceWrappers(const T& traceable) const {
+    static_assert(sizeof(T), "T must be fully defined");
+    traceable.TraceWrappers(this);
   }
 
   // Only called from automatically generated bindings code.
   template <typename T>
   void TraceWrappersFromGeneratedCode(const T* traceable) const {
-    TraceWrappers(traceable);
+    MarkAndTraceWrappers(traceable);
   }
 
   // Require all users of manual write barriers to make this explicit in their
@@ -185,17 +193,17 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // the field. Otherwise, the objects may be collected prematurely.
   template <typename T>
   void TraceWrappersWithManualWriteBarrier(const Member<T>& t) const {
-    TraceWrappers(t.Get());
+    MarkAndTraceWrappers(t.Get());
   }
 
   template <typename T>
   void TraceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
-    TraceWrappers(t.Get());
+    MarkAndTraceWrappers(t.Get());
   }
 
   template <typename T>
   void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
-    TraceWrappers(traceable);
+    MarkAndTraceWrappers(traceable);
   }
 
   virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
@@ -230,7 +238,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
 
   template <typename T>
-  void TraceWrappers(const T* traceable) const {
+  void MarkAndTraceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
 
     if (!traceable) {

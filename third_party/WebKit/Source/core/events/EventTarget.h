@@ -79,10 +79,13 @@ class CORE_EXPORT EventTargetData final
   ~EventTargetData();
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
 };
+
+DEFINE_TRAIT_FOR_TRACE_WRAPPERS(EventTargetData);
 
 // All DOM event targets extend EventTarget. The spec is defined here:
 // https://dom.spec.whatwg.org/#interface-eventtarget
@@ -173,8 +176,7 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   static DispatchEventResult GetDispatchEventResult(const Event&);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
 
   virtual bool KeepEventInNode(Event*) { return false; }
 
@@ -232,6 +234,11 @@ class GC_PLUGIN_IGNORE("513199") CORE_EXPORT EventTargetWithInlineData
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(event_target_data_);
     EventTarget::Trace(visitor);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->TraceWrappers(event_target_data_);
+    EventTarget::TraceWrappers(visitor);
   }
 
  protected:

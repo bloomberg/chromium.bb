@@ -52,8 +52,7 @@ class WorkerGlobalScope;
 // Why does this matter?
 // WebKit does not allow duplicated HTML event handlers of the same type,
 // but ALLOWs duplicated non-HTML event handlers.
-class CORE_EXPORT V8AbstractEventListener : public EventListener,
-                                            public TraceWrapperBase {
+class CORE_EXPORT V8AbstractEventListener : public EventListener {
  public:
   ~V8AbstractEventListener() override;
 
