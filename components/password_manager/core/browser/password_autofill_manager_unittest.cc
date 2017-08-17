@@ -1067,4 +1067,16 @@ TEST_F(PasswordAutofillManagerTest,
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
 }
 
+// SimpleWebviewDialog doesn't have an autofill client. Nothing should crash if
+// the filling fallback is invoked.
+TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsWithoutAutofillClient) {
+  auto client = base::MakeUnique<TestPasswordManagerClient>();
+  InitializePasswordAutofillManager(client.get(), nullptr);
+
+  SetManualFallbacksForFilling(true);
+
+  password_autofill_manager_->OnShowManualFallbackSuggestion(
+      base::i18n::RIGHT_TO_LEFT, gfx::RectF());
+}
+
 }  // namespace password_manager

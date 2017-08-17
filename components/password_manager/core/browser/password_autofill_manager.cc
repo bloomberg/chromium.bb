@@ -306,6 +306,12 @@ void PasswordAutofillManager::OnShowNotSecureWarning(
 void PasswordAutofillManager::OnShowManualFallbackSuggestion(
     base::i18n::TextDirection text_direction,
     const gfx::RectF& bounds) {
+  // https://crbug.com/699197
+  // CroS SimpleWebviewDialog used for the captive portal dialog is a special
+  // case because it doesn't instantiate many helper classes. |autofill_client_|
+  // is NULL too.
+  if (!autofill_client_)
+    return;
   std::vector<autofill::Suggestion> suggestions;
   autofill::Suggestion all_saved_passwords(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
