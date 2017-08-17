@@ -183,9 +183,10 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
   webrtc_track_ = webrtc_audio_track;
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(
-      FROM_HERE, base::Bind(&WebRtcMediaStreamTrackAdapter::
-                                FinalizeRemoteTrackInitializationOnMainThread,
-                            this));
+      FROM_HERE,
+      base::BindOnce(&WebRtcMediaStreamTrackAdapter::
+                         FinalizeRemoteTrackInitializationOnMainThread,
+                     this));
 }
 
 void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
@@ -199,9 +200,10 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
   webrtc_track_ = webrtc_video_track;
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(
-      FROM_HERE, base::Bind(&WebRtcMediaStreamTrackAdapter::
-                                FinalizeRemoteTrackInitializationOnMainThread,
-                            this));
+      FROM_HERE,
+      base::BindOnce(&WebRtcMediaStreamTrackAdapter::
+                         FinalizeRemoteTrackInitializationOnMainThread,
+                     this));
 }
 
 void WebRtcMediaStreamTrackAdapter::
@@ -264,9 +266,9 @@ void WebRtcMediaStreamTrackAdapter::DisposeRemoteAudioTrack() {
             blink::WebMediaStreamSource::kTypeAudio);
   factory_->GetWebRtcSignalingThread()->PostTask(
       FROM_HERE,
-      base::Bind(&WebRtcMediaStreamTrackAdapter::
-                     UnregisterRemoteAudioTrackAdapterOnSignalingThread,
-                 this));
+      base::BindOnce(&WebRtcMediaStreamTrackAdapter::
+                         UnregisterRemoteAudioTrackAdapterOnSignalingThread,
+                     this));
 }
 
 void WebRtcMediaStreamTrackAdapter::DisposeRemoteVideoTrack() {
@@ -284,9 +286,9 @@ void WebRtcMediaStreamTrackAdapter::
   DCHECK(remote_audio_track_adapter_);
   remote_audio_track_adapter_->Unregister();
   main_thread_->PostTask(
-      FROM_HERE, base::Bind(&WebRtcMediaStreamTrackAdapter::
-                                FinalizeRemoteTrackDisposingOnMainThread,
-                            this));
+      FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapter::
+                                    FinalizeRemoteTrackDisposingOnMainThread,
+                                this));
 }
 
 void WebRtcMediaStreamTrackAdapter::FinalizeRemoteTrackDisposingOnMainThread() {

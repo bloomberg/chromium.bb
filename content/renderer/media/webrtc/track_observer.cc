@@ -67,8 +67,9 @@ class CONTENT_EXPORT TrackObserver::TrackObserverImpl
   void OnChanged() override {
     DCHECK(!main_thread_->BelongsToCurrentThread());
     webrtc::MediaStreamTrackInterface::TrackState state = track_->state();
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&TrackObserverImpl::OnChangedOnMainThread, this, state));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TrackObserverImpl::OnChangedOnMainThread, this, state));
   }
 
   void OnChangedOnMainThread(

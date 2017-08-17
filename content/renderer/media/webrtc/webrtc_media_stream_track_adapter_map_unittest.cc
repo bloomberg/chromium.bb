@@ -53,9 +53,9 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter;
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
-        base::Bind(&WebRtcMediaStreamTrackAdapterMapTest::
-                       GetOrCreateRemoteTrackAdapterOnSignalingThread,
-                   base::Unretained(this), webrtc_track, &adapter));
+        base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
+                           GetOrCreateRemoteTrackAdapterOnSignalingThread,
+                       base::Unretained(this), webrtc_track, &adapter));
     RunMessageLoopsUntilIdle();
     return adapter;
   }
@@ -76,9 +76,9 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(&WebRtcMediaStreamTrackAdapterMapTest::
-                                  RunMessageLoopUntilIdleOnSignalingThread,
-                              base::Unretained(this), &waitable_event));
+        FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
+                                      RunMessageLoopUntilIdleOnSignalingThread,
+                                  base::Unretained(this), &waitable_event));
     waitable_event.Wait();
     base::RunLoop().RunUntilIdle();
   }

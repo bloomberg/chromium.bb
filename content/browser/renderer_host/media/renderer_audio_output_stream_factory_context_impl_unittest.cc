@@ -368,7 +368,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
     TestIPCClient client;
     provider_ptr->Acquire(
         mojo::MakeRequest(&stream_ptr), params,
-        base::Bind(&TestIPCClient::Start, base::Unretained(&client)));
+        base::BindOnce(&TestIPCClient::Start, base::Unretained(&client)));
     SyncWithAllThreads();
     stream_ptr->Play();
     SyncWithAllThreads();

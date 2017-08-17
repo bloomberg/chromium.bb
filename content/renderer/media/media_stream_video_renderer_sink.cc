@@ -82,7 +82,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     //  |gpu_memory_buffer_pool_| outlives the task.
     media_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
             base::Unretained(gpu_memory_buffer_pool_.get()), frame,
             media::BindToCurrentLoop(base::Bind(&FrameDeliverer::FrameReady,
@@ -186,8 +186,8 @@ void MediaStreamVideoRendererSink::Start() {
   frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
       repaint_cb_, media_task_runner_, worker_task_runner_, gpu_factories_));
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::Start,
-                            base::Unretained(frame_deliverer_.get())));
+      FROM_HERE, base::BindOnce(&FrameDeliverer::Start,
+                                base::Unretained(frame_deliverer_.get())));
 
   MediaStreamVideoSink::ConnectToTrack(
       video_track_,
@@ -203,8 +203,8 @@ void MediaStreamVideoRendererSink::Start() {
           blink::WebMediaStreamSource::kReadyStateEnded ||
       !video_track_.IsEnabled()) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::RenderEndOfStream,
-                              base::Unretained(frame_deliverer_.get())));
+        FROM_HERE, base::BindOnce(&FrameDeliverer::RenderEndOfStream,
+                                  base::Unretained(frame_deliverer_.get())));
   }
 }
 
@@ -222,8 +222,8 @@ void MediaStreamVideoRendererSink::Resume() {
     return;
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::Resume,
-                            base::Unretained(frame_deliverer_.get())));
+      FROM_HERE, base::BindOnce(&FrameDeliverer::Resume,
+                                base::Unretained(frame_deliverer_.get())));
 }
 
 void MediaStreamVideoRendererSink::Pause() {
@@ -232,8 +232,8 @@ void MediaStreamVideoRendererSink::Pause() {
     return;
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::Pause,
-                            base::Unretained(frame_deliverer_.get())));
+      FROM_HERE, base::BindOnce(&FrameDeliverer::Pause,
+                                base::Unretained(frame_deliverer_.get())));
 }
 
 void MediaStreamVideoRendererSink::OnReadyStateChanged(
@@ -242,8 +242,8 @@ void MediaStreamVideoRendererSink::OnReadyStateChanged(
   if (state == blink::WebMediaStreamSource::kReadyStateEnded &&
       frame_deliverer_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::RenderEndOfStream,
-                              base::Unretained(frame_deliverer_.get())));
+        FROM_HERE, base::BindOnce(&FrameDeliverer::RenderEndOfStream,
+                                  base::Unretained(frame_deliverer_.get())));
   }
 }
 
@@ -260,9 +260,10 @@ void MediaStreamVideoRendererSink::SetGpuMemoryBufferVideoForTesting(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   CHECK(frame_deliverer_);
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::SetGpuMemoryBufferVideoForTesting,
-                            base::Unretained(frame_deliverer_.get()),
-                            gpu_memory_buffer_pool));
+      FROM_HERE,
+      base::BindOnce(&FrameDeliverer::SetGpuMemoryBufferVideoForTesting,
+                     base::Unretained(frame_deliverer_.get()),
+                     gpu_memory_buffer_pool));
 }
 
 }  // namespace content

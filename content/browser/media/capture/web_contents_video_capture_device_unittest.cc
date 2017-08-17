@@ -143,7 +143,7 @@ class CaptureTestView : public TestRenderWidgetHostView {
     media::FillYUV(target.get(), SkColorGetR(yuv_color_),
                    SkColorGetG(yuv_color_), SkColorGetB(yuv_color_));
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, gfx::Rect(), true));
+                            base::BindOnce(callback, gfx::Rect(), true));
   }
 
   void BeginFrameSubscription(
@@ -414,19 +414,17 @@ class StubClientObserver {
 
   void OnError() {
     error_encountered_ = true;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &StubClientObserver::QuitIfConditionsMet,
-        base::Unretained(this),
-        kNothingYet,
-        gfx::Size()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StubClientObserver::QuitIfConditionsMet,
+                       base::Unretained(this), kNothingYet, gfx::Size()));
   }
 
   void DidDeliverFrame(SkColor color, const gfx::Size& size) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &StubClientObserver::QuitIfConditionsMet,
-        base::Unretained(this),
-        color,
-        size));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StubClientObserver::QuitIfConditionsMet,
+                       base::Unretained(this), color, size));
   }
 
  private:
@@ -553,8 +551,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // Schedule the update to occur when the test runs the event loop (and not
     // before expectations have been set).
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&CaptureTestView::SimulateUpdate,
-                                       base::Unretained(test_view())));
+                            base::BindOnce(&CaptureTestView::SimulateUpdate,
+                                           base::Unretained(test_view())));
   }
 
   void SimulateSourceSizeChange(const gfx::Size& size) {
@@ -608,8 +606,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&media::VideoCaptureDevice::RequestRefreshFrame,
-                   base::Unretained(device_.get())));
+        base::BindOnce(&media::VideoCaptureDevice::RequestRefreshFrame,
+                       base::Unretained(device_.get())));
   }
 
   void DestroyVideoCaptureDevice() { device_.reset(); }
@@ -679,8 +677,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   // consumer.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebContentsVideoCaptureDeviceTest::ResetWebContents,
-                 base::Unretained(this)));
+      base::BindOnce(&WebContentsVideoCaptureDeviceTest::ResetWebContents,
+                     base::Unretained(this)));
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
   device()->StopAndDeAllocate();
 }

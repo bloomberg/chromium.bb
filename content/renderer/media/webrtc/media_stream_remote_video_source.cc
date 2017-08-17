@@ -143,7 +143,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     if (!video_frame)
       return;
     // The bind ensures that we keep a reference to the underlying buffer.
-    video_frame->AddDestructionObserver(base::Bind(&DoNothing, buffer));
+    video_frame->AddDestructionObserver(base::BindOnce(&DoNothing, buffer));
   }
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
     video_frame->metadata()->SetRotation(
@@ -154,8 +154,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       media::VideoFrameMetadata::REFERENCE_TIME, render_time);
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
-                            this, video_frame));
+      FROM_HERE,
+      base::BindOnce(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread, this,
+                     video_frame));
 }
 
 void MediaStreamRemoteVideoSource::

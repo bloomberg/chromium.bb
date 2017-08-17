@@ -233,9 +233,8 @@ void MockMediaStreamVideoRenderer::Start() {
   started_ = true;
   paused_ = false;
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MockMediaStreamVideoRenderer::InjectFrame,
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
+                                base::Unretained(this)));
 }
 
 void MockMediaStreamVideoRenderer::Stop() {
@@ -343,8 +342,8 @@ void MockMediaStreamVideoRenderer::InjectFrame() {
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MockMediaStreamVideoRenderer::InjectFrame,
-                 base::Unretained(this)),
+      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
+                     base::Unretained(this)),
       delay_till_next_generated_frame_);
 
   // This will pause the |message_loop_|, and the purpose is to allow the main
@@ -633,8 +632,8 @@ void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
     message_loop_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebMediaPlayerMSTest::RenderFrame, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
+                                  base::Unretained(this)));
   }
   DoStartRendering();
 }
@@ -664,7 +663,8 @@ void WebMediaPlayerMSTest::RenderFrame() {
   }
   message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WebMediaPlayerMSTest::RenderFrame, base::Unretained(this)),
+      base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
+                     base::Unretained(this)),
       base::TimeDelta::FromSecondsD(1.0 / 60.0));
 }
 

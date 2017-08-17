@@ -256,10 +256,10 @@ void AudioLogImpl::SendWebContentsTitleHelper(
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&SendWebContentsTitleHelper, cache_key, base::Passed(&dict),
-                   render_process_id, render_frame_id));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&SendWebContentsTitleHelper,
+                                           cache_key, base::Passed(&dict),
+                                           render_process_id, render_frame_id));
     return;
   }
 
@@ -739,8 +739,9 @@ void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &MediaInternals::SendUpdate, base::Unretained(this), update));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&MediaInternals::SendUpdate,
+                                           base::Unretained(this), update));
     return;
   }
 

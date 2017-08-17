@@ -96,25 +96,20 @@ void AudioStreamMonitor::StartMonitoringStream(
     int render_frame_id,
     int stream_id,
     const ReadPowerAndClipCallback& read_power_callback) {
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&StartMonitoringHelper,
-                                     render_process_id,
-                                     render_frame_id,
-                                     stream_id,
-                                     read_power_callback));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&StartMonitoringHelper, render_process_id, render_frame_id,
+                     stream_id, read_power_callback));
 }
 
 // static
 void AudioStreamMonitor::StopMonitoringStream(int render_process_id,
                                               int render_frame_id,
                                               int stream_id) {
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&StopMonitoringHelper,
-                                     render_process_id,
-                                     render_frame_id,
-                                     stream_id));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&StopMonitoringHelper, render_process_id, render_frame_id,
+                     stream_id));
 }
 
 // static

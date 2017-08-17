@@ -531,8 +531,9 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
     // Libjingle hands out proxy objects in most cases, but the audio source
     // object is an exception (bug?).  So, to work around that, we need to make
     // sure we call SetVolume on the signaling thread.
-    signaling_thread_->PostTask(FROM_HERE,
-        base::Bind(&webrtc::AudioSourceInterface::SetVolume, source, volume));
+    signaling_thread_->PostTask(
+        FROM_HERE, base::BindOnce(&webrtc::AudioSourceInterface::SetVolume,
+                                  source, volume));
   } else {
     source->SetVolume(volume);
   }

@@ -67,8 +67,9 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
     checker_.CheckPermission(
         device_type, main_rfh()->GetProcess()->GetID(),
         main_rfh()->GetRoutingID(),
-        base::Bind(&MediaDevicesPermissionCheckerTest::CheckPermissionCallback,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &MediaDevicesPermissionCheckerTest::CheckPermissionCallback,
+            base::Unretained(this)));
     run_loop.Run();
 
     EXPECT_TRUE(callback_run_);

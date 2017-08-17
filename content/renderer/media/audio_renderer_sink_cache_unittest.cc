@@ -385,12 +385,13 @@ TEST_F(AudioRendererSinkCacheTest, SmokeTest) {
   for (int i = 0; i < kExperimentSize; ++i) {
     for (auto& thread : threads) {
       thread->task_runner()->PostTask(
-          FROM_HERE, base::Bind(&AudioRendererSinkCacheTest::GetRandomSinkInfo,
-                                base::Unretained(this), rand() % kSinkCount));
+          FROM_HERE,
+          base::BindOnce(&AudioRendererSinkCacheTest::GetRandomSinkInfo,
+                         base::Unretained(this), rand() % kSinkCount));
       thread->task_runner()->PostTask(
-          FROM_HERE, base::Bind(&AudioRendererSinkCacheTest::GetRandomSink,
-                                base::Unretained(this), rand() % kSinkCount,
-                                kSleepTimeout));
+          FROM_HERE, base::BindOnce(&AudioRendererSinkCacheTest::GetRandomSink,
+                                    base::Unretained(this), rand() % kSinkCount,
+                                    kSleepTimeout));
     }
   }
 
@@ -398,7 +399,7 @@ TEST_F(AudioRendererSinkCacheTest, SmokeTest) {
   media::WaitableMessageLoopEvent loop_event(
       TestTimeouts::action_max_timeout());
   threads[kThreadCount - 1]->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing), loop_event.GetClosure());
+      FROM_HERE, base::BindOnce(&base::DoNothing), loop_event.GetClosure());
   // Runs the loop and waits for the thread to call event's closure.
   loop_event.RunAndWait();
 }

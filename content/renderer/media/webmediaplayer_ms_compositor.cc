@@ -324,14 +324,15 @@ void WebMediaPlayerMSCompositor::StartRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebMediaPlayerMSCompositor::StartRenderingInternal, this));
+      base::BindOnce(&WebMediaPlayerMSCompositor::StartRenderingInternal,
+                     this));
 }
 
 void WebMediaPlayerMSCompositor::StopRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebMediaPlayerMSCompositor::StopRenderingInternal, this));
+      base::BindOnce(&WebMediaPlayerMSCompositor::StopRenderingInternal, this));
 }
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
@@ -349,7 +350,8 @@ void WebMediaPlayerMSCompositor::StopUsingProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebMediaPlayerMSCompositor::StopUsingProviderInternal, this));
+      base::BindOnce(&WebMediaPlayerMSCompositor::StopUsingProviderInternal,
+                     this));
 }
 
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
@@ -409,10 +411,10 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   current_frame_ = frame;
   if (size_changed) {
     main_message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&WebMediaPlayerMS::TriggerResize, player_));
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMS::TriggerResize, player_));
   }
   main_message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
+      FROM_HERE, base::BindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
 
 void WebMediaPlayerMSCompositor::StartRenderingInternal() {

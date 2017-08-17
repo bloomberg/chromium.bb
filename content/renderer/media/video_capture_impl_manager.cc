@@ -119,10 +119,9 @@ base::Closure VideoCaptureImplManager::StartCapture(
   const int client_id = ++next_client_id_;
 
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureImpl::StartCapture,
-                 base::Unretained(it->impl.get()), client_id, params,
-                 state_update_cb, deliver_frame_cb));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::StartCapture,
+                                base::Unretained(it->impl.get()), client_id,
+                                params, state_update_cb, deliver_frame_cb));
   return base::Bind(&VideoCaptureImplManager::StopCapture,
                     weak_factory_.GetWeakPtr(), client_id, id);
 }
@@ -135,9 +134,8 @@ void VideoCaptureImplManager::RequestRefreshFrame(
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureImpl::RequestRefreshFrame,
-                 base::Unretained(it->impl.get())));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::RequestRefreshFrame,
+                                base::Unretained(it->impl.get())));
 }
 
 void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
@@ -154,8 +152,8 @@ void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
   if (is_suspending_all_)
     return;  // Device should already be suspended.
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
-                            base::Unretained(it->impl.get()), true));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
+                                base::Unretained(it->impl.get()), true));
 }
 
 void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
@@ -170,8 +168,8 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
   if (is_suspending_all_)
     return;  // Device must remain suspended until all are resumed.
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
-                            base::Unretained(it->impl.get()), false));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
+                                base::Unretained(it->impl.get()), false));
 }
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
@@ -183,8 +181,8 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceSupportedFormats,
-                            base::Unretained(it->impl.get()), callback));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
+                                base::Unretained(it->impl.get()), callback));
 }
 
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
@@ -196,8 +194,8 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceFormatsInUse,
-                            base::Unretained(it->impl.get()), callback));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
+                                base::Unretained(it->impl.get()), callback));
 }
 
 std::unique_ptr<VideoCaptureImpl>
@@ -214,8 +212,8 @@ void VideoCaptureImplManager::StopCapture(int client_id,
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::StopCapture,
-                            base::Unretained(it->impl.get()), client_id));
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::StopCapture,
+                                base::Unretained(it->impl.get()), client_id));
 }
 
 void VideoCaptureImplManager::UnrefDevice(
@@ -250,8 +248,8 @@ void VideoCaptureImplManager::SuspendDevices(
     if (it->is_individually_suspended)
       continue;  // Either: 1) Already suspended; or 2) Should not be resumed.
     ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
-                              base::Unretained(it->impl.get()), suspend));
+        FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
+                                  base::Unretained(it->impl.get()), suspend));
   }
 }
 

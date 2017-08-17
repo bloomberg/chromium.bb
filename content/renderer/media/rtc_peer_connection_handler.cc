@@ -415,8 +415,9 @@ class CreateSessionDescriptionRequest
 
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&CreateSessionDescriptionRequest::OnSuccess, this, desc));
+      main_thread_->PostTask(
+          FROM_HERE, base::BindOnce(&CreateSessionDescriptionRequest::OnSuccess,
+                                    this, desc));
       return;
     }
 
@@ -427,8 +428,9 @@ class CreateSessionDescriptionRequest
   }
   void OnFailure(const std::string& error) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&CreateSessionDescriptionRequest::OnFailure, this, error));
+      main_thread_->PostTask(
+          FROM_HERE, base::BindOnce(&CreateSessionDescriptionRequest::OnFailure,
+                                    this, error));
       return;
     }
 
@@ -471,8 +473,9 @@ class SetSessionDescriptionRequest
 
   void OnSuccess() override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&SetSessionDescriptionRequest::OnSuccess, this));
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SetSessionDescriptionRequest::OnSuccess, this));
       return;
     }
     tracker_.TrackOnSuccess(NULL);
@@ -481,8 +484,9 @@ class SetSessionDescriptionRequest
   }
   void OnFailure(const std::string& error) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&SetSessionDescriptionRequest::OnFailure, this, error));
+      main_thread_->PostTask(
+          FROM_HERE, base::BindOnce(&SetSessionDescriptionRequest::OnFailure,
+                                    this, error));
       return;
     }
     tracker_.TrackOnFailure(error);
@@ -551,11 +555,12 @@ class StatsResponse : public webrtc::StatsObserver {
     for (auto* r : reports)
       report_copies->push_back(new Report(r));
 
-    main_thread_->PostTaskAndReply(FROM_HERE,
-        base::Bind(&StatsResponse::DeliverCallback, this,
-                   base::Unretained(report_copies)),
-        base::Bind(&StatsResponse::DeleteReports,
-                   base::Unretained(report_copies)));
+    main_thread_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&StatsResponse::DeliverCallback, this,
+                       base::Unretained(report_copies)),
+        base::BindOnce(&StatsResponse::DeleteReports,
+                       base::Unretained(report_copies)));
   }
 
  private:
@@ -726,9 +731,10 @@ class GetRTCStatsCallback : public webrtc::RTCStatsCollectorCallback {
 
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&GetRTCStatsCallback::OnStatsDeliveredOnMainThread,
-            this, report));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GetRTCStatsCallback::OnStatsDeliveredOnMainThread, this,
+                       report));
   }
 
  protected:
@@ -981,9 +987,10 @@ class RTCPeerConnectionHandler::Observer
   void OnSignalingChange(
       PeerConnectionInterface::SignalingState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&RTCPeerConnectionHandler::Observer::OnSignalingChange,
-              this, new_state));
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RTCPeerConnectionHandler::Observer::OnSignalingChange,
+                         this, new_state));
     } else if (handler_) {
       handler_->OnSignalingChange(new_state);
     }
@@ -997,32 +1004,36 @@ class RTCPeerConnectionHandler::Observer
     // The webkit object owned by RemoteMediaStreamImpl, will be initialized
     // asynchronously and the posted task will execude after that initialization
     // is done.
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&RTCPeerConnectionHandler::Observer::OnAddStreamImpl,
-            this, base::Passed(&remote_stream)));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnAddStreamImpl,
+                       this, base::Passed(&remote_stream)));
   }
 
   void OnRemoveStream(
       rtc::scoped_refptr<MediaStreamInterface> stream) override {
     main_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&RTCPeerConnectionHandler::Observer::OnRemoveStreamImpl,
-                   this, make_scoped_refptr(stream.get())));
+        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnRemoveStreamImpl,
+                       this, make_scoped_refptr(stream.get())));
   }
 
   void OnDataChannel(
       rtc::scoped_refptr<DataChannelInterface> data_channel) override {
     std::unique_ptr<RtcDataChannelHandler> handler(
         new RtcDataChannelHandler(main_thread_, data_channel));
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&RTCPeerConnectionHandler::Observer::OnDataChannelImpl,
-            this, base::Passed(&handler)));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnDataChannelImpl,
+                       this, base::Passed(&handler)));
   }
 
   void OnRenegotiationNeeded() override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&RTCPeerConnectionHandler::Observer::OnRenegotiationNeeded,
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &RTCPeerConnectionHandler::Observer::OnRenegotiationNeeded,
               this));
     } else if (handler_) {
       handler_->OnRenegotiationNeeded();
@@ -1032,8 +1043,9 @@ class RTCPeerConnectionHandler::Observer
   void OnIceConnectionChange(
       PeerConnectionInterface::IceConnectionState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
               &RTCPeerConnectionHandler::Observer::OnIceConnectionChange, this,
               new_state));
     } else if (handler_) {
@@ -1044,9 +1056,11 @@ class RTCPeerConnectionHandler::Observer
   void OnIceGatheringChange(
       PeerConnectionInterface::IceGatheringState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(FROM_HERE,
-          base::Bind(&RTCPeerConnectionHandler::Observer::OnIceGatheringChange,
-              this, new_state));
+      main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &RTCPeerConnectionHandler::Observer::OnIceGatheringChange, this,
+              new_state));
     } else if (handler_) {
       handler_->OnIceGatheringChange(new_state);
     }
@@ -1059,11 +1073,13 @@ class RTCPeerConnectionHandler::Observer
       return;
     }
 
-    main_thread_->PostTask(FROM_HERE,
-        base::Bind(&RTCPeerConnectionHandler::Observer::OnIceCandidateImpl,
-            this, sdp, candidate->sdp_mid(), candidate->sdp_mline_index(),
-            candidate->candidate().component(),
-            candidate->candidate().address().family()));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnIceCandidateImpl,
+                       this, sdp, candidate->sdp_mid(),
+                       candidate->sdp_mline_index(),
+                       candidate->candidate().component(),
+                       candidate->candidate().address().family()));
   }
 
   void OnAddStreamImpl(std::unique_ptr<RemoteMediaStreamImpl> stream) {
@@ -1339,7 +1355,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 
   signaling_thread()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &RunClosureWithTrace,
           base::Bind(&webrtc::PeerConnectionInterface::SetLocalDescription,
                      native_peer_connection_, base::RetainedRef(set_request),
@@ -1396,7 +1412,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
           PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION));
   signaling_thread()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &RunClosureWithTrace,
           base::Bind(&webrtc::PeerConnectionInterface::SetRemoteDescription,
                      native_peer_connection_, base::RetainedRef(set_request),
@@ -1475,8 +1491,9 @@ bool RTCPeerConnectionHandler::AddICECandidate(
   // PostTaskAndReply kind of a thing.
   bool result = AddICECandidate(candidate);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
-                            weak_factory_.GetWeakPtr(), request, result));
+      FROM_HERE,
+      base::BindOnce(&RTCPeerConnectionHandler::OnaddICECandidateResult,
+                     weak_factory_.GetWeakPtr(), request, result));
   // On failure callback will be triggered.
   return true;
 }
@@ -1630,18 +1647,20 @@ void RTCPeerConnectionHandler::GetStats(
     const std::string& track_id,
     blink::WebMediaStreamSource::Type track_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  signaling_thread()->PostTask(FROM_HERE,
-      base::Bind(&GetStatsOnSignalingThread, native_peer_connection_, level,
-                 make_scoped_refptr(observer), track_id, track_type));
+  signaling_thread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GetStatsOnSignalingThread, native_peer_connection_, level,
+                     make_scoped_refptr(observer), track_id, track_type));
 }
 
 void RTCPeerConnectionHandler::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  signaling_thread()->PostTask(FROM_HERE,
-      base::Bind(&GetRTCStatsOnSignalingThread,
-          base::ThreadTaskRunnerHandle::Get(), native_peer_connection_,
-          base::Passed(&callback)));
+  signaling_thread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GetRTCStatsOnSignalingThread,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     native_peer_connection_, base::Passed(&callback)));
 }
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>>
@@ -2121,9 +2140,9 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread->PostTask(FROM_HERE,
-        base::Bind(&RunSynchronousClosure, closure,
-                   base::Unretained(trace_event_name),
-                   base::Unretained(&event)));
+                     base::BindOnce(&RunSynchronousClosure, closure,
+                                    base::Unretained(trace_event_name),
+                                    base::Unretained(&event)));
     event.Wait();
   }
 }

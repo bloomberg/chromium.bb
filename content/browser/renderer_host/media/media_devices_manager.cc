@@ -355,15 +355,15 @@ void MediaDevicesManager::EnumerateAudioDevices(bool is_input) {
       is_input ? MEDIA_DEVICE_TYPE_AUDIO_INPUT : MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
   if (use_fake_devices_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MediaDevicesManager::DevicesEnumerated,
-                              weak_factory_.GetWeakPtr(), type,
-                              GetFakeAudioDevices(is_input)));
+        FROM_HERE, base::BindOnce(&MediaDevicesManager::DevicesEnumerated,
+                                  weak_factory_.GetWeakPtr(), type,
+                                  GetFakeAudioDevices(is_input)));
     return;
   }
 
   audio_system_->GetDeviceDescriptions(
-      base::Bind(&MediaDevicesManager::AudioDevicesEnumerated,
-                 weak_factory_.GetWeakPtr(), type),
+      base::BindOnce(&MediaDevicesManager::AudioDevicesEnumerated,
+                     weak_factory_.GetWeakPtr(), type),
       is_input);
 }
 

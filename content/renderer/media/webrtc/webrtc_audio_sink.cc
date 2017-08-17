@@ -49,9 +49,8 @@ void WebRtcAudioSink::OnEnabledChanged(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   adapter_->signaling_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&WebRtcAudioSink::Adapter::set_enabled),
-          adapter_, enabled));
+      base::BindOnce(base::IgnoreResult(&WebRtcAudioSink::Adapter::set_enabled),
+                     adapter_, enabled));
 }
 
 void WebRtcAudioSink::OnData(const media::AudioBus& audio_bus,
@@ -117,7 +116,7 @@ WebRtcAudioSink::Adapter::~Adapter() {
   if (audio_processor_) {
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DereferenceOnMainThread, std::move(audio_processor_)));
+        base::BindOnce(&DereferenceOnMainThread, std::move(audio_processor_)));
   }
 }
 

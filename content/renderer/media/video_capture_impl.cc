@@ -176,8 +176,8 @@ void VideoCaptureImpl::GetDeviceSupportedFormats(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceSupportedFormats(
       device_id_, session_id_,
-      base::Bind(&VideoCaptureImpl::OnDeviceSupportedFormats,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&VideoCaptureImpl::OnDeviceSupportedFormats,
+                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void VideoCaptureImpl::GetDeviceFormatsInUse(
@@ -185,8 +185,8 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceFormatsInUse(
       device_id_, session_id_,
-      base::Bind(&VideoCaptureImpl::OnDeviceFormatsInUse,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&VideoCaptureImpl::OnDeviceFormatsInUse,
+                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
@@ -326,8 +326,8 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
                  weak_factory_.GetWeakPtr(), buffer_id, buffer));
   frame->AddDestructionObserver(
-      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
-                 buffer_finished_callback));
+      base::BindOnce(&VideoCaptureImpl::DidFinishConsumingFrame,
+                     frame->metadata(), buffer_finished_callback));
 
   frame->metadata()->MergeInternalValuesFrom(*info->metadata);
 

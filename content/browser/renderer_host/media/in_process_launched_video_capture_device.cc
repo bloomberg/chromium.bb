@@ -45,9 +45,10 @@ InProcessLaunchedVideoCaptureDevice::~InProcessLaunchedVideoCaptureDevice() {
   media::VideoCaptureDevice* device_ptr = device_.release();
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&StopAndReleaseDeviceOnDeviceThread, device_ptr,
-                 base::Bind([](scoped_refptr<base::SingleThreadTaskRunner>) {},
-                            device_task_runner_)));
+      base::BindOnce(
+          &StopAndReleaseDeviceOnDeviceThread, device_ptr,
+          base::Bind([](scoped_refptr<base::SingleThreadTaskRunner>) {},
+                     device_task_runner_)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::GetPhotoState(
@@ -58,8 +59,8 @@ void InProcessLaunchedVideoCaptureDevice::GetPhotoState(
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&media::VideoCaptureDevice::GetPhotoState,
-                 base::Unretained(device_.get()), base::Passed(&callback)));
+      base::BindOnce(&media::VideoCaptureDevice::GetPhotoState,
+                     base::Unretained(device_.get()), base::Passed(&callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
@@ -70,9 +71,10 @@ void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoCaptureDevice::SetPhotoOptions,
-                            base::Unretained(device_.get()),
-                            base::Passed(&settings), base::Passed(&callback)));
+      FROM_HERE,
+      base::BindOnce(&media::VideoCaptureDevice::SetPhotoOptions,
+                     base::Unretained(device_.get()), base::Passed(&settings),
+                     base::Passed(&callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::TakePhoto(
@@ -83,8 +85,8 @@ void InProcessLaunchedVideoCaptureDevice::TakePhoto(
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&media::VideoCaptureDevice::TakePhoto,
-                 base::Unretained(device_.get()), base::Passed(&callback)));
+      base::BindOnce(&media::VideoCaptureDevice::TakePhoto,
+                     base::Unretained(device_.get()), base::Passed(&callback)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
@@ -93,8 +95,8 @@ void InProcessLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoCaptureDevice::MaybeSuspend,
-                            base::Unretained(device_.get())));
+      FROM_HERE, base::BindOnce(&media::VideoCaptureDevice::MaybeSuspend,
+                                base::Unretained(device_.get())));
 }
 
 void InProcessLaunchedVideoCaptureDevice::ResumeDevice() {
@@ -102,9 +104,9 @@ void InProcessLaunchedVideoCaptureDevice::ResumeDevice() {
   // Unretained() is safe to use here because |device| would be null if it
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
-  device_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&media::VideoCaptureDevice::Resume,
-                                           base::Unretained(device_.get())));
+  device_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&media::VideoCaptureDevice::Resume,
+                                base::Unretained(device_.get())));
 }
 
 void InProcessLaunchedVideoCaptureDevice::RequestRefreshFrame() {
@@ -113,8 +115,8 @@ void InProcessLaunchedVideoCaptureDevice::RequestRefreshFrame() {
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoCaptureDevice::RequestRefreshFrame,
-                            base::Unretained(device_.get())));
+      FROM_HERE, base::BindOnce(&media::VideoCaptureDevice::RequestRefreshFrame,
+                                base::Unretained(device_.get())));
 }
 
 void InProcessLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
@@ -125,10 +127,10 @@ void InProcessLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
   // device is destroyed on the device_task_runner_ and |done_cb|
   // guarantees that |this| stays alive.
   device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InProcessLaunchedVideoCaptureDevice::
-                                SetDesktopCaptureWindowIdOnDeviceThread,
-                            base::Unretained(this), device_.get(), window_id,
-                            base::Passed(&done_cb)));
+      FROM_HERE, base::BindOnce(&InProcessLaunchedVideoCaptureDevice::
+                                    SetDesktopCaptureWindowIdOnDeviceThread,
+                                base::Unretained(this), device_.get(),
+                                window_id, base::Passed(&done_cb)));
 }
 
 void InProcessLaunchedVideoCaptureDevice::OnUtilizationReport(
@@ -139,9 +141,9 @@ void InProcessLaunchedVideoCaptureDevice::OnUtilizationReport(
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoCaptureDevice::OnUtilizationReport,
-                            base::Unretained(device_.get()), frame_feedback_id,
-                            utilization));
+      FROM_HERE, base::BindOnce(&media::VideoCaptureDevice::OnUtilizationReport,
+                                base::Unretained(device_.get()),
+                                frame_feedback_id, utilization));
 }
 
 void InProcessLaunchedVideoCaptureDevice::

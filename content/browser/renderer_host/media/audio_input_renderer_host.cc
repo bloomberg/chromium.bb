@@ -163,8 +163,8 @@ void AudioInputRendererHost::OnMuted(media::AudioInputController* controller,
                                      bool is_muted) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoNotifyMutedState, this,
-                 base::RetainedRef(controller), is_muted));
+      base::BindOnce(&AudioInputRendererHost::DoNotifyMutedState, this,
+                     base::RetainedRef(controller), is_muted));
 }
 
 void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {

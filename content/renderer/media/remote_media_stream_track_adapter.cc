@@ -88,8 +88,8 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
 
 void RemoteAudioTrackAdapter::OnChanged() {
   main_thread_->PostTask(
-      FROM_HERE, base::Bind(&RemoteAudioTrackAdapter::OnChangedOnMainThread,
-                            this, observed_track()->state()));
+      FROM_HERE, base::BindOnce(&RemoteAudioTrackAdapter::OnChangedOnMainThread,
+                                this, observed_track()->state()));
 }
 
 void RemoteAudioTrackAdapter::OnChangedOnMainThread(

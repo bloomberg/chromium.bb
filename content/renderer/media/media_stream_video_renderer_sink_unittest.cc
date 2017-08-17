@@ -122,7 +122,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     // tasks on IO thread are completed before moving on.
     base::RunLoop run_loop;
     child_process_->io_task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind([] {}), run_loop.QuitClosure());
+        FROM_HERE, base::BindOnce([] {}), run_loop.QuitClosure());
     run_loop.Run();
     base::RunLoop().RunUntilIdle();
   }

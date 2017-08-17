@@ -99,20 +99,20 @@ class WebMediaPlayerMS::FrameDeliverer {
       last_frame_opaque_ = is_opaque;
       last_frame_rotation_ = video_rotation;
       main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&WebMediaPlayerMS::OnFirstFrameReceived,
-                                player_, video_rotation, is_opaque));
+          FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnFirstFrameReceived,
+                                    player_, video_rotation, is_opaque));
     } else {
       if (last_frame_opaque_ != is_opaque) {
         last_frame_opaque_ = is_opaque;
         main_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&WebMediaPlayerMS::OnOpacityChanged, player_,
-                                  is_opaque));
+            FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnOpacityChanged,
+                                      player_, is_opaque));
       }
       if (last_frame_rotation_ != video_rotation) {
         last_frame_rotation_ = video_rotation;
         main_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&WebMediaPlayerMS::OnRotationChanged, player_,
-                                  video_rotation, is_opaque));
+            FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnRotationChanged,
+                                      player_, video_rotation, is_opaque));
       }
     }
 

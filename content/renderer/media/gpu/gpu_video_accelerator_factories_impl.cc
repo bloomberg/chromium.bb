@@ -94,9 +94,10 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GpuVideoAcceleratorFactoriesImpl::
-                     BindVideoEncodeAcceleratorProviderOnTaskRunner,
-                 base::Unretained(this), base::Passed(&unbound_vea_provider)));
+      base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::
+                         BindVideoEncodeAcceleratorProviderOnTaskRunner,
+                     base::Unretained(this),
+                     base::Passed(&unbound_vea_provider)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::~GpuVideoAcceleratorFactoriesImpl() {}
@@ -116,8 +117,9 @@ bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
       // Drop the reference on the main thread.
       main_thread_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider,
-                     base::Unretained(this)));
+          base::BindOnce(
+              &GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider,
+              base::Unretained(this)));
     }
   }
   return !context_provider_;

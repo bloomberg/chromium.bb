@@ -12,9 +12,9 @@ ServiceLaunchedVideoCaptureDevice::ServiceLaunchedVideoCaptureDevice(
     : device_(std::move(device)),
       connection_lost_cb_(std::move(connection_lost_cb)) {
   // Unretained |this| is safe, because |this| owns |device_|.
-  device_.set_connection_error_handler(
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice,
-                 base::Unretained(this)));
+  device_.set_connection_error_handler(base::BindOnce(
+      &ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice,
+      base::Unretained(this)));
 }
 
 ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
@@ -24,9 +24,9 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
 void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
     media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->GetPhotoState(
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+  device_->GetPhotoState(base::BindOnce(
+      &ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,
+      base::Unretained(this), base::Passed(&callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
@@ -35,16 +35,17 @@ void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   device_->SetPhotoOptions(
       std::move(settings),
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+      base::BindOnce(
+          &ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse,
+          base::Unretained(this), base::Passed(&callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   device_->TakePhoto(
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+      base::BindOnce(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
+                     base::Unretained(this), base::Passed(&callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::MaybeSuspendDevice() {

@@ -79,9 +79,10 @@ void RtcDataChannelHandler::Observer::Unregister() {
 }
 
 void RtcDataChannelHandler::Observer::OnStateChange() {
-  main_thread_->PostTask(FROM_HERE, base::Bind(
-      &RtcDataChannelHandler::Observer::OnStateChangeImpl, this,
-      channel_->state()));
+  main_thread_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RtcDataChannelHandler::Observer::OnStateChangeImpl, this,
+                     channel_->state()));
 }
 
 void RtcDataChannelHandler::Observer::OnBufferedAmountChange(
@@ -89,9 +90,11 @@ void RtcDataChannelHandler::Observer::OnBufferedAmountChange(
   // Optimization: Only post a task if the change is a decrease, because the web
   // interface does not perform any action when there is an increase.
   if (previous_amount > channel_->buffered_amount()) {
-    main_thread_->PostTask(FROM_HERE, base::Bind(
-        &RtcDataChannelHandler::Observer::OnBufferedAmountDecreaseImpl, this,
-        previous_amount));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RtcDataChannelHandler::Observer::OnBufferedAmountDecreaseImpl,
+            this, previous_amount));
   }
 }
 
@@ -101,9 +104,9 @@ void RtcDataChannelHandler::Observer::OnMessage(
   // having to create a copy.  See webrtc bug 3967.
   std::unique_ptr<webrtc::DataBuffer> new_buffer(
       new webrtc::DataBuffer(buffer));
-  main_thread_->PostTask(FROM_HERE,
-      base::Bind(&RtcDataChannelHandler::Observer::OnMessageImpl, this,
-      base::Passed(&new_buffer)));
+  main_thread_->PostTask(
+      FROM_HERE, base::BindOnce(&RtcDataChannelHandler::Observer::OnMessageImpl,
+                                this, base::Passed(&new_buffer)));
 }
 
 void RtcDataChannelHandler::Observer::OnStateChangeImpl(

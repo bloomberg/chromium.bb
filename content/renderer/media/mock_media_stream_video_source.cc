@@ -52,7 +52,7 @@ void MockMediaStreamVideoSource::RequestRefreshFrame() {
         media::VideoFrame::CreateColorFrame(format_.frame_size, 0, 0, 0,
                                             base::TimeDelta());
     io_task_runner()->PostTask(
-        FROM_HERE, base::Bind(frame_callback_, frame, base::TimeTicks()));
+        FROM_HERE, base::BindOnce(frame_callback_, frame, base::TimeTicks()));
   }
 }
 
@@ -76,7 +76,7 @@ void MockMediaStreamVideoSource::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(!frame_callback_.is_null());
   io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(frame_callback_, frame, base::TimeTicks()));
+      FROM_HERE, base::BindOnce(frame_callback_, frame, base::TimeTicks()));
 }
 
 }  // namespace content

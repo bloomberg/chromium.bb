@@ -106,8 +106,8 @@ VideoCaptureHost::~VideoCaptureHost() {
   // destroyed on UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostDelegate::NotifyAllStreamsRemoved,
-                 base::Unretained(render_process_host_delegate_.get())));
+      base::BindOnce(&RenderProcessHostDelegate::NotifyAllStreamsRemoved,
+                     base::Unretained(render_process_host_delegate_.get())));
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
                             render_process_host_delegate_.release());
 }
@@ -117,8 +117,8 @@ void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureHost::DoError, weak_factory_.GetWeakPtr(),
-                 controller_id));
+      base::BindOnce(&VideoCaptureHost::DoError, weak_factory_.GetWeakPtr(),
+                     controller_id));
 }
 
 void VideoCaptureHost::OnBufferCreated(VideoCaptureControllerID controller_id,
@@ -165,8 +165,8 @@ void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureHost::DoEnded, weak_factory_.GetWeakPtr(),
-                 controller_id));
+      base::BindOnce(&VideoCaptureHost::DoEnded, weak_factory_.GetWeakPtr(),
+                     controller_id));
 }
 
 void VideoCaptureHost::OnStarted(VideoCaptureControllerID controller_id) {
@@ -182,8 +182,8 @@ void VideoCaptureHost::OnStarted(VideoCaptureControllerID controller_id) {
     // is destroyed on UI thread.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderProcessHostDelegate::NotifyStreamAdded,
-                   base::Unretained(render_process_host_delegate_.get())));
+        base::BindOnce(&RenderProcessHostDelegate::NotifyStreamAdded,
+                       base::Unretained(render_process_host_delegate_.get())));
   }
 }
 
@@ -209,8 +209,8 @@ void VideoCaptureHost::Start(int32_t device_id,
     // is destroyed on UI thread.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderProcessHostDelegate::NotifyStreamAdded,
-                   base::Unretained(render_process_host_delegate_.get())));
+        base::BindOnce(&RenderProcessHostDelegate::NotifyStreamAdded,
+                       base::Unretained(render_process_host_delegate_.get())));
     return;
   }
 
@@ -238,8 +238,8 @@ void VideoCaptureHost::Stop(int32_t device_id) {
   // destroyed on UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostDelegate::NotifyStreamRemoved,
-                 base::Unretained(render_process_host_delegate_.get())));
+      base::BindOnce(&RenderProcessHostDelegate::NotifyStreamRemoved,
+                     base::Unretained(render_process_host_delegate_.get())));
 }
 
 void VideoCaptureHost::Pause(int32_t device_id) {
@@ -354,8 +354,8 @@ void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
   // destroyed on UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostDelegate::NotifyStreamRemoved,
-                 base::Unretained(render_process_host_delegate_.get())));
+      base::BindOnce(&RenderProcessHostDelegate::NotifyStreamRemoved,
+                     base::Unretained(render_process_host_delegate_.get())));
 }
 
 void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
@@ -374,8 +374,8 @@ void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
   // destroyed on UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderProcessHostDelegate::NotifyStreamRemoved,
-                 base::Unretained(render_process_host_delegate_.get())));
+      base::BindOnce(&RenderProcessHostDelegate::NotifyStreamRemoved,
+                     base::Unretained(render_process_host_delegate_.get())));
 }
 
 void VideoCaptureHost::OnControllerAdded(

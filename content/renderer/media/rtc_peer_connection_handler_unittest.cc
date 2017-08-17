@@ -425,8 +425,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     mock_dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                              base::Unretained(&waitable_event)));
+        FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
+                                  base::Unretained(&waitable_event)));
     waitable_event.Wait();
     base::RunLoop().RunUntilIdle();
   }

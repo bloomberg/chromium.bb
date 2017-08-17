@@ -110,8 +110,9 @@ class MediaStreamTrackMetricsTest : public testing::Test {
     // MediaStreamInterface has two methods with the same name.
     typedef bool (MediaStreamInterface::*AddTrack)(TrackType*);
     base::RunLoop run_loop;
-    signaling_thread_.task_runner()->PostTaskAndReply(FROM_HERE,
-        base::Bind(
+    signaling_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(
             base::IgnoreResult<AddTrack>(&MediaStreamInterface::AddTrack),
             stream_, track),
         run_loop.QuitClosure());
@@ -124,8 +125,9 @@ class MediaStreamTrackMetricsTest : public testing::Test {
     // MediaStreamInterface has two methods with the same name.
     typedef bool (MediaStreamInterface::*RemoveTrack)(TrackType*);
     base::RunLoop run_loop;
-    signaling_thread_.task_runner()->PostTaskAndReply(FROM_HERE,
-        base::Bind(
+    signaling_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(
             base::IgnoreResult<RemoveTrack>(&MediaStreamInterface::RemoveTrack),
             stream_, track),
         run_loop.QuitClosure());

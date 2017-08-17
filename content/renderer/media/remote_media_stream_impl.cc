@@ -110,8 +110,8 @@ class RemoteMediaStreamImpl::Observer
         track_adapter_map_, webrtc_stream_.get());
     main_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&RemoteMediaStreamImpl::Observer::OnChangedOnMainThread,
-                   this, base::Passed(&new_adapter_refs)));
+        base::BindOnce(&RemoteMediaStreamImpl::Observer::OnChangedOnMainThread,
+                       this, base::Passed(&new_adapter_refs)));
   }
 
   void OnChangedOnMainThread(AdapterRefMap new_adapter_refs) {
@@ -144,10 +144,11 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
       GetAdapterRefMapFromWebRtcStream(track_adapter_map_, webrtc_stream);
   main_thread->PostTask(
       FROM_HERE,
-      base::Bind(&RemoteMediaStreamImpl::Observer::InitializeOnMainThread,
-                 observer_, webrtc_stream->label(), base::Passed(&adapter_refs),
-                 webrtc_stream->GetAudioTracks().size(),
-                 webrtc_stream->GetVideoTracks().size()));
+      base::BindOnce(&RemoteMediaStreamImpl::Observer::InitializeOnMainThread,
+                     observer_, webrtc_stream->label(),
+                     base::Passed(&adapter_refs),
+                     webrtc_stream->GetAudioTracks().size(),
+                     webrtc_stream->GetVideoTracks().size()));
 }
 
 RemoteMediaStreamImpl::~RemoteMediaStreamImpl() {

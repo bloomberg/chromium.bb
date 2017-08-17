@@ -183,17 +183,18 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_worker_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PeerConnectionDependencyFactory::InitializeWorkerThread,
-                 base::Unretained(this), &worker_thread_, &start_worker_event));
+      base::BindOnce(&PeerConnectionDependencyFactory::InitializeWorkerThread,
+                     base::Unretained(this), &worker_thread_,
+                     &start_worker_event));
 
   base::WaitableEvent create_network_manager_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_worker_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PeerConnectionDependencyFactory::
-                     CreateIpcNetworkManagerOnWorkerThread,
-                 base::Unretained(this), &create_network_manager_event));
+      base::BindOnce(&PeerConnectionDependencyFactory::
+                         CreateIpcNetworkManagerOnWorkerThread,
+                     base::Unretained(this), &create_network_manager_event));
 
   start_worker_event.Wait();
   create_network_manager_event.Wait();
@@ -212,10 +213,11 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_signaling_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PeerConnectionDependencyFactory::InitializeSignalingThread,
-                 base::Unretained(this),
-                 RenderThreadImpl::current()->GetGpuFactories(),
-                 &start_signaling_event));
+      base::BindOnce(
+          &PeerConnectionDependencyFactory::InitializeSignalingThread,
+          base::Unretained(this),
+          RenderThreadImpl::current()->GetGpuFactories(),
+          &start_signaling_event));
 
   start_signaling_event.Wait();
   CHECK(signaling_thread_);
@@ -470,8 +472,9 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
   if (!p2p_socket_dispatcher_->connected()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&PeerConnectionDependencyFactory::TryScheduleStunProbeTrial,
-                   base::Unretained(this)),
+        base::BindOnce(
+            &PeerConnectionDependencyFactory::TryScheduleStunProbeTrial,
+            base::Unretained(this)),
         base::TimeDelta::FromSeconds(1));
     return;
   }
@@ -487,7 +490,7 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
 
   chrome_worker_thread_.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread,
           base::Unretained(this), params),
       base::TimeDelta::FromMilliseconds(kExperimentStartDelayMs));
@@ -523,8 +526,9 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
     if (chrome_worker_thread_.IsRunning()) {
       chrome_worker_thread_.task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&PeerConnectionDependencyFactory::DeleteIpcNetworkManager,
-                     base::Unretained(this)));
+          base::BindOnce(
+              &PeerConnectionDependencyFactory::DeleteIpcNetworkManager,
+              base::Unretained(this)));
       // Stopping the thread will wait until all tasks have been
       // processed before returning. We wait for the above task to finish before
       // letting the the function continue to avoid any potential race issues.

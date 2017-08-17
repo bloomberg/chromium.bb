@@ -87,12 +87,9 @@ class WebContentsAudioMuter::MuteDestination
   void QueryForMatches(const std::set<SourceFrameRef>& candidates,
                        const MatchesCallback& results_callback) override {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&MuteDestination::QueryForMatchesOnUIThread,
-                   this,
-                   candidates,
-                   media::BindToCurrentLoop(results_callback)));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&MuteDestination::QueryForMatchesOnUIThread, this,
+                       candidates, media::BindToCurrentLoop(results_callback)));
   }
 
   void QueryForMatchesOnUIThread(const std::set<SourceFrameRef>& candidates,
@@ -145,9 +142,9 @@ void WebContentsAudioMuter::StartMuting() {
   is_muting_ = true;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioMirroringManager::StartMirroring,
-                 base::Unretained(AudioMirroringManager::GetInstance()),
-                 base::RetainedRef(destination_)));
+      base::BindOnce(&AudioMirroringManager::StartMirroring,
+                     base::Unretained(AudioMirroringManager::GetInstance()),
+                     base::RetainedRef(destination_)));
 }
 
 void WebContentsAudioMuter::StopMuting() {
@@ -157,9 +154,9 @@ void WebContentsAudioMuter::StopMuting() {
   is_muting_ = false;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioMirroringManager::StopMirroring,
-                 base::Unretained(AudioMirroringManager::GetInstance()),
-                 base::RetainedRef(destination_)));
+      base::BindOnce(&AudioMirroringManager::StopMirroring,
+                     base::Unretained(AudioMirroringManager::GetInstance()),
+                     base::RetainedRef(destination_)));
 }
 
 }  // namespace content

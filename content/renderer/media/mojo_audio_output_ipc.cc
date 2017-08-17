@@ -79,9 +79,9 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
   DCHECK_EQ(delegate_, delegate);
   // Since the creation callback won't fire if the provider binding is gone
   // and |this| owns |stream_provider_|, unretained is safe.
-  stream_provider_->Acquire(
-      mojo::MakeRequest(&stream_), params,
-      base::Bind(&MojoAudioOutputIPC::StreamCreated, base::Unretained(this)));
+  stream_provider_->Acquire(mojo::MakeRequest(&stream_), params,
+                            base::BindOnce(&MojoAudioOutputIPC::StreamCreated,
+                                           base::Unretained(this)));
 
   // Unretained is safe because |delegate_| must remain valid until
   // CloseStream is called, and |stream_| is reset in CloseStream.
