@@ -18,7 +18,7 @@ function createCraftedIframe()
 function test()
 {
     for (var eventName in SDK.ResourceTreeModel.Events)
-        InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
+        TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
 
     var frames = [];
     function frameId(frame) {
@@ -40,14 +40,14 @@ function test()
             var frame = event.data;
             var parentFrame = frame.parentFrame;
             parentFrame = parentFrame ? (", parentFrameId: " + frameId(parentFrame)) : "";
-            InspectorTest.addResult("    " + eventName + " id: " + frameId(frame) + parentFrame + ", isMainFrame: " + frame.isMainFrame());
+            TestRunner.addResult("    " + eventName + " id: " + frameId(frame) + parentFrame + ", isMainFrame: " + frame.isMainFrame());
             break;
         default:
         }
     }
 
-    InspectorTest.evaluateInPage("createCraftedIframe()");
-    InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "resources-test.js", "resource-tree-test.js"], InspectorTest.completeTest);
+    TestRunner.evaluateInPage("createCraftedIframe()");
+    ApplicationTestRunner.runAfterResourcesAreFinished(["dummy-iframe.html", "resources-test.js", "resource-tree-test.js"], TestRunner.completeTest);
 }
 
 </script>

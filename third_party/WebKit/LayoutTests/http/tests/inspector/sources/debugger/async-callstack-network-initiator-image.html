@@ -14,8 +14,8 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.evaluateInPage("testFunction()");
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, requestFinished);
+    TestRunner.evaluateInPage("testFunction()");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, requestFinished);
 
     function requestFinished(event)
     {
@@ -23,9 +23,9 @@ function test()
             return;
 
         var initiatorInfo = NetworkLog.networkLog.initiatorInfoForRequest(event.data);
-        var element = new Components.Linkifier().linkifyScriptLocation(InspectorTest.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1, initiatorInfo.columnNumber - 1);
-        InspectorTest.addResult(element.textContent);
-        InspectorTest.completeTest();
+        var element = new Components.Linkifier().linkifyScriptLocation(TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1, initiatorInfo.columnNumber - 1);
+        TestRunner.addResult(element.textContent);
+        TestRunner.completeTest();
     }
 }
 

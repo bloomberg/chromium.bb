@@ -16,7 +16,7 @@ function extension_testIgnoreCache(nextTest)
     {
         webInspector.inspectedWindow.eval("randomValue", function(value) {
             afterNormalReload = value;
-            evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onReloadWithIgnoreCache);
+            evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onReloadWithIgnoreCache);
             webInspector.inspectedWindow.reload({ ignoreCache: true });
         });
     };
@@ -33,7 +33,7 @@ function extension_testIgnoreCache(nextTest)
 
     webInspector.inspectedWindow.eval("randomValue", function(value) {
         beforeReload = value;
-        evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onNormalReload);
+        evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onNormalReload);
         webInspector.inspectedWindow.reload();
     });
 }

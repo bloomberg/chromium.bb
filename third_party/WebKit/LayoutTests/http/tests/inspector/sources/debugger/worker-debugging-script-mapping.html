@@ -13,13 +13,13 @@ function installWorker()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.evaluateInPage("installWorker()");
-        InspectorTest.waitUntilPaused(paused);
-        InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapAttachedForTest", sourceMapLoaded);
+        TestRunner.evaluateInPage("installWorker()");
+        SourcesTestRunner.waitUntilPaused(paused);
+        TestRunner.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapAttachedForTest", sourceMapLoaded);
     }
 
     var callFrames;
@@ -40,8 +40,8 @@ function test()
     {
         if (--callbacksLeft)
             return;
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.completeDebuggerTest();
     }
 };
 

@@ -11,12 +11,12 @@
         <script>
         function test()
         {
-            InspectorTest.expandElementsTree(step2);
+            ElementsTestRunner.expandElementsTree(step2);
 
             function step2()
             {
-                InspectorTest.dumpElementsTree();
-                InspectorTest.completeTest();
+                ElementsTestRunner.dumpElementsTree();
+                TestRunner.completeTest();
             }
         }
         </script>

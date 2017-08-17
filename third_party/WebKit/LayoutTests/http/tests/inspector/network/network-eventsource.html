@@ -26,19 +26,19 @@ function receiveEvent()
 
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.callFunctionInPageAsync("receiveEvent").then(step2);
+    NetworkTestRunner.recordNetwork();
+    TestRunner.callFunctionInPageAsync("receiveEvent").then(step2);
 
     async function step2()
     {
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.url());
-        InspectorTest.addResult("resource.type: " + request1.resourceType());
-        InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
+        var request1 = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request1.url());
+        TestRunner.addResult("resource.type: " + request1.resourceType());
+        TestRunner.assertTrue(!request1.failed, "Resource loading failed.");
 
         var content = await request1.requestContent();
-        InspectorTest.addResult("resource.content after requesting content: " + content);
-        InspectorTest.completeTest();
+        TestRunner.addResult("resource.content after requesting content: " + content);
+        TestRunner.completeTest();
     }
 }
 </script>

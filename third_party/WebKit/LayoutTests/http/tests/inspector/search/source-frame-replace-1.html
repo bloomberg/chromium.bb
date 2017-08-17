@@ -10,17 +10,17 @@ function test()
 {
 
     UI.viewManager.showView("sources");
-    InspectorTest.showScriptSource("search.js", didShowScriptSource);
+    SourcesTestRunner.showScriptSource("search.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)
     {
         var searchConfig = new UI.SearchableView.SearchConfig("REPLACEME1", true, false);
-        InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", false);
+        SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", false);
 
         var searchConfig = new UI.SearchableView.SearchConfig("REPLACEME2", true, false);
-        InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", true);
+        SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", true);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 };
 </script>

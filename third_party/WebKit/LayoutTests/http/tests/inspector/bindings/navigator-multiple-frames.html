@@ -9,25 +9,25 @@ async function test()
     var sourcesNavigator = new Sources.SourcesNavigatorView();
     sourcesNavigator.show(UI.inspectorView.element);
 
-    InspectorTest.markStep('dumpInitialNavigator');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('dumpInitialNavigator');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('createIframes');
+    TestRunner.markStep('createIframes');
     await Promise.all([
-        InspectorTest.attachFrame('frame1', './resources/magic-frame.html'),
-        InspectorTest.attachFrame('frame2', './resources/magic-frame.html'),
+        BindingsTestRunner.attachFrame('frame1', './resources/magic-frame.html'),
+        BindingsTestRunner.attachFrame('frame2', './resources/magic-frame.html'),
     ]);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('detachFrame1');
-    await InspectorTest.detachFrame('frame1');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('detachFrame1');
+    await BindingsTestRunner.detachFrame('frame1');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('detachFrame2');
-    await InspectorTest.detachFrame('frame2');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('detachFrame2');
+    await BindingsTestRunner.detachFrame('frame2');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

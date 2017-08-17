@@ -8,27 +8,27 @@ function test()
 {
     var cssResource;
 
-    InspectorTest.runAfterResourcesAreFinished(["stylesheet-text-plain.php"], step1);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["stylesheet-text-plain.php"], step1);
 
     function step1()
     {
-        InspectorTest.resourceTreeModel.forAllResources(findCSSResource);
+        TestRunner.resourceTreeModel.forAllResources(findCSSResource);
         function findCSSResource(resource)
         {
             if (resource.url.indexOf("stylesheet-text-plain.php") !== -1)
                 cssResource = resource;
         }
-        InspectorTest.addResult(cssResource.url);
-        InspectorTest.assertEquals(cssResource.resourceType(), Common.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
-        InspectorTest.assertTrue(!cssResource.failed, "Resource loading failed.");
+        TestRunner.addResult(cssResource.url);
+        TestRunner.assertEquals(cssResource.resourceType(), Common.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
+        TestRunner.assertTrue(!cssResource.failed, "Resource loading failed.");
         cssResource.requestContent().then(step2);
     }
 
     function step2()
     {
         var content = cssResource.contentEncoded ? window.atob(cssResource.content) : cssResource.content;
-        InspectorTest.addResult("Resource.content: " + content);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Resource.content: " + content);
+        TestRunner.completeTest();
     }
 }
 </script>

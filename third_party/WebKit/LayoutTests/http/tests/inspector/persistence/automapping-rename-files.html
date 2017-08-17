@@ -10,36 +10,36 @@ async function test()
 {
     // Disable default-running automapping so that it doesn't conflict
     // with AutomappingTest.
-    InspectorTest.initializeTestMapping();
+    BindingsTestRunner.initializeTestMapping();
 
     var foo_js = {
         content: "console.log('foo.js!');",
         time: null
     };
 
-    var automappingTest = new InspectorTest.AutomappingTest(Workspace.workspace);
+    var automappingTest = new BindingsTestRunner.AutomappingTest(Workspace.workspace);
     automappingTest.addNetworkResources({
         "http://example.com/path/foo.js": foo_js,
     });
 
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    InspectorTest.addFiles(fs, {
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    BindingsTestRunner.addFiles(fs, {
         "scripts/foo.js": foo_js,
     });
     await new Promise(fulfill => fs.reportCreated(fulfill));
 
     await automappingTest.waitUntilMappingIsStabilized();
 
-    InspectorTest.markStep('Rename foo.js => bar.js');
-    var fileUISourceCode = await InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+    TestRunner.markStep('Rename foo.js => bar.js');
+    var fileUISourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
     await fileUISourceCode.rename('bar.js');
     await automappingTest.waitUntilMappingIsStabilized();
 
-    InspectorTest.markStep('Rename bar.js => foo.js');
+    TestRunner.markStep('Rename bar.js => foo.js');
     fileUISourceCode.rename('foo.js');
     await automappingTest.waitUntilMappingIsStabilized();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

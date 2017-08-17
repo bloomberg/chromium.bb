@@ -11,25 +11,25 @@ function sendBeacon()
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(step2);
-    InspectorTest.evaluateInPage("sendBeacon()");
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage("sendBeacon()");
 
     function step2()
     {
-        InspectorTest.networkRequests().pop().requestContent().then(step3);
+        NetworkTestRunner.networkRequests().pop().requestContent().then(step3);
     }
 
     function step3()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL: " + request.url());
-        InspectorTest.addResult("Finished: " + request.finished);
-        InspectorTest.addResult("Cached: " + request.cached());
-        InspectorTest.addResult("Method: " + request.requestMethod);
-        InspectorTest.addResult("Status: " + request.statusCode + " " + request.statusText);
-        InspectorTest.addResult("Has raw request headers: " + (typeof request.requestHeadersText() === "string"));
-        InspectorTest.addResult("Has raw response headers: " + (typeof request.responseHeadersText === "string"));
-        InspectorTest.completeTest();
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult("URL: " + request.url());
+        TestRunner.addResult("Finished: " + request.finished);
+        TestRunner.addResult("Cached: " + request.cached());
+        TestRunner.addResult("Method: " + request.requestMethod);
+        TestRunner.addResult("Status: " + request.statusCode + " " + request.statusText);
+        TestRunner.addResult("Has raw request headers: " + (typeof request.requestHeadersText() === "string"));
+        TestRunner.addResult("Has raw response headers: " + (typeof request.responseHeadersText === "string"));
+        TestRunner.completeTest();
     }
 }
 </script>

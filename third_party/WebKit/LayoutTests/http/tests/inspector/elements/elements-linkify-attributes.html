@@ -12,13 +12,13 @@ function test()
     {
         i++;
         if (i > last)
-            return InspectorTest.completeTest();
+            return TestRunner.completeTest();
 
-        InspectorTest.selectNodeWithId("linkify-" + i, function()
+        ElementsTestRunner.selectNodeWithId("linkify-" + i, function()
         {
-            var treeElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+            var treeElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
 
-            InspectorTest.addResult("\nRendered text: " + treeElement.title.textContent);
+            TestRunner.addResult("\nRendered text: " + treeElement.title.textContent);
 
             // Print the embedded links.
             var links = treeElement.title.querySelectorAll(".devtools-link");
@@ -27,7 +27,7 @@ function test()
                 var node = treeElement.title;
                 while ((node = node.traverseNextTextNode(treeElement.title)) && !node.isSelfOrDescendant(link))
                     offset += node.textContent.length;
-                InspectorTest.addResult("Link at offset: " + offset + ": " + link.textContent);
+                TestRunner.addResult("Link at offset: " + offset + ": " + link.textContent);
             });
 
             check();

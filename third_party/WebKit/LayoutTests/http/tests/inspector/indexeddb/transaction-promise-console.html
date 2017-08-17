@@ -19,14 +19,14 @@ function test()
             var db = event.target.result;
             Promise.resolve().then(function() {
                 tx = db.transaction('store');
-                InspectorTest.evaluateInConsole("1 + 2");
+                ConsoleTestRunner.evaluateInConsole("1 + 2");
                 try {
                     tx.objectStore('store').get(0);
-                    InspectorTest.addResult("PASS: Transaction is still active");
+                    TestRunner.addResult("PASS: Transaction is still active");
                 } catch (ex) {
-                    InspectorTest.addResult("FAIL: " + ex.message);
+                    TestRunner.addResult("FAIL: " + ex.message);
                 } finally {
-                    InspectorTest.completeTest();
+                    TestRunner.completeTest();
                 }
             });
         };

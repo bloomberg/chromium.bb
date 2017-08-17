@@ -22,13 +22,13 @@ function test()
 
     function loadScriptAndGetContent(callback)
     {
-        InspectorTest.recordNetwork();
-        InspectorTest.addConsoleSniffer(scriptLoaded);
-        InspectorTest.evaluateInPage("scheduleScriptLoad()");
+        NetworkTestRunner.recordNetwork();
+        ConsoleTestRunner.addConsoleSniffer(scriptLoaded);
+        TestRunner.evaluateInPage("scheduleScriptLoad()");
 
         function scriptLoaded()
         {
-            var request = InspectorTest.networkRequests().pop();
+            var request = NetworkTestRunner.networkRequests().pop();
             request.requestContent().then(callback);
         }
     }
@@ -38,7 +38,7 @@ function test()
     function step1(content)
     {
         content1 = content;
-        InspectorTest.reloadPage(step2);
+        TestRunner.reloadPage(step2);
     }
 
     function step2(msg)
@@ -49,12 +49,12 @@ function test()
     function step3(content)
     {
         content2 = content;
-        InspectorTest.NetworkAgent.setCacheDisabled(true).then(step4);
+        TestRunner.NetworkAgent.setCacheDisabled(true).then(step4);
     }
 
     function step4()
     {
-        InspectorTest.reloadPage(step5);
+        TestRunner.reloadPage(step5);
     }
 
     function step5()
@@ -66,14 +66,14 @@ function test()
     {
         content3 = content;
 
-        InspectorTest.assertTrue(content1 === content2, "First and second scripts should be equal.");
-        InspectorTest.assertTrue(content2 !== content3, "Second and third scripts should differ.");
-        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step7);
+        TestRunner.assertTrue(content1 === content2, "First and second scripts should be equal.");
+        TestRunner.assertTrue(content2 !== content3, "Second and third scripts should differ.");
+        TestRunner.NetworkAgent.setCacheDisabled(false).then(step7);
     }
 
     function step7()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

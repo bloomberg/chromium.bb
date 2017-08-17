@@ -8,15 +8,15 @@ function test()
 {
     // This file should not match search query.
     var text = "searchTest" + "UniqueString";
-    InspectorTest.runAfterResourcesAreFinished(["search.js"], step2);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["search.js"], step2);
 
     async function step2()
     {
         var resource = Bindings.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
         var url = "http://127.0.0.1:8000/inspector/search/resources/non-existing.js";
-        var response = await InspectorTest.PageAgent.invoke_searchInResource({frameId: resource.frameId, url, query: text});
-        InspectorTest.addResult(response[Protocol.Error]);
-        InspectorTest.completeTest();
+        var response = await TestRunner.PageAgent.invoke_searchInResource({frameId: resource.frameId, url, query: text});
+        TestRunner.addResult(response[Protocol.Error]);
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -7,45 +7,45 @@
 <script>
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
     var script;
 
     function step1()
     {
-        InspectorTest.runAfterResourcesAreFinished(["search.js"], step2);
+        ApplicationTestRunner.runAfterResourcesAreFinished(["search.js"], step2);
     }
 
     function step2()
     {
-        InspectorTest.showScriptSource("search.js", step3);
+        SourcesTestRunner.showScriptSource("search.js", step3);
     }
 
     async function step3()
     {
         var url = "http://127.0.0.1:8000/inspector/search/resources/search.js";
-        var scripts = InspectorTest.queryScripts(function(s) { return s.sourceURL === url; });
+        var scripts = SourcesTestRunner.queryScripts(function(s) { return s.sourceURL === url; });
         script = scripts[0];
-        InspectorTest.addResult(script.sourceURL);
+        TestRunner.addResult(script.sourceURL);
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
         var searchMatches = await script.searchInContent(text, false, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
         searchMatches = await script.searchInContent(text, true, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await script.searchInContent(text, false, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await script.searchInContent(text, true, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

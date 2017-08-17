@@ -5,32 +5,32 @@
 <script>
 function test()
 {
-    var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
+    var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);
     cacheStorageModel.enable();
 
     function errorAndExit(error)
     {
         if (error)
-            InspectorTest.addResult(error);
-        InspectorTest.completeTest();
+            TestRunner.addResult(error);
+        TestRunner.completeTest();
     }
     
     function main()
     {
-        InspectorTest.clearAllCaches()
-            .then(InspectorTest.dumpCacheTree)
-            .then(InspectorTest.createCache.bind(this, "testCache1"))
-            .then(InspectorTest.dumpCacheTree)
-            .then(InspectorTest.createCache.bind(this, "testCache2"))
-            .then(InspectorTest.createCache.bind(this, "testCache3"))
-            .then(InspectorTest.createCache.bind(this, "testCache4"))
-            .then(InspectorTest.dumpCacheTree)
-            .then(InspectorTest.clearAllCaches)
-            .then(InspectorTest.completeTest)
+        ApplicationTestRunner.clearAllCaches()
+            .then(ApplicationTestRunner.dumpCacheTree)
+            .then(ApplicationTestRunner.createCache.bind(this, "testCache1"))
+            .then(ApplicationTestRunner.dumpCacheTree)
+            .then(ApplicationTestRunner.createCache.bind(this, "testCache2"))
+            .then(ApplicationTestRunner.createCache.bind(this, "testCache3"))
+            .then(ApplicationTestRunner.createCache.bind(this, "testCache4"))
+            .then(ApplicationTestRunner.dumpCacheTree)
+            .then(ApplicationTestRunner.clearAllCaches)
+            .then(TestRunner.completeTest)
             .catch(errorAndExit);
     }
 
-    InspectorTest.waitForCacheRefresh(main);
+    ApplicationTestRunner.waitForCacheRefresh(main);
 }
 </script>
 </head>

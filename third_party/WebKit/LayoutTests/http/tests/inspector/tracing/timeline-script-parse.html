@@ -19,21 +19,21 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        const tracingModel = InspectorTest.tracingModel();
+        const tracingModel = PerformanceTestRunner.tracingModel();
         tracingModel.sortedProcesses().forEach(
             p => p.sortedThreads().forEach(
                 t => t.events().forEach(
                     event => {
                         if (event.name === TimelineModel.TimelineModel.RecordType.ParseScriptOnBackground)
-                            InspectorTest.printTraceEventPropertiesWithDetails(event)
+                            PerformanceTestRunner.printTraceEventPropertiesWithDetails(event)
                     })
             )
         );
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

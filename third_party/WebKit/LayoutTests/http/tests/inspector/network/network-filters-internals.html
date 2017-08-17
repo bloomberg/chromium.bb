@@ -5,13 +5,13 @@
 <script>
 function test()
 {
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
 
     var totalResourceCount = 3;
-    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/cyrillic.html", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("resources/style.css", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("resources/abe.png", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("resources/abe.png", {}, ensureAllResources);
+    NetworkTestRunner.makeFetch("resources/cyrillic.html", {}, ensureAllResources);
     var filterArray = [
         {
             filterType: Network.NetworkLogView.FilterType.Domain,
@@ -32,11 +32,11 @@ function test()
     function checkFilters()
     {
         for (var filter of filterArray) {
-            InspectorTest.addResult("");
-            InspectorTest.addResult("filterType: " + filter.filterType);
-            InspectorTest.addResult("filterValue: " + filter.filterValue);
+            TestRunner.addResult("");
+            TestRunner.addResult("filterType: " + filter.filterType);
+            TestRunner.addResult("filterValue: " + filter.filterValue);
         }
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
 
         Network.NetworkPanel.revealAndFilter(filterArray);
 
@@ -47,9 +47,9 @@ function test()
                 foundNodesCount++;
         }
 
-        InspectorTest.addResult("Found results: " + foundNodesCount);
-        InspectorTest.addResult("");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Found results: " + foundNodesCount);
+        TestRunner.addResult("");
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -9,8 +9,8 @@ function initialize_extensionsSidebarTest()
     InspectorTest.dumpSidebarContent = function(panelName, callback)
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
-        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-            InspectorTest.addResult(panelName + " sidebar content: " + InspectorTest.textContentWithoutStyles(sidebar.element));
+        TestRunner.deprecatedRunAfterPendingDispatches(function() {
+            TestRunner.addResult(panelName + " sidebar content: " + TestRunner.textContentWithoutStyles(sidebar.element));
             callback();
         });
     }
@@ -18,7 +18,7 @@ function initialize_extensionsSidebarTest()
     InspectorTest.expandSidebar = function(panelName, callback)
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
-        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
+        TestRunner.deprecatedRunAfterPendingDispatches(function() {
             sidebar.revealView();
             callback();
         });

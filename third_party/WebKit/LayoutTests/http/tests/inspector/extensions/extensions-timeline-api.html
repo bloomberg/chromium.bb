@@ -13,9 +13,9 @@ InspectorTest.enableTimelineExtensionAndStart = function(callback) {
     const timelinePanel = UI.panels.timeline;
     const setting = Timeline.TimelinePanel._settingForTraceProvider(provider);
     setting.set(true);
-    InspectorTest.addResult(`Provider short display name: ${provider.shortDisplayName()}`);
-    InspectorTest.addResult(`Provider long display name: ${provider.longDisplayName()}`);
-    InspectorTest.startTimeline(callback);
+    TestRunner.addResult(`Provider short display name: ${provider.shortDisplayName()}`);
+    TestRunner.addResult(`Provider long display name: ${provider.longDisplayName()}`);
+    PerformanceTestRunner.startTimeline(callback);
 }
 
 }
@@ -73,12 +73,12 @@ function extension_startTimeline(callback)
 
 function extension_stopTimeline(callback)
 {
-    evaluateOnFrontend("InspectorTest.stopTimeline(reply);", callback);
+    evaluateOnFrontend("PerformanceTestRunner.stopTimeline(reply);", callback);
 }
 
 function extension_dumpFlameChart(callback)
 {
-    evaluateOnFrontend("InspectorTest.dumpTimelineFlameChart(['long extension name']); reply()", callback);
+    evaluateOnFrontend("PerformanceTestRunner.dumpTimelineFlameChart(['long extension name']); reply()", callback);
 }
 
 </script>

@@ -7,18 +7,18 @@
 
 function test()
 {
-    InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
     function selectedNodeChanged(event)
     {
         var node = event.data.node;
         if (!node)
             return;
         if (node.getAttribute("id") == "div") {
-            InspectorTest.addResult(Components.DOMPresentationUtils.fullQualifiedSelector(node));
-            InspectorTest.completeTest();
+            TestRunner.addResult(Components.DOMPresentationUtils.fullQualifiedSelector(node));
+            TestRunner.completeTest();
         }
     }
-    InspectorTest.evaluateInConsole("inspect(iframeDivElement)");
+    ConsoleTestRunner.evaluateInConsole("inspect(iframeDivElement)");
 }
 
 </script>

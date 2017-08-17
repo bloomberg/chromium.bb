@@ -13,21 +13,21 @@ function test()
         time: null
     };
 
-    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
+    var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
     automappingTest.addNetworkResources({
         // Make sure main resource gets mapped.
         "file:///usr/local/node/app.js": app_js,
     });
 
-    var fs = new InspectorTest.TestFileSystem("file:///usr/local/node");
-    InspectorTest.addFiles(fs, {
+    var fs = new BindingsTestRunner.TestFileSystem("file:///usr/local/node");
+    BindingsTestRunner.addFiles(fs, {
         "app.js": app_js,
     });
     fs.reportCreated(onFileSystemCreated);
 
     function onFileSystemCreated()
     {
-        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
+        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
     }
 }
 </script>

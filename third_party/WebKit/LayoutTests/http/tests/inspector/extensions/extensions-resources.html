@@ -41,7 +41,7 @@ InspectorTest.waitForStyleSheetChangedEvent = function(reply)
 {
     var originalSetTimeout = Common.Throttler.prototype._setTimeout;
     Common.Throttler.prototype._setTimeout = innerSetTimeout;
-    InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
+    TestRunner.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
 
     function onStyleSheetChanged()
     {
@@ -140,7 +140,7 @@ function extension_testOnContentCommitted(nextTest)
         resource.setContent("div.test { width: 140px; height: 42px; }", false);
     });
     // The next step is going to produce a console message that will be logged, so synchronize the output now.
-    evaluateOnFrontend("InspectorTest.deprecatedRunAfterPendingDispatches(reply)", function() {
+    evaluateOnFrontend("TestRunner.deprecatedRunAfterPendingDispatches(reply)", function() {
         extension_runWithResource(/abe\.png$/, function(resource) {
             resource.setContent("", true);
         });
@@ -164,7 +164,7 @@ function extension_testOnContentCommitted(nextTest)
 
 function extension_testOnResourceAdded(nextTest)
 {
-    evaluateOnFrontend("InspectorTest.startDebuggerTest(reply);", step2);
+    evaluateOnFrontend("SourcesTestRunner.startDebuggerTest(reply);", step2);
 
     function step2()
     {
@@ -180,7 +180,7 @@ function extension_testOnResourceAdded(nextTest)
         dumpObject(Array.prototype.slice.call(arguments), { url: "url" });
         webInspector.inspectedWindow.onResourceAdded.removeListener(onResourceAdded);
 
-        evaluateOnFrontend("InspectorTest.resumeExecution(reply);", nextTest);
+        evaluateOnFrontend("SourcesTestRunner.resumeExecution(reply);", nextTest);
     }
 }
 

@@ -17,32 +17,32 @@ function resourceLoaded()
 
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.addConsoleSniffer(step2);
-    InspectorTest.evaluateInPage("loadData()");
+    NetworkTestRunner.recordNetwork();
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage("loadData()");
 
     function step2()
     {
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.url());
-        InspectorTest.addResult("resource.type: " + request1.resourceType());
-        InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
+        var request1 = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request1.url());
+        TestRunner.addResult("resource.type: " + request1.resourceType());
+        TestRunner.assertTrue(!request1.failed, "Resource loading failed.");
         request1.requestContent().then(step3);
     }
 
     async function step3()
     {
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         requests.sort(function(a, b) {return a.url().localeCompare(b.url());});
-        InspectorTest.addResult("resources count = " + requests.length);
+        TestRunner.addResult("resources count = " + requests.length);
         for (i = 0; i < requests.length; i++) {
-            InspectorTest.addResult(requests[i].url());
+            TestRunner.addResult(requests[i].url());
             var content = await requests[i].requestContent();
-            InspectorTest.addResult("resource.content after requesting content: " + content);
+            TestRunner.addResult("resource.content after requesting content: " + content);
         }
 
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

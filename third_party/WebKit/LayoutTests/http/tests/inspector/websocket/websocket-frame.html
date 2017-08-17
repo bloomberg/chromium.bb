@@ -36,12 +36,12 @@ function test() {
             return;
         }
         for (var i = 0; i < frames.length; ++i)
-            InspectorTest.addResult(frames[i]);
+            TestRunner.addResult(frames[i]);
         if (done)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
-    InspectorTest.evaluateInPage("sendMessages()");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
+    TestRunner.evaluateInPage("sendMessages()");
 }
 </script>
 </head>

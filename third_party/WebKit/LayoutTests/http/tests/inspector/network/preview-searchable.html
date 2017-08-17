@@ -12,14 +12,14 @@ function test()
             view._regexButton.setToggled(false);
             view._caseSensitiveButton.setToggled(false);
             view.showSearchField();
-            InspectorTest.addResult("Should have found and highlighted all: " + search);
+            TestRunner.addResult("Should have found and highlighted all: " + search);
 
             var foundItems = view.element.childTextNodes().filter(node => node.parentElement.classList.contains("highlighted-search-result")).map(node => node.parentElement);
-            InspectorTest.addResult("Normal search found " + foundItems.length + " results in dom.");
+            TestRunner.addResult("Normal search found " + foundItems.length + " results in dom.");
 
             foundItems = view.element.childTextNodes().filter(node => node.parentElement.classList.contains("cm-search-highlight-start")).map(node => node.parentElement);
-            InspectorTest.addResult("CodeMirror search found " + foundItems.length + " results in dom.");
-            InspectorTest.addResult("");
+            TestRunner.addResult("CodeMirror search found " + foundItems.length + " results in dom.");
+            TestRunner.addResult("");
         }
     }
 
@@ -36,7 +36,7 @@ function test()
             compontentView._ensureContentLoaded();
             if (!compontentView.loaded) {
                 // try again when content is loaded.
-                InspectorTest.addSniffer(compontentView, "onTextEditorContentSet", previewViewHandled.bind(this, searches, callback, view));
+                TestRunner.addSniffer(compontentView, "onTextEditorContentSet", previewViewHandled.bind(this, searches, callback, view));
                 return;
             }
         } else if (compontentView instanceof SourceFrame.XMLView) {
@@ -51,8 +51,8 @@ function test()
             typeName = "RequestHTMLView";
         }
 
-        InspectorTest.addResult("Is Searchable: " + isSearchable);
-        InspectorTest.addResult("Type: " + typeName);
+        TestRunner.addResult("Is Searchable: " + isSearchable);
+        TestRunner.addResult("Type: " + typeName);
 
         if (isSearchable)
             testSearches(view, searches);
@@ -63,7 +63,7 @@ function test()
 
     function trySearches(request, searches, callback)
     {
-        InspectorTest.addSniffer(Network.RequestPreviewView.prototype, "showPreview", async function() {
+        TestRunner.addSniffer(Network.RequestPreviewView.prototype, "showPreview", async function() {
             previewViewHandled(searches, callback, await this._contentViewPromise);
         });
         var networkPanel = UI.panels.network;
@@ -75,14 +75,14 @@ function test()
     function testType(contentType, content, searches, callback)
     {
         var url = "data:" + contentType + "," + encodeURIComponent(content);
-        InspectorTest.makeSimpleXHR("GET", url, true, function() {
-            var request = InspectorTest.findRequestsByURLPattern(new RegExp(url.escapeForRegExp()))[0];
+        NetworkTestRunner.makeSimpleXHR("GET", url, true, function() {
+            var request = NetworkTestRunner.findRequestsByURLPattern(new RegExp(url.escapeForRegExp()))[0];
             request._resourceType = Common.resourceTypes.Document;
             trySearches(request, searches, callback);
         });
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function plainTextTest(next)
         {
             testType("text/plain", "foo bar\nfoo bar", ["foo", /*"bar"*/], next);

@@ -20,20 +20,20 @@ function addStylesheet()
 
 function test()
 {
-    InspectorTest.evaluateInPage("addStylesheet()");
-    InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.prototype, "updateLocations", sourceMappingSniffer, true);
+    TestRunner.evaluateInPage("addStylesheet()");
+    TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.prototype, "updateLocations", sourceMappingSniffer, true);
 
     function sourceMappingSniffer(header)
     {
         if (header.resourceURL().includes("selector-line-deprecated.css")) {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step2);
         }
     }
 
     function step2()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 

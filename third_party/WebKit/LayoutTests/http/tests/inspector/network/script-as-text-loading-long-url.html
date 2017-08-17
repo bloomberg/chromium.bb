@@ -12,13 +12,13 @@ function loadScript()
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(step1);
-    InspectorTest.evaluateInPage("loadScript()");
+    ConsoleTestRunner.addConsoleSniffer(step1);
+    TestRunner.evaluateInPage("loadScript()");
 
     function step1()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

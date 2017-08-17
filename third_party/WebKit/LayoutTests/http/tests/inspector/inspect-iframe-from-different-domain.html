@@ -16,13 +16,13 @@ function onIFrameLoad()
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("iframe-body", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("iframe-body", step1);
 
     function step1()
     {
-        var treeItem = InspectorTest.getElementStylePropertyTreeItem("background");
-        InspectorTest.dumpStyleTreeItem(treeItem, "");
-        InspectorTest.completeTest();
+        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("background");
+        ElementsTestRunner.dumpStyleTreeItem(treeItem, "");
+        TestRunner.completeTest();
     }
 }
 

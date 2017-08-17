@@ -90,25 +90,25 @@ window.x = new MyClass();
 
 function test()
 {
-    InspectorTest.changeExecutionContext("myIFrame");
+    ConsoleTestRunner.changeExecutionContext("myIFrame");
 
     ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "myGlob").then(checkCompletions.bind(this));
     function checkCompletions(completions)
     {
-        InspectorTest.addResult("myGlob completions:")
+        TestRunner.addResult("myGlob completions:")
         dumpCompletions(completions, ["myGlobalVar", "myGlobalFunction"]);
         requestIFrameCompletions();
     }
 
     function requestIFrameCompletions()
     {
-        InspectorTest.changeExecutionContext("top");
+        ConsoleTestRunner.changeExecutionContext("top");
         ObjectUI.JavaScriptAutocomplete.completionsForExpression("myIFrame.", "").then(checkIframeCompletions.bind(this));
     }
 
     function checkIframeCompletions(completions)
     {
-        InspectorTest.addResult("myIFrame completions:")
+        TestRunner.addResult("myIFrame completions:")
         dumpCompletions(completions, ["self", "top", "window"]);
         requestProxyCompletions();
     }
@@ -116,33 +116,33 @@ function test()
 
     function requestProxyCompletions()
     {
-        InspectorTest.changeExecutionContext("top");
+        ConsoleTestRunner.changeExecutionContext("top");
         ObjectUI.JavaScriptAutocomplete.completionsForExpression("window.proxy2.",  "").then(checkProxyCompletions.bind(this));
     }
 
     function checkProxyCompletions(completions)
     {
-        InspectorTest.addResult("proxy completions:")
+        TestRunner.addResult("proxy completions:")
         dumpCompletions(completions, ["a"]);
-        InspectorTest.evaluateInPage("window.counter", dumpCounter);
+        TestRunner.evaluateInPage("window.counter", dumpCounter);
     }
 
     function dumpCounter(result)
     {
-        InspectorTest.addResult("window.counter = " + result.value);
+        TestRunner.addResult("window.counter = " + result.value);
         requestMyClassWithMixinCompletions();
     }
 
 
     function requestMyClassWithMixinCompletions()
     {
-        InspectorTest.changeExecutionContext("top");
+        ConsoleTestRunner.changeExecutionContext("top");
         ObjectUI.JavaScriptAutocomplete.completionsForExpression("window.x.", "").then(checkMyClassWithMixinCompletions.bind(this));
     }
 
     function checkMyClassWithMixinCompletions(completions)
     {
-        InspectorTest.addResult("MyClass with mixin completions:")
+        TestRunner.addResult("MyClass with mixin completions:")
         dumpCompletions(completions, ["myMethod"]);
         requestObjectCompletions();
     }
@@ -150,16 +150,16 @@ function test()
 
     function requestObjectCompletions()
     {
-        InspectorTest.changeExecutionContext("top");
+        ConsoleTestRunner.changeExecutionContext("top");
         ObjectUI.JavaScriptAutocomplete.completionsForExpression("Object.",  "").then(checkObjectCompletions.bind(this));
     }
 
     function checkObjectCompletions(completions)
     {
-        InspectorTest.addResult("Object completions:")
+        TestRunner.addResult("Object completions:")
         dumpCompletions(completions, ["getOwnPropertyNames", "getOwnPropertyDescriptor", "keys"]);
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 
 
@@ -169,14 +169,14 @@ function test()
         var notFound = false;
         for (var completion of expected) {
             if (completionSet.has(completion)) {
-                InspectorTest.addResult(completion);
+                TestRunner.addResult(completion);
             } else {
-                InspectorTest.addResult("NOT FOUND: " + completion);
+                TestRunner.addResult("NOT FOUND: " + completion);
                 notFound = true;
             }
         }
         if (notFound)
-            InspectorTest.addResult(JSON.stringify(completions));
+            TestRunner.addResult(JSON.stringify(completions));
     }
 }
 

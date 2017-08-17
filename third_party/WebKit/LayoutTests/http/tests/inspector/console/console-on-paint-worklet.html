@@ -10,13 +10,13 @@ function importWorklet()
 
 function test()
 {
-    InspectorTest.waitForConsoleMessages(3, finish);
-    InspectorTest.evaluateInPage("importWorklet();");
+    ConsoleTestRunner.waitForConsoleMessages(3, finish);
+    TestRunner.evaluateInPage("importWorklet();");
 
     function finish()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

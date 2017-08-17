@@ -16,7 +16,7 @@ function extension_testAuditsAPI(nextTest)
         var node = results.createResult("Subtree");
         dumpObject(node);
         // Make sure dumpObject() pushes stuff through before we continue.
-        evaluateOnFrontend("InspectorTest.deprecatedRunAfterPendingDispatches(reply)", function() {
+        evaluateOnFrontend("TestRunner.deprecatedRunAfterPendingDispatches(reply)", function() {
             results.done();
         });
     }

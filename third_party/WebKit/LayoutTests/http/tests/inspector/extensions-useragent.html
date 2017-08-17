@@ -39,7 +39,7 @@ function extension_testUserAgent(nextTest)
     }
     function cleanUp()
     {
-        evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageLoaded);
+        evaluateOnFrontend("TestRunner.runWhenPageLoads(reply)", onPageLoaded);
         webInspector.inspectedWindow.reload("");
     }
     function onPageLoaded()

@@ -8,11 +8,11 @@ function test()
 {
   var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-lazy-addeventlistener.js";
   var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/lazy-scope";
-  InspectorTest.waitForConsoleMessages(1, () => {
-      InspectorTest.dumpConsoleMessages();
-      InspectorTest.completeTest();
+  ConsoleTestRunner.waitForConsoleMessages(1, () => {
+      ConsoleTestRunner.dumpConsoleMessages();
+      TestRunner.completeTest();
     });
-  InspectorTest.registerServiceWorker(scriptURL, scope);
+  ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
 }
 </script>
 </head>

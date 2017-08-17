@@ -13,18 +13,18 @@ async function test() {
     var columnsToTest = ["name", "method", "status", "protocol", "scheme", "domain", "remoteaddress", "type", "initiator", "cookies", "setcookies", "priority", "cache-control", "connection", "content-encoding", "content-length", "vary"];
 
     // Setup
-    InspectorTest.recordNetwork();
-    await InspectorTest.clearNetworkCache();
+    NetworkTestRunner.recordNetwork();
+    await NetworkTestRunner.clearNetworkCache();
 
-    InspectorTest.evaluateInPage("sendXHRRequest()");
-    var request = await InspectorTest.waitForEvent(SDK.NetworkManager.Events.RequestFinished, InspectorTest.networkManager,
+    TestRunner.evaluateInPage("sendXHRRequest()");
+    var request = await TestRunner.waitForEvent(SDK.NetworkManager.Events.RequestFinished, TestRunner.networkManager,
         request => request.name() === "empty.html?xhr");
-    var xhrNode = await InspectorTest.waitForNetworkLogViewNodeForRequest(request);
+    var xhrNode = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
 
     UI.panels.network._networkLogView._refresh();
     for (var columnName of columnsToTest)
-        InspectorTest.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
-    InspectorTest.completeTest();
+        TestRunner.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
+    TestRunner.completeTest();
 }
 </script>
 </head>

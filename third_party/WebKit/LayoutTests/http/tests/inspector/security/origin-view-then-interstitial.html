@@ -7,22 +7,22 @@ function test()
 {
     var request1 = new SDK.NetworkRequest(0, "https://foo.test/", "https://foo.test", 0, 0, null);
     request1.setSecurityState(Protocol.Security.SecurityState.Secure);
-    InspectorTest.dispatchRequestFinished(request1);
+    SecurityTestRunner.dispatchRequestFinished(request1);
 
-    InspectorTest.addResult("Before selecting origin view:");
-    InspectorTest.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
+    TestRunner.addResult("Before selecting origin view:");
+    TestRunner.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
 
     Security.SecurityPanel._instance()._sidebarTree._elementsByOrigin.get("https://foo.test").select();
 
-    InspectorTest.addResult("Panel on origin view before interstitial:");
-    InspectorTest.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
+    TestRunner.addResult("Panel on origin view before interstitial:");
+    TestRunner.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
 
     // Test that the panel transitions to an origin view when an interstitial is shown. https://crbug.com/559150
-    InspectorTest.mainTarget.model(SDK.ResourceTreeModel).dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialShown);
-    InspectorTest.addResult("After interstitial is shown:");
-    InspectorTest.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
+    TestRunner.mainTarget.model(SDK.ResourceTreeModel).dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialShown);
+    TestRunner.addResult("After interstitial is shown:");
+    TestRunner.dumpDeepInnerHTML(Security.SecurityPanel._instance()._visibleView.contentElement);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

@@ -5,74 +5,74 @@
 <script>
 function test()
 {
-    var indexedDBModel = InspectorTest.createIndexedDBModel();
-    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+    var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
 
     function dumpDatabaseNames()
     {
-        InspectorTest.addResult("Dumping database names:");
-        var securityOrigins = InspectorTest.securityOriginManager.securityOrigins();
+        TestRunner.addResult("Dumping database names:");
+        var securityOrigins = TestRunner.securityOriginManager.securityOrigins();
         var securityOrigin = securityOrigins[0];
         var names = indexedDBModel._databaseNamesBySecurityOrigin[securityOrigin];
         for (var i = 0; i < names.length; ++i)
-            InspectorTest.addResult("    " + names[i]);
-        InspectorTest.addResult("");
+            TestRunner.addResult("    " + names[i]);
+        TestRunner.addResult("");
     }
 
-    InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
+    TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
 
     function step2()
     {
         dumpDatabaseNames();
-        InspectorTest.createDatabase(mainFrameId, "testDatabase1", step3);
+        ApplicationTestRunner.createDatabase(mainFrameId, "testDatabase1", step3);
     }
 
     function step3()
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step4, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step4, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
     function step4()
     {
         dumpDatabaseNames();
-        InspectorTest.createDatabase(mainFrameId, "testDatabase2", step5);
+        ApplicationTestRunner.createDatabase(mainFrameId, "testDatabase2", step5);
     }
 
     function step5()
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step6, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step6, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
     function step6()
     {
         dumpDatabaseNames();
-        InspectorTest.deleteDatabase(mainFrameId, "testDatabase2", step7);
+        ApplicationTestRunner.deleteDatabase(mainFrameId, "testDatabase2", step7);
     }
 
     function step7()
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step8, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step8, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
     function step8()
     {
         dumpDatabaseNames();
-        InspectorTest.deleteDatabase(mainFrameId, "testDatabase1", step9);
+        ApplicationTestRunner.deleteDatabase(mainFrameId, "testDatabase1", step9);
     }
 
     function step9()
     {
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step10, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step10, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
     function step10()
     {
         dumpDatabaseNames();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

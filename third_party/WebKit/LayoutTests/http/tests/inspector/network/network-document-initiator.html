@@ -11,22 +11,22 @@ function navigateFromScript()
 
 var test = function()
 {
-    InspectorTest.evaluateInPage("navigateFromScript()");
-    InspectorTest.runWhenPageLoads(step1);
+    TestRunner.evaluateInPage("navigateFromScript()");
+    TestRunner.runWhenPageLoads(step1);
 
     function dumpInitiator(request)
     {
         var initiator = request.initiator();
-        InspectorTest.addResult(request.url() + ": " + initiator.type);
+        TestRunner.addResult(request.url() + ": " + initiator.type);
         if (initiator.url)
-            InspectorTest.addResult("    " + initiator.url + " " + initiator.lineNumber);
+            TestRunner.addResult("    " + initiator.url + " " + initiator.lineNumber);
         var stackTrace = initiator.stack;
         if (!stackTrace)
             return;
         for (var i = 0; i < stackTrace.callFrames.length; ++i) {
             var frame = stackTrace.callFrames[i];
             if (frame.lineNumber) {
-                InspectorTest.addResult("    " + frame.functionName + " " + frame.url + " " + frame.lineNumber);
+                TestRunner.addResult("    " + frame.functionName + " " + frame.url + " " + frame.lineNumber);
                 return;
             }
         }
@@ -34,10 +34,10 @@ var test = function()
 
     function step1()
     {
-        var results = InspectorTest.findRequestsByURLPattern(/\?foo/);
-        InspectorTest.assertTrue(results.length !== 0);
+        var results = NetworkTestRunner.findRequestsByURLPattern(/\?foo/);
+        TestRunner.assertTrue(results.length !== 0);
         dumpInitiator(results[0]);
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

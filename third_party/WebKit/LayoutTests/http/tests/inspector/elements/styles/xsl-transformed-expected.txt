@@ -8,7 +8,7 @@ OneTwoThree
           <script src="../../elements-test.js"></script>
           <script src="../../resources-test.js"></script>
         - <script>
-              function test()\n        {\n            InspectorTest.expandElementsTree(step2);\n\n            function step2()\n            {\n                InspectorTest.dumpElementsTree();\n                InspectorTest.completeTest();\n            }\n        }\n
+              function test()\n        {\n            ElementsTestRunner.expandElementsTree(step2);\n\n            function step2()\n            {\n                ElementsTestRunner.dumpElementsTree();\n                TestRunner.completeTest();\n            }\n        }\n
           </script>
       </head>
     - <body onload="runTest()">

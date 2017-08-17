@@ -9,12 +9,12 @@
 
 function test()
 {
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
     var networkSourceFrame, fileSystemSourceFrame;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function addFileSystem(next)
         {
             fs.reportCreated(next);
@@ -22,8 +22,8 @@ function test()
 
         function openNetworkTab(next)
         {
-            InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
-                .then(code => InspectorTest.showUISourceCodePromise(code))
+            TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
+                .then(code => SourcesTestRunner.showUISourceCodePromise(code))
                 .then(onNetworkTab);
 
             function onNetworkTab(sourceFrame)
@@ -38,8 +38,8 @@ function test()
 
         function openFileSystemTab(next)
         {
-            InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
-                .then(code => InspectorTest.showUISourceCodePromise(code))
+            TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                .then(code => SourcesTestRunner.showUISourceCodePromise(code))
                 .then(onFileSystemTab);
 
             function onFileSystemTab(sourceFrame)
@@ -56,7 +56,7 @@ function test()
         function addFileMapping(next)
         {
             testMapping.addBinding("foo.js");
-            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
 
             function onBindingCreated()
             {
@@ -89,17 +89,17 @@ function test()
         var editorContainer = UI.panels.sources._sourcesView._editorContainer;
         var openedUISourceCodes = editorContainer._tabIds.keysArray();
         openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
-        InspectorTest.addResult("Opened tabs: ");
+        TestRunner.addResult("Opened tabs: ");
         for (code of openedUISourceCodes)
-            InspectorTest.addResult("    " + code.url());
+            TestRunner.addResult("    " + code.url());
     }
 
     function dumpSourceFrame(sourceFrame)
     {
-        InspectorTest.addResult("SourceFrame: " + sourceFrame.uiSourceCode().url());
-        InspectorTest.addResult("    selection: " + sourceFrame.selection());
-        InspectorTest.addResult("    firstVisibleLine: " + sourceFrame.textEditor.firstVisibleLine());
-        InspectorTest.addResult("    isDirty: " + sourceFrame.uiSourceCode().isDirty());
+        TestRunner.addResult("SourceFrame: " + sourceFrame.uiSourceCode().url());
+        TestRunner.addResult("    selection: " + sourceFrame.selection());
+        TestRunner.addResult("    firstVisibleLine: " + sourceFrame.textEditor.firstVisibleLine());
+        TestRunner.addResult("    isDirty: " + sourceFrame.uiSourceCode().isDirty());
     }
 };
 </script>

@@ -11,15 +11,15 @@ function submit()
 
 function test()
 {
-    InspectorTest.evaluateInPage("submit()");
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
+    TestRunner.evaluateInPage("submit()");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
 
     function onRequestFinished(event)
     {
         var request = event.data;
-        InspectorTest.addResult(request.url());
-        InspectorTest.addObject(new NetworkLog.HAREntry(request).build(), InspectorTest.HARPropertyFormatters);
-        InspectorTest.completeTest();
+        TestRunner.addResult(request.url());
+        TestRunner.addObject(new NetworkLog.HAREntry(request).build(), NetworkTestRunner.HARPropertyFormatters);
+        TestRunner.completeTest();
     }
 }
 

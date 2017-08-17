@@ -13,21 +13,21 @@ function addImportRule()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function addImportRules(next)
         {
-            InspectorTest.waitForStyles("inspected", callback);
-            InspectorTest.evaluateInPage("addImportRule()");
+            ElementsTestRunner.waitForStyles("inspected", callback);
+            TestRunner.evaluateInPage("addImportRule()");
 
             function callback()
             {
-                InspectorTest.waitForStyles("inspected", next);
-                InspectorTest.evaluateInPage("addImportRule()");
+                ElementsTestRunner.waitForStyles("inspected", next);
+                TestRunner.evaluateInPage("addImportRule()");
             }
         }
     ]);

@@ -55,23 +55,23 @@ function test()
     function step1()
     {
         Common.settingForTest('monitoringXHREnabled').set(true);
-        InspectorTest.callFunctionInPageAsync("makeRequests").then(step2);
+        TestRunner.callFunctionInPageAsync("makeRequests").then(step2);
     }
 
     function step2()
     {
         Common.settingForTest('monitoringXHREnabled').set(false);
-        InspectorTest.callFunctionInPageAsync("makeRequests").then(step3);
+        TestRunner.callFunctionInPageAsync("makeRequests").then(step3);
     }
 
     function step3()
     {
         function finish()
         {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessages();
+            TestRunner.completeTest();
         }
-        InspectorTest.deprecatedRunAfterPendingDispatches(finish);
+        TestRunner.deprecatedRunAfterPendingDispatches(finish);
     }
 }
 //# sourceURL=console-fetch-logging.html

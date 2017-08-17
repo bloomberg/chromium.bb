@@ -6,33 +6,33 @@
 <script>
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["search.js"], step2);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["search.js"], step2);
     var resource;
 
     async function step2()
     {
         resource = Bindings.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
-        InspectorTest.addResult(resource.url);
+        TestRunner.addResult(resource.url);
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
         var searchMatches = await resource.searchInContent(text, false, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
         searchMatches = await resource.searchInContent(text, true, false);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await resource.searchInContent(text, false, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
         searchMatches = await resource.searchInContent(text, true, true);
-        InspectorTest.dumpSearchMatches(searchMatches);
+        SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

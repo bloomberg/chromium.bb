@@ -9,42 +9,42 @@ function test()
     {
         if (!request)
             return callback();
-        InspectorTest.addResult(request.url());
+        TestRunner.addResult(request.url());
 
         function contentLoaded(content)
         {
-            InspectorTest.addResult("resource.content: " + content);
+            TestRunner.addResult("resource.content: " + content);
             callback();
         }
 
         request.requestContent().then(contentLoaded);
     }
 
-    InspectorTest.recordNetwork();
-    InspectorTest.makeSimpleXHR("GET", "resources/empty.html?sync", false, firstXHRLoaded);
+    NetworkTestRunner.recordNetwork();
+    NetworkTestRunner.makeSimpleXHR("GET", "resources/empty.html?sync", false, firstXHRLoaded);
 
     function firstXHRLoaded()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/empty.html?async", true, step2);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/empty.html?async", true, step2);
     }
 
     function step2()
     {
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         var request = requests[requests.length - 2];
         dumpRequest(request, step3);
     }
 
     function step3()
     {
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         var request = requests[requests.length - 1];
         dumpRequest(request, step4);
     }
 
     function step4()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

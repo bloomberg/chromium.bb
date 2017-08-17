@@ -10,7 +10,7 @@ function test()
 
     function makeRequest(callback)
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/xhr-exists.html", true, callback);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/xhr-exists.html", true, callback);
     }
 
     function step1()
@@ -29,10 +29,10 @@ function test()
     {
         function finish()
         {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessages();
+            TestRunner.completeTest();
         }
-        InspectorTest.deprecatedRunAfterPendingDispatches(finish);
+        TestRunner.deprecatedRunAfterPendingDispatches(finish);
     }
 }
 

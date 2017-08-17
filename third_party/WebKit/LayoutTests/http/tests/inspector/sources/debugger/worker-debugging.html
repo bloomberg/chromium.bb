@@ -13,18 +13,18 @@ function installWorker()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.evaluateInPage("installWorker()");
-        InspectorTest.waitUntilPaused(paused);
+        TestRunner.evaluateInPage("installWorker()");
+        SourcesTestRunner.waitUntilPaused(paused);
     }
 
     function paused(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.resumeExecution(InspectorTest.completeDebuggerTest);
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.resumeExecution(SourcesTestRunner.completeDebuggerTest);
     }
 };
 

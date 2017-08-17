@@ -15,26 +15,26 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
     {
         var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
-        InspectorTest.addResult("\nPaused on " + eventName);
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.resumeExecution(step2);
+        TestRunner.addResult("\nPaused on " + eventName);
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.resumeExecution(step2);
     }
 
     function step2()
     {
-        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

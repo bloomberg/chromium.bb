@@ -13,22 +13,22 @@ function loadData()
 
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.evaluateInPage("loadData()", step2);
+    NetworkTestRunner.recordNetwork();
+    TestRunner.evaluateInPage("loadData()", step2);
 
     function step2()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request.url());
-        InspectorTest.addResult("resource.type: " + request.resourceType());
-        InspectorTest.assertTrue(!request.failed, "Resource loading failed.");
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request.url());
+        TestRunner.addResult("resource.type: " + request.resourceType());
+        TestRunner.assertTrue(!request.failed, "Resource loading failed.");
         request.requestContent().then(step3);
     }
 
     function step3(content)
     {
-        InspectorTest.addResult("resource.content after requesting content: " + content);
-        InspectorTest.completeTest();
+        TestRunner.addResult("resource.content after requesting content: " + content);
+        TestRunner.completeTest();
     }
 }
 </script>

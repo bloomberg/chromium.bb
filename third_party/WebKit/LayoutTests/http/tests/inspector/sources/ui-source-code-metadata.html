@@ -28,10 +28,10 @@ function addStyleSheetAndRunTest()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testCachedResource(next)
         {
-            InspectorTest.waitForScriptSource("style.css", onStyleSheet)
+            SourcesTestRunner.waitForScriptSource("style.css", onStyleSheet)
 
             function onStyleSheet(uiSourceCode)
             {
@@ -41,8 +41,8 @@ function test()
 
         function testDynamicResource(next)
         {
-            InspectorTest.evaluateInPageAsync("addScript()");
-            InspectorTest.waitForScriptSource("script.js", onScript);
+            TestRunner.evaluateInPageAsync("addScript()");
+            SourcesTestRunner.waitForScriptSource("script.js", onScript);
 
             function onScript(uiSourceCode)
             {
@@ -52,7 +52,7 @@ function test()
 
         function testInlinedSourceMapSource(next)
         {
-            InspectorTest.waitForScriptSource("style.scss", onSourceMapSource);
+            SourcesTestRunner.waitForScriptSource("style.scss", onSourceMapSource);
 
             function onSourceMapSource(uiSourceCode)
             {
@@ -67,16 +67,16 @@ function test()
 
         function onMetadata(metadata)
         {
-            InspectorTest.addResult("Metadata for UISourceCode: " + uiSourceCode.url());
+            TestRunner.addResult("Metadata for UISourceCode: " + uiSourceCode.url());
             if (!metadata) {
-                InspectorTest.addResult("    Metadata is EMPTY");
+                TestRunner.addResult("    Metadata is EMPTY");
                 next();
                 return;
             }
             var contentSize = metadata.contentSize;
             var time = metadata.modificationTime ? "<Date>" : "null";
-            InspectorTest.addResult("    content size: " + contentSize);
-            InspectorTest.addResult("    modification time: " + time);
+            TestRunner.addResult("    content size: " + contentSize);
+            TestRunner.addResult("    modification time: " + time);
             next();
         }
     }

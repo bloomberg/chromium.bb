@@ -27,7 +27,7 @@ function test()
     var sources_module_json = { content: "module descriptor 2" };
     var bazContent = "alert(1);";
 
-    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
+    var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
     automappingTest.addNetworkResources({
         // Make sure main resource gets mapped.
         "http://example.com": index_html,
@@ -55,8 +55,8 @@ function test()
         "http://example.com/sources/module.json": sources_module_json,
     });
 
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    InspectorTest.addFiles(fs, {
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    BindingsTestRunner.addFiles(fs, {
         "index.html": index_html,
         "scripts/foo.js": foo_js,
         "styles/bar.css": bar_css,
@@ -75,7 +75,7 @@ function test()
 
     function onFileSystemCreated()
     {
-        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
+        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
     }
 }
 </script>

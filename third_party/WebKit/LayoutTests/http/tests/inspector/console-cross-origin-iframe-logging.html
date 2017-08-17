@@ -22,9 +22,9 @@ function accessFrame()
 function test()
 {
     var finishAttemptsLeft = 2;
-    InspectorTest.addConsoleSniffer(maybeFinish, true);
+    ConsoleTestRunner.addConsoleSniffer(maybeFinish, true);
     Common.settingForTest('monitoringXHREnabled').set(true);
-    InspectorTest.evaluateInPage("accessFrame()", maybeFinish);
+    TestRunner.evaluateInPage("accessFrame()", maybeFinish);
 
     function maybeFinish()
     {
@@ -33,8 +33,8 @@ function test()
             return;
 
         Common.settingForTest('monitoringXHREnabled').set(false);
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

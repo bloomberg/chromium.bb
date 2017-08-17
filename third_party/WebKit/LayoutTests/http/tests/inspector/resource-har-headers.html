@@ -51,7 +51,7 @@ var test = function()
             "transferSize": testRequest.transferSize
         }
     };
-    InspectorTest.addObject(requestResults, {}, "", "Resource:");
+    TestRunner.addObject(requestResults, {}, "", "Resource:");
 
     var stillNondeterministic = {
         "startedDateTime": "formatAsTypeName",
@@ -60,8 +60,8 @@ var test = function()
         "_transferSize": "formatAsTypeName",
         "_error": "skip"
     };
-    InspectorTest.addObject(new NetworkLog.HAREntry(testRequest).build(), stillNondeterministic, "", "HAR:");
-    InspectorTest.completeTest();
+    TestRunner.addObject(new NetworkLog.HAREntry(testRequest).build(), stillNondeterministic, "", "HAR:");
+    TestRunner.completeTest();
 }
 </script>
 

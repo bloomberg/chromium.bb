@@ -21,14 +21,14 @@ function test() {
             for (var i = 0; i < websocketFrames.length; i++) {
                 var frame = websocketFrames[i];
                 var result = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
-                InspectorTest.addResult(result);
+                TestRunner.addResult(result);
                 if (frame.type == SDK.NetworkRequest.WebSocketFrameType.Error)
-                    InspectorTest.completeTest();
+                    TestRunner.completeTest();
             }
         }
     }
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
-    InspectorTest.evaluateInPage("sendMessages()");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
+    TestRunner.evaluateInPage("sendMessages()");
 }
 </script>
 </head>

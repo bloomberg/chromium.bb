@@ -28,7 +28,7 @@ function test()
     UI.viewManager.showView("timeline");
     const panel = UI.panels.timeline;
     panel._disableCaptureJSProfileSetting.set(true);
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
@@ -53,10 +53,10 @@ function test()
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
             if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"]["url"]))
-                InspectorTest.addResult("    ".repeat(level - 1) + traceEvent.name);
+                TestRunner.addResult("    ".repeat(level - 1) + traceEvent.name);
         }
-        InspectorTest.walkTimelineEventTree(dumpEvent);
-        InspectorTest.completeTest();
+        PerformanceTestRunner.walkTimelineEventTree(dumpEvent);
+        TestRunner.completeTest();
     }
 }
 

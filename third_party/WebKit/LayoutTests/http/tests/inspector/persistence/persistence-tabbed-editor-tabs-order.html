@@ -11,8 +11,8 @@
 
 function test()
 {
-    InspectorTest.forceUseDefaultMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    BindingsTestRunner.forceUseDefaultMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
     var folder = fs.root.mkdir("inspector").mkdir("persistence").mkdir("resources");
     folder.addFile("foo.js", "\n\nwindow.foo = ()=>'foo';");
     folder.addFile("bar.js", "window.bar = () => \"bar\";");
@@ -20,28 +20,28 @@ function test()
     fs.addFileMapping("http://127.0.0.1:8000", "/");
     fs.reportCreated(function() { });
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function waitForBindings(next)
         {
             Promise.all([
-                InspectorTest.waitForBinding("foo.js"),
-                InspectorTest.waitForBinding("bar.js"),
-                InspectorTest.waitForBinding("baz.js")
+                BindingsTestRunner.waitForBinding("foo.js"),
+                BindingsTestRunner.waitForBinding("bar.js"),
+                BindingsTestRunner.waitForBinding("baz.js")
             ]).then(next);
         },
 
         function openNetworkFiles(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("bar.js", Workspace.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("baz.js", Workspace.projectTypes.Network)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                TestRunner.waitForUISourceCode("bar.js", Workspace.projectTypes.Network),
+                TestRunner.waitForUISourceCode("baz.js", Workspace.projectTypes.Network)
             ]).then(onUISourceCodes);
 
             function onUISourceCodes(uiSourceCodes)
             {
                 for (var uiSourceCode of uiSourceCodes)
-                    InspectorTest.showUISourceCode(uiSourceCode, function() { });
+                    SourcesTestRunner.showUISourceCode(uiSourceCode, function() { });
                 dumpTabs("initial tabs:");
                 next();
             }
@@ -49,14 +49,14 @@ function test()
 
         function reloadPage(next)
         {
-            InspectorTest.hardReloadPage(onReloaded);
+            TestRunner.hardReloadPage(onReloaded);
 
             function onReloaded()
             {
                 Promise.all([
-                    InspectorTest.waitForBinding("foo.js"),
-                    InspectorTest.waitForBinding("bar.js"),
-                    InspectorTest.waitForBinding("baz.js")
+                    BindingsTestRunner.waitForBinding("foo.js"),
+                    BindingsTestRunner.waitForBinding("bar.js"),
+                    BindingsTestRunner.waitForBinding("baz.js")
                 ]).then(onBindingsRecreated);
             }
 
@@ -72,13 +72,13 @@ function test()
     {
         var tabbedPane = UI.panels.sources._sourcesView._editorContainer._tabbedPane;
         var tabs = tabbedPane._tabs;
-        InspectorTest.addResult(title);
+        TestRunner.addResult(title);
         for (var i = 0; i < tabs.length; ++i) {
             var text = (i + 1) + ": ";
             text += tabs[i].title;
             if (tabs[i] === tabbedPane._currentTab)
                 text += " [selected]";
-            InspectorTest.addResult("    "  + text);
+            TestRunner.addResult("    "  + text);
         }
     }
 };

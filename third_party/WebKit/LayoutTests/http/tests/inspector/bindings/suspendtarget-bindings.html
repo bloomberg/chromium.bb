@@ -6,35 +6,35 @@
 
 async function test()
 {
-    InspectorTest.markStep('initialWorkspace');
-    var snapshot = InspectorTest.dumpWorkspace();
+    TestRunner.markStep('initialWorkspace');
+    var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    InspectorTest.markStep('createIframesAndWaitForSourceMaps');
+    TestRunner.markStep('createIframesAndWaitForSourceMaps');
     await Promise.all([
-        InspectorTest.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
-        InspectorTest.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map')
+        BindingsTestRunner.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
+        BindingsTestRunner.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map')
     ]);
-    snapshot = InspectorTest.dumpWorkspace(snapshot);
+    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    InspectorTest.markStep('Suspending targets.');
+    TestRunner.markStep('Suspending targets.');
     await SDK.targetManager.suspendAllTargets();
-    snapshot = InspectorTest.dumpWorkspace(snapshot);
+    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    InspectorTest.markStep('detachFrame');
-    await InspectorTest.detachFrame('frame1', '_test_detachFrame.js');
-    snapshot = InspectorTest.dumpWorkspace(snapshot);
+    TestRunner.markStep('detachFrame');
+    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame.js');
+    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    InspectorTest.markStep('Resuming targets.');
+    TestRunner.markStep('Resuming targets.');
     await Promise.all([
         SDK.targetManager.resumeAllTargets(),
-        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
-        InspectorTest.waitForSourceMap('sourcemap-style.css.map')
+        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map')
     ]);
-    snapshot = InspectorTest.dumpWorkspace(snapshot);
+    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

@@ -12,15 +12,15 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        InspectorTest.printTimelineRecordsWithDetails("WebSocketCreate");
-        InspectorTest.printTimelineRecordsWithDetails("WebSocketSendHandshakeRequest");
-        InspectorTest.printTimelineRecordsWithDetails("WebSocketReceiveHandshakeResponse");
-        InspectorTest.printTimelineRecordsWithDetails("WebSocketDestroy");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecordsWithDetails("WebSocketCreate");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("WebSocketSendHandshakeRequest");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("WebSocketReceiveHandshakeResponse");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("WebSocketDestroy");
+        TestRunner.completeTest();
     }
 }
 

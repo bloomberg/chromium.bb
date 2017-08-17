@@ -13,41 +13,41 @@
 
 async function test()
 {
-    InspectorTest.markStep('testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile');
+    TestRunner.markStep('testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile');
 
-    var uiSourceCode = await InspectorTest.waitForUISourceCode('foo.css');
+    var uiSourceCode = await TestRunner.waitForUISourceCode('foo.css');
     await uiSourceCode.requestContent();
-    InspectorTest.addResult("Dumping uiSourceCode content:");
-    InspectorTest.addResult(uiSourceCode.workingCopy());
-    InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
+    TestRunner.addResult("Dumping uiSourceCode content:");
+    TestRunner.addResult(uiSourceCode.workingCopy());
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", nodeSelected);
 
     var uiSourceCode;
 
     function nodeSelected()
     {
-        InspectorTest.addResult("Dumping matched rules:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.addResult("Editing styles from elements panel:");
-        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        TestRunner.addResult("Dumping matched rules:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.addResult("Editing styles from elements panel:");
+        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         // Commit editing.
         treeElement.valueElement.textContent = "green";
         treeElement.valueElement.firstChild.select();
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
     }
 
     function stylesEdited()
     {
-        InspectorTest.addResult("Styles edited.");
-        InspectorTest.addResult("Dumping matched rules:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.addResult("Dumping uiSourceCode content:");
-        InspectorTest.addResult(uiSourceCode.workingCopy());
-        InspectorTest.completeTest();
+        TestRunner.addResult("Styles edited.");
+        TestRunner.addResult("Dumping matched rules:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.addResult("Dumping uiSourceCode content:");
+        TestRunner.addResult(uiSourceCode.workingCopy());
+        TestRunner.completeTest();
     }
 };
 </script>

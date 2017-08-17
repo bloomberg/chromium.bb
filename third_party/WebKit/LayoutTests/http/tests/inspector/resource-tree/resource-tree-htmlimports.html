@@ -11,12 +11,12 @@
 
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["resource-tree-test.js"], step1);
+    ApplicationTestRunner.runAfterResourcesAreFinished(["resource-tree-test.js"], step1);
 
     function step1()
     {
-        InspectorTest.dumpResourceTreeEverything();
-        InspectorTest.completeTest();
+        ApplicationTestRunner.dumpResourceTreeEverything();
+        TestRunner.completeTest();
     }
 }
 

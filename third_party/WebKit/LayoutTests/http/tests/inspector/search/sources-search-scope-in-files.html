@@ -19,7 +19,7 @@ function test()
 
     var scope = new Sources.SourcesSearchScope();
     var names = ["search.html", "search.js", "search.css"];
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
 
     var promises = [];
     for (var name of names)
@@ -31,8 +31,8 @@ function test()
 
     function onResourceError(error)
     {
-        InspectorTest.addResult("ERROR while loading resources: " + error.message);
-        InspectorTest.completeTest();
+        TestRunner.addResult("ERROR while loading resources: " + error.message);
+        TestRunner.completeTest();
     }
 
     function onAllResourcesLoaded()
@@ -42,14 +42,14 @@ function test()
 
         function fileSystemCreated()
         {
-            InspectorTest.addResult("Total uiSourceCodes: " + Workspace.workspace.uiSourceCodes().length);
-            InspectorTest.runTestSuite(testSuite);
+            TestRunner.addResult("Total uiSourceCodes: " + Workspace.workspace.uiSourceCodes().length);
+            TestRunner.runTestSuite(testSuite);
         }
     }
 
     function populateFileSystem(name)
     {
-        var urlPrefix = InspectorTest.mainTarget.inspectedURL().substr(0, InspectorTest.mainTarget.inspectedURL().lastIndexOf("/") + 1);
+        var urlPrefix = TestRunner.mainTarget.inspectedURL().substr(0, TestRunner.mainTarget.inspectedURL().lastIndexOf("/") + 1);
         var url = urlPrefix + "resources/" + name;
         return Runtime.loadResourcePromise(url).then(function(text) {
             fs.root.addFile(name, text);
@@ -74,113 +74,113 @@ function test()
         {
             var query = "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testCaseSensitive(next)
         {
             var query = "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, false, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testFileHTML(next)
         {
             var query = "searchTest" + "UniqueString" + " file:html";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testFileJS(next)
         {
             var query = "file:js " + "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testFileHTMLJS(next)
         {
             var query = "file:js " + "searchTest" + "UniqueString" + " file:html";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSpaceQueries(next)
         {
             var query = "searchTest" + "Unique" + " space" + " String";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSpaceQueriesFileHTML(next)
         {
             var query = "file:html " + "searchTest" + "Unique" + " space" + " String";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSpaceQueriesFileHTML_SEARCH(next)
         {
             var query = "file:html " + "searchTest" + "Unique" + " space" + " String" + " file:search";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSpaceQueriesFileJS_SEARCH_HTML(next)
         {
             var query = "file:js " + "searchTest" + "Unique" + " space" + " String" + " file:search file:html";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSeveralQueriesFileHTML(next)
         {
             var query = "searchTest" + "Unique" + " file:html " + " space" + " String";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSeveralQueriesFileHTML_SEARCH(next)
         {
             var query = "searchTest" + "Unique" + " file:html " + " space" + " String" + " file:search";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSeveralQueriesFileJS_SEARCH_HTML(next)
         {
             var query = "file:js " + "searchTest" + "Unique" + " file:html " + " space" + " String" + " file:search";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testFileSEARCH_NOT_JS_NOT_CSS(next)
         {
             var query = "searchTest" + "UniqueString" + " file:search -file:js -file:css";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testSeveralQueriesFileNotCSS(next)
         {
             var query = "searchTest" + "Unique" + " -file:css " + " space" + " String";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testFileQueryWithProjectName(next)
         {
-            InspectorTest.addResult("Running a file query with existing project name first:");
+            TestRunner.addResult("Running a file query with existing project name first:");
             var query = "searchTest" + "Unique" + " file:www";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, step2);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, step2);
 
             function step2()
             {
-                InspectorTest.addResult("Running a file query with non-existing project name now:");
+                TestRunner.addResult("Running a file query with non-existing project name now:");
                 query = "searchTest" + "Unique" + " file:zzz";
                 searchConfig = new Workspace.SearchConfig(query, true, false);
-                InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+                SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
             }
         },
 
@@ -198,7 +198,7 @@ function test()
             uiSourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
             var query = "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
+            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
         }
     ];
 }

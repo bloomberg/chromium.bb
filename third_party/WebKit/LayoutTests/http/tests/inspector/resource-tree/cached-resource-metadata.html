@@ -24,16 +24,16 @@ function addScriptAndRunTest()
 
 function test()
 {
-    var resource = InspectorTest.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/script-with-constant-last-modified.php");
+    var resource = TestRunner.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/script-with-constant-last-modified.php");
     if (!resource) {
-        InspectorTest.addResult("ERROR: Failed to find resource.");
-        InspectorTest.completeTest();
+        TestRunner.addResult("ERROR: Failed to find resource.");
+        TestRunner.completeTest();
         return;
     }
-    InspectorTest.addResult("Last modified: " + (resource.lastModified() ? resource.lastModified().toISOString() : null));
-    InspectorTest.addResult("Content size: " + resource.contentSize());
+    TestRunner.addResult("Last modified: " + (resource.lastModified() ? resource.lastModified().toISOString() : null));
+    TestRunner.addResult("Content size: " + resource.contentSize());
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

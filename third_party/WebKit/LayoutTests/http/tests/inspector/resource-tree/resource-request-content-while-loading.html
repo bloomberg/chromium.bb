@@ -14,9 +14,9 @@ function loadStylesheet()
 
 function test()
 {
-    InspectorTest.addSniffer(SDK.ResourceTreeFrame.prototype, "_addRequest", requestAdded, true);
-    InspectorTest.addSniffer(InspectorTest.PageAgent, "getResourceContent", pageAgentGetResourceContentCalled, true);
-    InspectorTest.evaluateInPage("loadStylesheet()");
+    TestRunner.addSniffer(SDK.ResourceTreeFrame.prototype, "_addRequest", requestAdded, true);
+    TestRunner.addSniffer(TestRunner.PageAgent, "getResourceContent", pageAgentGetResourceContentCalled, true);
+    TestRunner.evaluateInPage("loadStylesheet()");
     var contentWasRequested = false;
     var resource;
 
@@ -24,10 +24,10 @@ function test()
     {
         if (request.url().indexOf("styles-initial") === -1)
             return;
-        resource = InspectorTest.resourceMatchingURL("styles-initial");
+        resource = ApplicationTestRunner.resourceMatchingURL("styles-initial");
         if (!resource || !resource.request || contentWasRequested) {
-            InspectorTest.addResult("Cannot find resource");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Cannot find resource");
+            TestRunner.completeTest();
         }
         resource.requestContent().then(contentLoaded);
         contentWasRequested = true;
@@ -36,16 +36,16 @@ function test()
     function pageAgentGetResourceContentCalled()
     {
         if (!resource.request.finished) {
-            InspectorTest.addResult("Request must be finished before calling getResourceContent");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Request must be finished before calling getResourceContent");
+            TestRunner.completeTest();
         }
     }
 
     function contentLoaded(content)
     {
-        InspectorTest.addResult("Resource url: " + resource.url);
-        InspectorTest.addResult("Resource content: " + content);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Resource url: " + resource.url);
+        TestRunner.addResult("Resource content: " + content);
+        TestRunner.completeTest();
     }
 }
 </script>

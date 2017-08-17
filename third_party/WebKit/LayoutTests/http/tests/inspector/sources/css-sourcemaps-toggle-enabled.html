@@ -18,30 +18,30 @@ async function test()
     sourcesNavigator.show(UI.inspectorView.element);
 
     Common.moduleSetting('cssSourceMapsEnabled').set(true);
-    InspectorTest.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-1.css")');
-    InspectorTest.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-2.css")');
+    TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-1.css")');
+    TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-2.css")');
 
     await Promise.all([
-        InspectorTest.waitForUISourceCode('sourcemap-style-1.scss'),
-        InspectorTest.waitForUISourceCode('sourcemap-style-2.scss')
+        TestRunner.waitForUISourceCode('sourcemap-style-1.scss'),
+        TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
     ]);
 
-    InspectorTest.markStep('dumpInitialNavigator');
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    TestRunner.markStep('dumpInitialNavigator');
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('disableCSSSourceMaps');
+    TestRunner.markStep('disableCSSSourceMaps');
     Common.moduleSetting('cssSourceMapsEnabled').set(false);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.markStep('enableCSSSourceMaps');
+    TestRunner.markStep('enableCSSSourceMaps');
     Common.moduleSetting('cssSourceMapsEnabled').set(true);
     await Promise.all([
-        InspectorTest.waitForUISourceCode('sourcemap-style-1.scss'),
-        InspectorTest.waitForUISourceCode('sourcemap-style-2.scss')
+        TestRunner.waitForUISourceCode('sourcemap-style-1.scss'),
+        TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
     ]);
-    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 };
 
 </script>

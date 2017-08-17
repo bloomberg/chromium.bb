@@ -7,7 +7,7 @@
 <script>
 function test()
 {
-    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
     var indexedDBModel;
     var withoutIndexedDBURL = "http://localhost:8000/inspector/indexeddb/resources/without-indexed-db.html";
     var originalURL = "http://127.0.0.1:8000/inspector/indexeddb/resources-panel.html";
@@ -17,67 +17,67 @@ function test()
 
     function createDatabase(callback)
     {
-        InspectorTest.createDatabase(mainFrameId, databaseName, step2);
+        ApplicationTestRunner.createDatabase(mainFrameId, databaseName, step2);
 
         function step2()
         {
-            InspectorTest.createObjectStore(mainFrameId, databaseName, objectStoreName, "", false, step3);
+            ApplicationTestRunner.createObjectStore(mainFrameId, databaseName, objectStoreName, "", false, step3);
         }
 
         function step3()
         {
-            InspectorTest.createObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, "", false, false, callback);
+            ApplicationTestRunner.createObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, "", false, false, callback);
         }
     }
 
     function deleteDatabase(callback)
     {
-        InspectorTest.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, step2);
+        ApplicationTestRunner.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, step2);
 
         function step2()
         {
-            InspectorTest.deleteObjectStore(mainFrameId, databaseName, objectStoreName, step3);
+            ApplicationTestRunner.deleteObjectStore(mainFrameId, databaseName, objectStoreName, step3);
         }
 
         function step3()
         {
-            InspectorTest.deleteDatabase(mainFrameId, databaseName, callback);
+            ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, callback);
         }
     }
 
     // Start with non-resources panel.
     UI.viewManager.showView("console");
 
-    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
+    TestRunner.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
     function indexedDBAdded()
     {
-        InspectorTest.addResult("Database added.");
+        TestRunner.addResult("Database added.");
     }
 
-    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBRemoved", indexedDBRemoved, true);
+    TestRunner.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBRemoved", indexedDBRemoved, true);
     function indexedDBRemoved()
     {
-        InspectorTest.addResult("Database removed.");
+        TestRunner.addResult("Database removed.");
     }
 
-    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBLoaded", indexedDBLoaded, true);
+    TestRunner.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBLoaded", indexedDBLoaded, true);
     function indexedDBLoaded()
     {
-        InspectorTest.addResult("Database loaded.");
+        TestRunner.addResult("Database loaded.");
     }
 
     // Switch to resources panel.
     UI.viewManager.showView("resources");
 
-    InspectorTest.addResult("Expanded IndexedDB tree element.");
+    TestRunner.addResult("Expanded IndexedDB tree element.");
     UI.panels.resources._sidebar.indexedDBListTreeElement.expand();
-    InspectorTest.dumpIndexedDBTree();
-    InspectorTest.addResult("Created database.");
+    ApplicationTestRunner.dumpIndexedDBTree();
+    TestRunner.addResult("Created database.");
     createDatabase(databaseCreated);
 
     function databaseCreated()
     {
-        indexedDBModel = InspectorTest.indexedDBModel();
+        indexedDBModel = ApplicationTestRunner.indexedDBModel();
         indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
         UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
     }
@@ -85,36 +85,36 @@ function test()
     function databaseLoaded()
     {
         indexedDBModel.removeEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
-        InspectorTest.dumpIndexedDBTree();
-        InspectorTest.addResult("Navigated to another security origin.");
-        InspectorTest.navigate(withoutIndexedDBURL, navigatedAway);
+        ApplicationTestRunner.dumpIndexedDBTree();
+        TestRunner.addResult("Navigated to another security origin.");
+        TestRunner.navigate(withoutIndexedDBURL, navigatedAway);
     }
 
     function navigatedAway()
     {
-        InspectorTest.dumpIndexedDBTree();
-        InspectorTest.addResult("Navigated back.");
-        InspectorTest.navigate(originalURL, navigatedBack);
+        ApplicationTestRunner.dumpIndexedDBTree();
+        TestRunner.addResult("Navigated back.");
+        TestRunner.navigate(originalURL, navigatedBack);
     }
 
     function navigatedBack()
     {
-        InspectorTest.dumpIndexedDBTree();
-        InspectorTest.addResult("Deleted database.");
+        ApplicationTestRunner.dumpIndexedDBTree();
+        TestRunner.addResult("Deleted database.");
         deleteDatabase(databaseDeleted);
     }
 
     function databaseDeleted()
     {
         UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
-        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", databaseNamesLoadedAfterDeleting, false);
+        TestRunner.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", databaseNamesLoadedAfterDeleting, false);
     }
 
     function databaseNamesLoadedAfterDeleting()
     {
-        InspectorTest.dumpIndexedDBTree();
+        ApplicationTestRunner.dumpIndexedDBTree();
         UI.panels.resources._sidebar.indexedDBListTreeElement.collapse();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

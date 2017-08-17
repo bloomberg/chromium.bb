@@ -23,59 +23,59 @@ function test()
 {
     var timeZero = 0;
 
-    InspectorTest.recordNetwork();
-    InspectorTest.NetworkAgent.setCacheDisabled(true).then(step1);
+    NetworkTestRunner.recordNetwork();
+    TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
 
     function step1()
     {
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("loadScript()");
+        ConsoleTestRunner.addConsoleSniffer(step2);
+        TestRunner.evaluateInPage("loadScript()");
     }
 
     function step2(event)
     {
-        InspectorTest.evaluateInPage("unloadScript()", step3);
+        TestRunner.evaluateInPage("unloadScript()", step3);
     }
 
     function step3()
     {
-        InspectorTest.evaluateInPage("gc()", step4);
+        TestRunner.evaluateInPage("gc()", step4);
     }
 
     function step4()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(true).then(step5);
+        TestRunner.NetworkAgent.setCacheDisabled(true).then(step5);
     }
 
     function step5()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL:" + request.url());
-        InspectorTest.addResult("from memory cache: " + !!request._fromMemoryCache);
-        InspectorTest.addResult("from disk cache: " + !!request._fromDiskCache);
-        InspectorTest.addResult("has timing: " + !!request._timing);
-        InspectorTest.addResult("");
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult("URL:" + request.url());
+        TestRunner.addResult("from memory cache: " + !!request._fromMemoryCache);
+        TestRunner.addResult("from disk cache: " + !!request._fromDiskCache);
+        TestRunner.addResult("has timing: " + !!request._timing);
+        TestRunner.addResult("");
         timeZero = request._timing.requestTime;
-        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step6);
+        TestRunner.NetworkAgent.setCacheDisabled(false).then(step6);
     }
 
     function step6()
     {
-        InspectorTest.addConsoleSniffer(step7);
-        InspectorTest.evaluateInPage("loadScript()");
+        ConsoleTestRunner.addConsoleSniffer(step7);
+        TestRunner.evaluateInPage("loadScript()");
     }
 
     function step7()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL:" + request.url());
-        InspectorTest.addResult("from memory cache: " + !!request._fromMemoryCache);
-        InspectorTest.addResult("from disk cache: " + !!request._fromDiskCache);
-        InspectorTest.addResult("has timing: " + !!request._timing);
-        InspectorTest.addResult("");
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult("URL:" + request.url());
+        TestRunner.addResult("from memory cache: " + !!request._fromMemoryCache);
+        TestRunner.addResult("from disk cache: " + !!request._fromDiskCache);
+        TestRunner.addResult("has timing: " + !!request._timing);
+        TestRunner.addResult("");
         var time = request._timing.requestTime;
-        InspectorTest.addResult("Second request starts later than first: " + (time > timeZero));
-        InspectorTest.completeTest();
+        TestRunner.addResult("Second request starts later than first: " + (time > timeZero));
+        TestRunner.completeTest();
     }
 }
 </script>

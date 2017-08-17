@@ -16,14 +16,14 @@ function test()
 {
     Promise.all([
         UI.inspectorView.showPanel('sources'),
-        InspectorTest.evaluateInPagePromise('injectStyleSheet()')
+        TestRunner.evaluateInPagePromise('injectStyleSheet()')
     ]).then(onInjected);
 
     function onInjected()
     {
         var sourcesNavigator = new Sources.SourcesNavigatorView();
-        InspectorTest.dumpNavigatorView(sourcesNavigator);
-        InspectorTest.completeTest();
+        SourcesTestRunner.dumpNavigatorView(sourcesNavigator);
+        TestRunner.completeTest();
     }
 }
 </script>

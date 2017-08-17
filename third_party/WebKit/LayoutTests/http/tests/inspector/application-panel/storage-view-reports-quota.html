@@ -12,10 +12,10 @@ async function test() {
     var array = [];
     for (var i = 0; i < 5000000; i++)
       array.push(i % 10);
-    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
-    await new Promise(resolve => InspectorTest.createDatabase(mainFrameId, 'Database1', resolve));
-    await new Promise(resolve => InspectorTest.createObjectStore(mainFrameId, 'Database1', 'Store1', 'id', true, resolve));
-    await new Promise(resolve => InspectorTest.addIDBValue(mainFrameId, 'Database1', 'Store1', {key: 1, value: array}, '', resolve));
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
+    await new Promise(resolve => ApplicationTestRunner.createDatabase(mainFrameId, 'Database1', resolve));
+    await new Promise(resolve => ApplicationTestRunner.createObjectStore(mainFrameId, 'Database1', 'Store1', 'id', true, resolve));
+    await new Promise(resolve => ApplicationTestRunner.addIDBValue(mainFrameId, 'Database1', 'Store1', {key: 1, value: array}, '', resolve));
   }
 
   async function dumpWhenMatches(view, predicate) {
@@ -24,16 +24,16 @@ async function test() {
         if (usage !== null && (!predicate || predicate(usage, quota)))
           resolve();
         else
-          InspectorTest.addSniffer(clearStorageView, '_usageUpdatedForTest', sniffer);
+          TestRunner.addSniffer(clearStorageView, '_usageUpdatedForTest', sniffer);
       }
       sniffer(null);
     });
     // Quota will vary between setups, rather strip it altogether
     var clean = view._quotaRow.innerHTML.replace(/\&nbsp;/g, ' ');
     var quotaStripped = clean.replace(/(.*) \d+ .?B([^\d]*)/, '$1 --$2');
-    InspectorTest.addResult(quotaStripped);
+    TestRunner.addResult(quotaStripped);
 
-    InspectorTest.addResult('Usage breakdown:');
+    TestRunner.addResult('Usage breakdown:');
     for (var i = 0; i < view._pieChartLegend.children.length; i++) {
       var typeUsage = ': ';
       var children = view._pieChartLegend.children[i].children;
@@ -43,7 +43,7 @@ async function test() {
         if (children[j].classList.contains('usage-breakdown-legend-value'))
           typeUsage = typeUsage + children[j].textContent;
       }
-      InspectorTest.addResult(typeUsage);
+      TestRunner.addResult(typeUsage);
     }
   }
   UI.viewManager.showView('resources');
@@ -51,21 +51,21 @@ async function test() {
   var parent = UI.panels.resources._sidebar._applicationTreeElement;
   var clearStorageElement = parent.children().find(child => child.title === 'Clear storage');
 
-  InspectorTest.addResult('Tree element found: ' + !!clearStorageElement);
+  TestRunner.addResult('Tree element found: ' + !!clearStorageElement);
   clearStorageElement.select();
 
   var clearStorageView = UI.panels.resources.visibleView;
-  InspectorTest.addResult("Clear storage view is visible: " + (clearStorageView instanceof Resources.ClearStorageView));
+  TestRunner.addResult("Clear storage view is visible: " + (clearStorageView instanceof Resources.ClearStorageView));
 
   clearStorageView._clearButton.click();
   await dumpWhenMatches(clearStorageView, usage => usage === 0);
 
-  InspectorTest.markStep('Now with data');
+  TestRunner.markStep('Now with data');
 
   await writeArray();
   await dumpWhenMatches(clearStorageView, usage => usage > 5000000);
 
-  InspectorTest.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

@@ -7,18 +7,18 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("test_div", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("test_div", step1);
 
     function step1()
     {
-        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("background-color");
+        var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("background-color");
         treeItem.property.setDisabled(true).then(step2);
     }
 
     function step2(newStyle)
     {
-        InspectorTest.assertTrue(!!newStyle, "Could not disable style in redirected css.");
-        InspectorTest.completeTest();
+        TestRunner.assertTrue(!!newStyle, "Could not disable style in redirected css.");
+        TestRunner.completeTest();
     }
 }
 </script>

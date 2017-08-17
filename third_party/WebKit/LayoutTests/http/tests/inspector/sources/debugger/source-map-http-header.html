@@ -9,32 +9,32 @@
 
 var test = function()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.addResult("Reloading...");
+        TestRunner.addResult("Reloading...");
 
-        var debuggerModel = InspectorTest.debuggerModel;
+        var debuggerModel = TestRunner.debuggerModel;
         debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
         function onScriptAdded(event)
         {
             var script = event.data;
             if (!event.data.contentURL().endsWith(".php"))
                 return;
-            InspectorTest.addResult("Added script:");
-            InspectorTest.addResult("  url: " + script.sourceURL);
-            InspectorTest.addResult("  sourceMapUrl: " + script.sourceMapURL);
+            TestRunner.addResult("Added script:");
+            TestRunner.addResult("  url: " + script.sourceURL);
+            TestRunner.addResult("  sourceMapUrl: " + script.sourceMapURL);
         }
 
-        InspectorTest.reloadPage(step2);
+        TestRunner.reloadPage(step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Finished reload.");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Finished reload.");
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

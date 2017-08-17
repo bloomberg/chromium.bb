@@ -20,19 +20,19 @@ function navigateLink()
 
 function test()
 {
-    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "requestWillBeSent", step2);
-    InspectorTest.evaluateInPage("navigateLink()");
+    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "requestWillBeSent", step2);
+    TestRunner.evaluateInPage("navigateLink()");
 
     function step2()
     {
         // inspector-test.js appears in network panel occasionally in Safari on
         // Mac, so checking last request.
-        var request = InspectorTest.networkRequests().pop();
+        var request = NetworkTestRunner.networkRequests().pop();
 
-        InspectorTest.addResult(request.url());
-        InspectorTest.addResult("resource.requestContentType: " + request.requestContentType());
+        TestRunner.addResult(request.url());
+        TestRunner.addResult("resource.requestContentType: " + request.requestContentType());
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -7,16 +7,16 @@ function test()
 {
     var payload = "\u201AFoo\u201B";
 
-    InspectorTest.recordNetwork();
-    InspectorTest.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
+    NetworkTestRunner.recordNetwork();
+    NetworkTestRunner.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
 
     function step2()
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request.url());
-        InspectorTest.assertEquals("foo", request.queryString(), "Unexpected resource query.");
-        InspectorTest.assertEquals(payload, request.requestFormData, "Payload corrupted.");
-        InspectorTest.completeTest();
+        var request = NetworkTestRunner.networkRequests().pop();
+        TestRunner.addResult(request.url());
+        TestRunner.assertEquals("foo", request.queryString(), "Unexpected resource query.");
+        TestRunner.assertEquals(payload, request.requestFormData, "Payload corrupted.");
+        TestRunner.completeTest();
     }
 }
 </script>

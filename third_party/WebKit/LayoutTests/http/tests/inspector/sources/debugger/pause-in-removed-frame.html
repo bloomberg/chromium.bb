@@ -19,17 +19,17 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

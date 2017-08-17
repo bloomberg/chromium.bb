@@ -8,7 +8,7 @@
 
 function test()
 {
-    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
+    var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
 
     var reset_css = {
         content: "* { margin: 0 }",
@@ -33,8 +33,8 @@ function test()
         "http://example.com/logo.png": logo2
     });
 
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    InspectorTest.addFiles(fs, {
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    BindingsTestRunner.addFiles(fs, {
         "code/proj1/.git/HEAD": { content: "ref: refs/heads/master", time: new Date("May 12, 2007")},
         "code/proj1/reset.css": reset_css,
         "code/proj1/jquery.js": jquery_js,
@@ -49,7 +49,7 @@ function test()
 
     function onFileSystemCreated()
     {
-        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
+        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
     }
 }
 </script>

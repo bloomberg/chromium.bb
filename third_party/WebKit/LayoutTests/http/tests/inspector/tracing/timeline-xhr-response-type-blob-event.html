@@ -26,13 +26,13 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        InspectorTest.printTimelineRecords("XHRReadyStateChange");
-        InspectorTest.printTimelineRecords("XHRLoad");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecords("XHRReadyStateChange");
+        PerformanceTestRunner.printTimelineRecords("XHRLoad");
+        TestRunner.completeTest();
     }
 }
 

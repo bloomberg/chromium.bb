@@ -8,7 +8,7 @@ function test()
     /** @type {!Protocol.Security.InsecureContentStatus} */
     var insecureContentStatus = { ranMixedContent: true, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
-    InspectorTest.addResult("\nBefore Refresh --------------");
+    TestRunner.addResult("\nBefore Refresh --------------");
 
     var mixedExplanations = [
         {
@@ -26,30 +26,30 @@ function test()
             certificate: []
         }
     ];
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
+    TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
     // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
     var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
-        InspectorTest.dumpDeepInnerHTML(explanations[i]);
+        TestRunner.dumpDeepInnerHTML(explanations[i]);
 
-    InspectorTest.addResult("\nRefresh --------------");
+    TestRunner.addResult("\nRefresh --------------");
 
     // Now simulate a refresh.
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
+    TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
     var passive = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     passive.mixedContentType = "optionally-blockable";
-    InspectorTest.dispatchRequestFinished(passive);
+    SecurityTestRunner.dispatchRequestFinished(passive);
 
     var active = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
     active.mixedContentType = "blockable";
-    InspectorTest.dispatchRequestFinished(active);
+    SecurityTestRunner.dispatchRequestFinished(active);
 
     var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
-        InspectorTest.dumpDeepInnerHTML(explanations[i]);
-    InspectorTest.completeTest();
+        TestRunner.dumpDeepInnerHTML(explanations[i]);
+    TestRunner.completeTest();
 }
 </script>
 </head>

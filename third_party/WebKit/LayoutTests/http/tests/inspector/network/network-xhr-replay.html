@@ -8,36 +8,36 @@ function test()
 {
     function lastRequest()
     {
-        return InspectorTest.networkRequests().pop();
+        return NetworkTestRunner.networkRequests().pop();
     }
 
     function dumpRequest(request)
     {
-        InspectorTest.addResult("Dumping request: ");
-        InspectorTest.addResult("    url: " + request.url());
+        TestRunner.addResult("Dumping request: ");
+        TestRunner.addResult("    url: " + request.url());
         if (request.requestFormData)
-            InspectorTest.addResult("    requestFormData: " + request.requestFormData);
-        InspectorTest.addResult("    requestMethod: " + request.requestMethod);
-        InspectorTest.addResult("    test request header value: " + request.requestHeaderValue("headerName"));
+            TestRunner.addResult("    requestFormData: " + request.requestFormData);
+        TestRunner.addResult("    requestMethod: " + request.requestMethod);
+        TestRunner.addResult("    test request header value: " + request.requestHeaderValue("headerName"));
     }
 
     function assertRequestEqual(request1, request2)
     {
-        InspectorTest.assertEquals(request1.url(), request2.url(), "Requests have different url");
-        InspectorTest.assertEquals(request1.requestFormData, request2.requestFormData, "Requests have different requestFormData");
-        InspectorTest.assertEquals(request1.requestMethod, request2.requestMethod, "Requests have different requestMethod");
-        InspectorTest.assertEquals(request1.requestHeadersText, request2.requestHeadersText, "Requests have different requestHeadersText");
+        TestRunner.assertEquals(request1.url(), request2.url(), "Requests have different url");
+        TestRunner.assertEquals(request1.requestFormData, request2.requestFormData, "Requests have different requestFormData");
+        TestRunner.assertEquals(request1.requestMethod, request2.requestMethod, "Requests have different requestMethod");
+        TestRunner.assertEquals(request1.requestHeadersText, request2.requestHeadersText, "Requests have different requestHeadersText");
     }
 
     async function testXHRReplay(method, url, async, user, password, headers, withCredentials, payload, type, callback)
     {
-        InspectorTest.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type);
+        NetworkTestRunner.makeXHR(method, url, async, user, password, headers, withCredentials, payload, type);
 
-        var originalRequest = await InspectorTest.waitForEvent(
+        var originalRequest = await TestRunner.waitForEvent(
                 NetworkLog.NetworkLog.Events.RequestAdded, NetworkLog.networkLog);
         dumpRequest(originalRequest);
-        InspectorTest.NetworkAgent.replayXHR(originalRequest.requestId());
-        var replayedRequest = await InspectorTest.waitForEvent(
+        TestRunner.NetworkAgent.replayXHR(originalRequest.requestId());
+        var replayedRequest = await TestRunner.waitForEvent(
                 NetworkLog.NetworkLog.Events.RequestAdded, NetworkLog.networkLog);
 
         assertRequestEqual(originalRequest, replayedRequest);
@@ -45,7 +45,7 @@ function test()
     }
 
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testGetStaticAsync(next)
         {
             testXHRReplay("GET", "resources/empty.html", true, "user", "password", [["headerName", "headerValueA"]], false, undefined, undefined, next);

@@ -11,45 +11,45 @@ function sendRequest(url)
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testFetchBreakpoint(next)
         {
             SDK.domDebuggerManager.addXHRBreakpoint("foo", true);
-            InspectorTest.waitUntilPaused(step1);
-            InspectorTest.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
+            SourcesTestRunner.waitUntilPaused(step1);
+            TestRunner.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
 
             function step1(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.resumeExecution(step2);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.resumeExecution(step2);
             }
 
             function step2()
             {
-                InspectorTest.evaluateInPage("sendRequest('/bar?a=b')", step3);
+                TestRunner.evaluateInPage("sendRequest('/bar?a=b')", step3);
             }
 
             function step3()
             {
                 SDK.domDebuggerManager.removeXHRBreakpoint("foo");
-                InspectorTest.evaluateInPage("sendRequest('/foo?a=b')", next);
+                TestRunner.evaluateInPage("sendRequest('/foo?a=b')", next);
             }
         },
 
         function testPauseOnAnyFetch(next)
         {
             SDK.domDebuggerManager.addXHRBreakpoint("", true);
-            InspectorTest.waitUntilPaused(pausedFoo);
-            InspectorTest.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
+            SourcesTestRunner.waitUntilPaused(pausedFoo);
+            TestRunner.evaluateInPageWithTimeout("sendRequest('/foo?a=b')");
 
             function pausedFoo(callFrames)
             {
                 function resumed()
                 {
-                    InspectorTest.waitUntilPaused(pausedBar);
-                    InspectorTest.evaluateInPage("sendRequest('/bar?a=b')");
+                    SourcesTestRunner.waitUntilPaused(pausedBar);
+                    TestRunner.evaluateInPage("sendRequest('/bar?a=b')");
                 }
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.resumeExecution(resumed);
             }
 
             function pausedBar(callFrames)
@@ -57,32 +57,32 @@ function test()
                 function resumed()
                 {
                     SDK.domDebuggerManager.removeXHRBreakpoint("");
-                    InspectorTest.evaluateInPage("sendRequest('/baz?a=b')", next);
+                    TestRunner.evaluateInPage("sendRequest('/baz?a=b')", next);
                 }
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.resumeExecution(resumed);
             }
         },
 
         function testDisableBreakpoint(next)
         {
             SDK.domDebuggerManager.addXHRBreakpoint("", true);
-            InspectorTest.waitUntilPaused(paused);
-            InspectorTest.evaluateInPage("sendRequest('/foo')");
+            SourcesTestRunner.waitUntilPaused(paused);
+            TestRunner.evaluateInPage("sendRequest('/foo')");
 
             function paused(callFrames)
             {
                 function resumed()
                 {
                     SDK.domDebuggerManager.toggleXHRBreakpoint("", false);
-                    InspectorTest.waitUntilPaused(pausedAgain);
-                    InspectorTest.evaluateInPage("sendRequest('/foo')", next);
+                    SourcesTestRunner.waitUntilPaused(pausedAgain);
+                    TestRunner.evaluateInPage("sendRequest('/foo')", next);
                 }
-                InspectorTest.resumeExecution(resumed);
+                SourcesTestRunner.resumeExecution(resumed);
             }
 
             function pausedAgain(callFrames)
             {
-                InspectorTest.addResult("Fail, paused again after breakpoint was removed.");
+                TestRunner.addResult("Fail, paused again after breakpoint was removed.");
                 next();
             }
         }

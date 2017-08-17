@@ -11,29 +11,29 @@
 function test()
 {
     Runtime.experiments.enableForTest('persistence2');
-    var testMapping = InspectorTest.initializeTestMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    InspectorTest.addFooJSFile(fs);
+    var testMapping = BindingsTestRunner.initializeTestMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    BindingsTestRunner.addFooJSFile(fs);
     fs.reportCreated(function() { });
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function waitForUISourceCodes(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
                     .then(uiSourceCode => uiSourceCode.setWorkingCopy("dirty.")),
-                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ]).then(next);
         },
 
         function addFileSystemMapping(next)
         {
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, '_prevalidationFailedForTest', onPrevalidationFailed);
+            TestRunner.addSniffer(Persistence.Persistence.prototype, '_prevalidationFailedForTest', onPrevalidationFailed);
             testMapping.addBinding('foo.js');
 
             function onPrevalidationFailed(binding)
             {
-                InspectorTest.addResult("Failed to create binding: " + binding);
+                TestRunner.addResult("Failed to create binding: " + binding);
                 next();
             }
         },

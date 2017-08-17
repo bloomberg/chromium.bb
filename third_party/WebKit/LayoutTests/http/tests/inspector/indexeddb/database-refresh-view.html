@@ -14,14 +14,14 @@ async function test()
     var indexName = "testIndex";
     var keyPath = "testKey";
 
-    var indexedDBModel = InspectorTest.mainTarget.model(Resources.IndexedDBModel);
+    var indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
     var databaseId;
 
     function waitRefreshDatabase() {
         var view = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0]._view;
         view._refreshDatabaseButtonClicked();
         return new Promise((resolve) => {
-            InspectorTest.addSniffer(Resources.IDBDatabaseView.prototype, "_updatedForTests", resolve, false)
+            TestRunner.addSniffer(Resources.IDBDatabaseView.prototype, "_updatedForTests", resolve, false)
         });
     }
 
@@ -32,7 +32,7 @@ async function test()
 
     function waitUpdateDataView() {
         return new Promise((resolve) => {
-            InspectorTest.addSniffer(Resources.IDBDataView.prototype, "_updatedDataForTests", resolve, false)
+            TestRunner.addSniffer(Resources.IDBDataView.prototype, "_updatedDataForTests", resolve, false)
         });
     }
 
@@ -52,33 +52,33 @@ async function test()
     }
 
     function dumpObjectStores() {
-        InspectorTest.addResult("Dumping ObjectStore data:");
+        TestRunner.addResult("Dumping ObjectStore data:");
 
         var idbDatabaseTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0];
         for (var i = 0; i < idbDatabaseTreeElement.childCount(); ++i) {
             var objectStoreTreeElement = idbDatabaseTreeElement.childAt(i);
-            InspectorTest.addResult("    Object store: " + objectStoreTreeElement.title);
+            TestRunner.addResult("    Object store: " + objectStoreTreeElement.title);
             var entries = objectStoreTreeElement._view._entries;
             if (!entries.length) {
-                InspectorTest.addResult("            (no entries)");
+                TestRunner.addResult("            (no entries)");
                 continue;
             }
             for (var j = 0; j < entries.length; ++j) {
-                InspectorTest.addResult("            Key = " + entries[j].key._value + ", value = " + entries[j].value);
+                TestRunner.addResult("            Key = " + entries[j].key._value + ", value = " + entries[j].value);
             }
         }
     }
 
     // Initial tree
-    InspectorTest.dumpIndexedDBTree();
+    ApplicationTestRunner.dumpIndexedDBTree();
 
     // Create database
-    await InspectorTest.createDatabaseAsync(databaseName);
+    await ApplicationTestRunner.createDatabaseAsync(databaseName);
     await new Promise(waitDatabaseAdded);
     var idbDatabaseTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0];
     databaseId = idbDatabaseTreeElement._databaseId;
-    InspectorTest.addResult("Created database.");
-    InspectorTest.dumpIndexedDBTree();
+    TestRunner.addResult("Created database.");
+    ApplicationTestRunner.dumpIndexedDBTree();
 
     // Load indexedDb database view
     indexedDBModel.refreshDatabase(databaseId); // Initial database refresh.
@@ -87,16 +87,16 @@ async function test()
     var databaseView = idbDatabaseTreeElement._view;
 
     // Create first objectstore
-    await InspectorTest.createObjectStoreAsync(databaseName, objectStoreName1, indexName, keyPath);
+    await ApplicationTestRunner.createObjectStoreAsync(databaseName, objectStoreName1, indexName, keyPath);
     await waitRefreshDatabase();
-    InspectorTest.addResult("Created first objectstore.");
-    InspectorTest.dumpIndexedDBTree();
+    TestRunner.addResult("Created first objectstore.");
+    ApplicationTestRunner.dumpIndexedDBTree();
 
     // Create second objectstore
-    await InspectorTest.createObjectStoreAsync(databaseName, objectStoreName2, indexName, keyPath);
+    await ApplicationTestRunner.createObjectStoreAsync(databaseName, objectStoreName2, indexName, keyPath);
     await waitRefreshDatabase();
-    InspectorTest.addResult("Created second objectstore.");
-    InspectorTest.dumpIndexedDBTree();
+    TestRunner.addResult("Created second objectstore.");
+    ApplicationTestRunner.dumpIndexedDBTree();
 
     // Load objectstore data views
     for (var i = 0; i < idbDatabaseTreeElement.childCount(); ++i) {
@@ -105,28 +105,28 @@ async function test()
     }
 
     // Add entries
-    await InspectorTest.addIDBValueAsync(databaseName, objectStoreName1, "testKey", "testValue");
-    InspectorTest.addResult("Added " + objectStoreName1 + " entry.");
+    await ApplicationTestRunner.addIDBValueAsync(databaseName, objectStoreName1, "testKey", "testValue");
+    TestRunner.addResult("Added " + objectStoreName1 + " entry.");
     dumpObjectStores();
 
     // Refresh database view
     await waitRefreshDatabase();
     await waitUpdateDataView();  // Wait for second objectstore data to load on page.
-    InspectorTest.addResult("Refreshed database view.");
+    TestRunner.addResult("Refreshed database view.");
     dumpObjectStores();
 
     // Add entries
-    await InspectorTest.addIDBValueAsync(databaseName, objectStoreName2, "testKey2", "testValue2");
-    InspectorTest.addResult("Added " + objectStoreName2 + " entry.");
+    await ApplicationTestRunner.addIDBValueAsync(databaseName, objectStoreName2, "testKey2", "testValue2");
+    TestRunner.addResult("Added " + objectStoreName2 + " entry.");
     dumpObjectStores();
 
     // Right-click refresh database view
     await waitRefreshDatabaseRightClick();
     await waitUpdateDataView();  // Wait for second objectstore data to load on page.
-    InspectorTest.addResult("Right-click refreshed database.");
+    TestRunner.addResult("Right-click refreshed database.");
     dumpObjectStores();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

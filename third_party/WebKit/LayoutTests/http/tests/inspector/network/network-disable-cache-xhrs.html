@@ -5,29 +5,29 @@
 <script>
 function test()
 {
-    InspectorTest.recordNetwork();
-    InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, firstXHRLoaded);
+    NetworkTestRunner.recordNetwork();
+    NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, firstXHRLoaded);
 
     function firstXHRLoaded()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step2);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step2);
     }
 
     function step2()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(true).then(step3);
+        TestRunner.NetworkAgent.setCacheDisabled(true).then(step3);
     }
 
     function step3()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step4);
+        NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step4);
     }
 
     async function step4(msg)
     {
         // inspector-test.js appears in network panel occasionally in Safari on
         // Mac, so checking two last resources.
-        var requests = InspectorTest.networkRequests();
+        var requests = NetworkTestRunner.networkRequests();
         var request1 = requests[requests.length - 3];
         var request2 = requests[requests.length - 2];
         var request3 = requests[requests.length - 1];
@@ -36,17 +36,17 @@ function test()
         var request2Content = await request2.requestContent();
         var request3Content = await request3.requestContent();
 
-        InspectorTest.addResult(request1.url());
-        InspectorTest.addResult(request2.url());
-        InspectorTest.addResult(request3.url());
-        InspectorTest.assertTrue(request1Content === request2Content, "First and second resources are equal");
-        InspectorTest.assertTrue(request2Content !== request3Content, "Second and third resources differ");
-        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step5);
+        TestRunner.addResult(request1.url());
+        TestRunner.addResult(request2.url());
+        TestRunner.addResult(request3.url());
+        TestRunner.assertTrue(request1Content === request2Content, "First and second resources are equal");
+        TestRunner.assertTrue(request2Content !== request3Content, "Second and third resources differ");
+        TestRunner.NetworkAgent.setCacheDisabled(false).then(step5);
     }
 
     function step5()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

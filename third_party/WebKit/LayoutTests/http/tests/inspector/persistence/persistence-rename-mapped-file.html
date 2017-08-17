@@ -9,26 +9,26 @@
 
 function test()
 {
-    InspectorTest.forceUseDefaultMapping();
-    var fs = new InspectorTest.TestFileSystem("file:///var/www");
-    var fsEntry = InspectorTest.addFooJSFile(fs);
+    BindingsTestRunner.forceUseDefaultMapping();
+    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
+    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
     fs.addFileMapping("http://127.0.0.1:8000", "/");
     fs.reportCreated(function () { });
-    InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+    BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
     Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
 
     function onBindingCreated(binding)
     {
-        InspectorTest.addResult("Binding created: " + binding);
-        InspectorTest.addResult("Renaming foo.js -> bar.js");
+        TestRunner.addResult("Binding created: " + binding);
+        TestRunner.addResult("Renaming foo.js -> bar.js");
         binding.fileSystem.rename("bar.js", function() { });
     }
 
     function onBindingRemoved(event)
     {
         var binding = event.data;
-        InspectorTest.addResult("Binding successfully removed: " + binding);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Binding successfully removed: " + binding);
+        TestRunner.completeTest();
     }
 
 };

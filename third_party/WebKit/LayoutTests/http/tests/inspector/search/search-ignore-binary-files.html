@@ -7,13 +7,13 @@
 
 function test()
 {
-    InspectorTest.waitForScriptSource("pink.jpg", doSearch);
+    SourcesTestRunner.waitForScriptSource("pink.jpg", doSearch);
 
     function doSearch(next)
     {
         var scope = new Sources.SourcesSearchScope();
         var searchConfig = new Workspace.SearchConfig("AAAAAAA", true, false);
-        InspectorTest.runSearchAndDumpResults(scope, searchConfig, InspectorTest.completeTest.bind(InspectorTest));
+        SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, TestRunner.completeTest.bind(InspectorTest));
     }
 };
 </script>

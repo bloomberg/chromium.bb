@@ -8,17 +8,17 @@
 
 function test()
 {
-    InspectorTest.waitForScriptSource("selector-line-sourcemap-header.scss", onSourceMap);
+    SourcesTestRunner.waitForScriptSource("selector-line-sourcemap-header.scss", onSourceMap);
 
     function onSourceMap()
     {
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
     }
 
     function step1()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 
