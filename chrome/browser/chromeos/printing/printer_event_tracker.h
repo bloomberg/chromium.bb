@@ -77,7 +77,7 @@ class PrinterEventTracker : public KeyedService {
 
  private:
   // Records logs if true.  Discards logs if false.
-  bool logging_;
+  bool logging_ = false;
   std::vector<metrics::PrinterEventProto> events_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterEventTracker);

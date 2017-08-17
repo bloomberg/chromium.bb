@@ -26,12 +26,6 @@ class PrinterEventTrackerTest : public testing::Test {
   PrinterEventTrackerTest() = default;
   ~PrinterEventTrackerTest() override = default;
 
-  // testing::Test overrides:
-  void SetUp() override {
-    // By default, turn recording on.
-    tracker_.set_logging(true);
-  }
-
  protected:
   PrinterEventTracker tracker_;
 
@@ -61,6 +55,19 @@ TEST_F(PrinterEventTrackerTest, RecordsWhenEnabled) {
   EXPECT_EQ(1U, events.size());
 }
 
+TEST_F(PrinterEventTrackerTest, DefaultLoggingOff) {
+  Printer test_printer;
+  test_printer.set_make_and_model(kMakeAndModel);
+  test_printer.mutable_ppd_reference()->effective_make_and_model =
+      kEffectiveMakeAndModel;
+
+  tracker_.RecordIppPrinterInstalled(test_printer,
+                                     PrinterEventTracker::kAutomatic);
+
+  auto events = GetEvents();
+  EXPECT_TRUE(events.empty());
+}
+
 TEST_F(PrinterEventTrackerTest, DoesNotRecordWhileDisabled) {
   tracker_.set_logging(false);
 
@@ -77,6 +84,8 @@ TEST_F(PrinterEventTrackerTest, DoesNotRecordWhileDisabled) {
 }
 
 TEST_F(PrinterEventTrackerTest, InstalledIppPrinter) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.set_make_and_model(kMakeAndModel);
   test_printer.mutable_ppd_reference()->effective_make_and_model =
@@ -100,6 +109,8 @@ TEST_F(PrinterEventTrackerTest, InstalledIppPrinter) {
 }
 
 TEST_F(PrinterEventTrackerTest, InstalledPrinterAuto) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.set_make_and_model(kMakeAndModel);
   test_printer.mutable_ppd_reference()->autoconf = true;
@@ -126,6 +137,8 @@ TEST_F(PrinterEventTrackerTest, InstalledPrinterAuto) {
 }
 
 TEST_F(PrinterEventTrackerTest, InstalledPrinterUserPpd) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.mutable_ppd_reference()->user_supplied_ppd_url =
       "file:///i_dont_record_this_field/blah/blah/blah/some_ppd.ppd";
@@ -156,6 +169,8 @@ TEST_F(PrinterEventTrackerTest, InstalledPrinterUserPpd) {
 }
 
 TEST_F(PrinterEventTrackerTest, InstalledUsbPrinter) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.mutable_ppd_reference()->effective_make_and_model =
       kEffectiveMakeAndModel;
@@ -188,6 +203,8 @@ TEST_F(PrinterEventTrackerTest, InstalledUsbPrinter) {
 }
 
 TEST_F(PrinterEventTrackerTest, AbandonedNetworkPrinter) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.set_make_and_model(kMakeAndModel);
 
@@ -212,6 +229,8 @@ TEST_F(PrinterEventTrackerTest, AbandonedNetworkPrinter) {
 }
 
 TEST_F(PrinterEventTrackerTest, AbandonedUsbPrinter) {
+  tracker_.set_logging(true);
+
   UsbPrinter usb_printer;
   usb_printer.vendor_id = kVendorId;
   usb_printer.model_id = kProductId;
@@ -235,6 +254,8 @@ TEST_F(PrinterEventTrackerTest, AbandonedUsbPrinter) {
 }
 
 TEST_F(PrinterEventTrackerTest, RemovedPrinter) {
+  tracker_.set_logging(true);
+
   Printer test_printer;
   test_printer.set_make_and_model(kMakeAndModel);
   test_printer.mutable_ppd_reference()->effective_make_and_model =
