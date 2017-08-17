@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -184,59 +185,64 @@ void StartUserSession(const AccountId& account_id) {
 }
 
 void SetAlwaysShowMenuEnabled(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu,
+                         enabled);
 }
 
 void SetLargeCursorEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled, enabled);
 }
 
 void SetHighContrastEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilityHighContrastEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilityHighContrastEnabled,
+                         enabled);
 }
 
 void SetSpokenFeedbackEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+                         enabled);
 }
 
 void SetAutoclickEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilityAutoclickEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilityAutoclickEnabled, enabled);
 }
 
 void SetAutoclickDelayPref(int delay_ms) {
-  GetPrefs()->SetInteger(prefs::kAccessibilityAutoclickDelayMs, delay_ms);
+  GetPrefs()->SetInteger(ash::prefs::kAccessibilityAutoclickDelayMs, delay_ms);
 }
 
 void SetVirtualKeyboardEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilityVirtualKeyboardEnabled,
+                         enabled);
 }
 
 void SetMonoAudioEnabledPref(bool enabled) {
-  GetPrefs()->SetBoolean(prefs::kAccessibilityMonoAudioEnabled, enabled);
+  GetPrefs()->SetBoolean(ash::prefs::kAccessibilityMonoAudioEnabled, enabled);
 }
 
 bool GetLargeCursorEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
+  return GetPrefs()->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled);
 }
 
 bool GetHighContrastEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
+  return GetPrefs()->GetBoolean(ash::prefs::kAccessibilityHighContrastEnabled);
 }
 
 bool GetSpokenFeedbackEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled);
+  return GetPrefs()->GetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
 }
 
 bool GetAutoclickEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
+  return GetPrefs()->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled);
 }
 
 int GetAutoclickDelayFromPref() {
-  return GetPrefs()->GetInteger(prefs::kAccessibilityAutoclickDelayMs);
+  return GetPrefs()->GetInteger(ash::prefs::kAccessibilityAutoclickDelayMs);
 }
 
 bool GetMonoAudioEnabledFromPref() {
-  return GetPrefs()->GetBoolean(prefs::kAccessibilityMonoAudioEnabled);
+  return GetPrefs()->GetBoolean(ash::prefs::kAccessibilityMonoAudioEnabled);
 }
 
 bool IsBrailleImeActive() {

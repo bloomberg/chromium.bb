@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/accessibility_types.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -349,9 +350,10 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
-    prefs->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
+    prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
                       value_in_range != 0);
-    prefs->SetInteger(prefs::kAccessibilityScreenMagnifierType, value_in_range);
+    prefs->SetInteger(ash::prefs::kAccessibilityScreenMagnifierType,
+                      value_in_range);
   }
 }
 

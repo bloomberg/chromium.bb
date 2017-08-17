@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -105,7 +105,7 @@ class ComponentLoaderTest : public testing::Test {
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
     local_state_.registry()->RegisterBooleanPref(
-        prefs::kAccessibilitySpokenFeedbackEnabled, false);
+        ash::prefs::kAccessibilitySpokenFeedbackEnabled, false);
 #endif
   }
 

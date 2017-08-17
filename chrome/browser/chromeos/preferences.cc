@@ -9,6 +9,7 @@
 #include "ash/accessibility_types.h"
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -115,9 +116,10 @@ Preferences::~Preferences() {
 void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
-  registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                false);
-  registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled,
+  // TODO(jamescook): Move ownership and registration into ash.
+  registry->RegisterBooleanPref(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled, false);
+  registry->RegisterBooleanPref(ash::prefs::kAccessibilityMonoAudioEnabled,
                                 false);
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
   registry->RegisterStringPref(prefs::kSigninScreenTimezone, std::string());
@@ -174,69 +176,65 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
+
+  // TODO(jamescook): Move ownership and registration into ash.
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityStickyKeysEnabled,
-      false,
+      ash::prefs::kAccessibilityStickyKeysEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityLargeCursorEnabled,
-      false,
+      ash::prefs::kAccessibilityLargeCursorEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(prefs::kAccessibilityLargeCursorDipSize,
+  registry->RegisterIntegerPref(ash::prefs::kAccessibilityLargeCursorDipSize,
                                 ash::kDefaultLargeCursorSize);
-  registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
+  registry->RegisterBooleanPref(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
                                 false);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityHighContrastEnabled,
-      false,
+      ash::prefs::kAccessibilityHighContrastEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityScreenMagnifierCenterFocus,
-      true,
+      ash::prefs::kAccessibilityScreenMagnifierCenterFocus, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityScreenMagnifierEnabled, false,
+      ash::prefs::kAccessibilityScreenMagnifierEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kAccessibilityScreenMagnifierType, ash::kDefaultMagnifierType,
+      ash::prefs::kAccessibilityScreenMagnifierType, ash::kDefaultMagnifierType,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
+  registry->RegisterDoublePref(ash::prefs::kAccessibilityScreenMagnifierScale,
                                std::numeric_limits<double>::min());
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityAutoclickEnabled,
-      false,
+      ash::prefs::kAccessibilityAutoclickEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kAccessibilityAutoclickDelayMs,
+      ash::prefs::kAccessibilityAutoclickDelayMs,
       static_cast<int>(ash::AutoclickController::GetDefaultAutoclickDelay()
                            .InMilliseconds()),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityVirtualKeyboardEnabled,
-      false,
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityMonoAudioEnabled,
-      false,
+      ash::prefs::kAccessibilityMonoAudioEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityCaretHighlightEnabled, false,
+      ash::prefs::kAccessibilityCaretHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityCursorHighlightEnabled, false,
+      ash::prefs::kAccessibilityCursorHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilityFocusHighlightEnabled, false,
+      ash::prefs::kAccessibilityFocusHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilitySelectToSpeakEnabled, false,
+      ash::prefs::kAccessibilitySelectToSpeakEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kAccessibilitySwitchAccessEnabled, false,
+      ash::prefs::kAccessibilitySwitchAccessEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kShouldAlwaysShowAccessibilityMenu, false,
+      ash::prefs::kShouldAlwaysShowAccessibilityMenu, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
   registry->RegisterIntegerPref(
       prefs::kMouseSensitivity,
       3,
