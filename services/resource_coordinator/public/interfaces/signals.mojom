@@ -7,13 +7,6 @@ module resource_coordinator.mojom;
 enum Event {
   kTestEvent,
   kTitleUpdated,
-
-  // TODO(crbug.com/691886) Clean up the below events.
-  kOnNavigationCommit,
-  kOnWebContentsShown,
-  kOnWebContentsHidden,
-  kOnProcessAudioStarted,
-  kOnProcessAudioStopped,
 };
 
 // Defines the Storage property keys that can be get/set on the

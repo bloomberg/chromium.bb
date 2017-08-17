@@ -117,77 +117,8 @@ void CoordinationUnitImpl::Bind(mojom::CoordinationUnitRequest request) {
   binding_.Bind(std::move(request));
 }
 
-bool CoordinationUnitImpl::SelfOrParentHasFlagSet(StateFlags state) {
-  const base::Optional<bool>& state_flag = state_flags_[state];
-  if (state_flag && *state_flag) {
-    return true;
-  }
-
-  for (CoordinationUnitImpl* parent : parents_) {
-    if (parent->SelfOrParentHasFlagSet(state)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void CoordinationUnitImpl::RecalcCoordinationPolicy() {
-  for (CoordinationUnitImpl* child : children_) {
-    child->RecalcCoordinationPolicy();
-  }
-
-  if (!policy_callback_) {
-    return;
-  }
-
-  bool background_priority = !SelfOrParentHasFlagSet(kTabVisible) &&
-                             !SelfOrParentHasFlagSet(kAudioPlaying);
-
-  // Send the priority to the client if it's new or changed.
-  if (!current_policy_) {
-    current_policy_ = mojom::CoordinationPolicy::New();
-  } else if ((current_policy_->use_background_priority ==
-              background_priority) &&
-             !SelfOrParentHasFlagSet(StateFlags::kTestState)) {
-    return;
-  }
-
-  // current_policy_ should be kept in sync with the policy we
-  // send to the client, to avoid redundant updates.
-  // TODO(oysteine): Once this object becomes more complex, make
-  // copying more robust.
-  mojom::CoordinationPolicyPtr policy = mojom::CoordinationPolicy::New();
-  policy->use_background_priority = background_priority;
-  current_policy_->use_background_priority = background_priority;
-
-  policy_callback_->SetCoordinationPolicy(std::move(policy));
-}
-
 void CoordinationUnitImpl::SendEvent(mojom::Event event) {
   OnEventReceived(event);
-  // TODO(crbug.com/691886) Consider removing the following code.
-  switch (event) {
-    case mojom::Event::kOnWebContentsShown:
-      state_flags_[kTabVisible] = true;
-      break;
-    case mojom::Event::kOnWebContentsHidden:
-      state_flags_[kTabVisible] = false;
-      break;
-    case mojom::Event::kOnProcessAudioStarted:
-      state_flags_[kAudioPlaying] = true;
-      break;
-    case mojom::Event::kOnProcessAudioStopped:
-      state_flags_[kAudioPlaying] = false;
-      break;
-    case mojom::Event::kTestEvent:
-      state_flags_[kTestState] = true;
-      break;
-    default:
-      return;
-  }
-
-  RecalcCoordinationPolicy();
 }
 
 void CoordinationUnitImpl::GetID(const GetIDCallback& callback) {
@@ -199,6 +130,8 @@ void CoordinationUnitImpl::AddBinding(mojom::CoordinationUnitRequest request) {
 }
 
 void CoordinationUnitImpl::AddChild(const CoordinationUnitID& child_id) {
+  // TODO(ojan): Make this a DCHECK. When does it make sense to add a
+  // CoordinationUnit as its own child?
   if (child_id == id_) {
     return;
   }
@@ -226,9 +159,6 @@ void CoordinationUnitImpl::AddChild(const CoordinationUnitID& child_id) {
 }
 
 bool CoordinationUnitImpl::AddChild(CoordinationUnitImpl* child) {
-  // We don't recalculate the policy here as policies are only dependent
-  // on the current CU or its parents, not its children. In other words,
-  // policies only bubble down.
   bool success =
       children_.count(child) ? false : children_.insert(child).second;
 
@@ -274,20 +204,14 @@ void CoordinationUnitImpl::AddParent(CoordinationUnitImpl* parent) {
 
   for (auto& observer : observers_)
     observer.OnParentAdded(this, parent);
-
-  RecalcCoordinationPolicy();
 }
 
 void CoordinationUnitImpl::RemoveParent(CoordinationUnitImpl* parent) {
   size_t parents_removed = parents_.erase(parent);
   DCHECK_EQ(1u, parents_removed);
 
-  // TODO(matthalp, oysteine) should this go before or
-  // after RecalcCoordinationPolicy?
   for (auto& observer : observers_)
     observer.OnParentRemoved(this, parent);
-
-  RecalcCoordinationPolicy();
 }
 
 bool CoordinationUnitImpl::HasAncestor(CoordinationUnitImpl* ancestor) {
@@ -308,22 +232,6 @@ bool CoordinationUnitImpl::HasDescendant(CoordinationUnitImpl* descendant) {
   }
 
   return false;
-}
-
-void CoordinationUnitImpl::SetCoordinationPolicyCallback(
-    mojom::CoordinationPolicyCallbackPtr callback) {
-  callback.set_connection_error_handler(
-      base::Bind(&CoordinationUnitImpl::UnregisterCoordinationPolicyCallback,
-                 base::Unretained(this)));
-
-  policy_callback_ = std::move(callback);
-
-  RecalcCoordinationPolicy();
-}
-
-void CoordinationUnitImpl::UnregisterCoordinationPolicyCallback() {
-  policy_callback_.reset();
-  current_policy_.reset();
 }
 
 std::set<CoordinationUnitImpl*>
