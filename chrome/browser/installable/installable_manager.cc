@@ -139,11 +139,11 @@ void InstallableManager::GetData(const InstallableParams& params,
 
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
+  bool was_active = task_queue_.is_active_;
   task_queue_.Insert({params, callback});
-  if (task_queue_.is_active_)
+  if (was_active)
     return;
 
-  task_queue_.is_active_ = true;
   if (page_status_ == InstallabilityCheckStatus::NOT_STARTED)
     page_status_ = InstallabilityCheckStatus::NOT_COMPLETED;
 
@@ -590,13 +590,13 @@ void InstallableManager::OnRegistrationStored(const GURL& pattern) {
     return;
   }
 
+  bool was_active = task_queue_.is_active_;
   task_queue_.UnpauseAll();
 
-  // Start the pipeline again if it is not running. This will call
+  // Start the pipeline again if it was not running. This will call
   // CheckHasServiceWorker to check if the SW has a fetch handler. Otherwise,
   // adding the tasks to the end of the active queue is sufficient.
-  if (!task_queue_.is_active_) {
-    task_queue_.is_active_ = true;
+  if (!was_active) {
     StartNextTask();
   }
 }
@@ -631,6 +631,7 @@ InstallableManager::TaskQueue::~TaskQueue() {}
 
 void InstallableManager::TaskQueue::Insert(Task task) {
   tasks_.push_back(task);
+  is_active_ = true;
 }
 
 void InstallableManager::TaskQueue::Reset() {
