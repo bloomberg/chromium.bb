@@ -1253,6 +1253,28 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
   return s;
 }
 
+leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
+    std::vector<IndexedDBDatabaseMetadata>* output) {
+  leveldb::Status status = leveldb::Status::OK();
+  std::vector<base::string16> names = GetDatabaseNames(&status);
+  if (!status.ok())
+    return status;
+  for (const base::string16& name : names) {
+    output->emplace_back();
+    bool found = false;
+    status = GetIDBDatabaseMetaData(name, &output->back(), &found);
+    output->back().name = name;
+    if (!found)
+      return Status::NotFound("Metadata not found for \"%s\".",
+                              base::UTF16ToUTF8(name));
+    status = GetObjectStores(output->back().id, &output->back().object_stores);
+    if (!status.ok())
+      return status;
+  }
+
+  return status;
+}
+
 bool IndexedDBBackingStore::ReadCorruptionInfo(const FilePath& path_base,
                                                const Origin& origin,
                                                std::string* message) {
@@ -4006,6 +4028,12 @@ IndexedDBBackingStore::OpenIndexCursor(
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
 
   return std::move(cursor);
+}
+
+void IndexedDBBackingStore::StartPreCloseTasks() {
+  DCHECK(pre_close_task_queue_);
+  pre_close_task_queue_->Start(base::BindOnce(
+      &IndexedDBBackingStore::GetCompleteMetadata, base::Unretained(this)));
 }
 
 IndexedDBBackingStore::Transaction::Transaction(

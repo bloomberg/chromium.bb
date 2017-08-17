@@ -9,13 +9,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
+#include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -26,7 +31,27 @@ using url::Origin;
 
 namespace content {
 
-const int64_t kBackingStoreGracePeriodMs = 2000;
+namespace {
+
+using PreCloseTask = IndexedDBPreCloseTaskQueue::PreCloseTask;
+
+// Time after the last connection to a database is closed and when we destroy
+// the backing store.
+const int64_t kBackingStoreGracePeriodSeconds = 2;
+// Total time we let pre-close tasks run.
+const int64_t kPreCloseTasksMaxRunPeriodSeconds = 60;
+// The number of iterations for every 'round' of the tombstone sweeper.
+const int kTombstoneSweeperRoundIterations = 1000;
+// The maximum total iterations for the tombstone sweeper.
+const int kTombstoneSweeperMaxIterations = 10 * 1000 * 1000;
+
+const base::Feature kIDBTombstoneStatistics{"IDBTombstoneStatistics",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIDBTombstoneDeletion{"IDBTombstoneDeletion",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace
 
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(IndexedDBContextImpl* context)
     : context_(context) {
@@ -92,11 +117,51 @@ void IndexedDBFactoryImpl::ReleaseBackingStore(const Origin& origin,
   // in the mean time.
   DCHECK(!backing_store_map_[origin]->close_timer()->IsRunning());
   backing_store_map_[origin]->close_timer()->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kBackingStoreGracePeriodMs),
-      base::Bind(&IndexedDBFactoryImpl::MaybeCloseBackingStore, this, origin));
+      FROM_HERE, base::TimeDelta::FromSeconds(kBackingStoreGracePeriodSeconds),
+      base::Bind(&IndexedDBFactoryImpl::MaybeStartPreCloseTasks, this, origin));
+}
+
+void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
+  // Another reference may have been created since the maybe-close was posted,
+  // so it is necessary to check again.
+  if (!HasLastBackingStoreReference(origin))
+    return;
+
+  bool tombstone_stats_enabled =
+      base::FeatureList::IsEnabled(kIDBTombstoneStatistics);
+  bool tombstone_deletion_enabled =
+      base::FeatureList::IsEnabled(kIDBTombstoneDeletion);
+
+  if (tombstone_stats_enabled == tombstone_deletion_enabled) {
+    // We can't have both stats and deletion, so NOOP if both are enabled.
+    MaybeCloseBackingStore(origin);
+    return;
+  }
+  scoped_refptr<IndexedDBBackingStore> store = backing_store_map_[origin];
+  // TODO(next patch in this cl): Create logic about which tasks get put here.
+  // * Min time since last sweep,
+  // * Only one sweep at a time for a context (or globaly?)
+  std::list<std::unique_ptr<PreCloseTask>> tasks;
+  IndexedDBTombstoneSweeper::Mode mode =
+      tombstone_stats_enabled ? IndexedDBTombstoneSweeper::Mode::STATISTICS
+                              : IndexedDBTombstoneSweeper::Mode::DELETION;
+  tasks.push_back(base::MakeUnique<IndexedDBTombstoneSweeper>(
+      mode, kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
+      store->db()->db()));
+  // TODO(dmurph): Add compaction task that compacts all indexes if we have
+  // more than X deletions.
+
+  store->SetPreCloseTaskList(base::MakeUnique<IndexedDBPreCloseTaskQueue>(
+      std::move(tasks),
+      base::BindOnce(&IndexedDBFactoryImpl::MaybeCloseBackingStore, this,
+                     origin),
+      base::TimeDelta::FromSeconds(kPreCloseTasksMaxRunPeriodSeconds),
+      base::MakeUnique<base::OneShotTimer>()));
+  store->StartPreCloseTasks();
 }
 
 void IndexedDBFactoryImpl::MaybeCloseBackingStore(const Origin& origin) {
+  backing_store_map_[origin]->SetPreCloseTaskList(nullptr);
   // Another reference may have opened since the maybe-close was posted, so it
   // is necessary to check again.
   if (HasLastBackingStoreReference(origin))
@@ -106,9 +171,10 @@ void IndexedDBFactoryImpl::MaybeCloseBackingStore(const Origin& origin) {
 void IndexedDBFactoryImpl::CloseBackingStore(const Origin& origin) {
   const auto& it = backing_store_map_.find(origin);
   DCHECK(it != backing_store_map_.end());
-  // Stop the timer (if it's running) - this may happen if the timer was started
-  // and then a forced close occurs.
+  // Stop the timer and pre close tasks (if they are running) - this may happen
+  // if the timer was started and then a forced close occurs.
   it->second->close_timer()->Stop();
+  it->second->SetPreCloseTaskList(nullptr);
   backing_store_map_.erase(it);
 }
 
@@ -169,8 +235,10 @@ void IndexedDBFactoryImpl::ContextDestroyed() {
   // context (which nominally owns this factory) is destroyed during thread
   // termination the timers must be stopped so that this factory and the
   // stores can be disposed of.
-  for (const auto& it : backing_store_map_)
+  for (const auto& it : backing_store_map_) {
     it.second->close_timer()->Stop();
+    it.second->SetPreCloseTaskList(nullptr);
+  }
   backing_store_map_.clear();
   backing_stores_with_active_blobs_.clear();
   context_ = NULL;
@@ -401,7 +469,8 @@ bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
   const auto& it = backing_store_map_.find(origin);
   if (it == backing_store_map_.end())
     return false;
-  return it->second->close_timer()->IsRunning();
+  return it->second->close_timer()->IsRunning() ||
+         it->second->pre_close_task_queue();
 }
 
 scoped_refptr<IndexedDBBackingStore>
@@ -430,6 +499,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
   const auto& it2 = backing_store_map_.find(origin);
   if (it2 != backing_store_map_.end()) {
     it2->second->close_timer()->Stop();
+    if (it2->second->pre_close_task_queue()) {
+      it2->second->pre_close_task_queue()->StopForNewConnection();
+      it2->second->SetPreCloseTaskList(nullptr);
+    }
     return it2->second;
   }
 

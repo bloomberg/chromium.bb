@@ -453,9 +453,11 @@ class BlobEntryKey {
 
 class IndexDataKey {
  public:
-  IndexDataKey();
-  ~IndexDataKey();
-  static bool Decode(base::StringPiece* slice, IndexDataKey* result);
+  CONTENT_EXPORT IndexDataKey();
+  CONTENT_EXPORT IndexDataKey(IndexDataKey&& other);
+  CONTENT_EXPORT ~IndexDataKey();
+  CONTENT_EXPORT static bool Decode(base::StringPiece* slice,
+                                    IndexDataKey* result);
   CONTENT_EXPORT static std::string Encode(
       int64_t database_id,
       int64_t object_store_id,
@@ -467,14 +469,15 @@ class IndexDataKey {
                             int64_t object_store_id,
                             int64_t index_id,
                             const IndexedDBKey& user_key);
-  static std::string Encode(int64_t database_id,
-                            int64_t object_store_id,
-                            int64_t index_id,
-                            const IndexedDBKey& user_key,
-                            const IndexedDBKey& user_primary_key);
-  static std::string EncodeMinKey(int64_t database_id,
-                                  int64_t object_store_id,
-                                  int64_t index_id);
+  CONTENT_EXPORT static std::string Encode(
+      int64_t database_id,
+      int64_t object_store_id,
+      int64_t index_id,
+      const IndexedDBKey& user_key,
+      const IndexedDBKey& user_primary_key);
+  CONTENT_EXPORT static std::string EncodeMinKey(int64_t database_id,
+                                                 int64_t object_store_id,
+                                                 int64_t index_id);
   CONTENT_EXPORT static std::string EncodeMaxKey(int64_t database_id,
                                                  int64_t object_store_id,
                                                  int64_t index_id);
@@ -483,6 +486,8 @@ class IndexDataKey {
   int64_t IndexId() const;
   std::unique_ptr<IndexedDBKey> user_key() const;
   std::unique_ptr<IndexedDBKey> primary_key() const;
+
+  CONTENT_EXPORT std::string Encode() const;
 
  private:
   int64_t database_id_;
