@@ -12,34 +12,21 @@
 
 namespace content {
 
-void ServiceWorkerContentSettingsProxyImpl::Create(
-    GURL script_url,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    blink::mojom::WorkerContentSettingsProxyRequest request) {
-  mojo::MakeStrongBinding(
-      base::WrapUnique(new ServiceWorkerContentSettingsProxyImpl(
-          url::Origin(script_url), context)),
-      std::move(request));
-}
-
 ServiceWorkerContentSettingsProxyImpl::ServiceWorkerContentSettingsProxyImpl(
-    url::Origin origin,
-    base::WeakPtr<ServiceWorkerContextCore> context)
-    : origin_(origin), context_(context) {}
+    const GURL& script_url,
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    blink::mojom::WorkerContentSettingsProxyRequest request)
+    : origin_(script_url),
+      context_(context),
+      binding_(this, std::move(request)) {}
 
 ServiceWorkerContentSettingsProxyImpl::
     ~ServiceWorkerContentSettingsProxyImpl() = default;
 
 void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
-    const url::Origin& origin,
     const base::string16& name,
     AllowIndexedDBCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!origin_.IsSameOriginWith(origin)) {
-    mojo::ReportBadMessage("Origin is invalid");
-    std::move(callback).Run(false);
-    return;
-  }
   if (origin_.unique()) {
     std::move(callback).Run(false);
     return;
@@ -55,7 +42,6 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
 }
 
 void ServiceWorkerContentSettingsProxyImpl::RequestFileSystemAccessSync(
-    const url::Origin& origin,
     RequestFileSystemAccessSyncCallback callback) {
   mojo::ReportBadMessage(
       "The FileSystem API is not exposed to service workers "

@@ -279,7 +279,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
 
   ProvideContentSettingsClientToWorker(
       worker_clients, WTF::MakeUnique<SharedWorkerContentSettingsProxy>(
-                          starter_origin, std::move(content_settings_info_)));
+                          std::move(content_settings_info_)));
 
   if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =

@@ -651,7 +651,7 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
   instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
 
   blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy_ptr_info;
-  ServiceWorkerContentSettingsProxyImpl::Create(
+  content_settings_ = base::MakeUnique<ServiceWorkerContentSettingsProxyImpl>(
       params->script_url, context_,
       mojo::MakeRequest(&content_settings_proxy_ptr_info));
 

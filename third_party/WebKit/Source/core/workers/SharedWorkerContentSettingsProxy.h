@@ -14,11 +14,10 @@ namespace blink {
 
 // SharedWorkerContentSettingsProxy provides content settings information.
 // This is created on the main thread and then called on the worker thread.
-// Each information is requested via a Mojo connection to the browser process.
+// Information is requested via a Mojo connection to the browser process.
 class SharedWorkerContentSettingsProxy : public WebContentSettingsClient {
  public:
   SharedWorkerContentSettingsProxy(
-      SecurityOrigin*,
       mojom::blink::WorkerContentSettingsProxyPtrInfo host_info);
   ~SharedWorkerContentSettingsProxy() override;
 
@@ -31,10 +30,8 @@ class SharedWorkerContentSettingsProxy : public WebContentSettingsClient {
   // that it was constructed on, this uses ThreadSpecific.
   mojom::blink::WorkerContentSettingsProxyPtr& GetService();
 
-  const RefPtr<blink::SecurityOrigin> security_origin_;
-
   // This is set on the main thread at the ctor,
-  // and moved to a thread localstorage on the worker thread
+  // and moved to thread local storage on the worker thread
   // when GetService() is called for the first time.
   mojom::blink::WorkerContentSettingsProxyPtrInfo host_info_;
 };

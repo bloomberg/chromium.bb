@@ -76,8 +76,8 @@ SharedWorkerHost::~SharedWorkerHost() {
 
 void SharedWorkerHost::Start(bool pause_on_start) {
   blink::mojom::WorkerContentSettingsProxyPtrInfo content_settings;
-  SharedWorkerContentSettingsProxyImpl::Create(
-      weak_factory_.GetWeakPtr(), mojo::MakeRequest(&content_settings));
+  content_settings_ = base::MakeUnique<SharedWorkerContentSettingsProxyImpl>(
+      instance_->url(), this, mojo::MakeRequest(&content_settings));
 
   WorkerProcessMsg_CreateWorker_Params params;
   params.url = instance_->url();

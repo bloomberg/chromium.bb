@@ -139,9 +139,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   WebSettings* settings = shadow_page_->GetSettings();
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
 
-  content_settings_client_->SetSecurityOrigin(
-      SecurityOrigin::Create(script_url));
-
   // Currently we block all mixed-content requests from a ServiceWorker.
   settings->SetStrictMixedContentChecking(true);
   settings->SetAllowRunningOfInsecureContent(false);

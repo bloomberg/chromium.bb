@@ -42,6 +42,7 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 struct EmbeddedWorkerStartParams;
+class ServiceWorkerContentSettingsProxyImpl;
 class ServiceWorkerContextCore;
 
 // This gives an interface to control one EmbeddedWorker instance, which
@@ -335,6 +336,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Used for UMA. The start time of the current start sequence step.
   base::TimeTicks step_time_;
 
+  std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstance);
