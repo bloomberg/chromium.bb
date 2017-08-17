@@ -13,7 +13,9 @@ if (is_android) {
 declare_args() {
   # Denotes the type of Cast product. This is #defined as CAST_PRODUCT_TYPE in
   # version.h. See //components/metrics/proto/cast_logs.proto for valid values.
-  if (is_android) {
+  if (is_android_arc) {
+    cast_product_type = 7  # CAST_PRODUCT_TYPE_CHROME_OS
+  } else if (is_android) {
     if (is_android_things) {
       cast_product_type = 6  # CAST_PRODUCT_TYPE_ANDROID_THINGS
     } else {
@@ -24,11 +26,14 @@ declare_args() {
   }
 }
 
-if (is_android) {
+if (is_android_arc) {
+  assert(cast_product_type == 7)
+} else if (is_android) {
   assert(cast_product_type == 4 || cast_product_type == 6)
 } else {
-  assert(cast_product_type >= 0 && cast_product_type <= 6 &&
-         cast_product_type != 4 && cast_product_type != 6)
+  assert(cast_product_type >= 0 && cast_product_type <= 7 &&
+         cast_product_type != 4 && cast_product_type != 6 &&
+         cast_product_type != 7)
 }
 
 source_set("base") {
