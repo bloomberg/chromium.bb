@@ -13,6 +13,7 @@ public class OfflinePageItem {
     private final String mUrl;
     private final long mOfflineId;
     private final ClientId mClientId;
+    private final String mTitle;
     private final String mFilePath;
     private final long mFileSize;
     private final long mCreationTimeMs;
@@ -21,11 +22,12 @@ public class OfflinePageItem {
     private final String mRequestOrigin;
 
     public OfflinePageItem(String url, long offlineId, String clientNamespace, String clientId,
-            String filePath, long fileSize, long creationTimeMs, int accessCount,
+            String title, String filePath, long fileSize, long creationTimeMs, int accessCount,
             long lastAccessTimeMs, String requestOrigin) {
         mUrl = url;
         mOfflineId = offlineId;
         mClientId = new ClientId(clientNamespace, clientId);
+        mTitle = title;
         mFilePath = filePath;
         mFileSize = fileSize;
         mCreationTimeMs = creationTimeMs;
@@ -50,6 +52,12 @@ public class OfflinePageItem {
     @VisibleForTesting
     public ClientId getClientId() {
         return mClientId;
+    }
+
+    /** @return Title of the page. */
+    @VisibleForTesting
+    public String getTitle() {
+        return mTitle;
     }
 
     /** @return File Path to the offline copy of the page. */

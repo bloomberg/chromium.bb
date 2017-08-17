@@ -604,19 +604,19 @@ public class OfflinePageBridge {
 
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
-            String url, long offlineId, String clientNamespace, String clientId, String filePath,
-            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs,
-            String requestOrigin) {
-        offlinePagesList.add(createOfflinePageItem(url, offlineId, clientNamespace, clientId,
+            String url, long offlineId, String clientNamespace, String clientId, String title,
+            String filePath, long fileSize, long creationTime, int accessCount,
+            long lastAccessTimeMs, String requestOrigin) {
+        offlinePagesList.add(createOfflinePageItem(url, offlineId, clientNamespace, clientId, title,
                 filePath, fileSize, creationTime, accessCount, lastAccessTimeMs, requestOrigin));
     }
 
     @CalledByNative
     private static OfflinePageItem createOfflinePageItem(String url, long offlineId,
-            String clientNamespace, String clientId, String filePath, long fileSize,
+            String clientNamespace, String clientId, String title, String filePath, long fileSize,
             long creationTime, int accessCount, long lastAccessTimeMs, String requestOrigin) {
-        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, filePath, fileSize,
-                creationTime, accessCount, lastAccessTimeMs, requestOrigin);
+        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, title, filePath,
+                fileSize, creationTime, accessCount, lastAccessTimeMs, requestOrigin);
     }
 
     @CalledByNative
