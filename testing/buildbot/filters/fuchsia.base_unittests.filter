@@ -35,9 +35,6 @@
 # These tests all rely on being able to set the exit code of an externally
 # terminated process, which mx_task_kill() does not support.
 # https://crbug.com/753490.
--ProcessTest.Terminate
--ProcessTest.TerminateCurrentProcessImmediatelyWithNonZeroExitCode
--ProcessTest.TerminateCurrentProcessImmediatelyWithZeroExitCode
 -ProcessTest.WaitForExitWithTimeout
 -ProcessUtilTest.GetTerminationStatusCrash
 -ProcessUtilTest.GetTerminationStatusSigKill

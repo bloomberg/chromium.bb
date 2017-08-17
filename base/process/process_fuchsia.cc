@@ -113,7 +113,7 @@ Process Process::Duplicate() const {
 
 ProcessId Process::Pid() const {
   DCHECK(IsValid());
-  return GetProcId(process_.get());
+  return GetProcId(Handle());
 }
 
 bool Process::is_current() const {
@@ -127,12 +127,12 @@ void Process::Close() {
 
 bool Process::Terminate(int exit_code, bool wait) const {
   // exit_code isn't supportable. https://crbug.com/753490.
-  mx_status_t status = mx_task_kill(process_.get());
+  mx_status_t status = mx_task_kill(Handle());
   // TODO(scottmg): Put these LOG/CHECK back to DLOG/DCHECK after
   // https://crbug.com/750756 is diagnosed.
   if (status == MX_OK && wait) {
     mx_signals_t signals;
-    status = mx_object_wait_one(process_.get(), MX_TASK_TERMINATED,
+    status = mx_object_wait_one(Handle(), MX_TASK_TERMINATED,
                                 mx_deadline_after(MX_SEC(60)), &signals);
     if (status != MX_OK) {
       LOG(ERROR) << "Error waiting for process exit: " << status;
@@ -151,6 +151,8 @@ bool Process::WaitForExit(int* exit_code) const {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
+  DCHECK(!is_current_process_);
+
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
 

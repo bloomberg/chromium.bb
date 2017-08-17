@@ -45,6 +45,7 @@ TEST_F(ProcessTest, Create) {
   SpawnChildResult spawn_child = SpawnChild("SimpleChildProcess");
   ASSERT_TRUE(spawn_child.process.IsValid());
   ASSERT_FALSE(spawn_child.process.is_current());
+  EXPECT_NE(spawn_child.process.Pid(), kNullProcessId);
   spawn_child.process.Close();
   ASSERT_FALSE(spawn_child.process.IsValid());
 }
@@ -53,6 +54,7 @@ TEST_F(ProcessTest, CreateCurrent) {
   Process process = Process::Current();
   ASSERT_TRUE(process.IsValid());
   ASSERT_TRUE(process.is_current());
+  EXPECT_NE(process.Pid(), kNullProcessId);
   process.Close();
   ASSERT_FALSE(process.IsValid());
 }
