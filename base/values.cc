@@ -245,60 +245,43 @@ const Value::ListStorage& Value::GetList() const {
   return *list_;
 }
 
-Value::dict_iterator Value::FindKey(StringPiece key) {
-  CHECK(is_dict());
-  return dict_iterator(dict_->find(key));
+Value* Value::FindKey(StringPiece key) {
+  return const_cast<Value*>(static_cast<const Value*>(this)->FindKey(key));
 }
 
-Value::const_dict_iterator Value::FindKey(StringPiece key) const {
+const Value* Value::FindKey(StringPiece key) const {
   CHECK(is_dict());
-  return const_dict_iterator(dict_->find(key));
+  auto found = dict_->find(key);
+  if (found == dict_->end())
+    return nullptr;
+  return found->second.get();
 }
 
-Value::dict_iterator Value::FindKeyOfType(StringPiece key, Type type) {
-  CHECK(is_dict());
-  auto iter = dict_->find(key);
-  return dict_iterator((iter != dict_->end() && iter->second->IsType(type))
-                           ? iter
-                           : dict_->end());
+Value* Value::FindKeyOfType(StringPiece key, Type type) {
+  return const_cast<Value*>(
+      static_cast<const Value*>(this)->FindKeyOfType(key, type));
 }
 
-Value::const_dict_iterator Value::FindKeyOfType(StringPiece key,
-                                                Type type) const {
-  CHECK(is_dict());
-  auto iter = dict_->find(key);
-  return const_dict_iterator(
-      (iter != dict_->end() && iter->second->IsType(type)) ? iter
-                                                           : dict_->end());
+const Value* Value::FindKeyOfType(StringPiece key, Type type) const {
+  const Value* result = FindKey(key);
+  if (!result || result->type() != type)
+    return nullptr;
+  return result;
 }
 
-Value::dict_iterator Value::SetKey(StringPiece key, Value value) {
+Value* Value::SetKey(StringPiece key, Value value) {
   CHECK(is_dict());
-  auto iter = dict_->find(key);
-  if (iter != dict_->end()) {
-    *iter->second = std::move(value);
-    return dict_iterator(iter);
-  }
-
-  return dict_iterator(
-      dict_->emplace(key.as_string(), std::make_unique<Value>(std::move(value)))
-          .first);
+  return ((*dict_)[key.as_string()] = std::make_unique<Value>(std::move(value)))
+      .get();
 }
 
-Value::dict_iterator Value::SetKey(std::string&& key, Value value) {
+Value* Value::SetKey(std::string&& key, Value value) {
   CHECK(is_dict());
-  auto iter = dict_->find(key);
-  if (iter != dict_->end()) {
-    *iter->second = std::move(value);
-    return dict_iterator(iter);
-  }
-
-  return dict_iterator(
-      dict_->emplace(std::move(key), std::make_unique<Value>(std::move(value)))
-          .first);
+  return ((*dict_)[std::move(key)] = std::make_unique<Value>(std::move(value)))
+      .get();
 }
 
-Value::dict_iterator Value::SetKey(const char* key, Value value) {
+Value* Value::SetKey(const char* key, Value value) {
   return SetKey(StringPiece(key), std::move(value));
 }
 
@@ -309,13 +292,8 @@ Value* Value::FindPath(std::initializer_list<const char*> path) {
 const Value* Value::FindPath(std::initializer_list<const char*> path) const {
   const Value* cur = this;
   for (const char* component : path) {
-    if (!cur->is_dict())
+    if (!cur->is_dict() || (cur = cur->FindKey(component)) == nullptr)
       return nullptr;
-
-    auto found = cur->FindKey(component);
-    if (found == cur->DictEnd())
-      return nullptr;
-    cur = &found->second;
   }
   return cur;
 }
@@ -361,17 +339,7 @@ Value* Value::SetPath(std::initializer_list<const char*> path, Value value) {
   // "cur" will now contain the last dictionary to insert or replace into.
   if (!cur->is_dict())
     return nullptr;
-  return &cur->SetKey(*cur_path, std::move(value))->second;
-}
-
-Value::dict_iterator Value::DictEnd() {
-  CHECK(is_dict());
-  return dict_iterator(dict_->end());
-}
-
-Value::const_dict_iterator Value::DictEnd() const {
-  CHECK(is_dict());
-  return const_dict_iterator(dict_->end());
+  return cur->SetKey(*cur_path, std::move(value));
 }
 
 Value::dict_iterator_proxy Value::DictItems() {

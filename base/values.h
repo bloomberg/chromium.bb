@@ -138,38 +138,41 @@ class BASE_EXPORT Value {
   ListStorage& GetList();
   const ListStorage& GetList() const;
 
-  using dict_iterator = detail::dict_iterator;
-  using const_dict_iterator = detail::const_dict_iterator;
-  using dict_iterator_proxy = detail::dict_iterator_proxy;
-  using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;
-
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
-  // an iterator to the element. Otherwise the end iterator of the dictionary is
-  // returned. Callers are expected to compare the returned iterator against
-  // |DictEnd()| in order to determine whether |key| was present.
+  // a pointer to the element. Otherwise it returns nullptr.
+  // returned. Callers are expected to perform a check against null before using
+  // the pointer.
   // Note: This fatally asserts if type() is not Type::DICTIONARY.
-  dict_iterator FindKey(StringPiece key);
-  const_dict_iterator FindKey(StringPiece key) const;
+  //
+  // Example:
+  //   auto* found = FindKey("foo");
+  Value* FindKey(StringPiece key);
+  const Value* FindKey(StringPiece key) const;
 
   // |FindKeyOfType| is similar to |FindKey|, but it also requires the found
   // value to have type |type|. If no type is found, or the found value is of a
-  // different type the end iterator of the dictionary is returned.
-  // Callers are expected to compare the returned iterator against |DictEnd()|
-  // in order to determine whether |key| was present and of the correct |type|.
+  // different type nullptr is returned.
+  // Callers are expected to perform a check against null before using the
+  // pointer.
   // Note: This fatally asserts if type() is not Type::DICTIONARY.
-  dict_iterator FindKeyOfType(StringPiece key, Type type);
-  const_dict_iterator FindKeyOfType(StringPiece key, Type type) const;
+  //
+  // Example:
+  //   auto* found = FindKey("foo", Type::DOUBLE);
+  Value* FindKeyOfType(StringPiece key, Type type);
+  const Value* FindKeyOfType(StringPiece key, Type type) const;
 
   // |SetKey| looks up |key| in the underlying dictionary and sets the mapped
   // value to |value|. If |key| could not be found, a new element is inserted.
-  // An iterator to the modified item is returned.
+  // A pointer to the modified item is returned.
   // Note: This fatally asserts if type() is not Type::DICTIONARY.
-  dict_iterator SetKey(StringPiece key, Value value);
-  // This overload can result in a performance improvement if |key| is not yet
-  // present.
-  dict_iterator SetKey(std::string&& key, Value value);
+  //
+  // Example:
+  //   SetKey("foo", std::move(myvalue));
+  Value* SetKey(StringPiece key, Value value);
+  // This overload results in a performance improvement for std::string&&.
+  Value* SetKey(std::string&& key, Value value);
   // This overload is necessary to avoid ambiguity for const char* arguments.
-  dict_iterator SetKey(const char* key, Value value);
+  Value* SetKey(const char* key, Value value);
 
   // Searches a hierarchy of dictionary values for a given value. If a path
   // of dictionaries exist, returns the item at that path. If any of the path
@@ -180,10 +183,10 @@ class BASE_EXPORT Value {
   //
   // Implementation note: This can't return an iterator because the iterator
   // will actually be into another Value, so it can't be compared to iterators
-  // from thise one (in particular, the DictEnd() iterator).
+  // from this one (in particular, the DictItems().end() iterator).
   //
   // Example:
-  //   auto found = FindPath({"foo", "bar"});
+  //   auto* found = FindPath({"foo", "bar"});
   Value* FindPath(std::initializer_list<const char*> path);
   const Value* FindPath(std::initializer_list<const char*> path) const;
 
@@ -205,12 +208,8 @@ class BASE_EXPORT Value {
   //   value.SetPath({"foo", "bar"}, std::move(myvalue));
   Value* SetPath(std::initializer_list<const char*> path, Value value);
 
-  // |DictEnd| returns the end iterator of the underlying dictionary. It is
-  // intended to be used with |FindKey| in order to determine whether a given
-  // key is present in the dictionary.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
-  dict_iterator DictEnd();
-  const_dict_iterator DictEnd() const;
+  using dict_iterator_proxy = detail::dict_iterator_proxy;
+  using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;
 
   // |DictItems| returns a proxy object that exposes iterators to the underlying
   // dictionary. These are intended for iteration over all items in the
