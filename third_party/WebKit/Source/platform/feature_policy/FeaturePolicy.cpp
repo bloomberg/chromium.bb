@@ -87,13 +87,8 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
 bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return false;
-
   switch (feature) {
-    // TODO(loonybear): Re-enabled fullscreen in feature policy once tests have
-    // been updated.
-    // crbug.com/666761
     case WebFeaturePolicyFeature::kFullscreen:
-      return false;
     case WebFeaturePolicyFeature::kPayment:
     case WebFeaturePolicyFeature::kUsb:
       return true;
