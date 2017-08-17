@@ -23,6 +23,10 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
   virtual void OnDeviceListsComplete() {}
   virtual void OnStylusStateChanged(StylusState state) {}
 
+  // Called when ConfigureTouchDevices() is called. This indicates the
+  // transform, scale and/or device<->display mapping has changed.
+  virtual void OnTouchDeviceAssociationChanged() {}
+
  protected:
   InputDeviceEventObserver() {}
 };
