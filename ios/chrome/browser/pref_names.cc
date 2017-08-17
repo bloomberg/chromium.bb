@@ -100,10 +100,6 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
-// Boolean that is true when Suggest support is enabled.
-const char kContentSuggestionsRemoteEnabled[] =
-    "content_suggestions.remote_enabled";
-
 // A boolean pref set to true if prediction of network actions is allowed.
 // Actions include prerendering of web pages.
 // NOTE: The "dns_prefetching.enabled" value is used so that historical user

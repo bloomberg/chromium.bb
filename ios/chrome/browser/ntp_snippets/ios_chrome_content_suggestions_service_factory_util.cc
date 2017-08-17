@@ -182,7 +182,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
 
-  std::string pref_name = prefs::kContentSuggestionsRemoteEnabled;
+  std::string pref_name = prefs::kSearchSuggestEnabled;
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
