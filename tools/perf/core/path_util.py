@@ -32,6 +32,10 @@ def GetPerfContribDir():
   return os.path.join(GetPerfDir(), 'contrib')
 
 
+def GetAndroidPylibDir():
+  return os.path.join(GetChromiumSrcDir(), 'build', 'android')
+
+
 def AddTelemetryToPath():
   telemetry_path = GetTelemetryDir()
   if telemetry_path not in sys.path:
@@ -60,3 +64,9 @@ def AddWprToPath():
 def GetWprGoDir():
   return os.path.join(
       GetChromiumSrcDir(), 'third_party', 'catapult', 'web_page_replay_go')
+
+
+def AddAndroidPylibToPath():
+  android_pylib_path = GetAndroidPylibDir()
+  if android_pylib_path not in sys.path:
+    sys.path.insert(1, android_pylib_path)

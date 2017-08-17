@@ -17,6 +17,7 @@ from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
+from devil.android.sdk import shared_prefs
 from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
@@ -211,8 +212,11 @@ class LocalDeviceInstrumentationTestRun(
 
       @trace_event.traced
       def edit_shared_prefs():
-        shared_preference_utils.ApplySharedPreferenceSettings(
-            dev, self._test_instance.edit_shared_prefs)
+        for setting in self._test_instance.edit_shared_prefs:
+          shared_pref = shared_prefs.SharedPrefs(dev, setting['package'],
+                                                 setting['filename'])
+          shared_preference_utils.ApplySharedPreferenceSetting(
+              shared_pref, setting)
 
       @instrumentation_tracing.no_tracing
       def push_test_data():
