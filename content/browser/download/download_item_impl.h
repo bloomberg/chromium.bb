@@ -756,6 +756,9 @@ class CONTENT_EXPORT DownloadItemImpl
   // CONTENT_LENGTH_MISMATCH.
   int64_t received_bytes_at_length_mismatch_ = -1;
 
+  // Check whether the download item is updating its observers.
+  bool is_updating_observers_;
+
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);

@@ -124,6 +124,38 @@ int GetAutoResumptionSizeLimit() {
              : kDefaultAutoResumptionSizeLimit;
 }
 
+// Helper class for retrieving a DownloadManager.
+class DownloadManagerGetter : public DownloadManager::Observer {
+ public:
+  explicit DownloadManagerGetter(DownloadManager* manager) : manager_(manager) {
+    manager_->AddObserver(this);
+  }
+
+  ~DownloadManagerGetter() override {
+    if (manager_)
+      manager_->RemoveObserver(this);
+  }
+
+  void ManagerGoingDown(DownloadManager* manager) override {
+    manager_ = nullptr;
+  }
+
+  DownloadManager* manager() { return manager_; }
+
+ private:
+  DownloadManager* manager_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadManagerGetter);
+};
+
+void RemoveDownloadItem(std::unique_ptr<DownloadManagerGetter> getter,
+                        const std::string& guid) {
+  if (!getter->manager())
+    return;
+  DownloadItem* item = getter->manager()->GetDownloadByGuid(guid);
+  if (item)
+    item->Remove();
+}
+
 }  // namespace
 
 static void OnAcquirePermissionResult(
@@ -392,7 +424,14 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 void DownloadController::OnDangerousDownload(DownloadItem* item) {
   WebContents* web_contents = item->GetWebContents();
   if (!web_contents) {
-    item->Remove();
+    auto download_manager_getter = base::MakeUnique<DownloadManagerGetter>(
+        BrowserContext::GetDownloadManager(item->GetBrowserContext()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&RemoveDownloadItem,
+                       std::move(download_manager_getter),
+                       item->GetGuid()));
+    item->RemoveObserver(this);
     return;
   }
 
