@@ -42,7 +42,6 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
 
   bool AreDeviceListsComplete() const override;
   bool AreTouchscreensEnabled() const override;
-  bool AreTouchscreenTargetDisplaysValid() const override;
 
   void AddObserver(ui::InputDeviceEventObserver* observer) override;
   void RemoveObserver(ui::InputDeviceEventObserver* observer) override;
@@ -57,8 +56,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void OnKeyboardDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
   void OnTouchscreenDeviceConfigurationChanged(
-      const std::vector<ui::TouchscreenDevice>& devices,
-      bool are_touchscreen_target_displays_valid) override;
+      const std::vector<ui::TouchscreenDevice>& devices) override;
   void OnMouseDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
   void OnTouchpadDeviceConfigurationChanged(
@@ -67,8 +65,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
       const std::vector<ui::InputDevice>& keyboard_devices,
       const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
       const std::vector<ui::InputDevice>& mouse_devices,
-      const std::vector<ui::InputDevice>& touchpad_devices,
-      bool are_touchscreen_target_displays_valid) override;
+      const std::vector<ui::InputDevice>& touchpad_devices) override;
   void OnStylusStateChanged(StylusState state) override;
 
  private:
@@ -83,7 +80,6 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   std::vector<ui::InputDevice> mouse_devices_;
   std::vector<ui::InputDevice> touchpad_devices_;
   bool device_lists_complete_ = false;
-  bool are_touchscreen_target_displays_valid_ = false;
 
   // List of in-process observers.
   base::ObserverList<ui::InputDeviceEventObserver> observers_;

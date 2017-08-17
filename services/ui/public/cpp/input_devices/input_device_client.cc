@@ -49,10 +49,6 @@ bool InputDeviceClient::AreTouchscreensEnabled() const {
   return true;
 }
 
-bool InputDeviceClient::AreTouchscreenTargetDisplaysValid() const {
-  return are_touchscreen_target_displays_valid_;
-}
-
 void InputDeviceClient::AddObserver(ui::InputDeviceEventObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -81,11 +77,8 @@ void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(
 }
 
 void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
-    const std::vector<ui::TouchscreenDevice>& devices,
-    bool are_touchscreen_target_displays_valid) {
+    const std::vector<ui::TouchscreenDevice>& devices) {
   touchscreen_devices_ = devices;
-  are_touchscreen_target_displays_valid_ =
-      are_touchscreen_target_displays_valid;
   for (auto& observer : observers_)
     observer.OnTouchscreenDeviceConfigurationChanged();
 }
@@ -108,17 +101,12 @@ void InputDeviceClient::OnDeviceListsComplete(
     const std::vector<ui::InputDevice>& keyboard_devices,
     const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
     const std::vector<ui::InputDevice>& mouse_devices,
-    const std::vector<ui::InputDevice>& touchpad_devices,
-    bool are_touchscreen_target_displays_valid) {
-  are_touchscreen_target_displays_valid_ =
-      are_touchscreen_target_displays_valid;
+    const std::vector<ui::InputDevice>& touchpad_devices) {
   // Update the cached device lists if the received list isn't empty.
   if (!keyboard_devices.empty())
     OnKeyboardDeviceConfigurationChanged(keyboard_devices);
-  if (!touchscreen_devices.empty()) {
-    OnTouchscreenDeviceConfigurationChanged(
-        touchscreen_devices, are_touchscreen_target_displays_valid);
-  }
+  if (!touchscreen_devices.empty())
+    OnTouchscreenDeviceConfigurationChanged(touchscreen_devices);
   if (!mouse_devices.empty())
     OnMouseDeviceConfigurationChanged(mouse_devices);
   if (!touchpad_devices.empty())

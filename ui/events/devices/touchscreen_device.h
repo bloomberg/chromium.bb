@@ -39,9 +39,6 @@ struct EVENTS_DEVICES_EXPORT TouchscreenDevice : public InputDevice {
   // True if the specified touchscreen device is stylus capable.
   bool is_stylus = false;
   // Id of the display the touch device targets.
-  // NOTE: when obtaining TouchscreenDevice from InputDeviceManager this value
-  // may not have been updated. See
-  // InputDeviceManager::AreTouchscreenTargetDisplaysValid() for details.
   int64_t target_display_id = display::kInvalidDisplayId;
 };
 

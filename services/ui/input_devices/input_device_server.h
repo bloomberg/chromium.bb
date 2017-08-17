@@ -48,13 +48,10 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   void OnTouchpadDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
   void OnStylusStateChanged(StylusState state) override;
-  void OnTouchDeviceAssociationChanged() override;
 
  private:
   // Sends the current state of all input-devices to an observer.
   void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
-
-  void CallOnTouchscreenDeviceConfigurationChanged();
 
   void BindInputDeviceServerRequest(
       mojom::InputDeviceServerRequest request,

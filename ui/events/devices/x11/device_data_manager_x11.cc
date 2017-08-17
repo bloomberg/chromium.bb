@@ -146,7 +146,7 @@ bool DeviceDataManagerX11::IsTouchDataType(const int type) {
 
 // static
 void DeviceDataManagerX11::CreateInstance() {
-  if (HasInstance())
+  if (instance())
     return;
 
   DeviceDataManagerX11* device_data_manager = new DeviceDataManagerX11();

@@ -1,6 +1,6 @@
 specific_include_rules = {
   # TODO(mash): Remove. http://crbug.com/720917.
-  "oobe_display_chooser_unittest.cc": [
+  "oobe_display_chooser\.*": [
     "+ui/events/devices/device_data_manager.h",
   ]
 }

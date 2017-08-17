@@ -166,9 +166,9 @@ include_rules = [
   "+ui/events/devices/device_hotplug_event_observer.h",
   "+ui/events/devices/input_device.h",
   "+ui/events/devices/input_device_event_observer.h",
-  "+ui/events/devices/input_device_manager.h",
   "+ui/events/devices/stylus_state.h",
   "+ui/events/devices/touchscreen_device.h",
+  "+ui/events/devices/input_device_manager.h",
 
   # Only used by X11 (non-ChromeOS) code, which can use X directly.
   "+ui/events/devices/x11",
