@@ -388,11 +388,10 @@ void InstallableManager::WorkOnTask() {
     // again.
     if (worker_error() == NO_MATCHING_SERVICE_WORKER)
       worker_ = base::MakeUnique<ServiceWorkerProperty>();
+
     task_queue_.Next();
 
-    if (task_queue_.IsEmpty())
-      task_queue_.is_active_ = false;
-    else
+    if (!task_queue_.IsEmpty())
       StartNextTask();
 
     return;
@@ -522,9 +521,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         params.wait_for_worker = false;
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
-        if (task_queue_.IsEmpty())
-          task_queue_.is_active_ = false;
-        else
+        if (!task_queue_.IsEmpty())
           StartNextTask();
 
         return;
@@ -667,6 +664,8 @@ void InstallableManager::TaskQueue::PauseCurrent() {
 void InstallableManager::TaskQueue::Next() {
   DCHECK(!tasks_.empty());
   tasks_.erase(tasks_.begin());
+  if (IsEmpty())
+    is_active_ = false;
 }
 
 bool InstallableManager::TaskQueue::IsEmpty() const {
