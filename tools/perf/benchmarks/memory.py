@@ -78,9 +78,6 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     SetExtraBrowserOptionsForMemoryMeasurement(options)
 
 
-@benchmark.Enabled('mac')
-@benchmark.Enabled('win')
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['erikchen@chromium.org'])
 class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
   """Measure memory usage on trivial sites."""
@@ -108,11 +105,11 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE], 'Desktop Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')  # catapult:#3176
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Measure foreground/background memory on top 10 mobile page set.
@@ -134,7 +131,8 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
     return StoryExpectations()
 
 
@@ -195,7 +193,6 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
     return StoryExpectations()
 
 
-@benchmark.Enabled('has tabs')  # http://crbug.com/612210
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
@@ -213,5 +210,7 @@ class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ANDROID_WEBVIEW],
+            'Browser must have tabs. crbug.com/612210')
     return StoryExpectations()

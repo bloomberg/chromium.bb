@@ -5,7 +5,6 @@
 from core import perf_benchmark
 from measurements import startup
 import page_sets
-from telemetry import benchmark
 from telemetry import story
 
 
@@ -50,7 +49,7 @@ class StartupColdBlankPage(_StartupCold):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_ANDROID], 'Non Android benchmark')
+            [story.expectations.ALL_ANDROID], 'Desktop Benchmark')
     return StoryExpectations()
 
 
@@ -67,11 +66,10 @@ class StartupWarmBlankPage(_StartupWarm):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_ANDROID], 'Non Android benchmark')
+            [story.expectations.ALL_ANDROID], 'Desktop Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Disabled('content-shell')  # No pregenerated profiles.
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
@@ -91,14 +89,11 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_ANDROID], 'Desktop benchmark')
         self.DisableStory('blank_page.html', [story.expectations.ALL_MAC],
                           'crbug.com/747024')
     return StoryExpectations()
 
 
-@benchmark.Disabled('content-shell')  # No pregenerated profiles.
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
@@ -119,5 +114,5 @@ class StartupLargeProfileWarmBlankPage(_StartupWarm):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_ANDROID], 'Desktop benchmark')
+            [story.expectations.ALL_ANDROID], 'Desktop Benchmark')
     return StoryExpectations()

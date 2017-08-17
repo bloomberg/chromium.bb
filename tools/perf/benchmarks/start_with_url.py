@@ -57,7 +57,7 @@ class StartWithUrlColdTBM(_StartupPerfBenchmark):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_DESKTOP], 'Mobile benchmark')
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
@@ -87,7 +87,7 @@ class StartWithUrlWarmTBM(_StartupPerfBenchmark):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_DESKTOP], 'Mobile benchmark')
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
