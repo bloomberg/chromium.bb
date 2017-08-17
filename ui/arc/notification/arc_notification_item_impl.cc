@@ -100,7 +100,6 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()));
   notification->set_timestamp(base::Time::FromJavaTime(data->time));
 
-  pinned_ = rich_data.pinned;
   expand_state_ = data->expand_state;
   shown_contents_ = data->shown_contents;
 
@@ -173,10 +172,6 @@ void ArcNotificationItemImpl::DecrementWindowRefCount() {
   --window_ref_count_;
   if (window_ref_count_ == 0)
     manager_->CloseNotificationWindow(notification_key_);
-}
-
-bool ArcNotificationItemImpl::GetPinned() const {
-  return pinned_;
 }
 
 const gfx::ImageSkia& ArcNotificationItemImpl::GetSnapshot() const {

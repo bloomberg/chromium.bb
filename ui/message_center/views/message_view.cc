@@ -91,7 +91,7 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
   display_source_ = notification.display_source();
   pinned_ = notification.pinned();
   accessible_name_ = CreateAccessibleName(notification);
-  slide_out_controller_.set_enabled(!notification.pinned());
+  slide_out_controller_.set_enabled(!GetPinned());
 }
 
 // static
@@ -229,6 +229,10 @@ void MessageView::OnSlideChanged() {}
 
 void MessageView::OnSlideOut() {
   controller_->RemoveNotification(notification_id_, true);  // By user.
+}
+
+bool MessageView::GetPinned() const {
+  return pinned_ && !force_disable_pinned_;
 }
 
 void MessageView::OnCloseButtonPressed() {

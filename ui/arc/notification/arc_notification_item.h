@@ -65,8 +65,6 @@ class ArcNotificationItem {
   // is sent when |window_ref_count_| goes from one to zero.
   virtual void DecrementWindowRefCount() = 0;
 
-  // Returns the current pinned state.
-  virtual bool GetPinned() const = 0;
   // Returns the current snapshot.
   virtual const gfx::ImageSkia& GetSnapshot() const = 0;
   // Returns the current expand state.

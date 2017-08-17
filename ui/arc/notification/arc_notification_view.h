@@ -36,6 +36,8 @@ class ArcNotificationView : public message_center::MessageView {
   void OnContentBlured();
 
   // Overridden from MessageView:
+  void UpdateWithNotification(
+      const message_center::Notification& notification) override;
   void SetDrawBackgroundAsActive(bool active) override;
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
@@ -61,6 +63,10 @@ class ArcNotificationView : public message_center::MessageView {
  private:
   friend class ArcNotificationContentViewTest;
   friend class ArcNotificationViewTest;
+
+  // TODO(yoshiki): Mmove this to message_center::MessageView.
+  void UpdateControlButtonsVisibilityWithNotification(
+      const message_center::Notification& notification);
 
   // The view for the custom content. Owned by view hierarchy.
   views::View* contents_view_ = nullptr;
