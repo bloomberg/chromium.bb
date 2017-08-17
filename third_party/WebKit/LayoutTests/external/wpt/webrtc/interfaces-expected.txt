@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 498 tests; 195 PASS, 303 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 498 tests; 203 PASS, 295 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Main test driver 
 PASS Test driver for asyncInitCertificate 
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: OperationError: TEST_ERROR Reached unreachable code
@@ -64,7 +64,7 @@ FAIL RTCPeerConnection interface: operation getTransceivers() assert_own_propert
 PASS RTCPeerConnection interface: operation addTrack(MediaStreamTrack, MediaStream) 
 PASS RTCPeerConnection interface: operation removeTrack(RTCRtpSender) 
 FAIL RTCPeerConnection interface: operation addTransceiver([object Object],[object Object], RTCRtpTransceiverInit) assert_own_property: interface prototype object missing non-static operation expected property "addTransceiver" missing
-FAIL RTCPeerConnection interface: attribute ontrack assert_true: The prototype object must have a property "ontrack" expected true got false
+PASS RTCPeerConnection interface: attribute ontrack 
 FAIL RTCPeerConnection interface: attribute sctp assert_true: The prototype object must have a property "sctp" expected true got false
 PASS RTCPeerConnection interface: operation createDataChannel(USVString, RTCDataChannelInit) 
 PASS RTCPeerConnection interface: attribute ondatachannel 
@@ -131,7 +131,7 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 PASS RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on new RTCPeerConnection() with too few arguments must throw TypeError 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTransceiver([object Object],[object Object], RTCRtpTransceiverInit)" with the proper type assert_inherits: property "addTransceiver" not found in prototype chain
 FAIL RTCPeerConnection interface: calling addTransceiver([object Object],[object Object], RTCRtpTransceiverInit) on new RTCPeerConnection() with too few arguments must throw TypeError assert_inherits: property "addTransceiver" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type assert_inherits: property "ontrack" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "sctp" with the proper type assert_inherits: property "sctp" not found in prototype chain
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "createDataChannel(USVString, RTCDataChannelInit)" with the proper type 
 PASS RTCPeerConnection interface: calling createDataChannel(USVString, RTCDataChannelInit) on new RTCPeerConnection() with too few arguments must throw TypeError 
@@ -371,15 +371,15 @@ FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit propert
 FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit property "onstatechange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit property "ongatheringstatechange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCIceTransport interface: idlTestObjects.iceTransport must inherit property "onselectedcandidatepairchange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL RTCTrackEvent interface: existence and properties of interface object assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface object length assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface object name assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: attribute receiver assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: attribute track assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: attribute streams assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
-FAIL RTCTrackEvent interface: attribute transceiver assert_own_property: self does not have own property "RTCTrackEvent" expected property "RTCTrackEvent" missing
+FAIL RTCTrackEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCTrackEvent interface object length 
+PASS RTCTrackEvent interface object name 
+FAIL RTCTrackEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCTrackEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS RTCTrackEvent interface: attribute receiver 
+PASS RTCTrackEvent interface: attribute track 
+PASS RTCTrackEvent interface: attribute streams 
+FAIL RTCTrackEvent interface: attribute transceiver assert_true: The prototype object must have a property "transceiver" expected true got false
 FAIL RTCTrackEvent must be primary interface of initTrackEvent() assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: pc.addTransceiver is not a function"
 FAIL Stringification of initTrackEvent() assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: pc.addTransceiver is not a function"
 FAIL RTCTrackEvent interface: initTrackEvent() must inherit property "receiver" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: pc.addTransceiver is not a function"

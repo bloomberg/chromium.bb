@@ -19,7 +19,7 @@ MockWebRTCPeerConnectionHandlerClient()
       .WillByDefault(
           testing::Invoke(this, &MockWebRTCPeerConnectionHandlerClient::
                                     didGenerateICECandidateWorker));
-  ON_CALL(*this, DidAddRemoteStream(_))
+  ON_CALL(*this, DidAddRemoteStream(_, _))
       .WillByDefault(testing::Invoke(
           this,
           &MockWebRTCPeerConnectionHandlerClient::didAddRemoteStreamWorker));
@@ -40,7 +40,9 @@ void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didAddRemoteStreamWorker(
-    const blink::WebMediaStream& stream_descriptor) {
+    const blink::WebMediaStream& stream_descriptor,
+    blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>*
+        stream_web_rtp_receivers) {
   remote_steam_ = stream_descriptor;
 }
 

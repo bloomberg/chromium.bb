@@ -31,13 +31,17 @@
 #ifndef WebRTCPeerConnectionHandlerClient_h
 #define WebRTCPeerConnectionHandlerClient_h
 
+#include <memory>
+
 #include "WebCommon.h"
+#include "WebVector.h"
 
 namespace blink {
 
 class WebMediaStream;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
+class WebRTCRtpReceiver;
 
 class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
@@ -76,7 +80,15 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual void DidChangeSignalingState(SignalingState) = 0;
   virtual void DidChangeICEGatheringState(ICEGatheringState) = 0;
   virtual void DidChangeICEConnectionState(ICEConnectionState) = 0;
-  virtual void DidAddRemoteStream(const WebMediaStream&) = 0;
+  // Using pointer for the receivers argument instead of value due to MOCK-macro
+  // being incompatible with having to move the vector. This function may take
+  // ownership of all receivers in the vector.
+  // TODO(hbos): Move away from events of remote streams being added/removed
+  // towards events of remote tracks being added/removed.
+  // https://crbug.com/741619, 741618
+  virtual void DidAddRemoteStream(
+      const WebMediaStream&,
+      WebVector<std::unique_ptr<WebRTCRtpReceiver>>*) = 0;
   virtual void DidRemoveRemoteStream(const WebMediaStream&) = 0;
   virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;

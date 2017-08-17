@@ -81,7 +81,10 @@ promise_test(function() {
       // 2 receivers per stream, one for audio and one for video
       assert_equals(receivers.size, 4);
 
-      removeRemoteStreamsFromLocalStreams(pc, [ pc.getLocalStreams()[0] ]);
+      return removeRemoteStreamsFromLocalStreams(
+          pc, [ pc.getLocalStreams()[0] ]);
+    })
+    .then(function() {
       verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, true, true);
       verifyRemoteTracksHaveReceivers(pc);
       // Make sure object identities are preserved between calls.
@@ -109,11 +112,13 @@ promise_test(function() {
         receivers.add(pc.getReceivers()[i]);
       assert_equals(receivers.size, 6);
 
-      removeRemoteStreamsFromLocalStreams(pc, pc.getLocalStreams());
+      return removeRemoteStreamsFromLocalStreams(pc, pc.getLocalStreams());
+    })
+    .then(function() {
       assert_equals(pc.getRemoteStreams().length, 0);
       assert_equals(pc.getReceivers().length, 0);
     });
-}, 'pc.getReceivers() for streams being added and removed.');
+}, 'getReceivers() for streams being added and removed.');
 
 // |RTCRtpReceiver::getContributingSources| is mocked to update the contributing
 // sources with a predictable pattern, see

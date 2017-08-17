@@ -337,6 +337,33 @@ class MockWebRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   size_t num_packets_;
 };
 
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>
+GetReceiversOfStream(const blink::WebMediaStream& remote_web_stream,
+                     std::map<std::string, uintptr_t>* id_by_track) {
+  std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers;
+  blink::WebVector<blink::WebMediaStreamTrack> remote_tracks;
+  remote_web_stream.AudioTracks(remote_tracks);
+  for (const auto& remote_track : remote_tracks) {
+    receivers.push_back(
+        std::unique_ptr<blink::WebRTCRtpReceiver>(new MockWebRTCRtpReceiver(
+            GetIDByTrack(remote_track.Id().Utf8(), id_by_track),
+            remote_track)));
+  }
+  remote_web_stream.VideoTracks(remote_tracks);
+  for (const auto& remote_track : remote_tracks) {
+    receivers.push_back(
+        std::unique_ptr<blink::WebRTCRtpReceiver>(new MockWebRTCRtpReceiver(
+            GetIDByTrack(remote_track.Id().Utf8(), id_by_track),
+            remote_track)));
+  }
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> result(
+      receivers.size());
+  for (size_t i = 0; i < receivers.size(); ++i) {
+    result[i] = std::move(receivers[i]);
+  }
+  return result;
+}
+
 }  // namespace
 
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler()
@@ -458,8 +485,13 @@ void MockWebRTCPeerConnectionHandler::SetRemoteDescription(
     const WebRTCVoidRequest& request,
     const WebRTCSessionDescription& remote_description) {
   if (!remote_description.IsNull() && remote_description.Sdp() == "remote") {
-    UpdateRemoteStreams();
     remote_description_ = remote_description;
+    // This ensures the promise is resolved before the remote stream event is
+    // fired. This may change in the future, see
+    // https://github.com/w3c/webrtc-pc/issues/1508.
+    interfaces_->GetDelegate()->PostTask(
+        base::Bind(&MockWebRTCPeerConnectionHandler::UpdateRemoteStreams,
+                   weak_factory_.GetWeakPtr()));
     PostRequestResult(request);
   } else
     PostRequestFailure(request);
@@ -537,7 +569,9 @@ void MockWebRTCPeerConnectionHandler::UpdateRemoteStreams() {
     blink::WebMediaStream new_remote_stream;
     new_remote_stream.Initialize(remote_audio_tracks, remote_video_tracks);
     remote_streams_[added_it->first] = new_remote_stream;
-    client_->DidAddRemoteStream(new_remote_stream);
+    blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers =
+        GetReceiversOfStream(new_remote_stream, &id_by_track_);
+    client_->DidAddRemoteStream(new_remote_stream, &receivers);
     ++added_it;
   }
 }
@@ -690,20 +724,8 @@ MockWebRTCPeerConnectionHandler::GetReceivers() {
   std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers;
   for (const auto& pair : remote_streams_) {
     const auto& remote_stream = pair.second;
-    blink::WebVector<blink::WebMediaStreamTrack> remote_tracks;
-    remote_stream.AudioTracks(remote_tracks);
-    for (const auto& remote_track : remote_tracks) {
-      receivers.push_back(
-          std::unique_ptr<blink::WebRTCRtpReceiver>(new MockWebRTCRtpReceiver(
-              GetIDByTrack(remote_track.Id().Utf8(), &id_by_track_),
-              remote_track)));
-    }
-    remote_stream.VideoTracks(remote_tracks);
-    for (const auto& remote_track : remote_tracks) {
-      receivers.push_back(
-          std::unique_ptr<blink::WebRTCRtpReceiver>(new MockWebRTCRtpReceiver(
-              GetIDByTrack(remote_track.Id().Utf8(), &id_by_track_),
-              remote_track)));
+    for (auto& receiver : GetReceiversOfStream(remote_stream, &id_by_track_)) {
+      receivers.push_back(std::move(receiver));
     }
   }
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> web_vector(

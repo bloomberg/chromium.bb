@@ -236,6 +236,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const FirstSessionDescription& local,
       const FirstSessionDescription& remote);
 
+  std::unique_ptr<blink::WebRTCRtpReceiver> GetReceiverForTrack(
+      rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver);
+
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,

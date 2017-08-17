@@ -246,6 +246,7 @@
     "touchend",
     "touchmove",
     "touchstart",
+    "track",
     "transitionend",
     "typechange",
     "unhandledrejection",

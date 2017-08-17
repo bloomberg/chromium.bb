@@ -55,6 +55,9 @@ var gOpusDtx = false;
 /** @private */
 var gNegotiationNeededCount = 0;
 
+/** @private */
+var gTrackEvents = [];
+
 // Public interface to tests. These are expected to be called with
 // ExecuteJavascript invocations from the browser tests and will return answers
 // through the DOM automation controller.
@@ -480,6 +483,29 @@ function getNegotiationNeededCount() {
   }, 0);
 }
 
+/**
+ * Gets the track and stream IDs of each "ontrack" event that has been fired on
+ * the peer connection in chronological order.
+ *
+ * Returns "ok-" followed by a series of space-separated
+ * "RTCTrackEvent <track id> <stream ids>".
+ */
+function getTrackEvents() {
+  let result = '';
+  gTrackEvents.forEach(function(event) {
+    if (event.receiver.track != event.track)
+      throw failTest('RTCTrackEvent\'s track does not match its receiver\'s.');
+    let eventString = 'RTCTrackEvent ' + event.track.id;
+    event.streams.forEach(function(stream) {
+      eventString += ' ' + stream.id;
+    });
+    if (result.length)
+      result += ' ';
+    result += eventString;
+  });
+  returnToTest('ok-' + result);
+}
+
 // Internals.
 
 /** @private */
@@ -494,6 +520,7 @@ function createPeerConnection_(rtcConfig) {
   peerConnection.onicecandidate = iceCallback_;
   peerConnection.onicegatheringstatechange = iceGatheringCallback_;
   peerConnection.onnegotiationneeded = negotiationNeededCallback_;
+  peerConnection.ontrack = onTrackCallback_;
   return peerConnection;
 }
 
@@ -518,6 +545,11 @@ function iceGatheringCallback_() {
 /** @private */
 function negotiationNeededCallback_() {
   ++gNegotiationNeededCount;
+}
+
+/** @private */
+function onTrackCallback_(event) {
+  gTrackEvents.push(event);
 }
 
 /** @private */

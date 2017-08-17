@@ -151,6 +151,13 @@ std::vector<std::string> JsonArrayToVectorOfStrings(
 
 }  // namespace
 
+WebRtcTestBase::TrackEvent::TrackEvent(const std::string& track_id)
+    : track_id(track_id) {}
+
+WebRtcTestBase::TrackEvent::TrackEvent(const TrackEvent&) = default;
+
+WebRtcTestBase::TrackEvent::~TrackEvent() = default;
+
 WebRtcTestBase::WebRtcTestBase(): detect_errors_in_javascript_(false) {
   // The handler gets set for each test method, but that's fine since this
   // set operation is idempotent.
@@ -692,6 +699,25 @@ size_t WebRtcTestBase::GetNegotiationNeededCount(
   size_t count = 0;
   EXPECT_TRUE(base::StringToSizeT(result.substr(24), &count));
   return count;
+}
+
+std::vector<WebRtcTestBase::TrackEvent> WebRtcTestBase::GetTrackEvents(
+    content::WebContents* tab) const {
+  std::string result = ExecuteJavascript("getTrackEvents()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  std::vector<std::string> tokens = base::SplitString(
+      result.substr(3), " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<TrackEvent> events;
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    if (tokens[i] == "RTCTrackEvent") {
+      DCHECK_LT(i + 1, tokens.size());
+      events.push_back(TrackEvent(tokens[++i]));
+    } else {
+      DCHECK(!events.empty());
+      events[events.size() - 1].stream_ids.push_back(tokens[i]);
+    }
+  }
+  return events;
 }
 
 void WebRtcTestBase::CollectGarbage(content::WebContents* tab) const {

@@ -55,6 +55,15 @@ class WebRtcTestBase : public InProcessBrowserTest {
     INDIVIDUAL_STREAMS
   };
 
+  struct TrackEvent {
+    explicit TrackEvent(const std::string& track_id);
+    TrackEvent(const TrackEvent&);
+    ~TrackEvent();
+
+    std::string track_id;
+    std::vector<std::string> stream_ids;
+  };
+
  protected:
   WebRtcTestBase();
   ~WebRtcTestBase() override;
@@ -227,6 +236,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   bool HasReceiverWithTrack(content::WebContents* tab,
                             std::string track_id) const;
   size_t GetNegotiationNeededCount(content::WebContents* tab) const;
+  std::vector<TrackEvent> GetTrackEvents(content::WebContents* tab) const;
   // Performs garbage collection with "gc()". Requires command line switch
   // |kJavaScriptFlags| with "--expose-gc".
   void CollectGarbage(content::WebContents* tab) const;
