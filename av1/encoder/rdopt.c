@@ -9253,11 +9253,19 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       tmp_rate_mv = rate_mv;
       best_rd_cur = INT64_MAX;
       mbmi->interinter_compound_type = cur_type;
+      int masked_type_cost = 0;
+      if (masked_compound_used) {
+#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
+        if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
+          masked_type_cost += av1_cost_literal(1);
+        else
+#endif  // CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
+          masked_type_cost +=
+              compound_type_cost[mbmi->interinter_compound_type];
+      }
       rs2 = av1_cost_literal(get_interinter_compound_type_bits(
                 bsize, mbmi->interinter_compound_type)) +
-            (masked_compound_used
-                 ? compound_type_cost[mbmi->interinter_compound_type]
-                 : 0);
+            masked_type_cost;
 
       switch (cur_type) {
         case COMPOUND_AVERAGE:
