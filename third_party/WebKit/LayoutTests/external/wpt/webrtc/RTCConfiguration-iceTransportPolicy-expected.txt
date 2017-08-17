@@ -7,11 +7,11 @@ FAIL setConfiguration({ iceTransportPolicy: 'relay' }) with initial iceTransport
 FAIL setConfiguration({ iceTransportPolicy: 'all' }) with initial iceTransportPolicy relay should succeed pc.getConfiguration is not a function
 FAIL setConfiguration({}) with initial iceTransportPolicy relay should set new value to all pc.getConfiguration is not a function
 PASS new RTCPeerConnection(config) - with invalid iceTransportPolicy should throw TypeError 
-FAIL setConfiguration(config) - with invalid iceTransportPolicy should throw TypeError assert_own_property: expected property "setConfiguration" missing
+PASS setConfiguration(config) - with invalid iceTransportPolicy should throw TypeError 
 PASS new RTCPeerConnection(config) - with none iceTransportPolicy should throw TypeError 
-FAIL setConfiguration(config) - with none iceTransportPolicy should throw TypeError assert_own_property: expected property "setConfiguration" missing
+PASS setConfiguration(config) - with none iceTransportPolicy should throw TypeError 
 PASS new RTCPeerConnection(config) - with null iceTransportPolicy should throw TypeError 
-FAIL setConfiguration(config) - with null iceTransportPolicy should throw TypeError assert_own_property: expected property "setConfiguration" missing
+PASS setConfiguration(config) - with null iceTransportPolicy should throw TypeError 
 FAIL new RTCPeerConnection({ iceTransports: 'relay' }) should have no effect pc.getConfiguration is not a function
 FAIL new RTCPeerConnection({ iceTransports: 'invalid' }) should have no effect Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransportPolicy.
 FAIL new RTCPeerConnection({ iceTransports: null }) should have no effect Failed to construct 'RTCPeerConnection': The provided value 'null' is not a valid enum value of type RTCIceTransportPolicy.

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2528 tests; 2424 PASS, 104 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2491 tests; 2417 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute rootElement 
 PASS SVGElement interface: existence and properties of interface object 
 PASS SVGElement interface object length 
@@ -1059,43 +1059,6 @@ PASS SVGTextContentElement interface: operation getExtentOfChar(unsigned long)
 PASS SVGTextContentElement interface: operation getRotationOfChar(unsigned long) 
 PASS SVGTextContentElement interface: operation getCharNumAtPosition(DOMPoint) 
 PASS SVGTextContentElement interface: operation selectSubString(unsigned long, unsigned long) 
-FAIL SVGTextContentElement must be primary interface of textContent assert_equals: textContent's prototype is not SVGTextContentElement.prototype expected object "[object SVGTextContentElement]" but got object "[object SVGElement]"
-FAIL Stringification of textContent assert_equals: class string of textContent expected "[object SVGTextContentElement]" but got "[object SVGElement]"
-FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_UNKNOWN" with the proper type assert_inherits: property "LENGTHADJUST_UNKNOWN" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_SPACING" with the proper type assert_inherits: property "LENGTHADJUST_SPACING" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "LENGTHADJUST_SPACINGANDGLYPHS" with the proper type assert_inherits: property "LENGTHADJUST_SPACINGANDGLYPHS" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "textLength" with the proper type assert_inherits: property "textLength" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "lengthAdjust" with the proper type assert_inherits: property "lengthAdjust" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getNumberOfChars()" with the proper type assert_inherits: property "getNumberOfChars" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getComputedTextLength()" with the proper type assert_inherits: property "getComputedTextLength" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getSubStringLength(unsigned long, unsigned long)" with the proper type assert_inherits: property "getSubStringLength" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getSubStringLength(unsigned long, unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "getSubStringLength" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getStartPositionOfChar(unsigned long)" with the proper type assert_inherits: property "getStartPositionOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getStartPositionOfChar(unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "getStartPositionOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getEndPositionOfChar(unsigned long)" with the proper type assert_inherits: property "getEndPositionOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getEndPositionOfChar(unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "getEndPositionOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getExtentOfChar(unsigned long)" with the proper type assert_inherits: property "getExtentOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getExtentOfChar(unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "getExtentOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getRotationOfChar(unsigned long)" with the proper type assert_inherits: property "getRotationOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getRotationOfChar(unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "getRotationOfChar" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "getCharNumAtPosition(DOMPoint)" with the proper type assert_inherits: property "getCharNumAtPosition" not found in prototype chain
-FAIL SVGTextContentElement interface: calling getCharNumAtPosition(DOMPoint) on textContent with too few arguments must throw TypeError assert_inherits: property "getCharNumAtPosition" not found in prototype chain
-FAIL SVGTextContentElement interface: textContent must inherit property "selectSubString(unsigned long, unsigned long)" with the proper type assert_inherits: property "selectSubString" not found in prototype chain
-FAIL SVGTextContentElement interface: calling selectSubString(unsigned long, unsigned long) on textContent with too few arguments must throw TypeError assert_inherits: property "selectSubString" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "transform" with the proper type assert_inherits: property "transform" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "getBBox(SVGBoundingBoxOptions)" with the proper type assert_inherits: property "getBBox" not found in prototype chain
-FAIL SVGGraphicsElement interface: calling getBBox(SVGBoundingBoxOptions) on textContent with too few arguments must throw TypeError assert_inherits: property "getBBox" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "getCTM()" with the proper type assert_inherits: property "getCTM" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "getScreenCTM()" with the proper type assert_inherits: property "getScreenCTM" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "requiredExtensions" with the proper type assert_inherits: property "requiredExtensions" not found in prototype chain
-FAIL SVGGraphicsElement interface: textContent must inherit property "systemLanguage" with the proper type assert_inherits: property "systemLanguage" not found in prototype chain
-PASS SVGElement interface: textContent must inherit property "className" with the proper type 
-PASS SVGElement interface: textContent must inherit property "dataset" with the proper type 
-PASS SVGElement interface: textContent must inherit property "ownerSVGElement" with the proper type 
-PASS SVGElement interface: textContent must inherit property "viewportElement" with the proper type 
-PASS SVGElement interface: textContent must inherit property "tabIndex" with the proper type 
-PASS SVGElement interface: textContent must inherit property "focus()" with the proper type 
-PASS SVGElement interface: textContent must inherit property "blur()" with the proper type 
 PASS SVGTextPositioningElement interface: existence and properties of interface object 
 PASS SVGTextPositioningElement interface object length 
 PASS SVGTextPositioningElement interface object name 

@@ -4,11 +4,14 @@ FAIL new RTCPeerConnection({ rtcpMuxPolicy: undefined }) should have default rtc
 FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'require' }) should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'negotiate' }) may succeed or throw NotSupportedError pc.getConfiguration is not a function
 PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: null } should throw TypeError 
-FAIL setConfiguration(config) - with { rtcpMuxPolicy: null } should throw TypeError assert_own_property: expected property "setConfiguration" missing
+PASS setConfiguration(config) - with { rtcpMuxPolicy: null } should throw TypeError 
 PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError 
-FAIL setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError assert_own_property: expected property "setConfiguration" missing
-FAIL setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError assert_own_property: expected property "setConfiguration" missing
-FAIL setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_own_property: expected property "setConfiguration" missing
-FAIL setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_own_property: expected property "setConfiguration" missing
+PASS setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError 
+FAIL setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError assert_throws: function "() =>
+      pc.setConfiguration({ rtcpMuxPolicy: 'negotiate' })" did not throw
+FAIL setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>
+      pc.setConfiguration({ rtcpMuxPolicy: 'require' })" did not throw
+FAIL setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>
+      pc.setConfiguration({})" did not throw
 Harness: the test ran to completion.
 

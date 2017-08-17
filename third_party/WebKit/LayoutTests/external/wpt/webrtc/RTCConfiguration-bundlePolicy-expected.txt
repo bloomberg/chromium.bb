@@ -12,7 +12,9 @@ PASS setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy 
 PASS setConfiguration({ bundlePolicy: 'max-bundle' }) with initial bundlePolicy max-bundle should succeed 
 PASS new RTCPeerConnection({ bundlePolicy: null }) should throw TypeError 
 PASS new RTCPeerConnection({ bundlePolicy: 'invalid' }) should throw TypeError 
-FAIL setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_own_property: expected property "setConfiguration" missing
-FAIL setConfiguration({}) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_own_property: expected property "setConfiguration" missing
+FAIL setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_throws: function "() =>
+      pc.setConfiguration({ bundlePolicy: 'max-compat' })" did not throw
+FAIL setConfiguration({}) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_throws: function "() =>
+      pc.setConfiguration({})" did not throw
 Harness: the test ran to completion.
 
