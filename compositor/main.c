@@ -69,11 +69,20 @@ struct wet_output_config {
 	uint32_t transform;
 };
 
+struct wet_compositor;
+
+struct wet_head_tracker {
+	struct wl_listener head_destroy_listener;
+};
+
 struct wet_compositor {
 	struct weston_config *config;
 	struct wet_output_config *parsed_options;
 	struct wl_listener pending_output_listener;
 	bool drm_use_current_mode;
+	struct wl_listener heads_changed_listener;
+	int (*simple_output_configure)(struct weston_output *output);
+	bool init_failed;
 };
 
 static FILE *weston_logfile = NULL;
@@ -1010,6 +1019,181 @@ wet_configure_windowed_output_from_config(struct weston_output *output,
 	return 0;
 }
 
+static int
+count_remaining_heads(struct weston_output *output, struct weston_head *to_go)
+{
+	struct weston_head *iter = NULL;
+	int n = 0;
+
+	while ((iter = weston_output_iterate_heads(output, iter))) {
+		if (iter != to_go)
+			n++;
+	}
+
+	return n;
+}
+
+static void
+wet_head_tracker_destroy(struct wet_head_tracker *track)
+{
+	wl_list_remove(&track->head_destroy_listener.link);
+	free(track);
+}
+
+static void
+handle_head_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_head *head = data;
+	struct weston_output *output;
+	struct wet_head_tracker *track =
+		container_of(listener, struct wet_head_tracker,
+			     head_destroy_listener);
+
+	wet_head_tracker_destroy(track);
+
+	output = weston_head_get_output(head);
+
+	/* On shutdown path, the output might be already gone. */
+	if (!output)
+		return;
+
+	if (count_remaining_heads(output, head) > 0)
+		return;
+
+	weston_output_destroy(output);
+}
+
+static struct wet_head_tracker *
+wet_head_tracker_from_head(struct weston_head *head)
+{
+	struct wl_listener *lis;
+
+	lis = weston_head_get_destroy_listener(head, handle_head_destroy);
+	if (!lis)
+		return NULL;
+
+	return container_of(lis, struct wet_head_tracker,
+			    head_destroy_listener);
+}
+
+/* Listen for head destroy signal.
+ *
+ * If a head is destroyed and it was the last head on the output, we
+ * destroy the associated output.
+ *
+ * Do not bother destroying the head trackers on shutdown, the backend will
+ * destroy the heads which calls our handler to destroy the trackers.
+ */
+static void
+wet_head_tracker_create(struct wet_compositor *compositor,
+			struct weston_head *head)
+{
+	struct wet_head_tracker *track;
+
+	track = zalloc(sizeof *track);
+	if (!track)
+		return;
+
+	track->head_destroy_listener.notify = handle_head_destroy;
+	weston_head_add_destroy_listener(head, &track->head_destroy_listener);
+}
+
+static void
+simple_head_enable(struct weston_compositor *compositor, struct weston_head *head)
+{
+	struct wet_compositor *wet = to_wet_compositor(compositor);
+	struct weston_output *output;
+	int ret = 0;
+
+	output = weston_compositor_create_output_with_head(compositor, head);
+	if (!output) {
+		weston_log("Could not create an output for head \"%s\".\n",
+			   weston_head_get_name(head));
+		wet->init_failed = true;
+
+		return;
+	}
+
+	if (wet->simple_output_configure)
+		ret = wet->simple_output_configure(output);
+	if (ret < 0) {
+		weston_log("Cannot configure output \"%s\".\n",
+			   weston_head_get_name(head));
+		weston_output_destroy(output);
+		wet->init_failed = true;
+
+		return;
+	}
+
+	if (weston_output_enable(output) < 0) {
+		weston_log("Enabling output \"%s\" failed.\n",
+			   weston_head_get_name(head));
+		weston_output_destroy(output);
+		wet->init_failed = true;
+
+		return;
+	}
+
+	wet_head_tracker_create(wet, head);
+
+	/* The weston_compositor will track and destroy the output on exit. */
+}
+
+static void
+simple_head_disable(struct weston_head *head)
+{
+	struct weston_output *output;
+	struct wet_head_tracker *track;
+
+	track = wet_head_tracker_from_head(head);
+	if (track)
+		wet_head_tracker_destroy(track);
+
+	output = weston_head_get_output(head);
+	assert(output);
+	weston_output_destroy(output);
+}
+
+static void
+simple_heads_changed(struct wl_listener *listener, void *arg)
+{
+	struct weston_compositor *compositor = arg;
+	struct weston_head *head = NULL;
+	bool connected;
+	bool enabled;
+	bool changed;
+
+	while ((head = weston_compositor_iterate_heads(compositor, head))) {
+		connected = weston_head_is_connected(head);
+		enabled = weston_head_is_enabled(head);
+		changed = weston_head_is_device_changed(head);
+
+		if (connected && !enabled) {
+			simple_head_enable(compositor, head);
+		} else if (!connected && enabled) {
+			simple_head_disable(head);
+		} else if (enabled && changed) {
+			weston_log("Detected a monitor change on head '%s', "
+				   "not bothering to do anything about it.\n",
+				   weston_head_get_name(head));
+		}
+		weston_head_reset_device_changed(head);
+	}
+}
+
+static void
+wet_set_simple_head_configurator(struct weston_compositor *compositor,
+				 int (*fn)(struct weston_output *))
+{
+	struct wet_compositor *wet = to_wet_compositor(compositor);
+
+	wet->simple_output_configure = fn;
+
+	wet->heads_changed_listener.notify = simple_heads_changed;
+	weston_compositor_add_heads_changed_listener(compositor,
+						&wet->heads_changed_listener);
+}
+
 static void
 configure_input_device(struct weston_compositor *compositor,
 		       struct libinput_device *device)
@@ -1137,10 +1321,9 @@ load_drm_backend(struct weston_compositor *c,
 	return ret;
 }
 
-static void
-headless_backend_output_configure(struct wl_listener *listener, void *data)
+static int
+headless_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	struct wet_output_config defaults = {
 		.width = 1024,
 		.height = 640,
@@ -1148,10 +1331,7 @@ headless_backend_output_configure(struct wl_listener *listener, void *data)
 		.transform = WL_OUTPUT_TRANSFORM_NORMAL
 	};
 
-	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
-		weston_log("Cannot configure output \"%s\".\n", output->name);
-
-	weston_output_enable(output);
+	return wet_configure_windowed_output_from_config(output, &defaults);
 }
 
 static int
@@ -1189,14 +1369,14 @@ load_headless_backend(struct weston_compositor *c,
 	config.base.struct_version = WESTON_HEADLESS_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_headless_backend_config);
 
+	wet_set_simple_head_configurator(c, headless_backend_output_configure);
+
 	/* load the actual wayland backend and configure it */
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_HEADLESS,
 					     &config.base);
 
 	if (ret < 0)
 		return ret;
-
-	wet_set_pending_output_handler(c, headless_backend_output_configure);
 
 	if (!no_outputs) {
 		api = weston_windowed_output_get_api(c);
@@ -1676,7 +1856,7 @@ int main(int argc, char *argv[])
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
 	struct weston_seat *seat;
-	struct wet_compositor user_data;
+	struct wet_compositor user_data = { 0 };
 	int require_input;
 	int32_t wait_for_debugger = 0;
 
@@ -1791,6 +1971,8 @@ int main(int argc, char *argv[])
 	}
 
 	weston_pending_output_coldplug(ec);
+	if (user_data.init_failed)
+		goto out;
 
 	if (idle_time < 0)
 		weston_config_section_get_int(section, "idle-time", &idle_time, -1);
