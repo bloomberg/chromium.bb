@@ -238,7 +238,15 @@ public class VrShellDelegate
      * Called when the native library is first available.
      */
     public static void onNativeLibraryAvailable() {
-        if (sInstance != null) sInstance.cancelStartupAnimationIfNeeded();
+        // Check if VR classes are available before trying to use them. Note that the native
+        // vr_shell_delegate.cc is compiled out of unsupported platforms (like x86).
+        VrClassesWrapper wrapper = getVrClassesWrapper();
+        if (wrapper == null) return;
+        nativeOnLibraryAvailable();
+
+        if (sInstance != null) {
+            sInstance.cancelStartupAnimationIfNeeded();
+        }
     }
 
     @VisibleForTesting
@@ -801,6 +809,7 @@ public class VrShellDelegate
             mVSyncEstimator.resume();
         }
 
+        maybeSetPresentResult(true, donSuceeded);
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
         removeBlackOverlayView(mActivity);
         if (!donSuceeded && !mAutopresentWebVr && isDaydreamCurrentViewer()) {
@@ -820,7 +829,6 @@ public class VrShellDelegate
                 }
             }, EXPECT_DON_TIMEOUT_MS);
         }
-        maybeSetPresentResult(true, donSuceeded);
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
@@ -1605,6 +1613,7 @@ public class VrShellDelegate
     }
 
     private native long nativeInit();
+    private static native void nativeOnLibraryAvailable();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
     private native void nativeDisplayActivate(long nativeVrShellDelegate);
     private native void nativeUpdateVSyncInterval(

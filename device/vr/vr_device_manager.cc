@@ -102,8 +102,9 @@ unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {
 VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (index == 0)
-    return nullptr;
+  if (index == 0) {
+    return NULL;
+  }
 
   DeviceMap::iterator iter = devices_.find(index);
   if (iter == devices_.end()) {

@@ -10,15 +10,14 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
-#include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
-#include "device/vr/vr_device.h"
-#include "device/vr/vr_device_manager.h"
+#include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_display_impl.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -31,17 +30,6 @@ using base::android::ScopedJavaLocalRef;
 namespace vr_shell {
 
 namespace {
-
-// Statically supplies the VrShellDelegate creation hook to device/vr/ when this
-// module loads.
-class VrShellDelegateBootstrap {
- public:
-  VrShellDelegateBootstrap() {
-    device::GvrDelegateProvider::SetInstance(
-        base::Bind(&VrShellDelegate::CreateVrShellDelegate));
-  }
-};
-VrShellDelegateBootstrap bootstrap;
 
 content::RenderFrameHost* GetHostForDisplay(device::VRDisplayImpl* display) {
   return content::RenderFrameHost::FromID(display->ProcessId(),
@@ -86,11 +74,12 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
 
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  device::VRDevice* device = GetDevice();
-  if (device)
-    device->OnExitPresent();
-  if (!present_callback_.is_null())
+  if (device_provider_) {
+    device_provider_->Device()->OnExitPresent();
+  }
+  if (!present_callback_.is_null()) {
     base::ResetAndReturn(&present_callback_).Run(false);
+  }
 }
 
 device::GvrDelegateProvider* VrShellDelegate::CreateVrShellDelegate() {
@@ -108,14 +97,14 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
       Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
 
-void VrShellDelegate::SetDelegate(VrShell* vr_shell,
+void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
                                   gvr::ViewerType viewer_type) {
-  vr_shell_ = vr_shell;
-  device::VRDevice* device = GetDevice();
-  if (device)
-    device->OnChanged();
+  gvr_delegate_ = delegate;
+  if (device_provider_) {
+    device_provider_->Device()->OnDelegateChanged();
+  }
   if (vsync_timebase_ != base::TimeTicks()) {
-    vr_shell_->UpdateVSyncInterval(vsync_timebase_, vsync_interval_);
+    gvr_delegate_->UpdateVSyncInterval(vsync_timebase_, vsync_interval_);
   }
 
   if (pending_successful_present_request_) {
@@ -127,11 +116,10 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
 }
 
 void VrShellDelegate::RemoveDelegate() {
-  vr_shell_ = nullptr;
-  device::VRDevice* device = GetDevice();
-  if (device) {
-    device->OnExitPresent();
-    device->OnChanged();
+  gvr_delegate_ = nullptr;
+  if (device_provider_) {
+    device_provider_->Device()->OnExitPresent();
+    device_provider_->Device()->OnDelegateChanged();
   }
 }
 
@@ -149,35 +137,26 @@ void VrShellDelegate::SetPresentResult(bool success) {
     return;
   }
 
-  if (!vr_shell_) {
+  if (!gvr_delegate_) {
     // We have to wait until the GL thread is ready since we have to pass it
     // the VRSubmitFrameClient.
     pending_successful_present_request_ = true;
     return;
   }
 
-  vr_shell_->ConnectPresentingService(
+  gvr_delegate_->ConnectPresentingService(
       std::move(submit_client_), std::move(presentation_provider_request_));
 
   base::ResetAndReturn(&present_callback_).Run(true);
   pending_successful_present_request_ = false;
 
-  device::VRDevice* device = GetDevice();
-  if (!device) {
-    ExitWebVRPresent();
-    return;
-  }
-  device::VRDisplayImpl* presenting_display = device->GetPresentingDisplay();
-  if (!presenting_display) {
-    ExitWebVRPresent();
-    return;
-  }
+  device::VRDisplayImpl* presenting_display =
+      device_provider_->Device()->GetPresentingDisplay();
+  CHECK(presenting_display);
   content::RenderFrameHost* host = GetHostForDisplay(presenting_display);
-  if (!host) {
-    ExitWebVRPresent();
+  if (!host)
     return;
-  }
-  vr_shell_->SetWebVRSecureOrigin(IsSecureContext(host));
+  gvr_delegate_->SetWebVRSecureOrigin(IsSecureContext(host));
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
@@ -197,8 +176,8 @@ void VrShellDelegate::UpdateVSyncInterval(JNIEnv* env,
   vsync_timebase_ = base::TimeTicks() +
                     base::TimeDelta::FromMicroseconds(timebase_nanos / 1000);
   vsync_interval_ = base::TimeDelta::FromMicroseconds(interval_micros);
-  if (vr_shell_) {
-    vr_shell_->UpdateVSyncInterval(vsync_timebase_, vsync_interval_);
+  if (gvr_delegate_) {
+    gvr_delegate_->UpdateVSyncInterval(vsync_timebase_, vsync_interval_);
   }
 }
 
@@ -234,8 +213,18 @@ void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void VrShellDelegate::SetDeviceId(unsigned int device_id) {
-  device_id_ = device_id;
+void VrShellDelegate::SetDeviceProvider(
+    device::GvrDeviceProvider* device_provider) {
+  if (device_provider_ == device_provider)
+    return;
+  if (device_provider_)
+    ClearDeviceProvider();
+  CHECK(!device_provider_);
+  device_provider_ = device_provider;
+}
+
+void VrShellDelegate::ClearDeviceProvider() {
+  device_provider_ = nullptr;
 }
 
 void VrShellDelegate::RequestWebVRPresent(
@@ -263,9 +252,9 @@ void VrShellDelegate::ExitWebVRPresent() {
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
   if (Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_)) {
-    device::VRDevice* device = GetDevice();
-    if (device)
-      device->OnExitPresent();
+    if (device_provider_) {
+      device_provider_->Device()->OnExitPresent();
+    }
   }
 }
 
@@ -280,6 +269,10 @@ void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
     // Tell VrShell that we are in VR Browsing Mode.
     ExitWebVRPresent();
   }
+}
+
+device::GvrDelegate* VrShellDelegate::GetDelegate() {
+  return gvr_delegate_;
 }
 
 void VrShellDelegate::OnDisplayAdded(device::VRDisplayImpl* display) {
@@ -376,7 +369,7 @@ void VrShellDelegate::GetNextMagicWindowPose(
     device::VRDisplayImpl* display,
     device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
   content::RenderFrameHost* host = GetHostForDisplay(display);
-  if (!gvr_api_ || vr_shell_ || host == nullptr ||
+  if (!gvr_api_ || gvr_delegate_ || host == nullptr ||
       !host->GetView()->HasFocus()) {
     std::move(callback).Run(nullptr);
     return;
@@ -388,17 +381,13 @@ void VrShellDelegate::GetNextMagicWindowPose(
 void VrShellDelegate::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
-  if (vr_shell_) {
-    vr_shell_->CreateVRDisplayInfo(callback, device_id);
+  if (gvr_delegate_) {
+    gvr_delegate_->CreateVRDisplayInfo(callback, device_id);
     return;
   }
   // This is for magic window mode, which doesn't care what the render size is.
   callback.Run(device::GvrDelegate::CreateDefaultVRDisplayInfo(gvr_api_.get(),
                                                                device_id));
-}
-
-device::VRDevice* VrShellDelegate::GetDevice() {
-  return device::VRDeviceManager::GetInstance()->GetDevice(device_id_);
 }
 
 // ----------------------------------------------------------------------------
@@ -407,6 +396,11 @@ device::VRDevice* VrShellDelegate::GetDevice() {
 
 jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
+}
+
+static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+  device::GvrDelegateProvider::SetInstance(
+      base::Bind(&VrShellDelegate::CreateVrShellDelegate));
 }
 
 }  // namespace vr_shell

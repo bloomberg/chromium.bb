@@ -46,8 +46,9 @@
 #include "content/public/common/service_manager_connection.h"
 #include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
+#include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
-#include "device/vr/vr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -287,16 +288,16 @@ void VrShell::PostToGlThread(const tracked_objects::Location& from_here,
 void VrShell::OnContentPaused(bool paused) {
   if (!vr_shell_enabled_)
     return;
-  device::VRDevice* device = delegate_provider_->GetDevice();
-  if (!device)
+
+  if (!delegate_provider_->device_provider())
     return;
 
   // TODO(mthiesse): The page is no longer visible when in menu mode. We
   // should unfocus or otherwise let it know it's hidden.
   if (paused)
-    device->OnBlur();
+    delegate_provider_->device_provider()->Device()->OnBlur();
   else
-    device->OnFocus();
+    delegate_provider_->device_provider()->Device()->OnFocus();
 }
 
 void VrShell::NavigateBack() {
@@ -319,12 +320,15 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
   }
 
   if (!cardboard_gamepad_source_active_ && enabled) {
-    device::VRDevice* device = delegate_provider_->GetDevice();
-    if (!device)
+    // enable the gamepad
+    if (!delegate_provider_->device_provider())
       return;
 
+    unsigned int device_id =
+        delegate_provider_->device_provider()->Device()->id();
+
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::CardboardGamepadDataFetcher::Factory(this, device->id()));
+        new device::CardboardGamepadDataFetcher::Factory(this, device_id));
     cardboard_gamepad_source_active_ = true;
   }
 }
@@ -818,13 +822,14 @@ void VrShell::ProcessContentGesture(
 
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
   if (!gvr_gamepad_source_active_) {
-    device::VRDevice* device = delegate_provider_->GetDevice();
-    DCHECK(device);
-    if (!device)
+    if (!delegate_provider_->device_provider())
       return;
 
+    unsigned int device_id =
+        delegate_provider_->device_provider()->Device()->id();
+
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, device->id()));
+        new device::GvrGamepadDataFetcher::Factory(this, device_id));
     gvr_gamepad_source_active_ = true;
   }
   if (gvr_gamepad_data_fetcher_) {
