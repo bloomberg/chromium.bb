@@ -819,6 +819,7 @@ void VrShell::ProcessContentGesture(
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
   if (!gvr_gamepad_source_active_) {
     device::VRDevice* device = delegate_provider_->GetDevice();
+    DCHECK(device);
     if (!device)
       return;
 
