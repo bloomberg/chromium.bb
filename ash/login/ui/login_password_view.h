@@ -62,6 +62,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void RequestFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::ButtonListener:

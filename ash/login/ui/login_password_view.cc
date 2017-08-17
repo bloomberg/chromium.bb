@@ -133,6 +133,10 @@ gfx::Size LoginPasswordView::CalculatePreferredSize() const {
   return size;
 }
 
+void LoginPasswordView::RequestFocus() {
+  textfield_->RequestFocus();
+}
+
 bool LoginPasswordView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::KeyboardCode::VKEY_RETURN) {
     SubmitPassword();

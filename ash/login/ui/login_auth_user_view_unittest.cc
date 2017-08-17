@@ -54,4 +54,26 @@ TEST_F(LoginAuthUserViewUnittest, ShowingPinExpandsView) {
   EXPECT_GT(expanded_size.height(), start_size.height());
 }
 
+// Verifies that an auth user that shows a password is opaque.
+TEST_F(LoginAuthUserViewUnittest, ShowingPasswordForcesOpaque) {
+  LoginAuthUserView::TestApi auth_test(view_);
+  LoginUserView::TestApi user_test(auth_test.user_view());
+
+  // Add another view that will hold focus. The user view cannot have focus
+  // since focus will keep it opaque.
+  auto* focus = new views::View();
+  focus->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  container_->AddChildView(focus);
+  focus->RequestFocus();
+  EXPECT_FALSE(auth_test.user_view()->HasFocus());
+
+  // If the user view is showing a password it must be opaque.
+  view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
+  EXPECT_TRUE(user_test.is_opaque());
+  view_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
+  EXPECT_FALSE(user_test.is_opaque());
+  view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
+  EXPECT_TRUE(user_test.is_opaque());
+}
+
 }  // namespace ash

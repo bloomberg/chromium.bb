@@ -141,6 +141,9 @@ void LockContentsView::Layout() {
 
 void LockContentsView::AddedToWidget() {
   DoLayout();
+
+  // Focus the primary user when showing the UI. This will focus the password.
+  primary_auth_->RequestFocus();
 }
 
 void LockContentsView::OnUsersChanged(
