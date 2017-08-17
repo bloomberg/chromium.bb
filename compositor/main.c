@@ -1537,10 +1537,9 @@ out:
 	return ret;
 }
 
-static void
-x11_backend_output_configure(struct wl_listener *listener, void *data)
+static int
+x11_backend_output_configure(struct weston_output *output)
 {
-	struct weston_output *output = data;
 	struct wet_output_config defaults = {
 		.width = 1024,
 		.height = 600,
@@ -1548,10 +1547,7 @@ x11_backend_output_configure(struct wl_listener *listener, void *data)
 		.transform = WL_OUTPUT_TRANSFORM_NORMAL
 	};
 
-	if (wet_configure_windowed_output_from_config(output, &defaults) < 0)
-		weston_log("Cannot configure output \"%s\".\n", output->name);
-
-	weston_output_enable(output);
+	return wet_configure_windowed_output_from_config(output, &defaults);
 }
 
 static int
@@ -1587,14 +1583,14 @@ load_x11_backend(struct weston_compositor *c,
 	config.base.struct_version = WESTON_X11_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_x11_backend_config);
 
+	wet_set_simple_head_configurator(c, x11_backend_output_configure);
+
 	/* load the actual backend and configure it */
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_X11,
 					     &config.base);
 
 	if (ret < 0)
 		return ret;
-
-	wet_set_pending_output_handler(c, x11_backend_output_configure);
 
 	api = weston_windowed_output_get_api(c);
 
