@@ -15,14 +15,10 @@ import "url/mojo/origin.mojom";
 interface WorkerContentSettingsProxy {
 
   // Returns whether the worker is allowed access to IndexedDB.
-  // TODO(yukiy): remove |origin| from AllowIndexedDB() and
-  // RequestFileSystemAccessSync(), and instead, keep it on the browser process.
   [Sync]
-  AllowIndexedDB(url.mojom.Origin origin, mojo.common.mojom.String16 name)
-    => (bool result);
+  AllowIndexedDB(mojo.common.mojom.String16 name) => (bool result);
 
   // Returns whether the worker is allowed access to the file system.
   [Sync]
-  RequestFileSystemAccessSync(url.mojom.Origin origin)
-    => (bool result);
+  RequestFileSystemAccessSync() => (bool result);
 };

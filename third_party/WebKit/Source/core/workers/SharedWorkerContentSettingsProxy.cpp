@@ -10,39 +10,37 @@
 namespace blink {
 
 SharedWorkerContentSettingsProxy::SharedWorkerContentSettingsProxy(
-    SecurityOrigin* security_origin,
     mojom::blink::WorkerContentSettingsProxyPtrInfo host_info)
-    : security_origin_(security_origin->IsolatedCopy()),
-      host_info_(std::move(host_info)) {}
+    : host_info_(std::move(host_info)) {}
 SharedWorkerContentSettingsProxy::~SharedWorkerContentSettingsProxy() = default;
 
 bool SharedWorkerContentSettingsProxy::AllowIndexedDB(
     const WebString& name,
     const WebSecurityOrigin& origin) {
   bool result = false;
-  GetService()->AllowIndexedDB(security_origin_, name, &result);
+  GetService()->AllowIndexedDB(name, &result);
   return result;
 }
 
 bool SharedWorkerContentSettingsProxy::RequestFileSystemAccessSync() {
   bool result = false;
-  GetService()->RequestFileSystemAccessSync(security_origin_, &result);
+  GetService()->RequestFileSystemAccessSync(&result);
   return result;
 }
 
-// Use ThreadSpecific to ensure that |content_setting_instance_host| is
+// Use ThreadSpecific to ensure that |content_settings_instance_host| is
 // destructed on worker thread.
 // Each worker has a dedicated thread so this is safe.
 mojom::blink::WorkerContentSettingsProxyPtr&
 SharedWorkerContentSettingsProxy::GetService() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<mojom::blink::WorkerContentSettingsProxyPtr>,
-      content_setting_instance_host, ());
-  if (!content_setting_instance_host.IsSet()) {
+      content_settings_instance_host, ());
+  if (!content_settings_instance_host.IsSet()) {
     DCHECK(host_info_.is_valid());
-    content_setting_instance_host->Bind(std::move(host_info_));
+    content_settings_instance_host->Bind(std::move(host_info_));
   }
-  return *content_setting_instance_host;
+  return *content_settings_instance_host;
 }
 
 }  // namespace blink

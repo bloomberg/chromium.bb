@@ -36,11 +36,9 @@ class ServiceWorkerContentSettingsProxy final
   mojom::blink::WorkerContentSettingsProxyPtr& GetService();
 
   // This is set on the main thread at the ctor,
-  // and moved to a thread local storage on the worker thread
+  // and moved to thread local storage on the worker thread
   // when GetService() is called for the first time.
   mojom::blink::WorkerContentSettingsProxyPtrInfo host_info_;
-
-  RefPtr<blink::SecurityOrigin> security_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContentSettingsProxy);
 };

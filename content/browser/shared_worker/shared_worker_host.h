@@ -26,8 +26,9 @@ class Message;
 namespace content {
 
 class MessagePort;
-class SharedWorkerMessageFilter;
+class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
+class SharedWorkerMessageFilter;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
@@ -144,6 +145,7 @@ class SharedWorkerHost {
   // from blink::UseCounter::Feature enum.
   std::set<uint32_t> used_features_;
 
+  std::unique_ptr<SharedWorkerContentSettingsProxyImpl> content_settings_;
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
