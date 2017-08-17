@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -53,36 +53,20 @@ bool EnsureBrowserStateDirectoriesCreated(const base::FilePath& path,
   return true;
 }
 
-// Task that creates the directory and signal the FILE thread to resume
-// execution.
-void CreateDirectoryAndSignal(const base::FilePath& path,
-                              base::WaitableEvent* done_creating) {
-  bool success = base::CreateDirectory(path);
-  DCHECK(success);
-  done_creating->Signal();
-}
-
-// Task that blocks the FILE thread until CreateDirectoryAndSignal() finishes on
-// blocking I/O pool.
-void BlockFileThreadOnDirectoryCreate(base::WaitableEvent* done_creating) {
-  done_creating->Wait();
-}
-
-// Initiates creation of browser state directory on |sequenced_task_runner| and
-// ensures that FILE thread is blocked until that operation finishes.
+// Creates the browser state directory synchronously.
 void CreateBrowserStateDirectory(
     base::SequencedTaskRunner* sequenced_task_runner,
     const base::FilePath& path) {
-  base::WaitableEvent* done_creating =
-      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  sequenced_task_runner->PostTask(
-      FROM_HERE, base::Bind(&CreateDirectoryAndSignal, path, done_creating));
-  // Block the FILE thread until directory is created on I/O pool to make sure
-  // that we don't attempt any operation until that part completes.
-  web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
-                           base::Bind(&BlockFileThreadOnDirectoryCreate,
-                                      base::Owned(done_creating)));
+  // Create the browser state directory synchronously otherwise we would need to
+  // sequence every otherwise independent I/O operation inside the browser state
+  // directory with this operation. base::CreateDirectory() should be a
+  // lightweight I/O operation and avoiding the headache of sequencing all
+  // otherwise unrelated I/O after this one justifies running it on the main
+  // thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
+
+  bool success = base::CreateDirectory(path);
+  DCHECK(success);
 }
 
 base::FilePath GetCachePath(const base::FilePath& base) {
