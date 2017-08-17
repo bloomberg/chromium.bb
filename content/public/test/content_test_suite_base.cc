@@ -31,11 +31,6 @@
 #include "content/public/browser/android/compositor.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
-
 namespace content {
 
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
