@@ -955,7 +955,6 @@ struct weston_compositor {
 	struct wl_signal update_input_panel_signal;
 
 	struct wl_signal seat_created_signal;
-	struct wl_signal output_pending_signal;
 	struct wl_signal output_created_signal;
 	struct wl_signal output_destroyed_signal;
 	struct wl_signal output_moved_signal;
@@ -2115,7 +2114,7 @@ void
 weston_output_disable(struct weston_output *output);
 
 void
-weston_pending_output_coldplug(struct weston_compositor *compositor);
+weston_compositor_flush_heads_changed(struct weston_compositor *compositor);
 
 struct weston_head *
 weston_head_from_resource(struct wl_resource *resource);

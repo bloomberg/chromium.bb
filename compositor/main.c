@@ -1943,7 +1943,7 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	weston_pending_output_coldplug(ec);
+	weston_compositor_flush_heads_changed(ec);
 	if (user_data.init_failed)
 		goto out;
 

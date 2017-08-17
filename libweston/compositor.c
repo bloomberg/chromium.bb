@@ -5470,9 +5470,6 @@ weston_output_init(struct weston_output *output,
  * \param output     The weston_output object to add
  * \param compositor The compositor instance.
  *
- * Also notifies the compositor that an output is pending for
- * configuration.
- *
  * The opposite of this operation is built into weston_output_release().
  *
  * \memberof weston_output
@@ -5487,7 +5484,6 @@ weston_compositor_add_pending_output(struct weston_output *output,
 
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
-	wl_signal_emit(&compositor->output_pending_signal, output);
 }
 
 /** Constructs a weston_output object that can be used by the compositor.
@@ -5634,22 +5630,16 @@ weston_output_disable(struct weston_output *output)
 	output->destroying = 0;
 }
 
-/** Emits a signal to indicate that there are outputs waiting to be configured.
+/** Forces a synchronous call to heads_changed hook
  *
  * \param compositor The compositor instance
+ *
+ * If there are new or changed heads, calls the heads_changed hook and
+ * returns after the hook returns.
  */
 WL_EXPORT void
-weston_pending_output_coldplug(struct weston_compositor *compositor)
+weston_compositor_flush_heads_changed(struct weston_compositor *compositor)
 {
-	struct weston_output *output, *next;
-
-	wl_list_for_each_safe(output, next, &compositor->pending_output_list, link)
-		wl_signal_emit(&compositor->output_pending_signal, output);
-
-	/* Execute the heads changed callback manually to ensure it is
-	 * processed before any plugins get their start-up idle tasks ran.
-	 * This ensures the plugins see all the initial outputs.
-	 */
 	if (compositor->heads_changed_source) {
 		wl_event_source_remove(compositor->heads_changed_source);
 		weston_compositor_call_heads_changed(compositor);
@@ -6118,7 +6108,6 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_signal_init(&ec->hide_input_panel_signal);
 	wl_signal_init(&ec->update_input_panel_signal);
 	wl_signal_init(&ec->seat_created_signal);
-	wl_signal_init(&ec->output_pending_signal);
 	wl_signal_init(&ec->output_created_signal);
 	wl_signal_init(&ec->output_destroyed_signal);
 	wl_signal_init(&ec->output_moved_signal);
