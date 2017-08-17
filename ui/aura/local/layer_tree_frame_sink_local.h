@@ -11,6 +11,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ui/aura/window_port.h"
 #include "ui/base/property_data.h"
@@ -28,7 +29,8 @@ namespace aura {
 // aura::Window's ui::Layer.
 class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public viz::CompositorFrameSinkSupportClient,
-                                public viz::ExternalBeginFrameSourceClient {
+                                public viz::ExternalBeginFrameSourceClient,
+                                public viz::HostFrameSinkClient {
  public:
   LayerTreeFrameSinkLocal(const viz::FrameSinkId& frame_sink_id,
                           viz::HostFrameSinkManager* host_frame_sink_manager);
@@ -60,6 +62,9 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
  private:
+  // public viz::HostFrameSinkClient:
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+
   const viz::FrameSinkId frame_sink_id_;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
