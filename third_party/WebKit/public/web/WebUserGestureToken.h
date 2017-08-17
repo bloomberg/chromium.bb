@@ -51,8 +51,6 @@ class WebUserGestureToken {
   ~WebUserGestureToken() { Reset(); }
 
   BLINK_EXPORT bool HasGestures() const;
-  BLINK_EXPORT void SetOutOfProcess();
-  BLINK_EXPORT void SetJavascriptPrompt();
   bool IsNull() const { return token_.IsNull(); }
 
 #if INSIDE_BLINK

@@ -61,4 +61,12 @@ WebUserGestureToken WebUserGestureIndicator::CurrentUserGestureToken() {
   return WebUserGestureToken(UserGestureIndicator::CurrentTokenThreadSafe());
 }
 
+void WebUserGestureIndicator::ExtendTimeout() {
+  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kOutOfProcess);
+}
+
+void WebUserGestureIndicator::DisableTimeout() {
+  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
+}
+
 }  // namespace blink
