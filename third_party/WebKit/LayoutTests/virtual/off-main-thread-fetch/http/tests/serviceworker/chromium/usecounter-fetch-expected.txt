@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Usecounter for off-main-thread-fetch assert_false: The usecounter for off-main-thread-fetch must not be counted. expected false got true
-Harness: the test ran to completion.
-

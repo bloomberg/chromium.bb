@@ -1383,7 +1383,6 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
-crbug.com/491764 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
@@ -1736,7 +1735,6 @@ crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-sta
 crbug.com/626703 http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 virtual/off-main-thread-fetch/http/tests/inspector/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/extensions/extensions-sidebar.html [ Pass Failure ]
@@ -2204,7 +2202,6 @@ crbug.com/626703 external/wpt/XMLHttpRequest/preserve-ua-header-on-redirect.htm 
 crbug.com/626703 [ Linux ] external/wpt/XMLHttpRequest/send-content-type-string.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/send-entity-body-document.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-header-allowed.htm [ Failure ]
-crbug.com/626703 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/717157 external/wpt/fetch/api/basic/integrity-sharedworker.html [ Crash Timeout Pass ]
 
@@ -2232,7 +2229,6 @@ crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ N
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-window.html [ NeedsManualRebaseline ]
 crbug.com/713732 http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 crbug.com/713732 virtual/mojo-loading/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
-crbug.com/713732 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 crbug.com/713732 virtual/service-worker-script-streaming/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
@@ -2296,7 +2292,6 @@ crbug.com/655458 external/wpt/workers/semantics/structured-clone/shared.html [ C
 
 crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 crbug.com/675540 external/wpt/service-workers/service-worker/claim-with-redirect.https.html [ Skip ]
-crbug.com/675540 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/claim-with-redirect.https.html [ Skip ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
@@ -2429,23 +2424,19 @@ crbug.com/508728 external/wpt/workers/Worker_cross_origin_security_err.htm [ Tim
 crbug.com/508728 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
 
 crbug.com/602693 external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
-crbug.com/602693 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
 crbug.com/602693 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
 crbug.com/602693 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
-crbug.com/691944 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/mojo-blobs/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
-crbug.com/595993 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/595993 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/mojo-blobs/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 
@@ -2757,7 +2748,6 @@ crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ 
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
-crbug.com/678492 virtual/off-main-thread-fetch/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678493 virtual/mojo-loading/http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
@@ -2816,7 +2806,6 @@ crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-dat
 
 # Flaky on trybots
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
-crbug.com/688486 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 crbug.com/688486 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 crbug.com/688486 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 
@@ -2854,11 +2843,8 @@ crbug.com/724027 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
-# Flaky timeout
-crbug.com/723297 virtual/off-main-thread-fetch/http/tests/inspector/service-workers/service-workers-redundant.html [ Timeout ]
 
 crbug.com/715405 virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Skip ]
-crbug.com/715405 virtual/off-main-thread-fetch/http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/714166 http/tests/inspector/network/waterfall-images.html [ Skip ]
 crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
 
@@ -2871,7 +2857,6 @@ crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
-crbug.com/723086 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 crbug.com/739367 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
@@ -2950,13 +2935,9 @@ crbug.com/v8/6529 http/tests/devtools/console/console-dir.js [ NeedsManualRebase
 crbug.com/v8/6529 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
-crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 crbug.com/737959 virtual/mojo-loading/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
@@ -3016,7 +2997,6 @@ crbug.com/736177 [ Mac10.12 ] tables/mozilla_expected_failures/bugs/bug91057.htm
 crbug.com/736177 [ Mac10.12 ] transforms/svg-vs-css.xhtml [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] virtual/layout_ng/fast/block/basic/001.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] virtual/mojo-loading/http/tests/misc/acid2-pixel.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 ] virtual/off-main-thread-fetch/http/tests/misc/acid2-pixel.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
 # These tests are failing on both Mac-10.12 when using an Intel GPU and Mac-10.11.6 when using no GPU
@@ -3124,7 +3104,6 @@ crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
-crbug.com/750310 [ Win7 Debug ] virtual/off-main-thread-fetch/http/tests/inspector/network/network-blocked-reason.html [ Timeout ]
 
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Mac10.11 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]

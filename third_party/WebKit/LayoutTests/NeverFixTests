@@ -199,7 +199,6 @@ external/wpt/css/CSS2/linebox/line-height-126.xht [ WontFix ]
 # would let us differentiate test_shell and WebKit DumpTreeNode.
 crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 crbug.com/7482 [ Win Mac ] virtual/mojo-loading/http/tests/misc/timer-vs-loading.html [ WontFix ]
-crbug.com/7482 [ Win Mac ] virtual/off-main-thread-fetch/http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # On Linux bold emoji are already supported.
 crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]

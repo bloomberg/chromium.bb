@@ -30,12 +30,10 @@ promise_test((t) => {
           });
         })
       .then(() => {
-        // TODO(horo): Change it to assert_true when we ship off-main-thread
-        // fetch optimization.
-        assert_false(
+        assert_true(
             frame.contentWindow.internals.isUseCounted(
                 frame.contentDocument, kOffMainThreadFetch),
-            'The usecounter for off-main-thread-fetch must not be counted.');
+            'The usecounter for off-main-thread-fetch must be counted.');
       });
   }, 'Usecounter for off-main-thread-fetch');
 
