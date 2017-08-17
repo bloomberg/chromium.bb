@@ -10,12 +10,13 @@
 
 namespace device {
 
-class GvrDelegateProvider;
+class GvrDeviceProvider;
+class GvrDelegate;
 class VRDisplayImpl;
 
 class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
  public:
-  GvrDevice();
+  GvrDevice(GvrDeviceProvider* provider);
   ~GvrDevice() override;
 
   // VRDevice
@@ -33,8 +34,12 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   void OnDisplayRemoved(VRDisplayImpl* display) override;
   void OnListeningForActivateChanged(VRDisplayImpl* display) override;
 
+  void OnDelegateChanged();
+
  private:
-  GvrDelegateProvider* GetGvrDelegateProvider();
+  GvrDelegate* GetGvrDelegate();
+
+  GvrDeviceProvider* gvr_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

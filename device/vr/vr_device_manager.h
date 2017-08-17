@@ -26,9 +26,9 @@ namespace device {
 
 // Singleton used to provide the platform's VR devices to VRServiceImpl
 // instances.
-class DEVICE_VR_EXPORT VRDeviceManager {
+class VRDeviceManager {
  public:
-  virtual ~VRDeviceManager();
+  DEVICE_VR_EXPORT virtual ~VRDeviceManager();
 
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
@@ -38,12 +38,10 @@ class DEVICE_VR_EXPORT VRDeviceManager {
   // Automatically connects all currently available VR devices by querying
   // the device providers and, for each returned device, calling
   // VRServiceImpl::ConnectDevice.
-  void AddService(VRServiceImpl* service);
+  DEVICE_VR_EXPORT void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  unsigned int GetNumberOfConnectedDevices();
-
-  VRDevice* GetDevice(unsigned int index);
+  DEVICE_VR_EXPORT unsigned int GetNumberOfConnectedDevices();
 
  private:
   friend class VRDeviceManagerTest;
@@ -52,7 +50,10 @@ class DEVICE_VR_EXPORT VRDeviceManager {
 
   VRDeviceManager();
   // Constructor for testing.
-  explicit VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider);
+  DEVICE_VR_EXPORT explicit VRDeviceManager(
+      std::unique_ptr<VRDeviceProvider> provider);
+
+  DEVICE_VR_EXPORT VRDevice* GetDevice(unsigned int index);
 
   void InitializeProviders();
   void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
