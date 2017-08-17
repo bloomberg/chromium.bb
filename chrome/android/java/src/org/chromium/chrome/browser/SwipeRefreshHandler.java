@@ -120,7 +120,8 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
 
         // If the controls are at the bottom and hidden, allow cc to handle the scroll event to show
         // them.
-        if (manager.areBrowserControlsAtBottom() && manager.getBrowserControlHiddenRatio() > 0) {
+        if (manager != null && manager.areBrowserControlsAtBottom()
+                && manager.getBrowserControlHiddenRatio() > 0) {
             return false;
         }
 
