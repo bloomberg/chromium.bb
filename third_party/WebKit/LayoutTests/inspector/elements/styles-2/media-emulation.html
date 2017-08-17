@@ -19,42 +19,42 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("main", step0);
+    ElementsTestRunner.selectNodeAndWaitForStyles("main", step0);
 
     function step0()
     {
-        InspectorTest.addResult("Original style:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("Original style:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
         applyEmulatedMedia("print");
-        InspectorTest.waitForStyles("main", step1);
+        ElementsTestRunner.waitForStyles("main", step1);
     }
 
     function step1() {
-        InspectorTest.addResult("print media emulated:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("print media emulated:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
         applyEmulatedMedia("tty");
-        InspectorTest.waitForStyles("main", step2);
+        ElementsTestRunner.waitForStyles("main", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("tty media emulated:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("tty media emulated:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
         applyEmulatedMedia("");
-        InspectorTest.waitForStyles("main", step3);
+        ElementsTestRunner.waitForStyles("main", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("No media emulated:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("No media emulated:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 
     function applyEmulatedMedia(media)
     {
-        InspectorTest.EmulationAgent.setEmulatedMedia(media);
-        InspectorTest.cssModel.mediaQueryResultChanged();
+        TestRunner.EmulationAgent.setEmulatedMedia(media);
+        TestRunner.cssModel.mediaQueryResultChanged();
     }
 }
 </script>

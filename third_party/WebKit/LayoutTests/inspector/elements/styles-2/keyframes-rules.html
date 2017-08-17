@@ -15,15 +15,15 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testInit(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testDumpStyles(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             next();
         }
     ]);

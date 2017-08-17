@@ -10,38 +10,38 @@
 function test()
 {
     var bodyId;
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function test_styles(next)
         {
             function callback(styles)
             {
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Computed style property count for body ===");
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Computed style property count for body ===");
                 var propCount = styles.computedStyle.length;
-                InspectorTest.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
+                TestRunner.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Matched rules for body ===");
-                InspectorTest.dumpRuleMatchesArray(styles.matchedCSSRules);
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Matched rules for body ===");
+                ElementsTestRunner.dumpRuleMatchesArray(styles.matchedCSSRules);
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Pseudo rules for body ===");
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Pseudo rules for body ===");
                 for (var i = 0; i < styles.pseudoElements.length; ++i) {
-                    InspectorTest.addResult("PseudoType=" + styles.pseudoElements[i].pseudoType);
-                    InspectorTest.dumpRuleMatchesArray(styles.pseudoElements[i].matches);
+                    TestRunner.addResult("PseudoType=" + styles.pseudoElements[i].pseudoType);
+                    ElementsTestRunner.dumpRuleMatchesArray(styles.pseudoElements[i].matches);
                 }
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Inherited styles for body ===");
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Inherited styles for body ===");
                 for (var i = 0; i < styles.inherited.length; ++i) {
-                    InspectorTest.addResult("Level=" + (i + 1));
-                    InspectorTest.dumpStyle(styles.inherited[i].inlineStyle);
-                    InspectorTest.dumpRuleMatchesArray(styles.inherited[i].matchedCSSRules);
+                    TestRunner.addResult("Level=" + (i + 1));
+                    ElementsTestRunner.dumpStyle(styles.inherited[i].inlineStyle);
+                    ElementsTestRunner.dumpRuleMatchesArray(styles.inherited[i].matchedCSSRules);
                 }
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Inline style for body ===");
-                InspectorTest.dumpStyle(styles.inlineStyle);
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Inline style for body ===");
+                ElementsTestRunner.dumpStyle(styles.inlineStyle);
                 next();
             }
 
@@ -50,8 +50,8 @@ function test()
             function computedCallback(computedStyle)
             {
                 if (!computedStyle) {
-                    InspectorTest.addResult("Error");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("Error");
+                    TestRunner.completeTest();
                     return;
                 }
                 resultStyles.computedStyle = computedStyle;
@@ -60,8 +60,8 @@ function test()
             function matchedCallback(response)
             {
                 if (response[Protocol.Error]) {
-                    InspectorTest.addResult("error: " + response[Protocol.Error]);
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("error: " + response[Protocol.Error]);
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -75,45 +75,45 @@ function test()
             {
                 bodyId = node.id;
                 var promises = [
-                    InspectorTest.CSSAgent.getComputedStyleForNode(node.id).then(computedCallback),
-                    InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(matchedCallback)
+                    TestRunner.CSSAgent.getComputedStyleForNode(node.id).then(computedCallback),
+                    TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(matchedCallback)
                 ];
                 Promise.all(promises).then(callback.bind(null, resultStyles));
             }
-            InspectorTest.selectNodeWithId("mainBody", nodeCallback);
+            ElementsTestRunner.selectNodeWithId("mainBody", nodeCallback);
         },
 
         async function test_forcedState(next)
         {
-            InspectorTest.CSSAgent.forcePseudoState(bodyId, ["hover"]);
-            var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: bodyId});
+            TestRunner.CSSAgent.forcePseudoState(bodyId, ["hover"]);
+            var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: bodyId});
 
-            InspectorTest.addResult("=== BODY with forced :hover ===");
-            InspectorTest.dumpRuleMatchesArray(response.matchedCSSRules);
-            InspectorTest.CSSAgent.forcePseudoState(bodyId, ["hover"]).then(next);
+            TestRunner.addResult("=== BODY with forced :hover ===");
+            ElementsTestRunner.dumpRuleMatchesArray(response.matchedCSSRules);
+            TestRunner.CSSAgent.forcePseudoState(bodyId, ["hover"]).then(next);
         },
 
         function test_textNodeComputedStyles(next)
         {
-            InspectorTest.nodeWithId("toggle", nodeCallback);
+            ElementsTestRunner.nodeWithId("toggle", nodeCallback);
 
             async function nodeCallback(node)
             {
                 var textNode = node.children()[0];
                 if (textNode.nodeType() !== Node.TEXT_NODE) {
-                    InspectorTest.addResult("Failed to retrieve TextNode.");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("Failed to retrieve TextNode.");
+                    TestRunner.completeTest();
                     return;
                 }
-                var computedStyle = await InspectorTest.CSSAgent.getComputedStyleForNode(textNode.id);
+                var computedStyle = await TestRunner.CSSAgent.getComputedStyleForNode(textNode.id);
                 if (!computedStyle) {
-                    InspectorTest.addResult("Error");
+                    TestRunner.addResult("Error");
                     return;
                 }
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Computed style property count for TextNode ===");
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Computed style property count for TextNode ===");
                 var propCount = computedStyle.length;
-                InspectorTest.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
+                TestRunner.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
                 next();
             }
         },
@@ -122,38 +122,38 @@ function test()
         {
             async function nodeCallback(node)
             {
-                var response = await InspectorTest.CSSAgent.invoke_getInlineStylesForNode({nodeId: node.id});
+                var response = await TestRunner.CSSAgent.invoke_getInlineStylesForNode({nodeId: node.id});
                 if (response[Protocol.Error]) {
-                    InspectorTest.addResult("error: " + response[Protocol.Error]);
+                    TestRunner.addResult("error: " + response[Protocol.Error]);
                     next();
                     return;
                 }
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Attributes style for table ===");
-                InspectorTest.dumpStyle(response.attributesStyle);
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Attributes style for table ===");
+                ElementsTestRunner.dumpStyle(response.attributesStyle);
 
-                var result = await InspectorTest.CSSAgent.getStyleSheetText(response.inlineStyle.styleSheetId);
+                var result = await TestRunner.CSSAgent.getStyleSheetText(response.inlineStyle.styleSheetId);
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Stylesheet-for-inline-style text ===");
-                InspectorTest.addResult(result || "");
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Stylesheet-for-inline-style text ===");
+                TestRunner.addResult(result || "");
 
-                await InspectorTest.CSSAgent.setStyleSheetText(response.inlineStyle.styleSheetId, "");
+                await TestRunner.CSSAgent.setStyleSheetText(response.inlineStyle.styleSheetId, "");
 
-                InspectorTest.addResult("");
-                InspectorTest.addResult("=== Stylesheet-for-inline-style modification result ===");
-                InspectorTest.addResult(null);
+                TestRunner.addResult("");
+                TestRunner.addResult("=== Stylesheet-for-inline-style modification result ===");
+                TestRunner.addResult(null);
                 next();
             }
-            InspectorTest.nodeWithId("thetable", nodeCallback);
+            ElementsTestRunner.nodeWithId("thetable", nodeCallback);
         },
 
         async function test_addRule(next)
         {
-            var frameId = InspectorTest.resourceTreeModel.mainFrame.id;
-            var styleSheetId = await InspectorTest.CSSAgent.createStyleSheet(frameId);
+            var frameId = TestRunner.resourceTreeModel.mainFrame.id;
+            var styleSheetId = await TestRunner.CSSAgent.createStyleSheet(frameId);
             if (!styleSheetId) {
-                InspectorTest.addResult("Error in CSS.createStyleSheet");
+                TestRunner.addResult("Error in CSS.createStyleSheet");
                 next();
                 return;
             }
@@ -165,14 +165,14 @@ function test()
                 endColumn: 0
             };
 
-            var rule = await InspectorTest.CSSAgent.addRule(styleSheetId, "body {}", range);
+            var rule = await TestRunner.CSSAgent.addRule(styleSheetId, "body {}", range);
             if (!rule) {
-                InspectorTest.addResult("Error in CSS.addRule");
+                TestRunner.addResult("Error in CSS.addRule");
                 next();
                 return;
             }
 
-            var style = await InspectorTest.CSSAgent.setStyleTexts([
+            var style = await TestRunner.CSSAgent.setStyleTexts([
                 {
                     styleSheetId: rule.style.styleSheetId,
                     range: {
@@ -185,21 +185,21 @@ function test()
                 }
             ]);
             if (!style) {
-                InspectorTest.addResult("Error in CSS.setStyleTexts");
+                TestRunner.addResult("Error in CSS.setStyleTexts");
                 next();
                 return;
             }
 
-            var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: bodyId});
+            var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: bodyId});
             if (response[Protocol.Error]) {
-                InspectorTest.addResult("error: " + response[Protocol.Error]);
+                TestRunner.addResult("error: " + response[Protocol.Error]);
                 next();
                 return;
             }
 
-            InspectorTest.addResult("");
-            InspectorTest.addResult("=== Matched rules after rule added ===");
-            InspectorTest.dumpRuleMatchesArray(response.matchedCSSRules);
+            TestRunner.addResult("");
+            TestRunner.addResult("=== Matched rules after rule added ===");
+            ElementsTestRunner.dumpRuleMatchesArray(response.matchedCSSRules);
             next();
         },
     ]);

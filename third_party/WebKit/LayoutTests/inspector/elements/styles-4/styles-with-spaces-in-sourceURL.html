@@ -8,12 +8,12 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", onNodeSelected);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", onNodeSelected);
 
     function onNodeSelected()
     {
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 </script>

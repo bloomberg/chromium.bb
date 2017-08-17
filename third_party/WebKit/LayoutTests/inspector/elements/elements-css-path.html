@@ -13,7 +13,7 @@ function matchingElements(selector)
 function test()
 {
     var nodeQueue = [];
-    InspectorTest.expandElementsTree(enqueueNodes);
+    ElementsTestRunner.expandElementsTree(enqueueNodes);
 
     function enqueueNodes()
     {
@@ -25,25 +25,25 @@ function test()
     {
         var entry = nodeQueue.shift();
         if (!entry) {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
             return;
         }
         var cssPath = Components.DOMPresentationUtils.cssPath(entry.node, true);
         var result = entry.prefix + cssPath;
-        InspectorTest.addResult(result.replace(/\n/g, "\\n"));
+        TestRunner.addResult(result.replace(/\n/g, "\\n"));
         var escapedPath = cssPath.replace(/\\/g, "\\\\");
-        InspectorTest.evaluateInPage("matchingElements('" + escapedPath  + "')", callback);
+        TestRunner.evaluateInPage("matchingElements('" + escapedPath  + "')", callback);
 
         function callback(result)
         {
-            InspectorTest.assertEquals(1, result.value);
+            TestRunner.assertEquals(1, result.value);
             dumpNodeData();
         }
     }
 
     function getDocumentElement()
     {
-        var map = InspectorTest.domModel._idToDOMNode;
+        var map = TestRunner.domModel._idToDOMNode;
         for (var id in map) {
             if (map[id].nodeName() === "#document")
                 return map[id];

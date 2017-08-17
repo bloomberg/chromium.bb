@@ -10,42 +10,42 @@
 </style>
 <script>
 function test() {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStylesWithComputed("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", next);
         },
 
         function testColorSwatchInMatchRules(next)
         {
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
-            InspectorTest.addResult("Initial color value: " + treeItem.valueElement.textContent);
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
+            TestRunner.addResult("Initial color value: " + treeItem.valueElement.textContent);
             var swatch = treeItem.valueElement.querySelector("span[is=color-swatch]").shadowRoot.querySelector(".color-swatch-inner");
             swatch.dispatchEvent(createShiftClick());
-            InspectorTest.addResult("After shift-click: " + treeItem.valueElement.textContent);
-            InspectorTest.addResult("Has popover before click: " + popoverVisible());
+            TestRunner.addResult("After shift-click: " + treeItem.valueElement.textContent);
+            TestRunner.addResult("Has popover before click: " + popoverVisible());
 
             swatch.click();
-            InspectorTest.addResult("Has popover after click: " + popoverVisible());
+            TestRunner.addResult("Has popover after click: " + popoverVisible());
             next();
         },
 
         function testColorSwatchInCustomProperty(next)
         {
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("--variable");
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("--variable");
             var swatch = treeItem.valueElement.querySelector("span[is=color-swatch]");
-            InspectorTest.addResult("Custom property has a color swatch: " + !!swatch);
+            TestRunner.addResult("Custom property has a color swatch: " + !!swatch);
             next();
         },
 
         function testColorSwatchInComputedRules(next)
         {
-            var computedProperty = InspectorTest.findComputedPropertyWithName("color").title;
+            var computedProperty = ElementsTestRunner.findComputedPropertyWithName("color").title;
             var computedPropertyValue = computedProperty.querySelector(".value");
-            InspectorTest.addResult("Initial color value: " + computedPropertyValue.textContent);
+            TestRunner.addResult("Initial color value: " + computedPropertyValue.textContent);
             var swatch = computedPropertyValue.querySelector("span[is=color-swatch]").shadowRoot.querySelector(".color-swatch-inner");
             swatch.dispatchEvent(createShiftClick());
-            InspectorTest.addResult("After shift-click color value: " + computedPropertyValue.textContent);
+            TestRunner.addResult("After shift-click color value: " + computedPropertyValue.textContent);
             next();
         }
     ]);

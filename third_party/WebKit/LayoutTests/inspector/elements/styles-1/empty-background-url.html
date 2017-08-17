@@ -6,12 +6,12 @@
 <script>
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", step1);
 
     function step1()
     {
-        InspectorTest.dumpSelectedElementStyles(true, false);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false);
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -15,12 +15,12 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("p1", dumpAllStyles);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("p1", dumpAllStyles);
 
     function dumpAllStyles()
     {
-        InspectorTest.dumpSelectedElementStyles();
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles();
+        TestRunner.completeTest();
     }
 }
 

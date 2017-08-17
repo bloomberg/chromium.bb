@@ -8,7 +8,7 @@ Tests that elements panel correctly displays DOM tree structure for bi-di pages.
           <script src="../../http/tests/inspector/inspector-test.js"></script>
           <script src="../../http/tests/inspector/elements-test.js"></script>
         - <script>
-              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        InspectorTest.expandElementsTree(step1);\n    });\n\n    function step1()\n    {\n        InspectorTest.dumpElementsTree();\n        InspectorTest.completeTest();\n    }\n}\n\n
+              \nfunction test()\n{\n    // Warm up highlighter module.\n    runtime.loadModulePromise("source_frame").then(function() {\n        ElementsTestRunner.expandElementsTree(step1);\n    });\n\n    function step1()\n    {\n        ElementsTestRunner.dumpElementsTree();\n        TestRunner.completeTest();\n    }\n}\n\n
           </script>
       </head>
     - <body onload="runTest()">

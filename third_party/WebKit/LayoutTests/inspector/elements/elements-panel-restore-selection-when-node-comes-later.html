@@ -9,15 +9,15 @@ function test()
 {
     var node;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectNode(next)
         {
-            InspectorTest.nodeWithId("inspected", onNodeFound);
+            ElementsTestRunner.nodeWithId("inspected", onNodeFound);
 
             function onNodeFound(n)
             {
                 node = n;
-                InspectorTest.selectNode(node).then(onNodeSelected);
+                ElementsTestRunner.selectNode(node).then(onNodeSelected);
             }
 
             function onNodeSelected()
@@ -29,10 +29,10 @@ function test()
 
         function firstReloadWithoutNodeInDOM(next)
         {
-            InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
+            TestRunner.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
             // Do a reload and pretend page's DOM doesn't have a node to restore.
             overridePushNodeForPath(node.path());
-            InspectorTest.reloadPage(function() { });
+            TestRunner.reloadPage(function() { });
 
             function onNodeRestored()
             {
@@ -45,8 +45,8 @@ function test()
         {
             var pageReloaded = false;
             var nodeRestored = false;
-            InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
-            InspectorTest.reloadPage(onPageReloaded);
+            TestRunner.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
+            TestRunner.reloadPage(onPageReloaded);
 
             function onPageReloaded()
             {
@@ -73,9 +73,9 @@ function test()
 
     function dumpSelectedNode()
     {
-        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
         var nodeName = selectedElement ? selectedElement.node().nodeNameInCorrectCase() : "null";
-        InspectorTest.addResult("Selected node: '" + nodeName + "'");
+        TestRunner.addResult("Selected node: '" + nodeName + "'");
     }
 
     /**
@@ -83,7 +83,7 @@ function test()
      */
     function overridePushNodeForPath(pathToIgnore)
     {
-        var original = InspectorTest.override(SDK.DOMModel.prototype, "pushNodeByPathToFrontend", override);
+        var original = TestRunner.override(SDK.DOMModel.prototype, "pushNodeByPathToFrontend", override);
 
         function override(nodePath, callback)
         {

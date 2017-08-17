@@ -68,7 +68,7 @@ function test()
     function nextNode()
     {
         var nodeId = String(list[index++]);
-        InspectorTest.dumpInspectorHighlightJSON(nodeId, (index == list.length)  ? InspectorTest.completeTest.bind(InspectorTest): nextNode);
+        ElementsTestRunner.dumpInspectorHighlightJSON(nodeId, (index == list.length)  ? TestRunner.completeTest.bind(InspectorTest): nextNode);
     }
     nextNode();
 }

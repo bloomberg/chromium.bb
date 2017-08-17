@@ -11,25 +11,25 @@ function test()
     var treeOutline;
     var section;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testFreeFlowEdit(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true);
-            treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
+            ElementsTestRunner.dumpSelectedElementStyles(true);
+            treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("color");
             treeOutline = treeElement.treeOutline;
 
             treeElement.startEditing();
             treeElement.nameElement.textContent = "color";
-            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
             // Update incrementally, do not commit.
             treeElement.valueElement.textContent = "rgb(/*";
-            InspectorTest.waitForStyleApplied(next);
+            ElementsTestRunner.waitForStyleApplied(next);
             treeElement.kickFreeFlowStyleEditForTest();
         },
 
@@ -38,44 +38,44 @@ function test()
             // Commit editing.
             treeElement.valueElement.textContent = "green";
             treeElement.valueElement.firstChild.select();
-            InspectorTest.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            TestRunner.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         },
 
         function testNewPropertyEditorIsCreated(next)
         {
             var blankTreeElement = treeOutline.rootElement().childAt(1);
             if (!UI.isBeingEdited(blankTreeElement.nameElement)) {
-                InspectorTest.addResult("No new property editor active!");
-                InspectorTest.completeTest();
+                TestRunner.addResult("No new property editor active!");
+                TestRunner.completeTest();
                 return;
             }
 
             // Test Styles pane editor looping.
-            InspectorTest.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
-            blankTreeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            TestRunner.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            blankTreeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         },
 
         function testCycleThroughPropertyEditing(next)
         {
             if (!UI.isBeingEdited(treeOutline.firstChild().nameElement)) {
-                InspectorTest.addResult("Original property name editor not active!");
-                InspectorTest.completeTest();
+                TestRunner.addResult("Original property name editor not active!");
+                TestRunner.completeTest();
                 return;
             }
 
-            InspectorTest.selectNodeWithId("other", next);
+            ElementsTestRunner.selectNodeWithId("other", next);
         },
 
         function testNodeStyles(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function dumpStyles(next)
         {
-            InspectorTest.addResult("After append:");
-            InspectorTest.dumpSelectedElementStyles(true);
+            TestRunner.addResult("After append:");
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             next();
         }
     ]);

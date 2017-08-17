@@ -16,23 +16,23 @@ function clickPseudo()
 
 function test()
 {
-    InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(inspectModeEnabled);
+    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(inspectModeEnabled);
 
     function inspectModeEnabled()
     {
         UI.context.addFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
-        InspectorTest.evaluateInPage("clickPseudo()");
+        TestRunner.evaluateInPage("clickPseudo()");
     }
 
     function selectedNodeChanged()
     {
-        var selectedNode = InspectorTest.firstElementsTreeOutline().selectedDOMNode();
+        var selectedNode = ElementsTestRunner.firstElementsTreeOutline().selectedDOMNode();
         if (!selectedNode)
-            InspectorTest.addResult("<no selected node>");
+            TestRunner.addResult("<no selected node>");
         else
-            InspectorTest.addResult("Selected node pseudo type: " + selectedNode.pseudoType());
+            TestRunner.addResult("Selected node pseudo type: " + selectedNode.pseudoType());
         UI.context.removeFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

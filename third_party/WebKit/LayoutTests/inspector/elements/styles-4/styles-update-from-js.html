@@ -42,49 +42,49 @@ function modifyChildAttr()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testInit(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("container", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
         },
 
         function testSetStyleAttribute(next)
         {
             waitAndDumpAttributeAndStyles(next);
-            InspectorTest.evaluateInPage("modifyStyleAttribute()");
+            TestRunner.evaluateInPage("modifyStyleAttribute()");
         },
 
         function testSetStyleCSSText(next)
         {
             waitAndDumpAttributeAndStyles(next);
-            InspectorTest.evaluateInPage("modifyCSSText()");
+            TestRunner.evaluateInPage("modifyCSSText()");
         },
 
         function testSetViaParsedAttributes(next)
         {
             waitAndDumpAttributeAndStyles(next);
-            InspectorTest.evaluateInPage("modifyParsedAttributes()");
+            TestRunner.evaluateInPage("modifyParsedAttributes()");
         },
 
         function testSetViaAncestorClass(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("child", callback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("child", callback);
 
             function callback()
             {
                 waitAndDumpAttributeAndStyles(next, "child");
-                InspectorTest.evaluateInPage("modifyContainerClass()");
+                TestRunner.evaluateInPage("modifyContainerClass()");
             }
         },
 
         function testSetViaSiblingAttr(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("childSibling", callback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("childSibling", callback);
 
             function callback()
             {
                 waitAndDumpAttributeAndStyles(next, "childSibling");
-                InspectorTest.evaluateInPage("modifyChildAttr()");
+                TestRunner.evaluateInPage("modifyChildAttr()");
             }
         }
     ]);
@@ -97,29 +97,29 @@ function test()
             dumpAttributeAndStyles(id);
             next();
         }
-        InspectorTest.waitForStyles(id, callback);
+        ElementsTestRunner.waitForStyles(id, callback);
     }
 
     function dumpAttributeAndStyles(id)
     {
         var treeElement = findNodeTreeElement(id);
         if (!treeElement) {
-            InspectorTest.addResult("'" + id + "' tree element not found");
+            TestRunner.addResult("'" + id + "' tree element not found");
             return;
         }
-        InspectorTest.addResult(treeElement.listItemElement.textContent.replace(/\u200b/g, ""));
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult(treeElement.listItemElement.textContent.replace(/\u200b/g, ""));
+        ElementsTestRunner.dumpSelectedElementStyles(true);
     }
 
     function findNodeTreeElement(id)
     {
-        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
-        var expandedNode = InspectorTest.expandedNodeWithId(id);
+        ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
+        var expandedNode = ElementsTestRunner.expandedNodeWithId(id);
         if (!expandedNode) {
-            InspectorTest.addResult("'" + id + "' node not found");
-            InspectorTest.completeTest();
+            TestRunner.addResult("'" + id + "' node not found");
+            TestRunner.completeTest();
         }
-        return InspectorTest.firstElementsTreeOutline().findTreeElement(expandedNode);
+        return ElementsTestRunner.firstElementsTreeOutline().findTreeElement(expandedNode);
     }
 }
 </script>

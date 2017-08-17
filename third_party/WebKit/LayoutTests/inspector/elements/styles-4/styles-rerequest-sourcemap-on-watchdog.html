@@ -13,26 +13,26 @@ function addStyleSheet()
 
 function test()
 {
-    InspectorTest.cssModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onInitialSourceMap);
+    TestRunner.cssModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onInitialSourceMap);
 
-    InspectorTest.evaluateInPagePromise("addStyleSheet()");
+    TestRunner.evaluateInPagePromise("addStyleSheet()");
 
     function onInitialSourceMap()
     {
-        InspectorTest.cssModel.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onInitialSourceMap);
-        InspectorTest.waitForScriptSource("styles-rerequest-sourcemap-on-watchdog.css", onCSSFile);
+        TestRunner.cssModel.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onInitialSourceMap);
+        SourcesTestRunner.waitForScriptSource("styles-rerequest-sourcemap-on-watchdog.css", onCSSFile);
     }
 
     function onCSSFile(uiSourceCode)
     {
-        InspectorTest.addSniffer(SDK.SourceMapManager.prototype, "_sourceMapLoadedForTest", onSourceMapRerequested);
+        TestRunner.addSniffer(SDK.SourceMapManager.prototype, "_sourceMapLoadedForTest", onSourceMapRerequested);
         uiSourceCode.addRevision("div { color: blue; } /*# sourceMappingURL=styles-rerequest-sourcemap-on-watchdog.css.map */");
     }
 
     function onSourceMapRerequested()
     {
-        InspectorTest.addResult("SourceMap successfully re-requested.");
-        InspectorTest.completeTest();
+        TestRunner.addResult("SourceMap successfully re-requested.");
+        TestRunner.completeTest();
     }
 }
 </script>

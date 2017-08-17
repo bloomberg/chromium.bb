@@ -15,36 +15,36 @@ function modify(id)
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function setupTest(next)
         {
-            InspectorTest.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
+            ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
 
             function didSelectElement()
             {
-                InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "update", InspectorTest.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
+                TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "update", TestRunner.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
                 next();
             }
         },
 
         function testModifySibling(next)
         {
-            InspectorTest.evaluateInPage("modify(\"sibling\")", next);
+            TestRunner.evaluateInPage("modify(\"sibling\")", next);
         },
 
         function testModifySiblingChild(next)
         {
-            InspectorTest.evaluateInPage("modify(\"child-of-sibling\")", next);
+            TestRunner.evaluateInPage("modify(\"child-of-sibling\")", next);
         },
 
         function testModifyParent(next)
         {
-            InspectorTest.evaluateInPage("modify(\"parent\")", next);
+            TestRunner.evaluateInPage("modify(\"parent\")", next);
         },
 
         function testModifyChild(next)
         {
-            InspectorTest.evaluateInPage("modify(\"child\")", next);
+            TestRunner.evaluateInPage("modify(\"child\")", next);
         }
     ]);
 };

@@ -20,7 +20,7 @@ function createShadowRootV1(containerId, id, mode)
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testCreateShadowRoot(next)
         {
             testShadowRoot("container", "createShadowRoot('shadow-1')", next);
@@ -45,20 +45,20 @@ function test()
     function testShadowRoot(containerId, code, next)
     {
         var containerNode;
-        InspectorTest.expandElementsTree(dumpBefore);
+        ElementsTestRunner.expandElementsTree(dumpBefore);
 
         function dumpBefore()
         {
-            containerNode = InspectorTest.expandedNodeWithId(containerId);
-            InspectorTest.addResult("==== before ====");
-            InspectorTest.dumpElementsTree(containerNode);
-            InspectorTest.evaluateInPage(code, InspectorTest.expandElementsTree.bind(InspectorTest, dumpAfter));
+            containerNode = ElementsTestRunner.expandedNodeWithId(containerId);
+            TestRunner.addResult("==== before ====");
+            ElementsTestRunner.dumpElementsTree(containerNode);
+            TestRunner.evaluateInPage(code, ElementsTestRunner.expandElementsTree.bind(InspectorTest, dumpAfter));
         }
 
         function dumpAfter()
         {
-            InspectorTest.addResult("==== after ====");
-            InspectorTest.dumpElementsTree(containerNode);
+            TestRunner.addResult("==== after ====");
+            ElementsTestRunner.dumpElementsTree(containerNode);
             next();
         }
     }

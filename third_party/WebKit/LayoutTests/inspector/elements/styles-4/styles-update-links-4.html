@@ -21,25 +21,25 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectNodeWithPseudoElements(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("pseudo", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("pseudo", next);
         },
 
         function testPseudoSectionPropertyEdit(next)
         {
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("pseudo-property");
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("pseudo-property");
             var treeElement = treeItem.section().addNewBlankProperty(1);
-            InspectorTest.waitForStyleApplied(onPropertyInserted);
+            ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
             treeElement.applyStyleText("PROPERTY: INSERTED;", true);
 
             function onPropertyInserted()
             {
-                InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTED ####\n\n");
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
-                var rules = InspectorTest.getMatchedRules();
-                InspectorTest.validateRuleRanges("pseudo", rules, next);
+                TestRunner.addResult("\n\n#### AFTER PROPERTY INSERTED ####\n\n");
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+                var rules = ElementsTestRunner.getMatchedRules();
+                ElementsTestRunner.validateRuleRanges("pseudo", rules, next);
             }
         }
     ]);

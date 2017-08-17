@@ -23,29 +23,29 @@ function test()
 
     function step1()
     {
-        InspectorTest.selectNodeWithId("node", function () {
-            InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+        ElementsTestRunner.selectNodeWithId("node", function () {
+            ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
         });
     }
 
     function step2()
     {
-        InspectorTest.removeFirstEventListener();
-        InspectorTest.addResult("Listeners after removal:");
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step3, true);
+        ElementsTestRunner.removeFirstEventListener();
+        TestRunner.addResult("Listeners after removal:");
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step3, true);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("node-sibling", function () {
-            InspectorTest.addResult("Listeners for sibling node:");
-            InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
+        ElementsTestRunner.selectNodeWithId("node-sibling", function () {
+            TestRunner.addResult("Listeners for sibling node:");
+            ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
         });
     }
 
     function step4()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     step1();

@@ -7,13 +7,13 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("main", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("main", step1);
 
     function step1()
     {
-        InspectorTest.addResult("Main style:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Main style:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        TestRunner.completeTest();
     }
 }
 </script>

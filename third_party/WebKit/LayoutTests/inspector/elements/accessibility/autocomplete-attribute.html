@@ -8,19 +8,19 @@
 function test()
 {
     UI.viewManager.showView("accessibility.view")
-        .then(() => InspectorTest.selectNodeAndWaitForAccessibility("inspected"))
+        .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility("inspected"))
         .then(runTests);
 
     function getPromptForAttribute(attribute)
     {
-        var treeElement = InspectorTest.findARIAAttributeTreeElement(attribute);
+        var treeElement = AccessibilityTestRunner.findARIAAttributeTreeElement(attribute);
         treeElement._startEditing();
         return treeElement._prompt;
     }
 
     function runTests()
     {
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testCheckedEmptyValue(next)
             {
                 var prompt = getPromptForAttribute("aria-checked");
@@ -65,7 +65,7 @@ function test()
             var i;
             for (i = 0; i < golden.length; ++i) {
                 if (!suggestions.has(golden[i]))
-                    InspectorTest.addResult("NOT FOUND: " + golden[i]);
+                    TestRunner.addResult("NOT FOUND: " + golden[i]);
             }
             proxyElement.remove();
             callback();

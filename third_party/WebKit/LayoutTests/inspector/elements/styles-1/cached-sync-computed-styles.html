@@ -16,7 +16,7 @@ function updateStyle()
 
 function test()
 {
-    InspectorTest.nodeWithId("inspected", step1);
+    ElementsTestRunner.nodeWithId("inspected", step1);
     var backendCallCount = 0;
     var nodeId;
 
@@ -30,25 +30,25 @@ function test()
     {
         var callsLeft = 2;
         nodeId = node.id;
-        InspectorTest.addSniffer(Protocol.TargetBase.prototype, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
-        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
-        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
+        TestRunner.addSniffer(Protocol.TargetBase.prototype, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
+        TestRunner.cssModel.computedStylePromise(nodeId).then(styleCallback);
+        TestRunner.cssModel.computedStylePromise(nodeId).then(styleCallback);
         function styleCallback()
         {
             if (--callsLeft)
                 return;
-            InspectorTest.addResult("# of backend calls sent [2 requests]: " + backendCallCount);
-            InspectorTest.evaluateInPage("updateStyle()", step2);
+            TestRunner.addResult("# of backend calls sent [2 requests]: " + backendCallCount);
+            TestRunner.evaluateInPage("updateStyle()", step2);
         }
     }
 
     function step2()
     {
-        InspectorTest.cssModel.computedStylePromise(nodeId).then(callback);
+        TestRunner.cssModel.computedStylePromise(nodeId).then(callback);
         function callback()
         {
-            InspectorTest.addResult("# of backend calls sent [style update + another request]: " + backendCallCount);
-            InspectorTest.completeTest();
+            TestRunner.addResult("# of backend calls sent [style update + another request]: " + backendCallCount);
+            TestRunner.completeTest();
         }
     }
 }

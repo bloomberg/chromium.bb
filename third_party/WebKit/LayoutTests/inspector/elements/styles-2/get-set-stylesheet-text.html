@@ -24,7 +24,7 @@ function test()
 
     function findStyleSheet()
     {
-        var styleSheetHeaders = InspectorTest.cssModel.styleSheetHeaders();
+        var styleSheetHeaders = TestRunner.cssModel.styleSheetHeaders();
         for (var i = 0; i < styleSheetHeaders.length; ++i) {
             styleSheetHeader = styleSheetHeaders[i];
             if (styleSheetHeader.sourceURL.indexOf("get-set-stylesheet-text.css") >= 0) {
@@ -32,18 +32,18 @@ function test()
                 foundStyleSheetHeader.requestContent().then(callback);
             }
             if (!foundStyleSheetHeader)
-                InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
+                TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
         }
 
         function callback(content)
         {
             foundStyleSheetText = content;
-            InspectorTest.runTestSuite([ testSetText, testNewElementStyles ]);
+            TestRunner.runTestSuite([ testSetText, testNewElementStyles ]);
         }
 
         function styleSheetAdded()
         {
-            InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
+            TestRunner.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
             findStyleSheet();
         }
     }
@@ -53,15 +53,15 @@ function test()
         function callback(error)
         {
             if (error) {
-                InspectorTest.addResult("Failed to set stylesheet text: " + error);
+                TestRunner.addResult("Failed to set stylesheet text: " + error);
                 return;
             }
         }
 
-        InspectorTest.addResult("=== Original stylesheet text: ===");
-        InspectorTest.addResult(foundStyleSheetText);
-        InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, next, this);
-        InspectorTest.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true).then(callback);
+        TestRunner.addResult("=== Original stylesheet text: ===");
+        TestRunner.addResult(foundStyleSheetText);
+        TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, next, this);
+        TestRunner.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true).then(callback);
     }
 
     function testNewElementStyles()
@@ -69,21 +69,21 @@ function test()
         function callback(response)
         {
             if (response[Protocol.Error]) {
-                InspectorTest.addResult("error: " + response[Protocol.Error]);
+                TestRunner.addResult("error: " + response[Protocol.Error]);
                 return;
             }
 
-            InspectorTest.addResult("=== Matched rules for h1 after setText() ===");
+            TestRunner.addResult("=== Matched rules for h1 after setText() ===");
             dumpMatchesArray(response.matchedCSSRules);
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         }
 
         function nodeCallback(node)
         {
-            InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(callback);
+            TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(callback);
         }
 
-        InspectorTest.selectNodeWithId("inspected", nodeCallback);
+        ElementsTestRunner.selectNodeWithId("inspected", nodeCallback);
     }
 
 
@@ -103,10 +103,10 @@ function test()
             return;
         var isRule = !!(ruleOrStyle.style);
         var style = isRule ? ruleOrStyle.style : ruleOrStyle;
-        InspectorTest.addResult("");
-        InspectorTest.addResult(isRule ? "rule" : "style");
-        InspectorTest.addResult((isRule ? (ruleOrStyle.selectorList.text + ": [" + ruleOrStyle.origin + "]") : "raw style"));
-        InspectorTest.dumpStyle(style);
+        TestRunner.addResult("");
+        TestRunner.addResult(isRule ? "rule" : "style");
+        TestRunner.addResult((isRule ? (ruleOrStyle.selectorList.text + ": [" + ruleOrStyle.origin + "]") : "raw style"));
+        ElementsTestRunner.dumpStyle(style);
     }
 }
 </script>

@@ -6,13 +6,13 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInPage("document", didReceiveDocumentObject);
+    TestRunner.evaluateInPage("document", didReceiveDocumentObject);
     async function didReceiveDocumentObject(remoteObject)
     {
-        InspectorTest.addResult("didReceiveDocumentObject");
-        var nodeId = await InspectorTest.DOMAgent.requestNode(remoteObject.objectId);
-        InspectorTest.addResult("didRequestNode error = " + (nodeId ? "null" : "error"));
-        InspectorTest.completeTest();
+        TestRunner.addResult("didReceiveDocumentObject");
+        var nodeId = await TestRunner.DOMAgent.requestNode(remoteObject.objectId);
+        TestRunner.addResult("didRequestNode error = " + (nodeId ? "null" : "error"));
+        TestRunner.completeTest();
     }
 }
 </script>

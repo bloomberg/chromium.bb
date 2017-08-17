@@ -11,7 +11,7 @@ function test()
     var unformattedStyle;
 
 
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
 
     function onStyleSheetChanged(event)
     {
@@ -23,14 +23,14 @@ function test()
             unformattedStyle.rebase(event.data.edit);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function initFormattedStyle(next)
         {
             function callback(matchedResult)
             {
                 if (!matchedResult) {
-                    InspectorTest.addResult("empty styles");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("empty styles");
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -40,9 +40,9 @@ function test()
 
             function nodeCallback(node)
             {
-                InspectorTest.cssModel.matchedStylesPromise(node.id).then(callback);
+                TestRunner.cssModel.matchedStylesPromise(node.id).then(callback);
             }
-            InspectorTest.selectNodeWithId("formatted", nodeCallback);
+            ElementsTestRunner.selectNodeWithId("formatted", nodeCallback);
         },
 
         function testFormattedInsertStart(next)
@@ -149,8 +149,8 @@ function test()
             function callback(matchedResult)
             {
                 if (!matchedResult) {
-                    InspectorTest.addResult("empty styles");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("empty styles");
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -160,9 +160,9 @@ function test()
 
             function nodeCallback(node)
             {
-                InspectorTest.cssModel.matchedStylesPromise(node.id).then(callback);
+                TestRunner.cssModel.matchedStylesPromise(node.id).then(callback);
             }
-            InspectorTest.selectNodeWithId("unformatted", nodeCallback);
+            ElementsTestRunner.selectNodeWithId("unformatted", nodeCallback);
         },
 
         function testUnformattedInsertStart(next)
@@ -240,8 +240,8 @@ function test()
     function dumpFormattedAndCallNext(next, success)
     {
         if (!success) {
-            InspectorTest.addResult("error: operation failed.");
-            InspectorTest.completeTest();
+            TestRunner.addResult("error: operation failed.");
+            TestRunner.completeTest();
             return;
         }
 
@@ -253,8 +253,8 @@ function test()
     function dumpUnformattedAndCallNext(next, success)
     {
         if (!success) {
-            InspectorTest.addResult("error: operation failed.");
-            InspectorTest.completeTest();
+            TestRunner.addResult("error: operation failed.");
+            TestRunner.completeTest();
             return;
         }
 
@@ -267,8 +267,8 @@ function test()
     {
         if (!style)
             return;
-        InspectorTest.addResult("raw cssText:");
-        InspectorTest.addResult("{" + style.cssText + "}");
+        TestRunner.addResult("raw cssText:");
+        TestRunner.addResult("{" + style.cssText + "}");
     }
 }
 </script>

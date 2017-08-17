@@ -12,12 +12,12 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        dumpDOM(InspectorTest.getMatchedStylePropertyTreeItem("background"));
-        InspectorTest.completeTest();
+        dumpDOM(ElementsTestRunner.getMatchedStylePropertyTreeItem("background"));
+        TestRunner.completeTest();
     }
 
     function dumpDOM(treeItem)
@@ -25,7 +25,7 @@ function test()
         var element = treeItem.listItemElement.getElementsByClassName("value")[0];
         var result = [];
         dumpNode(element, result);
-        InspectorTest.addResult(result.join(""));
+        TestRunner.addResult(result.join(""));
     }
 
     function dumpNode(parentNode, result)

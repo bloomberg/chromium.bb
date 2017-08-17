@@ -9,24 +9,24 @@ function test()
     var UPDATE_COUNT = 5;
     var rebuildCount = 0;
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", selectCallback);
     function selectCallback()
     {
-        InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
+        TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
         var stylesPane = UI.panels.elements._stylesWidget;
         for (var i = 0; i < UPDATE_COUNT; ++i)
             UI.context.setFlavor(SDK.DOMNode, stylesPane.node());
 
-        InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
+        TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
     }
 
     function completeCallback()
     {
         if (rebuildCount >= UPDATE_COUNT)
-            InspectorTest.addResult("ERROR: got " + rebuildCount + " rebuilds for " + UPDATE_COUNT + " consecutive updates");
+            TestRunner.addResult("ERROR: got " + rebuildCount + " rebuilds for " + UPDATE_COUNT + " consecutive updates");
         else
-            InspectorTest.addResult("OK: rebuilds throttled");
-        InspectorTest.completeTest();
+            TestRunner.addResult("OK: rebuilds throttled");
+        TestRunner.completeTest();
     }
 
     function sniffRebuild()

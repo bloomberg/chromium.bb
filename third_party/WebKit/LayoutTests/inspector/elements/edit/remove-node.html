@@ -19,73 +19,73 @@ function test()
 {
     var containerNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
+                containerNode = ElementsTestRunner.expandedNodeWithId("container");
 
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.expandElementsTree(callback);
+            ElementsTestRunner.expandElementsTree(callback);
         },
 
         function testRemoveTextNode(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Removed Text node =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Removed Text node =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("removeTextNode('child1')", callback);
+            TestRunner.evaluateInPage("removeTextNode('child1')", callback);
         },
 
         function testRemoveFirst(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Removed first =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Removed first =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("removeNode('child1')", callback);
+            TestRunner.evaluateInPage("removeNode('child1')", callback);
         },
 
         function testRemoveMiddle(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Removed middle =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Removed middle =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("removeNode('child3')", callback);
+            TestRunner.evaluateInPage("removeNode('child3')", callback);
         },
 
         function testRemoveLast(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Removed last =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Removed last =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("removeNode('child4')", callback);
+            TestRunner.evaluateInPage("removeNode('child4')", callback);
         },
 
         function testRemoveTheOnly(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Removed the only =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Removed the only =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("removeNode('child2')", callback);
+            TestRunner.evaluateInPage("removeNode('child2')", callback);
         }
     ]);
 }

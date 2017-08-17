@@ -21,26 +21,26 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("container", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
         },
 
         function testInsertProperty(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
             var treeElement = treeItem.section().addNewBlankProperty(1);
-            InspectorTest.waitForStyleApplied(onPropertyInserted);
+            ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
             treeElement.applyStyleText("PROPERTY: INSERTED;", true);
 
             function onPropertyInserted()
             {
-                InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
-                var rules = InspectorTest.getMatchedRules();
-                InspectorTest.validateRuleRanges("container", rules, next);
+                TestRunner.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+                var rules = ElementsTestRunner.getMatchedRules();
+                ElementsTestRunner.validateRuleRanges("container", rules, next);
             }
         }
     ]);

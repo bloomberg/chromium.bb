@@ -7,7 +7,7 @@
 var test = function() {
 
   // make sure the tree is loaded
-  InspectorTest.selectNodeAndWaitForStyles("node-to-copy",nodeSelected);
+  ElementsTestRunner.selectNodeAndWaitForStyles("node-to-copy",nodeSelected);
   var input = document.body.createChild('input');
 
   function nodeSelected() {
@@ -17,8 +17,8 @@ var test = function() {
   }
   function next() {
     eventSender.keyDown('Paste');
-    InspectorTest.addResult(input.value);
-    InspectorTest.completeTest();
+    TestRunner.addResult(input.value);
+    TestRunner.completeTest();
   }
 }
 </script>

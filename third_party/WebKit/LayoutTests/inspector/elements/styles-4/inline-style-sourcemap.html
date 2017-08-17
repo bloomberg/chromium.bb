@@ -15,15 +15,15 @@ function embedInlineStyleSheet()
 function test()
 {
     SDK.targetManager.addModelListener(SDK.CSSModel, SDK.CSSModel.Events.StyleSheetAdded, function() { });
-    InspectorTest.evaluateInPage("embedInlineStyleSheet()", onEvaluated);
+    TestRunner.evaluateInPage("embedInlineStyleSheet()", onEvaluated);
 
     function onEvaluated() {
-        InspectorTest.selectNodeAndWaitForStyles("inspect", onSelected);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspect", onSelected);
     }
 
     function onSelected() {
-        InspectorTest.dumpSelectedElementStyles(true, false, false);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
+        TestRunner.completeTest();
     }
 };
 

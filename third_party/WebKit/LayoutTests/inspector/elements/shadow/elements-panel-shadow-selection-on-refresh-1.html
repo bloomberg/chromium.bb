@@ -7,21 +7,21 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function setup(next)
         {
             Common.settingForTest("showUAShadowDOM").set(true);
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testOpenShadowRoot(next)
         {
-            InspectorTest.findNode(isOpenShadowRoot, InspectorTest.selectReloadAndDump.bind(null, next));
+            ElementsTestRunner.findNode(isOpenShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
         },
 
         function testClosedShadowRoot(next)
         {
-            InspectorTest.findNode(isClosedShadowRoot, InspectorTest.selectReloadAndDump.bind(null, next));
+            ElementsTestRunner.findNode(isClosedShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
         },
     ]);
 

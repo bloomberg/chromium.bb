@@ -8,7 +8,7 @@ var test = function()
 {
     function setColor(inputColor, format)
     {
-        InspectorTest.addResult("Testing: " + inputColor);
+        TestRunner.addResult("Testing: " + inputColor);
         var color = Common.Color.parse(inputColor);
         spectrum.setColor(color, format);
     }
@@ -16,7 +16,7 @@ var test = function()
     function checkColorString(inputColor, format)
     {
         setColor(inputColor, format)
-        InspectorTest.addResult(spectrum.colorString());
+        TestRunner.addResult(spectrum.colorString());
     }
 
     function checkAlphaChange(inputColor, format)
@@ -24,16 +24,16 @@ var test = function()
         setColor(inputColor, format)
         spectrum._hsv[3] = 0;
         spectrum._innerSetColor(spectrum._hsv, undefined, undefined, ColorPicker.Spectrum._ChangeSource.Other);
-        InspectorTest.addResult(spectrum.colorString());
+        TestRunner.addResult(spectrum.colorString());
     }
 
     function checkNextFormat(inputColor, format)
     {
         setColor(inputColor, format);
         spectrum._formatViewSwitch();
-        InspectorTest.addResult(spectrum._colorFormat);
+        TestRunner.addResult(spectrum._colorFormat);
         spectrum._formatViewSwitch();
-        InspectorTest.addResult(spectrum._colorFormat);
+        TestRunner.addResult(spectrum._colorFormat);
     }
 
     var spectrum = new ColorPicker.Spectrum();
@@ -49,19 +49,19 @@ var test = function()
         { string: "hsl(1, 100%, 50%)", format: cf.HSL },
         { string: "hsla(1, 100%, 50%, 0.2)", format: cf.HSLA }];
 
-    InspectorTest.addResult("--- Testing colorString()");
+    TestRunner.addResult("--- Testing colorString()");
     for (var color of inputColors)
         checkColorString(color.string, color.format);
 
-    InspectorTest.addResult("--- Testing alpha changes");
+    TestRunner.addResult("--- Testing alpha changes");
     for (var color of inputColors)
         checkAlphaChange(color.string, color.format);
 
-    InspectorTest.addResult("--- Testing _formatViewSwitch()");
+    TestRunner.addResult("--- Testing _formatViewSwitch()");
     for (var color of inputColors)
         checkNextFormat(color.string, color.format);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

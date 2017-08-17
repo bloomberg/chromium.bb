@@ -21,24 +21,24 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("container", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
         },
 
         function testDisableProperty(next)
         {
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
-            InspectorTest.waitForStyleApplied(onPropertyDisabled);
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("border");
+            ElementsTestRunner.waitForStyleApplied(onPropertyDisabled);
             treeItem._toggleEnabled({ target: { checked: false }, consume: function() { } });
 
             function onPropertyDisabled()
             {
-                InspectorTest.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
-                var rules = InspectorTest.getMatchedRules();
-                InspectorTest.validateRuleRanges("container", rules, next);
+                TestRunner.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+                var rules = ElementsTestRunner.getMatchedRules();
+                ElementsTestRunner.validateRuleRanges("container", rules, next);
             }
         }
     ]);

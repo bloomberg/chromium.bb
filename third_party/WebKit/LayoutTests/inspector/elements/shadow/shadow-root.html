@@ -6,10 +6,10 @@
 
 function test()
 {
-    InspectorTest.expandElementsTree(function() {
-        var container = InspectorTest.expandedNodeWithId("container");
-        InspectorTest.dumpElementsTree(container);
-        InspectorTest.completeTest();
+    ElementsTestRunner.expandElementsTree(function() {
+        var container = ElementsTestRunner.expandedNodeWithId("container");
+        ElementsTestRunner.dumpElementsTree(container);
+        TestRunner.completeTest();
     });
 }
 </script>

@@ -11,37 +11,37 @@ function test()
     var bodyNode;
     var headNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(step1);
+            ElementsTestRunner.expandElementsTree(step1);
             function step1()
             {
-                htmlNode = InspectorTest.expandedNodeWithId("html");
-                headNode = InspectorTest.expandedNodeWithId("head");
-                bodyNode = InspectorTest.expandedNodeWithId("body");
+                htmlNode = ElementsTestRunner.expandedNodeWithId("html");
+                headNode = ElementsTestRunner.expandedNodeWithId("head");
+                bodyNode = ElementsTestRunner.expandedNodeWithId("body");
                 next();
             }
         },
 
         function testSetBody(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>").then(dumpHTML(next));
+            TestRunner.DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>").then(dumpHTML(next));
         },
 
         function testInsertComments(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>").then(dumpHTML(next));
+            TestRunner.DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>").then(dumpHTML(next));
         },
 
         function testSetHead(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>").then(dumpHTML(next));
+            TestRunner.DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>").then(dumpHTML(next));
         },
 
         function testSetHTML(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(
+            TestRunner.DOMAgent.setOuterHTML(
                 htmlNode.id, "<html><head><!-- new head content --></head><body>Setting body as a part of HTML.</body></html>").then(dumpHTML(next));
         }
     ]);
@@ -50,8 +50,8 @@ function test()
     {
         async function dump()
         {
-            var text = await InspectorTest.DOMAgent.getOuterHTML(htmlNode.id);
-            InspectorTest.addResult(text);
+            var text = await TestRunner.DOMAgent.getOuterHTML(htmlNode.id);
+            TestRunner.addResult(text);
             next();
         }
         return dump;

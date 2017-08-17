@@ -19,20 +19,20 @@ function click()
 
 function test()
 {
-    InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
 
     function step2()
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        InspectorTest.evaluateInPage("click()");
+        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        TestRunner.evaluateInPage("click()");
     }
 
     function step3()
     {
-        InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
-        InspectorTest.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
-        InspectorTest.completeTest();
+        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+        TestRunner.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
+        TestRunner.completeTest();
     }
 }
 

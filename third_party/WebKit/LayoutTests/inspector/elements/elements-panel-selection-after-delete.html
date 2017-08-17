@@ -17,11 +17,11 @@ function test()
     function selectNode(className, callback)
     {
         var selector = "#testTreeContainer ." + className;
-        InspectorTest.querySelector(selector, gotNode);
+        ElementsTestRunner.querySelector(selector, gotNode);
 
         function gotNode(node)
         {
-            InspectorTest.selectNode(node).then(callback);
+            ElementsTestRunner.selectNode(node).then(callback);
         }
     }
 
@@ -42,37 +42,37 @@ function test()
 
     function prepareTestTree(callback)
     {
-        InspectorTest.evaluateInPage("prepareTestTree()", callback);
+        TestRunner.evaluateInPage("prepareTestTree()", callback);
     }
 
     function removeElementAsUser(element, callback)
     {
-        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
+        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
         element.remove();
     }
 
     function removeElementExternally(element, callback)
     {
         var node = element.node();
-        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateChildren", callback);
+        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateChildren", callback);
         node.removeNode();
     }
 
     function dumpSelectedNode()
     {
-        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
         var selectedNode = selectedElement ? selectedElement.node() : null;
-        InspectorTest.addResult("The following node is now selected: " + nodeToString(selectedNode));
+        TestRunner.addResult("The following node is now selected: " + nodeToString(selectedNode));
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testUserDelete(next)
         {
             prepareTestTree(step2);
 
             function step2()
             {
-                InspectorTest.addResult("Selecting node...");
+                TestRunner.addResult("Selecting node...");
                 selectNode("child2", step3);
             }
 
@@ -80,8 +80,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting selected node like it was a user action...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting selected node like it was a user action...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementAsUser(selectedElement, step4);
             }
 
@@ -89,8 +89,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting selected node like it was a user action again...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting selected node like it was a user action again...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementAsUser(selectedElement, step5);
             }
 
@@ -98,8 +98,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting last child like it was a user action...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting last child like it was a user action...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementAsUser(selectedElement, step6);
             }
 
@@ -113,12 +113,12 @@ function test()
         function testExternalDelete(next)
         {
             // We should wait for container node to be updated since it is already populated.
-            InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
+            TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
             prepareTestTree();
 
             function step2()
             {
-                InspectorTest.addResult("Selecting node...");
+                TestRunner.addResult("Selecting node...");
                 selectNode("child2", step3);
             }
 
@@ -126,8 +126,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting selected node externally...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting selected node externally...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementExternally(selectedElement, step4);
             }
 
@@ -135,8 +135,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting selected node externally again...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting selected node externally again...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementExternally(selectedElement, step5);
             }
 
@@ -144,8 +144,8 @@ function test()
             {
                 dumpSelectedNode();
 
-                InspectorTest.addResult("Deleting last child externally...");
-                var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+                TestRunner.addResult("Deleting last child externally...");
+                var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
                 removeElementExternally(selectedElement, step6);
             }
 

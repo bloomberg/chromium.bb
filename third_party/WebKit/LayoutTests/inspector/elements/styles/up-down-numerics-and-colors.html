@@ -15,46 +15,46 @@ h1 {
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testInit(next)
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testAlterColor(next)
         {
-            var colorTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            var colorTreeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
             colorTreeElement.startEditing(colorTreeElement.valueElement);
 
             // PageUp should change to 'FF3'
-            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp"));
+            colorTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("PageUp"));
             // Ctrl/Meta + Shift Down should change to 'EE3'
             if (Host.isMac())
-                colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowDown", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true, /*Meta*/ true));
+                colorTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowDown", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true, /*Meta*/ true));
             else
-                colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowDown", /*Ctrl*/ true, /*Alt*/ false, /*Shift*/ true, /*Meta*/ false));
+                colorTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowDown", /*Ctrl*/ true, /*Alt*/ false, /*Shift*/ true, /*Meta*/ false));
 
-            InspectorTest.addResult(colorTreeElement.listItemElement.textContent);
+            TestRunner.addResult(colorTreeElement.listItemElement.textContent);
             next();
         },
 
         function testAlterNumber(next)
         {
-            var opacityTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("opacity");
+            var opacityTreeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("opacity");
             opacityTreeElement.startEditing(opacityTreeElement.valueElement);
             // 0.5 (initial). Alt + Up should change to 0.6
-            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp", /*Ctrl*/ false, /*Alt*/ true, /*Shift*/ false));
+            opacityTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowUp", /*Ctrl*/ false, /*Alt*/ true, /*Shift*/ false));
             // Up should change to 1.6
-            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
+            opacityTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
             // Shift + PageUp should change to 11.6
-            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true));
-            InspectorTest.addResult(opacityTreeElement.listItemElement.textContent);
+            opacityTreeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("PageUp", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true));
+            TestRunner.addResult(opacityTreeElement.listItemElement.textContent);
             next();
         },
 
         function testAlterBigNumber(next)
         {
-            var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("transform");
+            var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("transform");
             treeElement.startEditing(treeElement.valueElement);
             var selection = treeElement.valueElement.getComponentSelection();
             var range = selection.getRangeAt(0);
@@ -63,9 +63,9 @@ function test()
             newRange.setEnd(range.startContainer, 10);
             selection.removeAllRanges();
             selection.addRange(newRange);
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
-            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp"));
-            InspectorTest.addResult(treeElement.listItemElement.textContent);
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
+            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("PageUp"));
+            TestRunner.addResult(treeElement.listItemElement.textContent);
             next();
         }
     ]);

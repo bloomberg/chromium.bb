@@ -17,27 +17,27 @@ function test()
 {
     var containerNode;
     Common.settingForTest("showUAShadowDOM").set(true);
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(containerNode);
+                containerNode = ElementsTestRunner.expandedNodeWithId("container");
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.expandElementsTree(callback);
+            ElementsTestRunner.expandElementsTree(callback);
         },
 
         function testAppend(next)
         {
-            InspectorTest.evaluateInPage("typeText()", callback);
+            TestRunner.evaluateInPage("typeText()", callback);
 
             function callback()
             {
-                InspectorTest.addResult("======== Type text =========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("======== Type text =========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
         }

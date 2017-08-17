@@ -13,41 +13,41 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("container", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("container", step1);
 
     function step1()
     {
-        InspectorTest.addResult("Initial value");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("Initial value");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("font-weight");
+        var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("font-weight");
         treeItem.applyStyleText("font-weight: normal", false);
-        InspectorTest.waitForStyles("container", step2);
+        ElementsTestRunner.waitForStyles("container", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("After changing property");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After changing property");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        InspectorTest.domModel.undo();
-        InspectorTest.selectNodeAndWaitForStyles("other", step3);
+        TestRunner.domModel.undo();
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("After undo");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After undo");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        InspectorTest.domModel.redo();
-        InspectorTest.selectNodeAndWaitForStyles("container", step4);
+        TestRunner.domModel.redo();
+        ElementsTestRunner.selectNodeAndWaitForStyles("container", step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("After redo");
-        InspectorTest.dumpSelectedElementStyles(true);
-        InspectorTest.completeTest();
+        TestRunner.addResult("After redo");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        TestRunner.completeTest();
     }
 }
 </script>

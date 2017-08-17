@@ -6,35 +6,35 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("container", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("container", step1);
 
     function step1(node)
     {
-        InspectorTest.addResult("Before disable");
-        var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
-        InspectorTest.dumpStyleTreeItem(treeItem, "");
+        TestRunner.addResult("Before disable");
+        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("font-weight");
+        ElementsTestRunner.dumpStyleTreeItem(treeItem, "");
 
-        InspectorTest.toggleStyleProperty("font-weight", false);
-        InspectorTest.waitForStyles("container", step2);
+        ElementsTestRunner.toggleStyleProperty("font-weight", false);
+        ElementsTestRunner.waitForStyles("container", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("After disable");
-        var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
-        InspectorTest.dumpStyleTreeItem(treeItem, "");
+        TestRunner.addResult("After disable");
+        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("font-weight");
+        ElementsTestRunner.dumpStyleTreeItem(treeItem, "");
 
-        InspectorTest.toggleStyleProperty("font-weight", true);
-        InspectorTest.waitForStyles("container", step3);
+        ElementsTestRunner.toggleStyleProperty("font-weight", true);
+        ElementsTestRunner.waitForStyles("container", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("After enable");
-        var treeItem = InspectorTest.getElementStylePropertyTreeItem("font-weight");
-        InspectorTest.dumpStyleTreeItem(treeItem, "");
+        TestRunner.addResult("After enable");
+        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("font-weight");
+        ElementsTestRunner.dumpStyleTreeItem(treeItem, "");
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

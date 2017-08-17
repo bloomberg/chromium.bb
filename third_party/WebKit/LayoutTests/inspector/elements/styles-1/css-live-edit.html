@@ -10,25 +10,25 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testLiveEdit(next)
         {
-            InspectorTest.showScriptSource("css-live-edit.css", didShowResource);
+            SourcesTestRunner.showScriptSource("css-live-edit.css", didShowResource);
 
             function didShowResource(sourceFrame)
             {
-                InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditResource);
-                InspectorTest.replaceInSource(sourceFrame, "font-size: 12px;", "font-size: 20px;");
+                TestRunner.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditResource);
+                SourcesTestRunner.replaceInSource(sourceFrame, "font-size: 12px;", "font-size: 20px;");
             }
 
             function didEditResource()
             {
-                InspectorTest.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
+                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
             }
 
             function didSelectElement()
             {
-                InspectorTest.dumpSelectedElementStyles(false, true);
+                ElementsTestRunner.dumpSelectedElementStyles(false, true);
                 next();
             }
         }

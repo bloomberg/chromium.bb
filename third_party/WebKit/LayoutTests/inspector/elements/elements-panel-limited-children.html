@@ -18,43 +18,43 @@ function insertNode()
 function test()
 {
     var dataTreeElement;
-    InspectorTest.nodeWithId("data", step1);
+    ElementsTestRunner.nodeWithId("data", step1);
 
     function step1(node)
     {
-        dataTreeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
+        dataTreeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
         dataTreeElement._expandedChildrenLimit = 5;
         dataTreeElement.reveal();
         dataTreeElement.expand();
-        InspectorTest.deprecatedRunAfterPendingDispatches(step2);
+        TestRunner.deprecatedRunAfterPendingDispatches(step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("=========== Loaded 5 children ===========");
+        TestRunner.addResult("=========== Loaded 5 children ===========");
         dumpElementsTree();
-        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step3);
-        InspectorTest.evaluateInPage("insertNode()");
+        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step3);
+        TestRunner.evaluateInPage("insertNode()");
     }
 
     function step3()
     {
-        InspectorTest.addResult("=========== Modified children ===========");
+        TestRunner.addResult("=========== Modified children ===========");
         dumpElementsTree();
         dataTreeElement.expandAllButtonElement.button.click();
-        InspectorTest.deprecatedRunAfterPendingDispatches(step4);
+        TestRunner.deprecatedRunAfterPendingDispatches(step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("=========== Loaded all children ===========");
+        TestRunner.addResult("=========== Loaded all children ===========");
         dumpElementsTree();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function dumpElementsTree()
     {
-        InspectorTest.dumpElementsTree(null, 0);
+        ElementsTestRunner.dumpElementsTree(null, 0);
     }
 }
 </script>

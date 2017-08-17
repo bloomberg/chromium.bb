@@ -10,8 +10,8 @@ var initialize_AdditionalPreload = function() {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
+    TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
 
     var treeElement;
     var hasResourceChanged;
@@ -23,43 +23,43 @@ function test()
     function step1()
     {
         // Click "Add new rule".
-        InspectorTest.addNewRule("foo, div#inspected, bar", step2);
+        ElementsTestRunner.addNewRule("foo, div#inspected, bar", step2);
     }
 
     function step2()
     {
-        var section = InspectorTest.firstMatchedStyleSection();
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         var newProperty = section.addNewBlankProperty();
         newProperty.startEditing();
         textInputController.insertText("color");
-        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
+        newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Tab"));
         textInputController.insertText("maroon");
-        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Tab"));
-        InspectorTest.selectNodeAndWaitForStyles("other", step3);
+        newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Tab"));
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step3);
     }
 
     function step3()
     {
         // Click "Add new rule".
-        InspectorTest.addNewRule(null, onRuleAdded);
+        ElementsTestRunner.addNewRule(null, onRuleAdded);
 
         function onRuleAdded()
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", step4);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step4);
         }
     }
 
     function step4()
     {
-        InspectorTest.addResult("After adding new rule (inspected):");
-        InspectorTest.dumpSelectedElementStyles(true, false, true, true);
-        InspectorTest.selectNodeAndWaitForStyles("other", step5);
+        TestRunner.addResult("After adding new rule (inspected):");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step5);
     }
 
     function step5()
     {
-        InspectorTest.addResult("After adding new rule (other):");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        TestRunner.addResult("After adding new rule (other):");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         testFinished = true;
         maybeCompleteTest();
     }
@@ -68,8 +68,8 @@ function test()
     {
         if (!testFinished || !revisionAdded)
             return;
-        InspectorTest.addResult("Revision added: " + displayName);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Revision added: " + displayName);
+        TestRunner.completeTest();
     }
 
     function onRevisionAdded(revision)

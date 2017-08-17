@@ -49,88 +49,88 @@ function test()
 {
     var containerNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testDumpInitial(next)
         {
             function callback(node)
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
+                containerNode = ElementsTestRunner.expandedNodeWithId("container");
 
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("========= Original ========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.expandElementsTree(callback);
+            ElementsTestRunner.expandElementsTree(callback);
         },
 
         function testInsertBefore(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Inserted before =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Inserted before =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("insertBeforeFirst()", callback);
+            TestRunner.evaluateInPage("insertBeforeFirst()", callback);
         },
 
         function testInsertMiddle(next)
         {
             function callback()
             {
-                InspectorTest.addResult("===== Inserted middle =====");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("===== Inserted middle =====");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("insertNode()", callback);
+            TestRunner.evaluateInPage("insertNode()", callback);
         },
 
         function testAppend(next)
         {
             function callback()
             {
-                InspectorTest.addResult("======== Appended =========");
-                InspectorTest.dumpElementsTree(containerNode);
+                TestRunner.addResult("======== Appended =========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.evaluateInPage("appendChild()", callback);
+            TestRunner.evaluateInPage("appendChild()", callback);
         },
 
         function testAppendWithText(next)
         {
             function callback()
             {
-                InspectorTest.addResult("======== Appended with text=========");
-                InspectorTest.dumpElementsTree(containerNode);
-                var newNode = InspectorTest.expandedNodeWithId("child-with-text");
-                if (InspectorTest.domModel.nodeForId(newNode.firstChild.id))
-                    InspectorTest.addResult("Success: child text is bound");
+                TestRunner.addResult("======== Appended with text=========");
+                ElementsTestRunner.dumpElementsTree(containerNode);
+                var newNode = ElementsTestRunner.expandedNodeWithId("child-with-text");
+                if (TestRunner.domModel.nodeForId(newNode.firstChild.id))
+                    TestRunner.addResult("Success: child text is bound");
                 else
-                    InspectorTest.addResult("Failed: child text is not bound");
+                    TestRunner.addResult("Failed: child text is not bound");
                 next();
             }
-            InspectorTest.evaluateInPage("appendChildWithText()", callback);
+            TestRunner.evaluateInPage("appendChildWithText()", callback);
         },
 
         function testInsertFirstTextNode(next)
         {
             function callback()
             {
-                InspectorTest.addResult("======== Inserted first text node =========");
-                InspectorTest.expandElementsTree(callback2);
+                TestRunner.addResult("======== Inserted first text node =========");
+                ElementsTestRunner.expandElementsTree(callback2);
             }
 
             function callback2()
             {
-                InspectorTest.dumpElementsTree(containerNode);
-                var newNode = InspectorTest.expandedNodeWithId("child3");
-                if (InspectorTest.domModel.nodeForId(newNode.firstChild.id))
-                    InspectorTest.addResult("Success: child text is bound");
+                ElementsTestRunner.dumpElementsTree(containerNode);
+                var newNode = ElementsTestRunner.expandedNodeWithId("child3");
+                if (TestRunner.domModel.nodeForId(newNode.firstChild.id))
+                    TestRunner.addResult("Success: child text is bound");
                 else
-                    InspectorTest.addResult("Failed: child text is not bound");
+                    TestRunner.addResult("Failed: child text is not bound");
                 next();
             }
-            InspectorTest.evaluateInPage("insertFirstTextNode()", callback);
+            TestRunner.evaluateInPage("insertFirstTextNode()", callback);
         }
     ]);
 }

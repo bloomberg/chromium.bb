@@ -57,16 +57,16 @@ function test()
     var containerNode;
     var inspectedNode;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function dumpOriginalTree(next)
         {
-            InspectorTest.expandElementsTree(callback);
+            ElementsTestRunner.expandElementsTree(callback);
             function callback()
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
-                inspectedNode = InspectorTest.expandedNodeWithId("inspected");
-                InspectorTest.addResult("Original elements tree:");
-                InspectorTest.dumpElementsTree(containerNode);
+                containerNode = ElementsTestRunner.expandedNodeWithId("container");
+                inspectedNode = ElementsTestRunner.expandedNodeWithId("inspected");
+                TestRunner.addResult("Original elements tree:");
+                ElementsTestRunner.dumpElementsTree(containerNode);
                 next();
             }
         },
@@ -124,8 +124,8 @@ function test()
             executeAndDumpTree("removeNode()", SDK.DOMModel.Events.NodeRemoved, callback);
             function callback()
             {
-                InspectorTest.addResult("inspected:before DOMNode in DOMAgent: " + !!(InspectorTest.domModel.nodeForId(inspectedBefore.id)));
-                InspectorTest.addResult("inspected:after DOMNode in DOMAgent: " + !!(InspectorTest.domModel.nodeForId(inspectedAfter.id)));
+                TestRunner.addResult("inspected:before DOMNode in DOMAgent: " + !!(TestRunner.domModel.nodeForId(inspectedBefore.id)));
+                TestRunner.addResult("inspected:after DOMNode in DOMAgent: " + !!(TestRunner.domModel.nodeForId(inspectedAfter.id)));
                 next();
             }
         }
@@ -133,30 +133,30 @@ function test()
 
     function executeAndDumpTree(pageFunction, eventName, next)
     {
-        InspectorTest.domModel.addEventListener(eventName, domCallback, this);
-        InspectorTest.evaluateInPage(pageFunction);
+        TestRunner.domModel.addEventListener(eventName, domCallback, this);
+        TestRunner.evaluateInPage(pageFunction);
 
         function domCallback()
         {
-            InspectorTest.domModel.removeEventListener(eventName, domCallback, this);
-            InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            TestRunner.domModel.removeEventListener(eventName, domCallback, this);
+            ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
         }
 
         function treeCallback()
         {
-            InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
-            InspectorTest.dumpElementsTree(containerNode);
+            ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            ElementsTestRunner.dumpElementsTree(containerNode);
             next();
         }
     }
 
     function expandAndDumpTree(next)
     {
-          InspectorTest.addResult("== Expanding: ==");
-          InspectorTest.expandElementsTree(callback);
+          TestRunner.addResult("== Expanding: ==");
+          ElementsTestRunner.expandElementsTree(callback);
           function callback()
           {
-              InspectorTest.dumpElementsTree(containerNode);
+              ElementsTestRunner.dumpElementsTree(containerNode);
               next();
           }
     }
@@ -164,13 +164,13 @@ function test()
     function selectNodeAndDumpStyles(id, pseudoTypeName, callback)
     {
         if (pseudoTypeName)
-            InspectorTest.selectPseudoElementAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
+            ElementsTestRunner.selectPseudoElementAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
         else
-            InspectorTest.selectNodeAndWaitForStyles("inspected", stylesCallback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", stylesCallback);
 
         function stylesCallback()
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
             callback();
         }
     }

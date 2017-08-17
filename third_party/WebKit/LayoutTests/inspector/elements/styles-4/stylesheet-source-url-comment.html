@@ -42,7 +42,7 @@ function test()
 {
     function forEachHeaderMatchingURL(url, handler)
     {
-        var headers = InspectorTest.cssModel.styleSheetHeaders();
+        var headers = TestRunner.cssModel.styleSheetHeaders();
         for (var i = 0; i < headers.length; ++i) {
             if (headers[i].sourceURL.indexOf(url) !== -1)
                 handler(headers[i]);
@@ -51,19 +51,19 @@ function test()
 
     function checkHeaderHasSourceURL(header)
     {
-        InspectorTest.assertTrue(header.hasSourceURL);
+        TestRunner.assertTrue(header.hasSourceURL);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSourceURLCommentInInlineScript(next)
         {
-            InspectorTest.showScriptSource("stylesheet-source-url-comment.html", didShowSource);
+            SourcesTestRunner.showScriptSource("stylesheet-source-url-comment.html", didShowSource);
 
             function didShowSource(sourceFrame)
             {
                 function checkHeaderDoesNotHaveSourceURL(header)
                 {
-                    InspectorTest.assertTrue(!header.hasSourceURL, "hasSourceURL flag is set for inline stylesheet");
+                    TestRunner.assertTrue(!header.hasSourceURL, "hasSourceURL flag is set for inline stylesheet");
                 }
 
                 forEachHeaderMatchingURL("source-url-comment.html", checkHeaderDoesNotHaveSourceURL);
@@ -73,12 +73,12 @@ function test()
 
         function testSourceURLComment(next)
         {
-            InspectorTest.showScriptSource("css/addedInlineStylesheet.css", didShowSource);
-            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheet, 0)");
+            SourcesTestRunner.showScriptSource("css/addedInlineStylesheet.css", didShowSource);
+            TestRunner.evaluateInPage("setTimeout(addInlineStyleSheet, 0)");
 
             function didShowSource(sourceFrame)
             {
-                InspectorTest.addResult(sourceFrame.textEditor.text());
+                TestRunner.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("addedInlineStylesheet", checkHeaderHasSourceURL);
                 next();
             }
@@ -86,12 +86,12 @@ function test()
 
         function testDeprecatedSourceURLComment(next)
         {
-            InspectorTest.showScriptSource("css/addedInlineStylesheetDeprecated.css", didShowSource);
-            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheetDeprecated, 0)");
+            SourcesTestRunner.showScriptSource("css/addedInlineStylesheetDeprecated.css", didShowSource);
+            TestRunner.evaluateInPage("setTimeout(addInlineStyleSheetDeprecated, 0)");
 
             function didShowSource(sourceFrame)
             {
-                InspectorTest.addResult(sourceFrame.textEditor.text());
+                TestRunner.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("addedInlineStylesheetDeprecated", checkHeaderHasSourceURL);
                 next();
             }
@@ -99,12 +99,12 @@ function test()
 
         function testNonRelativeURL(next)
         {
-            InspectorTest.showScriptSource("css/nonRelativeInlineStylesheet.css", didShowSource);
-            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheetNonRelative, 0)");
+            SourcesTestRunner.showScriptSource("css/nonRelativeInlineStylesheet.css", didShowSource);
+            TestRunner.evaluateInPage("setTimeout(addInlineStyleSheetNonRelative, 0)");
 
             function didShowSource(sourceFrame)
             {
-                InspectorTest.addResult(sourceFrame.textEditor.text());
+                TestRunner.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("nonRelativeInlineStyleSheet.css", checkHeaderHasSourceURL);
                 next();
             }
@@ -112,12 +112,12 @@ function test()
 
         function testMultiple(next)
         {
-            InspectorTest.showScriptSource("css/addedInlineStylesheetMultiple.css", didShowSource);
-            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheetMultiple, 0)");
+            SourcesTestRunner.showScriptSource("css/addedInlineStylesheetMultiple.css", didShowSource);
+            TestRunner.evaluateInPage("setTimeout(addInlineStyleSheetMultiple, 0)");
 
             function didShowSource(sourceFrame)
             {
-                InspectorTest.addResult(sourceFrame.textEditor.text());
+                TestRunner.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("addInlineStyleSheetMultiple.css", checkHeaderHasSourceURL);
                 next();
             }

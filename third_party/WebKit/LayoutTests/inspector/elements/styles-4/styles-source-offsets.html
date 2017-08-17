@@ -23,31 +23,31 @@ function test()
             var firstRange = selectors[0].range;
             var lastRange = selectors[selectors.length - 1].range;
             var range = { startLine: firstRange.startLine, startColumn: firstRange.startColumn, endLine: lastRange.endLine, endColumn: lastRange.endColumn };
-            header = ruleOrStyle.selectorList.text + ": " + (range ? InspectorTest.rangeText(range) : "");
+            header = ruleOrStyle.selectorList.text + ": " + (range ? ElementsTestRunner.rangeText(range) : "");
         } else {
             style = ruleOrStyle;
             header = "element.style:";
         }
-        InspectorTest.addResult(header + " " + InspectorTest.rangeText(style.range));
+        TestRunner.addResult(header + " " + ElementsTestRunner.rangeText(style.range));
         var allProperties = style.cssProperties;
         for (var i = 0; i < allProperties.length; ++i) {
             var property = allProperties[i];
             if (!property.range)
                 continue;
-            InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
+            TestRunner.addResult("['" + property.name + "':'" + property.value + "'" + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + ElementsTestRunner.rangeText(property.range));
         }
     }
 
-    InspectorTest.selectNodeWithId("mainBody", step1);
+    ElementsTestRunner.selectNodeWithId("mainBody", step1);
 
     async function step1(node)
     {
-        var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+        var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
         for (var rule of response.matchedCSSRules)
             dumpStyleData(rule.rule);
         dumpStyleData(response.inlineStyle);
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

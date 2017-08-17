@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     var treeElement;
 
@@ -22,60 +22,60 @@ function test()
 
     function step3()
     {
-        InspectorTest.addResult("After adding new rule:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        TestRunner.addResult("After adding new rule:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         printStyleSheetAndCall(step4);
     }
 
     function step4()
     {
-        InspectorTest.domModel.undo();
-        InspectorTest.selectNodeAndWaitForStyles("other", step5);
+        TestRunner.domModel.undo();
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", step5);
     }
 
     function step5()
     {
-        InspectorTest.addResult("After undo:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        TestRunner.addResult("After undo:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         printStyleSheetAndCall(step6);
     }
 
     function step6()
     {
-        InspectorTest.domModel.redo();
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step7);
+        TestRunner.domModel.redo();
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step7);
     }
 
     function step7()
     {
-        InspectorTest.addResult("After redo:");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        TestRunner.addResult("After redo:");
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         printStyleSheetAndCall(step8);
     }
 
     function step8()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function addNewRuleAndSelectNode(nodeId, next)
     {
         function selectNode()
         {
-            InspectorTest.selectNodeAndWaitForStyles(nodeId, next);
+            ElementsTestRunner.selectNodeAndWaitForStyles(nodeId, next);
         }
 
-        InspectorTest.addNewRule("div.foo", selectNode);
+        ElementsTestRunner.addNewRule("div.foo", selectNode);
     }
 
     async function printStyleSheetAndCall(next)
     {
-        var section = InspectorTest.firstMatchedStyleSection();
+        var section = ElementsTestRunner.firstMatchedStyleSection();
         var id = section.style().styleSheetId;
-        var styleSheetText = await InspectorTest.CSSAgent.getStyleSheetText(id);
-        InspectorTest.addResult("===== Style sheet text: =====");
-        InspectorTest.addResult(styleSheetText);
-        InspectorTest.addResult("=============================");
+        var styleSheetText = await TestRunner.CSSAgent.getStyleSheetText(id);
+        TestRunner.addResult("===== Style sheet text: =====");
+        TestRunner.addResult(styleSheetText);
+        TestRunner.addResult("=============================");
         next();
     }
 }

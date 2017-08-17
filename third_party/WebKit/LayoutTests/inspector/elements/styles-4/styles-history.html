@@ -10,13 +10,13 @@
 
 function test()
 {
-    InspectorTest.runAfterCachedResourcesProcessed(runTestSuite);
+    ApplicationTestRunner.runAfterCachedResourcesProcessed(runTestSuite);
 
     var uiSourceCode;
 
     function runTestSuite()
     {
-        InspectorTest.runTestSuite([
+        TestRunner.runTestSuite([
             function testSetUp(next)
             {
                 function visitUISourceCodes(currentUISourceCode)
@@ -31,7 +31,7 @@ function test()
 
             function testSetResourceContentMinor(next)
             {
-                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
+                TestRunner.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 15px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
@@ -42,12 +42,12 @@ function test()
 
             function testSetResourceContentMajor(next)
             {
-                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
+                TestRunner.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 20px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
                 {
-                    InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMajor);
+                    TestRunner.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMajor);
                     uiSourceCode.commitWorkingCopy(function() { });
 
                     function styleUpdatedMajor()
@@ -75,7 +75,7 @@ function test()
                 function step1(style)
                 {
                     var property = getLiveProperty(style, "margin");
-                    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", dumpHistory(next));
+                    TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", dumpHistory(next));
                     property.setText("margin:30px;", true, true);
                 }
             }
@@ -84,30 +84,30 @@ function test()
 
     function styleSheetForResource(callback)
     {
-        InspectorTest.nodeWithId("mainBody", onNodeSelected);
+        ElementsTestRunner.nodeWithId("mainBody", onNodeSelected);
 
         function onNodeSelected(node)
         {
-            InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(onMatchedStylesForNode);
+            TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(onMatchedStylesForNode);
         }
 
         function onMatchedStylesForNode(response)
         {
             var error = response[Protocol.Error];
             if (error) {
-                InspectorTest.addResult("error: " + error);
-                InspectorTest.completeTest();
+                TestRunner.addResult("error: " + error);
+                TestRunner.completeTest();
                 return;
             }
             for (var matchedStyle of response.matchedCSSRules) {
                 var rule = matchedStyle.rule;
                 if (rule.origin !== "regular")
                     continue;
-                callback(new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
+                callback(new SDK.CSSStyleDeclaration(TestRunner.cssModel, null, rule.style));
                 return;
             }
-            InspectorTest.addResult("error: did not find any regular rule");
-            InspectorTest.completeTest();
+            TestRunner.addResult("error: did not find any regular rule");
+            TestRunner.completeTest();
         }
     }
 
@@ -115,10 +115,10 @@ function test()
     {
         function result()
         {
-            InspectorTest.addResult("History length: " + uiSourceCode.history().length);
+            TestRunner.addResult("History length: " + uiSourceCode.history().length);
             for (var i = 0; i < uiSourceCode.history().length; ++i) {
-                InspectorTest.addResult("Item " + i + ":");
-                InspectorTest.addResult(uiSourceCode.history()[i].content);
+                TestRunner.addResult("Item " + i + ":");
+                TestRunner.addResult(uiSourceCode.history()[i].content);
             }
             next();
         }

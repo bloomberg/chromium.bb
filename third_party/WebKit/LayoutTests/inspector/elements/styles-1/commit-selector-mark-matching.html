@@ -9,41 +9,41 @@ function test()
     var nodeId;
     var stylesPane;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function setUp(next) {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function addRule(next)
         {
-            InspectorTest.nodeWithId("inspected", nodeCallback);
+            ElementsTestRunner.nodeWithId("inspected", nodeCallback);
 
             function nodeCallback(node)
             {
                 nodeId = node.id;
                 stylesPane = UI.panels.elements._stylesWidget;
-                InspectorTest.addNewRule("foo, #inspected, .bar, #inspected", callback);
+                ElementsTestRunner.addNewRule("foo, #inspected, .bar, #inspected", callback);
             }
 
             function callback()
             {
-                InspectorTest.dumpSelectedElementStyles(true, false, false, true);
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
                 next();
             }
         },
 
         function changeSelector(next)
         {
-            var section = InspectorTest.firstMatchedStyleSection();
+            var section = ElementsTestRunner.firstMatchedStyleSection();
             section.startEditingSelector();
             var selectorElement = section._selectorElement;
             selectorElement.textContent = "#inspected, a, hr";
-            InspectorTest.waitForSelectorCommitted(callback);
-            selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            ElementsTestRunner.waitForSelectorCommitted(callback);
+            selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
             function callback()
             {
-                InspectorTest.dumpSelectedElementStyles(true, false, false, true);
+                ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
                 next();
             }
         }

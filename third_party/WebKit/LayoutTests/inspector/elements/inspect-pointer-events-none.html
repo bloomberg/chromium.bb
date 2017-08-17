@@ -42,7 +42,7 @@ function test()
 {
     function selectedNodeId()
     {
-        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
         if (!selectedElement)
             return "<no selected node>";
         return selectedElement.node().getAttribute("id");
@@ -52,40 +52,40 @@ function test()
     {
         var id = selectedNodeId();
         if (id === expectedId)
-            InspectorTest.addResult("PASS: selected node with id '" + id + "'");
+            TestRunner.addResult("PASS: selected node with id '" + id + "'");
         else
-            InspectorTest.addResult("FAIL: unexpected selection " + id);
+            TestRunner.addResult("FAIL: unexpected selection " + id);
     }
 
     function step1()
     {
-        InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+        TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
     }
 
     function step2()
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        InspectorTest.evaluateInPage("clickInner(true)");
+        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        TestRunner.evaluateInPage("clickInner(true)");
     }
 
     function step3()
     {
-        InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         expectSelectedNode("inner");
-        InspectorTest.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step4);
+        TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step4);
     }
 
     function step4()
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
-        InspectorTest.evaluateInPage("clickInner(false)");
+        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        TestRunner.evaluateInPage("clickInner(false)");
     }
 
     function step5()
     {
-        InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
         expectSelectedNode("outer");
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     step1();

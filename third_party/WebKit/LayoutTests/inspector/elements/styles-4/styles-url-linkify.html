@@ -10,10 +10,10 @@ function test()
 {
     function completeURL(baseURL, href)
     {
-        InspectorTest.addResult(Common.ParsedURL.completeURL(baseURL, href));
+        TestRunner.addResult(Common.ParsedURL.completeURL(baseURL, href));
     }
 
-    InspectorTest.addResult("URLs completed:");
+    TestRunner.addResult("URLs completed:");
     completeURL("http://example.com", "/");
     completeURL("http://example.com", "moo");
     completeURL("http://example.com/", "https://secure.com/moo");
@@ -42,7 +42,7 @@ function test()
     function dumpHref(dumpLinkClass)
     {
         var hrefNode;
-        var valueChildNodes = InspectorTest.firstMatchedStyleSection().propertiesTreeOutline.firstChild().valueElement.childNodes;
+        var valueChildNodes = ElementsTestRunner.firstMatchedStyleSection().propertiesTreeOutline.firstChild().valueElement.childNodes;
         for (var i = 0; i < valueChildNodes.length; ++i) {
             if (valueChildNodes[i].href) {
                 hrefNode = valueChildNodes[i];
@@ -50,7 +50,7 @@ function test()
             }
         }
         if (!hrefNode) {
-            InspectorTest.addResult("href property not found");
+            TestRunner.addResult("href property not found");
             return;
         }
 
@@ -66,23 +66,23 @@ function test()
         for (var i = segments.length - 1, minSegment = i - 3; i >= 0 && i >= minSegment; --i)
             output.unshift(segments[i]);
 
-        InspectorTest.addResult(styleClass + output.join("/"));
+        TestRunner.addResult(styleClass + output.join("/"));
     }
 
-    InspectorTest.selectNodeAndWaitForStyles("local", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("local", step1);
 
     function step1()
     {
-        InspectorTest.addResult("Link for a URI from CSS document:");
+        TestRunner.addResult("Link for a URI from CSS document:");
         dumpHref(true);
-        InspectorTest.selectNodeAndWaitForStyles("iframed", step2);
+        ElementsTestRunner.selectNodeAndWaitForStyles("iframed", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Link for a URI from iframe inline stylesheet:");
+        TestRunner.addResult("Link for a URI from iframe inline stylesheet:");
         dumpHref();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

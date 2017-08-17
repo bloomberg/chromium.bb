@@ -6,52 +6,52 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", addAndIncrementFirstProperty);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", addAndIncrementFirstProperty);
 
     var treeElement;
     var section;
 
     function addAndIncrementFirstProperty()
     {
-        InspectorTest.addResult("Before append:");
-        InspectorTest.dumpSelectedElementStyles(true);
-        section = InspectorTest.inlineStyleSection();
+        TestRunner.addResult("Before append:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
+        section = ElementsTestRunner.inlineStyleSection();
 
         // Create and increment.
         treeElement = section.addNewBlankProperty(0);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "margin-left";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         treeElement.valueElement.textContent = "1px";
         treeElement.valueElement.firstChild.select();
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
-        InspectorTest.waitForStyleApplied(incrementProperty);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
+        ElementsTestRunner.waitForStyleApplied(incrementProperty);
     }
 
     function incrementProperty()
     {
         // Increment again.
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowUp"));
-        InspectorTest.waitForStyleApplied(commitProperty);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
+        ElementsTestRunner.waitForStyleApplied(commitProperty);
     }
 
     function commitProperty()
     {
         // Commit.
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         reloadStyles(addAndChangeLastCompoundProperty);
     }
 
     function addAndChangeLastCompoundProperty()
     {
-        InspectorTest.addResult("After insertion at index 0:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After insertion at index 0:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
+        treeElement = ElementsTestRunner.inlineStyleSection().addNewBlankProperty(2);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
 
         treeElement.valueElement.textContent = "green; font-weight: bold";
         treeElement.kickFreeFlowStyleEditForTest();
@@ -59,39 +59,39 @@ function test()
         treeElement.valueElement.textContent = "red; font-weight: bold";
         treeElement.kickFreeFlowStyleEditForTest();
 
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, addAndCommitMiddleProperty));
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(reloadStyles.bind(this, addAndCommitMiddleProperty));
     }
 
     function addAndCommitMiddleProperty()
     {
-        InspectorTest.addResult("After appending and changing a 'compound' property:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After appending and changing a 'compound' property:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        treeElement = InspectorTest.inlineStyleSection().addNewBlankProperty(2);
+        treeElement = ElementsTestRunner.inlineStyleSection().addNewBlankProperty(2);
         treeElement.startEditing();
         treeElement.nameElement.textContent = "third-property";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         treeElement.valueElement.textContent = "third-value";
 
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(reloadStyles.bind(this, dumpAndComplete));
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(reloadStyles.bind(this, dumpAndComplete));
     }
 
     function dumpAndComplete()
     {
-        InspectorTest.addResult("After insertion at index 2:");
-        InspectorTest.dumpSelectedElementStyles(true);
+        TestRunner.addResult("After insertion at index 2:");
+        ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function reloadStyles(callback) {
-        InspectorTest.selectNodeAndWaitForStyles("other", otherCallback);
+        ElementsTestRunner.selectNodeAndWaitForStyles("other", otherCallback);
 
         function otherCallback()
         {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", callback);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", callback);
         }
     }
 }

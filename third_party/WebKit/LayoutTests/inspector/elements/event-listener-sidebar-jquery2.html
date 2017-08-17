@@ -16,18 +16,18 @@ function setupEventListeners()
 function test()
 {
     Common.settingForTest("showEventListenersForAncestors").set(true);
-    InspectorTest.selectNodeWithId("node", step1);
+    ElementsTestRunner.selectNodeWithId("node", step1);
 
     function step1()
     {
-        InspectorTest.showEventListenersWidget();
-        InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+        ElementsTestRunner.showEventListenersWidget();
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Remove listeners..");
-        var eventListenersWidget = InspectorTest.eventListenersWidget();
+        TestRunner.addResult("Remove listeners..");
+        var eventListenersWidget = ElementsTestRunner.eventListenersWidget();
         var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
         var promises = [];
         for (var i in listenerTypes) {
@@ -35,7 +35,7 @@ function test()
             for (var j in listenersItems)
                 promises.push(listenersItems[j].eventListener().remove());
         }
-        InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(this));
+        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(this));
         Promise.all(promises).then(() => eventListenersWidget.doUpdate());
     }
 }

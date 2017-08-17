@@ -28,15 +28,15 @@ function performActions()
 function test()
 {
     UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
-    InspectorTest.evaluateWithTimeline("performActions()", callback);
+    PerformanceTestRunner.evaluateWithTimeline("performActions()", callback);
 
     function callback()
     {
-        InspectorTest.timelineModel().mainThreadEvents().forEach(event => {
+        PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
             if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
-                InspectorTest.addResult(event.name);
+                TestRunner.addResult(event.name);
         });
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

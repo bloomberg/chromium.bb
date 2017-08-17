@@ -37,28 +37,28 @@ div {
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStylesWithComputed("id1", step1);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id1", step1);
 
     function step1()
     {
-        InspectorTest.addResult("==== Computed style for ID1 ====");
-        InspectorTest.dumpSelectedElementStyles(false, true);
-        InspectorTest.selectNodeAndWaitForStylesWithComputed("id2", step2);
+        TestRunner.addResult("==== Computed style for ID1 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, true);
+        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id2", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("==== Computed style for ID2 ====");
-        InspectorTest.dumpSelectedElementStyles(false, true);
-        InspectorTest.selectNodeAndWaitForStylesWithComputed("id3", step3);
+        TestRunner.addResult("==== Computed style for ID2 ====");
+        ElementsTestRunner.dumpSelectedElementStyles(false, true);
+        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("id3", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("==== Style for ID3 ====");
+        TestRunner.addResult("==== Style for ID3 ====");
         // The button[hidden] style specifies "display: none", which should not be /-- overloaded --/.
-        InspectorTest.dumpSelectedElementStyles(true, true);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpSelectedElementStyles(true, true);
+        TestRunner.completeTest();
     }
 
 }

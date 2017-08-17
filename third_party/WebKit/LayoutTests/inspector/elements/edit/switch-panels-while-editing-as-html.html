@@ -7,22 +7,22 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function selectNode(next)
         {
-            InspectorTest.selectNodeWithId("inspected", onNodeSelected)
+            ElementsTestRunner.selectNodeWithId("inspected", onNodeSelected)
 
             function onNodeSelected(node)
             {
-                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeElement.toggleEditAsHTML();
-                InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "setMultilineEditing", next);
+                TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "setMultilineEditing", next);
             }
         },
 
@@ -34,8 +34,8 @@ function test()
 
             function onError(error)
             {
-                InspectorTest.addResult("FAILURE: exception caught while switching panels.");
-                InspectorTest.completeTest();
+                TestRunner.addResult("FAILURE: exception caught while switching panels.");
+                TestRunner.completeTest();
             }
         }
     ]);

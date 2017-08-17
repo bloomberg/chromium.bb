@@ -11,28 +11,28 @@ function test()
     var rule;
     var matchedStyles;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next) {
-            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
         },
 
         function testAddRule(next)
         {
-            InspectorTest.nodeWithId("inspected", nodeCallback);
+            ElementsTestRunner.nodeWithId("inspected", nodeCallback);
 
             function nodeCallback(node)
             {
                 nodeId = node.id;
-                InspectorTest.addNewRule("#inspected", successCallback);
+                ElementsTestRunner.addNewRule("#inspected", successCallback);
             }
 
             function successCallback(section)
             {
                 rule = section.style().parentRule;
                 matchedStyles = section._matchedStyles;
-                InspectorTest.addResult("=== Rule added ===");
-                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyles, rule));
+                TestRunner.addResult("=== Rule added ===");
+                TestRunner.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
+                TestRunner.addResult("Selectors matching the (#inspected) node: " + ElementsTestRunner.matchingSelectors(matchedStyles, rule));
                 next();
             }
         },
@@ -43,10 +43,10 @@ function test()
 
             function callback(success)
             {
-                InspectorTest.addResult("=== Added rule modified ===");
+                TestRunner.addResult("=== Added rule modified ===");
                 if (!success) {
-                    InspectorTest.addResult("[!] No valid rule style received");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("[!] No valid rule style received");
+                    TestRunner.completeTest();
                 } else {
                     dumpProperties(rule.style);
                     rule.setSelectorText("body")
@@ -58,8 +58,8 @@ function test()
             function onSelectorUpdated(success)
             {
                 if (!success) {
-                    InspectorTest.addResult("[!] Failed to change selector");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("[!] Failed to change selector");
+                    TestRunner.completeTest();
                     return;
                 }
                 return matchedStyles.recomputeMatchingSelectors(rule);
@@ -67,9 +67,9 @@ function test()
 
             function successCallback()
             {
-                InspectorTest.addResult("=== Selector changed ===");
-                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
-                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(matchedStyles, rule));
+                TestRunner.addResult("=== Selector changed ===");
+                TestRunner.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
+                TestRunner.addResult("Selectors matching the (#inspected) node: " + ElementsTestRunner.matchingSelectors(matchedStyles, rule));
 
                 next();
             }
@@ -78,8 +78,8 @@ function test()
         function testModifyInlineStyle(next)
         {
             var inlineStyle;
-            InspectorTest.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
-            InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged);
+            TestRunner.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
+            TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged);
             function onStyleSheetChanged(event)
             {
                 if (event.data && event.data.edit)
@@ -89,7 +89,7 @@ function test()
             function stylesCallback(inlineStyleResult)
             {
                 if (!inlineStyleResult || !inlineStyleResult.inlineStyle) {
-                    InspectorTest.completeTest();
+                    TestRunner.completeTest();
                     return;
                 }
                 inlineStyle = inlineStyleResult.inlineStyle;
@@ -98,10 +98,10 @@ function test()
 
             function appendCallback(success)
             {
-                InspectorTest.addResult("=== Inline style modified ===");
+                TestRunner.addResult("=== Inline style modified ===");
                 if (!success) {
-                    InspectorTest.addResult("No valid inline style received");
-                    InspectorTest.completeTest();
+                    TestRunner.addResult("No valid inline style received");
+                    TestRunner.completeTest();
                     return;
                 }
 
@@ -117,7 +117,7 @@ function test()
            return;
        var allProperties = style.allProperties();
        for (var i = 0; i < allProperties.length; ++i)
-           InspectorTest.addResult(allProperties[i].text);
+           TestRunner.addResult(allProperties[i].text);
     }
 }
 </script>

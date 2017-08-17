@@ -18,23 +18,23 @@
 
 function test()
 {
-      InspectorTest.selectNodeAndWaitForStyles("container", step1);
+      ElementsTestRunner.selectNodeAndWaitForStyles("container", step1);
 
       function step1()
       {
-          InspectorTest.addResult("Initial value");
-          InspectorTest.dumpSelectedElementStyles(true, false, true);
+          TestRunner.addResult("Initial value");
+          ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-          var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("padding");
+          var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("padding");
           treeItem.applyStyleText("padding: 20px", false);
-          InspectorTest.waitForStyles("container", step2);
+          ElementsTestRunner.waitForStyles("container", step2);
       }
 
       function step2()
       {
-          InspectorTest.addResult("After changing property");
-          InspectorTest.dumpSelectedElementStyles(true, false, true);
-          InspectorTest.completeTest();
+          TestRunner.addResult("After changing property");
+          ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+          TestRunner.completeTest();
       }
 }
 

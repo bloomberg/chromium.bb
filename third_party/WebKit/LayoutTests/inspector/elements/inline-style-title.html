@@ -18,30 +18,30 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.nodeWithId("inline-style", onInlineStyleQueried);
+    ElementsTestRunner.nodeWithId("inline-style", onInlineStyleQueried);
 
-    var treeOutline = InspectorTest.firstElementsTreeOutline();
+    var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
     var treeElement;
 
     function onInlineStyleQueried(node)
     {
         if (!node) {
-            InspectorTest.addResult("Didn't find node with given ID");
-            InspectorTest.completeTest();
+            TestRunner.addResult("Didn't find node with given ID");
+            TestRunner.completeTest();
             return;
         }
         treeElement = treeOutline.findTreeElement(node);
-        InspectorTest.addResult("=== initial inline style text ===");
-        InspectorTest.addResult(treeElement.title.textContent);
-        InspectorTest.evaluateInPage("updateStyleText()", onStyleUpdated);
+        TestRunner.addResult("=== initial inline style text ===");
+        TestRunner.addResult(treeElement.title.textContent);
+        TestRunner.evaluateInPage("updateStyleText()", onStyleUpdated);
     }
 
     function onStyleUpdated()
     {
-        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
-        InspectorTest.addResult("=== inline style text after change ===");
-        InspectorTest.addResult(treeElement.title.textContent);
-        InspectorTest.completeTest();
+        ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
+        TestRunner.addResult("=== inline style text after change ===");
+        TestRunner.addResult(treeElement.title.textContent);
+        TestRunner.completeTest();
     }
 }
 

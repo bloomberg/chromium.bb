@@ -6,15 +6,15 @@
 
 function test()
 {
-    InspectorTest.expandElementsTree(onElementsTreeExpanded);
+    ElementsTestRunner.expandElementsTree(onElementsTreeExpanded);
 
     function onElementsTreeExpanded()
     {
-        var container = InspectorTest.expandedNodeWithId("container");
+        var container = ElementsTestRunner.expandedNodeWithId("container");
         var children = container.children();
         for (var i = 0; i < children.length; ++i)
-            InspectorTest.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
-        InspectorTest.completeTest();
+            TestRunner.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
+        TestRunner.completeTest();
     }
 }
 

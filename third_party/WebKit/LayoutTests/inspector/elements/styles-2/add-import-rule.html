@@ -8,28 +8,28 @@ function test() {
 var nodeId;
 var sheetId;
 
-InspectorTest.selectNodeAndWaitForStyles("styled-span", nodeSelected);
+ElementsTestRunner.selectNodeAndWaitForStyles("styled-span", nodeSelected);
 
 function nodeSelected(node) {
     nodeId = node.id;
-    InspectorTest.cssModel.matchedStylesPromise(nodeId).then(matchedStylesBefore);
+    TestRunner.cssModel.matchedStylesPromise(nodeId).then(matchedStylesBefore);
 }
 
 function matchedStylesBefore(matchedResult) {
     sheetId = matchedResult.nodeStyles()[1].styleSheetId;
-    InspectorTest.addResult("\n== Matched rules before @import added ==\n");
-    InspectorTest.dumpSelectedElementStyles(true);
-    InspectorTest.CSSAgent.setStyleSheetText(sheetId, "@import 'data:text/css,span{color:green}';").then(sheetTextSet);
+    TestRunner.addResult("\n== Matched rules before @import added ==\n");
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.CSSAgent.setStyleSheetText(sheetId, "@import 'data:text/css,span{color:green}';").then(sheetTextSet);
 }
 
 function sheetTextSet() {
-    InspectorTest.selectNodeAndWaitForStyles("styled-span", matchedStylesAfter);
+    ElementsTestRunner.selectNodeAndWaitForStyles("styled-span", matchedStylesAfter);
 }
 
 function matchedStylesAfter() {
-    InspectorTest.addResult("\n== Matched rules after @import added ==\n");
-    InspectorTest.dumpSelectedElementStyles(true);
-    InspectorTest.completeTest();
+    TestRunner.addResult("\n== Matched rules after @import added ==\n");
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
 }
 
 }

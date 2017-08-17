@@ -14,13 +14,13 @@
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, this);
-    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
-    InspectorTest.nodeWithId("inspected", nodeFound);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, this);
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
+    ElementsTestRunner.nodeWithId("inspected", nodeFound);
 
     function nodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
+        TestRunner.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
     }
 
     var styleSheetId;
@@ -28,8 +28,8 @@ function test()
     function matchedStylesCallback(matchedResult)
     {
         styleSheetId = matchedResult.nodeStyles()[1].styleSheetId;
-        InspectorTest.addResult("Setting stylesheet text...");
-        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
+        TestRunner.addResult("Setting stylesheet text...");
+        TestRunner.CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(../styles/resources/multiple-imports-edit-crash-1.css);\n@import url(../styles/resources/multiple-imports-edit-crash-2.css);\n#inspected { color: black }\n");
     }
 
@@ -44,9 +44,9 @@ function test()
 
         if (!(--addsExpected)) {
             added.sort();
-            InspectorTest.addResult("Added:");
-            InspectorTest.addResult(added.join("\n"));
-            InspectorTest.completeTest();
+            TestRunner.addResult("Added:");
+            TestRunner.addResult(added.join("\n"));
+            TestRunner.completeTest();
         }
     }
 
@@ -56,8 +56,8 @@ function test()
 
         if (!(--removesExpected)) {
             removed.sort();
-            InspectorTest.addResult("Removed:");
-            InspectorTest.addResult(removed.join("\n"));
+            TestRunner.addResult("Removed:");
+            TestRunner.addResult(removed.join("\n"));
         }
     }
 

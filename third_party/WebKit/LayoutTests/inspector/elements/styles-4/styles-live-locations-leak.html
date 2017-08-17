@@ -23,10 +23,10 @@
 function test()
 {
     var initialLiveLocationsCount;
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function selectInitialNode(next)
         {
-            InspectorTest.selectNodeAndWaitForStylesWithComputed("first", next);
+            ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("first", next);
         },
 
         function saveInitialLiveLocationsCount(next)
@@ -44,7 +44,7 @@ function test()
                     next();
                     return;
                 }
-                InspectorTest.selectNodeAndWaitForStylesWithComputed(elementsToSelect.shift(), loopThroughElements);
+                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed(elementsToSelect.shift(), loopThroughElements);
             }
             loopThroughElements();
         },
@@ -53,9 +53,9 @@ function test()
         {
             var liveLocationsCount = countLiveLocations();
             if (liveLocationsCount !== initialLiveLocationsCount)
-                InspectorTest.addResult(String.sprintf("ERROR: LiveLocations count is growing! Expected: %d found: %d", initialLiveLocationsCount, liveLocationsCount));
+                TestRunner.addResult(String.sprintf("ERROR: LiveLocations count is growing! Expected: %d found: %d", initialLiveLocationsCount, liveLocationsCount));
             else
-                InspectorTest.addResult("SUCCESS: LiveLocations count do not grow.");
+                TestRunner.addResult("SUCCESS: LiveLocations count do not grow.");
             next();
         }
     ]);

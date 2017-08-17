@@ -7,16 +7,16 @@
 
 function test()
 {
-    InspectorTest.expandElementsTree(step1);
+    ElementsTestRunner.expandElementsTree(step1);
 
     function step1()
     {
-        InspectorTest.reloadPage(step2);
+        TestRunner.reloadPage(step2);
     }
 
     function step2()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

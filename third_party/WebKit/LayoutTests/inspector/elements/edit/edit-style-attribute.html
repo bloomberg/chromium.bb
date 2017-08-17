@@ -20,34 +20,34 @@ function test()
     Elements.StylesSidebarPane.prototype.update = function() {};
     Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.expandElementsTree(next);
+            ElementsTestRunner.expandElementsTree(next);
         },
 
         function testSetNewValue(next)
         {
-            InspectorTest.evaluateInPage("testSetNewValue()");
+            TestRunner.evaluateInPage("testSetNewValue()");
 
-            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
+            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
-                InspectorTest.addResult("SDK.DOMModel.Events.AttrModified should be issued");
-                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
+                TestRunner.addResult("SDK.DOMModel.Events.AttrModified should be issued");
+                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
                 next();
             }
         },
 
         function testSetSameValue(next)
         {
-            InspectorTest.evaluateInPage("testSetSameValue()", next);
+            TestRunner.evaluateInPage("testSetSameValue()", next);
 
-            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
+            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
-                InspectorTest.addResult("SDK.DOMModel.Events.AttrModified should not be issued");
-                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
+                TestRunner.addResult("SDK.DOMModel.Events.AttrModified should not be issued");
+                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
             }
         }
     ]);

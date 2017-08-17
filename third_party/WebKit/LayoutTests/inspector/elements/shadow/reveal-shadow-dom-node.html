@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
 
     var nodeChangesRemaining = 2;
     function selectedNodeChanged(event)
@@ -14,9 +14,9 @@ function test()
         var node = event.data.node;
         if (node.nodeName() === "BODY")
             return;
-        InspectorTest.addResult("SelectedNodeChanged: " + node.localName() + " " + shadowDOMPart(node));
+        TestRunner.addResult("SelectedNodeChanged: " + node.localName() + " " + shadowDOMPart(node));
         if (!--nodeChangesRemaining)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 
     function shadowDOMPart(node)
@@ -26,16 +26,16 @@ function test()
         return "(in " + (node.ancestorUserAgentShadowRoot() ? "user-agent" : "author") + " shadow DOM)";
     }
 
-    InspectorTest.nodeWithId("nested-input", function(node) {
+    ElementsTestRunner.nodeWithId("nested-input", function(node) {
         node.shadowRoots()[0].getChildNodes(childrenCallback);
 
         function childrenCallback(children)
         {
             var shadowDiv = children[0];
-            InspectorTest.addResult("User-agent shadow DOM hidden:");
+            TestRunner.addResult("User-agent shadow DOM hidden:");
             UI.panels.elements.revealAndSelectNode(shadowDiv).then(() => {
                 Common.settingForTest("showUAShadowDOM").set(true);
-                InspectorTest.addResult("User-agent shadow DOM shown:");
+                TestRunner.addResult("User-agent shadow DOM shown:");
                 UI.panels.elements.revealAndSelectNode(shadowDiv);
             });
         }

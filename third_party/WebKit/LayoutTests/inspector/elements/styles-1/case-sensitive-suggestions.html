@@ -8,7 +8,7 @@ function test()
 {
     var prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().allProperties(), [], null, true);
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testForUpperCase(next)
         {
             testAutoCompletionsAgainstCase(prompt, "C", next);
@@ -58,11 +58,11 @@ function test()
                 switch (inputCase) {
                 case Case.Upper:
                     if (!isUpperCase(result[i].text))
-                        InspectorTest.addResult("Error: Suggestion " + result[i].text + " must be in UPPERCASE.");
+                        TestRunner.addResult("Error: Suggestion " + result[i].text + " must be in UPPERCASE.");
                     break;
                 case Case.Lower:
                     if (!isLowerCase(result[i].text))
-                        InspectorTest.addResult("Error: Suggestion " + result[i].text + " must be in lowercase.");
+                        TestRunner.addResult("Error: Suggestion " + result[i].text + " must be in lowercase.");
                     break;
                 }
             }

@@ -17,17 +17,17 @@
 
 function test()
 {
-    InspectorTest.nodeWithId("inspected", nodeFound);
+    ElementsTestRunner.nodeWithId("inspected", nodeFound);
 
     async function nodeFound(node)
     {
-        var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+        var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
         if (response[Protocol.Error]) {
-            InspectorTest.addResult("Failed to get styles: " + response[Protocol.Error]);
+            TestRunner.addResult("Failed to get styles: " + response[Protocol.Error]);
             return;
         }
-        InspectorTest.dumpRuleMatchesArray(response.matchedCSSRules);
-        InspectorTest.completeTest();
+        ElementsTestRunner.dumpRuleMatchesArray(response.matchedCSSRules);
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -6,26 +6,26 @@
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1()
     {
-        var treeElement = InspectorTest.getElementStylePropertyTreeItem("background");
-        InspectorTest.addResult("Viewing 'background' value in Styles:");
-        InspectorTest.addResult(treeElement.valueElement.textContent);
+        var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("background");
+        TestRunner.addResult("Viewing 'background' value in Styles:");
+        TestRunner.addResult(treeElement.valueElement.textContent);
 
         treeElement.startEditing(treeElement.nameElement);
         treeElement.nameElement.textContent = "background-image";
-        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(step2);
+        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(step2);
     }
 
     function step2()
     {
-        var treeElement = InspectorTest.getElementStylePropertyTreeItem("background-image");
-        InspectorTest.addResult("Renamed 'background' to 'background-image' (edited value):");
-        InspectorTest.addResult(treeElement.valueElement.textContent);
-        InspectorTest.completeTest();
+        var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("background-image");
+        TestRunner.addResult("Renamed 'background' to 'background-image' (edited value):");
+        TestRunner.addResult(treeElement.valueElement.textContent);
+        TestRunner.completeTest();
     }
 }
 

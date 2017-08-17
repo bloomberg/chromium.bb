@@ -14,24 +14,24 @@ function prepareTest()
 
 async function test()
 {
-    await InspectorTest.attachShadowDOM('shadow1', '#template'),
-    await InspectorTest.attachFrame('frame', './resources/frame.html');
-    var uiSourceCode = await InspectorTest.waitForUISourceCode('stylesheet.css');
-    var headers = InspectorTest.cssModel.styleSheetHeaders().filter(header => header.resourceURL().endsWith('stylesheet.css'));
-    InspectorTest.addResult('Headers count: ' + headers.length);
+    await BindingsTestRunner.attachShadowDOM('shadow1', '#template'),
+    await BindingsTestRunner.attachFrame('frame', './resources/frame.html');
+    var uiSourceCode = await TestRunner.waitForUISourceCode('stylesheet.css');
+    var headers = TestRunner.cssModel.styleSheetHeaders().filter(header => header.resourceURL().endsWith('stylesheet.css'));
+    TestRunner.addResult('Headers count: ' + headers.length);
 
-    InspectorTest.markStep('Make edits with Sources Panel');
-    var sourceFrame = await new Promise(x => InspectorTest.showScriptSource("stylesheet.css", x));
-    InspectorTest.replaceInSource(sourceFrame, 'red', 'EDITED');
-    await InspectorTest.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
+    TestRunner.markStep('Make edits with Sources Panel');
+    var sourceFrame = await new Promise(x => SourcesTestRunner.showScriptSource("stylesheet.css", x));
+    SourcesTestRunner.replaceInSource(sourceFrame, 'red', 'EDITED');
+    await TestRunner.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
     await checkHeadersContent();
 
 
-    InspectorTest.markStep('Make edits via css model');
-    InspectorTest.cssModel.setStyleSheetText(headers[0].id, '* { --foo: "bar" }');
-    await InspectorTest.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
+    TestRunner.markStep('Make edits via css model');
+    TestRunner.cssModel.setStyleSheetText(headers[0].id, '* { --foo: "bar" }');
+    await TestRunner.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
     await checkHeadersContent();
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
 
     async function checkHeadersContent(expected) {
@@ -39,12 +39,12 @@ async function test()
         contents.push(uiSourceCode.workingCopy());
         var dedup = new Set(contents);
         if (dedup.size !== 1) {
-            InspectorTest.addResult('ERROR: contents are out of sync!');
-            InspectorTest.completeTest();
+            TestRunner.addResult('ERROR: contents are out of sync!');
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult('Both headers and uiSourceCode content:');
-        InspectorTest.addResult(dedup.firstValue());
+        TestRunner.addResult('Both headers and uiSourceCode content:');
+        TestRunner.addResult(dedup.firstValue());
     }
 }
 </script>

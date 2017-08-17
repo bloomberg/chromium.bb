@@ -12,11 +12,11 @@ function test()
     }
 
     if (badNames.length === 0)
-        InspectorTest.addResult("PASSED");
+        TestRunner.addResult("PASSED");
     else
-        InspectorTest.addResult("Non-lowercase color nicknames: " + badNames.join(", "));
+        TestRunner.addResult("Non-lowercase color nicknames: " + badNames.join(", "));
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

@@ -9,67 +9,67 @@
 
 function test()
 {
-    InspectorTest.waitForScriptSource("styles-do-not-detach-sourcemap-on-edits.scss", onSourceMapLoaded);
+    SourcesTestRunner.waitForScriptSource("styles-do-not-detach-sourcemap-on-edits.scss", onSourceMapLoaded);
 
     function onSourceMapLoaded()
     {
-        InspectorTest.selectNodeAndWaitForStyles("container", onNodeSelected);
+        ElementsTestRunner.selectNodeAndWaitForStyles("container", onNodeSelected);
     }
 
     function onNodeSelected()
     {
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
         function editProperty(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
             treeItem.applyStyleText("NAME: VALUE", true);
-            InspectorTest.waitForStyles("container", next);
+            ElementsTestRunner.waitForStyles("container", next);
         },
 
         function editSelector(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-            var section = InspectorTest.firstMatchedStyleSection();
+            var section = ElementsTestRunner.firstMatchedStyleSection();
             section.startEditingSelector();
             section._selectorElement.textContent = "#container, SELECTOR";
-            InspectorTest.waitForSelectorCommitted(next);
-            section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            ElementsTestRunner.waitForSelectorCommitted(next);
+            section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         },
 
         function editMedia(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-            var section = InspectorTest.firstMatchedStyleSection();
-            var mediaTextElement = InspectorTest.firstMediaTextElementInSection(section);
+            var section = ElementsTestRunner.firstMatchedStyleSection();
+            var mediaTextElement = ElementsTestRunner.firstMediaTextElementInSection(section);
             mediaTextElement.click();
             mediaTextElement.textContent = "(max-width: 9999999px)";
-            InspectorTest.waitForMediaTextCommitted(next);
-            mediaTextElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            ElementsTestRunner.waitForMediaTextCommitted(next);
+            mediaTextElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
         },
 
         function addRule(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
-            var styleSheetHeader = InspectorTest.cssModel.styleSheetHeaders().find(header => header.resourceURL().indexOf("styles-do-not-detach-sourcemap-on-edits.css") !== -1);
+            var styleSheetHeader = TestRunner.cssModel.styleSheetHeaders().find(header => header.resourceURL().indexOf("styles-do-not-detach-sourcemap-on-edits.css") !== -1);
             if (!styleSheetHeader) {
-                InspectorTest.addResult("ERROR: failed to find style sheet!");
-                InspectorTest.completeTest();
+                TestRunner.addResult("ERROR: failed to find style sheet!");
+                TestRunner.completeTest();
                 return;
             }
-            InspectorTest.addNewRuleInStyleSheet(styleSheetHeader, "NEW-RULE", next);
+            ElementsTestRunner.addNewRuleInStyleSheet(styleSheetHeader, "NEW-RULE", next);
         },
 
         function finish(next)
         {
-            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
             next();
         },
     ];

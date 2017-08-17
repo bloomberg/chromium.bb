@@ -19,16 +19,16 @@
 <script>
 function test()
 {
-    InspectorTest.waitForScriptSource("source-url.css", onUISourceCodeCreated);
+    SourcesTestRunner.waitForScriptSource("source-url.css", onUISourceCodeCreated);
 
     function onUISourceCodeCreated()
     {
-        InspectorTest.nodeWithId("inspected", onNodeFound);
+        ElementsTestRunner.nodeWithId("inspected", onNodeFound);
     }
 
     function onNodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id).then(onMatchedStyles);
+        TestRunner.cssModel.matchedStylesPromise(node.id).then(onMatchedStyles);
     }
 
     function onMatchedStyles(matchedResult)
@@ -42,12 +42,12 @@ function test()
                 if (!property.range)
                     continue;
                 var uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(property, true);
-                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.name, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
+                TestRunner.addResult(String.sprintf("%s -> %s:%d:%d", property.name, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
                 var uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(property, false);
-                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.value, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
+                TestRunner.addResult(String.sprintf("%s -> %s:%d:%d", property.value, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
             }
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

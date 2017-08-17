@@ -17,18 +17,18 @@ function test()
 
     function selectDivAndEditValue()
     {
-        InspectorTest.selectNodeAndWaitForStyles("inspected" + idIndex++, editCallback);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected" + idIndex++, editCallback);
     }
 
     function editCallback()
     {
-        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("background");
+        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("background");
         treeElement.startEditing(treeElement.valueElement);
-        InspectorTest.addResult(treeElement.valueElement.textContent);
+        TestRunner.addResult(treeElement.valueElement.textContent);
         if (idIndex <= maxIndex)
             selectDivAndEditValue();
         else
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 }
 

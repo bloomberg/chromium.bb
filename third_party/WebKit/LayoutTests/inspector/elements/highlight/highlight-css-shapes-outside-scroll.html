@@ -27,7 +27,7 @@ function test()
     var i = 0;
     function dump()
     {
-        InspectorTest.dumpInspectorHighlightJSON("circle", i == 0 ? scroll : InspectorTest.completeTest.bind(InspectorTest));
+        ElementsTestRunner.dumpInspectorHighlightJSON("circle", i == 0 ? scroll : TestRunner.completeTest.bind(InspectorTest));
     }
     function scroll()
     {
