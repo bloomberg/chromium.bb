@@ -111,7 +111,7 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Release',
@@ -122,7 +122,7 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Debug',
@@ -329,7 +329,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Release',
@@ -340,7 +340,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Debug',
@@ -464,7 +464,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
         {
           'gpu': '1002:6821',
@@ -673,7 +673,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Release',
@@ -821,7 +821,7 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12'
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Release',
