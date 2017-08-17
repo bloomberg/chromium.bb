@@ -1483,10 +1483,10 @@ class DeviceStatusCollectorNetworkInterfacesTest
       if (strlen(fake_network.address) > 0) {
         // Set the IP config.
         base::DictionaryValue ip_config_properties;
-        ip_config_properties.SetStringWithoutPathExpansion(
-            shill::kAddressProperty, fake_network.address);
-        ip_config_properties.SetStringWithoutPathExpansion(
-            shill::kGatewayProperty, fake_network.gateway);
+        ip_config_properties.SetKey(shill::kAddressProperty,
+                                    base::Value(fake_network.address));
+        ip_config_properties.SetKey(shill::kGatewayProperty,
+                                    base::Value(fake_network.gateway));
         chromeos::ShillIPConfigClient::TestInterface* ip_config_test =
             chromeos::DBusThreadManager::Get()->GetShillIPConfigClient()->
             GetTestInterface();

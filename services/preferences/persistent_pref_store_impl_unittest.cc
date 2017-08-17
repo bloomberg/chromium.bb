@@ -127,7 +127,7 @@ TEST_F(PersistentPrefStoreImplTest, InitialValue) {
 TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kKey, "value");
+  dict.SetKey(kKey, base::Value("value"));
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
@@ -181,7 +181,7 @@ TEST_F(PersistentPrefStoreImplTest,
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kKey, "value");
+  dict.SetKey(kKey, base::Value("value"));
   pref_store()->SetValue(kKey, dict.CreateDeepCopy(), 0);
 
   ExpectPrefChange(other_pref_store.get(), kKey);
@@ -217,7 +217,7 @@ TEST_F(PersistentPrefStoreImplTest,
        RemoveWithoutPathExpansionObservedByOtherClient) {
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kKey, "value");
+  dict.SetKey(kKey, base::Value("value"));
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
@@ -230,7 +230,7 @@ TEST_F(PersistentPrefStoreImplTest,
   EXPECT_TRUE(dict.Equals(output));
 
   base::Value* mutable_value = nullptr;
-  dict.SetStringWithoutPathExpansion(kKey, "value");
+  dict.SetKey(kKey, base::Value("value"));
   ASSERT_TRUE(pref_store()->GetMutableValue(kKey, &mutable_value));
   base::DictionaryValue* mutable_dict = nullptr;
   ASSERT_TRUE(mutable_value->GetAsDictionary(&mutable_dict));

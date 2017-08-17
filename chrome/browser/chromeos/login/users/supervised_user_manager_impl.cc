@@ -284,7 +284,7 @@ void SupervisedUserManagerImpl::GetPasswordInformation(
 
   std::string salt;
   if (GetUserStringValue(user_id, kSupervisedUserPasswordSalt, &salt))
-    result->SetStringWithoutPathExpansion(kSalt, salt);
+    result->SetKey(kSalt, base::Value(salt));
 }
 
 void SupervisedUserManagerImpl::SetPasswordInformation(
@@ -342,7 +342,7 @@ void SupervisedUserManagerImpl::SetUserStringValue(
     const std::string& value) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, key);
-  update->SetStringWithoutPathExpansion(user_id, value);
+  update->SetKey(user_id, base::Value(value));
 }
 
 void SupervisedUserManagerImpl::SetUserIntegerValue(

@@ -200,13 +200,13 @@ class SupervisedUserBookmarksHandlerTest : public ::testing::Test {
       std::unique_ptr<base::DictionaryValue> links,
       std::unique_ptr<base::DictionaryValue> folders) {
     auto settings = base::MakeUnique<base::DictionaryValue>();
-    settings->SetStringWithoutPathExpansion("some_setting", "bleh");
+    settings->SetKey("some_setting", base::Value("bleh"));
     settings->SetWithoutPathExpansion("SupervisedBookmarkLink",
                                       std::move(links));
-    settings->SetStringWithoutPathExpansion("some_other_setting", "foo");
+    settings->SetKey("some_other_setting", base::Value("foo"));
     settings->SetWithoutPathExpansion("SupervisedBookmarkFolder",
                                       std::move(folders));
-    settings->SetStringWithoutPathExpansion("another_one", "blurb");
+    settings->SetKey("another_one", base::Value("blurb"));
     return settings;
   }
 
@@ -215,7 +215,7 @@ class SupervisedUserBookmarksHandlerTest : public ::testing::Test {
       const Setting* end) {
     auto dict = base::MakeUnique<base::DictionaryValue>();
     for (const Setting* setting = begin; setting != end; ++setting)
-      dict->SetStringWithoutPathExpansion(setting->first, setting->second);
+      dict->SetKey(setting->first, base::Value(setting->second));
     return dict;
   }
 

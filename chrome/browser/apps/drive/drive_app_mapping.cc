@@ -27,7 +27,7 @@ std::unique_ptr<base::DictionaryValue> CreateInfoDict(
     const std::string& chrome_app_id,
     bool generated) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetStringWithoutPathExpansion(kKeyChromeApp, chrome_app_id);
+  dict->SetKey(kKeyChromeApp, base::Value(chrome_app_id));
 
   // Only writes non-default value.
   if (generated)

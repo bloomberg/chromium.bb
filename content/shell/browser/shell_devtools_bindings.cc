@@ -277,7 +277,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     if (!params->GetString(0, &name) || !params->GetString(1, &value)) {
       return;
     }
-    preferences_.SetStringWithoutPathExpansion(name, value);
+    preferences_.SetKey(name, base::Value(value));
   } else if (method == "removePreference") {
     std::string name;
     if (!params->GetString(0, &name))

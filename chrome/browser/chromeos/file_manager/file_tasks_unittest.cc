@@ -281,9 +281,8 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
   // Set Text.app as default for "text/plain" in the preferences.
   base::DictionaryValue empty;
   base::DictionaryValue mime_types;
-  mime_types.SetStringWithoutPathExpansion(
-      "text/plain",
-      TaskDescriptorToId(text_app_task));
+  mime_types.SetKey("text/plain",
+                    base::Value(TaskDescriptorToId(text_app_task)));
   UpdateDefaultTaskPreferences(&pref_service, mime_types, empty);
 
   // Text.app should be chosen as default.
@@ -302,9 +301,7 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
 
   // Set Nice.app as default for ".txt" in the preferences.
   base::DictionaryValue suffixes;
-  suffixes.SetStringWithoutPathExpansion(
-      ".txt",
-      TaskDescriptorToId(nice_app_task));
+  suffixes.SetKey(".txt", base::Value(TaskDescriptorToId(nice_app_task)));
   UpdateDefaultTaskPreferences(&pref_service, empty, suffixes);
 
   // Now Nice.app should be chosen as default.

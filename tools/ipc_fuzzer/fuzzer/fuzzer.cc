@@ -608,7 +608,7 @@ struct FuzzTraits<base::DictionaryValue> {
         case base::Value::Type::STRING: {
           std::string tmp;
           fuzzer->FuzzString(&tmp);
-          p->SetStringWithoutPathExpansion(property, tmp);
+          p->SetKey(property, base::Value(tmp));
           break;
         }
         case base::Value::Type::BINARY: {

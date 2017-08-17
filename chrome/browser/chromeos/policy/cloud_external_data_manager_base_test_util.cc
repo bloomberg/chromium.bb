@@ -35,9 +35,9 @@ std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& data) {
   const std::string hash = crypto::SHA256HashString(data);
   std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
-  metadata->SetStringWithoutPathExpansion("url", url);
-  metadata->SetStringWithoutPathExpansion("hash", base::HexEncode(hash.c_str(),
-                                                                  hash.size()));
+  metadata->SetKey("url", base::Value(url));
+  metadata->SetKey("hash",
+                   base::Value(base::HexEncode(hash.c_str(), hash.size())));
   return metadata;
 }
 

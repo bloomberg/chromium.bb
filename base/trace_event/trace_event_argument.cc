@@ -439,7 +439,7 @@ std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
         std::string value;
         CHECK(it.ReadString(&value));
         if (cur_dict) {
-          cur_dict->SetStringWithoutPathExpansion(ReadKeyName(it), value);
+          cur_dict->SetKey(ReadKeyName(it), Value(value));
         } else {
           cur_list->AppendString(value);
         }

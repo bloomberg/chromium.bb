@@ -170,17 +170,15 @@ base::ListValue* ConstructFileSystemList(
 
     // Send the file system id so the renderer can create a valid FileSystem
     // object.
-    file_system_dict_value->SetStringWithoutPathExpansion(
-        "fsid", filesystems[i].fsid);
+    file_system_dict_value->SetKey("fsid", base::Value(filesystems[i].fsid));
 
-    file_system_dict_value->SetStringWithoutPathExpansion(
-        kNameKey, filesystems[i].name);
-    file_system_dict_value->SetStringWithoutPathExpansion(
+    file_system_dict_value->SetKey(kNameKey, base::Value(filesystems[i].name));
+    file_system_dict_value->SetKey(
         kGalleryIdKey,
-        base::Uint64ToString(filesystems[i].pref_id));
+        base::Value(base::Uint64ToString(filesystems[i].pref_id)));
     if (!filesystems[i].transient_device_id.empty()) {
-      file_system_dict_value->SetStringWithoutPathExpansion(
-          kDeviceIdKey, filesystems[i].transient_device_id);
+      file_system_dict_value->SetKey(
+          kDeviceIdKey, base::Value(filesystems[i].transient_device_id));
     }
     file_system_dict_value->SetKey(kIsRemovableKey,
                                    base::Value(filesystems[i].removable));

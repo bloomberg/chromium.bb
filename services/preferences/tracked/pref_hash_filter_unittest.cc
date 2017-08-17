@@ -254,8 +254,8 @@ std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
   std::unique_ptr<base::DictionaryValue> macs_dict(new base::DictionaryValue);
   for (base::DictionaryValue::Iterator it(*split_values); !it.IsAtEnd();
        it.Advance()) {
-    macs_dict->SetStringWithoutPathExpansion(
-        it.key(), "split mac for: " + path + "/" + it.key());
+    macs_dict->SetKey(it.key(),
+                      base::Value("split mac for: " + path + "/" + it.key()));
   }
   return macs_dict;
 };
@@ -401,7 +401,7 @@ class MockHashStoreContents : public HashStoreContents {
 
   // Records calls to this mock's SetMac/SetSplitMac methods.
   void RecordSetMac(const std::string& path, const std::string& mac) {
-    dictionary_.SetStringWithoutPathExpansion(path, mac);
+    dictionary_.SetKey(path, base::Value(mac));
   }
   void RecordSetSplitMac(const std::string& path,
                          const std::string& split_path,
@@ -412,7 +412,7 @@ class MockHashStoreContents : public HashStoreContents {
       mac_dict = dictionary_.SetDictionaryWithoutPathExpansion(
           path, base::MakeUnique<base::DictionaryValue>());
     }
-    mac_dict->SetStringWithoutPathExpansion(split_path, mac);
+    mac_dict->SetKey(split_path, base::Value(mac));
   }
 
   // Records a call to this mock's RemoveEntry method.

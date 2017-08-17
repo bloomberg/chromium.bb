@@ -172,8 +172,7 @@ void KeyPermissions::PermissionsForExtension::RegisterKeyForCorporateUsage(
 
   std::unique_ptr<base::DictionaryValue> new_pref_entry(
       new base::DictionaryValue);
-  new_pref_entry->SetStringWithoutPathExpansion(kPrefKeyUsage,
-                                                kPrefKeyUsageCorporate);
+  new_pref_entry->SetKey(kPrefKeyUsage, base::Value(kPrefKeyUsageCorporate));
 
   update->SetWithoutPathExpansion(public_key_spki_der_b64,
                                   std::move(new_pref_entry));
@@ -280,7 +279,7 @@ KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
       continue;
 
     std::unique_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
-    new_entry->SetStringWithoutPathExpansion(kStateStoreSPKI, entry.spki_b64);
+    new_entry->SetKey(kStateStoreSPKI, base::Value(entry.spki_b64));
     // Omit writing default values, namely |false|.
     if (entry.sign_once) {
       new_entry->SetKey(kStateStoreSignOnce, base::Value(entry.sign_once));

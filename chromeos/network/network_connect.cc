@@ -299,8 +299,7 @@ void NetworkConnectImpl::CallCreateConfiguration(
         NetworkConnectionHandler::kErrorConfigureFailed, "");
     return;
   }
-  shill_properties->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                  profile_path);
+  shill_properties->SetKey(shill::kProfileProperty, base::Value(profile_path));
   NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(

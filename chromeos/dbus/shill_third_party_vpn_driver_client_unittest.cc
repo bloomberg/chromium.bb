@@ -133,8 +133,8 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
 
   base::DictionaryValue parameters;
   const std::string kAddress("1.1.1.1");
-  parameters.SetStringWithoutPathExpansion(
-      shill::kAddressParameterThirdPartyVpn, kAddress);
+  parameters.SetKey(shill::kAddressParameterThirdPartyVpn,
+                    base::Value(kAddress));
 
   EXPECT_CALL(*this, MockSuccessWithWarning(std::string("deadbeef"))).Times(1);
 

@@ -169,10 +169,8 @@ scoped_refptr<extensions::Extension> CreateFakeExtension(
     const std::string& extension_id) {
   base::DictionaryValue manifest;
   std::string error;
-  manifest.SetStringWithoutPathExpansion(extensions::manifest_keys::kVersion,
-                                         "1.0.0.0");
-  manifest.SetStringWithoutPathExpansion(extensions::manifest_keys::kName,
-                                         "unused");
+  manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1.0.0.0"));
+  manifest.SetKey(extensions::manifest_keys::kName, base::Value("unused"));
   return extensions::Extension::Create(base::FilePath(),
                                        extensions::Manifest::UNPACKED,
                                        manifest,

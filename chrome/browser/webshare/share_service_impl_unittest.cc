@@ -66,8 +66,8 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     std::unique_ptr<base::DictionaryValue> origin_dict(
         new base::DictionaryValue);
 
-    origin_dict->SetStringWithoutPathExpansion(kUrlTemplateKey, url_template);
-    origin_dict->SetStringWithoutPathExpansion(kNameKey, name);
+    origin_dict->SetKey(kUrlTemplateKey, base::Value(url_template));
+    origin_dict->SetKey(kNameKey, base::Value(name));
 
     share_target_dict->SetWithoutPathExpansion(manifest_url,
                                                std::move(origin_dict));

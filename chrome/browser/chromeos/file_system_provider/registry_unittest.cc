@@ -58,9 +58,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
 
   base::DictionaryValue extensions;
   auto file_system = base::MakeUnique<base::DictionaryValue>();
-  file_system->SetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                             kFileSystemId);
-  file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName, kDisplayName);
+  file_system->SetKey(kPrefKeyFileSystemId, base::Value(kFileSystemId));
+  file_system->SetKey(kPrefKeyDisplayName, base::Value(kDisplayName));
   file_system->SetKey(kPrefKeyWritable, base::Value(writable));
   file_system->SetKey(kPrefKeySupportsNotifyTag,
                       base::Value(supports_notify_tag));
@@ -69,12 +68,11 @@ void RememberFakeFileSystem(TestingProfile* profile,
 
   // Remember watchers.
   auto watcher_value = base::MakeUnique<base::DictionaryValue>();
-  watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
-                                               watcher.entry_path.value());
+  watcher_value->SetKey(kPrefKeyWatcherEntryPath,
+                        base::Value(watcher.entry_path.value()));
   watcher_value->SetKey(kPrefKeyWatcherRecursive,
                         base::Value(watcher.recursive));
-  watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
-                                               watcher.last_tag);
+  watcher_value->SetKey(kPrefKeyWatcherLastTag, base::Value(watcher.last_tag));
   auto persistent_origins_value = base::MakeUnique<base::ListValue>();
   for (const auto& subscriber_it : watcher.subscribers) {
     if (subscriber_it.second.persistent)

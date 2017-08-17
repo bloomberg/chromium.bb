@@ -557,8 +557,8 @@ void ClientCertResolver::ConfigureCertificates(
                                       it->pkcs11_id,
                                       &shill_properties);
       if (!it->identity.empty()) {
-        shill_properties.SetStringWithoutPathExpansion(
-            shill::kEapIdentityProperty, it->identity);
+        shill_properties.SetKey(shill::kEapIdentityProperty,
+                                base::Value(it->identity));
       }
     }
     network_properties_changed_ = true;

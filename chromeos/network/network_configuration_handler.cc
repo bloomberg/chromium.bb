@@ -272,8 +272,7 @@ void NetworkConfigurationHandler::SetShillProperties(
     const NetworkState* network_state =
         network_state_handler_->GetNetworkState(service_path);
     guid = network_state ? network_state->guid() : base::GenerateGUID();
-    properties_to_set->SetStringWithoutPathExpansion(shill::kGuidProperty,
-                                                     guid);
+    properties_to_set->SetKey(shill::kGuidProperty, base::Value(guid));
   }
 
   LogConfigProperties("SetProperty", service_path, *properties_to_set);
@@ -352,8 +351,7 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
   properties_to_set->GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
   if (guid.empty()) {
     guid = base::GenerateGUID();
-    properties_to_set->SetStringWithoutPathExpansion(
-        ::onc::network_config::kGUID, guid);
+    properties_to_set->SetKey(::onc::network_config::kGUID, base::Value(guid));
   }
 
   LogConfigProperties("Configure", type, *properties_to_set);
@@ -559,7 +557,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
   std::string name =
       shill_property_util::GetNameFromProperties(service_path, properties);
   if (!name.empty())
-    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
+    properties_copy->SetKey(shill::kNameProperty, base::Value(name));
 
   // Get the GUID property from NetworkState if it is not set in Shill.
   std::string guid;
@@ -568,8 +566,8 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     const NetworkState* network_state =
         network_state_handler_->GetNetworkState(service_path);
     if (network_state) {
-      properties_copy->SetStringWithoutPathExpansion(
-          ::onc::network_config::kGUID, network_state->guid());
+      properties_copy->SetKey(::onc::network_config::kGUID,
+                              base::Value(network_state->guid()));
     }
   }
 

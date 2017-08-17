@@ -685,11 +685,9 @@ bool WifiConfigView::Login() {
   if (service_path_.empty()) {
     // TODO(stevenjb): Support modifying existing EAP configurations.
     // Will probably wait to do this in WebUI instead.
-    properties.SetStringWithoutPathExpansion(
-        shill::kTypeProperty, shill::kTypeWifi);
+    properties.SetKey(shill::kTypeProperty, base::Value(shill::kTypeWifi));
     shill_property_util::SetSSID(GetSsid(), &properties);
-    properties.SetStringWithoutPathExpansion(
-        shill::kModeProperty, shill::kModeManaged);
+    properties.SetKey(shill::kModeProperty, base::Value(shill::kModeManaged));
     properties.SetKey(shill::kSaveCredentialsProperty,
                       base::Value(GetSaveCredentials()));
     std::string security_class = shill::kSecurityNone;
@@ -707,15 +705,15 @@ bool WifiConfigView::Login() {
       }
       std::string passphrase = GetPassphrase();
       if (!passphrase.empty()) {
-        properties.SetStringWithoutPathExpansion(
-            shill::kPassphraseProperty, GetPassphrase());
+        properties.SetKey(shill::kPassphraseProperty,
+                          base::Value(GetPassphrase()));
       }
     } else {
       security_class = shill::kSecurity8021x;
       SetEapProperties(&properties, false /* not configured */);
     }
-    properties.SetStringWithoutPathExpansion(
-        shill::kSecurityClassProperty, security_class);
+    properties.SetKey(shill::kSecurityClassProperty,
+                      base::Value(security_class));
 
     // Configure and connect to network.
     NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
@@ -734,16 +732,15 @@ bool WifiConfigView::Login() {
     } else {
       const std::string passphrase = GetPassphrase();
       if (!passphrase.empty()) {
-        properties.SetStringWithoutPathExpansion(
-            shill::kPassphraseProperty, passphrase);
+        properties.SetKey(shill::kPassphraseProperty, base::Value(passphrase));
       }
     }
     if (network->type() == shill::kTypeEthernet) {
       // When configuring an ethernet service, we actually configure the
       // EthernetEap service, which exists in the Profile only.
       // See crbug.com/126870 for more info.
-      properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                               shill::kTypeEthernetEap);
+      properties.SetKey(shill::kTypeProperty,
+                        base::Value(shill::kTypeEthernetEap));
       share_network = false;
       NetworkConnect::Get()->CreateConfiguration(&properties, share_network);
     } else {
@@ -877,24 +874,23 @@ std::string WifiConfigView::GetEapAnonymousIdentity() const {
 
 void WifiConfigView::SetEapProperties(base::DictionaryValue* properties,
                                       bool configured) {
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapIdentityProperty, GetEapIdentity());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapMethodProperty, GetEapMethod());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapPhase2AuthProperty, GetEapPhase2Auth());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapAnonymousIdentityProperty, GetEapAnonymousIdentity());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapSubjectMatchProperty, GetEapSubjectMatch());
+  properties->SetKey(shill::kEapIdentityProperty,
+                     base::Value(GetEapIdentity()));
+  properties->SetKey(shill::kEapMethodProperty, base::Value(GetEapMethod()));
+  properties->SetKey(shill::kEapPhase2AuthProperty,
+                     base::Value(GetEapPhase2Auth()));
+  properties->SetKey(shill::kEapAnonymousIdentityProperty,
+                     base::Value(GetEapAnonymousIdentity()));
+  properties->SetKey(shill::kEapSubjectMatchProperty,
+                     base::Value(GetEapSubjectMatch()));
 
   SetEapClientCertProperties(properties);
 
   properties->SetKey(shill::kEapUseSystemCasProperty,
                      base::Value(GetEapUseSystemCas()));
   if (!configured || passphrase_textfield_->changed()) {
-    properties->SetStringWithoutPathExpansion(
-        shill::kEapPasswordProperty, GetPassphrase());
+    properties->SetKey(shill::kEapPasswordProperty,
+                       base::Value(GetPassphrase()));
   }
   auto pem_list = base::MakeUnique<base::ListValue>();
   std::string ca_cert_pem = GetEapServerCaCertPEM();

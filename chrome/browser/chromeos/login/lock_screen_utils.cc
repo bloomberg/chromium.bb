@@ -76,7 +76,7 @@ bool SetUserInputMethodImpl(
 
     base::DictionaryValue* const users_last_input_methods = updater.Get();
     if (users_last_input_methods)
-      users_last_input_methods->SetStringWithoutPathExpansion(username, "");
+      users_last_input_methods->SetKey(username, base::Value(""));
     return false;
   }
   if (!base::ContainsValue(ime_state->GetActiveInputMethodIds(),

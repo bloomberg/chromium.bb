@@ -325,13 +325,12 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     // Fake an account id. Note this needs to match GenerateKioskAppAccountId
     // in kiosk_app_manager.cc to make SetAutoLaunchApp work with the
     // existing app entry created here.
-    entry->SetStringWithoutPathExpansion(kAccountsPrefDeviceLocalAccountsKeyId,
-                                         app_id + "@kiosk-apps");
+    entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                  base::Value(app_id + "@kiosk-apps"));
     entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyType,
                   base::Value(policy::DeviceLocalAccount::TYPE_KIOSK_APP));
-    entry->SetStringWithoutPathExpansion(
-        kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-        app_id);
+    entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                  base::Value(app_id));
     device_local_accounts.Append(std::move(entry));
     owner_settings_service_->Set(kAccountsPrefDeviceLocalAccounts,
                                  device_local_accounts);

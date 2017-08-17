@@ -57,7 +57,7 @@ struct PublicKeyInfo {
 void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
                                           base::DictionaryValue* algorithm) {
   CHECK_EQ(net::X509Certificate::kPublicKeyTypeRSA, key_info.key_type);
-  algorithm->SetStringWithoutPathExpansion("name", kWebCryptoRSASSA_PKCS1_v1_5);
+  algorithm->SetKey("name", base::Value(kWebCryptoRSASSA_PKCS1_v1_5));
   algorithm->SetKey("modulusLength",
                     base::Value(static_cast<int>(key_info.key_size_bits)));
 

@@ -203,9 +203,9 @@ std::unique_ptr<base::DictionaryValue>
 CloudExternalDataManagerBaseTest::ConstructMetadata(const std::string& url,
                                                     const std::string& hash) {
   std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
-  metadata->SetStringWithoutPathExpansion("url", url);
-  metadata->SetStringWithoutPathExpansion("hash", base::HexEncode(hash.c_str(),
-                                                                  hash.size()));
+  metadata->SetKey("url", base::Value(url));
+  metadata->SetKey("hash",
+                   base::Value(base::HexEncode(hash.c_str(), hash.size())));
   return metadata;
 }
 

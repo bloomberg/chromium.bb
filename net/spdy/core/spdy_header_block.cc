@@ -335,10 +335,10 @@ std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
   auto headers_dict = base::MakeUnique<base::DictionaryValue>();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
-    headers_dict->SetStringWithoutPathExpansion(
+    headers_dict->SetKey(
         it->first.as_string(),
-        ElideHeaderValueForNetLog(capture_mode, it->first.as_string(),
-                                  it->second.as_string()));
+        base::Value(ElideHeaderValueForNetLog(
+            capture_mode, it->first.as_string(), it->second.as_string())));
   }
   dict->Set("headers", std::move(headers_dict));
   return std::move(dict);

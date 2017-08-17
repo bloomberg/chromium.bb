@@ -33,11 +33,9 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   std::unique_ptr<base::DictionaryValue> origin_dict(new base::DictionaryValue);
 
   if (!manifest.name.is_null()) {
-    origin_dict->SetStringWithoutPathExpansion(kNameKey,
-                                               manifest.name.string());
+    origin_dict->SetKey(kNameKey, base::Value(manifest.name.string()));
   }
-  origin_dict->SetStringWithoutPathExpansion(kUrlTemplateKey,
-                                             url_template);
+  origin_dict->SetKey(kUrlTemplateKey, base::Value(url_template));
 
   share_target_dict->SetWithoutPathExpansion(manifest_url.spec(),
                                              std::move(origin_dict));

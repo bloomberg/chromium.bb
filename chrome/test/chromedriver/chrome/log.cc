@@ -48,7 +48,7 @@ std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
       if (dict_copy->size() >= kMaxChildren - 1) {
-        dict_copy->SetStringWithoutPathExpansion("~~~", "...");
+        dict_copy->SetKey("~~~", base::Value("..."));
         break;
       }
       const base::Value* child = NULL;

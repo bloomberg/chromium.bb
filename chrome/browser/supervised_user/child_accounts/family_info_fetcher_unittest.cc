@@ -49,10 +49,10 @@ std::string BuildGetFamilyProfileResponse(
     const FamilyInfoFetcher::FamilyProfile& family) {
   base::DictionaryValue dict;
   auto family_dict = base::MakeUnique<base::DictionaryValue>();
-  family_dict->SetStringWithoutPathExpansion("familyId", family.id);
+  family_dict->SetKey("familyId", base::Value(family.id));
   std::unique_ptr<base::DictionaryValue> profile_dict =
       base::MakeUnique<base::DictionaryValue>();
-  profile_dict->SetStringWithoutPathExpansion("name", family.name);
+  profile_dict->SetKey("name", base::Value(family.name));
   family_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
   dict.SetWithoutPathExpansion("family", std::move(family_dict));
   std::string result;
@@ -77,27 +77,23 @@ std::string BuildGetFamilyMembersResponse(
     const FamilyInfoFetcher::FamilyMember& member = members[i];
     std::unique_ptr<base::DictionaryValue> member_dict(
         new base::DictionaryValue);
-    member_dict->SetStringWithoutPathExpansion("userId",
-                                               member.obfuscated_gaia_id);
-    member_dict->SetStringWithoutPathExpansion(
-        "role", FamilyInfoFetcher::RoleToString(member.role));
+    member_dict->SetKey("userId", base::Value(member.obfuscated_gaia_id));
+    member_dict->SetKey(
+        "role", base::Value(FamilyInfoFetcher::RoleToString(member.role)));
     if (!member.display_name.empty() ||
         !member.email.empty() ||
         !member.profile_url.empty() ||
         !member.profile_image_url.empty()) {
       auto profile_dict = base::MakeUnique<base::DictionaryValue>();
       if (!member.display_name.empty())
-        profile_dict->SetStringWithoutPathExpansion("displayName",
-                                                    member.display_name);
+        profile_dict->SetKey("displayName", base::Value(member.display_name));
       if (!member.email.empty())
-        profile_dict->SetStringWithoutPathExpansion("email",
-                                                    member.email);
+        profile_dict->SetKey("email", base::Value(member.email));
       if (!member.profile_url.empty())
-        profile_dict->SetStringWithoutPathExpansion("profileUrl",
-                                                    member.profile_url);
+        profile_dict->SetKey("profileUrl", base::Value(member.profile_url));
       if (!member.profile_image_url.empty())
-        profile_dict->SetStringWithoutPathExpansion("profileImageUrl",
-                                                    member.profile_image_url);
+        profile_dict->SetKey("profileImageUrl",
+                             base::Value(member.profile_image_url));
 
       member_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
     }

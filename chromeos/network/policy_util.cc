@@ -216,8 +216,8 @@ void ApplyGlobalAutoconnectPolicy(
     NOTREACHED();
 
   auto_connect_dictionary->SetKey(policy_source, base::Value(false));
-  auto_connect_dictionary->SetStringWithoutPathExpansion(
-      ::onc::kAugmentationEffectiveSetting, policy_source);
+  auto_connect_dictionary->SetKey(::onc::kAugmentationEffectiveSetting,
+                                  base::Value(policy_source));
 }
 
 }  // namespace
@@ -338,7 +338,7 @@ std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
   RemoveFakeCredentials(onc::kNetworkConfigurationSignature,
                         effective.get());
 
-  effective->SetStringWithoutPathExpansion(::onc::network_config::kGUID, guid);
+  effective->SetKey(::onc::network_config::kGUID, base::Value(guid));
 
   // Remove irrelevant fields.
   onc::Normalizer normalizer(true /* remove recommended fields */);
@@ -349,8 +349,7 @@ std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
       onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
                                      *effective));
 
-  shill_dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                  profile.path);
+  shill_dictionary->SetKey(shill::kProfileProperty, base::Value(profile.path));
 
   // If AutoConnect is enabled by policy, set the ManagedCredentials property to
   // indicate to Shill that this network can be used for autoconnect even

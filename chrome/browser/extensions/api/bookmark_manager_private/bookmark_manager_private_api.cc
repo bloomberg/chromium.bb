@@ -710,7 +710,7 @@ bool BookmarkManagerPrivateGetMetaInfoFunction::RunOnReady() {
         BookmarkNode::MetaInfoMap::const_iterator itr;
         base::DictionaryValue& temp = result.as_object->additional_properties;
         for (itr = meta_info->begin(); itr != meta_info->end(); itr++) {
-          temp.SetStringWithoutPathExpansion(itr->first, itr->second);
+          temp.SetKey(itr->first, base::Value(itr->second));
         }
       }
       results_ = GetMetaInfo::Results::Create(result);

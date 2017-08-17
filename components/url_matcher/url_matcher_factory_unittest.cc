@@ -240,7 +240,7 @@ void UrlConditionCaseTest::CheckCondition(
     list->AppendString(value);
     condition.SetWithoutPathExpansion(condition_key_, std::move(list));
   } else {
-    condition.SetStringWithoutPathExpansion(condition_key_, value);
+    condition.SetKey(condition_key_, base::Value(value));
   }
 
   URLMatcher matcher;

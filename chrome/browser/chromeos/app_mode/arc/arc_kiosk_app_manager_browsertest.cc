@@ -98,22 +98,19 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
     base::ListValue device_local_accounts;
     for (const policy::ArcKioskAppBasicInfo& app : apps) {
       std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-      entry->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyId,
-          GenerateAccountId(app.package_name()));
+      entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                    base::Value(GenerateAccountId(app.package_name())));
       entry->SetKey(
           kAccountsPrefDeviceLocalAccountsKeyType,
           base::Value(policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP));
-      entry->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
-          app.package_name());
-      entry->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyArcKioskClass, app.class_name());
-      entry->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyArcKioskAction, app.action());
-      entry->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
-          app.display_name());
+      entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+                    base::Value(app.package_name()));
+      entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+                    base::Value(app.class_name()));
+      entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+                    base::Value(app.action()));
+      entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+                    base::Value(app.display_name()));
       device_local_accounts.Append(std::move(entry));
     }
     owner_settings_service_->Set(kAccountsPrefDeviceLocalAccounts,

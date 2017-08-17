@@ -93,7 +93,7 @@ std::vector<std::string> GetStringVector(const base::DictionaryValue& dict,
 void WriteString(base::DictionaryValue& dict,
                  const std::string& key,
                  const std::string& value) {
-  dict.SetStringWithoutPathExpansion(key, value);
+  dict.SetKey(key, base::Value(value));
 };
 
 void WriteLabels(const Label& default_toolchain,

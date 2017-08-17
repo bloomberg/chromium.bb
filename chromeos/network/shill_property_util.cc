@@ -58,7 +58,7 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
       string_value.empty()) {
     return false;
   }
-  dest->SetStringWithoutPathExpansion(key, string_value);
+  dest->SetKey(key, base::Value(string_value));
   return true;
 }
 
@@ -66,7 +66,7 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
 
 void SetSSID(const std::string& ssid, base::DictionaryValue* properties) {
   std::string hex_ssid = base::HexEncode(ssid.c_str(), ssid.size());
-  properties->SetStringWithoutPathExpansion(shill::kWifiHexSsid, hex_ssid);
+  properties->SetKey(shill::kWifiHexSsid, base::Value(hex_ssid));
 }
 
 std::string GetSSIDFromProperties(const base::DictionaryValue& properties,
@@ -226,8 +226,7 @@ void SetUIData(const NetworkUIData& ui_data,
   ui_data.FillDictionary(&ui_data_dict);
   std::string ui_data_blob;
   base::JSONWriter::Write(ui_data_dict, &ui_data_blob);
-  shill_dictionary->SetStringWithoutPathExpansion(shill::kUIDataProperty,
-                                                  ui_data_blob);
+  shill_dictionary->SetKey(shill::kUIDataProperty, base::Value(ui_data_blob));
 }
 
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
@@ -241,7 +240,7 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   std::string type;
   service_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   success &= !type.empty();
-  dest->SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  dest->SetKey(shill::kTypeProperty, base::Value(type));
   if (type == shill::kTypeWifi) {
     success &=
         CopyStringFromDictionary(
@@ -280,12 +279,10 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
           shill::kProviderHostProperty, &vpn_provider_host);
     }
     success &= !vpn_provider_type.empty();
-    dest->SetStringWithoutPathExpansion(shill::kProviderTypeProperty,
-                                        vpn_provider_type);
+    dest->SetKey(shill::kProviderTypeProperty, base::Value(vpn_provider_type));
 
     success &= !vpn_provider_host.empty();
-    dest->SetStringWithoutPathExpansion(shill::kProviderHostProperty,
-                                        vpn_provider_host);
+    dest->SetKey(shill::kProviderHostProperty, base::Value(vpn_provider_host));
   } else if (type == shill::kTypeEthernet || type == shill::kTypeEthernetEap) {
     // Ethernet and EthernetEAP don't have any additional identifying
     // properties.

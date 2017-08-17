@@ -484,8 +484,8 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string profile = "profile path";
   base::DictionaryValue value;
   shill_property_util::SetSSID(networkName, &value);
-  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
-  value.SetStringWithoutPathExpansion(shill::kProfileProperty, profile);
+  value.SetKey(shill::kTypeProperty, base::Value(type));
+  value.SetKey(shill::kProfileProperty, base::Value(profile));
 
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))
@@ -504,8 +504,8 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
   std::string type = "wifi";
   base::DictionaryValue value;
   shill_property_util::SetSSID("Service", &value);
-  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
-  value.SetStringWithoutPathExpansion(shill::kProfileProperty, "profile2");
+  value.SetKey(shill::kTypeProperty, base::Value(type));
+  value.SetKey(shill::kProfileProperty, base::Value("profile2"));
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath("profile2"), _, _, _))
       .WillOnce(
@@ -554,8 +554,8 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfigurationFromCurrentProfile) {
   std::string type = "wifi";
   base::DictionaryValue value;
   shill_property_util::SetSSID("Service", &value);
-  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
-  value.SetStringWithoutPathExpansion(shill::kProfileProperty, "profile2");
+  value.SetKey(shill::kTypeProperty, base::Value(type));
+  value.SetKey(shill::kProfileProperty, base::Value("profile2"));
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath("profile2"), _, _, _))
       .WillOnce(
@@ -706,15 +706,13 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
                                const std::string& type) {
     base::DictionaryValue properties;
     shill_property_util::SetSSID(service_path, &properties);
-    properties.SetStringWithoutPathExpansion(shill::kNameProperty,
-                                             service_path);
-    properties.SetStringWithoutPathExpansion(shill::kGuidProperty,
-                                             service_path);
-    properties.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
-    properties.SetStringWithoutPathExpansion(shill::kStateProperty,
-                                             shill::kStateIdle);
-    properties.SetStringWithoutPathExpansion(
-        shill::kProfileProperty, NetworkProfileHandler::GetSharedProfilePath());
+    properties.SetKey(shill::kNameProperty, base::Value(service_path));
+    properties.SetKey(shill::kGuidProperty, base::Value(service_path));
+    properties.SetKey(shill::kTypeProperty, base::Value(type));
+    properties.SetKey(shill::kStateProperty, base::Value(shill::kStateIdle));
+    properties.SetKey(
+        shill::kProfileProperty,
+        base::Value(NetworkProfileHandler::GetSharedProfilePath()));
 
     network_configuration_handler_->CreateShillConfiguration(
         properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
@@ -767,10 +765,10 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
 
   // Set Properties
   base::DictionaryValue properties_to_set;
-  properties_to_set.SetStringWithoutPathExpansion(shill::kIdentityProperty,
-                                                  test_identity);
-  properties_to_set.SetStringWithoutPathExpansion(shill::kPassphraseProperty,
-                                                  test_passphrase);
+  properties_to_set.SetKey(shill::kIdentityProperty,
+                           base::Value(test_identity));
+  properties_to_set.SetKey(shill::kPassphraseProperty,
+                           base::Value(test_passphrase));
   network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
@@ -816,8 +814,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
 
   // Set Properties
   base::DictionaryValue properties_to_set;
-  properties_to_set.SetStringWithoutPathExpansion(shill::kWifiHexSsid,
-                                                  wifi_hex);
+  properties_to_set.SetKey(shill::kWifiHexSsid, base::Value(wifi_hex));
   network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
@@ -876,8 +873,8 @@ TEST_F(NetworkConfigurationHandlerStubTest, NetworkConfigurationObserver) {
                                   service_path, shill::kTypeProperty));
 
   base::DictionaryValue properties_to_set;
-  properties_to_set.SetStringWithoutPathExpansion(shill::kPassphraseProperty,
-                                                  test_passphrase);
+  properties_to_set.SetKey(shill::kPassphraseProperty,
+                           base::Value(test_passphrase));
   network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,

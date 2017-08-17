@@ -38,8 +38,7 @@ static void SetUserLastInputMethodPreference(const std::string& username,
       DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
       base::DictionaryValue* const users_last_input_methods = updater.Get();
       if (users_last_input_methods) {
-        users_last_input_methods->SetStringWithoutPathExpansion(username,
-                                                                input_method);
+        users_last_input_methods->SetKey(username, base::Value(input_method));
         update_succeed = true;
       }
     }
@@ -51,8 +50,7 @@ static void SetUserLastInputMethodPreference(const std::string& username,
       DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
       base::DictionaryValue* const users_last_input_methods = updater.Get();
       if (users_last_input_methods) {
-        users_last_input_methods->SetStringWithoutPathExpansion(username,
-                                                                input_method);
+        users_last_input_methods->SetKey(username, base::Value(input_method));
         update_succeed = true;
       }
     }

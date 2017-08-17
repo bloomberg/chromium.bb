@@ -378,12 +378,9 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X", idx, 0, 0, 0, 0, 0);
     std::string channel = base::IntToString(idx);
     std::string strength = base::IntToString(idx * 10);
-    properties.SetStringWithoutPathExpansion(shill::kGeoMacAddressProperty,
-                                             mac_address);
-    properties.SetStringWithoutPathExpansion(shill::kGeoChannelProperty,
-                                             channel);
-    properties.SetStringWithoutPathExpansion(shill::kGeoSignalStrengthProperty,
-                                             strength);
+    properties.SetKey(shill::kGeoMacAddressProperty, base::Value(mac_address));
+    properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
+    properties.SetKey(shill::kGeoSignalStrengthProperty, base::Value(strength));
     manager_test_->AddGeoNetwork(shill::kGeoWifiAccessPointsProperty,
                                  properties);
     base::RunLoop().RunUntilIdle();
@@ -397,13 +394,10 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
     std::string mcc = base::IntToString(idx * 100);
     std::string mnc = base::IntToString(idx * 100 + 1);
 
-    properties.SetStringWithoutPathExpansion(shill::kGeoCellIdProperty, ci);
-    properties.SetStringWithoutPathExpansion(
-        shill::kGeoLocationAreaCodeProperty, lac);
-    properties.SetStringWithoutPathExpansion(
-        shill::kGeoMobileCountryCodeProperty, mcc);
-    properties.SetStringWithoutPathExpansion(
-        shill::kGeoMobileNetworkCodeProperty, mnc);
+    properties.SetKey(shill::kGeoCellIdProperty, base::Value(ci));
+    properties.SetKey(shill::kGeoLocationAreaCodeProperty, base::Value(lac));
+    properties.SetKey(shill::kGeoMobileCountryCodeProperty, base::Value(mcc));
+    properties.SetKey(shill::kGeoMobileNetworkCodeProperty, base::Value(mnc));
 
     manager_test_->AddGeoNetwork(shill::kGeoCellTowersProperty, properties);
     base::RunLoop().RunUntilIdle();

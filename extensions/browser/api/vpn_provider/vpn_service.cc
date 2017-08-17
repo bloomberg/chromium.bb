@@ -408,23 +408,19 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
       CreateConfigurationInternal(extension_id, configuration_name, key);
 
   base::DictionaryValue properties;
-  properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                           shill::kTypeVPN);
-  properties.SetStringWithoutPathExpansion(shill::kNameProperty,
-                                           configuration_name);
-  properties.SetStringWithoutPathExpansion(shill::kProviderHostProperty,
-                                           extension_id);
-  properties.SetStringWithoutPathExpansion(shill::kObjectPathSuffixProperty,
-                                           configuration->key());
-  properties.SetStringWithoutPathExpansion(shill::kProviderTypeProperty,
-                                           shill::kProviderThirdPartyVpn);
-  properties.SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                           profile->path);
+  properties.SetKey(shill::kTypeProperty, base::Value(shill::kTypeVPN));
+  properties.SetKey(shill::kNameProperty, base::Value(configuration_name));
+  properties.SetKey(shill::kProviderHostProperty, base::Value(extension_id));
+  properties.SetKey(shill::kObjectPathSuffixProperty,
+                    base::Value(configuration->key()));
+  properties.SetKey(shill::kProviderTypeProperty,
+                    base::Value(shill::kProviderThirdPartyVpn));
+  properties.SetKey(shill::kProfileProperty, base::Value(profile->path));
 
   // Note: This will not create an entry in |policy_util|. TODO(pneubeck):
   // Determine the correct thing to do here, crbug.com/459278.
   std::string guid = base::GenerateGUID();
-  properties.SetStringWithoutPathExpansion(shill::kGuidProperty, guid);
+  properties.SetKey(shill::kGuidProperty, base::Value(guid));
 
   network_configuration_handler_->CreateShillConfiguration(
       properties, NetworkConfigurationObserver::SOURCE_EXTENSION_INSTALL,

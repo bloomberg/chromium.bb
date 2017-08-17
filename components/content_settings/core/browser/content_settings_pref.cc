@@ -402,9 +402,9 @@ void ContentSettingsPref::UpdatePref(
           resource_dictionary->SetWithoutPathExpansion(resource_identifier,
                                                        value->CreateDeepCopy());
           // Update timestamp for whole resource dictionary.
-          settings_dictionary->SetStringWithoutPathExpansion(
-              kLastModifiedPath,
-              base::Int64ToString(last_modified.ToInternalValue()));
+          settings_dictionary->SetKey(kLastModifiedPath,
+                                      base::Value(base::Int64ToString(
+                                          last_modified.ToInternalValue())));
         }
       } else {
         // Update settings dictionary.
@@ -416,9 +416,9 @@ void ContentSettingsPref::UpdatePref(
         } else {
           settings_dictionary->SetWithoutPathExpansion(kSettingPath,
                                                        value->CreateDeepCopy());
-          settings_dictionary->SetStringWithoutPathExpansion(
-              kLastModifiedPath,
-              base::Int64ToString(last_modified.ToInternalValue()));
+          settings_dictionary->SetKey(kLastModifiedPath,
+                                      base::Value(base::Int64ToString(
+                                          last_modified.ToInternalValue())));
         }
       }
       // Remove the settings dictionary if it is empty.

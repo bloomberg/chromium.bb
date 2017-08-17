@@ -71,10 +71,6 @@ class DictionaryValueUpdate {
                                std::unique_ptr<base::Value> in_value);
 
   // Convenience forms of SetWithoutPathExpansion().
-  void SetStringWithoutPathExpansion(base::StringPiece path,
-                                     base::StringPiece in_value);
-  void SetStringWithoutPathExpansion(base::StringPiece path,
-                                     const base::string16& in_value);
   std::unique_ptr<DictionaryValueUpdate> SetDictionaryWithoutPathExpansion(
       base::StringPiece path,
       std::unique_ptr<base::DictionaryValue> in_value);

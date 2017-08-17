@@ -143,17 +143,17 @@ class NetworkCertMigratorTest : public testing::Test {
     AddService(kVPNStub, shill::kTypeVPN, shill::kStateIdle);
     base::DictionaryValue provider;
     if (open_vpn) {
-      provider.SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                             shill::kProviderOpenVpn);
-      provider.SetStringWithoutPathExpansion(
-          shill::kOpenVPNClientCertIdProperty, pkcs11_id);
+      provider.SetKey(shill::kTypeProperty,
+                      base::Value(shill::kProviderOpenVpn));
+      provider.SetKey(shill::kOpenVPNClientCertIdProperty,
+                      base::Value(pkcs11_id));
     } else {
-      provider.SetStringWithoutPathExpansion(shill::kTypeProperty,
-                                             shill::kProviderL2tpIpsec);
-      provider.SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertSlotProperty, slot_id);
-      provider.SetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, pkcs11_id);
+      provider.SetKey(shill::kTypeProperty,
+                      base::Value(shill::kProviderL2tpIpsec));
+      provider.SetKey(shill::kL2tpIpsecClientCertSlotProperty,
+                      base::Value(slot_id));
+      provider.SetKey(shill::kL2tpIpsecClientCertIdProperty,
+                      base::Value(pkcs11_id));
     }
     service_test_->SetServiceProperty(
         kVPNStub, shill::kProviderProperty, provider);

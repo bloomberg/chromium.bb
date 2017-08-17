@@ -124,7 +124,7 @@ bool RefreshTokenStoreOnDisk::StoreRefreshToken(
   }
 
   std::string json_string;
-  tokens->SetStringWithoutPathExpansion(user_name_, refresh_token);
+  tokens->SetKey(user_name_, base::Value(refresh_token));
   if (!base::JSONWriter::Write(*token_data, &json_string)) {
     LOG(ERROR) << "Couldn't convert JSON data to string";
     return false;

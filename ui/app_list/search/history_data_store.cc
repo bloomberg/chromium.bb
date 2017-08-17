@@ -153,7 +153,7 @@ void HistoryDataStore::Load(
 void HistoryDataStore::SetPrimary(const std::string& query,
                                   const std::string& result) {
   base::DictionaryValue* entry_dict = GetEntryDict(query);
-  entry_dict->SetStringWithoutPathExpansion(kKeyPrimary, result);
+  entry_dict->SetKey(kKeyPrimary, base::Value(result));
   if (data_store_.get())
     data_store_->ScheduleWrite();
 }
@@ -176,8 +176,8 @@ void HistoryDataStore::SetUpdateTime(const std::string& query,
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   // Persist time as microseconds since Windows epoch (year 1601).
   const int64_t update_time_val = update_time.since_origin().InMicroseconds();
-  entry_dict->SetStringWithoutPathExpansion(
-      kKeyUpdateTime, base::Int64ToString(update_time_val));
+  entry_dict->SetKey(kKeyUpdateTime,
+                     base::Value(base::Int64ToString(update_time_val)));
   if (data_store_.get())
     data_store_->ScheduleWrite();
 }
