@@ -18,46 +18,21 @@ async function test()
     });
     InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
 
-    var filterChecks = [{
-        filterText: "-.css",
-        isRegex: false
-    }, {
-        filterText: "-.png",
-        isRegex: false
-    }, {
-        filterText: "css",
-        isRegex: false
-    }, {
-        filterText: "",
-        isRegex: false
-    }, {
-        filterText: ".*",
-        isRegex: true
-    }, {
-        filterText: ".*\\..*",
-        isRegex: true
-    }, {
-        filterText: ".*\\.png",
-        isRegex: true
-    }, {
-        filterText: "NOTHINGTOMATCH",
-        isRegex: true
-    }, {
-        filterText: "",
-        isRegex: true
-    }, {
-        filterText: "png",
-        isRegex: false
-    }, {
-        filterText: "-missing",
-        isRegex: false
-    }, {
-        filterText: "is:from-cache",
-        isRegex: false
-    }, {
-        filterText: "-is:from-cache",
-        isRegex: false
-    }];
+    var filterChecks = [
+        "-.css",
+        "-.png",
+        "css",
+        "",
+        "/.*/",
+        "/.*\\..*/",
+        "/.*\\.png/",
+        "/NOTHINGTOMATCH/",
+        "//",
+        "png",
+        "-missing",
+        "is:from-cache",
+        "-is:from-cache",
+    ];
 
     var resourceCount = 0;
     var totalResourceCount = 4;
@@ -69,11 +44,9 @@ async function test()
 
     function checkFilters()
     {
-        for (var filterObj of filterChecks) {
-            InspectorTest.addResult("filterText: " + filterObj.filterText);
-            InspectorTest.addResult("isRegex: " + filterObj.isRegex);
-
-            setNetworkLogFilter(filterObj.filterText, filterObj.isRegex);
+        for (var filterText of filterChecks) {
+            InspectorTest.addResult("filterText: " + filterText);
+            setNetworkLogFilter(filterText);
 
             var nodes = UI.panels.network._networkLogView.flatNodesList();
             var foundNodesCount = 0;
@@ -90,11 +63,9 @@ async function test()
 
     /**
      * @param {string} value
-     * @param {RegExp} isRegex
      */
-    function setNetworkLogFilter(value, isRegex)
+    function setNetworkLogFilter(value)
     {
-        UI.panels.network._networkLogView._textFilterUI._regexCheckBox.checked = isRegex;
         UI.panels.network._networkLogView._textFilterUI.setValue(value);
         UI.panels.network._networkLogView._filterChanged(null); // event not used in this method, so passing null
     }
