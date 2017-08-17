@@ -61,8 +61,10 @@ WebRange::WebRange(const PlainTextRange& range) {
 }
 
 EphemeralRange WebRange::CreateEphemeralRange(LocalFrame* frame) const {
+  // TODO(editing-dev): The use of VisibleSelection should be audited. See
+  // crbug.com/657237 for details.
   Element* selection_root = frame->Selection()
-                                .ComputeVisibleSelectionInDOMTreeDeprecated()
+                                .ComputeVisibleSelectionInDOMTree()
                                 .RootEditableElement();
   ContainerNode* scope =
       selection_root ? selection_root : frame->GetDocument()->documentElement();
