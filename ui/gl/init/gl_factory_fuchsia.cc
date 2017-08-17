@@ -45,7 +45,7 @@ void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
   NOTIMPLEMENTED();
 }
 
-bool InitializeExtensionSettingsPlatformOneOff() {
+bool InitializeExtensionSettingsOneOffPlatform() {
   NOTIMPLEMENTED();
   return false;
 }
