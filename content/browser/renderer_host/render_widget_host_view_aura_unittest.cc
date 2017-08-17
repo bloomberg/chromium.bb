@@ -781,7 +781,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void EnableWheelScrollLatching() {
     feature_list_.InitFromCommandLine(
-        features::kTouchpadAndWheelScrollLatching.name, "");
+        features::kTouchpadAndWheelScrollLatching.name,
+        features::kMojoInputMessages.name);
   }
 
   void DisableWheelScrollLatching() {

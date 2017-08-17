@@ -542,7 +542,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
   if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
 
-    widget_input_handler_manager_ = new WidgetInputHandlerManager(
+    widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
         weak_ptr_factory_.GetWeakPtr(), RenderThread::Get()->GetChannel(),
         render_thread_impl && compositor_
             ? render_thread_impl->compositor_task_runner()
@@ -2426,6 +2426,11 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
   }
   return static_cast<blink::WebFrameWidget*>(GetWebWidget())
       ->GetActiveWebInputMethodController();
+}
+
+void RenderWidget::GetWidgetInputHandler(
+    mojom::WidgetInputHandlerRequest request) {
+  widget_input_handler_manager_->AddInterface(std::move(request));
 }
 
 void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {

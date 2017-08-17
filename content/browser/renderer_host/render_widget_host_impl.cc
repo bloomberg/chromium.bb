@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
@@ -73,6 +74,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/web_preferences.h"
@@ -257,6 +259,54 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   return metadata;
 }
 
+class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
+ public:
+  void SetFocus(bool focused) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void MouseCaptureLost() override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void SetEditCommandsForNextKeyEvent(
+      const std::vector<content::EditCommand>& commands) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void CursorVisibilityChanged(bool visible) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void ImeSetComposition(const base::string16& text,
+                         const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                         const gfx::Range& range,
+                         int32_t start,
+                         int32_t end) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void ImeCommitText(const base::string16& text,
+                     const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                     const gfx::Range& range,
+                     int32_t relative_cursor_position) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void ImeFinishComposingText(bool keep_selection) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void RequestTextInputStateUpdate() override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void RequestCompositionUpdates(bool immediate_request,
+                                 bool monitor_request) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void DispatchEvent(std::unique_ptr<content::InputEvent> event,
+                     DispatchEventCallback callback) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+  void DispatchNonBlockingEvent(
+      std::unique_ptr<content::InputEvent> event) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
+};
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,7 +360,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
   latency_tracker_.SetDelegate(delegate_);
-
   DCHECK(base::TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h";
 #if defined(OS_WIN)
@@ -322,6 +371,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
         base::Bind(&gfx::ICCProfile::UpdateCachedProfilesOnBackgroundThread));
   }
 #endif
+
+  SetWidget(std::move(widget));
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
@@ -338,11 +389,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   latency_tracker_.Initialize(routing_id_, GetProcess()->GetID());
 
-  input_router_.reset(new LegacyInputRouterImpl(
-      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
-  legacy_widget_input_handler_ = base::MakeUnique<LegacyIPCWidgetInputHandler>(
-      static_cast<LegacyInputRouterImpl*>(input_router_.get()));
-
+  SetupInputRouter();
   touch_emulator_.reset();
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1489,6 +1536,10 @@ void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
 }
 
 mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
+  if (associated_widget_input_handler_)
+    return associated_widget_input_handler_.get();
+  if (widget_input_handler_)
+    return widget_input_handler_.get();
   return legacy_widget_input_handler_.get();
 }
 
@@ -1695,11 +1746,9 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // renderer. Otherwise it may be stuck waiting for the old renderer to ack an
   // event. (In particular, the above call to view_->RenderProcessGone will
   // destroy the aura window, which may dispatch a synthetic mouse move.)
-  input_router_.reset(new LegacyInputRouterImpl(
-      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
-  legacy_widget_input_handler_ = base::MakeUnique<LegacyIPCWidgetInputHandler>(
-      static_cast<LegacyInputRouterImpl*>(input_router_.get()));
-
+  SetupInputRouter();
+  associated_widget_input_handler_ = nullptr;
+  widget_input_handler_ = nullptr;
   synthetic_gesture_controller_.reset();
 
   last_received_frame_token_ = 0;
@@ -2741,9 +2790,36 @@ void RenderWidgetHostImpl::DidAllocateSharedBitmap(uint32_t sequence_number) {
   }
 }
 
+void RenderWidgetHostImpl::SetupInputRouter() {
+  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+    input_router_.reset(
+        new InputRouterImpl(this, this, GetInputRouterConfigForPlatform()));
+    // TODO(dtapuska): Remove the need for the unbound interface. It is
+    // possible that a RVHI may make calls to a WidgetInputHandler when
+    // the main frame is remote. This is because of ordering issues during
+    // widget shutdown, so we present an UnboundWidgetInputHandler had
+    // DLOGS the message calls.
+    legacy_widget_input_handler_ =
+        base::MakeUnique<UnboundWidgetInputHandler>();
+  } else {
+    input_router_.reset(new LegacyInputRouterImpl(
+        process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
+    legacy_widget_input_handler_ =
+        base::MakeUnique<LegacyIPCWidgetInputHandler>(
+            static_cast<LegacyInputRouterImpl*>(input_router_.get()));
+  }
+}
+
+void RenderWidgetHostImpl::SetWidgetInputHandler(
+    mojom::WidgetInputHandlerAssociatedPtr widget_input_handler) {
+  associated_widget_input_handler_ = std::move(widget_input_handler);
+}
+
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
-  // TODO(dtapuska): Bind the WidgetInputHandler when that code has
-  // landed. crbug.com/722928
+  if (widget && base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+    widget_input_handler_.reset();
+    widget->GetWidgetInputHandler(mojo::MakeRequest(&widget_input_handler_));
+  }
 }
 
 }  // namespace content

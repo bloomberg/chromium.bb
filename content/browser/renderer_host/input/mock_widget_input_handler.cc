@@ -26,7 +26,9 @@ void MockWidgetInputHandler::SetFocus(bool focused) {}
 void MockWidgetInputHandler::MouseCaptureLost() {}
 
 void MockWidgetInputHandler::SetEditCommandsForNextKeyEvent(
-    const std::vector<content::EditCommand>& commands) {}
+    const std::vector<content::EditCommand>& commands) {
+  edit_commands_ = commands;
+}
 
 void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {}
 
@@ -68,6 +70,13 @@ MockWidgetInputHandler::GetAndResetDispatchedEvents() {
   std::vector<DispatchedEvent> dispatched_events;
   dispatched_events_.swap(dispatched_events);
   return dispatched_events;
+}
+
+std::vector<content::EditCommand>
+MockWidgetInputHandler::GetAndResetEditCommands() {
+  std::vector<content::EditCommand> edit_commands;
+  edit_commands_.swap(edit_commands);
+  return edit_commands;
 }
 
 MockWidgetInputHandler::DispatchedEvent::DispatchedEvent(

@@ -56,9 +56,11 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
       std::unique_ptr<content::InputEvent> event) override;
 
   std::vector<DispatchedEvent> GetAndResetDispatchedEvents();
+  std::vector<content::EditCommand> GetAndResetEditCommands();
 
  private:
   std::vector<DispatchedEvent> dispatched_events_;
+  std::vector<content::EditCommand> edit_commands_;
 };
 
 }  // namespace content
