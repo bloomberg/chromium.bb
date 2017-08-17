@@ -161,7 +161,6 @@ void SpinThreads() {
   // (see crbug.com/88586).
   content::RunAllPendingInMessageLoop();
   content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
-  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
