@@ -160,8 +160,9 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   self.contentSuggestionsMediator.headerProvider = self.headerController;
 
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault
-         dataSource:self.contentSuggestionsMediator];
+      initWithStyle:CollectionViewControllerStyleDefault];
+  [self.suggestionsViewController
+      setDataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.suggestionCommandHandler = self;
   self.suggestionsViewController.suggestionsDelegate = self;
   self.suggestionsViewController.audience = self;

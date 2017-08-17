@@ -139,7 +139,6 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 
 @interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink>
 
-@property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
 @property(nonatomic, strong)
     NSMutableDictionary<NSNumber*, ContentSuggestionsSectionInformation*>*
         sectionInfoBySectionIdentifier;
@@ -163,13 +162,10 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 @synthesize sectionIdentifiersFromContentSuggestions =
     _sectionIdentifiersFromContentSuggestions;
 
-- (instancetype)initWithDataSource:
-    (id<ContentSuggestionsDataSource>)dataSource {
+- (instancetype)init {
   self = [super init];
   if (self) {
     _promoAdded = NO;
-    _dataSource = dataSource;
-    _dataSource.dataSink = self;
   }
   return self;
 }
@@ -182,7 +178,16 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
   self.collectionWidth =
       collectionViewController.collectionView.bounds.size.width;
 
-  [self reloadAllData];
+  if (self.dataSource)
+    [self reloadAllData];
+}
+
+- (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource {
+  _dataSource = dataSource;
+  dataSource.dataSink = self;
+
+  if (self.collectionViewController)
+    [self reloadAllData];
 }
 
 #pragma mark - ContentSuggestionsDataSink
