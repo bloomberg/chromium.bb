@@ -476,7 +476,12 @@ public class TileGroup implements MostVisitedSites.Observer {
             Tile tile = findTile(mSiteData);
             if (tile != null) { // Do nothing if the tile was removed.
                 if (icon == null) {
-                    mTileRenderer.setTileIconFromColor(tile, fallbackColor, isFallbackColorDefault);
+                    if (SuggestionsConfig.useModern()) {
+                        mTileRenderer.setDefaultTileIcon(tile);
+                    } else {
+                        mTileRenderer.setTileIconFromColor(
+                                tile, fallbackColor, isFallbackColorDefault);
+                    }
                 } else {
                     mTileRenderer.setTileIconFromBitmap(tile, icon);
                 }

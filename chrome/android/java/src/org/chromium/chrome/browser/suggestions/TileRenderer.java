@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.support.annotation.LayoutRes;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.view.LayoutInflater;
@@ -199,6 +200,12 @@ public class TileRenderer {
         tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
         tile.setType(
                 isFallbackColorDefault ? TileVisualType.ICON_DEFAULT : TileVisualType.ICON_COLOR);
+    }
+
+    public void setDefaultTileIcon(Tile tile) {
+        tile.setIcon(VectorDrawableCompat.create(mContext.getResources(),
+                R.drawable.tile_suggestion_default_icon, mContext.getTheme()));
+        tile.setType(TileVisualType.ICON_DEFAULT);
     }
 
     @LayoutRes
