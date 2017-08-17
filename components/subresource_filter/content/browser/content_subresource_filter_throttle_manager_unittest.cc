@@ -278,6 +278,11 @@ class ContentSubresourceFilterThrottleManagerTest
   void OnFirstSubresourceLoadDisallowed() override {
     ++disallowed_notification_count_;
   }
+  bool AllowStrongPopupBlocking() override { return true; }
+
+  ContentSubresourceFilterThrottleManager* throttle_manager() {
+    return throttle_manager_.get();
+  }
 
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
@@ -707,6 +712,13 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
                           2);
   tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.CPUDuration",
                           2);
+}
+
+TEST_F(ContentSubresourceFilterThrottleManagerTest,
+       DisallowedPopup_DoesNotCallFirstDisallowedLoad) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
+  EXPECT_TRUE(throttle_manager()->ShouldDisallowNewWindow(nullptr));
+  EXPECT_EQ(0, disallowed_notification_count());
 }
 
 // TODO(csharrison): Make sure the following conditions are exercised in tests:
