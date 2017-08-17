@@ -20692,9 +20692,10 @@
         ],
         "important": true,
         "models": [
+            "{\n    \"name\": \"pyro\",\n    \"test_suites\": null\n}",
             "{\n    \"name\": \"reef\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
             "{\n    \"name\": \"sand\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
-            "{\n    \"name\": \"snappy\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}"
+            "{\n    \"name\": \"snappy\",\n    \"test_suites\": null\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null

@@ -1438,6 +1438,10 @@
       "models": [
         {
           "board_name": "reef-uni",
+          "name": "pyro"
+        },
+        {
+          "board_name": "reef-uni",
           "name": "reef",
           "test_suites": [
             "sanity",
@@ -1462,15 +1466,7 @@
         },
         {
           "board_name": "reef-uni",
-          "name": "snappy",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ]
+          "name": "snappy"
         }
       ]
     }
