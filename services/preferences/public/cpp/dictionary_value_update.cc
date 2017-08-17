@@ -87,8 +87,8 @@ std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
 }
 
 void DictionaryValueUpdate::SetKey(base::StringPiece key, base::Value value) {
-  auto found = value_->FindKey(key);
-  if (found != value_->DictEnd() && found->second == value)
+  const base::Value* found = value_->FindKey(key);
+  if (found && *found == value)
     return;
 
   RecordKey(key);
