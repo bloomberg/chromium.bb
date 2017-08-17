@@ -22,6 +22,18 @@ window.addEventListener('load', function() {
     shadowRoot.appendChild(style);
     shadowRoot.appendChild(tree);
   }
+  // Generate the canvas element by script to ensure it's a replaced element.
+  var canvasParent = document.getElementById('replaced-canvas');
+  if (canvasParent) {
+    var canvas = document.createElement('canvas');
+    canvasParent.appendChild(canvas);
+    canvas.className = 'ta-none';
+    canvas.style = 'height: 0; margin-bottom: 50px; width: 300px; height: 150px;';
+    canvas.setAttribute('expected-action', 'none');
+    var context = canvas.getContext('2d');
+    context.font = '13px serif';
+    context.fillText('Touch action of replaced canvas should not be ignored', 0, 50);
+  }
 });
 
 /*

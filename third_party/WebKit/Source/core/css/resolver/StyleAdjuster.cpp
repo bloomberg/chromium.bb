@@ -59,6 +59,21 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+TouchAction AdjustTouchActionForElement(TouchAction touch_action,
+                                        const ComputedStyle& style,
+                                        Element* element) {
+  bool is_child_document =
+      element && element == element->GetDocument().documentElement() &&
+      element->GetDocument().LocalOwner();
+  if (style.ScrollsOverflow() || is_child_document)
+    return touch_action | TouchAction::kTouchActionPan;
+  return touch_action;
+}
+
+}  // namespace
+
 static EDisplay EquivalentBlockDisplay(EDisplay display) {
   switch (display) {
     case EDisplay::kBlock:
@@ -374,26 +389,30 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
 static void AdjustEffectiveTouchAction(ComputedStyle& style,
                                        const ComputedStyle& parent_style,
                                        Element* element) {
-  TouchAction action = parent_style.GetEffectiveTouchAction();
+  TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
   bool is_svg_root = element && element->IsSVGElement() &&
                      isSVGSVGElement(*element) && element->parentNode() &&
                      !element->parentNode()->IsSVGElement();
+  bool is_replaced_canvas =
+      element && isHTMLCanvasElement(element) &&
+      element->GetDocument().GetFrame() &&
+      element->GetDocument().CanExecuteScripts(kNotAboutToExecuteScript);
   bool is_non_replaced_inline_elements =
       style.IsDisplayInlineType() &&
       !(style.IsDisplayReplacedType() || is_svg_root ||
-        isHTMLImageElement(element));
+        isHTMLImageElement(element) || is_replaced_canvas);
   bool is_table_row_or_column = style.IsDisplayTableRowOrColumnType();
   bool is_layout_object_needed =
       element && element->LayoutObjectIsNeeded(style);
 
-  // According to W3C specs, touch actions are only supported by elements that
-  // support both the CSS width and height properties.
+  TouchAction element_touch_action = TouchAction::kTouchActionAuto;
+  // Touch actions are only supported by elements that support both the CSS
+  // width and height properties.
   // See https://www.w3.org/TR/pointerevents/#the-touch-action-css-property.
-  if (is_non_replaced_inline_elements || is_table_row_or_column ||
-      !is_layout_object_needed) {
-    style.SetEffectiveTouchAction(action);
-    return;
+  if (!is_non_replaced_inline_elements && !is_table_row_or_column &&
+      is_layout_object_needed) {
+    element_touch_action = style.GetTouchAction();
   }
 
   bool is_child_document =
@@ -404,7 +423,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
     const ComputedStyle* frame_style =
         element->GetDocument().LocalOwner()->GetComputedStyle();
     if (frame_style)
-      action = frame_style->GetEffectiveTouchAction();
+      inherited_action = frame_style->GetEffectiveTouchAction();
   }
 
   // The effective touch action is the intersection of the touch-action values
@@ -414,11 +433,11 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   // The panning-restricted cancellation should also apply to iframes, so we
   // allow (panning & local touch action) on the first descendant element of a
   // iframe element.
-  if (style.ScrollsOverflow() || is_child_document)
-    action |= TouchAction::kTouchActionPan;
+  inherited_action =
+      AdjustTouchActionForElement(inherited_action, style, element);
 
   // Apply the adjusted parent effective touch actions.
-  style.SetEffectiveTouchAction(style.GetTouchAction() & action);
+  style.SetEffectiveTouchAction(element_touch_action & inherited_action);
 
   // Touch action is inherited across frames.
   if (element && element->IsFrameOwnerElement() &&
@@ -426,10 +445,28 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
     Element* content_document_element =
         ToHTMLFrameOwnerElement(element)->contentDocument()->documentElement();
     if (content_document_element) {
-      content_document_element->SetNeedsStyleRecalc(
-          kSubtreeStyleChange,
-          StyleChangeReasonForTracing::Create(
-              StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+      // Actively trigger recalc for child document if the document does not
+      // have computed style created, or its effective touch action is out of
+      // date.
+      bool child_document_needs_recalc = true;
+      if (const ComputedStyle* content_document_style =
+              content_document_element->GetComputedStyle()) {
+        TouchAction document_touch_action =
+            content_document_style->GetEffectiveTouchAction();
+        TouchAction expected_document_touch_action =
+            AdjustTouchActionForElement(style.GetEffectiveTouchAction(),
+                                        *content_document_style,
+                                        content_document_element) &
+            content_document_style->GetTouchAction();
+        child_document_needs_recalc =
+            document_touch_action != expected_document_touch_action;
+      }
+      if (child_document_needs_recalc) {
+        content_document_element->SetNeedsStyleRecalc(
+            kSubtreeStyleChange,
+            StyleChangeReasonForTracing::Create(
+                StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+      }
     }
   }
 }
