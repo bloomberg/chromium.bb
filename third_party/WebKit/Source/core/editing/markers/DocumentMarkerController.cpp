@@ -455,6 +455,55 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   return nullptr;
 }
 
+HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+DocumentMarkerController::MarkersIntersectingRange(
+    const EphemeralRangeInFlatTree& range,
+    DocumentMarker::MarkerTypes types) {
+  HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>> node_marker_pairs;
+  if (!PossiblyHasMarkers(types))
+    return node_marker_pairs;
+
+  Node* const range_start_container =
+      range.StartPosition().ComputeContainerNode();
+  const unsigned range_start_offset =
+      range.StartPosition().ComputeOffsetInContainerNode();
+  Node* const range_end_container = range.EndPosition().ComputeContainerNode();
+  const unsigned range_end_offset =
+      range.EndPosition().ComputeOffsetInContainerNode();
+
+  for (Node& node : range.Nodes()) {
+    MarkerLists* const markers = markers_.at(&node);
+    if (!markers)
+      continue;
+
+    for (DocumentMarker::MarkerType type : types) {
+      const DocumentMarkerList* const list = ListForType(markers, type);
+      if (!list)
+        continue;
+
+      const unsigned start_offset =
+          node == range_start_container ? range_start_offset : 0;
+      const unsigned max_character_offset = node.MaxCharacterOffset();
+      const unsigned end_offset =
+          node == range_end_container ? range_end_offset : max_character_offset;
+
+      // Minor optimization: if we have an empty offset range at the boundary
+      // of a text node, it doesn't fall into the interior of any marker.
+      if (start_offset == 0 && end_offset == 0)
+        continue;
+      if (start_offset == max_character_offset && end_offset == 0)
+        continue;
+
+      const DocumentMarkerVector& markers_from_this_list =
+          list->MarkersIntersectingRange(start_offset, end_offset);
+      for (DocumentMarker* marker : markers_from_this_list)
+        node_marker_pairs.push_back(std::make_pair(&node, marker));
+    }
+  }
+
+  return node_marker_pairs;
+}
+
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
     Node* node,
     DocumentMarker::MarkerTypes marker_types) {

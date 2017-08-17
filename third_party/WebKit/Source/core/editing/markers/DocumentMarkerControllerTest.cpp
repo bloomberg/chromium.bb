@@ -353,6 +353,93 @@ TEST_F(DocumentMarkerControllerTest,
   EXPECT_EQ(3u, result->EndOffset());
 }
 
+TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRange) {
+  SetBodyContent("<div contenteditable>123456789</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add a spelling marker on "123"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)));
+  // Add a text match marker on "456"
+  MarkerController().AddTextMatchMarker(
+      EphemeralRange(Position(text, 3), Position(text, 6)),
+      TextMatchMarker::MatchStatus::kInactive);
+  // Add a grammar marker on "789"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 6), Position(text, 9)));
+
+  // Query for spellcheck markers intersecting "3456". The text match marker
+  // should not be returned, nor should the spelling marker touching the range.
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
+      MarkerController().MarkersIntersectingRange(
+          EphemeralRangeInFlatTree(PositionInFlatTree(text, 2),
+                                   PositionInFlatTree(text, 6)),
+          DocumentMarker::MisspellingMarkers());
+
+  EXPECT_EQ(1u, results.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, results[0].second->GetType());
+  EXPECT_EQ(0u, results[0].second->StartOffset());
+  EXPECT_EQ(3u, results[0].second->EndOffset());
+}
+
+TEST_F(DocumentMarkerControllerTest, MarkersIntersectingCollapsedRange) {
+  SetBodyContent("<div contenteditable>123456789</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add a spelling marker on "123"
+  MarkerController().AddSpellingMarker(
+      EphemeralRange(Position(text, 0), Position(text, 3)));
+
+  // Query for spellcheck markers containing the position between "1" and "2"
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
+      MarkerController().MarkersIntersectingRange(
+          EphemeralRangeInFlatTree(PositionInFlatTree(text, 1),
+                                   PositionInFlatTree(text, 1)),
+          DocumentMarker::MisspellingMarkers());
+
+  EXPECT_EQ(1u, results.size());
+  EXPECT_EQ(DocumentMarker::kSpelling, results[0].second->GetType());
+  EXPECT_EQ(0u, results[0].second->StartOffset());
+  EXPECT_EQ(3u, results[0].second->EndOffset());
+}
+
+TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRangeWithShadowDOM) {
+  // Set up some shadow elements in a way we know doesn't work properly when
+  // using EphemeralRange instead of EphemeralRangeInFlatTree:
+  // <div>not shadow</div>
+  // <div> (shadow DOM host)
+  //   #shadow-root
+  //     <div>shadow1</div>
+  //     <div>shadow2</div>
+  // Caling MarkersIntersectingRange with an EphemeralRange starting in the
+  // "not shadow" text and ending in the "shadow1" text will crash.
+  SetBodyContent(
+      "<div id=\"not_shadow\">not shadow</div><div id=\"shadow_root\" />");
+  ShadowRoot* shadow_root = SetShadowContent(
+      "<div id=\"shadow1\">shadow1</div><div id=\"shadow2\">shadow2</div>",
+      "shadow_root");
+
+  Element* not_shadow_div = GetDocument().QuerySelector("#not_shadow");
+  Node* not_shadow_text = not_shadow_div->firstChild();
+
+  Element* shadow1 = shadow_root->QuerySelector("#shadow1");
+  Node* shadow1_text = shadow1->firstChild();
+
+  MarkerController().AddTextMatchMarker(
+      EphemeralRange(Position(not_shadow_text, 0),
+                     Position(not_shadow_text, 10)),
+      TextMatchMarker::MatchStatus::kInactive);
+
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
+      MarkerController().MarkersIntersectingRange(
+          EphemeralRangeInFlatTree(PositionInFlatTree(not_shadow_text, 9),
+                                   PositionInFlatTree(shadow1_text, 1)),
+          DocumentMarker::kTextMatch);
+  EXPECT_EQ(1u, results.size());
+}
+
 TEST_F(DocumentMarkerControllerTest, SuggestionMarkersHaveUniqueTags) {
   SetBodyContent("<div contenteditable>foo</div>");
   Element* div = GetDocument().QuerySelector("div");
