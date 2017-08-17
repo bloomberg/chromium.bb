@@ -827,9 +827,14 @@ class MaximizedBrowserWindowWaiter {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_DetachToOwnWindow DISABLED_DetachToOwnWindow
+#else
+#define MAYBE_DetachToOwnWindow DetachToOwnWindow
+#endif
 // Drags from browser to separate window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DetachToOwnWindow) {
+                       MAYBE_DetachToOwnWindow) {
   const gfx::Rect initial_bounds(browser()->window()->GetBounds());
   // Add another tab.
   AddTabAndResetBrowser(browser());
