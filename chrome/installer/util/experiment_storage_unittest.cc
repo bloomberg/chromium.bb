@@ -139,6 +139,8 @@ TEST_P(ExperimentStorageTest, TestLoadStoreExperiment) {
   Experiment stored_experiment;
   ASSERT_TRUE(storage.AcquireLock()->LoadExperiment(&stored_experiment));
   EXPECT_EQ(ExperimentMetrics::kGroupAssigned, stored_experiment.state());
+  EXPECT_EQ(ExperimentMetrics::kGroupAssigned,
+            stored_experiment.metrics().state);
   EXPECT_EQ(5, stored_experiment.group());
   // Verify that expeirment state is stored in correct location in registry.
   base::win::RegKey key;

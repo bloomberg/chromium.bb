@@ -229,6 +229,7 @@ bool ExperimentStorage::Lock::LoadExperiment(Experiment* experiment) {
     return false;
 
   *experiment = temp_experiment;
+  experiment->metrics_ = metrics;
   return true;
 }
 
