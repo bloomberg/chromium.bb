@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -229,6 +230,9 @@ void CreateResourceUsageReporter(
 }
 #endif  // !defined(OS_ANDROID)
 
+base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
+    Leaky g_network_binder_creation_callback = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
@@ -339,9 +343,21 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif
 }
 
+void ChromeContentUtilityClient::RegisterNetworkBinders(
+    service_manager::BinderRegistry* registry) {
+  if (g_network_binder_creation_callback.Get())
+    g_network_binder_creation_callback.Get().Run(registry);
+}
+
 // static
 void ChromeContentUtilityClient::PreSandboxStartup() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
+}
+
+// static
+void ChromeContentUtilityClient::SetNetworkBinderCreationCallback(
+    const NetworkBinderCreationCallback& callback) {
+  g_network_binder_creation_callback.Get() = callback;
 }

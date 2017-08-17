@@ -96,6 +96,8 @@ static_library("test_support") {
     "../public/test/navigation_handle_observer.h",
     "../public/test/navigation_simulator.cc",
     "../public/test/navigation_simulator.h",
+    "../public/test/network_service_test_helper.cc",
+    "../public/test/network_service_test_helper.h",
     "../public/test/ppapi_test_utils.cc",
     "../public/test/ppapi_test_utils.h",
     "../public/test/render_view_test.cc",
