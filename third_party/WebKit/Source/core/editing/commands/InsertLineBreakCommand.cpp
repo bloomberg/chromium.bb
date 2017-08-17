@@ -127,10 +127,11 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
       node_to_insert = extra_node;
     }
 
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(*node_to_insert))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(SelectionForUndoStep::From(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::BeforeNode(*node_to_insert))
+            .SetIsDirectional(EndingSelection().IsDirectional())
+            .Build()));
   } else if (pos.ComputeEditingOffset() <= CaretMinOffset(pos.AnchorNode())) {
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())
@@ -145,11 +146,11 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
         return;
     }
 
-    SetEndingSelection(
+    SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentAfterNode(*node_to_insert))
             .SetIsDirectional(EndingSelection().IsDirectional())
-            .Build());
+            .Build()));
     // If we're inserting after all of the rendered text in a text node, or into
     // a non-text node, a simple insertion is sufficient.
   } else if (!pos.AnchorNode()->IsTextNode() ||
@@ -158,11 +159,11 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())
       return;
-    SetEndingSelection(
+    SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentAfterNode(*node_to_insert))
             .SetIsDirectional(EndingSelection().IsDirectional())
-            .Build());
+            .Build()));
   } else if (pos.AnchorNode()->IsTextNode()) {
     // Split a text node
     Text* text_node = ToText(pos.AnchorNode());
@@ -195,10 +196,11 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
       }
     }
 
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(ending_position)
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(SelectionForUndoStep::From(
+        SelectionInDOMTree::Builder()
+            .Collapse(ending_position)
+            .SetIsDirectional(EndingSelection().IsDirectional())
+            .Build()));
   }
 
   // Handle the case where there is a typing style.
@@ -225,9 +227,10 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     // So, this next call sets the endingSelection() to a caret just after the
     // line break that we inserted, or just before it if it's at the end of a
     // block.
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(EndingVisibleSelection().End())
-                           .Build());
+    SetEndingSelection(
+        SelectionForUndoStep::From(SelectionInDOMTree::Builder()
+                                       .Collapse(EndingVisibleSelection().End())
+                                       .Build()));
   }
 
   RebalanceWhitespace();
