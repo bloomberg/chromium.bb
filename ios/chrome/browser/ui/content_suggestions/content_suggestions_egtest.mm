@@ -160,7 +160,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       tapSettingsMenuButton:chrome_test_util::SettingsMenuPrivacyButton()];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(
-                     IDS_IOS_OPTIONS_CONTENT_SUGGESTIONS)]
+                     IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

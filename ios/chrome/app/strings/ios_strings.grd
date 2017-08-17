@@ -815,9 +815,6 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Advanced section of the Settings page.  [Length: 20em] [iOS only]">
         Advanced
       </message>
-      <message name="IDS_IOS_OPTIONS_CONTENT_SUGGESTIONS" desc="Title for the option to turn on/off content suggestions. [Length: 20em] [iOS only]">
-        Article suggestions
-      </message>
       <message name="IDS_IOS_OPTIONS_CONTINUITY_LABEL" desc="Title for group of items in the Privacy settings table, including Handoff. [Length: 10em] [iOS only]">
         Other Devices
       </message>
