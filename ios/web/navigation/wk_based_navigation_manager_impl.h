@@ -94,7 +94,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   bool CanGoToOffset(int offset) const override;
   void GoBack() override;
   void GoForward() override;
-  void GoToIndex(int index) override;
   NavigationItemList GetBackwardItems() const override;
   NavigationItemList GetForwardItems() const override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
@@ -111,6 +110,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // Returns the pending navigation item in the main frame.
   NavigationItemImpl* GetPendingItemImpl() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
+  void FinishGoToIndex(int index) override;
 
   // Returns the absolute index of WKBackForwardList's |currentItem|. Returns -1
   // if |currentItem| is nil.

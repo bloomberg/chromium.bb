@@ -145,6 +145,34 @@ void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
   pending_item->ResetHttpRequestHeaders();
 }
 
+void NavigationManagerImpl::GoToIndex(int index) {
+  if (index < 0 || index > GetItemCount()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!GetTransientItem()) {
+    delegate_->RecordPageStateInNavigationItem();
+  }
+  delegate_->ClearTransientContent();
+
+  // Notify delegate if the new navigation will use a different user agent.
+  UserAgentType to_item_user_agent_type =
+      GetItemAtIndex(index)->GetUserAgentType();
+  NavigationItem* pending_item = GetPendingItem();
+  NavigationItem* previous_item =
+      pending_item ? pending_item : GetLastCommittedItem();
+  UserAgentType previous_item_user_agent_type =
+      previous_item ? previous_item->GetUserAgentType() : UserAgentType::NONE;
+
+  if (to_item_user_agent_type != UserAgentType::NONE &&
+      to_item_user_agent_type != previous_item_user_agent_type) {
+    delegate_->WillChangeUserAgentType();
+  }
+
+  FinishGoToIndex(index);
+}
+
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
   return GetLastCommittedItemImpl();
 }

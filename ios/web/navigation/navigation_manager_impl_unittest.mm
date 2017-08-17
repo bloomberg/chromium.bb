@@ -71,8 +71,10 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
 
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
+  MOCK_METHOD0(UpdateHtml5HistoryState, void());
   MOCK_METHOD2(WillLoadCurrentItemWithParams,
                void(const NavigationManager::WebLoadParams&, bool));
+  MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD0(LoadCurrentItem, void());
   MOCK_METHOD0(Reload, void());
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
@@ -80,10 +82,6 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD1(OnNavigationItemCommitted, void(const LoadCommittedDetails&));
 
  private:
-  void GoToIndex(int index) override {
-    [session_controller_ goToItemAtIndex:index discardNonCommittedItems:NO];
-  }
-
   WebState* GetWebState() override { return nullptr; }
 
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override {
@@ -141,7 +139,18 @@ class NavigationManagerTest
     return delegate_;
   }
 
- protected:
+  // Manipulates the underlying session state to simulate the effect of
+  // GoToIndex() on the navigation manager to facilitate testing of other
+  // NavigationManager APIs. NavigationManager::GoToIndex() itself is tested
+  // separately by verifying expectations on the delegate method calls.
+  void SimulateGoToIndex(int index) {
+    if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+      [session_controller() goToItemAtIndex:index discardNonCommittedItems:NO];
+    } else {
+      ASSERT_TRUE(false) << "Not yet implemented.";
+    }
+  }
+
   CRWTestBackForwardList* mock_wk_list_;
   WKWebView* mock_web_view_;
 
@@ -477,7 +486,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
     return;
   }
   // Go to entry at index 1 and test API from that state.
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -501,7 +510,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 2 and test API from that state.
-  navigation_manager()->GoToIndex(2);
+  SimulateGoToIndex(2);
   ASSERT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -523,7 +532,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 4 and test API from that state.
-  navigation_manager()->GoToIndex(4);
+  SimulateGoToIndex(4);
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -623,7 +632,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 4 and committed entry to 1 and test.
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     [session_controller() setPendingItemIndex:4];
   }
@@ -648,7 +657,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry in the end of the stack.
-  navigation_manager()->GoToIndex(4);
+  SimulateGoToIndex(4);
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     [session_controller() setPendingItemIndex:-1];
   }
@@ -753,7 +762,7 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
 
   // Now go forward to that middle transient item (pending index is 1,
   // current index is 0).
-  navigation_manager()->GoToIndex(0);
+  SimulateGoToIndex(0);
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     [session_controller() setPendingItemIndex:1];
   }
@@ -1566,7 +1575,7 @@ TEST_P(NavigationManagerTest,
     return;
   }
 
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   EXPECT_CALL(navigation_manager_delegate(), Reload()).Times(1);
@@ -1717,7 +1726,8 @@ TEST_P(NavigationManagerTest,
     // implemented in WKBasedNavigationManager.
     return;
   }
-  navigation_manager()->GoToIndex(1);
+
+  SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   EXPECT_CALL(navigation_manager_delegate(), Reload()).Times(1);
@@ -1881,7 +1891,8 @@ TEST_P(NavigationManagerTest, TestBackwardForwardItems) {
     // implemented in WKBasedNavigationManager.
     return;
   }
-  navigation_manager()->GoBack();
+
+  SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   back_items = navigation_manager()->GetBackwardItems();
   EXPECT_EQ(1U, back_items.size());
@@ -2182,6 +2193,110 @@ TEST_P(NavigationManagerTest,
   ASSERT_EQ(1, navigation_manager()->GetItemCount());
   EXPECT_EQ("http://www.url.com/",
             navigation_manager()->GetItemAtIndex(0)->GetURL().spec());
+}
+
+// Tests that LoadCurrentItem() is exercised when going to a different page.
+TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+
+  EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
+  EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
+      .Times(0);
+
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    EXPECT_CALL(navigation_manager_delegate(), UpdateHtml5HistoryState())
+        .Times(0);
+    EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+  }
+
+  navigation_manager()->GoToIndex(0);
+
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    // Since LoadCurrentItem() is noop in test, we can only verify that the
+    // pending item index has been updated to the GoToIndex() destination.
+    EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
+  }
+}
+
+// Tests that LoadCurrentItem() is not exercised for same-document navigation.
+TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0#hash"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  static_cast<NavigationItemImpl*>(navigation_manager()->GetPendingItem())
+      ->SetIsCreatedFromHashChange(true);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0#hash"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+
+  EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
+  EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
+      .Times(0);
+
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    EXPECT_CALL(navigation_manager_delegate(), UpdateHtml5HistoryState());
+    EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(0);
+  }
+
+  navigation_manager()->GoToIndex(0);
+
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
+  }
+}
+
+// Tests that WillChangeUserAgentType() is triggered when going to a navigation
+// item of different user agent type.
+TEST_P(NavigationManagerTest, GoToIndexDifferentUserAgentType) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
+  navigation_manager()->GoToIndex(0);
 }
 
 INSTANTIATE_TEST_CASE_P(

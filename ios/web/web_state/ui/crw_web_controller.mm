@@ -483,12 +483,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // loaded.
 @property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
-// Requires page reconstruction if |userAgentType| is a non-NONE and it differs
-// from that of |previousUserAgentType|.
-- (void)updateWebViewFromUserAgentType:(web::UserAgentType)userAgentType
-                 previousUserAgentType:
-                     (web::UserAgentType)previousUserAgentType;
-
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Called when the web page has changed document and/or URL, and so the page
@@ -647,14 +641,6 @@ registerLoadRequestForURL:(const GURL&)URL
                  referrer:(const web::Referrer&)referrer
                transition:(ui::PageTransition)transition
    sameDocumentNavigation:(BOOL)sameDocumentNavigation;
-// Updates the HTML5 history state of the page using the current NavigationItem.
-// For same-document navigations and navigations affected by
-// window.history.[push/replace]State(), the URL and serialized state object
-// will be updated to the current NavigationItem's values.  A popState event
-// will be triggered for all same-document navigations.  Additionally, a
-// hashchange event will be triggered for same-document navigations where the
-// only difference between the current and previous URL is the fragment.
-- (void)updateHTML5HistoryState;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
@@ -1979,49 +1965,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (void)goToItemAtIndex:(int)index {
-  CRWSessionController* sessionController = self.sessionController;
-  const web::ScopedNavigationItemImplList& items = sessionController.items;
-  if (index < 0 || index >= static_cast<int>(items.size())) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!_webStateImpl->IsShowingWebInterstitial())
-    [self recordStateInHistory];
-
-  _webStateImpl->ClearTransientContent();
-
-  // Update the user agent before attempting the navigation.
-  // TODO(crbug.com/736103): due to the bug, updating the user agent of web view
-  // requires reconstructing the while web view, change the behavior to call
-  // [WKWebView setCustomUserAgent] once the bug is fixed.
-  web::NavigationItem* toItem = items[index].get();
-  web::NavigationItem* previousItem = sessionController.currentItem;
-  web::UserAgentType previousUserAgentType =
-      previousItem ? previousItem->GetUserAgentType()
-                   : web::UserAgentType::NONE;
-  [self updateWebViewFromUserAgentType:toItem->GetUserAgentType()
-                 previousUserAgentType:previousUserAgentType];
-
-  BOOL sameDocumentNavigation =
-      [sessionController isSameDocumentNavigationBetweenItem:previousItem
-                                                     andItem:toItem];
-  if (sameDocumentNavigation) {
-    [sessionController goToItemAtIndex:index discardNonCommittedItems:YES];
-    [self updateHTML5HistoryState];
-  } else {
-    [sessionController discardNonCommittedItems];
-    [sessionController setPendingItemIndex:index];
-
-    web::NavigationItemImpl* pendingItem = sessionController.pendingItem;
-    pendingItem->SetTransitionType(ui::PageTransitionFromInt(
-        pendingItem->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
-
-    [self loadCurrentURL];
-  }
-}
-
 - (BOOL)isLoaded {
   return _loadPhase == web::PAGE_LOADED;
 }
@@ -2109,8 +2052,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   if (self.navigationManagerImpl->CanGoToOffset(delta)) {
-    NSInteger index = self.navigationManagerImpl->GetIndexForOffset(delta);
-    [self goToItemAtIndex:index];
+    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
+    self.navigationManagerImpl->GoToIndex(index);
   }
 }
 
@@ -2201,15 +2144,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       initWithContextGetter:browserState->GetRequestContext()
           completionHandler:passKitCompletion]);
   return _passKitDownloader.get();
-}
-
-- (void)updateWebViewFromUserAgentType:(web::UserAgentType)userAgentType
-                 previousUserAgentType:
-                     (web::UserAgentType)previousUserAgentType {
-  if (userAgentType != web::UserAgentType::NONE &&
-      userAgentType != previousUserAgentType) {
-    [self requirePageReconstruction];
-  }
 }
 
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item

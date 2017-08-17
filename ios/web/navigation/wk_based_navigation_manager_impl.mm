@@ -318,10 +318,6 @@ void WKBasedNavigationManagerImpl::GoForward() {
   [delegate_->GetWebViewNavigationProxy() goForward];
 }
 
-void WKBasedNavigationManagerImpl::GoToIndex(int index) {
-  DLOG(WARNING) << "Not yet implemented.";
-}
-
 NavigationItemList WKBasedNavigationManagerImpl::GetBackwardItems() const {
   NavigationItemList items;
 
@@ -398,6 +394,12 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetPendingItemImpl() const {
 
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
   return transient_item_.get();
+}
+
+void WKBasedNavigationManagerImpl::FinishGoToIndex(int index) {
+  WKBackForwardListItem* wk_item = GetWKItemAtIndex(index);
+  DCHECK(wk_item);
+  [delegate_->GetWebViewNavigationProxy() goToBackForwardListItem:wk_item];
 }
 
 int WKBasedNavigationManagerImpl::GetWKCurrentItemIndex() const {
