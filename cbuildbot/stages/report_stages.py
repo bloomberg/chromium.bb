@@ -199,10 +199,10 @@ def _UploadAndLinkGomaLogIfNecessary(
   # Just in case, stop the goma. E.g. In case of timeout, we do not want to
   # keep goma compiler_proxy running.
   goma.Stop()
-  goma_url = goma.UploadLogs()
-  if goma_url:
-    logging.PrintBuildbotLink(
-        stage_name + ' Goma compiler_proxy log', goma_url)
+  goma_urls = goma.UploadLogs()
+  if goma_urls:
+    for label, url in goma_urls:
+      logging.PrintBuildbotLink('%s %s' % (stage_name, label), url)
 
 
 class BuildStartStage(generic_stages.BuilderStage):
