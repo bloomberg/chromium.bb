@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 116 tests; 73 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 74 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
@@ -56,7 +56,7 @@ PASS RTCPeerConnection interface: operation getSenders()
 PASS RTCPeerConnection interface: operation getReceivers() 
 PASS RTCPeerConnection interface: operation addTrack(MediaStreamTrack, MediaStream) 
 PASS RTCPeerConnection interface: operation removeTrack(RTCRtpSender) 
-FAIL RTCPeerConnection interface: attribute ontrack assert_true: The prototype object must have a property "ontrack" expected true got false
+PASS RTCPeerConnection interface: attribute ontrack 
 PASS RTCPeerConnection interface: operation createDataChannel(DOMString, RTCDataChannelInit) 
 PASS RTCPeerConnection interface: attribute ondatachannel 
 FAIL RTCPeerConnection interface: attribute dtmf assert_true: The prototype object must have a property "dtmf" expected true got false
@@ -122,7 +122,7 @@ PASS RTCPeerConnection interface: pc must inherit property "addTrack(MediaStream
 PASS RTCPeerConnection interface: calling addTrack(MediaStreamTrack, MediaStream) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "removeTrack(RTCRtpSender)" with the proper type 
 PASS RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on pc with too few arguments must throw TypeError 
-FAIL RTCPeerConnection interface: pc must inherit property "ontrack" with the proper type assert_inherits: property "ontrack" not found in prototype chain
+FAIL RTCPeerConnection interface: pc must inherit property "ontrack" with the proper type Unrecognized type EventHandler
 PASS RTCPeerConnection interface: pc must inherit property "createDataChannel(DOMString, RTCDataChannelInit)" with the proper type 
 PASS RTCPeerConnection interface: calling createDataChannel(DOMString, RTCDataChannelInit) on pc with too few arguments must throw TypeError 
 FAIL RTCPeerConnection interface: pc must inherit property "ondatachannel" with the proper type Unrecognized type EventHandler

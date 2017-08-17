@@ -135,7 +135,7 @@ promise_test(function() {
 
 function createStreams(constraints, numStreams, streamsSoFar = []) {
   if (numStreams == 0) {
-    return Promise.resolve(streamsSoFar);;
+    return Promise.resolve(streamsSoFar);
   }
   return navigator.mediaDevices.getUserMedia(constraints)
     .then(function(stream) {

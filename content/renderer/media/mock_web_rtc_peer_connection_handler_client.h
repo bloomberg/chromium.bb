@@ -29,8 +29,10 @@ class MockWebRTCPeerConnectionHandlerClient
   MOCK_METHOD1(DidChangeSignalingState, void(SignalingState state));
   MOCK_METHOD1(DidChangeICEGatheringState, void(ICEGatheringState state));
   MOCK_METHOD1(DidChangeICEConnectionState, void(ICEConnectionState state));
-  MOCK_METHOD1(DidAddRemoteStream,
-               void(const blink::WebMediaStream& stream_descriptor));
+  MOCK_METHOD2(
+      DidAddRemoteStream,
+      void(const blink::WebMediaStream& stream_descriptor,
+           blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>*));
   MOCK_METHOD1(DidRemoveRemoteStream,
                void(const blink::WebMediaStream& stream_descriptor));
   MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
@@ -39,7 +41,9 @@ class MockWebRTCPeerConnectionHandlerClient
   void didGenerateICECandidateWorker(
       const blink::WebRTCICECandidate& candidate);
   void didAddRemoteStreamWorker(
-      const blink::WebMediaStream& stream_descriptor);
+      const blink::WebMediaStream& stream_descriptor,
+      blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>*
+          stream_web_rtp_receivers);
   void didRemoveRemoteStreamWorker(
       const blink::WebMediaStream& stream_descriptor);
 
