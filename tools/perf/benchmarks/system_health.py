@@ -122,6 +122,13 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   def Name(cls):
     return 'system_health.memory_desktop'
 
+  def SetExtraBrowserOptions(self, options):
+    super(DesktopMemorySystemHealth, self).SetExtraBrowserOptions(
+          options)
+    options.AppendExtraBrowserArgs([
+      '--enable-heap-profiling=native',
+    ])
+
   def GetExpectations(self):
     return page_sets.SystemHealthDesktopMemoryExpectations()
 
