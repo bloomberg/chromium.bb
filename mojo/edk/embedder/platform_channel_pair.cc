@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace mojo {
 namespace edk {

@@ -95,6 +95,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
 #endif
   *process = base::LaunchProcess(child_command_line, options);
   DCHECK(process->IsValid());
+  platform_channel_pair.ChildProcessLaunched();
   receiver->SetPID(process->Pid());
   invitation.Send(
       process->Handle(),

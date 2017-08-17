@@ -265,6 +265,7 @@ class ServiceManagerTest : public test::ServiceTest,
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
+    platform_channel_pair.ChildProcessLaunched();
     receiver->SetPID(target_.Pid());
     invitation.Send(
         target_.Handle(),

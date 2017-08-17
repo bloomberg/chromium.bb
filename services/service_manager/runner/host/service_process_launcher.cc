@@ -159,6 +159,7 @@ void ServiceProcessLauncher::DoLaunch(
   // LaunchProcess will share stdin/out/err with the child process by default.
   if (start_sandboxed_)
     NOTIMPLEMENTED();
+  options.handles_to_transfer = std::move(handle_passing_info_);
 #elif defined(OS_POSIX)
   handle_passing_info_.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
   handle_passing_info_.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
