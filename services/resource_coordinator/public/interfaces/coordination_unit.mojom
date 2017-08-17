@@ -22,14 +22,6 @@ struct CoordinationUnitID {
   int64 id;
 };
 
-struct CoordinationPolicy {
-  bool use_background_priority;
-};
-
-interface CoordinationPolicyCallback {
-  SetCoordinationPolicy(CoordinationPolicy policy);
-};
-
 interface CoordinationUnit {
   // Mainly used to force a round-trip to the service over the pipe for
   // a specific unit, so we don't have to deal with possibly-not-yet-created
@@ -46,7 +38,6 @@ interface CoordinationUnit {
   // child_id must represent a CU that already exists service-side
   // and is a direct descendent of the current unit.
   RemoveChild(CoordinationUnitID child_id);
-  SetCoordinationPolicyCallback(CoordinationPolicyCallback callback);
 
   // Sends event signal to CoordinationUnit, an event signal are non-persistent.
   SendEvent(Event event);

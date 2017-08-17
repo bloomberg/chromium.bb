@@ -59,9 +59,6 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void RemoveChild(const CoordinationUnitID& child_id) override;
   void SendEvent(mojom::Event event) override;
   void SetProperty(mojom::PropertyType property_type, int64_t value) override;
-  // TODO(crbug.com/691886) Consider removing this.
-  void SetCoordinationPolicyCallback(
-      mojom::CoordinationPolicyCallbackPtr callback) override;
 
   // Return all of the reachable |CoordinationUnitImpl| instances
   // of type |CoordinationUnitType|. Note that a callee should
@@ -114,38 +111,20 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   std::set<CoordinationUnitImpl*> parents_;
 
  private:
-  enum StateFlags : uint8_t {
-    kTestState,
-    kTabVisible,
-    kAudioPlaying,
-    kNetworkIdle,
-    kNumStateFlags
-  };
-
   bool AddChild(CoordinationUnitImpl* child);
   bool RemoveChild(CoordinationUnitImpl* child);
   void AddParent(CoordinationUnitImpl* parent);
   void RemoveParent(CoordinationUnitImpl* parent);
   bool HasAncestor(CoordinationUnitImpl* ancestor);
   bool HasDescendant(CoordinationUnitImpl* descendant);
-  bool SelfOrParentHasFlagSet(StateFlags state);
-  // TODO(crbug.com/691886) Consider removing these.
-  void RecalcCoordinationPolicy();
-  void UnregisterCoordinationPolicyCallback();
 
   std::map<mojom::PropertyType, int64_t> properties_;
 
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   mojo::BindingSet<mojom::CoordinationUnit> bindings_;
 
-  mojom::CoordinationPolicyCallbackPtr policy_callback_;
-  mojom::CoordinationPolicyPtr current_policy_;
-
   base::ObserverList<CoordinationUnitGraphObserver> observers_;
   mojo::Binding<mojom::CoordinationUnit> binding_;
-
-  // TODO(crbug.com/691886) Consider switching properties_.
-  base::Optional<bool> state_flags_[kNumStateFlags];
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitImpl);
 };
