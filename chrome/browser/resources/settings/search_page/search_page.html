@@ -140,6 +140,15 @@
           </template>
         </template>
 
+<if expr="chromeos">
+        <template is="dom-if"
+            if="[[hotwordSearchEnablePref_.value]]">
+          <div class="start settings-box continuation indented">
+            $i18n{searchOkGoogleDisabled}
+          </div>
+        </template>
+</if>
+
         <!-- Manage search engines -->
         <div id="engines-subpage-trigger" class="settings-box"
             on-tap="onManageSearchEnginesTap_" actionable>
