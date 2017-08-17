@@ -1438,13 +1438,19 @@ TEST_F(InputMethodControllerTest, ImeTextSpanAppearsCorrectlyAfterNewline) {
   Controller().SetComposition(String("world"), ime_text_spans, 0, 0);
   ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
 
-  // Verify composition ime_text_span shows up on the second line, not the first
-  ASSERT_FALSE(GetDocument().Markers().MarkerAtPosition(
-      PlainTextRange(2).CreateRange(*div).StartPosition(),
-      DocumentMarker::AllMarkers()));
-  ASSERT_TRUE(GetDocument().Markers().MarkerAtPosition(
-      PlainTextRange(8).CreateRange(*div).StartPosition(),
-      DocumentMarker::AllMarkers()));
+  // Verify composition marker shows up on the second line, not the first
+  const Position& first_line_position =
+      PlainTextRange(2).CreateRange(*div).StartPosition();
+  const Position& second_line_position =
+      PlainTextRange(8).CreateRange(*div).StartPosition();
+  ASSERT_EQ(0u, GetDocument()
+                    .Markers()
+                    .MarkersFor(first_line_position.ComputeContainerNode())
+                    .size());
+  ASSERT_EQ(1u, GetDocument()
+                    .Markers()
+                    .MarkersFor(second_line_position.ComputeContainerNode())
+                    .size());
 
   // Verify marker has correct start/end offsets (measured from the beginning
   // of the node, which is the beginning of the line)

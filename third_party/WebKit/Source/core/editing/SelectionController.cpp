@@ -137,6 +137,18 @@ VisiblePositionInFlatTree VisiblePositionOfHitTestResult(
           hit_test_result.LocalPoint())));
 }
 
+DocumentMarker* SpellCheckMarkerAtPosition(
+    DocumentMarkerController& document_marker_controller,
+    const Position& position) {
+  const Node* const node = position.ComputeContainerNode();
+  if (!node->IsTextNode())
+    return nullptr;
+
+  const unsigned offset = position.ComputeOffsetInContainerNode();
+  return document_marker_controller.FirstMarkerIntersectingOffsetRange(
+      *ToText(node), offset, offset, DocumentMarker::MisspellingMarkers());
+}
+
 }  // namespace
 
 SelectionController::~SelectionController() = default;
@@ -597,9 +609,8 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
   const PositionInFlatTree& marker_position =
       pos.DeepEquivalent().ParentAnchoredEquivalent();
   const DocumentMarker* const marker =
-      inner_node->GetDocument().Markers().MarkerAtPosition(
-          ToPositionInDOMTree(marker_position),
-          DocumentMarker::MisspellingMarkers());
+      SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
+                                 ToPositionInDOMTree(marker_position));
   if (!marker) {
     UpdateSelectionForMouseDownDispatchingSelectStart(
         inner_node, SelectionInFlatTree(), TextGranularity::kWord,
@@ -1147,8 +1158,8 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
     return false;
   const Position& marker_position =
       pos.DeepEquivalent().ParentAnchoredEquivalent();
-  return inner_node->GetDocument().Markers().MarkerAtPosition(
-      marker_position, DocumentMarker::MisspellingMarkers());
+  return SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
+                                    marker_position);
 }
 
 void SelectionController::SendContextMenuEvent(
