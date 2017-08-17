@@ -257,6 +257,7 @@ DownloadItemImpl::DownloadItemImpl(
       etag_(etag),
       received_slices_(received_slices),
       net_log_(net_log),
+      is_updating_observers_(false),
       weak_ptr_factory_(this) {
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
@@ -301,6 +302,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       last_modified_time_(info.last_modified),
       etag_(info.etag),
       net_log_(net_log),
+      is_updating_observers_(false),
       weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_ACTIVE_DOWNLOAD);
@@ -334,6 +336,7 @@ DownloadItemImpl::DownloadItemImpl(
       delegate_(delegate),
       destination_info_(path, path, 0, false, std::string(), base::Time()),
       net_log_(net_log),
+      is_updating_observers_(false),
       weak_ptr_factory_(this) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
                                        DownloadCreateInfo(), true);
@@ -347,6 +350,7 @@ DownloadItemImpl::~DownloadItemImpl() {
   // Should always have been nuked before now, at worst in
   // DownloadManager shutdown.
   DCHECK(!download_file_.get());
+  CHECK(!is_updating_observers_);
 
   for (auto& observer : observers_)
     observer.OnDownloadDestroyed(this);
@@ -370,8 +374,13 @@ void DownloadItemImpl::UpdateObservers() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __func__ << "()";
 
+  // Nested updates should not be allowed.
+  DCHECK(!is_updating_observers_);
+
+  is_updating_observers_ = true;
   for (auto& observer : observers_)
     observer.OnDownloadUpdated(this);
+  is_updating_observers_ = false;
 }
 
 void DownloadItemImpl::ValidateDangerousDownload() {
