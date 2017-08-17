@@ -1878,6 +1878,24 @@
             ]
         }
     ],
+    "OmniboxSpeculativeServiceWorkerStartOnQueryInput": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxSpeculativeServiceWorkerStartOnQueryInput"
+                    ]
+                },
+                {
+                    "name": "Control"
+                }
+            ]
+        }
+    ],
     "OneGoogleBarOnLocalNtp": [
         {
             "platforms": [
