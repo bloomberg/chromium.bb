@@ -8,8 +8,10 @@
 #include "ash/highlighter/highlighter_result_view.h"
 #include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/highlighter/highlighter_view.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -56,6 +58,21 @@ void HighlighterController::SetObserver(
   observer_ = observer;
 }
 
+void HighlighterController::SetEnabled(bool enabled) {
+  FastInkPointerController::SetEnabled(enabled);
+  if (enabled) {
+    session_start_ = ui::EventTimeForNow();
+    gesture_counter_ = 0;
+    recognized_gesture_counter_ = 0;
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.Palette.Assistant.GesturesPerSession",
+                             gesture_counter_);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Ash.Shelf.Palette.Assistant.GesturesPerSession.Recognized",
+        recognized_gesture_counter_);
+  }
+}
+
 views::View* HighlighterController::GetPointerView() const {
   return highlighter_view_.get();
 }
@@ -78,22 +95,29 @@ void HighlighterController::UpdatePointerView(ui::TouchEvent* event) {
     const FastInkPoints& points = highlighter_view_->points();
     gfx::RectF box = points.GetBoundingBoxF();
 
-    HighlighterView::AnimationMode animation_mode;
-    if (DetectHorizontalStroke(box, HighlighterView::kPenTipSize)) {
+    const HighlighterGestureType gesture_type =
+        DetectHighlighterGesture(box, HighlighterView::kPenTipSize, points);
+
+    if (gesture_type == HighlighterGestureType::kHorizontalStroke) {
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Ash.Shelf.Palette.Assistant.HighlighterLength",
+          static_cast<int>(box.width()));
+
       box = AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
-      animation_mode = HighlighterView::AnimationMode::kFadeout;
-    } else if (DetectClosedShape(box, points)) {
-      animation_mode = HighlighterView::AnimationMode::kInflate;
-    } else {
-      animation_mode = HighlighterView::AnimationMode::kDeflate;
+    } else if (gesture_type == HighlighterGestureType::kClosedShape) {
+      const float fraction = box.width() * box.height() /
+                             (current_window->bounds().width() *
+                              current_window->bounds().height());
+      UMA_HISTOGRAM_PERCENTAGE("Ash.Shelf.Palette.Assistant.CircledPercentage",
+                               static_cast<int>(fraction * 100));
     }
 
     highlighter_view_->Animate(
-        box.CenterPoint(), animation_mode,
+        box.CenterPoint(), gesture_type,
         base::Bind(&HighlighterController::DestroyHighlighterView,
                    base::Unretained(this)));
 
-    if (animation_mode != HighlighterView::AnimationMode::kDeflate) {
+    if (gesture_type != HighlighterGestureType::kNotRecognized) {
       if (observer_) {
         observer_->HandleSelection(gfx::ToEnclosingRect(
             gfx::ScaleRect(box, GetScreenshotScale(current_window))));
@@ -101,10 +125,30 @@ void HighlighterController::UpdatePointerView(ui::TouchEvent* event) {
 
       result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
       result_view_->Animate(
-          box, animation_mode,
+          box, gesture_type,
           base::Bind(&HighlighterController::DestroyResultView,
                      base::Unretained(this)));
+
+      recognized_gesture_counter_++;
     }
+
+    gesture_counter_++;
+
+    const base::TimeTicks gesture_start = points.GetOldest().time;
+    if (gesture_counter_ > 1) {
+      // Up to 3 minutes.
+      UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Shelf.Palette.Assistant.GestureInterval",
+                                 gesture_start - previous_gesture_end_);
+    }
+    previous_gesture_end_ = points.GetNewest().time;
+
+    // Up to 10 seconds.
+    UMA_HISTOGRAM_TIMES("Ash.Shelf.Palette.Assistant.GestureDuration",
+                        points.GetNewest().time - gesture_start);
+
+    UMA_HISTOGRAM_ENUMERATION("Ash.Shelf.Palette.Assistant.GestureType",
+                              gesture_type,
+                              HighlighterGestureType::kGestureCount);
   }
 }
 

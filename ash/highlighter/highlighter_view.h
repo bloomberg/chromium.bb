@@ -21,17 +21,13 @@ class PointF;
 
 namespace ash {
 
+enum class HighlighterGestureType;
+
 // HighlighterView displays the highlighter palette tool. It draws the
 // highlighter stroke which consists of a series of thick lines connecting
 // touch points.
 class HighlighterView : public FastInkView {
  public:
-  enum class AnimationMode {
-    kFadeout,
-    kInflate,
-    kDeflate,
-  };
-
   static const SkColor kPenColor;
   static const gfx::SizeF kPenTipSize;
 
@@ -44,7 +40,7 @@ class HighlighterView : public FastInkView {
   void AddNewPoint(const gfx::PointF& new_point, const base::TimeTicks& time);
 
   void Animate(const gfx::PointF& pivot,
-               AnimationMode animation_mode,
+               HighlighterGestureType gesture_type,
                const base::Closure& done);
 
  private:
@@ -53,7 +49,7 @@ class HighlighterView : public FastInkView {
   void OnRedraw(gfx::Canvas& canvas) override;
 
   void FadeOut(const gfx::PointF& pivot,
-               AnimationMode animation_mode,
+               HighlighterGestureType gesture_type,
                const base::Closure& done);
 
   FastInkPoints points_;

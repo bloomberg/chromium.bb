@@ -26,6 +26,9 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
   // Set the observer to handle selection results.
   void SetObserver(HighlighterSelectionObserver* observer);
 
+  // FastInkPointerController:
+  void SetEnabled(bool enabled) override;
+
  private:
   friend class HighlighterControllerTestApi;
 
@@ -53,6 +56,19 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
 
   // |observer_| is not owned by the controller.
   HighlighterSelectionObserver* observer_ = nullptr;
+
+  // Time of the session start (e.g. when the controller was enabled).
+  base::TimeTicks session_start_;
+
+  // Time of the previous gesture end, valid after the first gesture
+  // within the session is complete.
+  base::TimeTicks previous_gesture_end_;
+
+  // Gesture counter withing a session.
+  int gesture_counter_ = 0;
+
+  // Recognized gesture counter withing a session.
+  int recognized_gesture_counter_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterController);
 };

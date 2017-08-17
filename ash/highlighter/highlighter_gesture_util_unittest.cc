@@ -63,12 +63,9 @@ class HighlighterGestureUtilTest : public AshTestBase {
     LineTo(w, 0);
   }
 
-  bool DetectHorizontalStroke() {
-    return ash::DetectHorizontalStroke(points_.GetBoundingBoxF(), kPenTipSize);
-  }
-
-  bool DetectClosedShape() {
-    return ash::DetectClosedShape(points_.GetBoundingBoxF(), points_);
+  HighlighterGestureType DetectGesture() {
+    return DetectHighlighterGesture(points_.GetBoundingBoxF(), kPenTipSize,
+                                    points_);
   }
 
  private:
@@ -83,74 +80,63 @@ class HighlighterGestureUtilTest : public AshTestBase {
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeTooShort) {
   TraceLine(0, 0, 1, 0);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeFlat) {
   TraceLine(0, 0, kLength, 0);
-  EXPECT_TRUE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kHorizontalStroke, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeTiltedLeftSlightly) {
   const float kTilt = kLength / 20;
   TraceLine(0, kTilt, kLength, 0);
-  EXPECT_TRUE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kHorizontalStroke, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeTiltedRightSlightly) {
   const float kTilt = kLength / 20;
   TraceLine(0, 0, kLength, kTilt);
-  EXPECT_TRUE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kHorizontalStroke, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeTiltedLeftTooMuch) {
   const float kTilt = kLength / 5;
   TraceLine(0, kTilt, kLength, 0);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeTiltedRightTooMuch) {
   const float kTilt = kLength / 5;
   TraceLine(0, 0, kLength, kTilt);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeZigZagSlightly) {
   const float kHeight = kLength / 20;
   TraceZigZag(kLength, kHeight);
-  EXPECT_TRUE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kHorizontalStroke, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, HorizontalStrokeZigZagTooMuch) {
   const float kHeight = kLength / 5;
   TraceZigZag(kLength, kHeight);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeRectangle) {
   TraceRect(kFrame, 0);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kClosedShape, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeRectangleThin) {
   TraceRect(gfx::RectF(0, 0, kLength, kLength / 20), 0);
-  EXPECT_TRUE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kHorizontalStroke, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeRectangleTilted) {
   TraceRect(kFrame, 10.0);
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kClosedShape, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeWithOverlap) {
@@ -161,8 +147,7 @@ TEST_F(HighlighterGestureUtilTest, ClosedShapeWithOverlap) {
   LineTo(kFrame.right(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.y());
   LineTo(kFrame.x(), kFrame.y());
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kClosedShape, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeLikeU) {
@@ -171,8 +156,7 @@ TEST_F(HighlighterGestureUtilTest, ClosedShapeLikeU) {
   LineTo(kFrame.x(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.y());
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeLikeG) {
@@ -182,8 +166,7 @@ TEST_F(HighlighterGestureUtilTest, ClosedShapeLikeG) {
   LineTo(kFrame.x(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.CenterPoint().y());
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kClosedShape, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeWithLittleBackAndForth) {
@@ -195,8 +178,7 @@ TEST_F(HighlighterGestureUtilTest, ClosedShapeWithLittleBackAndForth) {
   LineTo(kFrame.x(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.CenterPoint().y());
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_TRUE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kClosedShape, DetectGesture());
 }
 
 TEST_F(HighlighterGestureUtilTest, ClosedShapeWithTooMuchBackAndForth) {
@@ -211,8 +193,7 @@ TEST_F(HighlighterGestureUtilTest, ClosedShapeWithTooMuchBackAndForth) {
   LineTo(kFrame.x(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.bottom());
   LineTo(kFrame.right(), kFrame.CenterPoint().y());
-  EXPECT_FALSE(DetectHorizontalStroke());
-  EXPECT_FALSE(DetectClosedShape());
+  EXPECT_EQ(HighlighterGestureType::kNotRecognized, DetectGesture());
 }
 
 }  // namespace ash
