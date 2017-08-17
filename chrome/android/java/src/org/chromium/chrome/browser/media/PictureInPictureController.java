@@ -5,16 +5,21 @@
 package org.chromium.chrome.browser.media;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.util.Rational;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
@@ -92,7 +97,8 @@ public class PictureInPictureController {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VIDEO_PERSISTENCE)) return false;
 
         // Only auto-PiP if there is a playing fullscreen video.
-        if (!webContents.hasActiveEffectivelyFullscreenVideo()) {
+        if (!AppHooks.get().shouldDetectVideoFullscreen()
+                || !webContents.hasActiveEffectivelyFullscreenVideo()) {
             recordAttemptResult(METRICS_ATTEMPT_RESULT_NO_VIDEO);
             return false;
         }
@@ -170,8 +176,12 @@ public class PictureInPictureController {
             }
         });
 
-        // TODO(peconn): Use non-deprecated version once building with Android O.
-        activity.enterPictureInPictureMode();
+        Rect bounds = getVideoBounds(webContents, activity);
+        activity.enterPictureInPictureMode(
+                new PictureInPictureParams.Builder()
+                        .setAspectRatio(new Rational(bounds.width(), bounds.height()))
+                        .setSourceRectHint(bounds)
+                        .build());
 
         // Setup observers to dismiss the Activity on events that should end PiP.
         final Tab activityTab = activity.getActivityTab();
@@ -203,6 +213,40 @@ public class PictureInPictureController {
                         TimeUnit.MILLISECONDS, 50);
             }
         });
+    }
+
+    private static Rect getVideoBounds(WebContents webContents, Activity activity) {
+        // |getFullscreenVideoSize| may return null if there is a fullscreen video but it has not
+        // yet been detected. However we check |hasActiveEffectivelyFullscreenVideo| in
+        // |shouldAttempt|, so |rect| should never be null.
+        Rect rect = webContents.getFullscreenVideoSize();
+        float videoAspectRatio = ((float) rect.width()) / ((float) rect.height());
+
+        int windowWidth = activity.getWindow().getDecorView().getWidth();
+        int windowHeight = activity.getWindow().getDecorView().getHeight();
+        float phoneAspectRatio = ((float) windowWidth) / ((float) windowHeight);
+
+        // The currently playing video size is the video frame size, not the on-screen size.
+        // We know the video will be touching either the sides or the top and bottom of the screen
+        // so we can work out the screen bounds of the video from this.
+        int width, height;
+        if (videoAspectRatio > phoneAspectRatio) {
+            // The video takes up the full width of the phone and there are black bars at the top
+            // and bottom.
+            width = windowWidth;
+            height = (int) (windowWidth / videoAspectRatio);
+        } else {
+            // The video takes up the full height of the phone and there are black bars at the
+            // sides.
+            width = (int) (windowHeight * videoAspectRatio);
+            height = windowHeight;
+        }
+
+        // In the if above, either |height == windowHeight| or |width == windowWidth| so one of
+        // left or top will be zero.
+        int left = (windowWidth - width) / 2;
+        int top = (windowHeight - height) / 2;
+        return new Rect(left, top, left + width, top + height);
     }
 
     /**
