@@ -6,10 +6,10 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testLastResult(next)
         {
-            InspectorTest.evaluateInConsole("1+1", step1);
+            ConsoleTestRunner.evaluateInConsole("1+1", step1);
 
             function step1()
             {
@@ -19,12 +19,12 @@ function test()
 
         function testLastResultAfterConsoleClear(next)
         {
-            InspectorTest.evaluateInConsole("1+1", step1);
+            ConsoleTestRunner.evaluateInConsole("1+1", step1);
 
             function step1()
             {
                 Console.ConsoleView.clearConsole();
-                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
+                TestRunner.deprecatedRunAfterPendingDispatches(step2);
             }
 
             function step2()
@@ -36,11 +36,11 @@ function test()
 
     function evaluateLastResultAndDump(callback)
     {
-        InspectorTest.evaluateInConsole("$_", didEvaluate);
+        ConsoleTestRunner.evaluateInConsole("$_", didEvaluate);
 
         function didEvaluate()
         {
-            InspectorTest.dumpConsoleMessages();
+            ConsoleTestRunner.dumpConsoleMessages();
             if (callback)
                 callback();
         }

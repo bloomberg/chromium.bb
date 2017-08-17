@@ -25,26 +25,26 @@ function reopenWebInspector(objectId)
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("window.objectId");
+    var result = await TestRunner.RuntimeAgent.evaluate("window.objectId");
 
     if (result.type !== "string") {
-        InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
-        result = await InspectorTest.RuntimeAgent.evaluate(`({ handle : "handle" })`);
+        TestRunner.evaluateInPage("console.log('Opening front-end for the first time')");
+        result = await TestRunner.RuntimeAgent.evaluate(`({ handle : "handle" })`);
         checkHandleInInjectedScript(result.objectId, reopenInspector);
     } else {
-        InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
-        checkHandleInInjectedScript(result.value, InspectorTest.completeTest);
+        TestRunner.evaluateInPage("console.log('Opening front-end second time')");
+        checkHandleInInjectedScript(result.value, TestRunner.completeTest);
     }
 
     function reopenInspector()
     {
-        InspectorTest.evaluateInPage("reopenWebInspector('" + escape(result.objectId) + "')");
+        TestRunner.evaluateInPage("reopenWebInspector('" + escape(result.objectId) + "')");
     }
 
     async function checkHandleInInjectedScript(objectId, callback)
     {
-        var properties = await InspectorTest.RuntimeAgent.getProperties(objectId, false);
-        InspectorTest.evaluateInPage(!properties ? "console.log('Error resolving object')" : "console.log('Resolved object successfully')", callback);
+        var properties = await TestRunner.RuntimeAgent.getProperties(objectId, false);
+        TestRunner.evaluateInPage(!properties ? "console.log('Error resolving object')" : "console.log('Resolved object successfully')", callback);
     }
 }
 

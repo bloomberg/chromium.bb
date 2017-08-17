@@ -40,18 +40,18 @@ function showInspectorAndRunTest()
 
 function test()
 {
-    if (InspectorTest.consoleModel.messages().length !== 1)
-        InspectorTest.addResult("FAIL: found too many console messages: " + InspectorTest.consoleModel.messages().length);
+    if (TestRunner.consoleModel.messages().length !== 1)
+        TestRunner.addResult("FAIL: found too many console messages: " + TestRunner.consoleModel.messages().length);
 
-    var message = InspectorTest.consoleModel.messages()[0];
+    var message = TestRunner.consoleModel.messages()[0];
     var stack = message.stackTrace;
     if (stack && stack.callFrames.length)
-        InspectorTest.addResult("FAIL: found message with stack trace");
+        TestRunner.addResult("FAIL: found message with stack trace");
     else
-        InspectorTest.addResult("SUCCESS: message doesn't have stack trace");
+        TestRunner.addResult("SUCCESS: message doesn't have stack trace");
 
-    InspectorTest.addResult("TEST COMPLETE.");
-    InspectorTest.completeTest();
+    TestRunner.addResult("TEST COMPLETE.");
+    TestRunner.completeTest();
 }
 
 </script>

@@ -32,77 +32,77 @@ function destroyIframe() {
 
 async function test()
 {
-  await new Promise(f => InspectorTest.startDebuggerTest(f, true));
+  await new Promise(f => SourcesTestRunner.startDebuggerTest(f, true));
 
-  await InspectorTest.evaluateInPageAsync('setup()');
-  var workerTarget = await InspectorTest.waitForTarget(target => target.parentTarget() === InspectorTest.mainTarget);
-  var workerExecutionContext = await InspectorTest.waitForExecutionContext(workerTarget.model(SDK.RuntimeModel));
+  await TestRunner.evaluateInPageAsync('setup()');
+  var workerTarget = await TestRunner.waitForTarget(target => target.parentTarget() === TestRunner.mainTarget);
+  var workerExecutionContext = await TestRunner.waitForExecutionContext(workerTarget.model(SDK.RuntimeModel));
   dump();
 
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Selected worker');
+  TestRunner.addResult('');
+  TestRunner.addResult('Selected worker');
   UI.context.setFlavor(SDK.Target, workerTarget);
   dump();
 
-  var mainFrame = InspectorTest.resourceTreeModel.mainFrame;
-  var mainExecutionContext = InspectorTest.runtimeModel.executionContexts().find(context => context.frameId === mainFrame.id);
-  var childFrame = InspectorTest.resourceTreeModel.frames().find(frame => frame !== InspectorTest.resourceTreeModel.mainFrame);
-  var childExecutionContext = InspectorTest.runtimeModel.executionContexts().find(context => context.frameId === childFrame.id);
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Selected iframe');
+  var mainFrame = TestRunner.resourceTreeModel.mainFrame;
+  var mainExecutionContext = TestRunner.runtimeModel.executionContexts().find(context => context.frameId === mainFrame.id);
+  var childFrame = TestRunner.resourceTreeModel.frames().find(frame => frame !== TestRunner.resourceTreeModel.mainFrame);
+  var childExecutionContext = TestRunner.runtimeModel.executionContexts().find(context => context.frameId === childFrame.id);
+  TestRunner.addResult('');
+  TestRunner.addResult('Selected iframe');
   UI.context.setFlavor(SDK.ExecutionContext, childExecutionContext);
   dump();
 
-  InspectorTest.evaluateInPage('pauseInMain()');
-  await InspectorTest.waitUntilPausedPromise();
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Paused in main');
+  TestRunner.evaluateInPage('pauseInMain()');
+  await SourcesTestRunner.waitUntilPausedPromise();
+  TestRunner.addResult('');
+  TestRunner.addResult('Paused in main');
   dump();
 
-  await new Promise(f => InspectorTest.resumeExecution(f));
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Resumed');
+  await new Promise(f => SourcesTestRunner.resumeExecution(f));
+  TestRunner.addResult('');
+  TestRunner.addResult('Resumed');
   dump();
 
-  InspectorTest.evaluateInPage('pauseInWorker()');
-  await InspectorTest.waitUntilPausedPromise();
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Paused in worker');
+  TestRunner.evaluateInPage('pauseInWorker()');
+  await SourcesTestRunner.waitUntilPausedPromise();
+  TestRunner.addResult('');
+  TestRunner.addResult('Paused in worker');
   dump();
 
-  await new Promise(f => InspectorTest.resumeExecution(f));
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Resumed');
+  await new Promise(f => SourcesTestRunner.resumeExecution(f));
+  TestRunner.addResult('');
+  TestRunner.addResult('Resumed');
   dump();
 
-  InspectorTest.evaluateInPage('pauseInIframe()');
-  await InspectorTest.waitUntilPausedPromise();
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Paused in iframe');
+  TestRunner.evaluateInPage('pauseInIframe()');
+  await SourcesTestRunner.waitUntilPausedPromise();
+  TestRunner.addResult('');
+  TestRunner.addResult('Paused in iframe');
   dump();
 
-  await new Promise(f => InspectorTest.resumeExecution(f));
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Resumed');
+  await new Promise(f => SourcesTestRunner.resumeExecution(f));
+  TestRunner.addResult('');
+  TestRunner.addResult('Resumed');
   dump();
 
-  InspectorTest.evaluateInPage('destroyIframe()');
-  await InspectorTest.waitForExecutionContextDestroyed(childExecutionContext);
-  InspectorTest.addResult('');
-  InspectorTest.addResult('Destroyed iframe');
+  TestRunner.evaluateInPage('destroyIframe()');
+  await TestRunner.waitForExecutionContextDestroyed(childExecutionContext);
+  TestRunner.addResult('');
+  TestRunner.addResult('Destroyed iframe');
   dump();
 
-  InspectorTest.completeDebuggerTest();
+  SourcesTestRunner.completeDebuggerTest();
 
   function dump() {
     var consoleView = Console.ConsoleView.instance();
     var selector = consoleView._consoleContextSelector;
-    InspectorTest.addResult('Console context selector:');
+    TestRunner.addResult('Console context selector:');
     for (var executionContext of selector._items) {
       var selected = UI.context.flavor(SDK.ExecutionContext) === executionContext;
       var text = '____'.repeat(selector._depthFor(executionContext)) + selector.titleFor(executionContext);
       var disabled = !selector.isItemSelectable(executionContext);
-      InspectorTest.addResult(`${selected ? '*' : ' '} ${text} ${disabled ? '[disabled]' : ''}`);
+      TestRunner.addResult(`${selected ? '*' : ' '} ${text} ${disabled ? '[disabled]' : ''}`);
     }
   }
 }

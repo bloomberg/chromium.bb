@@ -9,12 +9,12 @@ window.eval = "Non-function";
 
 function test()
 {
-    InspectorTest.evaluateInConsole("foo", step1);
+    ConsoleTestRunner.evaluateInConsole("foo", step1);
 
     function step1()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

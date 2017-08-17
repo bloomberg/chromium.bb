@@ -66,12 +66,12 @@ function showWebInspector()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(onExpanded);
+    ConsoleTestRunner.expandConsoleMessages(onExpanded);
 
     function onExpanded()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

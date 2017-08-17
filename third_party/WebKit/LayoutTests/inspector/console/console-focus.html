@@ -10,7 +10,7 @@ var test = function()
     var viewport = consoleView._viewport;
     var prompt = consoleView._prompt;
     var consoleEditor;
-    InspectorTest.waitUntilConsoleEditorLoaded().then(e => consoleEditor = e).then(logMessages);
+    ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(e => consoleEditor = e).then(logMessages);
 
     // Ensure that the body is focusable.
     document.body.tabIndex = -1;
@@ -21,8 +21,8 @@ var test = function()
     }
 
     function logMessages() {
-        InspectorTest.waitForConsoleMessages(2, () => InspectorTest.runTestSuite(testSuite));
-        InspectorTest.evaluateInConsole("'foo " + "\n".repeat(50) + "bar'");
+        ConsoleTestRunner.waitForConsoleMessages(2, () => TestRunner.runTestSuite(testSuite));
+        ConsoleTestRunner.evaluateInConsole("'foo " + "\n".repeat(50) + "bar'");
     }
 
     var testSuite = [
@@ -53,13 +53,13 @@ var test = function()
             prompt.setText("foobar");
             consoleEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 1));
             resetAndDumpFocusAndScrollTop();
-            InspectorTest.addResult("Selection before: " + consoleEditor.selection().toString());
+            TestRunner.addResult("Selection before: " + consoleEditor.selection().toString());
 
-            InspectorTest.addResult("Clicking on container");
+            TestRunner.addResult("Clicking on container");
             consoleView._messagesElement.click();
 
             dumpFocusAndScrollInfo();
-            InspectorTest.addResult("Selection after: " + consoleEditor.selection().toString());
+            TestRunner.addResult("Selection after: " + consoleEditor.selection().toString());
             next();
         }
     ];
@@ -70,7 +70,7 @@ var test = function()
         var clientX = previewRect.left + previewRect.width / 2;
         var clientY = previewRect.top + previewRect.height / 2;
 
-        InspectorTest.addResult('Clicking message ' + index);
+        TestRunner.addResult('Clicking message ' + index);
         previewElement.dispatchEvent(new MouseEvent('click', {clientX: clientX, clientY: clientY, bubbles: true}));
     }
 
@@ -78,10 +78,10 @@ var test = function()
     {
         var focusedElement = document.deepActiveElement();
         if (focusedElement)
-            InspectorTest.addResult("Focused element: " + focusedElement.tagName);
+            TestRunner.addResult("Focused element: " + focusedElement.tagName);
         else
-            InspectorTest.addResult("No focus");
-        InspectorTest.addResult("Viewport scrolled to top: " + String(viewport.element.scrollTop === 0));
+            TestRunner.addResult("No focus");
+        TestRunner.addResult("Viewport scrolled to top: " + String(viewport.element.scrollTop === 0));
     }
 }
 

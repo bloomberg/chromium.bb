@@ -5,16 +5,16 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInConsole("var x = {a:1}; x.self = x; undefined = x;", step1);
+    ConsoleTestRunner.evaluateInConsole("var x = {a:1}; x.self = x; undefined = x;", step1);
 
     function step1()
     {
-        InspectorTest.evaluateInConsole("unknownVar", step2);
+        ConsoleTestRunner.evaluateInConsole("unknownVar", step2);
     }
     function step2()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

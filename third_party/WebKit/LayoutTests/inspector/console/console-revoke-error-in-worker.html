@@ -18,29 +18,29 @@ function handlePromiseRejection()
 
 function test()
 {
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, ConsoleTestRunner.wrapListener(messageAdded));
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
 
-    InspectorTest.addResult("Creating worker with promise");
-    InspectorTest.evaluateInPageWithTimeout("createPromise()");
+    TestRunner.addResult("Creating worker with promise");
+    TestRunner.evaluateInPageWithTimeout("createPromise()");
 
     function messageAdded(event)
     {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        TestRunner.addResult("");
+        TestRunner.addResult("Message added: " + event.data.level + " " + event.data.type);
 
         if (event.data.level === ConsoleModel.ConsoleMessage.MessageLevel.Error) {
-            InspectorTest.dumpConsoleCounters();
-            InspectorTest.addResult("");
-            InspectorTest.addResult("Handling promise");
-            InspectorTest.evaluateInPageWithTimeout("handlePromiseRejection()");
+            ConsoleTestRunner.dumpConsoleCounters();
+            TestRunner.addResult("");
+            TestRunner.addResult("Handling promise");
+            TestRunner.evaluateInPageWithTimeout("handlePromiseRejection()");
         }
     }
 
     function messageUpdated()
     {
-        InspectorTest.dumpConsoleCounters();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleCounters();
+        TestRunner.completeTest();
     }
 }
 

@@ -29,28 +29,28 @@ function createShadowRoot()
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("window.didReopen");
+    var result = await TestRunner.RuntimeAgent.evaluate("window.didReopen");
 
     if (result.type !== "number") {
-        InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
+        TestRunner.evaluateInPage("console.log('Opening front-end for the first time')");
         runTests(reopenInspector);
     } else {
-        InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
-        runTests(InspectorTest.completeTest);
+        TestRunner.evaluateInPage("console.log('Opening front-end second time')");
+        runTests(TestRunner.completeTest);
     }
 
     function reopenInspector()
     {
-        InspectorTest.evaluateInPage("reopenWebInspector()");
+        TestRunner.evaluateInPage("reopenWebInspector()");
     }
 
     function runTests(callback)
     {
-        InspectorTest.selectNodeAndWaitForStyles("inner", step2);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inner", step2);
 
         function step2()
         {
-            InspectorTest.dumpSelectedElementStyles(true);
+            ElementsTestRunner.dumpSelectedElementStyles(true);
             callback();
         }
     }

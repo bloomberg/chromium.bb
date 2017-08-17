@@ -10,13 +10,13 @@ function startWorker()
 
 function test()
 {
-    InspectorTest.waitForConsoleMessages(1, step1);
-    InspectorTest.evaluateInPage("startWorker();");
+    ConsoleTestRunner.waitForConsoleMessages(1, step1);
+    TestRunner.evaluateInPage("startWorker();");
 
     function step1()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

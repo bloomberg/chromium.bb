@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInConsole("\
+    ConsoleTestRunner.evaluateInConsole("\
         function foo()\n\
         {\n\
             throw {a:239};\n\
@@ -18,7 +18,7 @@ function test()
 
     function afterEvaluate()
     {
-        InspectorTest.dumpConsoleMessages();
+        ConsoleTestRunner.dumpConsoleMessages();
 
         var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
         var uiMessage = viewMessages[viewMessages.length - 1];
@@ -26,14 +26,14 @@ function test()
         var stackTrace = message.stackTrace;
 
         if (stackTrace.callFrames.length < 3) {
-            InspectorTest.addResult('FAILED: Stack size too small');
+            TestRunner.addResult('FAILED: Stack size too small');
         } else {
             for (var i = 0; i < 3; ++i) {
                 var frame = stackTrace.callFrames[i];
-                InspectorTest.addResult('call frame:' + frame.functionName + ' at ' + frame.url + ':' + frame.lineNumber);
+                TestRunner.addResult('call frame:' + frame.functionName + ' at ' + frame.url + ':' + frame.lineNumber);
             }
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

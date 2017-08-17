@@ -1057,6 +1057,25 @@ function runTest(pixelTest, enableWatchDogWhileDebugging)
 
         InspectorTest = {};
 
+        self.AccessibilityTestRunner = InspectorTest;
+        self.ApplicationTestRunner = InspectorTest;
+        self.AuditsTestRunner = InspectorTest;
+        self.BindingsTestRunner = InspectorTest;
+        self.ConsoleTestRunner = InspectorTest;
+        self.CoverageTestRunner = InspectorTest;
+        self.DataGridTestRunner = InspectorTest;
+        self.DeviceModeTestRunner = InspectorTest;
+        self.ElementsTestRunner = InspectorTest;
+        self.ExtensionsTestRunner = InspectorTest;
+        self.LayersTestRunner = InspectorTest;
+        self.NetworkTestRunner = InspectorTest;
+        self.PerformanceTestRunner = InspectorTest;
+        self.ProfilerTestRunner = InspectorTest;
+        self.SASSTestRunner = InspectorTest;
+        self.SecurityTestRunner = InspectorTest;
+        self.SourcesTestRunner = InspectorTest;
+        self.TestRunner = InspectorTest;
+
         for (var i = 0; i < initializationFunctions.length; ++i) {
             try {
                 initializationFunctions[i]();

@@ -29,22 +29,22 @@ function test()
         "new Error('errr')"
     ];
 
-    InspectorTest.addResult("Number of expressions: " + expressions.length);
-    InspectorTest.addResult("Names [temp3..temp7] are reserved\n");
+    TestRunner.addResult("Number of expressions: " + expressions.length);
+    TestRunner.addResult("Names [temp3..temp7] are reserved\n");
 
     function evaluateNext()
     {
         var expression = expressions.shift();
         if (!expression) {
-            InspectorTest.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
+            ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
             return;
         }
 
         function didEvaluate(result)
         {
-            InspectorTest.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
+            TestRunner.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
             UI.panels.sources._saveToTempVariable(result.object);
-            InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
+            ConsoleTestRunner.waitUntilNthMessageReceived(2, evaluateNext);
         }
 
         UI.context.flavor(SDK.ExecutionContext).evaluate({expression: expression, objectGroup:"console"}).then(didEvaluate);
@@ -52,8 +52,8 @@ function test()
 
     function dumpConsoleMessages()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 
     evaluateNext();

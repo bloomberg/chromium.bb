@@ -6,17 +6,17 @@
 
 function test()
 {
-    InspectorTest.addSniffer(Console.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter, true);
-    InspectorTest.addConsoleViewSniffer(messageSniffer, true);
+    TestRunner.addSniffer(Console.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter, true);
+    ConsoleTestRunner.addConsoleViewSniffer(messageSniffer, true);
 
-    InspectorTest.evaluateInConsole("$x('42')"); // number
-    InspectorTest.evaluateInConsole("$x('name(/html)')"); // string
-    InspectorTest.evaluateInConsole("$x('not(42)')"); // boolean
-    InspectorTest.evaluateInConsole("$x('/html/body/p').length"); // node iterator
-    InspectorTest.evaluateInConsole("$x('//a/@href')[0]"); // href, should not throw
-    InspectorTest.evaluateInConsole("$x('./a/@href', document.body)[0]"); // relative to document.body selector
-    InspectorTest.evaluateInConsole("$x('./a@href', document.body)"); // incorrect selector, shouldn't crash
-    InspectorTest.evaluateInPage("console.log('complete')"); // node iterator
+    ConsoleTestRunner.evaluateInConsole("$x('42')"); // number
+    ConsoleTestRunner.evaluateInConsole("$x('name(/html)')"); // string
+    ConsoleTestRunner.evaluateInConsole("$x('not(42)')"); // boolean
+    ConsoleTestRunner.evaluateInConsole("$x('/html/body/p').length"); // node iterator
+    ConsoleTestRunner.evaluateInConsole("$x('//a/@href')[0]"); // href, should not throw
+    ConsoleTestRunner.evaluateInConsole("$x('./a/@href', document.body)[0]"); // relative to document.body selector
+    ConsoleTestRunner.evaluateInConsole("$x('./a@href', document.body)"); // incorrect selector, shouldn't crash
+    TestRunner.evaluateInPage("console.log('complete')"); // node iterator
 
     var completeMessageReceived = false;
     function messageSniffer(uiMessage)
@@ -37,8 +37,8 @@ function test()
     function maybeCompleteTest()
     {
         if (!waitForParameteres && completeMessageReceived) {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessages();
+            TestRunner.completeTest();
         }
     }
 }

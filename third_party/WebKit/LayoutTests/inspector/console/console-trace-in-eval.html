@@ -31,11 +31,11 @@ function test()
 {
     function callback()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
-    InspectorTest.evaluateInPage("doEvalSource()");
-    InspectorTest.addConsoleSniffer(callback);
+    TestRunner.evaluateInPage("doEvalSource()");
+    ConsoleTestRunner.addConsoleSniffer(callback);
 }
 
 </script>

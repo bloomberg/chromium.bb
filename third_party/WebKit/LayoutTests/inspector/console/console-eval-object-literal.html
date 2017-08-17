@@ -27,10 +27,10 @@ function test()
     {
         ++current;
         if (current < commands.length) {
-            InspectorTest.evaluateInConsole(commands[current], loopOverCommands);
+            ConsoleTestRunner.evaluateInConsole(commands[current], loopOverCommands);
         } else {
-            InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+            TestRunner.completeTest();
         }
     }
 }

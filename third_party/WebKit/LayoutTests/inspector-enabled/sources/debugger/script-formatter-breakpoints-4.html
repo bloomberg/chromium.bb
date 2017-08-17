@@ -28,10 +28,10 @@ var test = function()
     var panel = UI.panels.sources;
     var scriptFormatter;
 
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetup(next)
         {
-            InspectorTest.scriptFormatter().then(function(sf) {
+            SourcesTestRunner.scriptFormatter().then(function(sf) {
                 scriptFormatter = sf;
                 next();
             });
@@ -39,31 +39,31 @@ var test = function()
 
         function testBreakpointSetInOriginalAndRemovedInFormatted(next)
         {
-            InspectorTest.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addResult("Adding breakpoint.");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+                TestRunner.addResult("Adding breakpoint.");
+                TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                SourcesTestRunner.setBreakpoint(sourceFrame, 11, "", true);
             }
 
             function breakpointResolved()
             {
-                InspectorTest.addResult("Formatting.");
-                InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                TestRunner.addResult("Formatting.");
+                TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
 
             function uiSourceCodeScriptFormatted()
             {
-                InspectorTest.addResult("Removing breakpoint.");
+                TestRunner.addResult("Removing breakpoint.");
                 var formattedSourceFrame = panel.visibleView;
-                InspectorTest.removeBreakpoint(formattedSourceFrame, 13);
-                InspectorTest.addResult("Unformatting.");
+                SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 13);
+                TestRunner.addResult("Unformatting.");
                 Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
                 var breakpoints = Bindings.breakpointManager._storage._setting.get();
-                InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
+                TestRunner.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
                 next();
             }
         }

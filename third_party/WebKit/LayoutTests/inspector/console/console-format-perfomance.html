@@ -17,13 +17,13 @@ function onload()
 
 function test()
 {
-    InspectorTest.evaluateInPage("logToConsole()", callback);
+    TestRunner.evaluateInPage("logToConsole()", callback);
 
     function callback()
     {
-        var messages = InspectorTest.dumpConsoleMessagesIntoArray();
-        messages.map(m => InspectorTest.addResult(m.replace(/:\s+\d+/g, ": <number>")));
-        InspectorTest.completeTest();
+        var messages = ConsoleTestRunner.dumpConsoleMessagesIntoArray();
+        messages.map(m => TestRunner.addResult(m.replace(/:\s+\d+/g, ": <number>")));
+        TestRunner.completeTest();
     }
 }
 </script>

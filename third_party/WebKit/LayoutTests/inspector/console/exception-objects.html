@@ -48,14 +48,14 @@ function test()
     function nextExpression()
     {
         if (!expressions.length) {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+            ConsoleTestRunner.dumpConsoleMessages();
+            TestRunner.completeTest();
             return;
         }
 
         var expression = expressions.shift();
-        InspectorTest.waitUntilNthMessageReceived(expression[1], nextExpression);
-        InspectorTest.evaluateInConsole(expression[0], function() {});
+        ConsoleTestRunner.waitUntilNthMessageReceived(expression[1], nextExpression);
+        ConsoleTestRunner.evaluateInConsole(expression[0], function() {});
     }
 
     nextExpression();

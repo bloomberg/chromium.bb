@@ -32,13 +32,13 @@ async function test()
     var workerCount = 0;
     var observer = {
         targetAdded(target) {
-            if (!InspectorTest.isDedicatedWorker(target))
+            if (!TestRunner.isDedicatedWorker(target))
                 return;
             workerCount++;
-            InspectorTest.addResult("Added worker: " + workerCount);
+            TestRunner.addResult("Added worker: " + workerCount);
             if (workerCount === 2) {
-                InspectorTest.addResult("Done.");
-                InspectorTest.completeTest();
+                TestRunner.addResult("Done.");
+                TestRunner.completeTest();
             }
         },
 
@@ -46,12 +46,12 @@ async function test()
         }
     };
 
-    await InspectorTest.TargetAgent.setAutoAttach(false, false);
+    await TestRunner.TargetAgent.setAutoAttach(false, false);
     // Debugger should not crash when autoconnecting is immediately followed by termination.
 
     SDK.targetManager.observeTargets(observer);
-    InspectorTest.TargetAgent.setAutoAttach(true, true);
-    InspectorTest.addResult("Worker inspection enabled");
+    TestRunner.TargetAgent.setAutoAttach(true, true);
+    TestRunner.addResult("Worker inspection enabled");
 };
 
 </script>

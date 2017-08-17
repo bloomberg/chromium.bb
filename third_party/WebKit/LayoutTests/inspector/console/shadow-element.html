@@ -8,27 +8,27 @@
 function test()
 {
     Common.settingForTest("showUAShadowDOM").set(true);
-    InspectorTest.selectNodeWithId("shadow", step1);
+    ElementsTestRunner.selectNodeWithId("shadow", step1);
 
     function step1()
     {
-        InspectorTest.evaluateInConsoleAndDump("'Author shadow element: ' + $0.id", step3);
+        ConsoleTestRunner.evaluateInConsoleAndDump("'Author shadow element: ' + $0.id", step3);
     }
 
     function step3()
     {
-        InspectorTest.selectNodeWithId("user-agent-host", step4);
+        ElementsTestRunner.selectNodeWithId("user-agent-host", step4);
     }
 
     function step4(node)
     {
         UI.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
-        InspectorTest.evaluateInConsoleAndDump("'User agent shadow host: ' + $0.id", step5);
+        ConsoleTestRunner.evaluateInConsoleAndDump("'User agent shadow host: ' + $0.id", step5);
     }
 
     function step5()
     {
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

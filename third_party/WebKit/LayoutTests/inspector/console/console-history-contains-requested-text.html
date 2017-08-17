@@ -6,12 +6,12 @@
 
 function test()
 {
-    InspectorTest.evaluateInConsole("{a:1, b:2}", step2);
+    ConsoleTestRunner.evaluateInConsole("{a:1, b:2}", step2);
     function step2()
     {
         var consoleView = Console.ConsoleView.instance();
-        InspectorTest.addResult(consoleView._prompt.history().previous());
-        InspectorTest.completeTest();
+        TestRunner.addResult(consoleView._prompt.history().previous());
+        TestRunner.completeTest();
     }
 }
 </script>

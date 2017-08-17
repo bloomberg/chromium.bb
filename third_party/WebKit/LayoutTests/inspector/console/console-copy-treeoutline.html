@@ -18,11 +18,11 @@ function prepareForTest()
 <script>
 function test()
 {
-    InspectorTest.fixConsoleViewportDimensions(600, 200);
+    ConsoleTestRunner.fixConsoleViewportDimensions(600, 200);
     var consoleView = Console.ConsoleView.instance();
     var viewport = consoleView._viewport;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSelectAll(next)
         {
             viewport.forceScrollItemToBeFirst(0);
@@ -35,7 +35,7 @@ function test()
             document.execCommand("selectAll");
 
             var text = viewport._selectedText();
-            InspectorTest.addResult("Selected text: " + text);
+            TestRunner.addResult("Selected text: " + text);
             next();
         }
     ]);

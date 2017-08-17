@@ -21,12 +21,12 @@ log();
 
 function test()
 {
-    InspectorTest.addResult("\nDumping messages");
-    InspectorTest.dumpConsoleMessages();
-    InspectorTest.addResult("\nDumping export strings");
+    TestRunner.addResult("\nDumping messages");
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.addResult("\nDumping export strings");
     var consoleView = Console.ConsoleView.instance();
-    consoleView._visibleViewMessages.forEach(message => InspectorTest.addResult(message.toExportString()));
-    InspectorTest.completeTest();
+    consoleView._visibleViewMessages.forEach(message => TestRunner.addResult(message.toExportString()));
+    TestRunner.completeTest();
 }
 
 </script>

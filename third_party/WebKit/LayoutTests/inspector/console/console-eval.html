@@ -6,12 +6,12 @@
 
 function test()
 {
-    InspectorTest.evaluateInConsole("1+2", step2);
+    ConsoleTestRunner.evaluateInConsole("1+2", step2);
 
     function step2()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

@@ -6,11 +6,11 @@
 
 function test()
 {
-    InspectorTest.evaluateInConsole("console.memory === console.memory", step1);
+    ConsoleTestRunner.evaluateInConsole("console.memory === console.memory", step1);
 
     function step1() {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

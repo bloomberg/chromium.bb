@@ -20,17 +20,17 @@ function addInlineWithSyntaxError()
 <script>
 function test()
 {
-    InspectorTest.evaluateInPage("setTimeout(foo, 0);", InspectorTest.waitUntilMessageReceived.bind(this, step2));
+    TestRunner.evaluateInPage("setTimeout(foo, 0);", ConsoleTestRunner.waitUntilMessageReceived.bind(this, step2));
 
     function step2()
     {
-        InspectorTest.evaluateInPage("setTimeout(addInlineWithSyntaxError, 0);", InspectorTest.waitUntilMessageReceived.bind(this, step3));
+        TestRunner.evaluateInPage("setTimeout(addInlineWithSyntaxError, 0);", ConsoleTestRunner.waitUntilMessageReceived.bind(this, step3));
     }
 
     function step3()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -15,7 +15,7 @@ function populateConsoleWithMessages(count)
 <script>
 function test()
 {
-    InspectorTest.fixConsoleViewportDimensions(600, 200);
+    ConsoleTestRunner.fixConsoleViewportDimensions(600, 200);
     var consoleView = Console.ConsoleView.instance();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;
@@ -30,11 +30,11 @@ function test()
             viewport.forceScrollItemToBeFirst(0);
             viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
             if (viewportMessagesCount < minimumViewportMessagesCount) {
-                InspectorTest.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
-                InspectorTest.completeTest();
+                TestRunner.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
+                TestRunner.completeTest();
                 return;
             }
-            InspectorTest.addResult(String.sprintf("Viewport contains %d messages", viewportMessagesCount));
+            TestRunner.addResult(String.sprintf("Viewport contains %d messages", viewportMessagesCount));
             next();
         },
 
@@ -162,7 +162,7 @@ function test()
                 blueSpan = blueSpan.traverseNextNode();
 
             window.getSelection().setBaseAndExtent(blueSpan, 0, blueSpan, blueSpan.childNodes.length);
-            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+            TestRunner.addResult("Selected text: " + viewport._selectedText());
             next();
         },
 
@@ -180,7 +180,7 @@ function test()
 
             var text = viewport._selectedText();
             var count = text ? text.split("\n").length : 0;
-            InspectorTest.addResult(count === messagesCount ? "Selected all " + count + " messages." : "Selected " + count + " messages instead of " + messagesCount);
+            TestRunner.addResult(count === messagesCount ? "Selected all " + count + " messages." : "Selected " + count + " messages instead of " + messagesCount);
             next();
         },
 
@@ -194,13 +194,13 @@ function test()
             var textNodeExtent = consoleView.itemElement(2).element().traverseNextTextNode();
 
             window.getSelection().setBaseAndExtent(nonTextNodeBase, 0, nonTextNodeExtent, 0);
-            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+            TestRunner.addResult("Selected text: " + viewport._selectedText());
 
             window.getSelection().setBaseAndExtent(textNodeBase, 0, nonTextNodeExtent, 0);
-            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+            TestRunner.addResult("Selected text: " + viewport._selectedText());
 
             window.getSelection().setBaseAndExtent(nonTextNodeBase, 0, textNodeExtent, 0);
-            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+            TestRunner.addResult("Selected text: " + viewport._selectedText());
 
             next();
         }
@@ -210,11 +210,11 @@ function test()
     function messageAdded()
     {
         if (!--awaitingMessagesCount)
-            InspectorTest.runTestSuite(testSuite);
+            TestRunner.runTestSuite(testSuite);
     }
 
-    InspectorTest.addConsoleSniffer(messageAdded, true);
-    InspectorTest.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", messagesCount));
+    ConsoleTestRunner.addConsoleSniffer(messageAdded, true);
+    TestRunner.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", messagesCount));
 
     function dumpSelectionModelElement(model)
     {
@@ -227,14 +227,14 @@ function test()
     {
         viewport.refresh();
         var text = String.sprintf("anchor = %s, head = %s", dumpSelectionModelElement(viewport._anchorSelection), dumpSelectionModelElement(viewport._headSelection));
-        InspectorTest.addResult(text);
+        TestRunner.addResult(text);
     }
 
     function dumpSelectionText()
     {
         viewport.refresh();
         var text = viewport._selectedText();
-        InspectorTest.addResult("Selected text:<<<EOL\n" + text + "\nEOL");
+        TestRunner.addResult("Selected text:<<<EOL\n" + text + "\nEOL");
     }
 
     function dumpViewportRenderedItems()
@@ -242,7 +242,7 @@ function test()
         viewport.refresh();
         var firstVisibleIndex = viewport.firstVisibleIndex();
         var lastVisibleIndex = viewport.lastVisibleIndex();
-        InspectorTest.addResult("first visible message index: " + firstVisibleIndex);
+        TestRunner.addResult("first visible message index: " + firstVisibleIndex);
     }
 
     function emulateShiftClickOnMessage(messageIndex)
@@ -250,7 +250,7 @@ function test()
         viewport.refresh();
         var selection = window.getSelection();
         if (!selection || !selection.rangeCount) {
-            InspectorTest.addResult("FAILURE: There's no selection");
+            TestRunner.addResult("FAILURE: There's no selection");
             return;
         }
         viewport.forceScrollItemToBeFirst(Math.max(messageIndex - minimumViewportMessagesCount / 2, 0));
@@ -262,13 +262,13 @@ function test()
     function selectMessages(fromMessage, fromTextOffset, toMessage, toTextOffset)
     {
         if (Math.abs(toMessage - fromMessage) > minimumViewportMessagesCount) {
-            InspectorTest.addResult(String.sprintf("FAILURE: Cannot select more than %d messages (requested to select from %d to %d", minimumViewportMessagesCount, fromMessage, toMessage));
-            InspectorTest.completeTest();
+            TestRunner.addResult(String.sprintf("FAILURE: Cannot select more than %d messages (requested to select from %d to %d", minimumViewportMessagesCount, fromMessage, toMessage));
+            TestRunner.completeTest();
             return;
         }
         viewport.forceScrollItemToBeFirst(Math.min(fromMessage, toMessage));
 
-        InspectorTest.selectConsoleMessages(fromMessage, fromTextOffset, toMessage, toTextOffset);
+        ConsoleTestRunner.selectConsoleMessages(fromMessage, fromTextOffset, toMessage, toTextOffset);
         viewport.refresh();
     }
 }

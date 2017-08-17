@@ -8,12 +8,12 @@ Object = function() {};
 
 function test()
 {
-    InspectorTest.evaluateInConsole("var foo = {bar:2012}; foo", step1);
+    ConsoleTestRunner.evaluateInConsole("var foo = {bar:2012}; foo", step1);
 
     function step1()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 

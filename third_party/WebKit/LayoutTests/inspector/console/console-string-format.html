@@ -22,8 +22,8 @@ function test()
         ["foo%555 bar", ""],
     ];
     for (var i = 0; i < params.length; ++i)
-        InspectorTest.addResult("String.sprintf(" + params[i].join(", ") + ") = \"" + String.sprintf.apply(String, params[i]) + "\"");
-    InspectorTest.completeTest();
+        TestRunner.addResult("String.sprintf(" + params[i].join(", ") + ") = \"" + String.sprintf.apply(String, params[i]) + "\"");
+    TestRunner.completeTest();
 }
 </script>
 </head>

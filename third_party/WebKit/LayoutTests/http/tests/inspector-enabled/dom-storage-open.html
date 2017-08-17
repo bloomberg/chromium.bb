@@ -21,15 +21,15 @@ function test()
 {
     function callback()
     {
-        InspectorTest.domStorageModel().enable();
-        var storages = InspectorTest.domStorageModel().storages();
+        ApplicationTestRunner.domStorageModel().enable();
+        var storages = ApplicationTestRunner.domStorageModel().storages();
         for (var i = 0; i < storages.length; ++i) {
-            InspectorTest.addResult("SecurityOrigin: " + storages[i].securityOrigin);
-            InspectorTest.addResult("IsLocalStorage: " + storages[i].isLocalStorage);
+            TestRunner.addResult("SecurityOrigin: " + storages[i].securityOrigin);
+            TestRunner.addResult("IsLocalStorage: " + storages[i].isLocalStorage);
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
-    InspectorTest.deprecatedRunAfterPendingDispatches(callback);
+    TestRunner.deprecatedRunAfterPendingDispatches(callback);
 }
 
 </script>

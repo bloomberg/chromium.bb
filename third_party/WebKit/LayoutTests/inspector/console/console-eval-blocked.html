@@ -6,11 +6,11 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateInConsole("1+2", step1);
+    ConsoleTestRunner.evaluateInConsole("1+2", step1);
     function step1()
     {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
     }
 }
 </script>
