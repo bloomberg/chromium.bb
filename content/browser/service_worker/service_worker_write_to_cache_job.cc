@@ -80,9 +80,6 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
       resource_id_(resource_id),
       incumbent_resource_id_(incumbent_resource_id),
       version_(version),
-      has_been_killed_(false),
-      did_notify_started_(false),
-      did_notify_finished_(false),
       weak_factory_(this) {
   DCHECK(version_);
   DCHECK(resource_type_ == RESOURCE_TYPE_SCRIPT ||
@@ -114,9 +111,19 @@ void ServiceWorkerWriteToCacheJob::StartAsync() {
     return;
   }
 
-  cache_writer_.reset(new ServiceWorkerCacheWriter(
-      CreateCacheResponseReader(), CreateCacheResponseReader(),
-      CreateCacheResponseWriter()));
+  // Create response readers only when we have to do the byte-for-byte check.
+  std::unique_ptr<ServiceWorkerResponseReader> compare_reader;
+  std::unique_ptr<ServiceWorkerResponseReader> copy_reader;
+  if (ShouldByteForByteCheck()) {
+    compare_reader =
+        context_->storage()->CreateResponseReader(incumbent_resource_id_);
+    copy_reader =
+        context_->storage()->CreateResponseReader(incumbent_resource_id_);
+  }
+  cache_writer_ = base::MakeUnique<ServiceWorkerCacheWriter>(
+      std::move(compare_reader), std::move(copy_reader),
+      context_->storage()->CreateResponseWriter(resource_id_));
+
   version_->script_cache_map()->NotifyStartedCaching(url_, resource_id_);
   did_notify_started_ = true;
   StartNetRequest();
@@ -487,18 +494,9 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   return net_error;
 }
 
-std::unique_ptr<ServiceWorkerResponseReader>
-ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
-  if (incumbent_resource_id_ == kInvalidServiceWorkerResourceId ||
-      !version_->pause_after_download()) {
-    return nullptr;
-  }
-  return context_->storage()->CreateResponseReader(incumbent_resource_id_);
-}
-
-std::unique_ptr<ServiceWorkerResponseWriter>
-ServiceWorkerWriteToCacheJob::CreateCacheResponseWriter() {
-  return context_->storage()->CreateResponseWriter(resource_id_);
+bool ServiceWorkerWriteToCacheJob::ShouldByteForByteCheck() const {
+  return incumbent_resource_id_ != kInvalidServiceWorkerResourceId &&
+         version_->pause_after_download();
 }
 
 }  // namespace content
