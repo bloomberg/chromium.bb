@@ -159,7 +159,6 @@ class FakePrinterDetector : public PrinterDetector {
  public:
   FakePrinterDetector() = default;
   ~FakePrinterDetector() override = default;
-  void Start() override {}
 
   void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
@@ -254,7 +253,8 @@ class CupsPrintersManagerTest : public testing::Test,
         manager_(CupsPrintersManager::Create(&synced_printers_manager_,
                                              &usb_detector_,
                                              &zeroconf_detector_,
-                                             ppd_provider_)) {
+                                             ppd_provider_,
+                                             &event_tracker_)) {
     manager_->AddObserver(this);
   }
 
@@ -286,6 +286,9 @@ class CupsPrintersManagerTest : public testing::Test,
   FakePrinterDetector usb_detector_;
   FakePrinterDetector zeroconf_detector_;
   scoped_refptr<FakePpdProvider> ppd_provider_;
+
+  // This is unused, it's just here for memory ownership.
+  PrinterEventTracker event_tracker_;
 
   // The manager being tested.  This must be declared after the fakes, as its
   // initialization must come after that of the fakes.

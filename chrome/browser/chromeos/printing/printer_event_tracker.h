@@ -11,30 +11,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/printing/printer_detector.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/metrics/proto/printer_event.pb.h"
 
 namespace chromeos {
-
-struct UsbPrinter {
-  UsbPrinter();
-  UsbPrinter(const UsbPrinter& printer);
-  UsbPrinter& operator=(const UsbPrinter& printer);
-
-  ~UsbPrinter();
-
-  // USB MFG string
-  std::string manufacturer;
-  // USB MDL string
-  std::string model;
-  // IEEE1284 Vendor ID
-  int32_t vendor_id;
-  // IEEE1284 Product ID
-  int32_t model_id;
-  // Printer configuration
-  Printer printer;
-};
 
 // Aggregates printer events for logging.
 class PrinterEventTracker : public KeyedService {
@@ -57,7 +39,9 @@ class PrinterEventTracker : public KeyedService {
 
   // Store a succesful USB printer installation. |mode| indicates if
   // the PPD was selected automatically or chosen by the user.
-  void RecordUsbPrinterInstalled(const UsbPrinter& printer, SetupMode mode);
+  void RecordUsbPrinterInstalled(
+      const PrinterDetector::DetectedPrinter& printer,
+      SetupMode mode);
 
   // Store a succesful network printer installation. |mode| indicates if
   // the PPD was selected automatically or chosen by the user.
@@ -67,7 +51,7 @@ class PrinterEventTracker : public KeyedService {
   void RecordSetupAbandoned(const Printer& printer);
 
   // Record an abandoned setup for a USB printer.
-  void RecordUsbSetupAbandoned(const UsbPrinter& printer);
+  void RecordUsbSetupAbandoned(const PrinterDetector::DetectedPrinter& printer);
 
   // Store a printer removal.
   void RecordPrinterRemoved(const Printer& printer);
