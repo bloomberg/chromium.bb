@@ -227,16 +227,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -10864,16 +10855,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -12708,16 +12690,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -13578,16 +13551,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -13615,16 +13579,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -13652,16 +13607,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -13686,16 +13632,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
@@ -13749,16 +13686,7 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--verbose",
-            "--results-json-override-with-build-property",
-            "build_number",
-            "buildnumber",
-            "--results-json-override-with-build-property",
-            "builder_name",
-            "buildername",
-            "--results-json-override-with-build-property",
-            "chromium_revision",
-            "got_revision_cp"
+            "--verbose"
           ],
           "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
