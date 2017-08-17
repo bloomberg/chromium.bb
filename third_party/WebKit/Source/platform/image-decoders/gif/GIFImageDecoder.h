@@ -29,12 +29,12 @@
 #include <memory>
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
+#include "third_party/skia/include/codec/SkCodec.h"
 
 namespace blink {
 
-class GIFImageReader;
-
-using GIFRow = Vector<unsigned char>;
+class SegmentStream;
 
 // This class decodes the GIF image format.
 class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
@@ -44,56 +44,42 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   GIFImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~GIFImageDecoder() override;
 
-  enum GIFParseQuery { kGIFSizeQuery, kGIFFrameCountQuery };
-
   // ImageDecoder:
   String FilenameExtension() const override { return "gif"; }
   void OnSetData(SegmentReader* data) override;
   int RepetitionCount() const override;
   bool FrameIsReceivedAtIndex(size_t) const override;
   float FrameDurationAtIndex(size_t) const override;
-  // CAUTION: SetFailed() deletes |reader_|.  Be careful to avoid
-  // accessing deleted memory, especially when calling this from inside
-  // GIFImageReader!
+  // CAUTION: SetFailed() deletes |codec_|. Be careful to avoid
+  // accessing deleted memory.
   bool SetFailed() override;
 
-  // Callbacks from the GIF reader.
-  bool HaveDecodedRow(size_t frame_index,
-                      GIFRow::const_iterator row_begin,
-                      size_t width,
-                      size_t row_number,
-                      unsigned repeat_count,
-                      bool write_transparent_pixels);
-  bool FrameComplete(size_t frame_index);
-
-  // For testing.
-  bool ParseCompleted() const;
+  size_t ClearCacheExceptFrame(size_t) override;
 
  private:
   // ImageDecoder:
-  void ClearFrameBuffer(size_t frame_index) override;
-  virtual void DecodeSize() { Parse(kGIFSizeQuery); }
+  void DecodeSize() override {}
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;
-
-  // Parses as much as is needed to answer the query, ignoring bitmap
-  // data. If parsing fails, sets the "decode failure" flag.
-  void Parse(GIFParseQuery);
-
-  // Reset the alpha tracker for this frame. Before calling this method, the
-  // caller must verify that the frame exists.
-  void OnInitFrameBuffer(size_t) override;
-
   // When the disposal method of the frame is DisposeOverWritePrevious, the
-  // next frame will use the previous frame's buffer as its starting state, so
+  // next frame will use a previous frame's buffer as its starting state, so
   // we can't take over the data in that case. Before calling this method, the
   // caller must verify that the frame exists.
   bool CanReusePreviousFrameBuffer(size_t) const override;
 
-  bool current_buffer_saw_alpha_;
-  mutable int repetition_count_;
-  std::unique_ptr<GIFImageReader> reader_;
+  // When a frame depends on a previous frame's content, there is a list of
+  // candidate reference frames. This function will find a previous frame from
+  // that list which satisfies the requirements of being a reference frame
+  // (kFrameComplete, not kDisposeOverwritePrevious).
+  // If no frame is found, it returns kNotFound.
+  size_t GetViableReferenceFrameIndex(size_t) const;
+
+  std::unique_ptr<SkCodec> codec_;
+  // |codec_| owns the SegmentStream, but we need access to it to append more
+  // data as it arrives.
+  SegmentStream* segment_stream_;
+  mutable int repetition_count_ = kAnimationLoopOnce;
 };
 
 }  // namespace blink
