@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
@@ -73,6 +74,11 @@ void FilterOutPrinters(std::vector<Printer>* printers,
   printers->resize(new_end - printers->begin());
 }
 
+// Return true if this is a USB printer.
+bool IsUsbPrinter(const Printer& printer) {
+  return base::StringPiece(printer.uri()).starts_with("usb://");
+}
+
 class CupsPrintersManagerImpl : public CupsPrintersManager,
                                 public SyncedPrintersManager::Observer {
  public:
@@ -86,7 +92,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   CupsPrintersManagerImpl(SyncedPrintersManager* synced_printers_manager,
                           PrinterDetector* usb_detector,
                           PrinterDetector* zeroconf_detector,
-                          scoped_refptr<PpdProvider> ppd_provider)
+                          scoped_refptr<PpdProvider> ppd_provider,
+                          PrinterEventTracker* event_tracker)
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
         usb_detector_(usb_detector),
@@ -96,6 +103,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                                           kZeroconfDetector,
                                           zeroconf_detector_),
         ppd_provider_(std::move(ppd_provider)),
+        event_tracker_(event_tracker),
         printers_(kNumPrinterClasses),
         weak_ptr_factory_(this) {
     synced_printers_manager_observer_.Add(synced_printers_manager_);
@@ -118,11 +126,17 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Public API function.
   void UpdateConfiguredPrinter(const Printer& printer) override {
+    // If this is an 'add' instead of just an update, record the event.
+    MaybeRecordInstallation(printer);
     synced_printers_manager_->UpdateConfiguredPrinter(printer);
   }
 
   // Public API function.
   void RemoveConfiguredPrinter(const std::string& printer_id) override {
+    auto existing = synced_printers_manager_->GetPrinter(printer_id);
+    if (existing != nullptr) {
+      event_tracker_->RecordPrinterRemoved(*existing);
+    }
     synced_printers_manager_->RemoveConfiguredPrinter(printer_id);
   }
 
@@ -198,6 +212,66 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
  private:
+  // Look through all sources for the detected printer with the given id.
+  // Return a pointer to the printer on found, null if no entry is found.
+  const PrinterDetector::DetectedPrinter* FindDetectedPrinter(
+      const std::string& id) const {
+    for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
+      for (const auto& detected : *printer_list) {
+        if (detected.printer.id() == id) {
+          return &detected;
+        }
+      }
+    }
+    return nullptr;
+  }
+
+  void MaybeRecordInstallation(const Printer& printer) {
+    if (synced_printers_manager_->GetPrinter(printer.id()) != nullptr) {
+      // It's just an update, not a new installation, so don't record an event.
+      return;
+    }
+    // Get the associated detection record if one exists.
+    const auto* detected = FindDetectedPrinter(printer.id());
+
+    // For compatibility with the previous implementation, record USB printers
+    // seperately from other IPP printers.  Eventually we may want to shift
+    // this to be split by autodetected/not autodetected instead of USB/other
+    // IPP.
+    if (IsUsbPrinter(printer)) {
+      // If it's a usb printer, we should have the full DetectedPrinter.  We
+      // can't log the printer if we don't have it.
+      if (detected == nullptr) {
+        LOG(WARNING) << "Failed to find USB printer " << printer.id()
+                     << " for installation event logging";
+        return;
+      }
+      // For recording purposes, this is an automatic install if the ppd
+      // reference generated at detection time is the is the one we actually
+      // used -- i.e. the user didn't have to change anything to obtain a ppd
+      // that worked.
+      PrinterEventTracker::SetupMode mode;
+      if (printer.ppd_reference() == detected->printer.ppd_reference()) {
+        mode = PrinterEventTracker::kAutomatic;
+      } else {
+        mode = PrinterEventTracker::kUser;
+      }
+      event_tracker_->RecordUsbPrinterInstalled(*detected, mode);
+    } else {
+      PrinterEventTracker::SetupMode mode;
+      if (detected != nullptr &&
+          (detected->printer.ppd_reference().autoconf ||
+           (detected->printer.ppd_reference() == printer.ppd_reference()))) {
+        // A printer is automatic if we successfully used IPP Anywhere or we
+        // auto-grabbed a ppd reference that worked.
+        mode = PrinterEventTracker::kAutomatic;
+      } else {
+        mode = PrinterEventTracker::kUser;
+      }
+      event_tracker_->RecordIppPrinterInstalled(printer, mode);
+    }
+  }
+
   // Return whether or not we believe this printer is currently available for
   // printing.  This is not a perfect test -- we just assume any IPP printers
   // are available because, in cases where there are a large number of
@@ -251,6 +325,20 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
   }
 
+  void RecordSetupAbandoned(const Printer& printer) override {
+    if (IsUsbPrinter(printer)) {
+      const auto* detected = FindDetectedPrinter(printer.id());
+      if (detected == nullptr) {
+        LOG(WARNING) << "Failed to find USB printer " << printer.id()
+                     << " for abandoned event logging";
+        return;
+      }
+      event_tracker_->RecordUsbSetupAbandoned(*detected);
+    } else {
+      event_tracker_->RecordSetupAbandoned(printer);
+    }
+  }
+
   // Rebuild the Automatic and Discovered printers lists.
   void RebuildDetectedLists() {
     printers_[kAutomatic].clear();
@@ -299,6 +387,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   scoped_refptr<PpdProvider> ppd_provider_;
 
+  // Not owned
+  PrinterEventTracker* event_tracker_;
+
   // Categorized printers.  This is indexed by PrinterClass.
   std::vector<std::vector<Printer>> printers_;
 
@@ -321,6 +412,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   std::unordered_set<std::string> configured_printer_ids_;
 
   base::ObserverList<CupsPrintersManager::Observer> observer_list_;
+
   base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_;
 };
 
@@ -335,7 +427,6 @@ void PrinterDetectorObserverProxy::OnPrintersFound(
 class ZeroconfDetectorStub : public PrinterDetector {
  public:
   ~ZeroconfDetectorStub() override {}
-  void Start() override {}
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
   std::vector<DetectedPrinter> GetPrinters() override {
@@ -358,7 +449,8 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
       SyncedPrintersManagerFactory::GetInstance()->GetForBrowserContext(
           profile),
       UsbPrinterDetectorFactory::GetInstance()->Get(profile),
-      ZeroconfDetectorStub::GetInstance(), CreatePpdProvider(profile));
+      ZeroconfDetectorStub::GetInstance(), CreatePpdProvider(profile),
+      PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile));
 }
 
 // static
@@ -366,10 +458,11 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
     SyncedPrintersManager* synced_printers_manager,
     PrinterDetector* usb_detector,
     PrinterDetector* zeroconf_detector,
-    scoped_refptr<PpdProvider> ppd_provider) {
+    scoped_refptr<PpdProvider> ppd_provider,
+    PrinterEventTracker* event_tracker) {
   return base::MakeUnique<CupsPrintersManagerImpl>(
       synced_printers_manager, usb_detector, zeroconf_detector,
-      std::move(ppd_provider));
+      std::move(ppd_provider), event_tracker);
 }
 
 }  // namespace chromeos

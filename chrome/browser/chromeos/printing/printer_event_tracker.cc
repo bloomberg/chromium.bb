@@ -36,11 +36,15 @@ void SetPpdInfo(metrics::PrinterEventProto* event,
 
 // Add information to |event| specific to |usb_printer|.
 void SetUsbInfo(metrics::PrinterEventProto* event,
-                const UsbPrinter& usb_printer) {
-  event->set_usb_vendor_id(usb_printer.vendor_id);
-  event->set_usb_model_id(usb_printer.model_id);
-  event->set_usb_printer_manufacturer(usb_printer.manufacturer);
-  event->set_usb_printer_model(usb_printer.model);
+                const PrinterDetector::DetectedPrinter& detected) {
+  event->set_usb_vendor_id(detected.ppd_search_data.usb_vendor_id);
+  event->set_usb_model_id(detected.ppd_search_data.usb_product_id);
+
+  // TODO(skau) - Pull USB-specific manufacturer/model strings directly into
+  // DetectedPrinter and supply those here instead of the deprecated Printer
+  // fields.
+  event->set_usb_printer_manufacturer(detected.printer.manufacturer());
+  event->set_usb_printer_model(detected.printer.model());
 }
 
 // Add information to the |event| that only network printers have.
@@ -53,26 +57,6 @@ void SetNetworkPrinterInfo(metrics::PrinterEventProto* event,
 
 }  // namespace
 
-UsbPrinter::UsbPrinter() = default;
-
-UsbPrinter::UsbPrinter(const UsbPrinter& other)
-    : manufacturer(other.manufacturer),
-      model(other.model),
-      vendor_id(other.vendor_id),
-      model_id(other.model_id),
-      printer(other.printer) {}
-
-UsbPrinter& UsbPrinter::operator=(const UsbPrinter& other) {
-  manufacturer = other.manufacturer;
-  model = other.model;
-  vendor_id = other.vendor_id;
-  model_id = other.model_id;
-  printer = other.printer;
-  return *this;
-}
-
-UsbPrinter::~UsbPrinter() = default;
-
 PrinterEventTracker::PrinterEventTracker() = default;
 PrinterEventTracker::~PrinterEventTracker() = default;
 
@@ -81,17 +65,16 @@ void PrinterEventTracker::set_logging(bool logging) {
 }
 
 void PrinterEventTracker::RecordUsbPrinterInstalled(
-    const UsbPrinter& usb_printer,
+    const PrinterDetector::DetectedPrinter& detected,
     SetupMode mode) {
   if (!logging_) {
     return;
   }
 
-  const Printer& printer = usb_printer.printer;
   metrics::PrinterEventProto event;
   SetEventType(&event, mode);
-  SetPpdInfo(&event, printer.ppd_reference());
-  SetUsbInfo(&event, usb_printer);
+  SetPpdInfo(&event, detected.printer.ppd_reference());
+  SetUsbInfo(&event, detected);
   events_.push_back(event);
 }
 
@@ -108,14 +91,15 @@ void PrinterEventTracker::RecordIppPrinterInstalled(const Printer& printer,
   events_.push_back(event);
 }
 
-void PrinterEventTracker::RecordUsbSetupAbandoned(const UsbPrinter& printer) {
+void PrinterEventTracker::RecordUsbSetupAbandoned(
+    const PrinterDetector::DetectedPrinter& detected) {
   if (!logging_) {
     return;
   }
 
   metrics::PrinterEventProto event;
   event.set_event_type(metrics::PrinterEventProto::SETUP_ABANDONED);
-  SetUsbInfo(&event, printer);
+  SetUsbInfo(&event, detected);
   events_.push_back(event);
 }
 
