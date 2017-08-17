@@ -232,7 +232,7 @@ Polymer({
         polymerIcon: 'oobe-welcome-20:add-cellular',
         customData: {
           onTap: function() {
-            self.OpenAddWiFiNetworkDialog_();
+            self.OpenAddMobileNetworkDialog_();
           },
         },
       },
