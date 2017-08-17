@@ -9,7 +9,6 @@ typemaps = [
   "//cc/ipc/filter_operations.typemap",
   "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",
-  "//cc/ipc/shared_quad_state.typemap",
   "//cc/ipc/surface_id.typemap",
   "//cc/ipc/texture_mailbox.typemap",
 ]

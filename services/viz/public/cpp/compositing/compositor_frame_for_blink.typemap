@@ -7,7 +7,6 @@ public_headers = [ "//cc/output/compositor_frame.h" ]
 traits_headers = [
   "//cc/ipc/filter_operation_struct_traits.h",
   "//cc/ipc/filter_operations_struct_traits.h",
-  "//cc/ipc/shared_quad_state_struct_traits.h",
   "//gpu/ipc/common/mailbox_holder_struct_traits.h",
   "//gpu/ipc/common/mailbox_struct_traits.h",
   "//gpu/ipc/common/sync_token_struct_traits.h",
@@ -18,6 +17,7 @@ traits_headers = [
   "//services/viz/public/cpp/compositing/quads_struct_traits.h",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.h",
   "//services/viz/public/cpp/compositing/selection_struct_traits.h",
+  "//services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h",
   "//services/viz/public/cpp/compositing/transferable_resource_struct_traits.h",
   "//skia/public/interfaces/image_filter_struct_traits.h",
   "//ui/gfx/mojo/selection_bound_struct_traits.h",

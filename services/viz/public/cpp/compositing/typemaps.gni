@@ -10,6 +10,7 @@ typemaps = [
   "//services/viz/public/cpp/compositing/resource_settings.typemap",
   "//services/viz/public/cpp/compositing/returned_resource.typemap",
   "//services/viz/public/cpp/compositing/selection.typemap",
+  "//services/viz/public/cpp/compositing/shared_quad_state.typemap",
   "//services/viz/public/cpp/compositing/surface_sequence.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
   "//services/viz/public/cpp/compositing/transferable_resource.typemap",
