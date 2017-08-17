@@ -9945,8 +9945,7 @@
   },
   "Fuchsia": {
     "additional_compile_targets": [
-      "gl_unittests",
-      "service_manager_unittests"
+      "gl_unittests"
     ],
     "gtest_tests": [
       {
@@ -10035,6 +10034,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "service_manager_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "skia_unittests"
       },
       {
@@ -10052,8 +10057,7 @@
     "additional_compile_targets": [
       "gl_unittests",
       "media_unittests",
-      "net_unittests",
-      "service_manager_unittests"
+      "net_unittests"
     ],
     "gtest_tests": [
       {
@@ -10124,6 +10128,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "mojo_system_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "service_manager_unittests"
       },
       {
         "swarming": {
