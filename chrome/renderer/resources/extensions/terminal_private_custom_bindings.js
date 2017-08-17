@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var binding = require('binding').Binding.create('terminalPrivate');
-var eventBindings = require('event_bindings');
+var binding = apiBridge || require('binding').Binding.create('terminalPrivate');
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 
 // Custom bindings for chrome.terminalPrivate API.
-eventBindings.registerArgumentMassager('terminalPrivate.onProcessOutput',
-    function(args, dispatch) {
+registerArgumentMassager('terminalPrivate.onProcessOutput',
+                         function(args, dispatch) {
   var tabId = args[0];
   var terminalId = args[1];
   try {
@@ -18,4 +20,5 @@ eventBindings.registerArgumentMassager('terminalPrivate.onProcessOutput',
   }
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

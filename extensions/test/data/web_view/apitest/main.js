@@ -1680,10 +1680,9 @@ function testWebRequestAPIWithHeaders() {
 }
 
 function testWebRequestAPIExistence() {
-  var apiPropertiesToCheck = [
+  var regularEventsToCheck = [
     // Declarative WebRequest API.
     'onMessage',
-    'onRequest',
     // WebRequest API.
     'onBeforeRequest',
     'onBeforeSendHeaders',
@@ -1695,24 +1694,24 @@ function testWebRequestAPIExistence() {
     'onCompleted',
     'onErrorOccurred'
   ];
+  var declarativeEventsToCheck = [
+    'onRequest',
+  ];
   var webview = document.createElement('webview');
   webview.setAttribute('partition', arguments.callee.name);
   webview.addEventListener('loadstop', function(e) {
-    for (var i = 0; i < apiPropertiesToCheck.length; ++i) {
-      embedder.test.assertEq('object',
-                             typeof webview.request[apiPropertiesToCheck[i]]);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].addListener);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].addRules);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].getRules);
-      embedder.test.assertEq(
-          'function',
-          typeof webview.request[apiPropertiesToCheck[i]].removeRules);
+    for (var i = 0; i < regularEventsToCheck.length; ++i) {
+      var eventName = regularEventsToCheck[i];
+      var event = webview.request[eventName];
+      embedder.test.assertEq('object', typeof event);
+      embedder.test.assertEq('function', typeof event.addListener);
+    }
+    for (var i = 0; i < declarativeEventsToCheck.length; ++i) {
+      var eventName = declarativeEventsToCheck[i];
+      var event = webview.request[eventName];
+      embedder.test.assertEq('function', typeof event.addRules);
+      embedder.test.assertEq('function', typeof event.getRules);
+      embedder.test.assertEq('function', typeof event.removeRules);
     }
 
     // Try to overwrite webview.request, shall not succeed.

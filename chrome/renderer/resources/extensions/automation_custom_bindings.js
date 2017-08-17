@@ -5,11 +5,12 @@
 // Custom bindings for the automation API.
 var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
-var automation = require('binding').Binding.create('automation');
+var automation = apiBridge || require('binding').Binding.create('automation');
 var automationInternal =
-    require('binding').Binding.create('automationInternal').generate();
+    getInternalApi ?
+        getInternalApi('automationInternal') :
+        require('binding').Binding.create('automationInternal').generate();
 var exceptionHandler = require('uncaught_exception_handler');
-var lastError = require('lastError');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
 var GetRoutingID = nativeAutomationInternal.GetRoutingID;
@@ -22,6 +23,12 @@ var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
+
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function hasLastError() {
+  return bindingUtil ?
+      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
+}
 
 /**
  * A namespace to export utility functions to other files in automation.
@@ -114,7 +121,7 @@ automation.registerCustomHook(function(bindingsAPI) {
     var params = { routingID: routingID, tabID: tabID };
     automationInternal.enableTab(params,
         function onEnable(id) {
-          if (lastError.hasError(chrome)) {
+          if (hasLastError()) {
             callback();
             return;
           }
@@ -137,7 +144,7 @@ automation.registerCustomHook(function(bindingsAPI) {
       // TODO(dtseng): Disable desktop tree once desktop object goes out of
       // scope.
       automationInternal.enableDesktop(routingID, function() {
-        if (lastError.hasError(chrome)) {
+        if (hasLastError()) {
           AutomationRootNode.destroy(DESKTOP_TREE_ID);
           callback();
           return;
@@ -357,5 +364,5 @@ automationInternal.onAccessibilityTreeSerializationError.addListener(
   automationInternal.enableFrame(id);
 });
 
-var binding = automation.generate();
-exports.$set('binding', binding);
+if (!apiBridge)
+  exports.$set('binding', automation.generate());

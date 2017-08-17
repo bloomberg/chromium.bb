@@ -4,8 +4,11 @@
 
 // Custom binding for the webrtcDesktopCapturePrivate API.
 
-var binding = require('binding').Binding.create('webrtcDesktopCapturePrivate');
-var sendRequest = require('sendRequest').sendRequest;
+var binding = apiBridge ||
+              require('binding').Binding.create('webrtcDesktopCapturePrivate');
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 var idGenerator = requireNative('id_generator');
 
 binding.registerCustomHook(function(bindingsAPI) {
@@ -25,18 +28,23 @@ binding.registerCustomHook(function(bindingsAPI) {
                                 function(sources, request, callback) {
     var id = idGenerator.GetNextId();
     pendingRequests[id] = callback;
-    sendRequest(this.name,
-                [id, sources, request, onRequestResult.bind(null, id)],
-                this.definition.parameters);
+    sendRequest('webrtcDesktopCapturePrivate.chooseDesktopMedia',
+                [id, sources, request,
+                 $Function.bind(onRequestResult, null, id)],
+                bindingUtil ? undefined : this.definition.parameters,
+                undefined);
     return id;
   });
 
   apiFunctions.setHandleRequest('cancelChooseDesktopMedia', function(id) {
     if (id in pendingRequests) {
       delete pendingRequests[id];
-      sendRequest(this.name, [id], this.definition.parameters);
+      sendRequest('webrtcDesktopCapturePrivate.cancelChooseDesktopMedia', [id],
+                  bindingUtil ? undefined : this.definition.parameters,
+                  undefined);
     }
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

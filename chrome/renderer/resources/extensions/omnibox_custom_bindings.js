@@ -5,10 +5,15 @@
 // Custom binding for the omnibox API. Only injected into the v8 contexts
 // for extensions which have permission for the omnibox API.
 
-var binding = require('binding').Binding.create('omnibox');
+var binding = apiBridge || require('binding').Binding.create('omnibox');
 
-var eventBindings = require('event_bindings');
-var sendRequest = require('sendRequest').sendRequest;
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
+
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 
 // Remove invalid characters from |text| so that it is suitable to use
 // for |AutocompleteMatch::contents|.
@@ -95,7 +100,9 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setHandleRequest('setDefaultSuggestion', function(details) {
     var parseResult = parseOmniboxDescription(details.description);
-    sendRequest(this.name, [parseResult], this.definition.parameters);
+    sendRequest('omnibox.setDefaultSuggestion', [parseResult],
+                bindingUtil ? undefined : this.definition.parameters,
+                undefined);
   });
 
   apiFunctions.setUpdateArgumentsPostValidate(
@@ -111,8 +118,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-eventBindings.registerArgumentMassager('omnibox.onInputChanged',
-    function(args, dispatch) {
+registerArgumentMassager('omnibox.onInputChanged', function(args, dispatch) {
   var text = args[0];
   var requestId = args[1];
   var suggestCallback = function(suggestions) {
@@ -121,4 +127,5 @@ eventBindings.registerArgumentMassager('omnibox.onInputChanged',
   dispatch([text, suggestCallback]);
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

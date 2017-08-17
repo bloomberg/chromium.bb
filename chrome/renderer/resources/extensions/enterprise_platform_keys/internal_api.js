@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var binding = require('binding')
-                  .Binding.create('enterprise.platformKeysInternal')
-                  .generate();
+var binding =
+    getInternalApi ?
+        getInternalApi('enterprise.platformKeysInternal') :
+        require('binding').Binding.create('enterprise.platformKeysInternal')
+            .generate();
 
 exports.$set('getTokens', binding.getTokens);
 exports.$set('generateKey', binding.generateKey);

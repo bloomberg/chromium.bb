@@ -4,7 +4,7 @@
 
 // Custom binding for the GCM API.
 
-var binding = require('binding').Binding.create('gcm');
+var binding = apiBridge || require('binding').Binding.create('gcm');
 var forEach = require('utils').forEach;
 
 binding.registerCustomHook(function(bindingsAPI) {
@@ -41,4 +41,5 @@ binding.registerCustomHook(function(bindingsAPI) {
     });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

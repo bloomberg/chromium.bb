@@ -4,7 +4,8 @@
 
 // Custom binding for the image writer private API.
 
-var binding = require('binding').Binding.create('imageWriterPrivate');
+var binding =
+    apiBridge || require('binding').Binding.create('imageWriterPrivate');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -17,4 +18,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

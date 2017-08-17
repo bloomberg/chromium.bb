@@ -6,17 +6,15 @@ var nativeDeepCopy = requireNative('utils').deepCopy;
 var logActivity = requireNative('activityLogger');
 var exceptionHandler = require('uncaught_exception_handler');
 
-var runCallbackWithLastError;
-if (bindingUtil) {
-  runCallbackWithLastError = function(name, message, stack, callback, args) {
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function runCallbackWithLastError(name, message, stack, callback, args) {
+  if (bindingUtil) {
     bindingUtil.runCallbackWithLastError(message, function() {
       $Function.apply(callback, null, args);
     });
+  } else {
+    jsLastError.run(name, message, stack, callback, args);
   }
-} else {
-  var lastError = require('lastError');
-  if (lastError)  // lastError can be undefined in unittests.
-    runCallbackWithLastError = lastError.run;
 }
 
 /**

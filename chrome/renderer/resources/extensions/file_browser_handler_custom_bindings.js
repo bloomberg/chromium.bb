@@ -4,16 +4,22 @@
 
 // Custom binding for the fileBrowserHandler API.
 
-var binding = require('binding').Binding.create('fileBrowserHandler');
+var binding =
+    apiBridge || require('binding').Binding.create('fileBrowserHandler');
 
-var eventBindings = require('event_bindings');
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
-var fileBrowserHandlerInternal = require('binding').Binding.create(
-    'fileBrowserHandlerInternal').generate();
+var fileBrowserHandlerInternal =
+    getInternalApi ?
+        getInternalApi('fileBrowserHandlerInternal') :
+        require('binding').Binding.create('fileBrowserHandlerInternal')
+            .generate();
 
-eventBindings.registerArgumentMassager('fileBrowserHandler.onExecute',
-    function(args, dispatch) {
+registerArgumentMassager('fileBrowserHandler.onExecute',
+                         function(args, dispatch) {
   if (args.length < 2) {
     dispatch(args);
     return;
@@ -54,4 +60,5 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

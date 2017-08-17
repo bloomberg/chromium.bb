@@ -63,4 +63,5 @@ binding.registerCustomHook(function(api) {
       });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());
