@@ -370,7 +370,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
     RunLoop(status);
     return;
   }
-  delegate_->OnStreamFailed(status, used_ssl_config);
+  delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config);
 }
 
 void HttpStreamFactoryImpl::JobController::OnCertificateError(
@@ -1046,7 +1046,7 @@ void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
 void HttpStreamFactoryImpl::JobController::NotifyRequestFailed(int rv) {
   if (!request_)
     return;
-  delegate_->OnStreamFailed(rv, server_ssl_config_);
+  delegate_->OnStreamFailed(rv, NetErrorDetails(), server_ssl_config_);
 }
 
 GURL HttpStreamFactoryImpl::JobController::ApplyHostMappingRules(
