@@ -1529,6 +1529,12 @@ template("ios_xctest_bundle") {
         OTHER_LDFLAGS = "-help"
         ONLY_ACTIVE_ARCH = "YES"
         DEBUG_INFORMATION_FORMAT = "dwarf"
+
+        # For XCUITest, Xcode requires specifying the host application name via
+        # the TEST_TARGET_NAME attribute.
+        if (invoker.product_type == "com.apple.product-type.bundle.ui-testing") {
+          TEST_TARGET_NAME = invoker.xcode_test_application_name
+        }
       }
 
       deps = [
@@ -1785,6 +1791,9 @@ template("ios_xcuitest_test_runner_bundle") {
 #       list of labels to depends on, these values are used to create the
 #       xctest dynamic library.
 #
+#   xcode_test_application_name:
+#       string, name of the test application for the ui test target.
+#
 # This template defines two targets, one named "${target_name}_module" is the
 # xctest dynamic library, and the other named "${target_name}_runner" is the
 # test runner application bundle.
@@ -1794,6 +1803,8 @@ template("ios_xcuitest_test") {
          "ios_xcuitest_test is incomplete and should not be used, see " +
              "crbug.com/709289 for tracking")
   assert(defined(invoker.deps), "deps must be defined for $target_name")
+  assert(defined(invoker.xcode_test_application_name),
+         "xcode_test_application_name must be defined for $target_name")
 
   _xcuitest_target = target_name
   _xcuitest_runner_target = _xcuitest_target + "_runner"
@@ -1809,6 +1820,8 @@ template("ios_xcuitest_test") {
 
   _xcuitest_module_output = _xcuitest_target
   ios_xctest_bundle(_xcuitest_module_target) {
+    forward_variables_from(invoker, [ "xcode_test_application_name" ])
+
     product_type = "com.apple.product-type.bundle.ui-testing"
     host_target = _xcuitest_runner_target
     output_name = _xcuitest_module_output
