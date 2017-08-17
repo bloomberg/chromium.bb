@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                                                    &opened_window));
   EXPECT_FALSE(opened_window);
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           1);
+                           0);
   // Make sure the popup UI was shown.
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           1);
+                           0);
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));

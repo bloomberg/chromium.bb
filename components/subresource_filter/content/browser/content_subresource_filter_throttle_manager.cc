@@ -257,8 +257,6 @@ bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow(
     should_block = open_url_params->triggering_event_info ==
                    blink::WebTriggeringEventInfo::kFromUntrustedEvent;
   }
-  if (should_block)
-    delegate_->OnFirstSubresourceLoadDisallowed();
   return should_block;
 }
 
