@@ -476,10 +476,8 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     if (!has_br(qcoeff[coeff_idx])) continue;
     int *br_count = txb_cache->br_count_arr + coeff_idx;
     int *br_mag = txb_cache->br_mag_arr[coeff_idx];
-    *br_count = get_level_count(qcoeff, bwl, height, row, col, NUM_BASE_LEVELS,
-                                br_ref_offset, BR_CONTEXT_POSITION_NUM);
-    get_mag(br_mag, qcoeff, bwl, height, row, col, br_ref_offset,
-            BR_CONTEXT_POSITION_NUM);
+    *br_count = get_br_count_mag(br_mag, qcoeff, bwl, height, row, col,
+                                 NUM_BASE_LEVELS);
     txb_cache->br_ctx_arr[coeff_idx] =
         get_br_ctx_from_count_mag(row, col, *br_count, br_mag[0]);
   }

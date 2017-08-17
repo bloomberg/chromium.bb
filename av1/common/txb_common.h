@@ -179,6 +179,33 @@ static int br_level_map[9] = {
 #define BR_MAG_OFFSET 1
 // TODO(angiebird): optimize this function by using a table to map from
 // count/mag to ctx
+
+static INLINE int get_br_count_mag(int *mag, const tran_low_t *tcoeffs, int bwl,
+                                   int height, int row, int col, int level) {
+  mag[0] = 0;
+  mag[1] = 0;
+  int count = 0;
+  for (int idx = 0; idx < BR_CONTEXT_POSITION_NUM; ++idx) {
+    const int ref_row = row + br_ref_offset[idx][0];
+    const int ref_col = col + br_ref_offset[idx][1];
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl))
+      continue;
+    const int pos = (ref_row << bwl) + ref_col;
+    tran_low_t abs_coeff = abs(tcoeffs[pos]);
+    count += abs_coeff > level;
+    if (br_ref_offset[idx][0] >= 0 && br_ref_offset[idx][1] >= 0) {
+      if (abs_coeff > mag[0]) {
+        mag[0] = abs_coeff;
+        mag[1] = 1;
+      } else if (abs_coeff == mag[0]) {
+        ++mag[1];
+      }
+    }
+  }
+  return count;
+}
+
 static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
                                             int mag) {
   int offset = 0;
