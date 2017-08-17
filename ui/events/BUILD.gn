@@ -409,7 +409,6 @@ if (!is_ios) {
         "blink/input_scroll_elasticity_controller_unittest.cc",
         "blink/web_input_event_traits_unittest.cc",
         "blink/web_input_event_unittest.cc",
-        "devices/device_data_manager_unittest.cc",
         "devices/mojo/device_struct_traits_unittest.cc",
         "devices/mojo/touch_device_transform_struct_traits_unittest.cc",
         "gestures/blink/web_gesture_curve_impl_unittest.cc",
@@ -446,6 +445,10 @@ if (!is_ios) {
         "//ui/events/x",
         "//ui/gfx/x",
       ]
+    }
+
+    if (use_x11 || use_ozone) {
+      sources += [ "devices/device_data_manager_unittest.cc" ]
     }
 
     if (use_ozone) {

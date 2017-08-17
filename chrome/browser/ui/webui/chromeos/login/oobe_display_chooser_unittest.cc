@@ -41,6 +41,14 @@ class OobeDisplayChooserTest : public ash::AshTestBase {
     manager->OnTouchscreenDevicesUpdated(devices);
   }
 
+  // ash::AshTestBase:
+  void SetUp() override {
+    ash::AshTestBase::SetUp();
+    static_cast<ui::DeviceHotplugEventObserver*>(
+        ui::DeviceDataManager::GetInstance())
+        ->OnDeviceListsComplete();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OobeDisplayChooserTest);
 };
