@@ -3142,13 +3142,9 @@ crbug.com/753462 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html
 
 crbug.com/746904 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
 
-crbug.com/754819 external/wpt/longtask-timing/longtask-attributes.html [ Failure ]
-crbug.com/754819 external/wpt/longtask-timing/longtask-in-childiframe-crossorigin.html [ Failure Timeout ]
-crbug.com/754819 external/wpt/longtask-timing/longtask-in-childiframe.html [ Failure ]
-crbug.com/754819 external/wpt/longtask-timing/longtask-in-externalscript.html [ Failure ]
-crbug.com/754819 external/wpt/longtask-timing/longtask-in-raf.html [ Failure ]
+crbug.com/754819 external/wpt/longtask-timing/longtask-in-childiframe-crossorigin.html [ Timeout ]
 crbug.com/754819 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Timeout ]
-crbug.com/754819 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Failure Timeout ]
+crbug.com/754819 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
