@@ -270,6 +270,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         item.value = field.displayValue;
         item.required = field.isRequired;
         item.autofillUIType = field.autofillUIType;
+        item.accessibilityTraits |= UIAccessibilityTraitButton;
         item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
         [model addItem:item toSectionWithIdentifier:sectionIdentifier];
         field.item = item;
