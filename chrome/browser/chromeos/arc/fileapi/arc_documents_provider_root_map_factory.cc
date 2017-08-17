@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map_factory.h"
 
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace arc {
@@ -46,13 +46,20 @@ ArcDocumentsProviderRootMapFactory::GetBrowserContextToUse(
 
 KeyedService* ArcDocumentsProviderRootMapFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
+  auto* arc_service_manager = ArcServiceManager::Get();
 
-  // Check if ARC is allowed for this profile.
-  if (!arc::IsArcAllowedForProfile(profile))
+  // Practically, this is in testing case.
+  if (!arc_service_manager) {
+    VLOG(2) << "ArcServiceManager is not available.";
     return nullptr;
+  }
 
-  return new ArcDocumentsProviderRootMap(profile);
+  if (arc_service_manager->browser_context() != context) {
+    VLOG(2) << "Non ARC allowed browser context.";
+    return nullptr;
+  }
+
+  return new ArcDocumentsProviderRootMap(Profile::FromBrowserContext(context));
 }
 
 }  // namespace arc
