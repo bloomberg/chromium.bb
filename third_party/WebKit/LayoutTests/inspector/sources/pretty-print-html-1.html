@@ -8,9 +8,9 @@
 
 function test()
 {
-    var testFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/html");
+    var testFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/html");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function simpleHTML(next)
         {
             var mappingQueries = ["</head>", "test", "</title>"];

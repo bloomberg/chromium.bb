@@ -12,17 +12,17 @@ var test = function()
         watchExpressionsPane.doUpdate();
         watchExpressionsPane._createWatchExpression("#$%");
         watchExpressionsPane._saveExpressions();
-        InspectorTest.deprecatedRunAfterPendingDispatches(step1);
+        TestRunner.deprecatedRunAfterPendingDispatches(step1);
     });
 
 
     function step1()
     {
-        InspectorTest.addResult(watchExpressionsPane.contentElement.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
+        TestRunner.addResult(watchExpressionsPane.contentElement.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
 
         // Clear watch expressions after execution.
         watchExpressionsPane._deleteAllButtonClicked();
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

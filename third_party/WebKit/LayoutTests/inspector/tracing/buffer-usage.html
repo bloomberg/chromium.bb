@@ -16,14 +16,14 @@ function test()
         {
             if (!controller)
                 return;
-            InspectorTest.addResult("TimelineControllerClient.recordingProgress");
+            TestRunner.addResult("TimelineControllerClient.recordingProgress");
             controller.stopRecording();
             controller = null;
         },
 
         loadingStarted: function()
         {
-            InspectorTest.addResult("TimelineControllerClient.loadingStarted");
+            TestRunner.addResult("TimelineControllerClient.loadingStarted");
         },
 
         loadingProgress: function()
@@ -31,24 +31,24 @@ function test()
             if (this._hadLoadingProgress)
                 return;
             this._hadLoadingProgress = true;
-            InspectorTest.addResult("TimelineControllerClient.loadingProgress");
+            TestRunner.addResult("TimelineControllerClient.loadingProgress");
         },
 
         processingStarted: function()
         {
-            InspectorTest.addResult("TimelineControllerClient.processingStarted");
+            TestRunner.addResult("TimelineControllerClient.processingStarted");
         },
 
         loadingComplete: function()
         {
-            InspectorTest.addResult("TimelineControllerClient.loadingComplete");
-            InspectorTest.completeTest();
+            TestRunner.addResult("TimelineControllerClient.loadingComplete");
+            TestRunner.completeTest();
         }
     };
     var performanceModel = new Timeline.PerformanceModel();
-    var controller = new Timeline.TimelineController(InspectorTest.tracingManager, performanceModel, new TestTimelineControllerClient());
+    var controller = new Timeline.TimelineController(TestRunner.tracingManager, performanceModel, new TestTimelineControllerClient());
     controller.startRecording({}, []).then(() => {
-        InspectorTest.addResult("TimelineControllerClient.recordingStarted");
+        TestRunner.addResult("TimelineControllerClient.recordingStarted");
     });
 }
 

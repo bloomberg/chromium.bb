@@ -13,9 +13,9 @@ function initialize_ProductsExperiment()
 async function test()
 {
     await ProductRegistry.instance();
-    InspectorTest.resetProductRegistry();
-    InspectorTest.addProductRegistryEntry("*.google.com", "Google");
-    InspectorTest.addResult("");
+    NetworkTestRunner.resetProductRegistry();
+    NetworkTestRunner.addProductRegistryEntry("*.google.com", "Google");
+    TestRunner.addResult("");
 
     var sessionId = "6.23";
     var rawTraceEvents = [
@@ -614,7 +614,7 @@ async function test()
     ];
 
     var timeline = UI.panels.timeline;
-    timeline._setModel(InspectorTest.createPerformanceModelWithEvents(rawTraceEvents));
+    timeline._setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
     timeline.requestWindowTimes(0, Infinity);
     await ProductRegistry.instance();
@@ -624,7 +624,7 @@ async function test()
         testEventTree("BottomUp", grouping);
     }
     testEventTree("EventLog");
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function getTreeView(type)
     {
@@ -638,13 +638,13 @@ async function test()
 
     function testEventTree(type, grouping)
     {
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
         var tree = getTreeView(type);
         if (grouping) {
-            InspectorTest.addResult(type + "  Group by: " + grouping);
+            TestRunner.addResult(type + "  Group by: " + grouping);
             tree._groupBySetting.set(grouping);
         } else {
-            InspectorTest.addResult(type);
+            TestRunner.addResult(type);
         }
         var rootNode = tree._dataGrid.rootNode();
         for (var node of rootNode.children)
@@ -661,7 +661,7 @@ async function test()
                       ? UI.beautifyFunctionName(node.event.args["data"]["functionName"])
                       : Timeline.TimelineUIUtils.eventTitle(node.event);
         }
-        InspectorTest.addResult("  ".repeat(padding) + `${name}: ${node.selfTime.toFixed(3)}  ${node.totalTime.toFixed(3)}`);
+        TestRunner.addResult("  ".repeat(padding) + `${name}: ${node.selfTime.toFixed(3)}  ${node.totalTime.toFixed(3)}`);
         node.children().forEach(printEventTree.bind(null, padding + 1));
     }
 }

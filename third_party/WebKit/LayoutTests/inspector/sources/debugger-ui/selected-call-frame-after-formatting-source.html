@@ -18,39 +18,39 @@ function testFunction2()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
     var panel = UI.panels.sources;
     var sourceFrame;
 
     function step1()
     {
-        var testName = InspectorTest.mainTarget.inspectedURL();
+        var testName = TestRunner.mainTarget.inspectedURL();
         testName = testName.substring(testName.lastIndexOf('/') + 1);
-        InspectorTest.showScriptSource(testName, step2);
+        SourcesTestRunner.showScriptSource(testName, step2);
     }
 
     function step2(frame)
     {
         sourceFrame = frame;
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step3);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step3);
     }
 
     function step3()
     {
-        InspectorTest.completeDebuggerTest(); return;
-        InspectorTest.debuggerModel.setSelectedCallFrame(InspectorTest.debuggerModel.debuggerPausedDetails().callFrames[1]);
+        SourcesTestRunner.completeDebuggerTest(); return;
+        TestRunner.debuggerModel.setSelectedCallFrame(TestRunner.debuggerModel.debuggerPausedDetails().callFrames[1]);
         sourceFrame._toggleFormatSource(step4);
     }
 
     function step4()
     {
-        InspectorTest.assertEquals("testFunction", UI.context.flavor(SDK.DebuggerModel.CallFrame).functionName);
+        TestRunner.assertEquals("testFunction", UI.context.flavor(SDK.DebuggerModel.CallFrame).functionName);
         sourceFrame._toggleFormatSource(step5);
     }
 
     function step5()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

@@ -8,10 +8,10 @@ function test() {
     /* This test seems silly, but originally it tickled bug 31080 */
     function callback()
     {
-        InspectorTest.addResult("Timeline started");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Timeline started");
+        TestRunner.completeTest();
     }
-    InspectorTest.startTimeline(callback);
+    PerformanceTestRunner.startTimeline(callback);
 }
 
 

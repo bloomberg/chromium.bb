@@ -24,26 +24,26 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
-    InspectorTest.invokeAsyncWithTimeline("display", function() {
-        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
+    PerformanceTestRunner.invokeAsyncWithTimeline("display", function() {
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        TestRunner.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), PerformanceTestRunner.InvalidationFormatters, "", "paint invalidations");
 
         var linkifier = new Components.Linkifier();
-        var target = InspectorTest.timelineModel().targetByEvent(event);
+        var target = PerformanceTestRunner.timelineModel().targetByEvent(event);
         var contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier, true);
         Timeline.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
         var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
         var invalidations = invalidationsTree.shadowRoot.textContent;
         checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:14");
         checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:15");
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     });
 
     function checkStringContains(string, contains)
     {
         var doesContain = string.indexOf(contains) >= 0;
-        InspectorTest.check(doesContain, contains + " should be present in " + string);
-        InspectorTest.addResult("PASS - record contained " + contains);
+        TestRunner.check(doesContain, contains + " should be present in " + string);
+        TestRunner.addResult("PASS - record contained " + contains);
     }
 }
 </script>

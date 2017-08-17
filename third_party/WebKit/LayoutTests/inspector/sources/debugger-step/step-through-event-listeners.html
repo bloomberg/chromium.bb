@@ -28,51 +28,51 @@ function addListenerAndClick()
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testClickBreakpoint(next)
         {
-            InspectorTest.setEventListenerBreakpoint("listener:click", true);
-            InspectorTest.waitUntilPaused(paused1);
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+            SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
+            SourcesTestRunner.waitUntilPaused(paused1);
+            TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
 
             function paused1(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.resumeExecution(resumed1);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.resumeExecution(resumed1);
             }
 
             function resumed1()
             {
-                InspectorTest.waitUntilPaused(paused2);
+                SourcesTestRunner.waitUntilPaused(paused2);
             }
 
             function paused2(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.resumeExecution(resumed2);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.resumeExecution(resumed2);
             }
 
             function resumed2()
             {
-                InspectorTest.waitUntilPaused(paused3);
+                SourcesTestRunner.waitUntilPaused(paused3);
             }
 
             function paused3(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.resumeExecution(resumed3);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.resumeExecution(resumed3);
             }
 
             function resumed3()
             {
-                InspectorTest.waitUntilPaused(paused4);
+                SourcesTestRunner.waitUntilPaused(paused4);
             }
 
             function paused4(callFrames)
             {
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.setEventListenerBreakpoint("listener:click", false);
-                InspectorTest.resumeExecution(next);
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
+                SourcesTestRunner.resumeExecution(next);
             }
         }
     ]);

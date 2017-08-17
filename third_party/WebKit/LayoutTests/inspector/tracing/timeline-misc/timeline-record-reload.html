@@ -9,15 +9,15 @@ function test()
 {
     var panel = UI.panels.timeline;
 
-    InspectorTest.runWhenTimelineIsReady(recordingStopped);
+    PerformanceTestRunner.runWhenTimelineIsReady(recordingStopped);
 
     panel._millisecondsToRecordAfterLoadEvent = 1;
     panel._recordReload();
 
     function recordingStopped()
     {
-        InspectorTest.addResult("Recording stopped");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Recording stopped");
+        TestRunner.completeTest();
     }
 }
 

@@ -11,73 +11,73 @@ function testFunction()
 
 var test = function()
 {
-    var testName = InspectorTest.mainTarget.inspectedURL();
+    var testName = TestRunner.mainTarget.inspectedURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
     var testSourceFrame;
     function step1()
     {
-        InspectorTest.showScriptSource(testName, step2);
+        SourcesTestRunner.showScriptSource(testName, step2);
     }
 
     function step2(sourceFrame)
     {
         testSourceFrame = sourceFrame;
-        InspectorTest.addResult("Main resource was shown.");
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        InspectorTest.debuggerModel._disableDebugger();
+        TestRunner.addResult("Main resource was shown.");
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        TestRunner.debuggerModel._disableDebugger();
     }
 
     function step3()
     {
-        InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        InspectorTest.addResult("Debugger disabled.");
-        InspectorTest.setBreakpoint(testSourceFrame, 8, "", true);
-        InspectorTest.addResult("Breakpoint added");
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
-        InspectorTest.debuggerModel._enableDebugger();
+        TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        TestRunner.addResult("Debugger disabled.");
+        SourcesTestRunner.setBreakpoint(testSourceFrame, 8, "", true);
+        TestRunner.addResult("Breakpoint added");
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        TestRunner.debuggerModel._enableDebugger();
     }
 
     function step4()
     {
-        InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
-        InspectorTest.addResult("Debugger was enabled");
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step5);
+        TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        TestRunner.addResult("Debugger was enabled");
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step5);
     }
 
     function step5()
     {
-        InspectorTest.resumeExecution(step6);
+        SourcesTestRunner.resumeExecution(step6);
     }
 
     function step6()
     {
-        InspectorTest.addResult("Disable debugger again");
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
-        InspectorTest.debuggerModel._disableDebugger();
+        TestRunner.addResult("Disable debugger again");
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
+        TestRunner.debuggerModel._disableDebugger();
     }
 
     function step7()
     {
-        InspectorTest.addResult("Debugger disabled");
+        TestRunner.addResult("Debugger disabled");
         var breakpoint = Bindings.breakpointManager.findBreakpoints(testSourceFrame.uiSourceCode(), 8)[0];
         breakpoint.remove();
-        InspectorTest.addResult("Breakpoint removed");
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
-        InspectorTest.debuggerModel._enableDebugger();
+        TestRunner.addResult("Breakpoint removed");
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
+        TestRunner.debuggerModel._enableDebugger();
     }
 
     function step8()
     {
-        InspectorTest.addResult("Debugger enabled");
-        InspectorTest.addResult("Evaluating test function.");
-        InspectorTest.evaluateInPage("testFunction()", step9);
+        TestRunner.addResult("Debugger enabled");
+        TestRunner.addResult("Evaluating test function.");
+        TestRunner.evaluateInPage("testFunction()", step9);
     }
 
     function step9()
     {
-        InspectorTest.addResult("function evaluated without a pause on the breakpoint.")
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("function evaluated without a pause on the breakpoint.")
+        SourcesTestRunner.completeDebuggerTest();
     }
 };
 

@@ -21,18 +21,18 @@ function functionBaz()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorFrontendHost.copyText = text => InspectorTest.addResult(InspectorTest.clearSpecificInfoFromStackFrames(text));
+        InspectorFrontendHost.copyText = text => TestRunner.addResult(TestRunner.clearSpecificInfoFromStackFrames(text));
         self.runtime.sharedInstance(Sources.CallStackSidebarPane)._copyStackTrace();
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

@@ -8,19 +8,19 @@
 
 function test()
 {
-    InspectorTest.showScriptSource("edit-me.js", onSourceFrame);
+    SourcesTestRunner.showScriptSource("edit-me.js", onSourceFrame);
 
     function onSourceFrame(sourceFrame)
     {
-        InspectorTest.addSniffer(Sources.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
+        TestRunner.addSniffer(Sources.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
         sourceFrame.textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
-        InspectorTest.typeIn(sourceFrame.textEditor, "test!");
+        SourcesTestRunner.typeIn(sourceFrame.textEditor, "test!");
     }
 
     function onCompilationFinished(sourceFrame)
     {
-        InspectorTest.dumpSourceFrameMessages(sourceFrame);
-        InspectorTest.completeTest();
+        SourcesTestRunner.dumpSourceFrameMessages(sourceFrame);
+        TestRunner.completeTest();
     }
 }
 

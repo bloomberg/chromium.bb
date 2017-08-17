@@ -34,18 +34,18 @@ function startSecondWorker()
 
 function test()
 {
-    InspectorTest.invokeWithTracing("startSecondWorker", InspectorTest.safeWrap(processTracingEvents));
+    PerformanceTestRunner.invokeWithTracing("startSecondWorker", TestRunner.safeWrap(processTracingEvents));
 
     var workerMetadataEventCount = 0;
     function processTracingEvents()
     {
-        InspectorTest.tracingModel().sortedProcesses().forEach(function(process) {
+        PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
             process.sortedThreads().forEach(function(thread) {
                 thread.events().forEach(processEvent);
             });
         });
-        InspectorTest.assertEquals(2, workerMetadataEventCount);
-        InspectorTest.completeTest();
+        TestRunner.assertEquals(2, workerMetadataEventCount);
+        TestRunner.completeTest();
     }
 
     function processEvent(event)
@@ -54,8 +54,8 @@ function test()
             return;
 
         ++workerMetadataEventCount;
-        InspectorTest.assertEquals(InspectorTest.timelineModel().sessionId(), event.args["data"]["sessionId"]);
-        InspectorTest.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
+        TestRunner.assertEquals(PerformanceTestRunner.timelineModel().sessionId(), event.args["data"]["sessionId"]);
+        TestRunner.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
     }
 
 }

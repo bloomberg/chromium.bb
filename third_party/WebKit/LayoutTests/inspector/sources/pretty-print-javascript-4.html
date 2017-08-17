@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+    var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/javascript");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function withStatementFormatting(next)
         {
             var mappingQueries = ["first", "obj", "nice", "1", "2", "done"];

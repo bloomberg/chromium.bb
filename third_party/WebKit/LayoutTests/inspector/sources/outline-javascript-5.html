@@ -7,24 +7,24 @@
 
 async function test()
 {
-    var test = InspectorTest.testJavascriptOutline;
+    var test = SourcesTestRunner.testJavascriptOutline;
 
-    InspectorTest.markStep('testComputedProperty');
+    TestRunner.markStep('testComputedProperty');
     await test('a.b[c] = function() { };');
 
-    InspectorTest.markStep('testComputedPropertyInTheMiddle');
+    TestRunner.markStep('testComputedPropertyInTheMiddle');
     await test('a.b[c].d = function() { };');
 
-    InspectorTest.markStep('testComputedPropertyForExpression');
+    TestRunner.markStep('testComputedPropertyForExpression');
     await test('(a || b).c = function() { };');
 
-    InspectorTest.markStep('testPropertyStringLiteral');
+    TestRunner.markStep('testPropertyStringLiteral');
     await test('var foo = { "bar": function() { }}');
 
-    InspectorTest.markStep('testPropertyNumberLiteral');
+    TestRunner.markStep('testPropertyNumberLiteral');
     await test('var foo = { 42: function() { }}');
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

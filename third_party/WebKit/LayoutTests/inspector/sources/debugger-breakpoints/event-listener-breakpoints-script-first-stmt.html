@@ -31,30 +31,30 @@ function test()
 {
     var numberOfPauses = 2;
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
     {
         var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
-        InspectorTest.addResult("\nPaused on " + eventName);
-        InspectorTest.captureStackTrace(callFrames);
+        TestRunner.addResult("\nPaused on " + eventName);
+        SourcesTestRunner.captureStackTrace(callFrames);
 
         if (--numberOfPauses)
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
         else
-            InspectorTest.resumeExecution(step2);
+            SourcesTestRunner.resumeExecution(step2);
     }
 
     function step2()
     {
-        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

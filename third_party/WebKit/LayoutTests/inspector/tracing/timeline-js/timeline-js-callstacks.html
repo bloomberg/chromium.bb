@@ -550,14 +550,14 @@ function test()
     }
     ];
 
-    var model = InspectorTest.createPerformanceModelWithEvents(rawTraceEvents);
+    var model = PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
     var events = TimelineModel.TimelineJSProfileProcessor.generateJSFrameEvents(model.timelineModel().mainThreadEvents());
     events = events.mergeOrdered(model.timelineModel().mainThreadEvents(), SDK.TracingModel.Event.orderedCompareStartTime);
     events.filter(function(e) { return e.duration; }).forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + (e.args.data && e.args.data.functionName || ""));
+        TestRunner.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + (e.args.data && e.args.data.functionName || ""));
     });
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

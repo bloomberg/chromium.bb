@@ -12,34 +12,34 @@ function testFunction()
 
 async function test()
 {
-    await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200);
+    await TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    var scriptFormatter = await InspectorTest.scriptFormatter();
+    var scriptFormatter = await SourcesTestRunner.scriptFormatter();
 
-    InspectorTest.startDebuggerTest(step3);
+    SourcesTestRunner.startDebuggerTest(step3);
 
     function step3()
     {
-        InspectorTest.showScriptSource("unformatted-async.js", step4);
+        SourcesTestRunner.showScriptSource("unformatted-async.js", step4);
     }
 
     function step4()
     {
-        InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", step5);
+        TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", step5);
         scriptFormatter._toggleFormatScriptSource();
     }
 
     function step5()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step6);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step6);
     }
 
     function step6()
     {
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
-          InspectorTest.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
-        InspectorTest.completeDebuggerTest();
+          TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

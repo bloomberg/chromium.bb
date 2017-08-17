@@ -15,16 +15,16 @@ function produceGarbageForGCEvents()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("produceGarbageForGCEvents", validate);
+    PerformanceTestRunner.invokeAsyncWithTimeline("produceGarbageForGCEvents", validate);
 
     function validate()
     {
-        var gcEvent = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.MajorGC) || InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.MinorGC)
+        var gcEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.MajorGC) || PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.MinorGC)
         if (gcEvent)
-            InspectorTest.addResult("SUCCESS: Found expected GC event record");
+            TestRunner.addResult("SUCCESS: Found expected GC event record");
         else
-            InspectorTest.addResult("FAIL: GC event record wasn't found");
-        InspectorTest.completeTest();
+            TestRunner.addResult("FAIL: GC event record wasn't found");
+        TestRunner.completeTest();
     }
 }
 

@@ -11,37 +11,37 @@ var test = function()
 {
     var scriptSource;
     var shouldRequestContent = false;
-    InspectorTest.scriptFormatter().then(startDebuggerTest);
+    SourcesTestRunner.scriptFormatter().then(startDebuggerTest);
     var scriptFormatter;
 
     function startDebuggerTest(sf)
     {
         scriptFormatter = sf;
-        InspectorTest.startDebuggerTest(started);
+        SourcesTestRunner.startDebuggerTest(started);
     }
 
     function started()
     {
-        InspectorTest.showScriptSource("script-formatter-search.html", didShowScriptSource);
+        SourcesTestRunner.showScriptSource("script-formatter-search.html", didShowScriptSource);
     }
 
     async function didShowScriptSource(frame)
     {
         scriptSource = frame._uiSourceCode;
         var matches = await scriptSource.searchInContent("magic-string", true, false);
-        InspectorTest.addResult("Pre-format search results:");
-        InspectorTest.dumpSearchMatches(matches);
+        TestRunner.addResult("Pre-format search results:");
+        SourcesTestRunner.dumpSearchMatches(matches);
         shouldRequestContent = true;
-        InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+        TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
         scriptFormatter._toggleFormatScriptSource();
     }
 
     async function uiSourceCodeScriptFormatted()
     {
         var matches = await scriptSource.searchInContent("magic-string", true, false);
-        InspectorTest.addResult("Post-format search results:");
-        InspectorTest.dumpSearchMatches(matches);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Post-format search results:");
+        SourcesTestRunner.dumpSearchMatches(matches);
+        TestRunner.completeTest();
     }
 }
 

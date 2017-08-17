@@ -14,7 +14,7 @@ function test()
     InspectorTest.TestTimelineLoaderClient.prototype = {
         loadingStarted: function()
         {
-            InspectorTest.addResult("TimelineLoaderClient.loadingStarted()");
+            TestRunner.addResult("TimelineLoaderClient.loadingStarted()");
         },
 
         loadingProgress: function()
@@ -23,12 +23,12 @@ function test()
 
         processingStarted: function()
         {
-            InspectorTest.addResult("TimelineLoaderClient.processingStarted()");
+            TestRunner.addResult("TimelineLoaderClient.processingStarted()");
         },
 
         loadingComplete: function(model)
         {
-            InspectorTest.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
+            TestRunner.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
             this._resolve(model);
         },
 
@@ -43,14 +43,14 @@ function test()
         function checkSaveData(output)
         {
             var saveData = JSON.parse(output);
-            InspectorTest.addResult("Saved data is equal to restored data: " + (JSON.stringify(expectedOutput) === JSON.stringify(saveData)));
+            TestRunner.addResult("Saved data is equal to restored data: " + (JSON.stringify(expectedOutput) === JSON.stringify(saveData)));
             callback();
         }
 
         var client = new InspectorTest.TestTimelineLoaderClient();
         var blob = new Blob([input], {type: 'text/pain'});
         var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
-        var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
+        var stream = new TestRunner.StringOutputStream(TestRunner.safeWrap(checkSaveData));
         var model = await client.modelPromise();
         var storage = model.backingStorage();
         await stream.open("");
@@ -63,7 +63,7 @@ function test()
         var blob = new Blob([input], {type: 'text/pain'});
         var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
         var model = await client.modelPromise();
-        InspectorTest.addResult("Model is empty: " + (!model || (!model.minimumRecordTime() && !model.maximumRecordTime())));
+        TestRunner.addResult("Model is empty: " + (!model || (!model.minimumRecordTime() && !model.maximumRecordTime())));
         callback();
     }
 
@@ -106,7 +106,7 @@ function test()
 	{"args":{"name":"CrBrowserMain"},"cat":"__metadata","name":"thread_name","ph":"M","pid":32072,"tid":32072,"ts":0}
     ];
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testNormal(next)
         {
             var input = JSON.stringify(data);

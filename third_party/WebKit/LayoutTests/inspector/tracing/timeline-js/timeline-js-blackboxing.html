@@ -278,22 +278,22 @@ function test()
         for (var i = 0; i < timelineData.entryStartTimes.length; ++i) {
             var name = dataProvider.entryTitle(i);
             var padding = "  ".repeat(timelineData.entryLevels[i] - 1);
-            InspectorTest.addResult(padding + name + ": " + timelineData.entryTotalTimes[i] + " @ " + timelineData.entryStartTimes[i]);
+            TestRunner.addResult(padding + name + ": " + timelineData.entryTotalTimes[i] + " @ " + timelineData.entryStartTimes[i]);
         }
     }
 
     Runtime.experiments.enableForTest("blackboxJSFramesOnTimeline");
     var dataProvider = new Timeline.TimelineFlameChartDataProvider(UI.panels.timeline._filters);
-    dataProvider.setModel(InspectorTest.createPerformanceModelWithEvents(rawTraceEvents));
+    dataProvider.setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
-    InspectorTest.addResult("\nBlackboxed url: lib_script.js");
+    TestRunner.addResult("\nBlackboxed url: lib_script.js");
     Bindings.blackboxManager._blackboxURL("lib_script.js");
     printTimelineData(dataProvider);
 
-    InspectorTest.addResult("\nUnblackboxed url: lib_script.js");
+    TestRunner.addResult("\nUnblackboxed url: lib_script.js");
     Bindings.blackboxManager._unblackboxURL("lib_script.js");
     printTimelineData(dataProvider);
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

@@ -11,46 +11,46 @@ function testFunction()
 
 var test = function()
 {
-    var testName = InspectorTest.mainTarget.inspectedURL();
+    var testName = TestRunner.mainTarget.inspectedURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.showScriptSource(testName, step2);
+        SourcesTestRunner.showScriptSource(testName, step2);
     }
 
     function step2(sourceFrame)
     {
-        InspectorTest.addResult("Main resource was shown.");
-        InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        InspectorTest.debuggerModel._disableDebugger();
+        TestRunner.addResult("Main resource was shown.");
+        SourcesTestRunner.setBreakpoint(sourceFrame, 8, "", true);
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        TestRunner.debuggerModel._disableDebugger();
     }
 
     function step3()
     {
-        InspectorTest.addResult("Debugger disabled.");
-        InspectorTest.addResult("Evaluating test function.");
-        InspectorTest.evaluateInPage("testFunction()", step4);
+        TestRunner.addResult("Debugger disabled.");
+        TestRunner.addResult("Evaluating test function.");
+        TestRunner.evaluateInPage("testFunction()", step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("function evaluated without a pause on the breakpoint.");
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step5, this);
-        InspectorTest.debuggerModel._enableDebugger();
+        TestRunner.addResult("function evaluated without a pause on the breakpoint.");
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step5, this);
+        TestRunner.debuggerModel._enableDebugger();
     }
 
     function step5()
     {
-        InspectorTest.addResult("Debugger was enabled");
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step6);
+        TestRunner.addResult("Debugger was enabled");
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step6);
     }
 
     function step6()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 };
 

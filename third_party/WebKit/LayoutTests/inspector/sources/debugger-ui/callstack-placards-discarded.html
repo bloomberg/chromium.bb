@@ -11,39 +11,39 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testCallStackPlacardsDiscarded(next)
         {
-            InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPause, this);
+            TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPause, this);
             var previousCount = undefined;
             function didPause(event)
             {
-                InspectorTest.addResult("Received DebuggerPaused event.");
+                TestRunner.addResult("Received DebuggerPaused event.");
                 var callFrame = event.data.callFrames[0];
-                InspectorTest.addResult("Function name: " + callFrame.functionName);
+                TestRunner.addResult("Function name: " + callFrame.functionName);
                 var count = liveLocationsCount();
                 if (previousCount !== undefined && count !== previousCount)
-                    InspectorTest.addResult("FAILED: Live locations count has changed!");
+                    TestRunner.addResult("FAILED: Live locations count has changed!");
                 previousCount = count;
             }
 
-            InspectorTest.showScriptSource("callstack-placards-discarded.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("callstack-placards-discarded.html", didShowScriptSource);
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addResult("Script source was shown.");
-                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause1);
+                TestRunner.addResult("Script source was shown.");
+                SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause1);
             }
             function didPause1()
             {
-                InspectorTest.resumeExecution(didResume1)
+                SourcesTestRunner.resumeExecution(didResume1)
             }
             function didResume1()
             {
-                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause2);
+                SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause2);
             }
             function didPause2()
             {
-                InspectorTest.resumeExecution(didResume2)
+                SourcesTestRunner.resumeExecution(didResume2)
             }
             function didResume2()
             {
@@ -55,7 +55,7 @@ var test = function()
     function liveLocationsCount()
     {
         var count = 0;
-        var infos = Object.values(InspectorTest.debuggerModel.scripts).map(script => script[Bindings.DebuggerWorkspaceBinding._ScriptInfoSymbol]).filter(info => !!info);
+        var infos = Object.values(TestRunner.debuggerModel.scripts).map(script => script[Bindings.DebuggerWorkspaceBinding._ScriptInfoSymbol]).filter(info => !!info);
         infos.forEach(function(info) {
             count += info._locations ? info._locations.size : 0;
         });

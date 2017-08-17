@@ -11,18 +11,18 @@ Running: testSourceFrameContent
 
 function test()
 {
-    InspectorTest.evaluateInPage("frontendReopeningCount", function(result) {
+    TestRunner.evaluateInPage("frontendReopeningCount", function(result) {
         if (result._description === "0")
-            InspectorTest.evaluateInPage("reopenFrontend()")
+            TestRunner.evaluateInPage("reopenFrontend()")
         else {
-            InspectorTest.runDebuggerTestSuite([
+            SourcesTestRunner.runDebuggerTestSuite([
                 function testSourceFrameContent(next)
                 {
-                    InspectorTest.showScriptSource("open-close-open.html", didShowScriptSource);
+                    SourcesTestRunner.showScriptSource("open-close-open.html", didShowScriptSource);
 
                     function didShowScriptSource(sourceFrame)
                     {
-                        InspectorTest.dumpSourceFrameContents(sourceFrame);
+                        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
                         next();
                     }
                 }

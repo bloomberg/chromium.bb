@@ -13,18 +13,18 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("loadIframe()");
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        ConsoleTestRunner.addConsoleSniffer(step2);
+        TestRunner.evaluateInPage("loadIframe()");
     }
 
     function step2()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

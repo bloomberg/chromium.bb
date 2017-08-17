@@ -14,41 +14,41 @@ function testFunction()
 var test = function()
 {
     var currentSourceFrame;
-    InspectorTest.setQuiet(true);
+    SourcesTestRunner.setQuiet(true);
     var pageURL = "js-with-inline-stylesheets.html";
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
-            InspectorTest.showScriptSource(pageURL, didShowScriptSource);
+            SourcesTestRunner.showScriptSource(pageURL, didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
-                InspectorTest.addResult("Script source was shown.");
-                InspectorTest.waitUntilPaused(didPause);
-                InspectorTest.createNewBreakpoint(currentSourceFrame, 9, "", true)
-                    .then(() => InspectorTest.waitBreakpointSidebarPane())
-                    .then(() => InspectorTest.runTestFunction());
+                TestRunner.addResult("Script source was shown.");
+                SourcesTestRunner.waitUntilPaused(didPause);
+                SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 9, "", true)
+                    .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
+                    .then(() => SourcesTestRunner.runTestFunction());
             }
 
             function didPause(callFrames)
             {
-                InspectorTest.addResult("Script execution paused.");
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.waitBreakpointSidebarPane().then(breakpointRemoved);
-                InspectorTest.removeBreakpoint(currentSourceFrame, 9);
+                TestRunner.addResult("Script execution paused.");
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.dumpBreakpointSidebarPane();
+                SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
+                SourcesTestRunner.removeBreakpoint(currentSourceFrame, 9);
             }
 
             function breakpointRemoved()
             {
-                InspectorTest.resumeExecution(didResume);
+                SourcesTestRunner.resumeExecution(didResume);
             }
 
             function didResume()
             {
-                InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.addResult("Script execution resumed.");
+                SourcesTestRunner.dumpBreakpointSidebarPane();
+                TestRunner.addResult("Script execution resumed.");
                 next();
             }
         }

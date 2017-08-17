@@ -7,8 +7,8 @@ function test()
     function dumpParsedSearchQuery(query, isRegex)
     {
         var searchConfig = new Workspace.SearchConfig(query, true, isRegex);
-        InspectorTest.addResult("Dumping parsed search query [" + query + "]:");
-        InspectorTest.addResult(JSON.stringify(searchConfig.queries()));
+        TestRunner.addResult("Dumping parsed search query [" + query + "]:");
+        TestRunner.addResult(JSON.stringify(searchConfig.queries()));
     }
 
     dumpParsedSearchQuery("function", false);
@@ -17,7 +17,7 @@ function test()
     dumpParsedSearchQuery("file:js   function   ", false);
     dumpParsedSearchQuery("\s", true);
     dumpParsedSearchQuery(" \s hello", true);
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 };
 </script>
 </head>

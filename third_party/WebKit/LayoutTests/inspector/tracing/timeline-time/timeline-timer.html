@@ -25,16 +25,16 @@ function performActions()
 function test()
 {
     UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        InspectorTest.printTimelineRecordsWithDetails("TimerInstall");
-        InspectorTest.printTimelineRecordsWithDetails("TimerFire");
-        InspectorTest.printTimelineRecordsWithDetails("TimerRemove");
-        InspectorTest.printTimelineRecords("FunctionCall");
-        InspectorTest.printTimelineRecordsWithDetails("EvaluateScript");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerInstall");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerFire");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerRemove");
+        PerformanceTestRunner.printTimelineRecords("FunctionCall");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("EvaluateScript");
+        TestRunner.completeTest();
     }
 }
 

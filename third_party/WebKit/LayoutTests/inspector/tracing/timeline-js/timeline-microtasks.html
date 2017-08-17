@@ -24,13 +24,13 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        var event = InspectorTest.timelineModel().mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
-        InspectorTest.printTraceEventProperties(event);
-        InspectorTest.completeTest();
+        var event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
+        PerformanceTestRunner.printTraceEventProperties(event);
+        TestRunner.completeTest();
     }
 }
 

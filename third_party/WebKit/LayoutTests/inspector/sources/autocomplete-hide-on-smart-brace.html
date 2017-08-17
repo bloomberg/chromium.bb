@@ -8,40 +8,40 @@
 
 function test()
 {
-    InspectorTest.showScriptSource("edit-me.js", onSourceFrame);
+    SourcesTestRunner.showScriptSource("edit-me.js", onSourceFrame);
 
     var textEditor;
     function onSourceFrame(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
         textEditor.element.focus();
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
         function testSummonSuggestBox(next)
         {
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
 
             textEditor.setText("one\n()");
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(1,1));
-            InspectorTest.typeIn(textEditor, "o", function() { });
+            SourcesTestRunner.typeIn(textEditor, "o", function() { });
 
             function onSuggestionsShown()
             {
-                InspectorTest.addResult("Suggestions shown.");
+                TestRunner.addResult("Suggestions shown.");
                 next();
             }
         },
 
         function testTypeSmartBrace(next)
         {
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
-            InspectorTest.typeIn(textEditor, ")", function() { });
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
+            SourcesTestRunner.typeIn(textEditor, ")", function() { });
 
             function onSuggestionsHidden()
             {
-                InspectorTest.addResult("Suggestions hidden.");
+                TestRunner.addResult("Suggestions hidden.");
                 next();
             }
         },

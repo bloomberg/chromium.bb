@@ -81,17 +81,17 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_continueToLocationRenderedForTest").then(step2);
-        InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", function() {
-          InspectorTest.showUISourceCodePromise(this.uiSourceCode()).then(() => {
+        TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_continueToLocationRenderedForTest").then(step2);
+        TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", function() {
+          SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
             this._showContinueToLocations();
           });
         });
-        InspectorTest.runTestFunctionAndWaitUntilPaused();
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
     }
 
     function step2()
@@ -106,8 +106,8 @@ var test = function()
             lines.push(`${decoration.className} @${line + 1}:${find.from.ch} = '${text}'`);
         }
         lines.sort();
-        InspectorTest.addResults(lines);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResults(lines);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

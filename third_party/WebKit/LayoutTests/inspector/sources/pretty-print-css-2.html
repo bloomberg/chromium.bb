@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testCSSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/css");
+    var testCSSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/css");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testFontFace(next)
         {
             var css = "@font-face{font-family:MyHelvetica;src:local('Helvetica Neue Bold'),local('HelveticaNeue-Bold'),url(MgOpenModernaBold.ttf);font-weight:bold;}div{color:red}";

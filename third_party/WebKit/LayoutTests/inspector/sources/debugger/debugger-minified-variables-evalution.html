@@ -7,16 +7,16 @@
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2()
     {
-        InspectorTest.waitForScriptSource("resolve-expressions-origin.js", step3)
+        SourcesTestRunner.waitForScriptSource("resolve-expressions-origin.js", step3)
     }
 
     function step3(uiSourceCode)
@@ -31,7 +31,7 @@ function test()
         for (var position of positions)
             promise = promise.then(testAtPosition.bind(null, uiSourceCode, position));
 
-        promise.then(() => InspectorTest.completeDebuggerTest());
+        promise.then(() => SourcesTestRunner.completeDebuggerTest());
     }
 
     function Position(line, startColumn, endColumn, originText)
@@ -45,8 +45,8 @@ function test()
     function testAtPosition(uiSourceCode, position)
     {
         return Sources.SourceMapNamesResolver.resolveExpression(UI.context.flavor(SDK.DebuggerModel.CallFrame), position.originText, uiSourceCode, position.line, position.startColumn, position.endColumn)
-            .then(InspectorTest.evaluateOnCurrentCallFrame)
-            .then(result => InspectorTest.addResult(result.object.description));
+            .then(SourcesTestRunner.evaluateOnCurrentCallFrame)
+            .then(result => TestRunner.addResult(result.object.description));
     }
 }
 

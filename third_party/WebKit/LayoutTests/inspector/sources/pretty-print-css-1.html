@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testCSSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/css");
+    var testCSSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/css");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimpleCSS(next)
         {
             var content = "a { /* pre-comment */ color /* after name */ : /* before value */ red /* post-comment */ }";
@@ -20,7 +20,7 @@ function test()
 
         function testComplexCSS(next)
         {
-            InspectorTest.showScriptSource("style-formatter-obfuscated.css", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("style-formatter-obfuscated.css", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
@@ -43,7 +43,7 @@ function test()
         function testFormatInlinedStyles(next)
         {
             var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a.b{color:red;text-decoration: none}}</style></body></html>";
-            InspectorTest.testPrettyPrint("text/html", content, [], next);
+            SourcesTestRunner.testPrettyPrint("text/html", content, [], next);
         },
 
         function testNonZeroLineMapping(next)

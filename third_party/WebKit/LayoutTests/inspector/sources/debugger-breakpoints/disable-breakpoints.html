@@ -13,94 +13,94 @@ function testFunction()
 var test = function()
 {
     var currentSourceFrame;
-    InspectorTest.setQuiet(true);
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.runDebuggerTestSuite([
         function testSetBreakpointPauseResumeThenDisable(next)
         {
-            InspectorTest.showScriptSource("disable-breakpoints.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("disable-breakpoints.html", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addResult("Script source was shown.");
-                InspectorTest.waitUntilPaused(didPause);
-                InspectorTest.createNewBreakpoint(sourceFrame, 7, "", true)
-                    .then(() => InspectorTest.waitBreakpointSidebarPane())
-                    .then(() => InspectorTest.runTestFunction());
+                TestRunner.addResult("Script source was shown.");
+                SourcesTestRunner.waitUntilPaused(didPause);
+                SourcesTestRunner.createNewBreakpoint(sourceFrame, 7, "", true)
+                    .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
+                    .then(() => SourcesTestRunner.runTestFunction());
             }
 
             function didPause(callFrames)
             {
-                InspectorTest.addResult("Script execution paused.");
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.addConsoleSniffer(testFunctionFinishedForTheFirstTime);
-                InspectorTest.resumeExecution(didResume);
+                TestRunner.addResult("Script execution paused.");
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.dumpBreakpointSidebarPane();
+                ConsoleTestRunner.addConsoleSniffer(testFunctionFinishedForTheFirstTime);
+                SourcesTestRunner.resumeExecution(didResume);
             }
 
             function didResume(callFrames)
             {
-                InspectorTest.addResult("Script execution resumed.");
+                TestRunner.addResult("Script execution resumed.");
             }
 
             function testFunctionFinishedForTheFirstTime()
             {
-                InspectorTest.addResult("Test function finished.");
+                TestRunner.addResult("Test function finished.");
 
-                InspectorTest.addResult("Disabling breakpoints...");
+                TestRunner.addResult("Disabling breakpoints...");
                 Bindings.breakpointManager.setBreakpointsActive(false);
 
-                InspectorTest.addResult("Running test function again...");
-                InspectorTest.addConsoleSniffer(testFunctionFinishedForTheSecondTime);
-                InspectorTest.runTestFunction();
+                TestRunner.addResult("Running test function again...");
+                ConsoleTestRunner.addConsoleSniffer(testFunctionFinishedForTheSecondTime);
+                SourcesTestRunner.runTestFunction();
             }
 
             function testFunctionFinishedForTheSecondTime(callFrames)
             {
-                InspectorTest.addResult("Test function finished.");
+                TestRunner.addResult("Test function finished.");
                 next();
             }
         },
 
         function testEnableBreakpointsAgain(next)
         {
-            InspectorTest.showScriptSource("disable-breakpoints.html", didShowScriptSource);
+            SourcesTestRunner.showScriptSource("disable-breakpoints.html", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
-                InspectorTest.addResult("Enabling breakpoints...");
+                TestRunner.addResult("Enabling breakpoints...");
                 Bindings.breakpointManager.setBreakpointsActive(true);
 
-                InspectorTest.addResult("Running test function...");
-                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+                TestRunner.addResult("Running test function...");
+                SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
             }
 
             function didPause(callFrames)
             {
-                InspectorTest.addResult("Script execution paused.");
-                InspectorTest.captureStackTrace(callFrames);
-                InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.addConsoleSniffer(testFunctionFinished);
-                InspectorTest.resumeExecution(didResume);
+                TestRunner.addResult("Script execution paused.");
+                SourcesTestRunner.captureStackTrace(callFrames);
+                SourcesTestRunner.dumpBreakpointSidebarPane();
+                ConsoleTestRunner.addConsoleSniffer(testFunctionFinished);
+                SourcesTestRunner.resumeExecution(didResume);
             }
 
             function didResume(callFrames)
             {
-                InspectorTest.addResult("Script execution resumed.");
+                TestRunner.addResult("Script execution resumed.");
             }
 
             function testFunctionFinished()
             {
-                InspectorTest.addResult("Test function finished.");
-                InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.waitBreakpointSidebarPane().then(breakpointRemoved);
-                InspectorTest.removeBreakpoint(currentSourceFrame, 7);
+                TestRunner.addResult("Test function finished.");
+                SourcesTestRunner.dumpBreakpointSidebarPane();
+                SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
+                SourcesTestRunner.removeBreakpoint(currentSourceFrame, 7);
             }
 
             function breakpointRemoved()
             {
-                InspectorTest.addResult("Breakpoints removed.");
-                InspectorTest.dumpBreakpointSidebarPane();
+                TestRunner.addResult("Breakpoints removed.");
+                SourcesTestRunner.dumpBreakpointSidebarPane();
                 next();
             }
         },

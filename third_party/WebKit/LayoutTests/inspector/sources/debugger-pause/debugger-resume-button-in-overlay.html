@@ -19,11 +19,11 @@ function clickAt(x, y)
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function inOverlay()
@@ -36,20 +36,20 @@ var test = function()
 
     function step2(callFrames)
     {
-        InspectorTest.evaluateFunctionInOverlay(inOverlay, step3);
+        TestRunner.evaluateFunctionInOverlay(inOverlay, step3);
     }
 
     function step3(val)
     {
-        InspectorTest.addResult("Make a click");
+        TestRunner.addResult("Make a click");
         var resumeButtonCenter = JSON.parse(val);
-        InspectorTest.waitUntilResumed(step4);
-        InspectorTest.evaluateInConsole("clickAt(" + resumeButtonCenter.x + ", " + resumeButtonCenter.y + ");");
+        SourcesTestRunner.waitUntilResumed(step4);
+        ConsoleTestRunner.evaluateInConsole("clickAt(" + resumeButtonCenter.x + ", " + resumeButtonCenter.y + ");");
     }
 
     function step4()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

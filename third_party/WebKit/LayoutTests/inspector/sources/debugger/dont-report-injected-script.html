@@ -11,17 +11,17 @@ function newWorld()
 
 function test()
 {
-    InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
-    InspectorTest.evaluateInPage("newWorld()\n//# sourceURL=foo.js");
+    TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
+    TestRunner.evaluateInPage("newWorld()\n//# sourceURL=foo.js");
 
     var expectedScriptParsed = 2;
     function step2(event)
     {
         var script = event.data;
-        InspectorTest.addResult(script.sourceURL);
+        TestRunner.addResult(script.sourceURL);
         --expectedScriptParsed;
         if (!expectedScriptParsed)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 }
 </script>

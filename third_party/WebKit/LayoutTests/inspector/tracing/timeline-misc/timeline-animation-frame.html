@@ -19,14 +19,14 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        InspectorTest.printTimelineRecordsWithDetails("RequestAnimationFrame");
-        InspectorTest.printTimelineRecordsWithDetails("FireAnimationFrame");
-        InspectorTest.printTimelineRecordsWithDetails("CancelAnimationFrame");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecordsWithDetails("RequestAnimationFrame");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("FireAnimationFrame");
+        PerformanceTestRunner.printTimelineRecordsWithDetails("CancelAnimationFrame");
+        TestRunner.completeTest();
     }
 }
 

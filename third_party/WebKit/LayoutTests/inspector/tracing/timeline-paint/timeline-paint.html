@@ -18,38 +18,38 @@ function updateSubframeAndDisplay()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("display", step1);
+    PerformanceTestRunner.invokeAsyncWithTimeline("display", step1);
 
     function step1()
     {
-        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
         if (event)
-            InspectorTest.printTraceEventProperties(event);
+            PerformanceTestRunner.printTraceEventProperties(event);
         else
-            InspectorTest.addResult("FAIL: no paint record found");
-        InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", step3);
+            TestRunner.addResult("FAIL: no paint record found");
+        PerformanceTestRunner.invokeAsyncWithTimeline("updateSubframeAndDisplay", step3);
     }
 
     function step3()
     {
-        var events = InspectorTest.timelineModel().mainThreadEvents().filter(e => e.name === TimelineModel.TimelineModel.RecordType.Paint);
-        InspectorTest.assertGreaterOrEqual(events.length, 2, "Paint record with subframe paint not found");
+        var events = PerformanceTestRunner.timelineModel().mainThreadEvents().filter(e => e.name === TimelineModel.TimelineModel.RecordType.Paint);
+        TestRunner.assertGreaterOrEqual(events.length, 2, "Paint record with subframe paint not found");
         var topQuad = events[0].args["data"].clip;
         var subframePaint = events[1];
-        InspectorTest.assertGreaterOrEqual(events[0].endTime, subframePaint.endTime, "Subframe paint is not a child of frame paint");
+        TestRunner.assertGreaterOrEqual(events[0].endTime, subframePaint.endTime, "Subframe paint is not a child of frame paint");
         var subframeQuad = subframePaint.args["data"].clip;
-        InspectorTest.assertEquals(8, topQuad.length);
-        InspectorTest.assertEquals(8, subframeQuad.length);
-        InspectorTest.assertGreaterOrEqual(subframeQuad[0], topQuad[0]);
-        InspectorTest.assertGreaterOrEqual(subframeQuad[1], topQuad[1]);
-        InspectorTest.assertGreaterOrEqual(topQuad[2], subframeQuad[2]);
-        InspectorTest.assertGreaterOrEqual(subframeQuad[3], topQuad[3]);
-        InspectorTest.assertGreaterOrEqual(topQuad[4], subframeQuad[4]);
-        InspectorTest.assertGreaterOrEqual(topQuad[5], subframeQuad[5]);
-        InspectorTest.assertGreaterOrEqual(subframeQuad[6], topQuad[6]);
-        InspectorTest.assertGreaterOrEqual(topQuad[7], subframeQuad[7]);
+        TestRunner.assertEquals(8, topQuad.length);
+        TestRunner.assertEquals(8, subframeQuad.length);
+        TestRunner.assertGreaterOrEqual(subframeQuad[0], topQuad[0]);
+        TestRunner.assertGreaterOrEqual(subframeQuad[1], topQuad[1]);
+        TestRunner.assertGreaterOrEqual(topQuad[2], subframeQuad[2]);
+        TestRunner.assertGreaterOrEqual(subframeQuad[3], topQuad[3]);
+        TestRunner.assertGreaterOrEqual(topQuad[4], subframeQuad[4]);
+        TestRunner.assertGreaterOrEqual(topQuad[5], subframeQuad[5]);
+        TestRunner.assertGreaterOrEqual(subframeQuad[6], topQuad[6]);
+        TestRunner.assertGreaterOrEqual(topQuad[7], subframeQuad[7]);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

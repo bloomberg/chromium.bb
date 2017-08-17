@@ -286,13 +286,13 @@ function test()
         samples: [2, 2, 3, 3, 3, 4, 4, 2, 2]
     };
 
-    var timelineController = InspectorTest.timelineController();
+    var timelineController = PerformanceTestRunner.timelineController();
     timelineController._addCpuProfile(SDK.targetManager.mainTarget().id(), cpuProfile);
     timelineController.traceEventsCollected(rawTraceEvents);
     timelineController._finalizeTrace();
     var events = timelineController._performanceModel.timelineModel().inspectedTargetEvents();
-    events.forEach(e => InspectorTest.addResult(`${e.name}: ${e.startTime} ${(e.selfTime || 0).toFixed(2)}/${(e.duration || 0).toFixed(2)}`));
-    InspectorTest.completeTest();
+    events.forEach(e => TestRunner.addResult(`${e.name}: ${e.startTime} ${(e.selfTime || 0).toFixed(2)}/${(e.duration || 0).toFixed(2)}`));
+    TestRunner.completeTest();
 }
 
 </script>

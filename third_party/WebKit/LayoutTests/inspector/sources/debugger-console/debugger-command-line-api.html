@@ -12,8 +12,8 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", inspect);
-    InspectorTest.addSniffer(Common.Revealer, "revealPromise", oneRevealPromise, true);
+    TestRunner.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", inspect);
+    TestRunner.addSniffer(Common.Revealer, "revealPromise", oneRevealPromise, true);
 
     function oneRevealPromise(node, revealPromise)
     {
@@ -24,26 +24,26 @@ var test = function()
 
     function updateFocusedNode()
     {
-        InspectorTest.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
+        SourcesTestRunner.completeDebuggerTest();
     }
 
     function inspect(objectId, hints)
     {
-        InspectorTest.addResult("WebInspector.inspect called with: " + objectId.description);
-        InspectorTest.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
+        TestRunner.addResult("WebInspector.inspect called with: " + objectId.description);
+        TestRunner.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
     }
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
-        InspectorTest.evaluateInConsoleAndDump("inspect($('#p1'))");
+        ConsoleTestRunner.evaluateInConsoleAndDump("inspect($('#p1'))");
     }
 }
 

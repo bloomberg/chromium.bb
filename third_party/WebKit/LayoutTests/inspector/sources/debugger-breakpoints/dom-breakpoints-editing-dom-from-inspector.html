@@ -7,29 +7,29 @@
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function testRemoveNode(next)
         {
-            InspectorTest.addResult("Testing NodeRemoved DOM breakpoint.");
-            InspectorTest.nodeWithId("elementToRemove", step2);
+            TestRunner.addResult("Testing NodeRemoved DOM breakpoint.");
+            ElementsTestRunner.nodeWithId("elementToRemove", step2);
 
             function step2(node)
             {
-                InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
-                InspectorTest.addResult("Set NodeRemoved DOM breakpoint.");
+                TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+                TestRunner.addResult("Set NodeRemoved DOM breakpoint.");
                 node.removeNode(next);
             }
         },
 
         function testModifyAttribute(next)
         {
-            InspectorTest.addResult("Testing AttributeModified DOM breakpoint.");
-            InspectorTest.nodeWithId("rootElement", step2);
+            TestRunner.addResult("Testing AttributeModified DOM breakpoint.");
+            ElementsTestRunner.nodeWithId("rootElement", step2);
 
             function step2(node)
             {
-                InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
-                InspectorTest.addResult("Set AttributeModified DOM breakpoint.");
+                TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+                TestRunner.addResult("Set AttributeModified DOM breakpoint.");
                 node.setAttribute("title", "a title", next);
             }
         }

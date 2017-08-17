@@ -18,12 +18,12 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     var stepCount = 0;
@@ -31,12 +31,12 @@ var test = function()
     {
         if (stepCount < 2) {
             for (var i = 0, frame; frame = callFrames[i]; ++i)
-                InspectorTest.assertTrue(!frame.returnValue(), "Unexpected returnValue in frame #" + i);
-            InspectorTest.stepOver();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
+                TestRunner.assertTrue(!frame.returnValue(), "Unexpected returnValue in frame #" + i);
+            SourcesTestRunner.stepOver();
+            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step2));
         } else {
-            InspectorTest.captureStackTrace(callFrames, null, { printReturnValue: true });
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.captureStackTrace(callFrames, null, { printReturnValue: true });
+            SourcesTestRunner.completeDebuggerTest();
         }
         ++stepCount;
     }

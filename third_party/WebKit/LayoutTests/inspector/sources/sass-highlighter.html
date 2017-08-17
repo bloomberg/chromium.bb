@@ -9,12 +9,12 @@
 
 function test()
 {
-    InspectorTest.showScriptSource("empty.scss", onSourceShown);
+    SourcesTestRunner.showScriptSource("empty.scss", onSourceShown);
     function onSourceShown(uiSourceCodeFrame)
     {
         var uiSourceCode = uiSourceCodeFrame.uiSourceCode();
-        InspectorTest.addResult(uiSourceCode.mimeType());
-        InspectorTest.completeTest();
+        TestRunner.addResult(uiSourceCode.mimeType());
+        TestRunner.completeTest();
     }
 }
 

@@ -15,8 +15,8 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
     var updateCount = 8;
 
     Common.settings.createLocalSetting("watchExpressions", []).set(["x", "y.foo"]);
@@ -25,16 +25,16 @@ function test()
     {
         watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
         UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
-            InspectorTest.addSniffer(Sources.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
-            InspectorTest.evaluateInPage("testFunction()");
+            TestRunner.addSniffer(Sources.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
+            TestRunner.evaluateInPage("testFunction()");
         });
     }
 
     function watchExpressionsUpdated(result, wasThrown)
     {
-        InspectorTest.addResult(this._element.deepTextContent());
+        TestRunner.addResult(this._element.deepTextContent());
         if (--updateCount === 0)
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.completeDebuggerTest();
     }
 }
 

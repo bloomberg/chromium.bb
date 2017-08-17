@@ -8,7 +8,7 @@ function test()
 {
     var MockProject = class extends Workspace.ProjectStore {
         requestFileContent(uri, callback) {
-            InspectorTest.addResult("Content is requested from SourceCodeProvider.");
+            TestRunner.addResult("Content is requested from SourceCodeProvider.");
             setTimeout(callback.bind(null, "var x = 0;"), 0);
         }
 
@@ -29,22 +29,22 @@ function test()
         }
     };
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testUISourceCode(next)
         {
             var uiSourceCode = new Workspace.UISourceCode(new MockProject(), "url", Common.resourceTypes.Script);
             function didRequestContent(callNumber, content)
             {
-                InspectorTest.addResult("Callback " + callNumber + " is invoked.");
-                InspectorTest.assertEquals("text/javascript", uiSourceCode.mimeType());
-                InspectorTest.assertEquals("var x = 0;", content);
+                TestRunner.addResult("Callback " + callNumber + " is invoked.");
+                TestRunner.assertEquals("text/javascript", uiSourceCode.mimeType());
+                TestRunner.assertEquals("var x = 0;", content);
 
                 if (callNumber === 3) {
                     // Check that sourceCodeProvider.requestContent won't be called anymore.
                     uiSourceCode.requestContent().then(function(content)
                     {
-                        InspectorTest.assertEquals("text/javascript", uiSourceCode.mimeType());
-                        InspectorTest.assertEquals("var x = 0;", content);
+                        TestRunner.assertEquals("text/javascript", uiSourceCode.mimeType());
+                        TestRunner.assertEquals("var x = 0;", content);
                         next();
                     });
                 }

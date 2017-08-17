@@ -21,17 +21,17 @@ function test()
 
     for (var i = 0; i < testCases.length; i += 2) {
         var url = testCases[i];
-        InspectorTest.addResult("Testing \"" + url + "\"");
+        TestRunner.addResult("Testing \"" + url + "\"");
         var regexValue = Bindings.blackboxManager._urlToRegExpString(url);
-        InspectorTest.assertEquals(testCases[i + 1], regexValue);
+        TestRunner.assertEquals(testCases[i + 1], regexValue);
         if (!regexValue)
             continue;
         var regex = new RegExp(regexValue);
-        InspectorTest.assertTrue(regex.test(url), "FAIL: Generated RegExp does not match the URL");
+        TestRunner.assertTrue(regex.test(url), "FAIL: Generated RegExp does not match the URL");
     }
 
-    InspectorTest.addResult("\nPASS");
-    InspectorTest.completeTest();
+    TestRunner.addResult("\nPASS");
+    TestRunner.completeTest();
 }
 
 </script>

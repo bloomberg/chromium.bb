@@ -52,22 +52,22 @@ function test()
         ]
     };
 
-    InspectorTest.addSniffer(SourceFrame.SourcesTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
-    InspectorTest.showScriptSource("timeline-data.js", frameRevealed);
+    TestRunner.addSniffer(SourceFrame.SourcesTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
+    SourcesTestRunner.showScriptSource("timeline-data.js", frameRevealed);
 
     function decorationAdded(line, type, element)
     {
-        InspectorTest.addResult(`${line} ${type} ${element.textContent} ${element.style.backgroundColor}`);
+        TestRunner.addResult(`${line} ${type} ${element.textContent} ${element.style.backgroundColor}`);
     }
 
     function frameRevealed(frame)
     {
         var url = frame.uiSourceCode().url();
-        InspectorTest.addResult(InspectorTest.formatters.formatAsURL(url));
+        TestRunner.addResult(TestRunner.formatters.formatAsURL(url));
         cpuProfile.nodes.forEach(n => n.callFrame.url = url);
         var lineProfile = PerfUI.LineLevelProfile.instance();
         lineProfile.appendCPUProfile(new SDK.CPUProfileDataModel(cpuProfile));
-        setTimeout(() => InspectorTest.completeTest(), 0);
+        setTimeout(() => TestRunner.completeTest(), 0);
     }
 }
 

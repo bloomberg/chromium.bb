@@ -6,30 +6,30 @@
 function test()
 {
     SDK.targetManager.mainTarget().setIsNodeJSForTest();
-    InspectorTest.startDebuggerTest();
+    SourcesTestRunner.startDebuggerTest();
 
     var functionText = "function foobar() { \nconsole.log('foobar execute!');\n}";
     var sourceURL = "\n//# sourceURL=/usr/local/home/prog/foobar.js";
-    InspectorTest.evaluateInPage(functionText + sourceURL, function() { });
-    InspectorTest.showScriptSource("foobar.js", didShowScriptSource);
+    TestRunner.evaluateInPage(functionText + sourceURL, function() { });
+    SourcesTestRunner.showScriptSource("foobar.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)
     {
-        InspectorTest.addResult("Setting breakpoint:");
-        InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-        InspectorTest.setBreakpoint(sourceFrame, 1, "", true);
+        TestRunner.addResult("Setting breakpoint:");
+        TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 1, "", true);
     }
 
     function breakpointResolved(location)
     {
-        InspectorTest.waitUntilPaused(paused);
-        InspectorTest.evaluateInPage("foobar()");
+        SourcesTestRunner.waitUntilPaused(paused);
+        TestRunner.evaluateInPage("foobar()");
     }
 
     function paused()
     {
-        InspectorTest.addResult("Successfully paused on breakpoint");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Successfully paused on breakpoint");
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

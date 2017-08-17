@@ -18,39 +18,39 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(runTestFunction);
-    InspectorTest.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(runTestFunction);
+    SourcesTestRunner.setQuiet(true);
 
     var stepCount = 0;
 
     function runTestFunction()
     {
-        InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
-        InspectorTest.evaluateInPage("setTimeout(testFunction, 0)");
+        TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        TestRunner.evaluateInPage("setTimeout(testFunction, 0)");
     }
 
     function onSetExecutionLocation(uiLocation)
     {
-        InspectorTest.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
+        TestRunner.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
     }
 
     function dumpAndContinue(textEditor, lineNumber)
     {
-        InspectorTest.addResult("=========== 8< ==========");
+        TestRunner.addResult("=========== 8< ==========");
         for (var i = 8; i < 18; ++i) {
             var output = ["[" + (i < 10 ? " " : "") + i + "]"];
             output.push(i == lineNumber ? ">" : " ");
             output.push(textEditor.line(i));
             output.push("\t");
             textEditor._decorations.get(i).forEach(decoration => output.push(decoration.element.deepTextContent()));
-            InspectorTest.addResult(output.join(" "));
+            TestRunner.addResult(output.join(" "));
         }
 
-        InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         if (++stepCount < 10)
-            InspectorTest.stepOver();
+            SourcesTestRunner.stepOver();
         else
-            InspectorTest.completeDebuggerTest();
+            SourcesTestRunner.completeDebuggerTest();
     }
 }
 

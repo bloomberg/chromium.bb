@@ -77,7 +77,7 @@ function showImages()
 
 function test()
 {
-    InspectorTest.invokeWithTracing("showImages", InspectorTest.safeWrap(onTracingComplete));
+    PerformanceTestRunner.invokeWithTracing("showImages", TestRunner.safeWrap(onTracingComplete));
     function onTracingComplete()
     {
         function isDecodeImageEvent(event)
@@ -88,11 +88,11 @@ function test()
         {
             var urlA = TimelineModel.TimelineData.forEvent(a).url;
             var urlB = TimelineModel.TimelineData.forEvent(b).url;
-            urlA = InspectorTest.formatters.formatAsURL(urlA || "<missing>");
-            urlB = InspectorTest.formatters.formatAsURL(urlB || "<missing>");
+            urlA = TestRunner.formatters.formatAsURL(urlA || "<missing>");
+            urlB = TestRunner.formatters.formatAsURL(urlB || "<missing>");
             return urlA.localeCompare(urlB);
         }
-        var events = InspectorTest.timelineModel().inspectedTargetEvents();
+        var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
         var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
         for (var i = 0; i < sortedDecodeEvents.length; ++i) {
             var event = sortedDecodeEvents[i];
@@ -101,11 +101,11 @@ function test()
             // Skip duplicate events, as long as they have the imageURL
             if (i && url && url === TimelineModel.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
                 continue;
-            InspectorTest.addResult("event: " + event.name);
-            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(url));
-            InspectorTest.addResult("backendNodeId: " + (timlelineData.backendNodeId > 0 ? "present" : "absent"));
+            TestRunner.addResult("event: " + event.name);
+            TestRunner.addResult("imageURL: " + TestRunner.formatters.formatAsURL(url));
+            TestRunner.addResult("backendNodeId: " + (timlelineData.backendNodeId > 0 ? "present" : "absent"));
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

@@ -13,22 +13,22 @@ function performActions()
 
 function test() 
 {
-    InspectorTest.startTimeline(step1);
+    PerformanceTestRunner.startTimeline(step1);
     function step1()
     {
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("performActions()");
+        ConsoleTestRunner.addConsoleSniffer(step2);
+        TestRunner.evaluateInPage("performActions()");
     }
 
     function step2()
     {
-        InspectorTest.stopTimeline(step3);
+        PerformanceTestRunner.stopTimeline(step3);
     }
 
     function step3()
     {
-        InspectorTest.printTimelineRecords("EvaluateScript");
-        InspectorTest.completeTest();
+        PerformanceTestRunner.printTimelineRecords("EvaluateScript");
+        TestRunner.completeTest();
     }
 }
 

@@ -12,7 +12,7 @@ function callback()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
@@ -21,31 +21,31 @@ function test()
 
     function step2()
     {
-        InspectorTest.nodeWithId("test", step3);
+        ElementsTestRunner.nodeWithId("test", step3);
     }
 
     function step3(node)
     {
-        InspectorTest.assertTrue(!!node);
-        InspectorTest.evaluateInPage("setTimeout(callback, 200)", step4.bind(null, node));
+        TestRunner.assertTrue(!!node);
+        TestRunner.evaluateInPage("setTimeout(callback, 200)", step4.bind(null, node));
     }
 
     function step4(node)
     {
-        InspectorTest.assertTrue(!UI.panels.sources.paused());
-        InspectorTest.togglePause();
+        TestRunner.assertTrue(!UI.panels.sources.paused());
+        SourcesTestRunner.togglePause();
 
         // This used to skip the pause request (the test used to timeout).
         node.highlight();
 
-        InspectorTest.waitUntilPaused(step5);
+        SourcesTestRunner.waitUntilPaused(step5);
     }
 
     function step5(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.addResult("PASS: Debugger paused.");
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.captureStackTrace(callFrames);
+        TestRunner.addResult("PASS: Debugger paused.");
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

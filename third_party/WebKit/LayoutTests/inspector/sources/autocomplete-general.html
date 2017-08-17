@@ -7,14 +7,14 @@
 <script>
 function test()
 {
-    InspectorTest.showScriptSource("edit-me.js", onSourceFrame);
+    SourcesTestRunner.showScriptSource("edit-me.js", onSourceFrame);
 
     var textEditor;
     function onSourceFrame(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
         textEditor.element.focus();
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     var testSuite = [
@@ -24,11 +24,11 @@ function test()
         {
             textEditor.setText("name1 name2 name3 name4\nna");
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(1, 2));
-            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onAutocompletionSuggestBox);
-            InspectorTest.typeIn(textEditor, "m");
+            TestRunner.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onAutocompletionSuggestBox);
+            SourcesTestRunner.typeIn(textEditor, "m");
             function onAutocompletionSuggestBox()
             {
-                document.activeElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+                document.activeElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
                 dumpDictionary(next);
             }
         },
@@ -49,7 +49,7 @@ function test()
         {
             textEditor.setText("one\none");
             textEditor.setSelection(new TextUtils.TextRange(0, 0, 0, 3));
-            InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
+            SourcesTestRunner.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
         },
 
         function testSetText(next)
@@ -61,23 +61,23 @@ function test()
         function testSimpleEdit(next)
         {
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 3));
-            InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
+            SourcesTestRunner.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
         },
 
         function testDeleteOneDogAndOneCat(next)
         {
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 6));
-            InspectorTest.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
+            SourcesTestRunner.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
         }
     ];
 
     function dumpDictionary(next) {
         var wordsInDictionary = textEditor._autocompleteController._dictionary.wordsWithPrefix("");
-        InspectorTest.addResult("========= Text in editor =========");
-        InspectorTest.dumpTextWithSelection(textEditor);
-        InspectorTest.addResult("======= Words in dictionary =======");
-        InspectorTest.addResult("[" + wordsInDictionary.sort().join(", ") + "]");
-        InspectorTest.addResult("=============");
+        TestRunner.addResult("========= Text in editor =========");
+        SourcesTestRunner.dumpTextWithSelection(textEditor);
+        TestRunner.addResult("======= Words in dictionary =======");
+        TestRunner.addResult("[" + wordsInDictionary.sort().join(", ") + "]");
+        TestRunner.addResult("=============");
         next();
     }
 }

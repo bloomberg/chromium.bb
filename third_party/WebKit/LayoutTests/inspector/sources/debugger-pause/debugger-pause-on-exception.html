@@ -16,25 +16,25 @@ function handleClick()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        InspectorTest.showScriptSource("debugger-pause-on-exception.html", step2);
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        SourcesTestRunner.showScriptSource("debugger-pause-on-exception.html", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Script source was shown.");
-        InspectorTest.evaluateInPage("setTimeout(handleClick, 0)");
-        InspectorTest.waitUntilPausedAndDumpStackAndResume(step3);
+        TestRunner.addResult("Script source was shown.");
+        TestRunner.evaluateInPage("setTimeout(handleClick, 0)");
+        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(step3);
     }
 
     function step3()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

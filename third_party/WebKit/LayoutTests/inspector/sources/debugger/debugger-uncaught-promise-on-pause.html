@@ -44,23 +44,23 @@ function runPromisesFromInspector()
 
 function test()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.addConsoleViewSniffer(addMessage, true);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
-        InspectorTest.evaluateInPage("runPromisesFromInspector()", resumeExecution);
+        TestRunner.evaluateInPage("runPromisesFromInspector()", resumeExecution);
     }
 
     function resumeExecution()
     {
-        InspectorTest.resumeExecution();
+        SourcesTestRunner.resumeExecution();
     }
 
     var count = 0;
@@ -69,13 +69,13 @@ function test()
         if (uiMessage.toString().indexOf("inspector.err") !== -1)
             ++count;
         if (count === 2)
-            InspectorTest.expandConsoleMessages(dump);
+            ConsoleTestRunner.expandConsoleMessages(dump);
     }
 
     function dump()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        TestRunner.completeTest();
     }
 }
 

@@ -24,50 +24,50 @@ f3();
 
 var test = function()
 {
-    var testName = InspectorTest.mainTarget.inspectedURL();
+    var testName = TestRunner.mainTarget.inspectedURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.addResult("Did load front-end");
-        InspectorTest.addResult("Paused: " + !!InspectorTest.debuggerModel.debuggerPausedDetails());
-        InspectorTest.reloadPage(didReload.bind(this));
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this);
+        TestRunner.addResult("Did load front-end");
+        TestRunner.addResult("Paused: " + !!TestRunner.debuggerModel.debuggerPausedDetails());
+        TestRunner.reloadPage(didReload.bind(this));
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this);
     }
 
     function didReload()
     {
-        InspectorTest.addResult("didReload");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("didReload");
+        SourcesTestRunner.completeDebuggerTest();
     }
 
     function didPauseAfterReload(details)
     {
-        InspectorTest.addResult("didPauseAfterReload");
-        InspectorTest.addResult("Source strings corresponding to the call stack:");
+        TestRunner.addResult("didPauseAfterReload");
+        TestRunner.addResult("Source strings corresponding to the call stack:");
         dumpNextCallFrame(didDump);
     }
 
     var callFrameIndex = 0;
     function dumpNextCallFrame(next)
     {
-        var callFrames = InspectorTest.debuggerModel.callFrames;
+        var callFrames = TestRunner.debuggerModel.callFrames;
         if (callFrameIndex === callFrames.length) {
             next();
             return;
         }
         var frame = callFrames[callFrameIndex];
         var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-        InspectorTest.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
+        SourcesTestRunner.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
 
         function dumpCallFrameLine(sourceFrame)
         {
             var resourceText = sourceFrame._textEditor.text();
             var lines = resourceText.split("\n");
             var lineNumber = uiLocation.lineNumber;
-            InspectorTest.addResult("Frame " + callFrameIndex + ") line " + lineNumber + ", content: " + lines[lineNumber] + " (must be part of function '" + frame.functionName + "')");
+            TestRunner.addResult("Frame " + callFrameIndex + ") line " + lineNumber + ", content: " + lines[lineNumber] + " (must be part of function '" + frame.functionName + "')");
             callFrameIndex++
             dumpNextCallFrame(next);
         }
@@ -75,12 +75,12 @@ var test = function()
 
     function didDump()
     {
-        InspectorTest.resumeExecution(didResume);
+        SourcesTestRunner.resumeExecution(didResume);
     }
 
     function didResume()
     {
-        InspectorTest.addResult("didResume");
+        TestRunner.addResult("didResume");
     }
 };
 </script>

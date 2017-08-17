@@ -9,9 +9,9 @@
 
 function test()
 {
-    var testCSSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/css");
+    var testCSSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/css");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testMediaRule(next)
         {
             var css = "@media screen,print{body{line-height:1.2}}span{line-height:10px}";

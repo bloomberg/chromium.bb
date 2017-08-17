@@ -8,8 +8,8 @@ function test()
 {
     function dumpNavigator(sourcesNavigatorView)
     {
-        InspectorTest.addResult("Navigator:");
-        InspectorTest.dumpNavigatorView(sourcesNavigatorView);
+        TestRunner.addResult("Navigator:");
+        SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
     }
 
     function createNavigatorView()
@@ -19,29 +19,29 @@ function test()
         return navigatorView;
     }
 
-    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, 'requestContent', onRequestContent, true);
+    TestRunner.addSniffer(Workspace.UISourceCode.prototype, 'requestContent', onRequestContent, true);
 
     function onRequestContent() {
-        InspectorTest.addResult("Source requested for " + this.url());
+        TestRunner.addResult("Source requested for " + this.url());
     }
 
-    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
-    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
-    var page = new InspectorTest.PageMock('http://example.com');
-    InspectorTest.connectToPage('mock-page', page, true /* makeMainTarget */);
+    Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
+    var page = new TestRunner.PageMock('http://example.com');
+    TestRunner.connectToPage('mock-page', page, true /* makeMainTarget */);
 
     function addNetworkFile(url)
     {
         page.evalScript(url, '', false /* isContentScript */);
-        return InspectorTest.waitForUISourceCode(url);
+        return TestRunner.waitForUISourceCode(url);
     }
 
     function reload() {
         page.reload();
-        return new Promise(fulfill => InspectorTest.addSniffer(SDK.ResourceTreeModel.prototype, '_frameNavigated', fulfill));
+        return new Promise(fulfill => TestRunner.addSniffer(SDK.ResourceTreeModel.prototype, '_frameNavigated', fulfill));
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         async function testInitialLoad(next)
         {
             await reload();
@@ -68,7 +68,7 @@ function test()
             await addNetworkFile("baz.js");
 
             dumpNavigator(sourcesNavigatorView);
-            InspectorTest.addResult("Revealing in navigator.");
+            TestRunner.addResult("Revealing in navigator.");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
@@ -87,8 +87,8 @@ function test()
             var sourcesNavigatorView = createNavigatorView();
 
             var uiSourceCode = await addNetworkFile("foo.js");
-            InspectorTest.waitForUISourceCode().then(onUISourceCode);
-            InspectorTest.evaluateInPage("function foo() {}");
+            TestRunner.waitForUISourceCode().then(onUISourceCode);
+            TestRunner.evaluateInPage("function foo() {}");
 
             async function onUISourceCode(debuggerUISourceCode)
             {

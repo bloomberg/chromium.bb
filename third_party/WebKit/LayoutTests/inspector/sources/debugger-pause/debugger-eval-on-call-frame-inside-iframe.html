@@ -54,23 +54,23 @@ function test()
         {
             var expression = copy.shift();
             if (expression)
-                InspectorTest.evaluateInConsoleAndDump(expression, inner, true);
+                ConsoleTestRunner.evaluateInConsoleAndDump(expression, inner, true);
             else
                 callback();
         }
     }
 
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
-        InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.addResult("\n=== Evaluating on iframe ===");
+        SourcesTestRunner.captureStackTrace(callFrames);
+        TestRunner.addResult("\n=== Evaluating on iframe ===");
         evaluateInConsoleAndDump(step3);
     }
 
@@ -78,18 +78,18 @@ function test()
     {
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         pane._list.selectItem(pane._list._model.at(1));
-        InspectorTest.deprecatedRunAfterPendingDispatches(step4);
+        TestRunner.deprecatedRunAfterPendingDispatches(step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("\n=== Evaluating on top frame ===");
+        TestRunner.addResult("\n=== Evaluating on top frame ===");
         evaluateInConsoleAndDump(step5);
     }
 
     function step5()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

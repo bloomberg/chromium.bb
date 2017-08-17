@@ -16,12 +16,12 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+    ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
 
     function dumpConsoleMessages()
     {
-        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
-        InspectorTest.completeTest();
+        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+        TestRunner.completeTest();
     }
 }
 

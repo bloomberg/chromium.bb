@@ -18,18 +18,18 @@ function testFunction()
 
 async function test()
 {
-    await InspectorTest.startDebuggerTestPromise();
-    InspectorTest.evaluateInPageWithTimeout("testFunction()");
+    await SourcesTestRunner.startDebuggerTestPromise();
+    TestRunner.evaluateInPageWithTimeout("testFunction()");
     var sourceFrame = await waitForPausedUISourceCode();
-    InspectorTest.createNewBreakpoint(sourceFrame, 10, "", true);
-    await InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
-    await InspectorTest.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
-    InspectorTest.completeDebuggerTest();
+    SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, "", true);
+    await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+    await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+    SourcesTestRunner.completeDebuggerTest();
 
     function waitForPausedUISourceCode() {
         return new Promise(resolve => {
-            InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", function() {
-              InspectorTest.showUISourceCodePromise(this.uiSourceCode()).then(() => {
+            TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", function() {
+              SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
                 resolve(this);
               });
             });

@@ -30,8 +30,8 @@ function test()
 
     function performStandardTestCase(pageExpression, next)
     {
-        InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-        InspectorTest.evaluateInPage(pageExpression, didEvaluate);
+        TestRunner.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
+        TestRunner.evaluateInPage(pageExpression, didEvaluate);
 
         function didEvaluate(remote)
         {
@@ -55,7 +55,7 @@ function test()
             // lineNumber and columnNumber are 0-based
             ++lineNumber;
             ++columnNumber;
-            InspectorTest.addResult("Generator location revealed: [" + lineNumber + ":" + columnNumber + "]");
+            TestRunner.addResult("Generator location revealed: [" + lineNumber + ":" + columnNumber + "]");
             next();
         }
     }
@@ -77,7 +77,7 @@ function test()
             "}; " + functionName);
     }
 
-    InspectorTest.runTestSuite(expressions.map(createTestSuiteFunction));
+    TestRunner.runTestSuite(expressions.map(createTestSuiteFunction));
 }
 
 </script>

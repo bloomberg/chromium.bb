@@ -17,10 +17,10 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.runDebuggerTestSuite([
+    SourcesTestRunner.runDebuggerTestSuite([
         function step1(next)
         {
-            InspectorTest.runTestFunctionAndWaitUntilPaused(next);
+            SourcesTestRunner.runTestFunctionAndWaitUntilPaused(next);
         },
 
         function step2(next)
@@ -96,19 +96,19 @@ function test()
         for (var i = 0; i < golden.length; ++i) {
             if (!suggestions.has(golden[i])) {
                 failed = true;
-                InspectorTest.addResult("FAIL: NOT FOUND: " + golden[i]);
+                TestRunner.addResult("FAIL: NOT FOUND: " + golden[i]);
             }
         }
 
         for (var i = 0; i < antiGolden.length; ++i) {
             if (suggestions.has(antiGolden[i])) {
                 failed = true;
-                InspectorTest.addResult("FAIL: FOUND: " + antiGolden[i]);
+                TestRunner.addResult("FAIL: FOUND: " + antiGolden[i]);
             }
         }
 
         if (!failed)
-            InspectorTest.addResult("PASS");
+            TestRunner.addResult("PASS");
 
         continuation();
     }

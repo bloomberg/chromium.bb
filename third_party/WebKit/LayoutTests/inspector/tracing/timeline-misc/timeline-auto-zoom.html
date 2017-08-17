@@ -33,16 +33,16 @@ function test()
         {"name": "FunctionCall", "ts": 6000000, "dur":  1000, "ph": "X", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline", "args":{"data":{}}}
     ];
 
-    UI.panels.timeline._setModel(InspectorTest.createPerformanceModelWithEvents(traceEvents));
+    UI.panels.timeline._setModel(PerformanceTestRunner.createPerformanceModelWithEvents(traceEvents));
 
     var overview = UI.panels.timeline._overviewPane;
     var startTime = overview._windowStartTime;
     var endTime = overview._windowEndTime;
-    InspectorTest.assertGreaterOrEqual(startTime, 1010);
-    InspectorTest.assertGreaterOrEqual(2000, startTime);
-    InspectorTest.assertGreaterOrEqual(endTime, 4200);
-    InspectorTest.assertGreaterOrEqual(5000, startTime);
-    InspectorTest.completeTest();
+    TestRunner.assertGreaterOrEqual(startTime, 1010);
+    TestRunner.assertGreaterOrEqual(2000, startTime);
+    TestRunner.assertGreaterOrEqual(endTime, 4200);
+    TestRunner.assertGreaterOrEqual(5000, startTime);
+    TestRunner.completeTest();
 }
 
 </script>

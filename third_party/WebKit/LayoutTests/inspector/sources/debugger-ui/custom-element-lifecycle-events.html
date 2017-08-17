@@ -22,26 +22,26 @@ function test() {
         "created.remove();",
     ].join('\n');
 
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1() {
-        InspectorTest.evaluateInConsole(setup, function() {
-            InspectorTest.addResult("Custom element registered.");
-            InspectorTest.evaluateInConsoleAndDump("new CustomElement() instanceof CustomElement", step2);
+        ConsoleTestRunner.evaluateInConsole(setup, function() {
+            TestRunner.addResult("Custom element registered.");
+            ConsoleTestRunner.evaluateInConsoleAndDump("new CustomElement() instanceof CustomElement", step2);
         });
     }
 
     function step2() {
-        InspectorTest.evaluateInConsole('debugger;');
-        InspectorTest.waitUntilPaused(step3);
+        ConsoleTestRunner.evaluateInConsole('debugger;');
+        SourcesTestRunner.waitUntilPaused(step3);
     }
 
     function step3() {
-        InspectorTest.evaluateInConsoleAndDump("new CustomElement() instanceof CustomElement", step4);
+        ConsoleTestRunner.evaluateInConsoleAndDump("new CustomElement() instanceof CustomElement", step4);
     }
 
     function step4() {
-        InspectorTest.evaluateInConsole(lifecycleCallbacks, InspectorTest.completeDebuggerTest);
+        ConsoleTestRunner.evaluateInConsole(lifecycleCallbacks, SourcesTestRunner.completeDebuggerTest);
     }
 }
 

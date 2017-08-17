@@ -13,20 +13,20 @@ function doActions()
 function test()
 {
     UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
-    InspectorTest.invokeAsyncWithTimeline("doActions", InspectorTest.safeWrap(dumpLastFrame));
+    PerformanceTestRunner.invokeAsyncWithTimeline("doActions", TestRunner.safeWrap(dumpLastFrame));
     function dumpLastFrame()
     {
-        var frames = InspectorTest.timelineFrameModel().frames();
-        var lastFrame = InspectorTest.timelineFrameModel().frames().peekLast();
+        var frames = PerformanceTestRunner.timelineFrameModel().frames();
+        var lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
         if (lastFrame) {
-            InspectorTest.addResult("layerTree: " + typeof lastFrame.layerTree);
-            InspectorTest.addResult("mainFrameId: " + typeof lastFrame._mainFrameId);
+            TestRunner.addResult("layerTree: " + typeof lastFrame.layerTree);
+            TestRunner.addResult("mainFrameId: " + typeof lastFrame._mainFrameId);
             var paints = lastFrame.layerTree.paints();
-            InspectorTest.addResult("paints: " + (paints && paints.length ? "present" : "absent"));
+            TestRunner.addResult("paints: " + (paints && paints.length ? "present" : "absent"));
         } else {
-            InspectorTest.addResult("FAIL: there was no frame");
+            TestRunner.addResult("FAIL: there was no frame");
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 </script>

@@ -79,10 +79,10 @@ function startTimeline()
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testStartStopTimeline(next)
         {
-            InspectorTest.evaluateWithTimeline("startStopTimeline()", allEventsReceived);
+            PerformanceTestRunner.evaluateWithTimeline("startStopTimeline()", allEventsReceived);
 
             function allEventsReceived()
             {
@@ -93,7 +93,7 @@ function test()
 
         function testStartStopMultiple(next)
         {
-            InspectorTest.evaluateWithTimeline("startStopMultiple()", allEventsReceived);
+            PerformanceTestRunner.evaluateWithTimeline("startStopMultiple()", allEventsReceived);
 
             function allEventsReceived()
             {
@@ -104,26 +104,26 @@ function test()
 
         function testStartMultipleStopInsideEvals(next)
         {
-            InspectorTest.startTimeline(step1);
+            PerformanceTestRunner.startTimeline(step1);
 
             function step1()
             {
-                InspectorTest.evaluateInPage("startMultiple()", step2);
+                TestRunner.evaluateInPage("startMultiple()", step2);
             }
 
             function step2()
             {
-                InspectorTest.evaluateInPage("stopTwo()", step3);
+                TestRunner.evaluateInPage("stopTwo()", step3);
             }
 
             function step3()
             {
-                InspectorTest.evaluateInPage("stopOne()", step4);
+                TestRunner.evaluateInPage("stopOne()", step4);
             }
 
             function step4()
             {
-                InspectorTest.stopTimeline(finish);
+                PerformanceTestRunner.stopTimeline(finish);
             }
 
             function finish()
@@ -135,7 +135,7 @@ function test()
 
         function testStopUnknown(next)
         {
-            InspectorTest.evaluateWithTimeline("stopUnknown()", allEventsReceived);
+            PerformanceTestRunner.evaluateWithTimeline("stopUnknown()", allEventsReceived);
 
             function allEventsReceived()
             {
@@ -146,7 +146,7 @@ function test()
 
         function testStartFromPanel(next)
         {
-            InspectorTest.evaluateWithTimeline("startStopTimeline()", finish)
+            PerformanceTestRunner.evaluateWithTimeline("startStopTimeline()", finish)
 
             function finish()
             {
@@ -157,7 +157,7 @@ function test()
 
         function testStopFromPanel(next)
         {
-            InspectorTest.evaluateWithTimeline("startTimeline()", finish)
+            PerformanceTestRunner.evaluateWithTimeline("startTimeline()", finish)
 
             function finish()
             {
@@ -168,16 +168,16 @@ function test()
     ]);
 
     function printTimelineAndTimestampEvents() {
-        InspectorTest.tracingModel().sortedProcesses().forEach(function(process)
+        PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process)
         {
             process.sortedThreads().forEach(function(thread)
             {
                 thread.events().forEach(function(event)
                 {
                    if (event.hasCategory(TimelineModel.TimelineModel.Category.Console))
-                       InspectorTest.addResult(event.name);
+                       TestRunner.addResult(event.name);
                    else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp)
-                       InspectorTest.addResult(event.args["data"]["message"]);
+                       TestRunner.addResult(event.args["data"]["message"]);
                 });
             });
         });

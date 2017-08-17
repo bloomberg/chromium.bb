@@ -49,17 +49,17 @@ function sendXHR()
 
 function test()
 {
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:loadend", true, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:progress", true, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:readystatechange", true, "xmlhttprequest");
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        SourcesTestRunner.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:loadend", true, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:progress", true, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:readystatechange", true, "xmlhttprequest");
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     var totalBreaks = 6;
@@ -68,28 +68,28 @@ function test()
     {
         --totalBreaks;
         auxData = auxData || {};
-        var result = InspectorTest.captureStackTraceIntoString(callFrames) + "\n";
+        var result = SourcesTestRunner.captureStackTraceIntoString(callFrames) + "\n";
         result += "Event target: " + auxData["targetName"] + "\n";
 
         callStacksOutput.push(result);
         if (totalBreaks) {
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
         } else {
-            InspectorTest.addResult("Captured call stacks in no particular order:");
+            TestRunner.addResult("Captured call stacks in no particular order:");
             callStacksOutput.sort();
-            InspectorTest.addResults(callStacksOutput);
+            TestRunner.addResults(callStacksOutput);
             completeTest();
         }
     }
 
     function completeTest()
     {
-        InspectorTest.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:loadend", false, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:progress", false, "xmlhttprequest");
-        InspectorTest.setEventListenerBreakpoint("listener:readystatechange", false, "xmlhttprequest");
-        InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.completeDebuggerTest.bind(InspectorTest));
+        SourcesTestRunner.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:loadend", false, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:progress", false, "xmlhttprequest");
+        SourcesTestRunner.setEventListenerBreakpoint("listener:readystatechange", false, "xmlhttprequest");
+        TestRunner.deprecatedRunAfterPendingDispatches(SourcesTestRunner.completeDebuggerTest.bind(InspectorTest));
     }
 }
 

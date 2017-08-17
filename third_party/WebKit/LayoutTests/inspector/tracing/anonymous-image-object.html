@@ -26,12 +26,12 @@ function doActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("doActions", onRecordingDone);
+    PerformanceTestRunner.invokeAsyncWithTimeline("doActions", onRecordingDone);
 
     function onRecordingDone()
     {
-        InspectorTest.addResult("DONE");
-        InspectorTest.completeTest();
+        TestRunner.addResult("DONE");
+        TestRunner.completeTest();
     }
 }
 </script>

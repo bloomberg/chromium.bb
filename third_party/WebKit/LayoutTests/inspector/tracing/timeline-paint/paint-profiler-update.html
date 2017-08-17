@@ -30,23 +30,23 @@ function test()
     panel._captureLayersAndPicturesSetting.set(true);
     panel._onModeChanged();
 
-    InspectorTest.invokeAsyncWithTimeline("performActions", onRecordingDone);
+    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", onRecordingDone);
     var paintEvents = [];
     function onRecordingDone()
     {
-        var events = InspectorTest.timelineModel()._mainThreadEvents;
+        var events = PerformanceTestRunner.timelineModel()._mainThreadEvents;
         for (var event of events) {
             if (event.name === TimelineModel.TimelineModel.RecordType.Paint) {
                 paintEvents.push(event);
                 if (!TimelineModel.TimelineData.forEvent(event).picture)
-                    InspectorTest.addResult("Event without picture at " + paintEvents.length);
+                    TestRunner.addResult("Event without picture at " + paintEvents.length);
             }
         }
 
         if (paintEvents.length < 2)
              throw new Error("FAIL: Expect at least two paint events");
 
-        InspectorTest.addSniffer(panel._flameChart._detailsView, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
+        TestRunner.addSniffer(panel._flameChart._detailsView, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
         panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]));
     }
 
@@ -56,7 +56,7 @@ function test()
 
         panel._flameChart._detailsView._tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.PaintProfiler, true);
         var paintProfilerView = panel._flameChart._detailsView._lazyPaintProfilerView._paintProfilerView;
-        InspectorTest.addSniffer(paintProfilerView, "_update", onPaintProfilerUpdate, true);
+        TestRunner.addSniffer(paintProfilerView, "_update", onPaintProfilerUpdate, true);
 
         function onPaintProfilerUpdate()
         {
@@ -64,9 +64,9 @@ function test()
             if (!paintProfilerView._snapshot)
                 return;
             var logSize = paintProfilerView._log && paintProfilerView._log.length ? ">0" : "0";
-            InspectorTest.addResult("Paint " + updateCount + " log size: " + logSize);
+            TestRunner.addResult("Paint " + updateCount + " log size: " + logSize);
             if (updateCount++)
-                InspectorTest.completeTest();
+                TestRunner.completeTest();
             else
                 panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[1]), Timeline.TimelineDetailsView.Tab.PaintProfiler);
         }

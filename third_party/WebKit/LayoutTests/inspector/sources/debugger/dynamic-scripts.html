@@ -32,17 +32,17 @@ function scriptLoaded()
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(step1);
-    InspectorTest.evaluateInPage("loadScripts()", function() { })
+    ConsoleTestRunner.addConsoleSniffer(step1);
+    TestRunner.evaluateInPage("loadScripts()", function() { })
 
     function step1()
     {
-        InspectorTest.startDebuggerTest(step2);
+        SourcesTestRunner.startDebuggerTest(step2);
     }
 
     function step2()
     {
-        InspectorTest.deprecatedRunAfterPendingDispatches(step3);
+        TestRunner.deprecatedRunAfterPendingDispatches(step3);
     }
 
     function step3()
@@ -64,16 +64,16 @@ function test()
         }
         urls = urls.filter(filter);
 
-        InspectorTest.addResult("UISourceCodes:");
+        TestRunner.addResult("UISourceCodes:");
         var lastURL;
         for (var i = 0; i < urls.length; ++i) {
             // Hack around the problem with scripts surviving between tests.
             if (urls[i] === lastURL && !lastURL.endsWith(".html"))
                 continue;
-            InspectorTest.addResult("    " + urls[i]);
+            TestRunner.addResult("    " + urls[i]);
             lastURL = urls[i];
         }
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

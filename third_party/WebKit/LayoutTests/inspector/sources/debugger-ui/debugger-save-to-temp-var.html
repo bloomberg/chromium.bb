@@ -57,15 +57,15 @@ function test()
         "new Error('errr')"
     ];
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.setQuiet(true);
+    SourcesTestRunner.startDebuggerTest(step1);
 
-    InspectorTest.addResult("Number of expressions: " + expressions.length);
-    InspectorTest.addResult("Names [temp3..temp7] are reserved\n");
+    TestRunner.addResult("Number of expressions: " + expressions.length);
+    TestRunner.addResult("Names [temp3..temp7] are reserved\n");
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause()
@@ -77,15 +77,15 @@ function test()
     {
         var expression = expressions.shift();
         if (!expression) {
-            InspectorTest.waitForRemoteObjectsConsoleMessages(tearDown);
+            ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(tearDown);
             return;
         }
 
         function didEvaluate(result)
         {
-            InspectorTest.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
+            TestRunner.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
             UI.panels.sources._saveToTempVariable(result.object);
-            InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
+            ConsoleTestRunner.waitUntilNthMessageReceived(2, evaluateNext);
         }
 
         UI.context.flavor(SDK.ExecutionContext).evaluate({expression: expression, objectGroup: "console"}).then(didEvaluate);
@@ -93,13 +93,13 @@ function test()
 
     function tearDown()
     {
-        InspectorTest.evaluateInPage("checkThisObject()", dumpConsoleMessages);
+        TestRunner.evaluateInPage("checkThisObject()", dumpConsoleMessages);
     }
 
     function dumpConsoleMessages()
     {
-        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.completeDebuggerTest();
+        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

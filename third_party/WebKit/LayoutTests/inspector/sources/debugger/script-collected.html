@@ -15,21 +15,21 @@ function generateErrorScripts()
 
 function test()
 {
-    InspectorTest.startDebuggerTest(step1);
+    SourcesTestRunner.startDebuggerTest(step1);
     var discardedScripts = 0;
 
     function step1()
     {
-        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DiscardedAnonymousScriptSource, () => ++discardedScripts);
-        InspectorTest.evaluateInPage("generateErrorScripts()\n//# sourceURL=foo", step2);
+        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DiscardedAnonymousScriptSource, () => ++discardedScripts);
+        TestRunner.evaluateInPage("generateErrorScripts()\n//# sourceURL=foo", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Discarded: " + discardedScripts);
+        TestRunner.addResult("Discarded: " + discardedScripts);
         var codes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Debugger).filter(code => !code.url().match(/VM\d+\s/));
-        InspectorTest.addResult("Remaining UISourceCodes: " + codes.length);
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("Remaining UISourceCodes: " + codes.length);
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 </script>

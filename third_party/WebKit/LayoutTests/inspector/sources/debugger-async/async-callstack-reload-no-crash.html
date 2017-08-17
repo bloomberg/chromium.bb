@@ -18,24 +18,24 @@ function callback()
 function test()
 {
     var maxAsyncCallStackDepth = 8;
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     async function step1()
     {
-        await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        await TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause()
     {
-        InspectorTest.addResult("Reloading the page...");
-        InspectorTest.reloadPage(afterReload);
+        TestRunner.addResult("Reloading the page...");
+        TestRunner.reloadPage(afterReload);
     }
 
     function afterReload()
     {
-        InspectorTest.addResult("PASS: Reloaded successfully.");
-        InspectorTest.completeDebuggerTest();
+        TestRunner.addResult("PASS: Reloaded successfully.");
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 

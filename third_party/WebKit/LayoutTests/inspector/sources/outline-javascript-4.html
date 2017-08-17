@@ -7,18 +7,18 @@
 
 async function test()
 {
-    var test = InspectorTest.testJavascriptOutline;
+    var test = SourcesTestRunner.testJavascriptOutline;
 
-    InspectorTest.markStep('testAsyncFunction');
+    TestRunner.markStep('testAsyncFunction');
     await test('async function foo() { }');
 
-    InspectorTest.markStep('testAsyncArrowFunction');
+    TestRunner.markStep('testAsyncArrowFunction');
     await test('var sum = async (x, y) => x + y;');
 
-    InspectorTest.markStep('testGeneratorFunction');
+    TestRunner.markStep('testGeneratorFunction');
     await test('function* foo() { }');
 
-    InspectorTest.markStep('testMismatchBrackets');
+    TestRunner.markStep('testMismatchBrackets');
     await test(`
 function foo(a, b) {
     if (a > b) {
@@ -30,13 +30,13 @@ function bar(eee) {
 }
 `);
 
-    InspectorTest.markStep('testSyntaxError');
+    TestRunner.markStep('testSyntaxError');
     await test(`
 function notAGenerator(a, b) {
     yield 10;
 }`);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

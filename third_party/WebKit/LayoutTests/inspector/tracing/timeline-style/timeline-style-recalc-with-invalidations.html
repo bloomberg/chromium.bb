@@ -42,29 +42,29 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testLocalFrame(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
+            PerformanceTestRunner.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
                 next();
             });
         },
 
         function multipleStyleRecalcs(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, "second recalc style invalidations");
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, "third recalc style invalidations");
+            PerformanceTestRunner.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, "second recalc style invalidations");
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, "third recalc style invalidations");
                 next();
             });
         },
 
         function testSubframe(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("changeSubframeStylesAndDisplay", function() {
-                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
+            PerformanceTestRunner.invokeAsyncWithTimeline("changeSubframeStylesAndDisplay", function() {
+                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
                 next();
             });
         }

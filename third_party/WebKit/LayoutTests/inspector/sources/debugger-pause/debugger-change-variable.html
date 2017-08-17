@@ -20,38 +20,38 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.startDebuggerTest(step1, true);
+    SourcesTestRunner.startDebuggerTest(step1, true);
 
     function evalLocalVariables(callback)
     {
-        InspectorTest.evaluateInConsoleAndDump("localObject1.a", next);
+        ConsoleTestRunner.evaluateInConsoleAndDump("localObject1.a", next);
         function next()
         {
-            InspectorTest.evaluateInConsoleAndDump("localObject2", callback);
+            ConsoleTestRunner.evaluateInConsoleAndDump("localObject2", callback);
         }
     }
 
     function localScopeObject()
     {
-        var localsSection = InspectorTest.scopeChainSections()[0];
+        var localsSection = SourcesTestRunner.scopeChainSections()[0];
         return localsSection._object;
     }
 
     function step1()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
     }
 
     function step2(callFrames)
     {
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         pane._list.selectItem(pane._list._model.at(1));
-        InspectorTest.deprecatedRunAfterPendingDispatches(step3);
+        TestRunner.deprecatedRunAfterPendingDispatches(step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("\nEvaluated before modification:");
+        TestRunner.addResult("\nEvaluated before modification:");
         evalLocalVariables(step4);
     }
 
@@ -59,13 +59,13 @@ var test = function()
     {
         await localScopeObject().setPropertyValue("localObject1", "({ a: -290})");
         await localScopeObject().setPropertyValue({ value: "localObject2" }, "123");
-        InspectorTest.addResult("\nEvaluated after modification:");
+        TestRunner.addResult("\nEvaluated after modification:");
         evalLocalVariables(step7);
     }
 
     function step7()
     {
-        InspectorTest.completeDebuggerTest();
+        SourcesTestRunner.completeDebuggerTest();
     }
 }
 
