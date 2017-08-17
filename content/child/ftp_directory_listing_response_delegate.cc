@@ -94,8 +94,8 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
     return;
   }
   for (const FtpDirectoryListingEntry& entry : entries) {
-    // Skip the current and parent directory entries in the listing. Our header
-    // always includes them.
+    // Skip the current and parent directory entries in the listing.
+    // net::GetParentDirectoryLink() takes care of them.
     if (base::EqualsASCII(entry.name, ".") ||
         base::EqualsASCII(entry.name, ".."))
       continue;
@@ -120,7 +120,7 @@ void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
   // If this isn't top level directory (i.e. the path isn't "/",)
   // add a link to the parent directory.
   if (response_url.path().length() > 1) {
-    SendDataToClient("<script>onHasParentDirectory();</script>\n");
+    SendDataToClient(net::GetParentDirectoryLink());
   }
 }
 
