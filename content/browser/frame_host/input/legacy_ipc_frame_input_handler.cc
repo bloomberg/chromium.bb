@@ -165,6 +165,11 @@ void LegacyIPCFrameInputHandler::MoveCaret(const gfx::Point& point) {
   SendInput(base::MakeUnique<InputMsg_MoveCaret>(routing_id_, point));
 }
 
+void LegacyIPCFrameInputHandler::GetWidgetInputHandler(
+    mojom::WidgetInputHandlerAssociatedRequest interface_request) {
+  NOTREACHED();
+}
+
 void LegacyIPCFrameInputHandler::SendInput(
     std::unique_ptr<IPC::Message> message) {
   static_cast<LegacyInputRouterImpl*>(

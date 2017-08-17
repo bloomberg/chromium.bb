@@ -31,7 +31,7 @@
 #include "content/browser/child_process_importance.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
-#include "content/browser/renderer_host/input/input_router_client.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/legacy_ipc_widget_input_handler.h"
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -102,7 +102,7 @@ struct TextInputState;
 // embedders of content, and adds things only visible to content.
 class CONTENT_EXPORT RenderWidgetHostImpl
     : public RenderWidgetHost,
-      public InputRouterClient,
+      public InputRouterImplClient,
       public InputDispositionHandler,
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
@@ -215,7 +215,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
   void SetCursor(const CursorInfo& cursor_info) override;
-  mojom::WidgetInputHandler* GetWidgetInputHandler();
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -596,6 +595,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // there are any queued messages belonging to it, they will be processed.
   void DidProcessFrame(uint32_t frame_token);
 
+  // An associated WidgetInputHandler should be set if the RWHI is associated
+  // with a RenderFrameHost. Using an associated channel will allow the
+  // interface calls processed on the FrameInputHandler to be processed in order
+  // with the interface calls processed on the WidgetInputHandler.
+  void SetWidgetInputHandler(
+      mojom::WidgetInputHandlerAssociatedPtr widget_input_handler);
+  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
   void SetWidget(mojom::WidgetPtr widget);
 
  protected:
@@ -770,6 +776,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // viz::SharedBitmapAllocationObserver implementation.
   void DidAllocateSharedBitmap(
       uint32_t last_shared_bitmap_sequence_number) override;
+  void SetupInputRouter();
 
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
@@ -1012,7 +1019,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     viz::mojom::HitTestRegionListPtr hit_test_region_list;
   } saved_frame_;
 
-  std::unique_ptr<LegacyIPCWidgetInputHandler> legacy_widget_input_handler_;
+  // If the |associated_widget_input_handler_| is set it should always be
+  // used to ensure in order delivery of related messages that may occur
+  // at the frame input level; see FrameInputHandler. Note that when the
+  // RWHI wraps a WebPagePopup widget it will only have a
+  // a |widget_input_handler_|.
+  mojom::WidgetInputHandlerAssociatedPtr associated_widget_input_handler_;
+  mojom::WidgetInputHandlerPtr widget_input_handler_;
+  std::unique_ptr<mojom::WidgetInputHandler> legacy_widget_input_handler_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

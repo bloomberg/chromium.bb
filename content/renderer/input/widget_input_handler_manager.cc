@@ -55,6 +55,19 @@ void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
 
 }  // namespace
 
+scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
+    base::WeakPtr<RenderWidget> render_widget,
+    IPC::Sender* legacy_host_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+    blink::scheduler::RendererScheduler* renderer_scheduler) {
+  scoped_refptr<WidgetInputHandlerManager> manager =
+      new WidgetInputHandlerManager(
+          std::move(render_widget), legacy_host_channel,
+          std::move(compositor_task_runner), renderer_scheduler);
+  manager->Init();
+  return manager;
+}
+
 WidgetInputHandlerManager::WidgetInputHandlerManager(
     base::WeakPtr<RenderWidget> render_widget,
     IPC::Sender* legacy_host_channel,
@@ -69,14 +82,16 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
   // TODO(dtapuska): Define a mojo channel for back to the host. Currently
   // we use legacy IPC.
   legacy_host_message_routing_id_ = render_widget->routing_id();
+}
 
+void WidgetInputHandlerManager::Init() {
   if (compositor_task_runner_) {
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &WidgetInputHandlerManager::InitOnCompositorThread, this,
-            render_widget->compositor()->GetInputHandler(),
-            render_widget->compositor_deps()->IsScrollAnimatorEnabled()));
+            render_widget_->compositor()->GetInputHandler(),
+            render_widget_->compositor_deps()->IsScrollAnimatorEnabled()));
   }
 }
 

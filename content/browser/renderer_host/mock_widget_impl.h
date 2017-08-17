@@ -16,6 +16,8 @@ class MockWidgetImpl : public mojom::Widget {
   explicit MockWidgetImpl(mojo::InterfaceRequest<mojom::Widget> request);
   ~MockWidgetImpl() override;
 
+  void GetWidgetInputHandler(mojom::WidgetInputHandlerRequest request) override;
+
  private:
   mojo::Binding<mojom::Widget> binding_;
 };

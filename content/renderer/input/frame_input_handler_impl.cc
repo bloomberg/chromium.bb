@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
+#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
@@ -43,7 +45,6 @@ FrameInputHandlerImpl::FrameInputHandlerImpl(
       input_event_queue_(render_frame->GetRenderWidget()->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this)
-
 {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
   // If we have created an input event queue move the mojo request over to the
@@ -389,6 +390,21 @@ void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
   RenderViewImpl* render_view = render_frame_->render_view();
   render_frame_->GetWebFrame()->MoveCaretSelection(
       render_view->ConvertWindowPointToViewport(point));
+}
+
+void FrameInputHandlerImpl::GetWidgetInputHandler(
+    mojom::WidgetInputHandlerAssociatedRequest interface_request) {
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::GetWidgetInputHandler,
+                                  weak_this_, std::move(interface_request)));
+    return;
+  }
+  if (!render_frame_)
+    return;
+  render_frame_->GetRenderWidget()
+      ->widget_input_handler_manager()
+      ->AddAssociatedInterface(std::move(interface_request));
 }
 
 void FrameInputHandlerImpl::ExecuteCommandOnMainThread(

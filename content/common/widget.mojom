@@ -8,6 +8,5 @@ import "content/common/input/input_handler.mojom";
 
 // Interface representing the Widget.
 interface Widget {
-  // TODO(dtapuska): Implementation pending. crbug.com/722928.
-  // GetWidgetInputHandler(WidgetInputHandler& request);
+  GetWidgetInputHandler(WidgetInputHandler& request);
 };

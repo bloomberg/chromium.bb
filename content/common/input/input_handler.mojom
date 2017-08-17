@@ -282,6 +282,8 @@ interface FrameInputHandler {
   // Requests the renderer to move the caret selection toward the point.
   MoveCaret(gfx.mojom.Point point);
 
-  // TODO(dtapuska): Implement WidgetInputHandler.
-  // GetWidgetInputHandler(associated WidgetInputHandler& interface_request);
+  // Return an associated WidgetInputHandler interface so that input
+  // messages to the widget associated with this frame can be sent
+  // serially.
+  GetWidgetInputHandler(associated WidgetInputHandler& interface_request);
 };
