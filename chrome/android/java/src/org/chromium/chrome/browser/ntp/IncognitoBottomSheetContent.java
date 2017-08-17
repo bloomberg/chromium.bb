@@ -48,9 +48,11 @@ public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements 
         mScrollView.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 mIncognitoNewTabPageView.getResources(), R.color.incognito_primary_color));
         // Remove some additional padding that's not necessary when using Chrome Home.
-        mScrollView.setPaddingRelative(0,
-                -((int) activity.getResources().getDimension(R.dimen.toolbar_height_no_shadow)), 0,
-                0);
+        mScrollView.setPaddingRelative(mScrollView.getPaddingStart(),
+                mScrollView.getPaddingTop()
+                        - ((int) activity.getResources().getDimension(
+                                  R.dimen.toolbar_height_no_shadow)),
+                mScrollView.getPaddingEnd(), mScrollView.getPaddingBottom());
 
         mScrollView.getViewTreeObserver().addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
