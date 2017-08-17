@@ -30,9 +30,10 @@ class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
 
 // ServiceWorkerProviderContext stores common state for service worker
-// "providers" (currently WebServiceWorkerProviderImpl and
-// ServiceWorkerNetworkProvider). Providers for the same underlying entity hold
-// strong references to a shared instance of this class.
+// "providers" (currently WebServiceWorkerProviderImpl,
+// ServiceWorkerNetworkProvider, and ServiceWorkerContextClient). Providers for
+// the same underlying entity hold strong references to a shared instance of
+// this class.
 //
 // The ServiceWorkerProviderContext has different roles depending on if it's for
 // a "controllee" (a Document or Worker execution context), or a "controller" (a
@@ -41,7 +42,7 @@ struct ServiceWorkerProviderContextDeleter;
 //    controllee's ServiceWorkerContainer#controller. The reference to the
 //    controller is kept until SetController() is called with an
 //    invalid worker info.
-//  - For controllers, this is used for keeping the associated registration and
+//  - For controllers, it's used for keeping the associated registration and
 //    its versions alive to create the controller's
 //    ServiceWorkerGlobalScope#registration.
 //
