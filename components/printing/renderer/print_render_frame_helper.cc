@@ -790,6 +790,11 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   if (!frame())
     return;
 
+  // Plugins do not need to be resized. Resizing the PDF plugin causes a
+  // flicker in the top left corner behind the preview. See crbug.com/739973.
+  if (PrintingNodeOrPdfFrame(frame(), node_to_print_))
+    return;
+
   // Backup size and offset if it's a local frame.
   blink::WebView* web_view = frame_.view();
   if (blink::WebFrame* web_frame = web_view->MainFrame()) {
@@ -908,6 +913,10 @@ void PrepareFrameAndViewForPrint::CallOnReady() {
 
 void PrepareFrameAndViewForPrint::RestoreSize() {
   if (!frame())
+    return;
+
+  // Do not restore plugins, since they are not resized.
+  if (PrintingNodeOrPdfFrame(frame(), node_to_print_))
     return;
 
   blink::WebView* web_view = frame_.GetFrame()->View();
