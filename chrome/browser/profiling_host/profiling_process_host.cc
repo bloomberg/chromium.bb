@@ -40,6 +40,10 @@ ProfilingProcessHost::~ProfilingProcessHost() {
 
 void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
+  // Ignore newly launched child process if only profiling the browser.
+  if (mode_ == Mode::kBrowser)
+    return;
+
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
         ->PostTask(
@@ -67,6 +71,10 @@ void ProfilingProcessHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // Ignore newly launched renderer if only profiling the browser.
+  if (mode_ == Mode::kBrowser)
+    return;
+
   if (type != content::NOTIFICATION_RENDERER_PROCESS_CREATED)
     return;
 
@@ -114,9 +122,11 @@ void ProfilingProcessHost::SendPipeToClientProcess(
 
 // static
 ProfilingProcessHost* ProfilingProcessHost::EnsureStarted(
-    content::ServiceManagerConnection* connection) {
+    content::ServiceManagerConnection* connection,
+    Mode mode) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ProfilingProcessHost* host = GetInstance();
+  host->SetMode(mode);
   host->MakeConnector(connection);
   host->LaunchAsService();
   return host;
@@ -194,6 +204,10 @@ void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
                                                        base::File file) {
   mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
   memlog_->DumpProcess(pid, std::move(handle));
+}
+
+void ProfilingProcessHost::SetMode(Mode mode) {
+  mode_ = mode;
 }
 
 }  // namespace profiling

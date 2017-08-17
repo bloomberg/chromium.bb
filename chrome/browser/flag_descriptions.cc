@@ -1971,6 +1971,17 @@ const char kCloudPrintXpsDescription[] =
 
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+const char kEnableOutOfProcessHeapProfilingName[] =
+    "Out of process heap profiling.";
+const char kEnableOutOfProcessHeapProfilingDescription[] =
+    "Creates a profiling service that records stacktraces for all live, "
+    "malloced objects.";
+const char kEnableOutOfProcessHeapProfilingModeBrowser[] =
+    "Profile only the browser process.";
+const char kEnableOutOfProcessHeapProfilingModeAll[] = "Profile all processes.";
+#endif  // ENABLE_OOP_HEAP_PROFILING
+
 #if BUILDFLAG(ENABLE_WEBRTC)
 
 const char kWebrtcH264WithOpenh264FfmpegName[] =

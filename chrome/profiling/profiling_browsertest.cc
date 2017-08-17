@@ -21,7 +21,8 @@ class ProfilingBrowserTest : public InProcessBrowserTest {
     // function for details.
     // TODO(awong): Can we do this with just SetUpCommandLine() and no Relaunch?
     base::CommandLine new_command_line(GetCommandLineForRelaunch());
-    new_command_line.AppendSwitch(switches::kMemlog);
+    new_command_line.AppendSwitchASCII(switches::kMemlog,
+                                       switches::kMemlogModeAll);
 
     ui_test_utils::BrowserAddedObserver observer;
     base::LaunchProcess(new_command_line, base::LaunchOptionsForTest());

@@ -47,9 +47,18 @@ namespace profiling {
 class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                              content::NotificationObserver {
  public:
+  enum class Mode {
+    // Only profile the browser process.
+    kBrowser,
+
+    // Profile all processes.
+    kAll,
+  };
+
   // Launches the profiling process if necessary and returns a pointer to it.
   static ProfilingProcessHost* EnsureStarted(
-      content::ServiceManagerConnection* connection);
+      content::ServiceManagerConnection* connection,
+      Mode mode);
 
   // Returns a pointer to the current global profiling process host.
   static ProfilingProcessHost* GetInstance();
@@ -91,6 +100,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void GetOutputFileOnBlockingThread(base::ProcessId pid);
   void HandleDumpProcessOnIOThread(base::ProcessId pid, base::File file);
 
+  void SetMode(Mode mode);
+
   content::NotificationRegistrar registrar_;
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::MemlogPtr memlog_;
@@ -98,6 +109,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Handles profiling for the current process, without connecting to any
   // service manager interfaces.
   profiling::MemlogClient memlog_client_;
+
+  // The mode determines which processes should be profiled.
+  Mode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };
