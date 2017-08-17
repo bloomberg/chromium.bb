@@ -68,52 +68,53 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
+                                              &images);
     EXPECT_EQ(2u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
-    EXPECT_TRUE(images[1].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->image() == discardable_image[1][1]);
   }
 
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(130, 140, 128, 128), 1.f, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 140, 128, 128),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[1][1]);
   }
 
   // The rotated bitmap would still be in the top right tile.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[1][1]);
   }
 
   // Layer sized iterators. These should find all pixel refs.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
+                                              &images);
     EXPECT_EQ(3u, images.size());
     // Top left tile with bitmap[0][0] and bitmap[1][1].
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
-    EXPECT_TRUE(images[1].image() == discardable_image[1][0]);
-    EXPECT_TRUE(images[2].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->image() == discardable_image[1][0]);
+    EXPECT_TRUE(images[2]->image() == discardable_image[1][1]);
   }
 
   // Verify different raster scales
   for (float scale = 1.f; scale <= 5.f; scale += 0.5f) {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(130, 0, 128, 128), scale, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
+                                              &images);
+    DrawImage image(*images[0], scale, DefaultColorSpace());
     EXPECT_EQ(1u, images.size());
-    EXPECT_FLOAT_EQ(scale, images[0].scale().width());
-    EXPECT_FLOAT_EQ(scale, images[0].scale().height());
+    EXPECT_FLOAT_EQ(scale, image.scale().width());
+    EXPECT_FLOAT_EQ(scale, image.scale().height());
   }
 }
 
@@ -129,23 +130,23 @@ TEST(RecordingSourceTest, EmptyImages) {
 
   // Tile sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(140, 140, 128, 128), 1.f, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
 }
@@ -183,23 +184,23 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
 
   // Tile sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(140, 140, 128, 128), 1.f, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
 }
@@ -232,39 +233,39 @@ TEST(RecordingSourceTest, DiscardableImages) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
   }
 
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(140, 140, 128, 128), 1.f, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[1][1]);
   }
 
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
 
   // Layer sized iterators. These should find all 3 images.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
+                                              &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
-    EXPECT_TRUE(images[1].image() == discardable_image[1][0]);
-    EXPECT_TRUE(images[2].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->image() == discardable_image[1][0]);
+    EXPECT_TRUE(images[2]->image() == discardable_image[1][1]);
   }
 }
 
@@ -304,36 +305,36 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
   }
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(
-        gfx::Rect(260, 260, 256, 256), 1.f, DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256),
+                                              &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[1][1]);
   }
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256),
+                                              &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators. These should find three images.
   {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), 1.f,
-                                              DefaultColorSpace(), &images);
+    std::vector<const DrawImage*> images;
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512),
+                                              &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0].image() == discardable_image[0][0]);
-    EXPECT_TRUE(images[1].image() == discardable_image[0][1]);
-    EXPECT_TRUE(images[2].image() == discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->image() == discardable_image[0][1]);
+    EXPECT_TRUE(images[2]->image() == discardable_image[1][1]);
   }
 }
 

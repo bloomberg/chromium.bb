@@ -98,12 +98,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   gfx::Size GetSize() const;
 
   // Populate the given list with all images that may overlap the given
-  // rect in layer space. The returned draw images' matrices are modified as if
-  // they were being using during raster at scale |raster_scale|.
+  // rect in layer space.
   void GetDiscardableImagesInRect(const gfx::Rect& layer_rect,
-                                  float contents_scale,
-                                  const gfx::ColorSpace& target_color_space,
-                                  std::vector<DrawImage>* images) const;
+                                  std::vector<const DrawImage*>* images) const;
 
   // Return true iff this raster source can raster the given rect in layer
   // space.

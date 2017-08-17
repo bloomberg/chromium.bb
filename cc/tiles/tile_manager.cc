@@ -884,17 +884,18 @@ void TileManager::PartitionImagesForCheckering(
     std::vector<DrawImage>* sync_decoded_images,
     std::vector<PaintImage>* checkered_images) {
   Tile* tile = prioritized_tile.tile();
-  std::vector<DrawImage> images_in_tile;
+  std::vector<const DrawImage*> images_in_tile;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-      tile->enclosing_layer_rect(), tile->raster_transform().scale(),
-      raster_color_space, &images_in_tile);
+      tile->enclosing_layer_rect(), &images_in_tile);
   WhichTree tree = tile->tiling()->tree();
 
-  for (auto& draw_image : images_in_tile) {
+  for (const auto* original_draw_image : images_in_tile) {
+    DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
+                         raster_color_space);
     if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree))
       checkered_images->push_back(draw_image.paint_image());
     else
-      sync_decoded_images->push_back(draw_image);
+      sync_decoded_images->push_back(std::move(draw_image));
   }
 }
 
@@ -904,13 +905,14 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
     CheckerImageTracker::DecodeType decode_type,
     CheckerImageTracker::ImageDecodeQueue* image_decode_queue) {
   Tile* tile = prioritized_tile.tile();
-  std::vector<DrawImage> images_in_tile;
+  std::vector<const DrawImage*> images_in_tile;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-      tile->enclosing_layer_rect(), tile->raster_transform().scale(),
-      raster_color_space, &images_in_tile);
+      tile->enclosing_layer_rect(), &images_in_tile);
   WhichTree tree = tile->tiling()->tree();
 
-  for (auto& draw_image : images_in_tile) {
+  for (const auto* original_draw_image : images_in_tile) {
+    DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
+                         raster_color_space);
     if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree)) {
       image_decode_queue->push_back(CheckerImageTracker::ImageDecodeRequest(
           draw_image.paint_image(), decode_type));
@@ -1005,9 +1007,10 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
 
     // Add the sync decoded images to |new_locked_images| so they can be added
     // to the task graph.
-    new_locked_images.insert(new_locked_images.end(),
-                             sync_decoded_images.begin(),
-                             sync_decoded_images.end());
+    new_locked_images.insert(
+        new_locked_images.end(),
+        std::make_move_iterator(sync_decoded_images.begin()),
+        std::make_move_iterator(sync_decoded_images.end()));
 
     // For checkered-images, send them to the decode service.
     for (auto& image : checkered_images) {

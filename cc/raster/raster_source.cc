@@ -194,12 +194,10 @@ bool RasterSource::PerformSolidColorAnalysis(gfx::Rect layer_rect,
 
 void RasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
-    float contents_scale,
-    const gfx::ColorSpace& target_color_space,
-    std::vector<DrawImage>* images) const {
+    std::vector<const DrawImage*>* images) const {
   DCHECK_EQ(0u, images->size());
-  display_list_->discardable_image_map().GetDiscardableImagesInRect(
-      layer_rect, contents_scale, target_color_space, images);
+  display_list_->discardable_image_map().GetDiscardableImagesInRect(layer_rect,
+                                                                    images);
 }
 
 gfx::Rect RasterSource::GetRectForImage(PaintImage::Id image_id) const {

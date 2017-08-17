@@ -66,8 +66,9 @@ PlaybackImageProvider::GetDecodedDrawImage(const PaintImage& paint_image,
 
   DrawImage draw_image = DrawImage(paint_image, RoundOutRect(src_rect),
                                    filter_quality, matrix, target_color_space_);
+  auto decoded_draw_image = cache_->GetDecodedImageForDraw(draw_image);
   return ScopedDecodedDrawImage(
-      cache_->GetDecodedImageForDraw(draw_image),
+      decoded_draw_image,
       base::BindOnce(&UnrefImageFromCache, std::move(draw_image), cache_));
 }
 
