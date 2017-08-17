@@ -186,6 +186,20 @@ async function runTest() {
   undefineObjectProperties(Boolean);
   undefineObjectProperties(Math);
 
+  // Make methods that can be called during implicit type conversions throw.
+  Object.prototype.toString = () => {
+    throw new Error('Object toString() called');
+  };
+  Object.prototype.valueOf = () => {
+    throw new Error('Object valueOf() called');
+  };
+  Array.prototype.toString = () => {
+    throw new Error('Array toString() called');
+  };
+  Array.prototype.valueOf = () => {
+    throw new Error('Array valueOf() called');
+  };
+
   // Undefine (almost) everything on the global object.
   // Assigning to 'location' causes a navigation which breaks the test.
   const doNotSet = new Set(['location']);
