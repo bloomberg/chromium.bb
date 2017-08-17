@@ -13,15 +13,18 @@
 namespace device {
 
 RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer::
-    RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer() {}
+    RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer()
+    : PlatformSensorFusionAlgorithm(
+          mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
+          {mojom::SensorType::ACCELEROMETER}) {}
 
 RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer::
     ~RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer() =
         default;
 
 bool RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer::
-    GetFusedData(mojom::SensorType which_sensor_changed,
-                 SensorReading* fused_reading) {
+    GetFusedDataInternal(mojom::SensorType which_sensor_changed,
+                         SensorReading* fused_reading) {
   // Transform the accelerometer values to W3C draft angles.
   //
   // Accelerometer values are just dot products of the sensor axes
@@ -45,8 +48,10 @@ bool RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer::
   DCHECK(fusion_sensor_);
 
   SensorReading reading;
-  if (!fusion_sensor_->GetLatestReading(0, &reading))
+  if (!fusion_sensor_->GetSourceReading(mojom::SensorType::ACCELEROMETER,
+                                        &reading)) {
     return false;
+  }
 
   double acceleration_x = reading.accel.x;
   double acceleration_y = reading.accel.y;

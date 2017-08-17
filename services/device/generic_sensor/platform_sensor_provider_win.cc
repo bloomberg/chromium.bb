@@ -44,14 +44,12 @@ void PlatformSensorProviderWin::CreateSensorInternal(
   switch (type) {
     // Fusion sensor.
     case mojom::SensorType::LINEAR_ACCELERATION: {
-      std::vector<mojom::SensorType> source_sensor_types = {
-          mojom::SensorType::ACCELEROMETER};
       auto linear_acceleration_fusion_algorithm = base::MakeUnique<
           LinearAccelerationFusionAlgorithmUsingAccelerometer>();
       // If this PlatformSensorFusion object is successfully initialized,
       // |callback| will be run with a reference to this object.
       base::MakeRefCounted<PlatformSensorFusion>(
-          std::move(mapping), this, callback, source_sensor_types, type,
+          std::move(mapping), this, callback,
           std::move(linear_acceleration_fusion_algorithm));
       break;
     }

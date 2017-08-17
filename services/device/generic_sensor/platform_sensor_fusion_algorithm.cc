@@ -5,10 +5,16 @@
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
 
 #include <cmath>
+#include "base/stl_util.h"
 
 namespace device {
 
-PlatformSensorFusionAlgorithm::PlatformSensorFusionAlgorithm() {}
+PlatformSensorFusionAlgorithm::PlatformSensorFusionAlgorithm(
+    mojom::SensorType fused_type,
+    const std::vector<mojom::SensorType>& source_types)
+    : fused_type_(fused_type), source_types_(source_types) {
+  DCHECK(!source_types_.empty());
+}
 
 PlatformSensorFusionAlgorithm::~PlatformSensorFusionAlgorithm() = default;
 
@@ -21,6 +27,13 @@ bool PlatformSensorFusionAlgorithm::IsReadingSignificantlyDifferent(
       return true;
   }
   return false;
+}
+
+bool PlatformSensorFusionAlgorithm::GetFusedData(
+    mojom::SensorType which_sensor_changed,
+    SensorReading* fused_reading) {
+  DCHECK(base::ContainsValue(source_types_, which_sensor_changed));
+  return GetFusedDataInternal(which_sensor_changed, fused_reading);
 }
 
 void PlatformSensorFusionAlgorithm::Reset() {}

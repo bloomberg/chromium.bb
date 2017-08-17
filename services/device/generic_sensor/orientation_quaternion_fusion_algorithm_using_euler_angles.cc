@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
+namespace device {
+
 namespace {
 
 void ComputeQuaternionFromEulerAngles(double alpha,
@@ -31,17 +33,27 @@ void ComputeQuaternionFromEulerAngles(double alpha,
   *w = cx * cy * cz - sx * sy * sz;
 }
 
+constexpr mojom::SensorType GetFusedType(bool absolute) {
+  return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION
+                  : mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION;
+}
+
+constexpr mojom::SensorType GetSourceType(bool absolute) {
+  return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES
+                  : mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES;
+}
+
 }  // namespace
 
-namespace device {
-
 OrientationQuaternionFusionAlgorithmUsingEulerAngles::
-    OrientationQuaternionFusionAlgorithmUsingEulerAngles() {}
+    OrientationQuaternionFusionAlgorithmUsingEulerAngles(bool absolute)
+    : PlatformSensorFusionAlgorithm(GetFusedType(absolute),
+                                    {GetSourceType(absolute)}) {}
 
 OrientationQuaternionFusionAlgorithmUsingEulerAngles::
     ~OrientationQuaternionFusionAlgorithmUsingEulerAngles() = default;
 
-bool OrientationQuaternionFusionAlgorithmUsingEulerAngles::GetFusedData(
+bool OrientationQuaternionFusionAlgorithmUsingEulerAngles::GetFusedDataInternal(
     mojom::SensorType which_sensor_changed,
     SensorReading* fused_reading) {
   // Transform the *_ORIENTATION_EULER_ANGLES values to
@@ -49,7 +61,7 @@ bool OrientationQuaternionFusionAlgorithmUsingEulerAngles::GetFusedData(
   DCHECK(fusion_sensor_);
 
   SensorReading reading;
-  if (!fusion_sensor_->GetLatestReading(0, &reading))
+  if (!fusion_sensor_->GetSourceReading(which_sensor_changed, &reading))
     return false;
 
   double beta = reading.orientation_euler.x;

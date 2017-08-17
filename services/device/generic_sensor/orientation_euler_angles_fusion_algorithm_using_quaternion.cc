@@ -10,6 +10,8 @@
 #include "services/device/generic_sensor/orientation_util.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
+namespace device {
+
 namespace {
 
 // Helper function to convert a quaternion to a rotation matrix. x, y, z, w
@@ -60,17 +62,27 @@ void ComputeEulerAnglesFromQuaternion(double x,
                                                           alpha, beta, gamma);
 }
 
+constexpr mojom::SensorType GetFusedType(bool absolute) {
+  return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES
+                  : mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES;
+}
+
+constexpr mojom::SensorType GetSourceType(bool absolute) {
+  return absolute ? mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION
+                  : mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION;
+}
+
 }  // namespace
 
-namespace device {
-
 OrientationEulerAnglesFusionAlgorithmUsingQuaternion::
-    OrientationEulerAnglesFusionAlgorithmUsingQuaternion() {}
+    OrientationEulerAnglesFusionAlgorithmUsingQuaternion(bool absolute)
+    : PlatformSensorFusionAlgorithm(GetFusedType(absolute),
+                                    {GetSourceType(absolute)}) {}
 
 OrientationEulerAnglesFusionAlgorithmUsingQuaternion::
     ~OrientationEulerAnglesFusionAlgorithmUsingQuaternion() = default;
 
-bool OrientationEulerAnglesFusionAlgorithmUsingQuaternion::GetFusedData(
+bool OrientationEulerAnglesFusionAlgorithmUsingQuaternion::GetFusedDataInternal(
     mojom::SensorType which_sensor_changed,
     SensorReading* fused_reading) {
   // Transform the *_ORIENTATION_QUATERNION values to
@@ -78,7 +90,7 @@ bool OrientationEulerAnglesFusionAlgorithmUsingQuaternion::GetFusedData(
   DCHECK(fusion_sensor_);
 
   SensorReading reading;
-  if (!fusion_sensor_->GetLatestReading(0, &reading))
+  if (!fusion_sensor_->GetSourceReading(which_sensor_changed, &reading))
     return false;
 
   double x = reading.orientation_quat.x;
