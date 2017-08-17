@@ -26,8 +26,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests for the ItemChooserDialog class.
  */
@@ -98,13 +96,10 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
                 new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<ItemChooserDialog>() {
-                        @Override
-                        public ItemChooserDialog call() {
-                            ItemChooserDialog dialog = new ItemChooserDialog(
-                                    getActivity(), ItemChooserDialogTest.this, labels);
-                            return dialog;
-                        }
+                () -> {
+                    ItemChooserDialog dialog1 = new ItemChooserDialog(
+                            getActivity(), ItemChooserDialogTest.this, labels);
+                    return dialog1;
                 });
         return dialog;
     }
@@ -125,24 +120,14 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         TouchCommon.singleClickView(items.getChildAt(position - 1));
 
         CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedEnabledState, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return button.isEnabled();
-                    }
-                }));
+                Criteria.equals(expectedEnabledState, () -> button.isEnabled()));
 
         if (!expectedEnabledState) return;
 
         TouchCommon.singleClickView(button);
 
         CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedItemId, new Callable<String>() {
-                    @Override
-                    public String call() {
-                        return mLastSelectedId;
-                    }
-                }));
+                Criteria.equals(expectedItemId, () -> mLastSelectedId));
     }
 
     private View getRowView(Dialog dialog, int position) {

@@ -67,12 +67,7 @@ public class ServiceTabLauncher {
         // Note that this is used by PaymentRequestEvent.openWindow().
         if (disposition == WindowOpenDisposition.NEW_POPUP) {
             if (!createPopupCustomTab(requestId, url, incognito)) {
-                ThreadUtils.postOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onWebContentsForRequestAvailable(requestId, null);
-                    }
-                });
+                ThreadUtils.postOnUiThread(() -> onWebContentsForRequestAvailable(requestId, null));
             }
             return;
         }
@@ -89,20 +84,17 @@ public class ServiceTabLauncher {
                 WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
         if (webApkPackageName != null) {
             WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
-                    new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
-                        @Override
-                        public void onChecked(boolean doesBrowserBackWebApk) {
-                            if (doesBrowserBackWebApk) {
-                                Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                                        webApkPackageName, url, true /* forceNavigation */);
-                                intent.putExtra(
-                                        ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
-                                ContextUtils.getApplicationContext().startActivity(intent);
-                                return;
-                            }
-                            launchTabOrWebapp(requestId, incognito, url, referrerUrl,
-                                    referrerPolicy, extraHeaders, postData);
+                    doesBrowserBackWebApk -> {
+                        if (doesBrowserBackWebApk) {
+                            Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
+                                    webApkPackageName, url, true /* forceNavigation */);
+                            intent.putExtra(
+                                    ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+                            ContextUtils.getApplicationContext().startActivity(intent);
+                            return;
                         }
+                        launchTabOrWebapp(requestId, incognito, url, referrerUrl,
+                                referrerPolicy, extraHeaders, postData);
                     };
             ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackageName, callback);
             return;

@@ -29,7 +29,6 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -151,12 +150,9 @@ public class RepostFormWarningTest {
         reload();
         waitForRepostFormWarningDialog();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getCurrentTabModel().closeTab(mTab);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mActivityTestRule.getActivity().getCurrentTabModel().closeTab(
+                        mTab));
 
         CriteriaHelper.pollUiThread(
                 new Criteria("Form resubmission dialog not dismissed correctly") {
@@ -175,12 +171,8 @@ public class RepostFormWarningTest {
                         return RepostFormWarningDialog.getCurrentDialogForTesting() != null;
                     }
                 });
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<AlertDialog>() {
-            @Override
-            public AlertDialog call() throws Exception {
-                return (AlertDialog) RepostFormWarningDialog.getCurrentDialogForTesting();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> (AlertDialog) RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
     /** Performs a POST navigation in mTab. */
@@ -188,32 +180,19 @@ public class RepostFormWarningTest {
         final String url = "/chrome/test/data/android/test.html";
         final byte[] postData = new byte[] { 42 };
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
-                        mTestServer.getURL(url), postData));
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
+                        mTestServer.getURL(url), postData)));
     }
 
     /** Reloads mTab. */
     private void reload() throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mTab.reload();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> mTab.reload());
     }
 
     /** Clicks the given button in the given dialog. */
     private void clickButton(final AlertDialog dialog, final int buttonId) throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                dialog.getButton(buttonId).performClick();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> dialog.getButton(buttonId).performClick());
     }
 }

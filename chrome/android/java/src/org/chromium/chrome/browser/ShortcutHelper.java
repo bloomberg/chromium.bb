@@ -190,12 +190,9 @@ public class ShortcutHelper {
                 // process is complete, call back to native code to start the splash image
                 // download.
                 WebappRegistry.getInstance().register(
-                        id, new WebappRegistry.FetchWebappDataStorageCallback() {
-                            @Override
-                            public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                                storage.updateFromShortcutIntent(resultIntent);
-                                nativeOnWebappDataStored(callbackPointer);
-                            }
+                        id, storage -> {
+                            storage.updateFromShortcutIntent(resultIntent);
+                            nativeOnWebappDataStored(callbackPointer);
                         });
                 if (shouldShowToastWhenAddingShortcut()) {
                     showAddedToHomescreenToast(userTitle);

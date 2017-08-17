@@ -72,7 +72,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -148,23 +147,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         newIncognitoTabFromMenu();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.getWebContents().evaluateJavaScriptForTests(
-                        "(function() {"
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.getWebContents().evaluateJavaScriptForTests(
+                "(function() {"
                         + "  window.open('www.google.com');"
                         + "})()",
-                        null);
-            }
-        });
+                null));
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return getActivity().getTabModelSelector().getModel(false).getCount();
-            }
-        }));
+        CriteriaHelper.pollUiThread(Criteria.equals(2,
+                () -> getActivity().getTabModelSelector().getModel(false).getCount()));
     }
 
     @MediumTest
@@ -174,16 +164,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         newIncognitoTabFromMenu();
         loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.getWebContents().evaluateJavaScriptForTests(
-                        "(function() {"
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.getWebContents().evaluateJavaScriptForTests(
+                "(function() {"
                         + "  alert('hi');"
                         + "})()",
-                        null);
-            }
-        });
+                null));
 
         final AtomicReference<JavascriptAppModalDialog> dialog =
                 new AtomicReference<>();
@@ -197,12 +182,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                dialog.get().onClick(null, DialogInterface.BUTTON_POSITIVE);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> dialog.get().onClick(null, DialogInterface.BUTTON_POSITIVE));
 
         dialog.set(null);
 
@@ -230,12 +211,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     public void testOpenAndCloseNewTabButton() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         startMainActivityWithURL(mTestServer.getURL(TEST_FILE_PATH));
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                String title = getActivity().getCurrentTabModel().getTabAt(0).getTitle();
-                assertEquals("Data file for TabsTest", title);
-            }
+        getInstrumentation().runOnMainSync(() -> {
+            String title = getActivity().getCurrentTabModel().getTabAt(0).getTitle();
+            assertEquals("Data file for TabsTest", title);
         });
         final int tabCount = getActivity().getCurrentTabModel().getCount();
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
@@ -251,13 +229,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         singleClickView(newTabButton);
         overviewModeWatcher.waitForBehavior();
 
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("The tab count is wrong",
-                        tabCount + 1, getActivity().getCurrentTabModel().getCount());
-            }
-        });
+        getInstrumentation().runOnMainSync(() -> assertEquals("The tab count is wrong",
+                tabCount + 1, getActivity().getCurrentTabModel().getCount()));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -270,12 +243,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         });
 
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                assertEquals(tabCount, getActivity().getCurrentTabModel().getCount());
-            }
-        });
+        getInstrumentation().runOnMainSync(
+                () -> assertEquals(tabCount, getActivity().getCurrentTabModel().getCount()));
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
@@ -508,13 +477,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 (initialTabCount + 1) == getActivity().getCurrentTabModel().getCount());
         getInstrumentation().waitForIdleSync();
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
-        ChromeTabUtils.closeTabWithAction(getInstrumentation(), getActivity(), new Runnable() {
-            @Override
-            public void run() {
-                getInstrumentation().runOnMainSync(
-                        new SimulateClickOnMainThread(layoutManager, x, y));
-            }
-        });
+        ChromeTabUtils.closeTabWithAction(getInstrumentation(), getActivity(),
+                () -> getInstrumentation().runOnMainSync(
+                        new SimulateClickOnMainThread(layoutManager, x, y)));
         assertTrue("Expected: " + initialTabCount + " tab Got: "
                 + getActivity().getCurrentTabModel().getCount(),
                 initialTabCount == getActivity().getCurrentTabModel().getCount());
@@ -758,23 +723,15 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         final int count = openTabs(12, false);
 
         // Selecting the first tab to scroll all the way to the top.
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(getActivity().getCurrentTabModel(), 0);
-            }
-        });
+        getInstrumentation().runOnMainSync(
+                () -> TabModelUtils.setIndex(getActivity().getCurrentTabModel(), 0));
         showOverviewAndWaitForAnimation();
         checkTabsStacking();
 
         // Selecting the last tab to scroll all the way to the bottom.
         hideOverviewAndWaitForAnimation();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(getActivity().getCurrentTabModel(), count - 1);
-            }
-        });
+        getInstrumentation().runOnMainSync(
+                () -> TabModelUtils.setIndex(getActivity().getCurrentTabModel(), count - 1));
         showOverviewAndWaitForAnimation();
         checkTabsStacking();
     }
@@ -942,12 +899,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     private int getLayoutTabInStackCount(final boolean isIncognito) {
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         final int[] count = new int[1];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Stack stack = getStack(layoutManager, isIncognito);
-                count[0] = stack.getTabs().length;
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Stack stack = getStack(layoutManager, isIncognito);
+            count[0] = stack.getTabs().length;
         });
         return count[0];
     }
@@ -955,12 +909,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     private boolean stackTabIsVisible(final boolean isIncognito, final int index) {
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         final boolean[] isVisible = new boolean[1];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Stack stack = getStack(layoutManager, isIncognito);
-                isVisible[0] = (stack.getTabs())[index].getLayoutTab().isVisible();
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Stack stack = getStack(layoutManager, isIncognito);
+            isVisible[0] = (stack.getTabs())[index].getLayoutTab().isVisible();
         });
         return isVisible[0];
     }
@@ -968,13 +919,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     private float[] getLayoutTabInStackXY(final boolean isIncognito, final int index) {
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         final float[] xy = new float[2];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Stack stack = getStack(layoutManager, isIncognito);
-                xy[0] = (stack.getTabs())[index].getLayoutTab().getX();
-                xy[1] = (stack.getTabs())[index].getLayoutTab().getY();
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Stack stack = getStack(layoutManager, isIncognito);
+            xy[0] = (stack.getTabs())[index].getLayoutTab().getX();
+            xy[1] = (stack.getTabs())[index].getLayoutTab().getY();
         });
         return xy;
     }
@@ -983,38 +931,35 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             final boolean isLandscape) {
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         final float[] target = new float[2];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Stack stack = getStack(layoutManager, isIncognito);
-                StackTab[] tabs = stack.getTabs();
-                // The position of the click is expressed from the top left corner of the content.
-                // The aim is to find an offset that is inside the content but not on the close
-                // button.  For this, we calculate the center of the visible tab area.
-                LayoutTab layoutTab = tabs[tabIndexToSelect].getLayoutTab();
-                LayoutTab nextLayoutTab = (tabIndexToSelect + 1) < tabs.length
-                        ? tabs[tabIndexToSelect + 1].getLayoutTab() : null;
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Stack stack = getStack(layoutManager, isIncognito);
+            StackTab[] tabs = stack.getTabs();
+            // The position of the click is expressed from the top left corner of the content.
+            // The aim is to find an offset that is inside the content but not on the close
+            // button.  For this, we calculate the center of the visible tab area.
+            LayoutTab layoutTab = tabs[tabIndexToSelect].getLayoutTab();
+            LayoutTab nextLayoutTab = (tabIndexToSelect + 1) < tabs.length
+                    ? tabs[tabIndexToSelect + 1].getLayoutTab() : null;
 
-                float tabOffsetX = layoutTab.getX();
-                float tabOffsetY = layoutTab.getY();
-                float tabRightX, tabBottomY;
-                if (isLandscape) {
-                    tabRightX = nextLayoutTab != null
-                            ? nextLayoutTab.getX()
-                            : tabOffsetX + layoutTab.getScaledContentWidth();
-                    tabBottomY = tabOffsetY + layoutTab.getScaledContentHeight();
-                } else {
-                    tabRightX = tabOffsetX + layoutTab.getScaledContentWidth();
-                    tabBottomY = nextLayoutTab != null
-                            ? nextLayoutTab.getY()
-                            : tabOffsetY + layoutTab.getScaledContentHeight();
-                }
-                tabRightX = Math.min(tabRightX, mTabsViewWidthDp);
-                tabBottomY = Math.min(tabBottomY, mTabsViewHeightDp);
-
-                target[0] = (tabOffsetX + tabRightX) / 2.0f;
-                target[1] = (tabOffsetY + tabBottomY) / 2.0f;
+            float tabOffsetX = layoutTab.getX();
+            float tabOffsetY = layoutTab.getY();
+            float tabRightX, tabBottomY;
+            if (isLandscape) {
+                tabRightX = nextLayoutTab != null
+                        ? nextLayoutTab.getX()
+                        : tabOffsetX + layoutTab.getScaledContentWidth();
+                tabBottomY = tabOffsetY + layoutTab.getScaledContentHeight();
+            } else {
+                tabRightX = tabOffsetX + layoutTab.getScaledContentWidth();
+                tabBottomY = nextLayoutTab != null
+                        ? nextLayoutTab.getY()
+                        : tabOffsetY + layoutTab.getScaledContentHeight();
             }
+            tabRightX = Math.min(tabRightX, mTabsViewWidthDp);
+            tabBottomY = Math.min(tabBottomY, mTabsViewHeightDp);
+
+            target[0] = (tabOffsetX + tabRightX) / 2.0f;
+            target[1] = (tabOffsetY + tabBottomY) / 2.0f;
         });
         return target;
     }
@@ -1053,16 +998,13 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         final float clickY = coordinates[1];
         Log.v("ChromeTest", String.format("clickX %f clickY %f", clickX, clickY));
 
-        ChromeTabUtils.closeTabWithAction(getInstrumentation(), getActivity(), new Runnable() {
-            @Override
-            public void run() {
-                if (isLandscape) {
-                    getInstrumentation().runOnMainSync(new SimulateTabSwipeOnMainThread(
-                            layoutManager, clickX, clickY, 0, swipeDirection * mTabsViewWidthDp));
-                } else {
-                    getInstrumentation().runOnMainSync(new SimulateTabSwipeOnMainThread(
-                            layoutManager, clickX, clickY, swipeDirection * mTabsViewHeightDp, 0));
-                }
+        ChromeTabUtils.closeTabWithAction(getInstrumentation(), getActivity(), () -> {
+            if (isLandscape) {
+                getInstrumentation().runOnMainSync(new SimulateTabSwipeOnMainThread(
+                        layoutManager, clickX, clickY, 0, swipeDirection * mTabsViewWidthDp));
+            } else {
+                getInstrumentation().runOnMainSync(new SimulateTabSwipeOnMainThread(
+                        layoutManager, clickX, clickY, swipeDirection * mTabsViewHeightDp, 0));
             }
         });
 
@@ -1297,12 +1239,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         loadUrlInNewTab(mTestServer.getURL(
                 "/chrome/test/data/android/tabstest/text_page.html"));
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                ContentViewCore view = getActivity().getActivityTab().getContentViewCore();
-                view.flingViewport(SystemClock.uptimeMillis(), 0, -2000, false);
-            }
+        getInstrumentation().runOnMainSync(() -> {
+            ContentViewCore view = getActivity().getActivityTab().getContentViewCore();
+            view.flingViewport(SystemClock.uptimeMillis(), 0, -2000, false);
         });
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
     }
@@ -1503,13 +1442,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         };
 
         if (expectsSelection) {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    TabModelSelector selector = getActivity().getTabModelSelector();
-                    for (TabModel tabModel : selector.getModels()) {
-                        tabModel.addObserver(observer);
-                    }
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                TabModelSelector selector = getActivity().getTabModelSelector();
+                for (TabModel tabModel : selector.getModels()) {
+                    tabModel.addObserver(observer);
                 }
             });
         }
@@ -1525,13 +1461,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             } catch (TimeoutException e) {
                 fail("Tab selected event was never received");
             }
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    TabModelSelector selector = getActivity().getTabModelSelector();
-                    for (TabModel tabModel : selector.getModels()) {
-                        tabModel.removeObserver(observer);
-                    }
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                TabModelSelector selector = getActivity().getTabModelSelector();
+                for (TabModel tabModel : selector.getModels()) {
+                    tabModel.removeObserver(observer);
                 }
             });
         }
@@ -1586,21 +1519,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         UiUtils.settleDownUI(getInstrumentation());
         getInstrumentation().runOnMainSync(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        urlBar.requestFocus();
-                    }
-                });
+                () -> urlBar.requestFocus());
         UiUtils.settleDownUI(getInstrumentation());
 
         getInstrumentation().runOnMainSync(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        urlBar.clearFocus();
-                    }
-                });
+                () -> urlBar.clearFocus());
         UiUtils.settleDownUI(getInstrumentation());
         ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
         UiUtils.settleDownUI(getInstrumentation());
@@ -1608,14 +1531,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertFalse("Keyboard somehow got shown",
                 org.chromium.ui.UiUtils.isKeyboardShowing(getActivity(), urlBar));
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
-                float swipeXChange = mTabsViewWidthDp / 2.f;
-                edgeSwipeHandler.swipeUpdated(
-                        swipeXChange, 0.f, swipeXChange, 0.f, swipeXChange, 0.f);
-            }
+        ThreadUtils.runOnUiThread(() -> {
+            edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
+            float swipeXChange = mTabsViewWidthDp / 2.f;
+            edgeSwipeHandler.swipeUpdated(
+                    swipeXChange, 0.f, swipeXChange, 0.f, swipeXChange, 0.f);
         });
 
         CriteriaHelper.pollUiThread(
@@ -1627,13 +1547,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                     }
                 });
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assertFalse("Keyboard should be hidden while swiping",
-                        org.chromium.ui.UiUtils.isKeyboardShowing(getActivity(), urlBar));
-                edgeSwipeHandler.swipeFinished();
-            }
+        ThreadUtils.runOnUiThread(() -> {
+            assertFalse("Keyboard should be hidden while swiping",
+                    org.chromium.ui.UiUtils.isKeyboardShowing(getActivity(), urlBar));
+            edgeSwipeHandler.swipeFinished();
         });
 
         CriteriaHelper.pollUiThread(
@@ -1719,19 +1636,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         assertEquals("Too many tabs at startup", 1, model.getCount());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                model.closeTab(tab, false, false, true);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> model.closeTab(tab, false, false, true));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                assertTrue("Tab close is not undoable", model.isClosurePending(tab.getId()));
-                assertTrue("Tab was not hidden", tab.isHidden());
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue("Tab close is not undoable", model.isClosurePending(tab.getId()));
+            assertTrue("Tab was not hidden", tab.isHidden());
         });
     }
 
@@ -1753,12 +1662,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         assertEquals("Too many tabs at startup", 1, model.getCount());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                model.closeTab(tab, false, false, true);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> model.closeTab(tab, false, false, true));
 
         assertTrue("notifyChanged() was not called", mNotifyChangedCalled);
     }
@@ -1856,11 +1760,6 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     private void assertFileExists(final File fileToCheck, final boolean expected)
             throws InterruptedException {
         CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(expected, new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() {
-                            return fileToCheck.exists();
-                        }
-                    }));
+                Criteria.equals(expected, () -> fileToCheck.exists()));
     }
 }

@@ -114,13 +114,8 @@ public class ShareIntentTest extends ChromeTabbedActivityTestBase {
                 new ComponentName("test.package", "test.activity"), null);
         // Skips the capture of screenshot and notifies with an empty file.
         mockActivity.setScreenshotCaptureSkippedForTesting(true);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mockActivity.onShareMenuItemSelected(
-                        true /* shareDirectly */, false /* isIncognito */);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mockActivity.onShareMenuItemSelected(
+                true /* shareDirectly */, false /* isIncognito */));
 
         try {
             mockActivity.waitForFileCheck();

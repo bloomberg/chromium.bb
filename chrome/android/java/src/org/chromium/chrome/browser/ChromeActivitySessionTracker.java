@@ -189,14 +189,11 @@ public class ChromeActivitySessionTracker {
     }
 
     private ApplicationStateListener createApplicationStateListener() {
-        return new ApplicationStateListener() {
-            @Override
-            public void onApplicationStateChange(int newState) {
-                if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
-                    onForegroundSessionEnd();
-                } else if (newState == ApplicationState.HAS_DESTROYED_ACTIVITIES) {
-                    onForegroundActivityDestroyed();
-                }
+        return newState -> {
+            if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
+                onForegroundSessionEnd();
+            } else if (newState == ApplicationState.HAS_DESTROYED_ACTIVITIES) {
+                onForegroundActivityDestroyed();
             }
         };
     }

@@ -52,7 +52,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -128,12 +127,9 @@ public class NavigateTest {
             throws Exception {
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         Assert.assertNotNull("urlBar is null", urlBar);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                urlBar.requestFocus();
-                urlBar.setText(url);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            urlBar.requestFocus();
+            urlBar.setText(url);
         });
         final LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
@@ -266,12 +262,8 @@ public class NavigateTest {
         navigateAndObserve(url1, url1);
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.setUseDesktopUserAgent(true /* useDesktop */, true /* reloadOnChange */);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> tab.setUseDesktopUserAgent(true /* useDesktop */, true /* reloadOnChange */));
         ChromeTabUtils.waitForTabPageLoaded(tab, url1);
 
         DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
@@ -325,12 +317,8 @@ public class NavigateTest {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(redirectedUrl, new Callable<String>() {
-                    @Override
-                    public String call() {
-                        return mActivityTestRule.getActivity().getActivityTab().getUrl();
-                    }
-                }));
+                Criteria.equals(redirectedUrl,
+                        () -> mActivityTestRule.getActivity().getActivityTab().getUrl()));
     }
 
     /**
@@ -359,12 +347,8 @@ public class NavigateTest {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(targetUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                return mActivityTestRule.getActivity().getActivityTab().getUrl();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(targetUrl,
+                () -> mActivityTestRule.getActivity().getActivityTab().getUrl()));
 
         // Check if Java redirections were removed from the history.
         // Note that if we try to go back in the test: NavigateToEntry() is called, but
@@ -461,19 +445,16 @@ public class NavigateTest {
                     mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
 
             final Semaphore urlServedSemaphore = new Semaphore(0);
-            Runnable checkAction = new Runnable() {
-                @Override
-                public void run() {
-                    final Tab tab = TabModelUtils.getCurrentTab(model);
+            Runnable checkAction = () -> {
+                final Tab tab = TabModelUtils.getCurrentTab(model);
 
-                    // Make sure that we are showing the spoofed data and a blank URL.
-                    String url = getTabUrlOnUIThread(tab);
-                    boolean spoofedUrl = "".equals(url) || "about:blank".equals(url);
-                    Assert.assertTrue("URL Spoofed", spoofedUrl);
-                    Assert.assertEquals(
-                            "Not showing mocked content", "\"Spoofed\"", getTabBodyText(tab));
-                    urlServedSemaphore.release();
-                }
+                // Make sure that we are showing the spoofed data and a blank URL.
+                String url = getTabUrlOnUIThread(tab);
+                boolean spoofedUrl = "".equals(url) || "about:blank".equals(url);
+                Assert.assertTrue("URL Spoofed", spoofedUrl);
+                Assert.assertEquals(
+                        "Not showing mocked content", "\"Spoofed\"", getTabBodyText(tab));
+                urlServedSemaphore.release();
             };
 
             // Mock out the test URL
@@ -512,12 +493,7 @@ public class NavigateTest {
             final Tab tab = TabModelUtils.getCurrentTab(model);
             mActivityTestRule.assertWaitForPageScaleFactorMatch(0.75f);
             CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(mockedUrl, new Callable<String>() {
-                        @Override
-                        public String call() {
-                            return getTabUrlOnUIThread(tab);
-                        }
-                    }), 5000, 50);
+                    Criteria.equals(mockedUrl, () -> getTabUrlOnUIThread(tab)), 5000, 50);
 
             // Make sure that we're showing new content now.
             Assert.assertEquals("Still showing spoofed data", "\"Real\"", getTabBodyText(tab));
@@ -528,12 +504,7 @@ public class NavigateTest {
 
     private String getTabUrlOnUIThread(final Tab tab) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return tab.getUrl();
-                }
-            });
+            return ThreadUtils.runOnUiThreadBlocking(() -> tab.getUrl());
         } catch (ExecutionException ex) {
             assert false : "Unexpected ExecutionException";
         }

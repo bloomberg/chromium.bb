@@ -54,12 +54,9 @@ public class BackgroundSyncLauncherTest {
         final Semaphore semaphore = new Semaphore(0);
 
         BackgroundSyncLauncher.ShouldLaunchCallback callback =
-                new BackgroundSyncLauncher.ShouldLaunchCallback() {
-                    @Override
-                    public void run(Boolean shouldLaunch) {
-                        mShouldLaunchResult = shouldLaunch;
-                        semaphore.release();
-                    }
+                shouldLaunch -> {
+                    mShouldLaunchResult = shouldLaunch;
+                    semaphore.release();
                 };
 
         BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(callback);

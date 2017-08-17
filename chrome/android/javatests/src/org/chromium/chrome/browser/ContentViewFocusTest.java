@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
-import android.view.View.OnFocusChangeListener;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,13 +60,10 @@ public class ContentViewFocusTest {
     private String mTitle;
 
     private void addFocusChangedListener(View view) {
-        view.setOnFocusChangeListener(new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                synchronized (mFocusChanges) {
-                    mFocusChanges.add(Boolean.valueOf(hasFocus));
-                    mFocusChanges.notify();
-                }
+        view.setOnFocusChangeListener((v, hasFocus) -> {
+            synchronized (mFocusChanges) {
+                mFocusChanges.add(Boolean.valueOf(hasFocus));
+                mFocusChanges.notify();
             }
         });
     }
@@ -124,12 +120,9 @@ public class ContentViewFocusTest {
         addFocusChangedListener(view);
         final EdgeSwipeHandler edgeSwipeHandler =
                 mActivityTestRule.getActivity().getLayoutManager().getTopSwipeHandler();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
-                edgeSwipeHandler.swipeUpdated(100, 0, 100, 0, 100, 0);
-            }
+        ThreadUtils.runOnUiThread(() -> {
+            edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
+            edgeSwipeHandler.swipeUpdated(100, 0, 100, 0, 100, 0);
         });
 
         CriteriaHelper.pollUiThread(
@@ -146,12 +139,7 @@ public class ContentViewFocusTest {
         Assert.assertFalse("Content view didn't lose focus", blockForFocusChanged());
 
         // End the drag
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                edgeSwipeHandler.swipeFinished();
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> edgeSwipeHandler.swipeFinished());
 
         CriteriaHelper.pollUiThread(
                 new Criteria("Layout not requesting Tab Android view be attached") {
@@ -238,21 +226,11 @@ public class ContentViewFocusTest {
         onTitleUpdatedHelper.waitForCallback(callCount);
         Assert.assertEquals("initial", mTitle);
         callCount = onTitleUpdatedHelper.getCallCount();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                cvc.onPause();
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> cvc.onPause());
         onTitleUpdatedHelper.waitForCallback(callCount);
         Assert.assertEquals("blurred", mTitle);
         callCount = onTitleUpdatedHelper.getCallCount();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                cvc.onResume();
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> cvc.onResume());
         onTitleUpdatedHelper.waitForCallback(callCount);
         Assert.assertEquals("focused", mTitle);
         mActivityTestRule.getActivity().getActivityTab().getWebContents().removeObserver(observer);

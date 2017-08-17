@@ -246,16 +246,13 @@ public class ActivityTabTaskDescriptionHelper {
             final String currentUrl = mCurrentTab.getUrl();
             mFaviconHelper.getLocalFaviconImageForURL(
                     mCurrentTab.getProfile(), mCurrentTab.getUrl(), 0,
-                    new FaviconHelper.FaviconImageCallback() {
-                        @Override
-                        public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                            if (mCurrentTab == null
-                                    || !TextUtils.equals(currentUrl, mCurrentTab.getUrl())) {
-                                return;
-                            }
-
-                            updateFavicon(image);
+                    (image, iconUrl) -> {
+                        if (mCurrentTab == null
+                                || !TextUtils.equals(currentUrl, mCurrentTab.getUrl())) {
+                            return;
                         }
+
+                        updateFavicon(image);
                     });
         }
         updateTaskDescription();

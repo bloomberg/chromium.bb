@@ -173,23 +173,20 @@ public class SmartClipProviderTest implements Handler.Callback {
     @RetryOnFailure
     public void testSmartClipDataCallback() throws InterruptedException, TimeoutException {
         final Rect rect = new Rect(10, 20, 110, 190);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // This emulates what OEM will be doing when they want to call
-                // functions on SmartClipProvider through view hierarchy.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // This emulates what OEM will be doing when they want to call
+            // functions on SmartClipProvider through view hierarchy.
 
-                Object scp = findSmartClipProvider(
-                        mActivityTestRule.getActivity().findViewById(android.R.id.content));
-                Assert.assertNotNull(scp);
-                try {
-                    mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
-                    mExtractSmartClipDataMethod.invoke(
-                            scp, rect.left, rect.top, rect.width(), rect.height());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Assert.fail();
-                }
+            Object scp = findSmartClipProvider(
+                    mActivityTestRule.getActivity().findViewById(android.R.id.content));
+            Assert.assertNotNull(scp);
+            try {
+                mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
+                mExtractSmartClipDataMethod.invoke(
+                        scp, rect.left, rect.top, rect.width(), rect.height());
+            } catch (Exception e) {
+                e.printStackTrace();
+                Assert.fail();
             }
         });
         mCallbackHelper.waitForCallback(0, 1);  // call count: 0 --> 1
@@ -209,25 +206,22 @@ public class SmartClipProviderTest implements Handler.Callback {
     @Feature({"SmartClip"})
     @RetryOnFailure
     public void testSmartClipNoHandlerDoesntCrash() throws InterruptedException, TimeoutException {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Object scp = findSmartClipProvider(
-                        mActivityTestRule.getActivity().findViewById(android.R.id.content));
-                Assert.assertNotNull(scp);
-                try {
-                    // Galaxy Note 4 has a bug where it doesn't always set the handler first; in
-                    // that case, we shouldn't crash: http://crbug.com/710147
-                    mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Object scp = findSmartClipProvider(
+                    mActivityTestRule.getActivity().findViewById(android.R.id.content));
+            Assert.assertNotNull(scp);
+            try {
+                // Galaxy Note 4 has a bug where it doesn't always set the handler first; in
+                // that case, we shouldn't crash: http://crbug.com/710147
+                mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
 
-                    // Add a wait for a valid callback to make sure we have time to
-                    // hit the crash from the above call if any.
-                    mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
-                    mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Assert.fail();
-                }
+                // Add a wait for a valid callback to make sure we have time to
+                // hit the crash from the above call if any.
+                mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
+                mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Assert.fail();
             }
         });
         mCallbackHelper.waitForCallback(0, 1); // call count: 0 --> 1

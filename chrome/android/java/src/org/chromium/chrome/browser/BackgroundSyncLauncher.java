@@ -249,19 +249,15 @@ public class BackgroundSyncLauncher {
      */
     protected static void rescheduleTasksOnUpgrade(final Context context) {
         final GcmNetworkManager scheduler = GcmNetworkManager.getInstance(context);
-        BackgroundSyncLauncher.ShouldLaunchCallback callback =
-                new BackgroundSyncLauncher.ShouldLaunchCallback() {
-                    @Override
-                    public void run(Boolean shouldLaunch) {
-                        if (shouldLaunch) {
-                            // It's unclear what time the sync event was supposed to fire, so fire
-                            // without delay and let the browser reschedule if necessary.
-                            // TODO(iclelland): If this fails, report the failure via UMA (not now,
-                            // since the browser is not running, but on next startup.)
-                            scheduleLaunchTask(scheduler, 0);
-                        }
-                    }
-                };
+        BackgroundSyncLauncher.ShouldLaunchCallback callback = shouldLaunch -> {
+            if (shouldLaunch) {
+                // It's unclear what time the sync event was supposed to fire, so fire
+                // without delay and let the browser reschedule if necessary.
+                // TODO(iclelland): If this fails, report the failure via UMA (not now,
+                // since the browser is not running, but on next startup.)
+                scheduleLaunchTask(scheduler, 0);
+            }
+        };
         BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(callback);
     }
 

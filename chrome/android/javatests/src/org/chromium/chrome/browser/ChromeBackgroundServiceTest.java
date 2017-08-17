@@ -65,16 +65,13 @@ public class ChromeBackgroundServiceTest {
         protected void checkExpectations(final boolean expectedLaunchBrowser,
                 final boolean expectedDidCallOnPersistentSchedulerWakeUp,
                 final boolean expectedDidCallOnBrowserUpgraded) {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
-                    Assert.assertEquals("OnPersistentSchedulerWakeUp",
-                            expectedDidCallOnPersistentSchedulerWakeUp,
-                            mDidCallOnPersistentSchedulerWakeUp);
-                    Assert.assertEquals("OnBrowserUpgraded", expectedDidCallOnBrowserUpgraded,
-                            mDidCallOnBrowserUpgraded);
-                }
+            ThreadUtils.runOnUiThread(() -> {
+                Assert.assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
+                Assert.assertEquals("OnPersistentSchedulerWakeUp",
+                        expectedDidCallOnPersistentSchedulerWakeUp,
+                        mDidCallOnPersistentSchedulerWakeUp);
+                Assert.assertEquals("OnBrowserUpgraded", expectedDidCallOnBrowserUpgraded,
+                        mDidCallOnBrowserUpgraded);
             });
         }
     }

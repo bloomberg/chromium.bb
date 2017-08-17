@@ -112,12 +112,7 @@ public class TabState {
         @Override
         protected void finalize() {
             assert mHandler != null;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    nativeFreeWebContentsStateBuffer(buffer());
-                }
-            });
+            mHandler.post(() -> nativeFreeWebContentsStateBuffer(buffer()));
         }
     }
 
