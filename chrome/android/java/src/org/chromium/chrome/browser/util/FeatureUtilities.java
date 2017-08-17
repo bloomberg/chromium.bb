@@ -258,6 +258,8 @@ public class FeatureUtilities {
      * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
      */
     public static boolean isChromeHomeEnabled() {
+        if (DeviceFormFactor.isTablet()) return false;
+
         if (sChromeHomeEnabled == null) {
             // Allow disk access for preferences while Chrome Home is in experimentation.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
