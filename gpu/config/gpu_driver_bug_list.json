@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.25",
+  "version": "10.26",
   "entries": [
     {
       "id": 1,
@@ -824,9 +824,13 @@
     {
       "id": 100,
       "description": "Disable Direct3D11 on systems with AMD switchable graphics",
-      "cr_bugs": [451420],
+      "cr_bugs": [451420, 755722],
       "os": {
         "type": "win"
+      },
+      "driver_date": {
+        "op": "<",
+        "value": "2016.6"
       },
       "multi_gpu_style": "amd_switchable",
       "features": [
