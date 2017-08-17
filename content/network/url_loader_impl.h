@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/http/http_raw_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
@@ -86,6 +87,9 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   // finished.
   scoped_refptr<ResourceResponse> response_;
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+
+  bool report_raw_headers_;
+  net::HttpRawRequestHeaders raw_request_headers_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 

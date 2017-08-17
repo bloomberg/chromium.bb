@@ -4,6 +4,10 @@
 
 #include "content/network/url_loader_impl.h"
 
+#include <string>
+
+#include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -47,6 +51,54 @@ int BuildLoadFlagsForRequest(const ResourceRequest& request,
   return load_flags;
 }
 
+// TODO(caseq): This duplicates its namesake in
+// content/browser/loader/resource_loader.cc verbatim.
+scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
+    const net::URLRequest& request,
+    const net::HttpRawRequestHeaders& raw_request_headers) {
+  scoped_refptr<ResourceDevToolsInfo> info = new ResourceDevToolsInfo();
+
+  const net::HttpResponseInfo& response_info = request.response_info();
+  // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
+  bool report_headers_text =
+      !response_info.DidUseQuic() && !response_info.was_fetched_via_spdy;
+
+  for (const auto& pair : raw_request_headers.headers())
+    info->request_headers.push_back(pair);
+  std::string request_line = raw_request_headers.request_line();
+  if (report_headers_text && !request_line.empty()) {
+    std::string text = std::move(request_line);
+    for (const auto& pair : raw_request_headers.headers()) {
+      if (!pair.second.empty()) {
+        base::StringAppendF(&text, "%s: %s\r\n", pair.first.c_str(),
+                            pair.second.c_str());
+      } else {
+        base::StringAppendF(&text, "%s:\r\n", pair.first.c_str());
+      }
+    }
+    info->request_headers_text = std::move(text);
+  }
+
+  const net::HttpResponseHeaders* response_headers = request.response_headers();
+  if (response_headers) {
+    info->http_status_code = response_headers->response_code();
+    info->http_status_text = response_headers->GetStatusText();
+
+    std::string name;
+    std::string value;
+    for (size_t it = 0;
+         response_headers->EnumerateHeaderLines(&it, &name, &value);) {
+      info->response_headers.push_back(std::make_pair(name, value));
+    }
+    if (report_headers_text) {
+      info->response_headers_text =
+          net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+              response_headers->raw_headers());
+    }
+  }
+  return info;
+}
+
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
@@ -72,6 +124,7 @@ void PopulateResourceResponse(net::URLRequest* request,
 
   response->head.request_start = request->creation_time();
   response->head.response_start = base::TimeTicks::Now();
+  response->head.encoded_data_length = request->GetTotalReceivedBytes();
 }
 
 // A subclass of net::UploadBytesElementReader which owns
@@ -171,7 +224,11 @@ URLLoaderImpl::URLLoaderImpl(
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      report_raw_headers_(false),
       weak_ptr_factory_(this) {
+  // TODO(caseq): Make sure the client renderer actually has premissions to
+  // get raw headers (i.e. has DevTools attached).
+  report_raw_headers_ = request.report_raw_headers;
   context_->RegisterURLLoader(this);
   binding_.set_connection_error_handler(
       base::Bind(&URLLoaderImpl::OnConnectionError, base::Unretained(this)));
@@ -200,7 +257,11 @@ URLLoaderImpl::URLLoaderImpl(
 
   int load_flags = BuildLoadFlagsForRequest(request, false);
   url_request_->SetLoadFlags(load_flags);
-
+  if (report_raw_headers_) {
+    url_request_->SetRequestHeadersCallback(
+        base::Bind(&net::HttpRawRequestHeaders::Assign,
+                   base::Unretained(&raw_request_headers_)));
+  }
   url_request_->Start();
 }
 
@@ -241,8 +302,10 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response.get());
-  response->head.encoded_data_length = url_request_->GetTotalReceivedBytes();
-
+  if (report_raw_headers_) {
+    response->head.devtools_info =
+        BuildDevToolsInfo(*url_request_, raw_request_headers_);
+  }
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
 
@@ -258,7 +321,10 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
 
   response_ = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response_.get());
-  response_->head.encoded_data_length = url_request_->raw_header_size();
+  if (report_raw_headers_) {
+    response_->head.devtools_info =
+        BuildDevToolsInfo(*url_request_, raw_request_headers_);
+  }
 
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
   response_body_stream_ = std::move(data_pipe.producer_handle);
