@@ -394,10 +394,8 @@ public class NotificationPlatformBridge {
      */
     @Nullable
     private static String getOriginFromIntent(Intent intent) {
-        // TODO(crbug.com/707804): Refer to this extra by name once we compile against O, i.e.:
-        // intent.getStringExtra(Notification.EXTRA_CHANNEL_ID);
         String originFromChannelId =
-                getOriginFromChannelId(intent.getStringExtra("android.intent.extra.CHANNEL_ID"));
+                getOriginFromChannelId(intent.getStringExtra(Notification.EXTRA_CHANNEL_ID));
         return originFromChannelId != null ? originFromChannelId
                                            : getOriginFromNotificationTag(intent.getStringExtra(
                                                      NotificationConstants.EXTRA_NOTIFICATION_TAG));

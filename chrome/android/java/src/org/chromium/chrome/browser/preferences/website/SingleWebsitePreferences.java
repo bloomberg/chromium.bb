@@ -16,6 +16,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 import android.widget.ListAdapter;
@@ -405,13 +406,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private static void launchOsChannelSettings(Context context, String channelId) {
-        // TODO(crbug.com/707804): Refer to these ACTION & EXTRA constants by name not value, i.e.
-        // Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
-        // intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
-        // intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
-        Intent intent = new Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS");
-        intent.putExtra("android.provider.extra.CHANNEL_ID", channelId);
-        intent.putExtra("android.provider.extra.APP_PACKAGE", context.getPackageName());
+        Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
+        intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
         context.startActivity(intent);
     }
 
