@@ -6362,7 +6362,7 @@ I don't think this site should be blocked!
           Restart computer
         </message>
         <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_ERROR_CANT_REMOVE" desc="An error message, appearing on the Chrome Cleanup web page, that Chrome tried to clean up unwanted software, as requested by the user, but was unsuccessful. Omits subject, i.e. Chrome can't remove harmful software.">
-          Can't remove harmful software
+          Can't remove harmful software.
         </message>
         <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVE" desc="Title of the Chrome Cleanup web page. Chrome browser shows the webpage when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears above a description of what the cleanup does. 'Remove' is imperative.">
           Remove harmful software
