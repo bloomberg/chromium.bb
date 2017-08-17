@@ -1781,8 +1781,12 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
 }
 
 static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  selection.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
   const VisibleSelection& visible_selection =
-      selection.ComputeVisibleSelectionInDOMTreeDeprecated();
+      selection.ComputeVisibleSelectionInDOMTree();
   if (!visible_selection.IsRange() && !visible_selection.RootEditableElement())
     return false;
   return selection.SelectionHasFocus();
@@ -1814,9 +1818,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
 
   if (!override_target_element && ShouldShowContextMenuAtSelection(selection)) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    doc->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!doc->NeedsLayoutTreeUpdate());
 
     IntRect first_rect = frame_->GetEditor().FirstRectForRange(
         selection.ComputeVisibleSelectionInDOMTree()
