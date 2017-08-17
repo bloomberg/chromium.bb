@@ -9,6 +9,7 @@ import android.support.test.filters.SmallTest;
 import org.json.JSONObject;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.test.util.CertTestUtil;
 
 import java.io.ByteArrayInputStream;

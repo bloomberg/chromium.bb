@@ -13,6 +13,8 @@ import android.support.test.filters.SmallTest;
 import android.system.Os;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.CronetTestFramework;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetLibraryLoader;
 
 import java.io.FileDescriptor;

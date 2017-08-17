@@ -4,6 +4,9 @@
 
 package org.chromium.net;
 
+import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
+import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
+
 import android.support.test.filters.MediumTest;
 
 import org.json.JSONObject;
@@ -12,6 +15,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.test.EmbeddedTestServer;
 
