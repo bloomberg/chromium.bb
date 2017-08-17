@@ -329,8 +329,6 @@ void InstallableManager::Reset() {
   manifest_ = base::MakeUnique<ManifestProperty>();
   valid_manifest_ = base::MakeUnique<ValidManifestProperty>();
   worker_ = base::MakeUnique<ServiceWorkerProperty>();
-
-  task_queue_.is_active_ = false;
 }
 
 void InstallableManager::SetManifestDependentTasksComplete() {
@@ -638,6 +636,7 @@ void InstallableManager::TaskQueue::Insert(Task task) {
 void InstallableManager::TaskQueue::Reset() {
   tasks_.clear();
   paused_tasks_.clear();
+  is_active_ = false;
 }
 
 bool InstallableManager::TaskQueue::HasPaused() const {
