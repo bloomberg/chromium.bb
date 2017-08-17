@@ -137,6 +137,10 @@ class MockComponentUpdateService : public ComponentUpdateService,
     return nullptr;
   }
 
+  std::vector<ComponentInfo> GetComponents() const override {
+    return std::vector<ComponentInfo>();
+  }
+
   // OnDemandUpdater implementation:
   void OnDemandUpdate(const std::string& crx_id,
                       const Callback& callback) override {

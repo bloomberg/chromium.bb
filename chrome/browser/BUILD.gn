@@ -1578,6 +1578,7 @@ split_static_library("browser") {
     "//components/keyed_service/content",
     "//components/language/core/browser",
     "//components/metrics:call_stacks",
+    "//components/metrics:component_metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:profiler",
