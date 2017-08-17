@@ -183,6 +183,7 @@ bundle_data("resources") {
   ]
 }
 
+# TODO(crbug.com/756439): merge with ui_internal and update all deps.
 source_set("ui_internal_arc") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -322,6 +323,7 @@ source_set("ui_internal_arc") {
   ]
 }
 
+# TODO(crbug.com/756439): merge with ui_internal_arc and update all deps.
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
