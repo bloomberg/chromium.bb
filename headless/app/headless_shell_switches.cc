@@ -32,6 +32,12 @@ const char kHideScrollbars[] = "hide-scrollbars";
 // Save a pdf file of the loaded page.
 const char kPrintToPDF[] = "print-to-pdf";
 
+// Specifies a list of hosts for whom we bypass proxy settings and use direct
+// connections. Ignored unless --proxy-server is also specified. This is a
+// comma-separated list of bypass rules. See: "net/proxy/proxy_bypass_rules.h"
+// for the format of these rules.
+const char kProxyBypassList[] = "proxy-bypass-list";
+
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";

@@ -662,6 +662,11 @@ int HeadlessShellMain(int argc, const char** argv) {
         command_line.GetSwitchValueASCII(switches::kProxyServer);
     std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
     proxy_config->proxy_rules().ParseFromString(proxy_server);
+    if (command_line.HasSwitch(switches::kProxyBypassList)) {
+      std::string bypass_list =
+          command_line.GetSwitchValueASCII(switches::kProxyBypassList);
+      proxy_config->proxy_rules().bypass_rules.ParseFromString(bypass_list);
+    }
     builder.SetProxyConfig(std::move(proxy_config));
   }
 
