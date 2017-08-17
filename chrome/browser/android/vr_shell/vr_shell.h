@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -85,7 +84,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void SwapContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& tab,
+      const base::android::JavaParamRef<jobject>& web_contents,
       const base::android::JavaParamRef<jobject>& android_ui_gesture_target);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnTriggerEvent(JNIEnv* env,
@@ -225,11 +224,14 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode);
 
+  content::WebContents* GetNonNativePageWebContents() const;
+
   bool vr_shell_enabled_;
 
   bool webvr_mode_ = false;
 
-  TabAndroid* active_tab_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
+  bool web_contents_is_native_page_ = false;
   base::android::ScopedJavaGlobalRef<jobject> j_motion_event_synthesizer_;
   ui::WindowAndroid* window_;
   std::unique_ptr<VrCompositor> compositor_;

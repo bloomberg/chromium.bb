@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
@@ -176,42 +177,42 @@ void VrShell::SwapContents(
   TabAndroid* active_tab =
       TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, tab));
   DCHECK(active_tab);
-  content::WebContents* active_web_contents =
-      active_tab->IsNativePage() ? nullptr : active_tab->web_contents();
-  auto* last_active_web_contents = GetActiveWebContents();
-
-  if (active_web_contents && active_web_contents == last_active_web_contents)
-    return;
+  content::WebContents* contents = active_tab->web_contents();
+  bool is_native_page = active_tab->IsNativePage();
 
   AndroidUiGestureTarget* target = nullptr;
-  if (!active_web_contents) {
+  if (is_native_page) {
     DCHECK(!android_ui_gesture_target.is_null());
     target = AndroidUiGestureTarget::FromJavaObject(android_ui_gesture_target);
-    if (target == android_ui_gesture_target_.get())
-      return;
   }
 
-  SetIsInVR(last_active_web_contents, false);
+  if (contents == web_contents_ && target == android_ui_gesture_target_.get()) {
+    return;
+  }
 
-  active_tab_ = active_tab;
-  compositor_->SetLayer(active_web_contents);
-  SetIsInVR(active_web_contents, true);
+  SetIsInVR(GetNonNativePageWebContents(), false);
+  web_contents_ = contents;
+  web_contents_is_native_page_ = is_native_page;
+  compositor_->SetLayer(GetNonNativePageWebContents());
+  SetIsInVR(GetNonNativePageWebContents(), true);
   ContentFrameWasResized(false /* unused */);
   SetUiState();
+
+  vr_web_contents_observer_ = base::MakeUnique<VrWebContentsObserver>(
+      web_contents_, this, ui_, toolbar_.get());
 
   if (target) {
     android_ui_gesture_target_.reset(target);
     input_manager_ = nullptr;
-    vr_web_contents_observer_ = nullptr;
     metrics_helper_ = nullptr;
     return;
   }
-  input_manager_ = base::MakeUnique<VrInputManager>(active_web_contents);
-  vr_web_contents_observer_ = base::MakeUnique<VrWebContentsObserver>(
-      active_web_contents, this, ui_, toolbar_.get());
+  input_manager_ =
+      base::MakeUnique<VrInputManager>(GetNonNativePageWebContents());
   // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
   // tabs. crbug.com/684661
-  metrics_helper_ = base::MakeUnique<VrMetricsHelper>(active_web_contents);
+  metrics_helper_ =
+      base::MakeUnique<VrMetricsHelper>(GetNonNativePageWebContents());
   metrics_helper_->SetVRActive(true);
   metrics_helper_->SetWebVREnabled(webvr_mode_);
 }
@@ -219,18 +220,15 @@ void VrShell::SwapContents(
 void VrShell::SetUiState() {
   toolbar_->Update();
 
-  auto* active_web_contents = GetActiveWebContents();
-
-  if (!active_web_contents) {
+  if (!GetNonNativePageWebContents()) {
     ui_->SetLoading(false);
     ui_->SetFullscreen(false);
   } else {
-    ui_->SetLoading(active_web_contents->IsLoading());
-    ui_->SetFullscreen(active_web_contents->IsFullscreen());
+    ui_->SetLoading(GetNonNativePageWebContents()->IsLoading());
+    ui_->SetFullscreen(GetNonNativePageWebContents()->IsFullscreen());
   }
-  if (active_tab_) {
-    ui_->SetIncognito(
-        active_tab_->web_contents()->GetBrowserContext()->IsOffTheRecord());
+  if (web_contents_) {
+    ui_->SetIncognito(web_contents_->GetBrowserContext()->IsOffTheRecord());
   } else {
     ui_->SetIncognito(false);
   }
@@ -359,7 +357,7 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // exit vr session
   if (metrics_helper_)
     metrics_helper_->SetVRActive(false);
-  SetIsInVR(GetActiveWebContents(), false);
+  SetIsInVR(GetNonNativePageWebContents(), false);
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -369,7 +367,7 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   if (metrics_helper_)
     metrics_helper_->SetVRActive(true);
-  SetIsInVR(GetActiveWebContents(), true);
+  SetIsInVR(GetNonNativePageWebContents(), true);
 }
 
 void VrShell::SetSurface(JNIEnv* env,
@@ -599,7 +597,7 @@ void VrShell::ContentFrameWasResized(bool width_changed) {
 
 void VrShell::ContentWebContentsDestroyed() {
   input_manager_.reset();
-  active_tab_ = nullptr;
+  web_contents_ = nullptr;
   // TODO(mthiesse): Handle web contents being destroyed.
   ForceExitVr();
 }
@@ -610,9 +608,9 @@ void VrShell::ContentWasHidden() {
 }
 
 void VrShell::ContentWasShown() {
-  auto* active_web_contents = GetActiveWebContents();
-  if (active_web_contents) {
-    input_manager_ = base::MakeUnique<VrInputManager>(active_web_contents);
+  if (GetNonNativePageWebContents()) {
+    input_manager_ =
+        base::MakeUnique<VrInputManager>(GetNonNativePageWebContents());
   }
 }
 
@@ -626,9 +624,9 @@ void VrShell::ExitPresent() {
 }
 
 void VrShell::ExitFullscreen() {
-  auto* active_web_contents = GetActiveWebContents();
-  if (active_web_contents && active_web_contents->IsFullscreen()) {
-    active_web_contents->ExitFullscreen(false);
+  if (GetNonNativePageWebContents() &&
+      GetNonNativePageWebContents()->IsFullscreen()) {
+    GetNonNativePageWebContents()->ExitFullscreen(false);
   }
 }
 
@@ -652,6 +650,10 @@ void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
       base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
       kExitVrDueToUnsupportedModeDelay);
   LogUnsupportedModeUserMetric(mode);
+}
+
+content::WebContents* VrShell::GetNonNativePageWebContents() const {
+  return !web_contents_is_native_page_ ? web_contents_ : nullptr;
 }
 
 void VrShell::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
@@ -849,9 +851,7 @@ bool VrShell::HasDaydreamSupport(JNIEnv* env) {
 
 content::WebContents* VrShell::GetActiveWebContents() const {
   // TODO(tiborg): Handle the case when Tab#isShowingErrorPage returns true.
-  return (active_tab_ && !active_tab_->IsNativePage())
-             ? active_tab_->web_contents()
-             : nullptr;
+  return GetNonNativePageWebContents();
 }
 
 bool VrShell::ShouldDisplayURL() const {
