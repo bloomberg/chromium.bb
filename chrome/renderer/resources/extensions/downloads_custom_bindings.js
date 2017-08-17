@@ -4,14 +4,17 @@
 
 // Custom bindings for the downloads API.
 
-var binding = require('binding').Binding.create('downloads');
-var downloadsInternal = require('binding').Binding.create(
-    'downloadsInternal').generate();
-var eventBindings = require('event_bindings');
+var binding = apiBridge || require('binding').Binding.create('downloads');
+var downloadsInternal =
+    getInternalApi ?
+        getInternalApi('downloadsInternal') :
+        require('binding').Binding.create('downloadsInternal').generate();
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 
-eventBindings.registerArgumentMassager(
-    'downloads.onDeterminingFilename',
-    function massage_determining_filename(args, dispatch) {
+registerArgumentMassager('downloads.onDeterminingFilename',
+                         function(args, dispatch) {
   var downloadItem = args[0];
   // Copy the id so that extensions can't change it.
   var downloadId = downloadItem.id;
@@ -63,4 +66,6 @@ eventBindings.registerArgumentMassager(
     throw e;
   }
 });
-exports.$set('binding', binding.generate());
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

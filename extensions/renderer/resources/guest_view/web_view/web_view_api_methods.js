@@ -4,7 +4,9 @@
 
 // This module implements the public-facing API functions for the <webview> tag.
 
-var WebViewInternal = require('webViewInternal').WebViewInternal;
+var WebViewInternal = getInternalApi ?
+    getInternalApi('webViewInternal') :
+    require('webViewInternal').WebViewInternal;
 var WebViewImpl = require('webView').WebViewImpl;
 
 // An array of <webview>'s public-facing API methods. Methods without custom

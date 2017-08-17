@@ -5,7 +5,8 @@
 // This module implements the public-facing API functions for the
 // <extensionview> tag.
 
-var ExtensionViewInternal =
+var ExtensionViewInternal = getInternalApi ?
+    getInternalApi('extensionViewInternal') :
     require('extensionViewInternal').ExtensionViewInternal;
 var ExtensionViewImpl = require('extensionView').ExtensionViewImpl;
 var ExtensionViewConstants =

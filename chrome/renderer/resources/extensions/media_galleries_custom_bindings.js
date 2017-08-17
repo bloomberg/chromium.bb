@@ -4,10 +4,12 @@
 
 // Custom binding for the Media Gallery API.
 
-var binding = require('binding').Binding.create('mediaGalleries');
+var binding = apiBridge || require('binding').Binding.create('mediaGalleries');
 var blobNatives = requireNative('blob_natives');
 var mediaGalleriesNatives = requireNative('mediaGalleries');
-var sendRequest = require('sendRequest').sendRequest;
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 
 var blobsAwaitingMetadata = {};
 var mediaGalleriesMetadata = {};
@@ -101,8 +103,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       customCallback: $Function.bind(getMetadataCallback, null, blobUuid),
     };
 
-    sendRequest(this.name, [blobUuid, options, callback],
-                this.definition.parameters, optArgs);
+    sendRequest('mediaGalleries.getMetadata', [blobUuid, options, callback],
+                bindingUtil ? undefined : this.definition.parameters, optArgs);
   });
 });
 

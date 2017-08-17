@@ -4,7 +4,7 @@
 
 // Custom binding for the i18n API.
 
-var binding = require('binding').Binding.create('i18n');
+var binding = apiBridge || require('binding').Binding.create('i18n');
 
 var i18nNatives = requireNative('i18n');
 var GetL10nMessage = i18nNatives.GetL10nMessage;
@@ -46,4 +46,5 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

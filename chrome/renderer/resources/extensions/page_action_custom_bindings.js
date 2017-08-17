@@ -16,7 +16,8 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, $Function.bind(function(args) {
       sendRequest('pageAction.setIcon', [args, callback],
-                  bindingUtil ? undefined : this.definition.parameters);
+                  bindingUtil ? undefined : this.definition.parameters,
+                  undefined);
     }, this));
   });
 });

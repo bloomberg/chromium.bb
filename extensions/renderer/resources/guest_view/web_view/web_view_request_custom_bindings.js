@@ -4,7 +4,7 @@
 
 // Custom binding for the webViewRequest API.
 
-var binding = require('binding').Binding.create('webViewRequest');
+var binding = apiBridge || require('binding').Binding.create('webViewRequest');
 
 var declarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
@@ -52,4 +52,5 @@ binding.registerCustomHook(function(api) {
   }
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

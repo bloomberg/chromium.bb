@@ -4,7 +4,9 @@
 
 var AutomationEvent = require('automationEvent').AutomationEvent;
 var automationInternal =
-    require('binding').Binding.create('automationInternal').generate();
+    getInternalApi ?
+        getInternalApi('automationInternal') :
+        require('binding').Binding.create('automationInternal').generate();
 var exceptionHandler = require('uncaught_exception_handler');
 
 var natives = requireNative('automationInternal');

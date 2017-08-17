@@ -8,7 +8,8 @@ var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
 var ExtensionViewImpl = require('extensionView').ExtensionViewImpl;
-var ExtensionViewInternal =
+var ExtensionViewInternal = getInternalApi ?
+    getInternalApi('extensionViewInternal') :
     require('extensionViewInternal').ExtensionViewInternal;
 
 // -----------------------------------------------------------------------------

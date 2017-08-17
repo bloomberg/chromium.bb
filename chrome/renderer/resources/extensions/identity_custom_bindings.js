@@ -4,7 +4,7 @@
 
 // Custom binding for the Identity API.
 
-var binding = require('binding').Binding.create('identity');
+var binding = apiBridge || require('binding').Binding.create('identity');
 
 binding.registerCustomHook(function(binding, id, contextType) {
   var apiFunctions = binding.apiFunctions;
@@ -20,4 +20,5 @@ binding.registerCustomHook(function(binding, id, contextType) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

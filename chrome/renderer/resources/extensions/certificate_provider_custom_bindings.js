@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var binding = require('binding').Binding.create('certificateProvider');
-var certificateProviderInternal = require('binding').Binding.create(
-    'certificateProviderInternal').generate();
-var eventBindings = require('event_bindings');
+var binding =
+    apiBridge || require('binding').Binding.create('certificateProvider');
+var certificateProviderInternal =
+    getInternalApi ?
+        getInternalApi('certificateProviderInternal') :
+        require('binding').Binding.create(
+            'certificateProviderInternal').generate();
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 
 var certificateProviderSchema =
     requireNative('schema_registry').GetSchema('certificateProvider')
@@ -37,39 +43,36 @@ function handleEvent(eventName, internalReportFunc) {
       utils.lookup(certificateProviderSchema.events, 'name', eventName);
   var callbackSchema = utils.lookup(eventSchema.parameters, 'type', 'function');
 
-  eventBindings.registerArgumentMassager(
-      'certificateProvider.' + eventName,
-      function(args, dispatch) {
-        var responded = false;
+  registerArgumentMassager('certificateProvider.' + eventName,
+                           function(args, dispatch) {
+    var responded = false;
 
-        // Function provided to the extension as the event callback argument.
-        // The extension calls this to report results in reply to the event.
-        // It throws an exception if called more than once and if the provided
-        // results don't match the callback schema.
-        var reportFunc = function(reportArg1, reportArg2) {
-          if (responded) {
-            throw new Error(
-                'Event callback must not be called more than once.');
-          }
+    // Function provided to the extension as the event callback argument.
+    // The extension calls this to report results in reply to the event.
+    // It throws an exception if called more than once and if the provided
+    // results don't match the callback schema.
+    var reportFunc = function(reportArg1, reportArg2) {
+      if (responded)
+        throw new Error('Event callback must not be called more than once.');
 
-          var reportArgs = [reportArg1];
-          if (reportArg2 !== undefined)
-            reportArgs.push(reportArg2);
-          var finalArgs = [];
-          try {
-            // Validates that the results reported by the extension matche the
-            // callback schema of the event. Throws an exception in case of an
-            // error.
-            validate(reportArgs, callbackSchema.parameters);
-            finalArgs = reportArgs;
-          } finally {
-            responded = true;
-            internalReportFunc.apply(
-                null, [args[0] /* requestId */].concat(finalArgs));
-          }
-        };
-        dispatch(args.slice(1).concat(reportFunc));
-      });
+      var reportArgs = [reportArg1];
+      if (reportArg2 !== undefined)
+        reportArgs.push(reportArg2);
+      var finalArgs = [];
+      try {
+        // Validates that the results reported by the extension matche the
+        // callback schema of the event. Throws an exception in case of an
+        // error.
+        validate(reportArgs, callbackSchema.parameters);
+        finalArgs = reportArgs;
+      } finally {
+        responded = true;
+        internalReportFunc.apply(
+            null, [args[0] /* requestId */].concat(finalArgs));
+      }
+    };
+    dispatch(args.slice(1).concat(reportFunc));
+  });
 }
 
 handleEvent('onCertificatesRequested',
@@ -78,4 +81,5 @@ handleEvent('onCertificatesRequested',
 handleEvent('onSignDigestRequested',
             certificateProviderInternal.reportSignature);
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

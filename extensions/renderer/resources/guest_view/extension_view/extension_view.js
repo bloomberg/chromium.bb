@@ -8,7 +8,8 @@ var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
 var ExtensionViewEvents = require('extensionViewEvents').ExtensionViewEvents;
-var ExtensionViewInternal =
+var ExtensionViewInternal = getInternalApi ?
+    getInternalApi('extensionViewInternal') :
     require('extensionViewInternal').ExtensionViewInternal;
 
 function ExtensionViewImpl(extensionviewElement) {

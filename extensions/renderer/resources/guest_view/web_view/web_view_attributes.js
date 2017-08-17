@@ -7,7 +7,9 @@
 var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewImpl = require('webView').WebViewImpl;
-var WebViewInternal = require('webViewInternal').WebViewInternal;
+var WebViewInternal = getInternalApi ?
+    getInternalApi('webViewInternal') :
+    require('webViewInternal').WebViewInternal;
 
 // -----------------------------------------------------------------------------
 // AllowScalingAttribute object.
