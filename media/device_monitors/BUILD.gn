@@ -16,7 +16,9 @@ source_set("device_monitors") {
 
   configs += [ "//media:media_implementation" ]
 
-  deps = []
+  deps = [
+    "//base",
+  ]
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
