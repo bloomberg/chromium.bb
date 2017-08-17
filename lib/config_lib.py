@@ -90,6 +90,7 @@ CONFIG_TEMPLATE_REFERENCE_BOARD_NAME = 'reference_board_name'
 CONFIG_TEMPLATE_MODELS = 'models'
 CONFIG_TEMPLATE_MODEL_NAME = 'name'
 CONFIG_TEMPLATE_MODEL_TEST_SUITES = 'test_suites'
+CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED = 'cq_test_enabled'
 
 CONFIG_X86_INTERNAL = 'X86_INTERNAL'
 CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
@@ -1542,6 +1543,9 @@ def GeBuildConfigAllBoards(ge_build_config):
 
 def GetUnifiedBuildConfigAllBuilds(ge_build_config):
   """Extract a list of all unified build configurations.
+
+  This dictionary is based on the JSON defined by the proto generated from
+  GoldenEye.  See cs/crosbuilds.proto
 
   Args:
     ge_build_config: Dictionary containing the decoded GE configuration file.

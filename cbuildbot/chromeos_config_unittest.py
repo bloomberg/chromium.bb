@@ -216,7 +216,8 @@ class UnifiedBuildConfigTestCase(object):
         },
         {
           "name": "pyro",
-          "test_suites": ["sanity"]
+          "test_suites": ["sanity"],
+          "cq_test_enabled": true
         }
       ]
     }
@@ -283,7 +284,7 @@ class UnifiedBuildCqBuilders(
     self.assertIsNotNone(reef_uni_paladin)
     models = reef_uni_paladin['models']
     self.assertEquals(len(models), 1)
-    self.assertIn(config_lib.ModelTestConfig('reef'), models)
+    self.assertIn(config_lib.ModelTestConfig('pyro'), models)
 
     master_paladin = self._site_config['master-paladin']
     self.assertIn('reef-uni-paladin', master_paladin['slave_configs'])

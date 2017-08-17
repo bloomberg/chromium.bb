@@ -2439,29 +2439,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if board in _unified_board_names:
       for unibuild in _unified_builds:
         if board == unibuild[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]:
-          # Test suite config for paladin builders is specified in the matrix
-          # below, so we're wiping out any filters here since they are only
-          # used for the release builders.
           models = []
           for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
             name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
-            models.append(config_lib.ModelTestConfig(name))
+            if (config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED in model
+                and model[config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED]):
+              models.append(config_lib.ModelTestConfig(name))
 
-          if models:
-            test_model = models[0]
-          else:
-            test_model = config_lib.ModelTestConfig(board)
-
-          # This is dealing with the reef case, which hopefully won't be
-          # replicated going forward.  This will match reef as the primary
-          # model for board reef-uni
-          for model in models:
-            if board.startswith(model.name):
-              test_model = model
-
-          # We're only going to test on one model.
-          # Right now, this is mainly due to hw lab provisioning limitations.
-          customizations.update(models=[test_model])
+          customizations.update(models=models)
 
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
@@ -2568,6 +2553,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('elm',            None,             'hana'),          # oak (MTK8173)
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
+    ('reef-uni',       None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
 
@@ -2578,7 +2564,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       if board is None:
         continue
       config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
-      site_config[config_name]['hw_tests'] = [suite]
+      # Only configurate hw_tests for unified builds if they have specified
+      # models they want to test against (based on lab provisioning)
+      if board in _unified_board_names:
+        if site_config[config_name]['models']:
+          site_config[config_name]['hw_tests'] = [suite]
+      else:
+        site_config[config_name]['hw_tests'] = [suite]
 
   #
   # Paladins with alternative configs.

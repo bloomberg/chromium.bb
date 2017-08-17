@@ -6315,9 +6315,6 @@
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "models": [
-            "{\n    \"name\": \"coral\",\n    \"test_suites\": null\n}"
-        ],
         "overlays": "both",
         "prebuilts": "private",
         "useflags": [
@@ -20614,9 +20611,6 @@
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "models": [
-            "{\n    \"name\": \"reef\",\n    \"test_suites\": null\n}"
-        ],
         "overlays": "both",
         "prebuilts": "private",
         "useflags": [
