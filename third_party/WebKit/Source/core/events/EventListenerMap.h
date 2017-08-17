@@ -37,6 +37,7 @@
 #include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventListenerOptions.h"
 #include "core/events/RegisteredEventListener.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
@@ -73,6 +74,7 @@ class CORE_EXPORT EventListenerMap {
   void CopyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   friend class EventListenerIterator;
@@ -88,26 +90,6 @@ class CORE_EXPORT EventListenerMap {
 #if DCHECK_IS_ON()
   int active_iterator_count_ = 0;
 #endif
-};
-
-class EventListenerIterator {
-  WTF_MAKE_NONCOPYABLE(EventListenerIterator);
-  STACK_ALLOCATED();
-
- public:
-  explicit EventListenerIterator(EventTarget*);
-#if DCHECK_IS_ON()
-  ~EventListenerIterator();
-#endif
-
-  EventListener* NextListener();
-
- private:
-  // This cannot be a Member because it is pointing to a part of object.
-  // TODO(haraken): Use Member<EventTarget> instead of EventListenerMap*.
-  EventListenerMap* map_;
-  unsigned entry_index_;
-  unsigned index_;
 };
 
 #if !DCHECK_IS_ON()

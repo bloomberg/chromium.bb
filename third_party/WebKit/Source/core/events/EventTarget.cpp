@@ -155,14 +155,8 @@ DEFINE_TRACE(EventTargetData) {
   visitor->Trace(event_listener_map);
 }
 
-DEFINE_TRACE_WRAPPERS(EventTarget) {
-  EventListenerIterator iterator(const_cast<EventTarget*>(this));
-  while (EventListener* listener = iterator.NextListener()) {
-    if (listener->GetType() != EventListener::kJSEventListenerType)
-      continue;
-    visitor->TraceWrappersWithManualWriteBarrier(
-        static_cast<V8AbstractEventListener*>(listener));
-  }
+DEFINE_TRACE_WRAPPERS(EventTargetData) {
+  visitor->TraceWrappers(event_listener_map);
 }
 
 EventTarget::EventTarget() {}
@@ -357,10 +351,6 @@ bool EventTarget::AddEventListenerInternal(
   bool added = EnsureEventTargetData().event_listener_map.Add(
       event_type, listener, options, &registered_listener);
   if (added) {
-    if (listener->GetType() == EventListener::kJSEventListenerType) {
-      ScriptWrappableVisitor::WriteBarrier(
-          static_cast<V8AbstractEventListener*>(listener));
-    }
     AddedEventListener(event_type, registered_listener);
   }
   return added;

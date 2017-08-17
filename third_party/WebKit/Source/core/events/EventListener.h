@@ -22,6 +22,7 @@
 #define EventListener_h
 
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -31,7 +32,8 @@ class Event;
 class ExecutionContext;
 
 class CORE_EXPORT EventListener
-    : public GarbageCollectedFinalized<EventListener> {
+    : public GarbageCollectedFinalized<EventListener>,
+      public TraceWrapperBase {
  public:
   enum ListenerType {
     kJSEventListenerType,
@@ -54,6 +56,7 @@ class CORE_EXPORT EventListener
   ListenerType GetType() const { return type_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
 
  protected:
   explicit EventListener(ListenerType type) : type_(type) {}

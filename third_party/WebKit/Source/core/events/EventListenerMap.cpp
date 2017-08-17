@@ -209,45 +209,13 @@ DEFINE_TRACE(EventListenerMap) {
   visitor->Trace(entries_);
 }
 
-EventListenerIterator::EventListenerIterator(EventTarget* target)
-    : map_(nullptr), entry_index_(0), index_(0) {
-  DCHECK(target);
-  EventTargetData* data = target->GetEventTargetData();
-
-  if (!data)
-    return;
-
-  map_ = &data->event_listener_map;
-
-#if DCHECK_IS_ON()
-  {
-    MutexLocker locker(ActiveIteratorCountMutex());
-    map_->active_iterator_count_++;
+DEFINE_TRACE_WRAPPERS(EventListenerMap) {
+  // Trace wrappers in entries_.
+  for (auto& entry : entries_) {
+    for (auto& listener : *entry.second) {
+      visitor->TraceWrappers(listener);
+    }
   }
-#endif
-}
-
-#if DCHECK_IS_ON()
-EventListenerIterator::~EventListenerIterator() {
-  if (map_) {
-    MutexLocker locker(ActiveIteratorCountMutex());
-    map_->active_iterator_count_--;
-  }
-}
-#endif
-
-EventListener* EventListenerIterator::NextListener() {
-  if (!map_)
-    return nullptr;
-
-  for (; entry_index_ < map_->entries_.size(); ++entry_index_) {
-    EventListenerVector& listeners = *map_->entries_[entry_index_].second;
-    if (index_ < listeners.size())
-      return listeners[index_++].Listener();
-    index_ = 0;
-  }
-
-  return nullptr;
 }
 
 }  // namespace blink
