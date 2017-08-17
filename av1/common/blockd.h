@@ -31,9 +31,6 @@
 #include "av1/common/pvq_state.h"
 #include "av1/decoder/decint.h"
 #endif
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -686,6 +683,59 @@ typedef struct {
   int xqd[2];
 } SgrprojInfo;
 #endif  // CONFIG_LOOP_RESTORATION
+
+#if CONFIG_CFL
+typedef struct cfl_ctx {
+  // Pixel buffer containing the luma pixels used as prediction for chroma
+  // TODO(ltrudeau) Convert to uint16 for HBD support
+  uint8_t y_pix[MAX_SB_SQUARE];
+
+  // Pixel buffer containing the downsampled luma pixels used as prediction for
+  // chroma
+  // TODO(ltrudeau) Convert to uint16 for HBD support
+  uint8_t y_down_pix[MAX_SB_SQUARE];
+
+  // Height and width of the luma prediction block currently in the pixel buffer
+  int y_height, y_width;
+
+  // Height and width of the chroma prediction block currently associated with
+  // this context
+  int uv_height, uv_width;
+
+  // Transform level averages of the luma reconstructed values over the entire
+  // prediction unit
+  // Fixed point y_averages is Q12.3:
+  //   * Worst case division is 1/1024
+  //   * Max error will be 1/16th.
+  // Note: 3 is chosen so that y_averages fits in 15 bits when 12 bit input is
+  // used
+  int y_averages_q3[MAX_NUM_TXB];
+  int y_averages_stride;
+
+  int are_parameters_computed;
+
+  // Chroma subsampling
+  int subsampling_x, subsampling_y;
+
+  // Block level DC_PRED for each chromatic plane
+  int dc_pred[CFL_PRED_PLANES];
+
+  int mi_row, mi_col;
+
+  // Whether the reconstructed luma pixels need to be stored
+  int store_y;
+
+#if CONFIG_CB4X4
+  int is_chroma_reference;
+#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+  // The prediction used for sub8x8 blocks originates from multiple luma blocks,
+  // this array is used to validate that cfl_store() is called only once for
+  // each luma block
+  uint8_t sub8x8_val[4];
+#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#endif  // CONFIG_CB4X4
+} CFL_CTX;
+#endif  // CONFIG_CFL
 
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];

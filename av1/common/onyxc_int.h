@@ -35,9 +35,6 @@
 #if CONFIG_PVQ
 #include "av1/common/pvq.h"
 #endif
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 #if CONFIG_HASH_ME
 // TODO(youzhou@microsoft.com): Encoder only. Move it out of common
 #include "av1/encoder/hash_motion.h"
@@ -639,6 +636,10 @@ static INLINE int mi_rows_aligned_to_sb(const AV1_COMMON *cm) {
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
   return cm->frame_type == KEY_FRAME || cm->intra_only;
 }
+
+#if CONFIG_CFL
+void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
+#endif
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_PVQ
