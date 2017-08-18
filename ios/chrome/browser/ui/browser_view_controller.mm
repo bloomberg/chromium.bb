@@ -656,8 +656,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 - (void)showAllBookmarks;
 // Shows a panel within the New Tab Page.
 - (void)showNTPPanel:(NewTabPage::PanelIdentifier)panel;
-// Shows the "rate this app" dialog.
-- (void)showRateThisAppDialog;
 // Dismisses the "rate this app" dialog.
 - (void)dismissRateThisAppDialog;
 // Whether the given tab's URL is an application specific URL.
@@ -4310,6 +4308,32 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 #endif  // !defined(NDEBUG)
 
+// TODO(crbug.com/634507) Remove base::TimeXXX::ToInternalValue().
+- (void)showRateThisAppDialog {
+  DCHECK(!_rateThisAppDialog);
+
+  // Store the current timestamp whenever this dialog is shown.
+  _browserState->GetPrefs()->SetInt64(prefs::kRateThisAppDialogLastShownTime,
+                                      base::Time::Now().ToInternalValue());
+
+  // Some versions of iOS7 do not support linking directly to the "Ratings and
+  // Reviews" appstore page.  For iOS7 fall back to an alternative URL that
+  // links to the main appstore page for the Chrome app.
+  NSURL* storeURL =
+      [NSURL URLWithString:(@"itms-apps://itunes.apple.com/WebObjects/"
+                            @"MZStore.woa/wa/"
+                            @"viewContentsUserReviews?type=Purple+Software&id="
+                            @"535886823&pt=9008&ct=rating")];
+
+  base::RecordAction(base::UserMetricsAction("IOSRateThisAppDialogShown"));
+  [self clearPresentedStateWithCompletion:nil];
+
+  _rateThisAppDialog = ios::GetChromeBrowserProvider()->CreateAppRatingPrompt();
+  [_rateThisAppDialog setAppStoreURL:storeURL];
+  [_rateThisAppDialog setDelegate:self];
+  [_rateThisAppDialog show];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4394,9 +4418,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
       break;
     case IDC_SHOW_SECURITY_HELP:
       [self showSecurityHelpPage];
-      break;
-    case IDC_RATE_THIS_APP:
-      [self showRateThisAppDialog];
       break;
     default:
       // Unknown commands get sent up the responder chain.
@@ -4616,31 +4637,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [tab navigationManager]->LoadURLWithParams(params);
-}
-
-- (void)showRateThisAppDialog {
-  DCHECK(!_rateThisAppDialog);
-
-  // Store the current timestamp whenever this dialog is shown.
-  _browserState->GetPrefs()->SetInt64(prefs::kRateThisAppDialogLastShownTime,
-                                      base::Time::Now().ToInternalValue());
-
-  // Some versions of iOS7 do not support linking directly to the "Ratings and
-  // Reviews" appstore page.  For iOS7 fall back to an alternative URL that
-  // links to the main appstore page for the Chrome app.
-  NSURL* storeURL =
-      [NSURL URLWithString:(@"itms-apps://itunes.apple.com/WebObjects/"
-                            @"MZStore.woa/wa/"
-                            @"viewContentsUserReviews?type=Purple+Software&id="
-                            @"535886823&pt=9008&ct=rating")];
-
-  base::RecordAction(base::UserMetricsAction("IOSRateThisAppDialogShown"));
-  [self clearPresentedStateWithCompletion:nil];
-
-  _rateThisAppDialog = ios::GetChromeBrowserProvider()->CreateAppRatingPrompt();
-  [_rateThisAppDialog setAppStoreURL:storeURL];
-  [_rateThisAppDialog setDelegate:self];
-  [_rateThisAppDialog show];
 }
 
 - (void)dismissRateThisAppDialog {

@@ -72,6 +72,9 @@
 - (void)viewSource;
 #endif
 
+// Shows the "rate this app" dialog.
+- (void)showRateThisAppDialog;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
