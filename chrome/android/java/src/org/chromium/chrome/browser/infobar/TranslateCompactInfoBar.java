@@ -101,7 +101,9 @@ public class TranslateCompactInfoBar extends InfoBar
     // showing language menu after dismissing overflow menu.
     private TranslateMenuHelper mOverflowMenuHelper;
     private TranslateMenuHelper mLanguageMenuHelper;
+
     private TintedImageButton mMenuButton;
+    private InfoBarCompactLayout mParent;
 
     private TranslateSnackbarController mSnackbarController;
 
@@ -235,12 +237,13 @@ public class TranslateCompactInfoBar extends InfoBar
                 mTabLayout.endScrollingAnimationIfPlaying();
                 recordInfobarAction(INFOBAR_OPTIONS);
                 initMenuHelper(TranslateMenu.MENU_OVERFLOW);
-                mOverflowMenuHelper.show(TranslateMenu.MENU_OVERFLOW);
+                mOverflowMenuHelper.show(TranslateMenu.MENU_OVERFLOW, getParentWidth());
                 mMenuExpanded = true;
             }
         });
 
         parent.addContent(content, 1.0f);
+        mParent = parent;
     }
 
     private void initMenuHelper(int menuType) {
@@ -366,7 +369,7 @@ public class TranslateCompactInfoBar extends InfoBar
             case TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE:
                 recordInfobarAction(INFOBAR_MORE_LANGUAGES);
                 initMenuHelper(TranslateMenu.MENU_TARGET_LANGUAGE);
-                mLanguageMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
+                mLanguageMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE, getParentWidth());
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
                 // Only show snackbar when "Always Translate" is enabled.
@@ -401,7 +404,7 @@ public class TranslateCompactInfoBar extends InfoBar
             case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
                 recordInfobarAction(INFOBAR_PAGE_NOT_IN);
                 initMenuHelper(TranslateMenu.MENU_SOURCE_LANGUAGE);
-                mLanguageMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
+                mLanguageMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE, getParentWidth());
                 return;
             default:
                 assert false : "Unexpected overflow menu code";
@@ -569,6 +572,11 @@ public class TranslateCompactInfoBar extends InfoBar
     private void incrementAndRecordTranslationsPerPageCount() {
         RecordHistogram.recordCountHistogram(
                 INFOBAR_HISTOGRAM_TRANSLATION_COUNT, ++mTotalTranslationCount);
+    }
+
+    // Return the width of parent in pixels.  Return 0 if there is no parent.
+    private int getParentWidth() {
+        return mParent != null ? mParent.getWidth() : 0;
     }
 
     private native void nativeApplyStringTranslateOption(
