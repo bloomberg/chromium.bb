@@ -6,6 +6,7 @@
 #define PerformanceLongTaskTiming_h
 
 #include "core/timing/PerformanceEntry.h"
+#include "core/timing/SubTaskAttribution.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/WTFString.h"
@@ -19,24 +20,28 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceLongTaskTiming* Create(double start_time,
-                                           double end_time,
-                                           String name,
-                                           String frame_src,
-                                           String frame_id,
-                                           String frame_name);
+  static PerformanceLongTaskTiming* Create(
+      double start_time,
+      double end_time,
+      String name,
+      String frame_src,
+      String frame_id,
+      String frame_name,
+      const SubTaskAttribution::EntriesVector& sub_task_attributions);
 
   TaskAttributionVector attribution() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PerformanceLongTaskTiming(double start_time,
-                            double end_time,
-                            String name,
-                            String frame_src,
-                            String frame_id,
-                            String frame_name);
+  PerformanceLongTaskTiming(
+      double start_time,
+      double end_time,
+      String name,
+      String frame_src,
+      String frame_id,
+      String frame_name,
+      const SubTaskAttribution::EntriesVector& sub_task_attributions);
   ~PerformanceLongTaskTiming() override;
 
   TaskAttributionVector attribution_;

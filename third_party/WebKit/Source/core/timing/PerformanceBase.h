@@ -39,6 +39,7 @@
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceNavigationTiming.h"
 #include "core/timing/PerformancePaintTiming.h"
+#include "core/timing/SubTaskAttribution.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -55,6 +56,7 @@ class ResourceResponse;
 class ResourceTimingInfo;
 class SecurityOrigin;
 class UserTiming;
+class SubTaskAttribution;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceObservers = HeapListHashSet<Member<PerformanceObserver>>;
@@ -103,12 +105,14 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
 
-  void AddLongTaskTiming(double start_time,
-                         double end_time,
-                         const String& name,
-                         const String& culprit_frame_src,
-                         const String& culprit_frame_id,
-                         const String& culprit_frame_name);
+  void AddLongTaskTiming(
+      double start_time,
+      double end_time,
+      const String& name,
+      const String& culprit_frame_src,
+      const String& culprit_frame_id,
+      const String& culprit_frame_name,
+      const SubTaskAttribution::EntriesVector& sub_task_attributions);
 
   void AddResourceTiming(const ResourceTimingInfo&);
 
@@ -160,7 +164,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   bool IsResourceTimingBufferFull();
   void AddResourceTimingBuffer(PerformanceEntry&);
 
-  void NotifyObserversOfEntry(PerformanceEntry&);
+  void NotifyObserversOfEntry(PerformanceEntry&) const;
   void NotifyObserversOfEntries(PerformanceEntryVector&);
   bool HasObserverFor(PerformanceEntry::EntryType) const;
 

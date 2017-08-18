@@ -81,10 +81,12 @@ class CORE_EXPORT Performance final : public PerformanceBase,
       LocalFrame* observer_frame);
 
   // PerformanceMonitor::Client implementation.
-  void ReportLongTask(double start_time,
-                      double end_time,
-                      ExecutionContext* task_context,
-                      bool has_multiple_contexts) override;
+  void ReportLongTask(
+      double start_time,
+      double end_time,
+      ExecutionContext* task_context,
+      bool has_multiple_contexts,
+      const SubTaskAttribution::EntriesVector& sub_task_attributions) override;
 
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
