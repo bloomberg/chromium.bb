@@ -1762,6 +1762,10 @@ void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w) {
   TX_SIZE tx_size;
   int ctx, plane;
 
+#if LV_MAP_PROB
+  return;
+#endif
+
   for (plane = 0; plane < PLANE_TYPES; ++plane)
     for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
       av1_cond_prob_diff_update(w, &cpi->common.fc->dc_sign[plane][ctx],

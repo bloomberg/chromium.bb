@@ -20,6 +20,7 @@
 #endif
 
 #if CONFIG_LV_MAP
+#include "av1/common/txb_common.h"
 const aom_prob default_txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS] = {
 #if CONFIG_CHROMA_2X2
   { 252, 71, 126, 184, 178, 218, 251, 49, 133, 221, 27, 92, 197 },
