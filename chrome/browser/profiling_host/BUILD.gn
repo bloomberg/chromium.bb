@@ -14,6 +14,7 @@ static_library("profiling_host") {
 
   deps = [
     "//base",
+    "//base/allocator:features",
     "//chrome/common",
     "//content/public/common",
   ]

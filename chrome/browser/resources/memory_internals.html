@@ -5,15 +5,21 @@
   body {
     font-family: sans-serif;
   }
-  .procrow {
-    line-height: 250%;
+  th {
+    border-bottom: 1px solid black;
+    padding: 5px;
+    text-align: left;
   }
-  .button {
-    background-color: black;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    padding: 10px;
+  td {
+    padding: 5px;
+  }
+  .message {
+    font-style: italic;
+    margin-bottom: 1em;
+    padding: 5px;
+  }
+  .refresh {
+    padding: 5px;
   }
 </style>
 </head><body>
@@ -24,9 +30,9 @@
 
 <h3>Experimental memory internals</h3>
 
-<div id="proclist">
-loading...
-</div>
+<div class="message" id="message"></div>
+
+<div id="proclist">loading...</div>
 
 </body></html>
 

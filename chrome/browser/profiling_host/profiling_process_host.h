@@ -42,12 +42,18 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                              content::NotificationObserver {
  public:
   enum class Mode {
+    // No profiling enabled.
+    kNone,
+
     // Only profile the browser process.
     kBrowser,
 
     // Profile all processes.
     kAll,
   };
+
+  // Returns the mode set on the current process' command line.
+  static Mode GetCurrentMode();
 
   // Launches the profiling process if necessary and returns a pointer to it.
   static ProfilingProcessHost* EnsureStarted(
