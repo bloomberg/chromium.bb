@@ -137,18 +137,20 @@ class HostFrameSinkManagerTest : public testing::Test {
 // Verify that creating and destroying a CompositorFrameSink using
 // mojom::CompositorFrameSink works correctly.
 TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
-  // Calling CreateCompositorFrameSink() should first register the frame sink
-  // and then request to create it.
-  EXPECT_CALL(impl(), RegisterFrameSinkId(kFrameSinkChild1));
+  FakeHostFrameSinkClient host_client;
 
-  FakeHostFrameSinkClient client;
-  host().RegisterFrameSinkId(kFrameSinkChild1, &client);
+  // Register then create CompositorFrameSink for child.
+  EXPECT_CALL(impl(), RegisterFrameSinkId(kFrameSinkChild1));
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
   EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
   host().CreateCompositorFrameSink(kFrameSinkChild1, nullptr /* request */,
                                    nullptr /* client */);
+  testing::Mock::VerifyAndClearExpectations(&impl());
 
-  EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
+  // Register but don't actually create CompositorFrameSink for parent.
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
 
   // Register should call through to FrameSinkManagerImpl and should work even
   // though |kFrameSinkParent1| was not created yet.
@@ -156,17 +158,15 @@ TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
               RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1));
   host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
 
-  // Destroying the CompositorFrameSink should invalidate it in viz.
+  // Destroy the CompositorFrameSink.
   EXPECT_CALL(impl(), InvalidateFrameSinkId(kFrameSinkChild1));
-
-  // We should still have the hierarchy data for |kFrameSinkChild1|.
-  EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
+  host().InvalidateFrameSinkId(kFrameSinkChild1);
+  testing::Mock::VerifyAndClearExpectations(&impl());
 
   // Unregister should work after the CompositorFrameSink is destroyed.
   EXPECT_CALL(impl(), UnregisterFrameSinkHierarchy(kFrameSinkParent1,
                                                    kFrameSinkChild1));
   host().UnregisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
-  host().InvalidateFrameSinkId(kFrameSinkChild1);
 
   // Data for |kFrameSinkChild1| should be deleted now.
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
@@ -174,18 +174,23 @@ TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
 
 // Verify that that creating two CompositorFrameSinkSupports works.
 TEST_F(HostFrameSinkManagerTest, CreateCompositorFrameSinkSupport) {
-  auto support_client =
+  FakeHostFrameSinkClient host_client;
+
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  auto support_child =
       CreateCompositorFrameSinkSupport(kFrameSinkChild1, true /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
   auto support_parent =
       CreateCompositorFrameSinkSupport(kFrameSinkParent1, true /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkParent1));
 
-  // Register should call through to FrameSinkManagerImpl.
+  // Verify that registering and unregistering frame sink hierarchy works.
   EXPECT_CALL(impl(),
               RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1));
   host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
+  testing::Mock::VerifyAndClearExpectations(&impl());
 
   EXPECT_CALL(impl(), UnregisterFrameSinkHierarchy(kFrameSinkParent1,
                                                    kFrameSinkChild1));
@@ -194,23 +199,24 @@ TEST_F(HostFrameSinkManagerTest, CreateCompositorFrameSinkSupport) {
   // We should still have the CompositorFrameSink data for |kFrameSinkChild1|.
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
-  support_client.reset();
-
-  // Data for |kFrameSinkChild1| should be deleted now.
+  // Data for |kFrameSinkChild1| should be deleted when everything is destroyed.
+  support_child.reset();
+  host().InvalidateFrameSinkId(kFrameSinkChild1);
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
 
+  // Data for |kFrameSinkParent1| should be deleted when everything is
+  // destroyed.
   support_parent.reset();
-
-  // Data for |kFrameSinkParent1| should be deleted now.
+  host().InvalidateFrameSinkId(kFrameSinkParent1);
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkParent1));
 }
 
 TEST_F(HostFrameSinkManagerTest, AssignTemporaryReference) {
-  FakeHostFrameSinkClient client;
-  host().RegisterFrameSinkId(kFrameSinkParent1, &client);
-  host().RegisterFrameSinkId(kFrameSinkChild1, &client);
+  FakeHostFrameSinkClient host_client;
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
 
   const SurfaceId surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
+  host().RegisterFrameSinkId(surface_id.frame_sink_id(), &host_client);
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   false /* is_root */);
 
@@ -224,8 +230,13 @@ TEST_F(HostFrameSinkManagerTest, AssignTemporaryReference) {
       MakeSurfaceInfo(surface_id));
 }
 
+// Verify that we drop temporary reference to a surface that doesn't have any
+// registered parent.
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
+  FakeHostFrameSinkClient host_client;
+
   const SurfaceId surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
+  host().RegisterFrameSinkId(surface_id.frame_sink_id(), &host_client);
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   false /* is_root */);
 
@@ -239,13 +250,14 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
 // Verify that we drop the temporary reference to a new surface if the frame
 // sink that corresponds to the new surface has been invalidated.
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
-  FakeHostFrameSinkClient client;
-  host().RegisterFrameSinkId(kFrameSinkChild1, &client);
-  auto support_client =
+  FakeHostFrameSinkClient host_client;
+
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  auto support_child =
       CreateCompositorFrameSinkSupport(kFrameSinkChild1, false /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
-  host().RegisterFrameSinkId(kFrameSinkParent1, &client);
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
   auto support_parent =
       CreateCompositorFrameSinkSupport(kFrameSinkParent1, true /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkParent1));
@@ -255,6 +267,7 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
               RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1));
   host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
 
+  // Verify that temporary reference is assigned correctly before invalidation.
   const SurfaceId client_surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
   EXPECT_CALL(impl(), DropTemporaryReference(client_surface_id)).Times(0);
   EXPECT_CALL(impl(),
@@ -264,8 +277,9 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
       MakeSurfaceInfo(client_surface_id));
   testing::Mock::VerifyAndClearExpectations(&impl());
 
-  // Invaidating the client should cause the next SurfaceId to be dropped.
-  support_client.reset();
+  // Invaidating the child should cause the temporary reference to the next
+  // SurfaceId to be dropped.
+  support_child.reset();
   host().InvalidateFrameSinkId(kFrameSinkChild1);
 
   const SurfaceId client_surface_id2 = MakeSurfaceId(kFrameSinkChild1, 2);
@@ -280,21 +294,21 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
 
 // Verify that multiple parents in the frame sink hierarchy works.
 TEST_F(HostFrameSinkManagerTest, HierarchyMultipleParents) {
-  FakeHostFrameSinkClient client;
+  FakeHostFrameSinkClient host_client;
 
   // Register two parent and child CompositorFrameSink.
   const FrameSinkId& id_parent1 = kFrameSinkParent1;
-  host().RegisterFrameSinkId(id_parent1, &client);
+  host().RegisterFrameSinkId(id_parent1, &host_client);
   auto support_parent1 =
       CreateCompositorFrameSinkSupport(id_parent1, true /* is_root */);
 
   const FrameSinkId& id_parent2 = kFrameSinkChild1;
-  host().RegisterFrameSinkId(id_parent2, &client);
+  host().RegisterFrameSinkId(id_parent2, &host_client);
   auto support_parent2 =
       CreateCompositorFrameSinkSupport(id_parent2, true /* is_root */);
 
   const FrameSinkId& id_child = kFrameSinkParent2;
-  host().RegisterFrameSinkId(id_child, &client);
+  host().RegisterFrameSinkId(id_child, &host_client);
   auto support_child =
       CreateCompositorFrameSinkSupport(id_child, false /* is_root */);
 
@@ -328,13 +342,14 @@ TEST_F(HostFrameSinkManagerTest, HierarchyMultipleParents) {
 // Verify that we drop the temporary reference to a new surface if the only
 // frame sink registered as an embedder has been invalidated.
 TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForInvalidatedParent) {
-  FakeHostFrameSinkClient client;
-  host().RegisterFrameSinkId(kFrameSinkChild1, &client);
-  auto support_client =
+  FakeHostFrameSinkClient host_client;
+
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  auto support_child =
       CreateCompositorFrameSinkSupport(kFrameSinkChild1, false /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
-  host().RegisterFrameSinkId(kFrameSinkParent1, &client);
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
   auto support_parent =
       CreateCompositorFrameSinkSupport(kFrameSinkParent1, true /* is_root */);
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkParent1));
@@ -344,6 +359,7 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForInvalidatedParent) {
               RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1));
   host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
 
+  // Verify that temporary reference is assigned correctly before invalidation.
   const SurfaceId client_surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
   EXPECT_CALL(impl(), DropTemporaryReference(client_surface_id)).Times(0);
   EXPECT_CALL(impl(),
@@ -364,12 +380,15 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForInvalidatedParent) {
   GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(client_surface_id2));
 
-  support_client.reset();
+  support_child.reset();
   host().InvalidateFrameSinkId(kFrameSinkChild1);
 }
 
 TEST_F(HostFrameSinkManagerTest, DisplayRootTemporaryReference) {
+  FakeHostFrameSinkClient host_client;
+
   const SurfaceId surface_id = MakeSurfaceId(kFrameSinkParent1, 1);
+  host().RegisterFrameSinkId(surface_id.frame_sink_id(), &host_client);
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
                                                   true /* is_root */);
 
