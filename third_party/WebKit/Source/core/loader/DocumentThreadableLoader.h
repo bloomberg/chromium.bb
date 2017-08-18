@@ -137,6 +137,38 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // consulting ServiceWorker).
   void DispatchInitialRequest(ResourceRequest&);
   void MakeCrossOriginAccessRequest(const ResourceRequest&);
+
+  // TODO(hintzed): CORS handled out of Blink. Code in methods below named
+  // *OutOfBlinkCORS is to be moved back into the corresponding methods
+  // (e.g. those inherited from RawResourceClient) after
+  // https://crbug.com/736308 is fixed (i.e. when CORS is generally handled out
+  // of Blink).
+  void DispatchInitialRequestOutOfBlinkCORS(ResourceRequest&);
+  void MakeCrossOriginAccessRequestOutOfBlinkCORS(const ResourceRequest&);
+  void StartOutOfBlinkCORS(const ResourceRequest&);
+  bool RedirectReceivedOutOfBlinkCORS(Resource*,
+                                      const ResourceRequest&,
+                                      const ResourceResponse&);
+  void HandleResponseOutOfBlinkCORS(unsigned long identifier,
+                                    WebURLRequest::FetchRequestMode,
+                                    WebURLRequest::FetchCredentialsMode,
+                                    const ResourceResponse&,
+                                    std::unique_ptr<WebDataConsumerHandle>);
+  // TODO(hintzed): CORS handled in Blink. Methods below named *BlinkCORS are to
+  // be removed after https://crbug.com/736308 is fixed (i.e. when CORS is
+  // handled out of Blink).
+  void DispatchInitialRequestBlinkCORS(ResourceRequest&);
+  void MakeCrossOriginAccessRequestBlinkCORS(const ResourceRequest&);
+  void StartBlinkCORS(const ResourceRequest&);
+  bool RedirectReceivedBlinkCORS(Resource*,
+                                 const ResourceRequest&,
+                                 const ResourceResponse&);
+  void HandleResponseBlinkCORS(unsigned long identifier,
+                               WebURLRequest::FetchRequestMode,
+                               WebURLRequest::FetchCredentialsMode,
+                               const ResourceResponse&,
+                               std::unique_ptr<WebDataConsumerHandle>);
+
   // Loads m_fallbackRequestForServiceWorker.
   void LoadFallbackRequestForServiceWorker();
   // Issues a CORS preflight.
@@ -211,6 +243,9 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // m_securityOrigin. In such a case, build a ResourceLoaderOptions with
   // up-to-date values from them and this variable, and use it.
   const ResourceLoaderOptions resource_loader_options_;
+
+  // True when feature OutOfBlinkCORS is enabled (https://crbug.com/736308).
+  bool out_of_blink_cors_;
 
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag_;
