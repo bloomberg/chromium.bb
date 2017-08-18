@@ -9,6 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -47,6 +48,18 @@
 using namespace ntp_snippets;
 
 namespace {
+
+//  Scroll the collection view in order to have the toolbar menu icon visible.
+void ScrollUp() {
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(chrome_test_util::ToolsMenuButton(),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+      onElementWithMatcher:grey_accessibilityID(
+                               [ContentSuggestionsViewController
+                                   collectionAccessibilityIdentifier])]
+      assertWithMatcher:grey_notNil()];
+}
 
 // Returns a suggestion created from the |category|, |suggestion_id| and the
 // |url|.
@@ -150,6 +163,146 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 }
 
 #pragma mark - Tests
+
+// Tests that after dismissing a ReadingList item, it is not displayed on the
+// NTP. But it is still unread in the Reading List surface.
+- (void)testSwipeToDismissReadingListItem {
+  // Add two items to Reading List.
+  std::string stdTitle1{"test title1"};
+  std::string stdTitle2{"test title2"};
+  NSString* title1 = base::SysUTF8ToNSString(stdTitle1);
+  NSString* title2 = base::SysUTF8ToNSString(stdTitle2);
+  ReadingListModel* readingListModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
+  readingListModel->AddEntry(GURL("http://chromium.org/2"), stdTitle2,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+  readingListModel->AddEntry(GURL("http://chromium.org/1"), stdTitle1,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+
+  // Check that the two items are present in a new tab.
+  [ChromeEarlGreyUI openNewTab];
+  [CellWithMatcher(grey_accessibilityID(title1))
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [CellWithMatcher(grey_accessibilityID(title2))
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Swipe to dismiss the first one.
+  [CellWithMatcher(grey_accessibilityID(title1))
+      performAction:[GREYActions
+                        actionForSwipeFastInDirection:kGREYDirectionLeft
+                               xOriginStartPercentage:0.9
+                               yOriginStartPercentage:0.5]];
+
+  // Check the swiped item is dismissed.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(title1),
+                                          grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_nil()];
+
+  // Check the dismissed item is not present when opening a new NTP.
+  ScrollUp();
+  [ChromeEarlGreyUI openNewTab];
+  [CellWithMatcher(grey_accessibilityID(title2))
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(title1)]
+      assertWithMatcher:grey_nil()];
+
+  // Open the Reading List surface.
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_READING_LIST)]
+      performAction:grey_tap()];
+
+  // Check that both entries are unread in the ReadingList surface.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          StaticTextWithAccessibilityLabelId(
+                                              IDS_IOS_READING_LIST_READ_HEADER)]
+      assertWithMatcher:grey_notVisible()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_READING_LIST_UNREAD_HEADER)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabel(title1)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(title2),
+                     grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that only the 3 most recent Reading List items are displayed.
+- (void)testReadingListItem {
+  // Create entry titles for 4 unread entries and 1 read entry.
+  std::string stdTitle1{"test unread title1"};
+  std::string stdTitle2{"test unread title2"};
+  std::string stdTitle3{"test unread title3"};
+  std::string stdTitle4{"test unread title4"};
+  std::string stdReadTitle{"test read title"};
+  NSString* title1 = base::SysUTF8ToNSString(stdTitle1);
+  NSString* title2 = base::SysUTF8ToNSString(stdTitle2);
+  NSString* title3 = base::SysUTF8ToNSString(stdTitle3);
+  NSString* title4 = base::SysUTF8ToNSString(stdTitle4);
+  NSString* readTitle = base::SysUTF8ToNSString(stdReadTitle);
+
+  // Adds the entries: title1 is the oldest, title4 is the latest.
+  ReadingListModel* readingListModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
+  readingListModel->AddEntry(GURL("http://chromium.org/1"), stdTitle1,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+  readingListModel->AddEntry(GURL("http://chromium.org/2"), stdTitle2,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+  readingListModel->AddEntry(GURL("http://chromium.org/3"), stdTitle3,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+  readingListModel->AddEntry(GURL("http://chromium.org/5"), stdReadTitle,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+  readingListModel->SetReadStatus(GURL("http://chromium.org/5"), true);
+  readingListModel->AddEntry(GURL("http://chromium.org/4"), stdTitle4,
+                             reading_list::ADDED_VIA_CURRENT_APP);
+
+  // Check that only the first 3 unread items are displayed.
+  [ChromeEarlGreyUI openNewTab];
+  [CellWithMatcher(grey_accessibilityID(title4))
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [CellWithMatcher(grey_accessibilityID(title3))
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [CellWithMatcher(grey_accessibilityID(title2))
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(readTitle)]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(title1)]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests that tapping "More" on the Reading List section opens the Reading List
+// surface.
+- (void)testMoreReadingListSection {
+  // Add an entry to make sure the Reading List section is displayed.
+  ReadingListModel* readingListModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
+  readingListModel->AddEntry(GURL("http://chromium.org/2"), "test title",
+                             reading_list::ADDED_VIA_CURRENT_APP);
+
+  // Tap More.
+  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)) performAction:grey_tap()];
+
+  // Check the Reading List surface is opened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          StaticTextWithAccessibilityLabelId(
+                                              IDS_IOS_TOOLS_MENU_READING_LIST)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Close Reading List.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_READING_LIST_DONE_BUTTON)]
+      performAction:grey_tap()];
+}
 
 // Tests that a switch for the ContentSuggestions exists in the settings. The
 // behavior depends on having a real remote provider, so it cannot be tested
