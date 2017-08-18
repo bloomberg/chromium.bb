@@ -48,6 +48,7 @@ ASH_EXPORT extern const char kAshShelfColorSchemeDarkMuted[];
 ASH_EXPORT extern const char kAshShelfColorSchemeDarkVibrant[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
+ASH_EXPORT extern const char kForceClamshellPowerButton[];
 ASH_EXPORT extern const char kHasInternalStylus[];
 ASH_EXPORT extern const char kSpuriousPowerButtonWindow[];
 ASH_EXPORT extern const char kSpuriousPowerButtonAccelCount[];

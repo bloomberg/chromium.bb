@@ -109,6 +109,10 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+// Forces non-tablet-style power button behavior even if the device has a
+// convertible form factor.
+const char kForceClamshellPowerButton[] = "force-clamshell-power-button";
+
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 

@@ -59,7 +59,7 @@ class ASH_EXPORT PowerButtonController
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
   // Resets |tablet_controller_| to hold a new object to simulate Chrome
-  // starting.
+  // starting. Also calls ProcessCommandLine().
   void ResetTabletPowerButtonControllerForTest();
 
   TabletPowerButtonController* tablet_power_button_controller_for_test() {
@@ -67,6 +67,10 @@ class ASH_EXPORT PowerButtonController
   }
 
  private:
+  // Updates |has_legacy_power_button_| and |force_clamshell_power_button_|
+  // based on the current command line.
+  void ProcessCommandLine();
+
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
   bool lock_button_down_ = false;
@@ -89,6 +93,10 @@ class ASH_EXPORT PowerButtonController
   // Was a command-line switch set telling us that we're running on hardware
   // that misreports power button releases?
   bool has_legacy_power_button_ = false;
+
+  // Was a command-line switch set telling us to use non-tablet-style power
+  // button behavior even if we're running on a convertible device?
+  bool force_clamshell_power_button_ = false;
 
   LockStateController* lock_state_controller_;  // Not owned.
 
