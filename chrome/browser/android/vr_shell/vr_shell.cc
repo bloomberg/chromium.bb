@@ -34,9 +34,11 @@
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -45,6 +47,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/url_constants.h"
 #include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
@@ -818,13 +821,25 @@ bool VrShell::HasDaydreamSupport(JNIEnv* env) {
 
 content::WebContents* VrShell::GetActiveWebContents() const {
   // TODO(tiborg): Handle the case when Tab#isShowingErrorPage returns true.
-  return GetNonNativePageWebContents();
+  return web_contents_;
 }
 
 bool VrShell::ShouldDisplayURL() const {
-  // It's possible for there to be no web contents, e.g. on the new tab page.
-  return GetActiveWebContents() &&
-         ChromeToolbarModelDelegate::ShouldDisplayURL();
+  content::NavigationEntry* entry = GetNavigationEntry();
+  if (!entry) {
+    return ChromeToolbarModelDelegate::ShouldDisplayURL();
+  }
+  GURL url = entry->GetVirtualURL();
+  // URL is of the form chrome-native://.... This is not useful for the user.
+  // Hide it.
+  if (url.SchemeIs(chrome::kChromeUINativeScheme)) {
+    return false;
+  }
+  // URL is of the form chrome://....
+  if (url.SchemeIs(content::kChromeUIScheme)) {
+    return true;
+  }
+  return ChromeToolbarModelDelegate::ShouldDisplayURL();
 }
 
 // ----------------------------------------------------------------------------
