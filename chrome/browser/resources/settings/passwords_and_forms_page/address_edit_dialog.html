@@ -54,6 +54,10 @@
         @apply(--paper-input-container-label-floating);
       }
 
+      :host-context([dir=rtl]) #select-label {
+        transform-origin: right;
+      }
+
       .long {
         width: var(--paper-input-max-width);
       }
