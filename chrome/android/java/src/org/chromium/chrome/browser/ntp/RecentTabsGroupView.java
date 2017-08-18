@@ -115,11 +115,11 @@ public class RecentTabsGroupView extends RelativeLayout {
     }
 
     /**
-     * Configures the view for the sync promo.
+     * Configures the view for the promo.
      *
      * @param isExpanded Whether the view is expanded or collapsed.
      */
-    public void configureForSyncPromo(boolean isExpanded) {
+    public void configureForPromo(boolean isExpanded) {
         mDeviceIcon.setVisibility(View.VISIBLE);
         mDeviceIcon.setImageResource(R.drawable.recent_laptop);
         mDeviceLabel.setText(R.string.ntp_recent_tabs_sync_promo_title);
