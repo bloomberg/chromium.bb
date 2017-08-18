@@ -29,8 +29,6 @@ source_set("ui") {
     "rtl_geometry.mm",
     "show_mail_composer_util.h",
     "show_mail_composer_util.mm",
-    "show_privacy_settings_util.h",
-    "show_privacy_settings_util.mm",
     "side_swipe_gesture_recognizer.h",
     "side_swipe_gesture_recognizer.mm",
     "ui_util.h",

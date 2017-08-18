@@ -47,9 +47,7 @@
 #import "ios/chrome/browser/payments/payment_request_cache.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "ios/chrome/browser/procedural_block_types.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#import "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/payments/js_payment_request_manager.h"
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -156,6 +154,9 @@ struct PendingPaymentResponse {
 // The payments::PaymentRequest instance currently showing, if any.
 @property(nonatomic, assign) payments::PaymentRequest* pendingPaymentRequest;
 
+// The dispatcher for Payment Requests.
+@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+
 // Terminates the pending request with |errorMessage| and dismisses the UI.
 // Invokes the callback once the request has been terminated.
 - (void)terminatePendingRequestWithErrorMessage:(NSString*)errorMessage
@@ -234,14 +235,18 @@ struct PendingPaymentResponse {
 @synthesize paymentRequestCoordinator = _paymentRequestCoordinator;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
 @synthesize pendingPaymentRequest = _pendingPaymentRequest;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
-                                  (ios::ChromeBrowserState*)browserState {
+                                  (ios::ChromeBrowserState*)browserState
+                                dispatcher:(id<ApplicationCommands>)dispatcher {
   if ((self = [super init])) {
     _baseViewController = viewController;
 
     _browserState = browserState;
+
+    _dispatcher = dispatcher;
 
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
@@ -855,12 +860,9 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   coordinator.paymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
+  __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlockWithBool callback = ^(BOOL) {
-    UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
-    DCHECK(mainWindow);
-    GenericChromeCommand* command =
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_AUTOFILL_SETTINGS];
-    [mainWindow chromeExecuteCommand:command];
+    [weakSelf.dispatcher showAutofillSettings];
   };
 
   [self terminatePendingRequestWithErrorMessage:kCancelErrorMessage

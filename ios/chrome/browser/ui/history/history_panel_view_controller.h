@@ -11,6 +11,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
 @protocol UrlLoader;
 
 // View controller for displaying the history panel.
@@ -18,14 +19,11 @@ class ChromeBrowserState;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// Returns view controller that presents the history panel.
-+ (UIViewController*)controllerToPresentForBrowserState:
-                         (ios::ChromeBrowserState*)browserState
-                                                 loader:(id<UrlLoader>)loader;
 @end
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_PANEL_VIEW_CONTROLLER_H_

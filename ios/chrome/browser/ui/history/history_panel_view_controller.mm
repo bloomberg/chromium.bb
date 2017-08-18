@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 #import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
@@ -16,7 +17,6 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
-#import "ios/chrome/browser/ui/show_privacy_settings_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -77,18 +77,26 @@ CGFloat kShadowOpacity = 0.2f;
 // Configures the clear browsing data bar for the current state of the history
 // collection.
 - (void)configureClearBrowsingBar;
+
+// The dispatcher used by this ViewController.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
 @end
 
 @implementation HistoryPanelViewController
 
+@synthesize dispatcher = _dispatcher;
+
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState {
+                  browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _historyCollectionController =
         [[HistoryCollectionViewController alloc] initWithLoader:loader
                                                    browserState:browserState
                                                        delegate:self];
+    _dispatcher = dispatcher;
 
     // Configure modal presentation.
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
@@ -110,15 +118,6 @@ CGFloat kShadowOpacity = 0.2f;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   NOTREACHED();
   return nil;
-}
-
-+ (UIViewController*)controllerToPresentForBrowserState:
-                         (ios::ChromeBrowserState*)browserState
-                                                 loader:(id<UrlLoader>)loader {
-  HistoryPanelViewController* historyPanelController =
-      [[HistoryPanelViewController alloc] initWithLoader:loader
-                                            browserState:browserState];
-  return historyPanelController;
 }
 
 - (void)viewDidLoad {
@@ -318,7 +317,7 @@ CGFloat kShadowOpacity = 0.2f;
   [self exitSearchMode];
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
-  ShowClearBrowsingData();
+  [self.dispatcher showClearBrowsingDataSettings];
 }
 
 - (void)enterEditingMode {

@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/contextual_search/js_contextual_search_manager.h"
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/contextual_search/window_gesture_observer.h"
-#import "ios/chrome/browser/ui/show_privacy_settings_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
