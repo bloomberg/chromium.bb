@@ -11,6 +11,7 @@
 #include "cc/base/filter_operation.h"
 #include "cc/base/filter_operations.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/effects/SkAlphaThresholdFilter.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -18,6 +19,7 @@
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -281,8 +283,11 @@ sk_sp<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
         break;
       }
       case FilterOperation::ALPHA_THRESHOLD: {
+        SkRegion region;
+        for (const gfx::Rect& rect : op.shape())
+          region.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
         sk_sp<SkImageFilter> alpha_filter = SkAlphaThresholdFilter::Make(
-            op.region(), op.amount(), op.outer_threshold(), nullptr);
+            region, op.amount(), op.outer_threshold(), nullptr);
         if (image_filter) {
           image_filter = SkComposeImageFilter::Make(std::move(alpha_filter),
                                                     std::move(image_filter));

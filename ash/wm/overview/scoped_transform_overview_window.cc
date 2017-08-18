@@ -348,9 +348,9 @@ void ScopedTransformOverviewWindow::SetTransform(
   if (&transform != &original_transform_ &&
       !determined_original_window_shape_) {
     determined_original_window_shape_ = true;
-    SkRegion* window_shape = window()->layer()->alpha_shape();
+    const ShapeRects* window_shape = window()->layer()->alpha_shape();
     if (!original_window_shape_ && window_shape)
-      original_window_shape_.reset(new SkRegion(*window_shape));
+      original_window_shape_ = base::MakeUnique<ShapeRects>(*window_shape);
   }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
@@ -380,24 +380,27 @@ void ScopedTransformOverviewWindow::HideHeader() {
   if (inset > 0) {
     // Use alpha shape to hide the window header.
     bounds.Inset(0, inset, 0, 0);
-    std::unique_ptr<SkRegion> region(new SkRegion);
-    region->setRect(RectToSkIRect(bounds));
-    if (original_window_shape_)
-      region->op(*original_window_shape_, SkRegion::kIntersect_Op);
+    std::unique_ptr<ShapeRects> shape;
+    if (original_window_shape_) {
+      // When the |window| has a shape, use the new bounds to clip that shape.
+      shape = base::MakeUnique<ShapeRects>(*original_window_shape_);
+      for (auto& rect : *shape)
+        rect.Intersect(bounds);
+    } else {
+      shape = base::MakeUnique<ShapeRects>();
+      shape->push_back(bounds);
+    }
     aura::Window* window = GetOverviewWindow();
-    window->layer()->SetAlphaShape(std::move(region));
+    window->layer()->SetAlphaShape(std::move(shape));
     window->layer()->SetMasksToBounds(true);
   }
 }
 
 void ScopedTransformOverviewWindow::ShowHeader() {
   ui::Layer* layer = window()->layer();
-  if (original_window_shape_) {
-    layer->SetAlphaShape(
-        base::MakeUnique<SkRegion>(*original_window_shape_.get()));
-  } else {
-    layer->SetAlphaShape(nullptr);
-  }
+  layer->SetAlphaShape(original_window_shape_ ? base::MakeUnique<ShapeRects>(
+                                                    *original_window_shape_)
+                                              : nullptr);
   layer->SetMasksToBounds(false);
 }
 

@@ -195,11 +195,11 @@ class LayerTreeHostFiltersScaledPixelTest
     // Add an alpha threshold filter to the blue layer which will filter out
     // everything except the lower right corner.
     FilterOperations filters;
-    SkRegion alpha_region;
-    alpha_region.setRect(
-        half_content, half_content, content_size, content_size);
+    FilterOperation::ShapeRects alpha_shape;
+    alpha_shape.emplace_back(half_content, half_content, content_size,
+                             content_size);
     filters.Append(
-        FilterOperation::CreateAlphaThresholdFilter(alpha_region, 1.f, 0.f));
+        FilterOperation::CreateAlphaThresholdFilter(alpha_shape, 1.f, 0.f));
     foreground->SetFilters(filters);
 
     device_scale_factor_ = device_scale_factor;
@@ -838,12 +838,10 @@ class EnlargedTextureWithAlphaThresholdFilter
 
     rect1.Inset(-5, -5);
     rect2.Inset(-5, -5);
-    SkRegion alpha_region;
-    SkIRect rects[2] = {gfx::RectToSkIRect(rect1), gfx::RectToSkIRect(rect2)};
-    alpha_region.setRects(rects, 2);
+    FilterOperation::ShapeRects alpha_shape = {rect1, rect2};
     FilterOperations filters;
     filters.Append(
-        FilterOperation::CreateAlphaThresholdFilter(alpha_region, 0.f, 0.f));
+        FilterOperation::CreateAlphaThresholdFilter(alpha_shape, 0.f, 0.f));
     filter_layer->SetFilters(filters);
 
     background->AddChild(filter_layer);

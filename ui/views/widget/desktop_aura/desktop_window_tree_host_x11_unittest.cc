@@ -267,17 +267,10 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   }
 
   // 2) Test setting the window shape via Widget::SetShape().
-  gfx::Path shape2;
-  shape2.moveTo(10, 0);
-  shape2.lineTo(10, 10);
-  shape2.lineTo(0, 10);
-  shape2.lineTo(0, 100);
-  shape2.lineTo(100, 100);
-  shape2.lineTo(100, 0);
-  shape2.close();
-
-  auto shape_region = base::MakeUnique<SkRegion>();
-  shape_region->setPath(shape2, SkRegion(shape2.getBounds().round()));
+  auto shape_region = base::MakeUnique<Widget::ShapeRects>();
+  shape_region->emplace_back(10, 0, 90, 10);
+  shape_region->emplace_back(0, 10, 10, 90);
+  shape_region->emplace_back(10, 10, 90, 90);
 
   std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
   widget2->Show();

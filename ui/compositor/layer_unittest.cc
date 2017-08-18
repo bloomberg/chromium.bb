@@ -1264,9 +1264,9 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
       CreateColorLayer(blue_with_alpha, gfx::Rect(viewport_size)));
 
   // Add a shape to restrict the visible part of the layer.
-  SkRegion shape;
-  shape.setRect(0, 0, viewport_size.width(), blue_height);
-  foreground_layer->SetAlphaShape(base::WrapUnique(new SkRegion(shape)));
+  auto shape = base::MakeUnique<Layer::ShapeRects>();
+  shape->emplace_back(0, 0, viewport_size.width(), blue_height);
+  foreground_layer->SetAlphaShape(std::move(shape));
 
   foreground_layer->SetFillsBoundsOpaquely(false);
 

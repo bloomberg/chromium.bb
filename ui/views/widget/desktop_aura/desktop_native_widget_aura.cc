@@ -710,7 +710,8 @@ void DesktopNativeWidgetAura::StackAtTop() {
     desktop_window_tree_host_->StackAtTop();
 }
 
-void DesktopNativeWidgetAura::SetShape(std::unique_ptr<SkRegion> shape) {
+void DesktopNativeWidgetAura::SetShape(
+    std::unique_ptr<Widget::ShapeRects> shape) {
   if (content_window_)
     desktop_window_tree_host_->SetShape(std::move(shape));
 }

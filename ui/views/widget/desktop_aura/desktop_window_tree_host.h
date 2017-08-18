@@ -94,9 +94,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
 
-  // Sets the shape of the root window. If |native_region| is NULL then the
+  // Sets the shape of the root window. If |native_shape| is nullptr then the
   // window reverts to rectangular.
-  virtual void SetShape(std::unique_ptr<SkRegion> native_region) = 0;
+  virtual void SetShape(std::unique_ptr<Widget::ShapeRects> native_shape) = 0;
 
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;

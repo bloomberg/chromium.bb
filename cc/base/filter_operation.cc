@@ -33,7 +33,7 @@ bool FilterOperation::operator==(const FilterOperation& other) const {
     return image_filter_.get() == other.image_filter_.get();
   }
   if (type_ == ALPHA_THRESHOLD) {
-    return region_ == other.region_ && amount_ == other.amount_ &&
+    return shape_ == other.shape_ && amount_ == other.amount_ &&
            outer_threshold_ == other.outer_threshold_;
   }
   return amount_ == other.amount_;
@@ -118,7 +118,7 @@ FilterOperation::FilterOperation(FilterType type,
 }
 
 FilterOperation::FilterOperation(FilterType type,
-                                 const SkRegion& region,
+                                 const ShapeRects& shape,
                                  float inner_threshold,
                                  float outer_threshold)
     : type_(type),
@@ -127,7 +127,7 @@ FilterOperation::FilterOperation(FilterType type,
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
       zoom_inset_(0),
-      region_(region) {
+      shape_(shape) {
   DCHECK_EQ(type_, ALPHA_THRESHOLD);
   memset(matrix_, 0, sizeof(matrix_));
 }
@@ -140,7 +140,7 @@ FilterOperation::FilterOperation(const FilterOperation& other)
       drop_shadow_color_(other.drop_shadow_color_),
       image_filter_(other.image_filter_),
       zoom_inset_(other.zoom_inset_),
-      region_(other.region_),
+      shape_(other.shape_),
       blur_tile_mode_(other.blur_tile_mode_) {
   memcpy(matrix_, other.matrix_, sizeof(matrix_));
 }
@@ -182,7 +182,8 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
     case FilterOperation::REFERENCE:
       return FilterOperation::CreateReferenceFilter(nullptr);
     case FilterOperation::ALPHA_THRESHOLD:
-      return FilterOperation::CreateAlphaThresholdFilter(SkRegion(), 1.f, 0.f);
+      return FilterOperation::CreateAlphaThresholdFilter(
+          FilterOperation::ShapeRects(), 1.f, 0.f);
   }
   NOTREACHED();
   return FilterOperation::CreateEmptyFilter();
@@ -269,7 +270,7 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
         gfx::Tween::FloatValueBetween(progress, from_op.outer_threshold(),
                                       to_op.outer_threshold()),
         to_op.type()));
-    blended_filter.set_region(to_op.region());
+    blended_filter.set_shape(to_op.shape());
   }
 
   return blended_filter;
@@ -318,13 +319,13 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
     case FilterOperation::ALPHA_THRESHOLD: {
       value->SetDouble("inner_threshold", amount_);
       value->SetDouble("outer_threshold", outer_threshold_);
-      std::unique_ptr<base::ListValue> region_value(new base::ListValue());
-      value->BeginArray("region");
-      for (SkRegion::Iterator it(region_); !it.done(); it.next()) {
-        value->AppendInteger(it.rect().x());
-        value->AppendInteger(it.rect().y());
-        value->AppendInteger(it.rect().width());
-        value->AppendInteger(it.rect().height());
+      std::unique_ptr<base::ListValue> shape_value(new base::ListValue());
+      value->BeginArray("shape");
+      for (const gfx::Rect& rect : shape_) {
+        value->AppendInteger(rect.x());
+        value->AppendInteger(rect.y());
+        value->AppendInteger(rect.width());
+        value->AppendInteger(rect.height());
       }
       value->EndArray();
     } break;

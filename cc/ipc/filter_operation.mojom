@@ -31,12 +31,13 @@ enum FilterType {
 struct FilterOperation {
   FilterType type;
   float amount;
+  float outer_threshold;
   gfx.mojom.Point drop_shadow_offset;
   uint32 drop_shadow_color;
   skia.mojom.ImageFilter image_filter;
   array<float, 20>? matrix;
   int32 zoom_inset;
   skia.mojom.BlurTileMode blur_tile_mode;
-  // Note: SkRegion is currently not needed for serialization.
+  array<gfx.mojom.Rect>? shape;
 };
 

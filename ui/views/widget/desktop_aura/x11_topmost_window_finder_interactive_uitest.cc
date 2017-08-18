@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -302,10 +301,10 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto skregion1 = base::MakeUnique<SkRegion>();
-  skregion1->op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
-  skregion1->op(SkIRect::MakeXYWH(10, 0, 90, 100), SkRegion::kUnion_Op);
-  widget1->SetShape(std::move(skregion1));
+  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  shape1->emplace_back(0, 10, 10, 90);
+  shape1->emplace_back(10, 0, 90, 100);
+  widget1->SetShape(std::move(shape1));
 
   SkRegion skregion2;
   skregion2.op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
@@ -341,10 +340,10 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto skregion1 = base::MakeUnique<SkRegion>();
-  skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
-  // Widget takes ownership of |skregion1|.
-  widget1->SetShape(std::move(skregion1));
+  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  shape1->emplace_back();
+  // Widget takes ownership of |shape1|.
+  widget1->SetShape(std::move(shape1));
 
   XID xids[] = { xid1 };
   StackingClientListWaiter stack_waiter(xids, arraysize(xids));
@@ -362,9 +361,9 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto skregion1 = base::MakeUnique<SkRegion>();
-  skregion1->op(SkIRect::MakeXYWH(0, 0, 0, 0), SkRegion::kUnion_Op);
-  widget1->SetShape(std::move(skregion1));
+  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  shape1->emplace_back();
+  widget1->SetShape(std::move(shape1));
 
   // Remove the shape - this is now just a normal window.
   widget1->SetShape(nullptr);

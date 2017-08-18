@@ -700,15 +700,18 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopWindowTreeHostX11::SetShape(
-    std::unique_ptr<SkRegion> native_region) {
+    std::unique_ptr<Widget::ShapeRects> native_shape) {
   custom_window_shape_ = false;
   window_shape_.reset();
 
-  if (native_region) {
+  if (native_shape) {
+    SkRegion native_region;
+    for (const gfx::Rect& rect : *native_shape)
+      native_region.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
     gfx::Transform transform = GetRootTransform();
-    if (!transform.IsIdentity() && !native_region->isEmpty()) {
+    if (!transform.IsIdentity() && !native_region.isEmpty()) {
       SkPath path_in_dip;
-      if (native_region->getBoundaryPath(&path_in_dip)) {
+      if (native_region.getBoundaryPath(&path_in_dip)) {
         SkPath path_in_pixels;
         path_in_dip.transform(transform.matrix(), &path_in_pixels);
         window_shape_.reset(gfx::CreateRegionFromSkPath(path_in_pixels));
@@ -716,7 +719,7 @@ void DesktopWindowTreeHostX11::SetShape(
         window_shape_.reset(XCreateRegion());
       }
     } else {
-      window_shape_.reset(gfx::CreateRegionFromSkRegion(*native_region));
+      window_shape_.reset(gfx::CreateRegionFromSkRegion(native_region));
     }
 
     custom_window_shape_ = true;
