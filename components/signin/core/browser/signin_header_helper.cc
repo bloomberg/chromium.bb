@@ -125,7 +125,7 @@ bool SigninHeaderHelper::ShouldBuildRequestHeader(
   return true;
 }
 
-void AppendOrRemoveAccountConsistentyRequestHeader(
+void AppendOrRemoveAccountConsistencyRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
