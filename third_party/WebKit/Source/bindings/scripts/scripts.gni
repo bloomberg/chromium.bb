@@ -464,7 +464,7 @@ template("generate_conditional_features") {
       "--output-directory",
       rebase_path(invoker.output_dir, root_build_dir),
       "--info-dir",
-      "gen/blink/bindings",
+      rebase_path("$bindings_output_dir", root_build_dir),
       "--cache-dir",
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--target-component",
