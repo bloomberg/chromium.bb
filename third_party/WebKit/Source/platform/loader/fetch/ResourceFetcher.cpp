@@ -27,6 +27,7 @@
 
 #include "platform/loader/fetch/ResourceFetcher.h"
 
+#include "base/time/time.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -45,6 +46,7 @@
 #include "platform/network/NetworkInstrumentation.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/probe/PlatformProbes.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -62,6 +64,9 @@ using blink::WebURLRequest;
 namespace blink {
 
 namespace {
+
+constexpr base::TimeDelta kKeepaliveLoadersTimeout =
+    base::TimeDelta::FromSeconds(30);
 
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
   case Resource::k##name: {                                                 \
@@ -274,6 +279,15 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context,
           std::move(task_runner),
           this,
           &ResourceFetcher::ResourceTimingReportTimerFired),
+      // keepalive_loaders_timer_ shouldn't use a frame associated timer because
+      // it will be run after frame destruction.
+      keepalive_loaders_timer_(
+          Platform::Current()
+              ->CurrentThread()
+              ->Scheduler()
+              ->LoadingTaskRunner(),
+          this,
+          &ResourceFetcher::StopFetchingIncludingKeepaliveLoaders),
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
@@ -1183,6 +1197,13 @@ void ResourceFetcher::ClearContext() {
   scheduler_->Shutdown();
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
   context_ = Context().Detach();
+
+  if (!loaders_.IsEmpty() || !non_blocking_loaders_.IsEmpty()) {
+    // There are some keepalive requests.
+    self_keep_alive_ = this;
+    keepalive_loaders_timer_.StartOneShot(kKeepaliveLoadersTimeout,
+                                          BLINK_FROM_HERE);
+  }
 }
 
 int ResourceFetcher::BlockingRequestCount() const {
@@ -1432,26 +1453,15 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
     non_blocking_loaders_.erase(loader);
   else
     NOTREACHED();
+
+  if (loaders_.IsEmpty() && non_blocking_loaders_.IsEmpty()) {
+    self_keep_alive_.Clear();
+    keepalive_loaders_timer_.Stop();
+  }
 }
 
 void ResourceFetcher::StopFetching() {
-  // TODO(toyoshim): May want to suspend scheduler while canceling loaders so
-  // that the cancellations below do not awake unnecessary scheduling.
-
-  HeapVector<Member<ResourceLoader>> loaders_to_cancel;
-  for (const auto& loader : non_blocking_loaders_) {
-    if (!loader->GetKeepalive())
-      loaders_to_cancel.push_back(loader);
-  }
-  for (const auto& loader : loaders_) {
-    if (!loader->GetKeepalive())
-      loaders_to_cancel.push_back(loader);
-  }
-
-  for (const auto& loader : loaders_to_cancel) {
-    if (loaders_.Contains(loader) || non_blocking_loaders_.Contains(loader))
-      loader->Cancel();
-  }
+  StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
 }
 
 void ResourceFetcher::SetDefersLoading(bool defers) {
@@ -1653,6 +1663,35 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        params.GetOriginRestriction(),
                        resource->LastResourceRequest().GetRedirectStatus());
   RequestLoadStarted(resource->Identifier(), resource, params, kUse);
+}
+
+void ResourceFetcher::StopFetchingInternal(StopFetchingTarget target) {
+  // TODO(toyoshim): May want to suspend scheduler while canceling loaders so
+  // that the cancellations below do not awake unnecessary scheduling.
+
+  HeapVector<Member<ResourceLoader>> loaders_to_cancel;
+  for (const auto& loader : non_blocking_loaders_) {
+    if (target == StopFetchingTarget::kIncludingKeepaliveLoaders ||
+        !loader->GetKeepalive()) {
+      loaders_to_cancel.push_back(loader);
+    }
+  }
+  for (const auto& loader : loaders_) {
+    if (target == StopFetchingTarget::kIncludingKeepaliveLoaders ||
+        !loader->GetKeepalive()) {
+      loaders_to_cancel.push_back(loader);
+    }
+  }
+
+  for (const auto& loader : loaders_to_cancel) {
+    if (loaders_.Contains(loader) || non_blocking_loaders_.Contains(loader))
+      loader->Cancel();
+  }
+}
+
+void ResourceFetcher::StopFetchingIncludingKeepaliveLoaders(TimerBase*) {
+  StopFetchingInternal(StopFetchingTarget::kIncludingKeepaliveLoaders);
+  self_keep_alive_.Clear();
 }
 
 DEFINE_TRACE(ResourceFetcher) {
