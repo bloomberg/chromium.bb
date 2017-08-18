@@ -107,6 +107,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/undo",
+    "//ios/clean/chrome/browser/ui/overlays",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",

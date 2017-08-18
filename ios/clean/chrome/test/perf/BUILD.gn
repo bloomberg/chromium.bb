@@ -47,6 +47,7 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
   ]
 
   deps = [
+    "//ios/chrome/app:tests_fake_hook",
     "//ios/clean/chrome/app:main",
     "//ios/testing/perf:startup",
   ]

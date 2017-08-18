@@ -20,6 +20,7 @@ source_set("web_contents") {
     "//ios/chrome/browser/ui/coordinators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/context_menu",
+    "//ios/clean/chrome/browser/ui/overlays",
     "//ios/web",
     "//ui/base",
     "//url",
