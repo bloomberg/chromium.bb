@@ -412,6 +412,12 @@ const CGFloat kMenuWidth = 264;
   [self.navigationController pushViewController:controller animated:YES];
 }
 
+- (void)bookmarkTableView:(BookmarkTableView*)view
+    selectedNodesForDeletion:
+        (const std::set<const bookmarks::BookmarkNode*>&)nodes {
+  [self deleteNodes:nodes];
+}
+
 #pragma mark - BookmarkFolderViewControllerDelegate
 
 - (void)folderPicker:(BookmarkFolderViewController*)folderPicker

@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -18,10 +19,14 @@
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarkTableView ()<UITableViewDataSource, UITableViewDelegate> {
+@interface BookmarkTableView ()<UITableViewDataSource,
+                                UITableViewDelegate,
+                                BookmarkModelBridgeObserver> {
   // A vector of bookmark nodes to display in the table view.
   std::vector<const BookmarkNode*> _bookmarkItems;
   const BookmarkNode* _currentRootNode;
+  // Bridge to register for bookmark changes.
+  std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
 }
 
 // The UITableView to show bookmarks.
@@ -55,6 +60,7 @@ using bookmarks::BookmarkNode;
                                frame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    DCHECK(rootNode);
     _browserState = browserState;
     _delegate = delegate;
     _currentRootNode = rootNode;
@@ -62,6 +68,11 @@ using bookmarks::BookmarkNode;
     // Set up connection to the BookmarkModel.
     _bookmarkModel =
         ios::BookmarkModelFactory::GetForBrowserState(browserState);
+
+    // Set up observers.
+    _modelBridge.reset(
+        new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
+
     [self computeBookmarkTableViewData];
 
     self.tableView =
@@ -82,8 +93,7 @@ using bookmarks::BookmarkNode;
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.emptyTableBackgroundView.text =
         l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL);
-    self.emptyTableBackgroundView.alpha =
-        _currentRootNode->child_count() == 0 ? 1 : 0;
+    [self updateEmptyBackground];
     [self addSubview:self.emptyTableBackgroundView];
   }
   return self;
@@ -117,6 +127,7 @@ using bookmarks::BookmarkNode;
   }
 
   cell.textLabel.text = bookmark_utils_ios::TitleForBookmarkNode(node);
+  cell.textLabel.accessibilityIdentifier = cell.textLabel.text;
   if (node->is_folder()) {
     [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
   } else {
@@ -127,15 +138,21 @@ using bookmarks::BookmarkNode;
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  return YES;
+  // We enable the swipe-to-delete gesture and reordering control for nodes of
+  // type URL or Folder, and not the permanent ones.
+  const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  return node->type() == BookmarkNode::URL ||
+         node->type() == BookmarkNode::FOLDER;
 }
 
 - (void)tableView:(UITableView*)tableView
     commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   if (editingStyle == UITableViewCellEditingStyleDelete) {
-    // TODO(crbug.com/695749) Implement the deletion of bookmark/folder and
-    // insertion of folder here.
+    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+    std::set<const BookmarkNode*> nodes;
+    nodes.insert(node);
+    [self.delegate bookmarkTableView:self selectedNodesForDeletion:nodes];
   }
 }
 
@@ -152,9 +169,71 @@ using bookmarks::BookmarkNode;
     // Open URL. Pass this to the delegate.
     [self.delegate bookmarkTableView:self selectedUrlForNavigation:node->url()];
   }
+  // Deselect row.
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+#pragma mark - BookmarkModelBridgeObserver Callbacks
+// BookmarkModelBridgeObserver Callbacks
+// Instances of this class automatically observe the bookmark model.
+// The bookmark model has loaded.
+- (void)bookmarkModelLoaded {
+  [self refreshContents];
+}
+
+// The node has changed, but not its children.
+- (void)bookmarkNodeChanged:(const BookmarkNode*)bookmarkNode {
+  // The root folder changed. Do nothing.
+  if (bookmarkNode == _currentRootNode)
+    return;
+
+  // A specific cell changed. Reload, if currently shown.
+  if (std::find(_bookmarkItems.begin(), _bookmarkItems.end(), bookmarkNode) !=
+      _bookmarkItems.end()) {
+    [self refreshContents];
+  }
+}
+
+// The node has not changed, but its children have.
+- (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
+  // The current root folder's children changed. Reload everything.
+  if (bookmarkNode == _currentRootNode) {
+    [self refreshContents];
+    return;
+  }
+}
+
+// The node has moved to a new parent folder.
+- (void)bookmarkNode:(const BookmarkNode*)bookmarkNode
+     movedFromParent:(const BookmarkNode*)oldParent
+            toParent:(const BookmarkNode*)newParent {
+  if (oldParent == _currentRootNode || newParent == _currentRootNode) {
+    // A folder was added or removed from the current root folder.
+    [self refreshContents];
+  }
+}
+
+// |node| was deleted from |folder|.
+- (void)bookmarkNodeDeleted:(const BookmarkNode*)node
+                 fromFolder:(const BookmarkNode*)folder {
+  if (_currentRootNode == node) {
+    _currentRootNode = NULL;
+    [self refreshContents];
+  }
+}
+
+// All non-permanent nodes have been removed.
+- (void)bookmarkModelRemovedAllNodes {
+  // TODO(crbug.com/695749) Check if this case is applicable in the new UI.
 }
 
 #pragma mark - Private
+
+- (void)refreshContents {
+  [self computeBookmarkTableViewData];
+  [self updateEmptyBackground];
+  [self.tableView reloadData];
+}
 
 // Returns the bookmark node associated with |indexPath|.
 - (const BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath {
@@ -167,22 +246,21 @@ using bookmarks::BookmarkNode;
 
 // Computes the bookmarks table view based on the current root node.
 - (void)computeBookmarkTableViewData {
-  if (!self.bookmarkModel->loaded())
+  if (!self.bookmarkModel->loaded() || _currentRootNode == NULL)
     return;
 
-  // Regenerate the list of all bookmarks, if current root node is not set,
-  // then reset to model's root node.
-  if (!_currentRootNode) {
-    _currentRootNode = self.bookmarkModel->root_node();
+  // Regenerate the list of all bookmarks.
+  _bookmarkItems.clear();
+  int childCount = _currentRootNode->child_count();
+  for (int i = 0; i < childCount; ++i) {
+    const BookmarkNode* node = _currentRootNode->GetChild(i);
+    _bookmarkItems.push_back(node);
   }
-  if (_currentRootNode) {
-    _bookmarkItems.clear();
-    int childCount = _currentRootNode->child_count();
-    for (int i = 0; i < childCount; ++i) {
-      const BookmarkNode* node = _currentRootNode->GetChild(i);
-      _bookmarkItems.push_back(node);
-    }
-  }
+}
+
+- (void)updateEmptyBackground {
+  self.emptyTableBackgroundView.alpha =
+      _currentRootNode != NULL && _currentRootNode->child_count() > 0 ? 0 : 1;
 }
 
 @end
