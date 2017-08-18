@@ -39,11 +39,11 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
   void FollowRedirect() override;
   void ProceedWithResponse() override;
 
-  void OnReceiveResponse(const ResourceResponseHead& head,
+  void OnReceiveResponse(scoped_refptr<ResourceResponse> response,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head);
+                         scoped_refptr<ResourceResponse> response);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnComplete(const ResourceRequestCompletionStatus& completion_status);
 
