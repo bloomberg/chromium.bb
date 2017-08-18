@@ -260,21 +260,20 @@ void AddSourceFilesToProjectForIndexing(
   }
 }
 
-// Add xctest files to the "Compiler Sources" of corresponding xctest native
-// targets.
-void AddXCTestFilesToXCTestModuleTarget(
-    const Target::FileList& xctest_file_list,
-    PBXNativeTarget* native_target,
-    PBXProject* project,
-    SourceDir source_dir,
-    const BuildSettings* build_settings) {
+// Add xctest files to the "Compiler Sources" of corresponding test module
+// native targets.
+void AddXCTestFilesToTestModuleTarget(const Target::FileList& xctest_file_list,
+                                      PBXNativeTarget* native_target,
+                                      PBXProject* project,
+                                      SourceDir source_dir,
+                                      const BuildSettings* build_settings) {
   for (const SourceFile& source : xctest_file_list) {
     std::string source_path = RebasePath(source.value(), source_dir,
                                          build_settings->root_path_utf8());
 
     // Test files need to be known to Xcode for proper indexing and for
-    // discovery of tests function for XCTest, but the compilation is done
-    // via ninja and thus must prevent Xcode from compiling the files by
+    // discovery of tests function for XCTest and XCUITest, but the compilation
+    // is done via ninja and thus must prevent Xcode from compiling the files by
     // adding '-help' as per file compiler flag.
     project->AddSourceFile(source_path, source_path, CompilerFlags::HELP,
                            native_target);
@@ -535,23 +534,32 @@ void XcodeWriter::CreateProductsProject(
         bundle_target_to_pbxtarget.insert(
             std::make_pair(target, native_target));
 
-        if (!IsXCTestModuleTarget(target))
+        if (!IsXCTestModuleTarget(target) && !IsXCUITestModuleTarget(target))
           continue;
 
         // For XCTest, test files are compiled into the application bundle.
-        const Target* test_application_target = FindApplicationTargetByName(
-            target->bundle_data().xcode_test_application_name(), targets);
-        SearchXCTestFilesForTarget(test_application_target,
+        // For XCUITest, test files are compiled into the test module bundle.
+        const Target* target_with_xctest_files = nullptr;
+        if (IsXCTestModuleTarget(target)) {
+          target_with_xctest_files = FindApplicationTargetByName(
+              target->bundle_data().xcode_test_application_name(), targets);
+        } else if (IsXCUITestModuleTarget(target)) {
+          target_with_xctest_files = target;
+        } else {
+          NOTREACHED();
+        }
+
+        SearchXCTestFilesForTarget(target_with_xctest_files,
                                    &xctest_files_per_target);
         const Target::FileList& xctest_file_list =
-            xctest_files_per_target[test_application_target];
+            xctest_files_per_target[target_with_xctest_files];
 
         // Add xctest files to the "Compiler Sources" of corresponding xctest
-        // native targets for proper indexing and for discovery of tests
-        // function for XCTest.
-        AddXCTestFilesToXCTestModuleTarget(xctest_file_list, native_target,
-                                           main_project.get(), source_dir,
-                                           build_settings);
+        // and xcuitest native targets for proper indexing and for discovery of
+        // tests function.
+        AddXCTestFilesToTestModuleTarget(xctest_file_list, native_target,
+                                         main_project.get(), source_dir,
+                                         build_settings);
         break;
       }
 
