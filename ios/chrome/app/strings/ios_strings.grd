@@ -1170,6 +1170,18 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_MESSAGE" desc="Message informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. This is shown alone in an infobar at the bottom of the screen after the user tries to view or copy the password from a settings page. [Length: about two lines]">
         To see passwords, set a screen lock on your device
       </message>
+      <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE" desc="Title of the alert informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. [Length: one line]">
+        Set A Passcode
+      </message>
+      <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT" desc="Message informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. This is shown as an alert message after the user tries to view or copy the password from a settings page. [Length: about two lines]">
+        To see passwords, you must first set a passcode on your device.
+      </message>
+      <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW" desc="The label of the 'Learn how' button of the alert informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. The button leads to a help article on how to set up a device lock.">
+        Learn How
+      </message>
+      <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_OK" desc="The label of the OK button of the alert informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. The button dismisses the alert.">
+        OK
+      </message>
       <message name="IDS_IOS_SETTINGS_TITLE" desc="Title for the settings panel [iOS].">
         Settings
       </message>
