@@ -2139,13 +2139,8 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_UNPOISON_PARTITION_CTX
   const int ctx =
       partition_plane_context(xd, mi_row, mi_col, has_rows, has_cols, bsize);
-  const aom_prob *const probs =
-      ctx < PARTITION_CONTEXTS ? cm->fc->partition_prob[ctx] : NULL;
-  FRAME_COUNTS *const counts = ctx < PARTITION_CONTEXTS ? xd->counts : NULL;
 #else
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
-  const aom_prob *const probs = cm->fc->partition_prob[ctx];
-  FRAME_COUNTS *const counts = xd->counts;
 #endif
   PARTITION_TYPE p;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -2164,14 +2159,21 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         ACCT_STR);
 #endif  // CONFIG_EXT_PARTITION_TYPES
   } else if (!has_rows && has_cols) {
-    p = aom_read(r, probs[1], ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
+    assert(bsize > BLOCK_8X8);
+    aom_cdf_prob cdf[2];
+    partition_gather_vert_alike(cdf, partition_cdf);
+    assert(cdf[1] == AOM_ICDF(CDF_PROB_TOP));
+    p = aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
+    // gather cols
   } else if (has_rows && !has_cols) {
-    p = aom_read(r, probs[2], ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
+    assert(bsize > BLOCK_8X8);
+    aom_cdf_prob cdf[2];
+    partition_gather_horz_alike(cdf, partition_cdf);
+    assert(cdf[1] == AOM_ICDF(CDF_PROB_TOP));
+    p = aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
   } else {
     p = PARTITION_SPLIT;
   }
-
-  if (counts) ++counts->partition[ctx][p];
 
   return p;
 }
