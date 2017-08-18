@@ -79,6 +79,9 @@ class ArcSessionRunner : public ArcSession::Observer,
   // delays.
   void SetRestartDelayForTesting(const base::TimeDelta& restart_delay);
 
+  // TODO(yusukes): Remove the function once crbug.com/756687 is fixed.
+  static void ResetEmitLoginPromptVisibleCalledCalledForTesting();
+
  private:
   // The possible states.  In the normal flow, the state changes in the
   // following sequence:
