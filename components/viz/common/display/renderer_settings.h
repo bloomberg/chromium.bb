@@ -36,6 +36,8 @@ class VIZ_COMMON_EXPORT RendererSettings {
   // in ResourcePool. Only used for layout or pixel tests, as non-deterministic
   // resource sizes can lead to floating point error and noise in these tests.
   bool disallow_non_exact_resource_reuse = false;
+
+  int slow_down_compositing_scale_factor = 1;
 };
 
 }  // namespace viz

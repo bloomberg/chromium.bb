@@ -490,7 +490,10 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
     return;
   }
 
-  DrawRenderPass(render_pass);
+  // Repeated draw to simulate a slower device for the evaluation of performance
+  // improvements in UI effects.
+  for (int i = 0; i < settings_->slow_down_compositing_scale_factor; ++i)
+    DrawRenderPass(render_pass);
 
   bool first_request = true;
   for (auto& copy_request : render_pass->copy_requests) {

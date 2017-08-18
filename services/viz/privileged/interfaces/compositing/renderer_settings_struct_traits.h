@@ -70,6 +70,11 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.disallow_non_exact_resource_reuse;
   }
 
+  static int slow_down_compositing_scale_factor(
+      const viz::RendererSettings& input) {
+    return input.slow_down_compositing_scale_factor;
+  }
+
   static bool Read(viz::mojom::RendererSettingsDataView data,
                    viz::RendererSettings* out);
 };
