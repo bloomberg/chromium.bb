@@ -265,6 +265,7 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
   entry.attempt_count = proto.attempt_count();
   entry.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag({proto.traffic_annotation()});
+  entry.bytes_downloaded = proto.bytes_downloaded();
 
   return entry;
 }
@@ -283,7 +284,7 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
   proto.set_completion_time(entry.completion_time.ToInternalValue());
   proto.set_attempt_count(entry.attempt_count);
   proto.set_traffic_annotation(entry.traffic_annotation.unique_id_hash_code);
-
+  proto.set_bytes_downloaded(entry.bytes_downloaded);
   return proto;
 }
 

@@ -6,7 +6,7 @@
 
 namespace download {
 
-Entry::Entry() : attempt_count(0) {}
+Entry::Entry() : bytes_downloaded(0u), attempt_count(0) {}
 Entry::Entry(const Entry& other) = default;
 
 Entry::Entry(const DownloadParams& params)
@@ -15,6 +15,7 @@ Entry::Entry(const DownloadParams& params)
       create_time(base::Time::Now()),
       scheduling_params(params.scheduling_params),
       request_params(params.request_params),
+      bytes_downloaded(0u),
       attempt_count(0),
       traffic_annotation(params.traffic_annotation) {}
 
@@ -35,6 +36,7 @@ bool Entry::operator==(const Entry& other) const {
          state == other.state && target_file_path == other.target_file_path &&
          create_time == other.create_time &&
          completion_time == other.completion_time &&
+         bytes_downloaded == other.bytes_downloaded &&
          attempt_count == other.attempt_count &&
          traffic_annotation == other.traffic_annotation;
 }

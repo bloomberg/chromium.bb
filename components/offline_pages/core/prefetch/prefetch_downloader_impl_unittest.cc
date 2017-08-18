@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/test/empty_client.h"
 #include "components/download/internal/test/test_download_service.h"
+#include "components/download/public/download_metadata.h"
 #include "components/download/public/service_config.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
@@ -45,10 +46,11 @@ class TestDownloadClient : public download::test::EmptyClient {
     downloader_->OnDownloadFailed(guid);
   }
 
-  void OnDownloadSucceeded(const std::string& guid,
-                           const base::FilePath& path,
-                           uint64_t size) override {
-    downloader_->OnDownloadSucceeded(guid, path, size);
+  void OnDownloadSucceeded(
+      const std::string& guid,
+      const download::CompletionInfo& completion_info) override {
+    downloader_->OnDownloadSucceeded(guid, completion_info.path,
+                                     completion_info.bytes_downloaded);
   }
 
  private:
