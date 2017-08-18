@@ -170,6 +170,7 @@ struct PrefetchDownloadResult {
                          const base::FilePath& file_path,
                          int64_t file_size);
   PrefetchDownloadResult(const PrefetchDownloadResult& other);
+  bool operator==(const PrefetchDownloadResult& other) const;
 
   std::string download_id;
   bool success = false;

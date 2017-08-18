@@ -41,6 +41,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   std::vector<PrefetchURL> latest_prefetch_urls;
   std::unique_ptr<ClientId> last_removed_client_id;
   std::vector<std::string> operation_list;
+  std::vector<PrefetchDownloadResult> download_results;
 
   int new_suggestions_count = 0;
   int processing_schedule_count = 0;

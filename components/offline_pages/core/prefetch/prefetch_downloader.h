@@ -11,14 +11,14 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 // Asynchronously downloads the archive.
 class PrefetchDownloader {
  public:
   virtual ~PrefetchDownloader() = default;
 
-  virtual void SetCompletedCallback(
-      const PrefetchDownloadCompletedCallback& callback) = 0;
+  virtual void SetPrefetchService(PrefetchService* service) = 0;
 
   // Starts to download an archive from |download_location|.
   virtual void StartDownload(const std::string& download_id,

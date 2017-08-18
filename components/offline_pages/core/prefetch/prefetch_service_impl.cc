@@ -44,12 +44,9 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_background_task_handler_(
           std::move(prefetch_background_task_handler)) {
   prefetch_dispatcher_->SetService(this);
+  prefetch_downloader_->SetPrefetchService(this);
   prefetch_gcm_handler_->SetService(this);
   suggested_articles_observer_->SetPrefetchService(this);
-  prefetch_downloader_->SetCompletedCallback(
-      base::Bind(&PrefetchServiceImpl::OnDownloadCompleted,
-                 // Downloader is owned by this instance.
-                 base::Unretained(this)));
 }
 
 PrefetchServiceImpl::~PrefetchServiceImpl() = default;
@@ -99,19 +96,6 @@ PrefetchServiceImpl::GetPrefetchBackgroundTaskHandler() {
 void PrefetchServiceImpl::Shutdown() {
   suggested_articles_observer_.reset();
   prefetch_downloader_.reset();
-}
-
-void PrefetchServiceImpl::OnDownloadCompleted(
-    const PrefetchDownloadResult& result) {
-  logger_.RecordActivity("Download " + result.download_id +
-                         (result.success ? " succeeded" : " failed"));
-  if (!result.success)
-    return;
-
-  logger_.RecordActivity("Downloaded as " + result.file_path.MaybeAsASCII() +
-                         " with size " + std::to_string(result.file_size));
-
-  // TODO(jianli): To hook up with prefetch importer.
 }
 
 }  // namespace offline_pages

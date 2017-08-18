@@ -46,12 +46,11 @@ class PrefetchServiceImpl : public PrefetchService {
   void Shutdown() override;
 
  private:
-  // Called when a download completes.
-  void OnDownloadCompleted(const PrefetchDownloadResult& result);
-
   OfflineEventLogger logger_;
 
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
+  // |prefetch_dispatcher_| must outlive |prefetch_downloader_| due to
+  // unretained references in bound callbacks.
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
   std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory_;
