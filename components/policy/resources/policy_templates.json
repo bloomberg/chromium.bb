@@ -2142,7 +2142,9 @@
           'name': 'AuthSchemes',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-','android:46-'],
+          'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2161,7 +2163,9 @@
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:9-','android:46-'],
+          'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2180,7 +2184,9 @@
           'name': 'EnableAuthNegotiatePort',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2199,7 +2205,9 @@
           'name': 'AuthServerWhitelist',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-','android:46-','webview_android:49-'],
+          'supported_on': ['chrome.*:9-','android:46-','webview_android:49-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2218,7 +2226,9 @@
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-','android:46-'],
+          'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2271,7 +2281,9 @@
           'name': 'AllowCrossOriginAuthPrompt',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:13-'],
+          'supported_on': ['chrome.*:13-','chrome_os:62-'],
+          # TODO(ljusten): Uncomment, once that property is in:
+          # 'supported_cros_management': ['ad'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
