@@ -9,6 +9,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '../android_apps_page/compiled_resources2.gyp:android_apps_browser_proxy',
+        '../change_password_page/compiled_resources2.gyp:change_password_browser_proxy',
         '../chrome_cleanup_page/compiled_resources2.gyp:chrome_cleanup_proxy',
         '../compiled_resources2.gyp:route',
         '../compiled_resources2.gyp:search_settings',
