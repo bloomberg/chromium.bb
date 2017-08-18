@@ -963,7 +963,7 @@ inline void InlineFlowBox::AddBoxShadowVisualOverflow(
   // actually the opposite shadow that applies, since the line is "upside down"
   // in terms of block coordinates.
   LayoutRectOutsets logical_outsets(
-      outsets.LogicalOutsetsWithFlippedLines(writing_mode));
+      outsets.LineOrientationOutsetsWithFlippedLines(writing_mode));
 
   LayoutRect shadow_bounds(LogicalFrameRect());
   shadow_bounds.Expand(logical_outsets);
@@ -987,7 +987,7 @@ inline void InlineFlowBox::AddBorderOutsetVisualOverflow(
   // actually the opposite border that applies, since the line is "upside down"
   // in terms of block coordinates. vertical-rl is the flipped line mode.
   LayoutRectOutsets logical_outsets =
-      style.BorderImageOutsets().LogicalOutsetsWithFlippedLines(
+      style.BorderImageOutsets().LineOrientationOutsetsWithFlippedLines(
           style.GetWritingMode());
 
   if (!IncludeLogicalLeftEdge())
@@ -1069,7 +1069,7 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
   if (ShadowList* text_shadow = style.TextShadow()) {
     text_shadow_logical_outsets =
         LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal())
-            .LogicalOutsets(style.GetWritingMode());
+            .LineOrientationOutsets(style.GetWritingMode());
   }
 
   // FIXME: This code currently uses negative values for expansion of the top

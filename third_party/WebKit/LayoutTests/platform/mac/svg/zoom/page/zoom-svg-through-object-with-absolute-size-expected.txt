@@ -3,32 +3,32 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x198
   LayoutBlockFlow {html} at (0,0) size 800x198.09
     LayoutBlockFlow {body} at (5.55,5.55) size 788.91x187
-      LayoutTable {table} at (141.45,0) size 506x187
-        LayoutTableSection (anonymous) at (0,0) size 506x187
-          LayoutTableRow {tr} at (0,0) size 506x187
-            LayoutTableCell {td} at (0,0) size 506x187 [r=0 c=0 rs=1 cs=3]
-              LayoutTable {table} at (7.44,6) size 493x175
-                LayoutTableSection (anonymous) at (0,0) size 493x175
-                  LayoutTableRow {tr} at (0,1) size 493x66
-                    LayoutTableCell {td} at (1,1) size 491x65.75 [r=0 c=0 rs=1 cs=2]
-                      LayoutBlockFlow {h1} at (5.55,19.88) size 481x26
-                        LayoutText {#text} at (0,0) size 481x26
-                          text run at (0,0) width 481: "Both sides should have identical size after zooming"
-                  LayoutTableRow {tr} at (0,68) size 493x23
-                    LayoutTableCell {td} at (1,68) size 245x23 [r=1 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (96,5) size 53x13
-                        text run at (96,5) width 53: "SVG Image"
-                    LayoutTableCell {td} at (247,68) size 245x23 [r=1 c=1 rs=1 cs=1]
+      LayoutTable {table} at (142.45,0) size 504x187
+        LayoutTableSection (anonymous) at (0,0) size 504x187
+          LayoutTableRow {tr} at (0,0) size 504x187
+            LayoutTableCell {td} at (0,0) size 504x187 [r=0 c=0 rs=1 cs=3]
+              LayoutTable {table} at (6,6) size 492x175
+                LayoutTableSection (anonymous) at (0,0) size 492x175
+                  LayoutTableRow {tr} at (0,1) size 492x66
+                    LayoutTableCell {td} at (1,1) size 490x65.75 [r=0 c=0 rs=1 cs=2]
+                      LayoutBlockFlow {h1} at (5,19.88) size 480x26
+                        LayoutText {#text} at (0,0) size 480x26
+                          text run at (0,0) width 480: "Both sides should have identical size after zooming"
+                  LayoutTableRow {tr} at (0,68) size 492x23
+                    LayoutTableCell {td} at (1,68) size 244x23 [r=1 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (95,5) size 54x13
+                        text run at (95,5) width 54: "SVG Image"
+                    LayoutTableCell {td} at (246,68) size 245x23 [r=1 c=1 rs=1 cs=1]
                       LayoutText {#text} at (96,5) size 53x13
                         text run at (96,5) width 53: "PNG Image"
-                  LayoutTableRow {tr} at (0,92) size 493x82
-                    LayoutTableCell {td} at (1,92) size 245x82.44 [r=2 c=0 rs=1 cs=1]
+                  LayoutTableRow {tr} at (0,92) size 492x82
+                    LayoutTableCell {td} at (1,92) size 244x82.44 [r=2 c=0 rs=1 cs=1]
                       LayoutText {#text} at (0,0) size 0x0
-                    LayoutTableCell {td} at (247,92) size 245x82.44 [r=2 c=1 rs=1 cs=1]
+                    LayoutTableCell {td} at (246,92) size 245x82.44 [r=2 c=1 rs=1 cs=1]
                       LayoutImage {img} at (5,5) size 138.88x69.44
                       LayoutText {#text} at (0,0) size 0x0
-layer at (257,109) size 139x69
-  LayoutEmbeddedObject {object} at (101.13,5) size 138.88x69.44
+layer at (255,109) size 139x69
+  LayoutEmbeddedObject {object} at (100.13,5) size 138.88x69.44
     layer at (0,0) size 139x69
       LayoutView at (0,0) size 139x69
     layer at (0,0) size 139x69

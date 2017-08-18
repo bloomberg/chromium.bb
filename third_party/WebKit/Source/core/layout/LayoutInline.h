@@ -135,20 +135,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return ToElement(LayoutBoxModelObject::GetNode());
   }
 
-  LayoutRectOutsets MarginBoxOutsets() const final;
   LayoutUnit MarginLeft() const final;
   LayoutUnit MarginRight() const final;
   LayoutUnit MarginTop() const final;
   LayoutUnit MarginBottom() const final;
-  LayoutUnit MarginBefore(
-      const ComputedStyle* other_style = nullptr) const final;
-  LayoutUnit MarginAfter(
-      const ComputedStyle* other_style = nullptr) const final;
-  LayoutUnit MarginStart(
-      const ComputedStyle* other_style = nullptr) const final;
-  LayoutUnit MarginEnd(const ComputedStyle* other_style = nullptr) const final;
-  LayoutUnit MarginOver() const final;
-  LayoutUnit MarginUnder() const final;
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const final;
