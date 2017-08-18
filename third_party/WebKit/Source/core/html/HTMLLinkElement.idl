@@ -43,7 +43,7 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
 
     // HTMLLinkElement implements LinkStyle
-    // https://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 
     // HTML Imports

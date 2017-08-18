@@ -52,7 +52,7 @@
     [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString border;
 
     // CSSOM View Module
-    // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlimageelement-interface
+    // https://drafts.csswg.org/cssom-view/#extensions-to-the-htmlimageelement-interface
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
 

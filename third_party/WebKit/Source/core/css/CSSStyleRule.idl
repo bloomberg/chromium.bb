@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-cssstylerule-interface
+// https://drafts.csswg.org/cssom/#the-cssstylerule-interface
 
 [
     DependentLifetime

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-cssrule-interface
+// https://drafts.csswg.org/cssom/#the-cssrule-interface
 
 [
     DependentLifetime
@@ -38,15 +38,15 @@
     readonly attribute CSSStyleSheet? parentStyleSheet;
 
     // CSS Animations
-    // https://dev.w3.org/csswg/css-animations/#interface-cssrule
+    // https://drafts.csswg.org/css-animations/#interface-cssrule
     const unsigned short KEYFRAMES_RULE = 7;
     const unsigned short KEYFRAME_RULE = 8;
 
     // CSS Conditional Rules
-    // https://dev.w3.org/csswg/css-conditional/#extentions-to-cssrule-interface
+    // https://drafts.csswg.org/css-conditional/#extentions-to-cssrule-interface
     const unsigned short SUPPORTS_RULE = 12;
 
     // CSS Device Adaptation
-    // https://dev.w3.org/csswg/css-device-adapt/#css-rule-interface
+    // https://drafts.csswg.org/css-device-adapt/#css-rule-interface
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;
 };

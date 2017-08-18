@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://dev.w3.org/csswg/cssom-view/#extensions-to-the-window-interface
+// https://drafts.csswg.org/cssom-view/#extensions-to-the-window-interface
 
 dictionary ScrollToOptions : ScrollOptions {
     unrestricted double left;

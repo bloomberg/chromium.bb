@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-csspagerule-interface
+// https://drafts.csswg.org/cssom/#the-csspagerule-interface
 
 // TODO(foolip): CSSPageRule should inherit from CSSGroupingRule.
 // crbug.com/496381. To internally implement this as grouping rule,
 // margin at-rules should be implemented crbug.com/320370, since the
-// spec https://dev.w3.org/csswg/css-page/#at-page-rule allows only
+// spec https://drafts.csswg.org/css-page/#at-page-rule allows only
 // margin at-rules inside @page.
 interface CSSPageRule : CSSRule {
     attribute DOMString selectorText;

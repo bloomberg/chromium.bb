@@ -63,7 +63,7 @@
     stringifier;
 
     // CSSOM View Module
-    // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-range-interface
+    // https://drafts.csswg.org/cssom-view/#extensions-to-the-range-interface
     DOMRectList getClientRects();
     DOMRect getBoundingClientRect();
 

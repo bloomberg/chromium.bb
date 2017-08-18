@@ -32,7 +32,7 @@ interface SVGStyleElement : SVGElement {
     [MeasureAs=SVGStyleElementTitle] attribute DOMString title;
 
     // SVGStyleElement implements LinkStyle
-    // https://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 
     // TODO(foolip): The disabled attribute was not in SVG 1.1 and has been

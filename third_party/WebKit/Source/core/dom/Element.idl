@@ -89,7 +89,7 @@ interface Element : Node {
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
 
     // CSSOM View Module
-    // https://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
+    // https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface
     DOMRectList getClientRects();
     [RuntimeCallStatsCounter=ElementGetBoundingClientRect] DOMRect getBoundingClientRect();
 

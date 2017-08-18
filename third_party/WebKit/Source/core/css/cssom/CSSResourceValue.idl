@@ -4,7 +4,7 @@
 
 // CSSResourceValue is the base class used for representing loadable resources
 // in Typed OM. Example subclasses may include images and fonts.
-// Spec: https://drafts.css-houdini.org/css-typed-om-1/#resourcevalue-objects
+// Spec: https://drafts.css-houdini.org/css-typed-om/#resourcevalue-objects
 enum CSSResourceState {
     "unloaded", "loading", "loaded", "error"
 };

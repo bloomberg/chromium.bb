@@ -17,7 +17,7 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
+// https://drafts.csswg.org/cssom-view/#the-mediaquerylist-interface
 
 [
     ActiveScriptWrappable,
@@ -28,7 +28,7 @@
     // Even though this interface is now an event target, these functions
     // exist as aliases for addEventListener for backwards compatibility
     // with older versions of this interface. See the note at
-    // https://dev.w3.org/csswg/cssom-view/#dom-mediaquerylist-removelistener
+    // https://drafts.csswg.org/cssom-view/#dom-mediaquerylist-removelistener
     [ImplementedAs=addDeprecatedListener] void addListener(EventListener? listener);
     [ImplementedAs=removeDeprecatedListener] void removeListener(EventListener? listener);
     attribute EventHandler onchange;

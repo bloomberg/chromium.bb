@@ -28,6 +28,6 @@ interface HTMLStyleElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString type;
 
     // HTMLStyleElement implements LinkStyle
-    // https://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 };
