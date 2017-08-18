@@ -135,15 +135,17 @@ void ShelfController::AddObserver(
 
   if (Shell::GetAshConfig() == Config::MASH) {
     // Mash synchronizes two ShelfModel instances, owned by Ash and Chrome.
-    // Notify Chrome of existing ShelfModel items created by Ash.
+    // Notify Chrome of existing ShelfModel items and delegates created by Ash.
     for (int i = 0; i < model_.item_count(); ++i) {
       const ShelfItem& item = model_.items()[i];
-      observer_ptr->OnShelfItemAdded(i, item);
       ShelfItemDelegate* delegate = model_.GetShelfItemDelegate(item.id);
+      // Notify observers of the delegate before the items themselves; Chrome
+      // creates default delegates if none exist, breaking ShelfWindowWatcher.
       if (delegate) {
         observer_ptr->OnShelfItemDelegateChanged(
             item.id, delegate->CreateInterfacePtrAndBind());
       }
+      observer_ptr->OnShelfItemAdded(i, item);
     }
   }
 
