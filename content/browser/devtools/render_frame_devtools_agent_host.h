@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -148,9 +149,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void GrantPolicy(RenderFrameHostImpl* host);
   void RevokePolicy(RenderFrameHostImpl* host);
 
-  // TODO(dgozman): remove together with old navigation code.
-  DevToolsSession* SingleSession();
-
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -164,7 +162,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<FrameHostHolder> pending_;
 
   // Stores per-host state between DisconnectWebContents and ConnectWebContents.
-  std::string disconnected_cookie_;
+  base::flat_map<int, std::string> disconnected_cookie_for_session_;
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
