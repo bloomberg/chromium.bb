@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Amaran</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> daripada <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Tidak dapat mengalih keluar perisian berbahaya</translation>
 <translation id="1062407476771304334">Gantikan</translation>
 <translation id="1062866675591297858">Urus pengguna di bawah seliaan anda melalui <ph name="BEGIN_LINK" />Papan Pemuka Pengguna Di Bawah Seliaan<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Penyemak Fail Pustaka Media</translation>
@@ -449,7 +448,6 @@
     <ph name="BEGIN_BOLD" />benarkan atau larang<ph name="END_BOLD" /> tapak web tertentu,
     <ph name="BEGIN_BOLD" />semak<ph name="END_BOLD" /> tapak web yang telah dilawati pengguna diselia, dan
     <ph name="BEGIN_BOLD" />urus<ph name="END_BOLD" /> tetapan lain.</translation>
-<translation id="1648797160541174252">Proksi rangkaian untuk <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Butiran log masuk sudah lapuk</translation>
 <translation id="164969095109328410">Peranti Chrome</translation>
 <translation id="1650371550981945235">Tunjukkan pilihan input</translation>
@@ -2582,6 +2580,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4816492930507672669">Muat halaman</translation>
 <translation id="4820334425169212497">Tidak, saya tidak melihatnya</translation>
 <translation id="4821086771593057290">Kata laluan anda telah ditukar. Sila cuba semula dengan kata laluan baharu anda.</translation>
+<translation id="4821725298388681253">Ini ialah keluaran awal. Sesetengah ciri seperti carian dan masukan teks belum tersedia lagi.</translation>
 <translation id="4821935166599369261">&amp;Pemprofilan Didayakan</translation>
 <translation id="4823484602432206655">Baca dan tukar pengguna dan tetapan peranti</translation>
 <translation id="4823651846660089135">Peranti dalam mod baca sahaja</translation>
@@ -3532,6 +3531,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6232017090690406397">Bateri</translation>
 <translation id="6232116551750539448">Sambungan ke <ph name="NAME" /> telah hilang</translation>
 <translation id="6237816943013845465">Membolehkan anda melaraskan peleraian skrin anda</translation>
+<translation id="6238923052227198598">Simpan nota terkini pada skrin kunci</translation>
 <translation id="6239558157302047471">Muat semula &amp;bingkai</translation>
 <translation id="6241530762627360640">Akses maklumat mengenai peranti Bluetooth yang dipasangkan dengan sistem anda dan temui peranti Bluetooth berhampiran.</translation>
 <translation id="6243774244933267674">Pelayan tidak tersedia</translation>
@@ -4614,7 +4614,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7876243839304621966">Buangkan semua</translation>
 <translation id="7877451762676714207">Ralat pelayan tidak diketahui. Sila cuba lagi atau hubungi pentadbir pelayan.</translation>
 <translation id="7877680364634660272">Lawatan</translation>
-<translation id="7878562273885520351">Kata laluan anda mungkin dijejaskan</translation>
+<translation id="7878562273885520351">Kata laluan anda mungkin terjejas</translation>
 <translation id="7881483672146086348">Paparkan Akaun</translation>
 <translation id="7881969471599061635">Lumpuhkan sari kata</translation>
 <translation id="7882358943899516840">Jenis penyedia</translation>
@@ -4941,6 +4941,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8366396658833131068">Sambungan rangkaian anda sudah dipulihkan. Sila pilih rangkaian lain atau tekan butang 'Teruskan' di bawah untuk melancarkan apl kios anda.</translation>
 <translation id="8366947248864804596">Apabila telefon anda dibuka kunci dan berada berdekatan, pilih sahaja untuk membuka kunci. Jika tidak, masukkan kata laluan atau PIN anda.</translation>
 <translation id="8368859634510605990">&amp;Buka semua penanda halaman</translation>
+<translation id="8371695176452482769">Cakap sekarang</translation>
 <translation id="8372369524088641025">Kekunci WEP teruk</translation>
 <translation id="8373360586245335572">Benarkan semua tapak memaparkan pemberitahuan</translation>
 <translation id="8373553483208508744">Redam beberapa tab</translation>

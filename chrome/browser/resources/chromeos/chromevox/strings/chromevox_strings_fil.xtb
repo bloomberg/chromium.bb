@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Susunod na Linya</translation>
 <translation id="3153024374267644603">I-on ang pananalita</translation>
+<translation id="3153928844647607688">Talahanayan na <ph name="TABLENAME" />, <ph name="TABLEROWS" /> by <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Walang nakaraang button.</translation>
 <translation id="3163593631834463955">Walang laman na header ng column</translation>
 <translation id="316542773973815724">Nabigasyon</translation>
@@ -405,6 +406,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">Abril</translation>
 <translation id="460018603901637538">Gawing tabi-tabi ang istilo ng display.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Babalewalain ang susunod na pagpindot ng key</translation>
 <translation id="461613135510474570">Pangungusap</translation>
 <translation id="4647836961514597010">Tagapili ng kulay</translation>
@@ -782,6 +784,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="820417203470636242">Walang lamang cell.</translation>
 <translation id="8215202828671303819">Maramihang pagpili</translation>
 <translation id="8224171046658870249">Lumipat sa ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Lumaktaw sa nakaraang napo-focus na item</translation>
 <translation id="8278417001922463147">Walang nakaraang artikulo.</translation>
 <translation id="8283603667300770666">Susunod na field ng form</translation>

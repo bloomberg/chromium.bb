@@ -463,6 +463,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Pabandykite išjungti plėtinius.</translation>
 <translation id="457875822857220463">Pristatymas</translation>
+<translation id="4582800630050655161">Galite prarasti prieigą prie „Google“ paskyros arba susidurti su tapatybės vagyste. „Chromium“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="4587425331216688090">Pašalinti adresą iš „Chrome“?</translation>
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
@@ -471,10 +472,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="4690462567478992370">Nebenaudoti negaliojančio sertifikato</translation>
+<translation id="4690954380545377795">Galite prarasti prieigą prie „Google“ paskyros arba susidurti su tapatybės vagyste. „Chrome“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ryšys nutrauktas</translation>
 <translation id="471880041731876836">Neturite leidimo, kad galėtumėte apsilankykite šioje svetainėje</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Paleistas įrankis „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
+<translation id="472349245089439925">Jūsų mokėjimas</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Iš naujo paleiskite „Chromium“</translation>
@@ -536,6 +539,8 @@
 <translation id="5199729219167945352">Bandymai</translation>
 <translation id="5205222826937269299">Būtina nurodyti pavadinimą</translation>
 <translation id="5222812217790122047">Būtina nurodyti el. paštą</translation>
+<translation id="522700295135997067">Gali būti, kad ši svetainė ką tik pavogė jūsų slaptažodį</translation>
+<translation id="5230733896359313003">Pristatymo adresas</translation>
 <translation id="5251803541071282808">Debesis</translation>
 <translation id="5277279256032773186">Naudojate „Chrome“ darbe? Įmonės gali tvarkyti darbuotojų „Chrome“ nustatymus. Sužinokite daugiau</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Jei norite laikinai išjungti programinę įrangą, kad galėtumėte pasiekti žiniatinklį, atlikite nurodytus veiksmus. Jums reikės administratoriaus teisių.<ph name="END_PARAGRAPH" />
@@ -554,6 +559,7 @@
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
+<translation id="5332219387342487447">Pristatymo metodas</translation>
 <translation id="5355557959165512791">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes jos sertifikatas buvo anuliuotas. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
 <translation id="5386426401304769735">Šios svetainės sertifikatų grandinėje yra sertifikatas, pasirašytas naudojant SHA-1.</translation>
@@ -825,6 +831,7 @@
 <translation id="7669271284792375604">Šios svetainės užgrobėjai gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>
 <translation id="7674629440242451245">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų kuriamą kanalą adresu chrome.com/dev.</translation>
 <translation id="7682287625158474539">Pristatymas</translation>
+<translation id="7699293099605015246">Straipsniai šiuo metu negalimi</translation>
 <translation id="7701040980221191251">Nieko</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Eiti į svetainę <ph name="SITE" /> (nesaugu)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikatas</translation>
@@ -842,6 +849,7 @@
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> tinklalapis gali laikinai neveikti arba visam laikui būti perkeltas nauju žiniatinklio adresu.</translation>
 <translation id="7800304661137206267">Ryšys užšifruotas naudojant <ph name="CIPHER" /> su <ph name="MAC" /> pranešimo tapatybei nustatyti ir <ph name="KX" /> kaip pagrindinį mainų mechanizmą.</translation>
+<translation id="7802523362929240268">Svetainė yra teisėta</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7805768142964895445">Būsena</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -851,6 +859,7 @@
 <translation id="785549533363645510">Tačiau nesate nematomi. Įjungus inkognito režimą, naršymo veiksmai vis tiek matomi darbdaviui, interneto paslaugų teikėjui ar svetainėms, kuriose lankotės.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Debeto ir išankstinio mokėjimo kortelės tinkamos.</translation>
+<translation id="7878562273885520351">Jūsų slaptažodis gali būti pažeistas</translation>
 <translation id="7887683347370398519">Patikrinkite kortelės saugos kodą (CVC) ir bandykite dar kartą</translation>
 <translation id="79338296614623784">Įveskite tinkamą telefono numerį</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -978,7 +987,9 @@
 <translation id="9069693763241529744">Užblokuota pagal plėtinį</translation>
 <translation id="9076283476770535406">Joje gali būti suaugusiesiems skirto turinio</translation>
 <translation id="9078964945751709336">Būtina pateikti daugiau informacijos</translation>
+<translation id="9080712759204168376">Užsakymų suvestinė</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
+<translation id="910908805481542201">Padėkite man tai išspręsti</translation>
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9137248913990643158">Prieš naudodami šią programą prisijunkite prie „Chrome“.</translation>
@@ -1000,5 +1011,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Nėra}=1{1 elementas}one{# elementas}few{# elementai}many{# elemento}other{# elementų}}</translation>
 <translation id="981121421437150478">Neprisijungus</translation>
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
+<translation id="989988560359834682">Adreso redagavimas</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

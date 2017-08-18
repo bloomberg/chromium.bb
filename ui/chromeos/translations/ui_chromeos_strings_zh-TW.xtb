@@ -22,6 +22,7 @@
 <translation id="158809615184981282">法羅文鍵盤</translation>
 <translation id="1646136617204068573">匈牙利文鍵盤</translation>
 <translation id="164729547906544836">坦米爾文鍵盤 (印度文音譯)</translation>
+<translation id="164969095109328410">Chrome 裝置</translation>
 <translation id="1829129547161959350">企鵝</translation>
 <translation id="184633654410729720">泰文鍵盤 (Kedmanee)</translation>
 <translation id="1921986354447415460">土耳其文 F 鍵盤</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">哈薩克文鍵盤</translation>
 <translation id="2384596874640104496">錫蘭文鍵盤</translation>
 <translation id="2464079411014186876">冰淇淋</translation>
+<translation id="2468402215065996499">電子寵物</translation>
 <translation id="247772113373397749">加拿大文 (多語言) 鍵盤</translation>
 <translation id="2494837236724268445">古吉拉特文鍵盤 (拼音)</translation>
 <translation id="2529133382850673012">美式鍵盤</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">青蛙</translation>
 <translation id="2649120831653069427">彩虹魚</translation>
 <translation id="2735698359135166290">羅馬尼亞文標準鍵盤</translation>
-<translation id="2744450304594201174">電子寵物</translation>
 <translation id="2771816809568414714">乳酪</translation>
 <translation id="2781645665747935084">比利時文</translation>
 <translation id="2790805296069989825">俄文鍵盤</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">加拿大文 (多語言)</translation>
 <translation id="3241720467332021590">愛爾蘭文</translation>
 <translation id="3252266817569339921">法文</translation>
+<translation id="3280987981688031357">黑膠唱片</translation>
 <translation id="3296763833017966289">喬治亞文</translation>
 <translation id="3338239663705455570">斯洛維尼亞文鍵盤</translation>
 <translation id="3399597614303179694">馬其頓文鍵盤</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">立陶宛文</translation>
 <translation id="3603385196401704894">加拿大法文</translation>
 <translation id="3606220979431771195">土耳其文 F</translation>
+<translation id="3619115746895587757">卡布奇諾</translation>
 <translation id="3678559383040232393">馬爾他文鍵盤</translation>
 <translation id="3801082500826908679">法羅文</translation>
 <translation id="3809272675881623365">兔子</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">足球</translation>
 <translation id="497244430928947428">馬來文鍵盤 (拼音)</translation>
 <translation id="498902553138568924">紅蝴蝶</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">披薩</translation>
 <translation id="5098629044894065541">希伯來文</translation>
 <translation id="5123433949759960244">籃球</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">音譯 (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Dvorak 美式配置</translation>
 <translation id="5640179856859982418">瑞士文鍵盤</translation>
-<translation id="5656201261327432370">卡布奇諾</translation>
 <translation id="5756666464756035725">匈牙利文 QWERTY</translation>
 <translation id="5771585441665576801">音譯 (geia → γεια)</translation>
 <translation id="5790193330357274855">哈薩克文</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">韓文 3 Set (Final)</translation>
 <translation id="5838825566232597749">美式 Workman 國際</translation>
 <translation id="5892290200158927959">法文 BÉPO 鍵盤</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">拉丁美洲文鍵盤</translation>
 <translation id="60357267506638014">捷克 QWERTY</translation>
 <translation id="6054173164583630569">法文鍵盤</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">自行車</translation>
 <translation id="6878261347041253038">梵文鍵盤 (拼音)</translation>
 <translation id="6885780034956018177">蝸牛</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">美式 Workman</translation>
 <translation id="6935521024859866267">上下顛倒</translation>
 <translation id="6937152069980083337">Google 日文輸入法 (適用於美式鍵盤)</translation>
 <translation id="6939777852457331078">美式 Workman 鍵盤</translation>
 <translation id="6970230597523682626">保加利亞文</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">音譯 (salam → ሰላም)</translation>
 <translation id="7172053773111046550">愛沙尼亞文鍵盤</translation>
 <translation id="719009910964971313">美式 Programmer Dvorak 鍵盤</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">韓文 3 Set (No Shift)</translation>
 <translation id="8299269255470343364">日文</translation>
 <translation id="8336579025507394412">冰島文鍵盤配置</translation>
-<translation id="8391218455464584335">黑膠</translation>
 <translation id="8391950649760071442">音譯 (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">簡易/速成輸入法</translation>
 <translation id="8418113698656761985">羅馬尼亞文鍵盤</translation>

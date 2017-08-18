@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">območje</translation>
 <translation id="1591562245178063882">Ta mesec</translation>
 <translation id="1637811476055996098">Izberi datoteke</translation>
-<translation id="167575180612809735">kazalnik zasedenosti</translation>
 <translation id="1729654308190250600">Vnesite e-poštni naslov (polje ne sme biti prazno).</translation>
 <translation id="1758486001363313524">Drugo ...</translation>
 <translation id="1806710327868736751">pogovorno okno z opozorilom</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">Dopoldne/popoldne</translation>
 <translation id="1832974991323546415">predvajanje v oddaljeni napravi</translation>
 <translation id="1854180393107901205">Ustavi predvajanje</translation>
-<translation id="1880518467580572141">oris</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stanje</translation>
 <translation id="1938124657309484470">Vrednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ali prej.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Izklopi zvok</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="588258955323874662">Celozaslonsko</translation>
+<translation id="5888666972993069672">Predvajanje v napravi <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5966707198760109579">Teden</translation>
 <translation id="5987525920412732405">pomikalnik</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Počisti</translation>
 <translation id="668171684555832681">Drugo ...</translation>
 <translation id="6692633176391053278">kontrolnik</translation>
-<translation id="6739588121953935928">ravnilo</translation>
 <translation id="6755330956360078551">opis orodja</translation>
 <translation id="6790428901817661496">Predvajanje</translation>
 <translation id="6820355525329141109">Vtičnika ni bilo mogoče naložiti.</translation>

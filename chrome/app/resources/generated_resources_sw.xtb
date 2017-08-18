@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Ilani</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> ya <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Imeshindwa kuondoa programu hatari</translation>
 <translation id="1062407476771304334">Badilisha</translation>
 <translation id="1062866675591297858">Dhibiti watumiaji wako wanaosimamiwa kupitia <ph name="BEGIN_LINK" />Dashibodi ya Watumiaji Wanaosimamiwa<ph name="END_LINK" /> .</translation>
 <translation id="1064662184364304002">Kikagua Faili za Maktaba ya Maudhui</translation>
@@ -448,7 +447,6 @@
     <ph name="BEGIN_BOLD" />kuruhusu au kuzuia<ph name="END_BOLD" /> tofuti fulani,
     <ph name="BEGIN_BOLD" />kukagua<ph name="END_BOLD" /> tovuti ambazo mtumiaji anayesimamiwa ametembelea, na
     <ph name="BEGIN_BOLD" />kudhibiti<ph name="END_BOLD" /> mipangilio mingine.</translation>
-<translation id="1648797160541174252">Proksi ya mtandao ya <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Muda wa matumizi ya maelezo ya kuingia katika akaunti umekwisha</translation>
 <translation id="164969095109328410">Kifaa cha Chrome</translation>
 <translation id="1650371550981945235">Onyesha chaguo za kuingiza data</translation>
@@ -2574,6 +2572,7 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="4816492930507672669">Sawazisha kwenye ukurasa</translation>
 <translation id="4820334425169212497">Hapana, Siioni</translation>
 <translation id="4821086771593057290">Nenosiri lako limebadilika. Tafadhali jaribu tena kwa nenosiri lako jipya.</translation>
+<translation id="4821725298388681253">Toleo hili ni la awali. Baadhi ya vipengele kama vile utafutaji na uandikaji havipatikani.</translation>
 <translation id="4821935166599369261">&amp;Uwekaji Wasifu Umewezeshwa</translation>
 <translation id="4823484602432206655">Soma na ubadilishe mipangilio ya mtumiaji na kifaa</translation>
 <translation id="4823651846660089135">Kifaa ni cha kusoma tu</translation>
@@ -3525,6 +3524,7 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="6232017090690406397">Betri</translation>
 <translation id="6232116551750539448">Muunganisho kwenye <ph name="NAME" /> umepotea</translation>
 <translation id="6237816943013845465">Hukuruhusu kurekebisha ubora wa skrini yako</translation>
+<translation id="6238923052227198598">Kiweke kidokezo cha hivi punde kwenye skrini iliyofungwa</translation>
 <translation id="6239558157302047471">Pakia fremu upya</translation>
 <translation id="6241530762627360640">Fikia maelezo kuhusu vifaa vya Bluetooth vilivyooanishwa na mfumo wako na ugundue vifaa vya karibu vya Bluetooth.</translation>
 <translation id="6243774244933267674">Seva haipatikani.</translation>
@@ -4936,6 +4936,7 @@ Inakokotoa muda wa kujaa</translation>
 <translation id="8366396658833131068">Muunganisho wa mtandao wako umerejeshwa. Tafadhali chagua mtandao tofauti au bonyeza kitufe cha 'Endelea' hapo chini ili uzindue programu ya kioski.</translation>
 <translation id="8366947248864804596">Fungua kwa kuchagua tu iwapo simu yako imefunguliwa na ipo karibu. Vinginevyo, weka nenosiri lako au PIN.</translation>
 <translation id="8368859634510605990">&amp;Fungua alamisho zote</translation>
+<translation id="8371695176452482769">Ongea sasa</translation>
 <translation id="8372369524088641025">Kitufe kibovu cha WEP</translation>
 <translation id="8373360586245335572">Ruhusu tovuti zote zionyeshe arifa</translation>
 <translation id="8373553483208508744">Zima vichupo</translation>

@@ -27,7 +27,6 @@
 <translation id="1643640058022401035">ከዚህ ገጽ መውጣት የChromoting ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="1654128982815600832">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማንቃት ላይ…</translation>
 <translation id="170207782578677537">ይህንን ኮምፒውተር መመዝገብ አልተሳካም።</translation>
-<translation id="1704090719919187045">Chromoting የአስተናጋጅ ምርጫዎች</translation>
 <translation id="174018511426417793">ምንም የተመዘገቡ ኮምፒውተሮች የለዎትም። ከአንድ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chrome የርቀት ዴስክቶፕን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="1742469581923031760">በመገናኘት ላይ...</translation>
 <translation id="1770394049404108959">መተግበሪያውን መክፈት አልችልም።</translation>
@@ -117,8 +116,6 @@
 <translation id="3695446226812920698">እንዴት እንደሆነ ይወቁ</translation>
 <translation id="3718805989288361841">በChrome የርቀት ዴስክቶፕ የመመሪያ ቅንብሮች ውስጥ አንድ ስህተት አለ። እገዛ ለማግኘት የሥርዓት አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="3776024066357219166">የChrome የርቀት ዴስክቶፕ ክፍለ-ጊዜው ተጠናቅቋል።</translation>
-<translation id="3785447812627779171">Chromoting
-አስተናጋጅ</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">እባክዎ በChrome የርቀት ዴስክቶፕ መዳረሻ ለመፍቀድ መለያዎን እና ፒንዎን ከዚህ በታች ያረጋግጡ።</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
@@ -134,7 +131,6 @@
 <translation id="409800995205263688">ማሳሰቢያ፦ የመምሪያ ቅንብሮች በአውታረ መረብዎ ውስጥ ባሉ ኮምፒውተሮች የሚኖሩ ግንኙነቶችን ብቻ ነው የሚፈቅዱት።</translation>
 <translation id="4155497795971509630">አንዳንድ የሚያስፈልጉ ክፍሎች ይጎድላሉ። እባክዎ የሶፍትዌሩ የቅርብ ጊዜውን ስሪት መጫንዎን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="4156740505453712750">ይህንን ኮምፒውተር በተጠበቀ መዳረሻ ለመድረስ እባክዎ <ph name="BOLD_START" />ቢያንስ ስድስት አኃዞች<ph name="BOLD_END" /> የሆነ ፒን ይምረጡ። ይሄ ፒን ከሌላ ቦታ ሆኖ ሲገናኙ ያስፈልጋል።</translation>
-<translation id="4156741816461781891">እንደ <ph name="EMAIL_ADDRESS" /> ሆነው ገብተዋል።</translation>
 <translation id="4176825807642096119">የመዳረሻ ኮድ</translation>
 <translation id="4207623512727273241">ከመቀጠልዎ በፊት እባክዎ ጫኚውን ያስሂዱት።</translation>
 <translation id="4227991223508142681">የአስተናጋጅ አቅርቦት መገልገያ</translation>
@@ -152,8 +148,6 @@
 <translation id="4517233780764084060">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chromoting ወደ «እንደ መስኮት ክፈት» ሊያዋቅሩት ይችላሉ።</translation>
 <translation id="4563926062592110512">የደንበኛው ግንኙነት ተቋርጧል፦ <ph name="CLIENT_USERNAME" />።</translation>
 <translation id="4572065712096155137">መዳረሻ</translation>
-<translation id="4573676252416618192">Chrome የርቀት
-ዴስክቶፕ አስተናጋጅ</translation>
 <translation id="4592037108270173918">በተንቀሳቃሽ ስልክ አውታረ መረብ ላይ ከአንድ መሣሪያ ጋር ሲገናኙ የውሂብ ክፍያዎች ሊከፈልባቸው ይችላሉ። መቀጠል ይፈልጋሉ?</translation>
 <translation id="4619978527973181021">ተቀበልና ጫን</translation>
 <translation id="4635770493235256822">የርቀት መሣሪያዎች</translation>
@@ -212,7 +206,6 @@
 <translation id="5843054235973879827">ይሄ ለምንድነው ደህንነቱ የተጠበቀ የሆነው?</translation>
 <translation id="5859141382851488196">አዲሰ መስኮት…</translation>
 <translation id="5885438903806970186">መስመር ላይ።</translation>
-<translation id="6001953797859482435">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ምርጫዎች</translation>
 <translation id="6011539954251327702">Chromoting ኮምፒውተርዎ ደህንነቱ በተጠበቀ መልኩ በድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChromoting መተግበሪያውን ማሂድ አለባቸው፣ <ph name="URL" /> ላይ ሊያገኙት ይችላሉ።</translation>
 <translation id="6033507038939587647">የቁልፍ ሰሌዳ አማራጮች</translation>
 <translation id="6040143037577758943">ዝጋ</translation>

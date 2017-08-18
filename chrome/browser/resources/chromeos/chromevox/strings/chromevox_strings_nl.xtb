@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Volgende regel</translation>
 <translation id="3153024374267644603">Spraak aan</translation>
+<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> bij <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Geen vorige knop.</translation>
 <translation id="3163593631834463955">Lege koptekst kolom</translation>
 <translation id="316542773973815724">Navigatie</translation>
@@ -404,6 +405,7 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="4597532268155981612">formulier</translation>
 <translation id="4597896406374528575">april</translation>
 <translation id="460018603901637538">De weergavestijl wijzigen in naast elkaar.</translation>
+<translation id="4601367666219428522">tabel <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Volgende toetsaanslag wordt genegeerd</translation>
 <translation id="461613135510474570">Zin</translation>
 <translation id="4647836961514597010">Kleurenkiezer</translation>
@@ -781,6 +783,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="820417203470636242">Lege cel.</translation>
 <translation id="8215202828671303819">Meervoudige selectie</translation>
 <translation id="8224171046658870249">Overgeschakeld naar ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Springen naar vorig actief item</translation>
 <translation id="8278417001922463147">Geen vorig artikel.</translation>
 <translation id="8283603667300770666">Volgend formulierveld</translation>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">régió</translation>
 <translation id="1591562245178063882">Ebben a hónapban</translation>
 <translation id="1637811476055996098">Fájlok kiválasztása</translation>
-<translation id="167575180612809735">„elfoglalt” kijelző</translation>
 <translation id="1729654308190250600">Kérjük, ne hagyja üresen az e-mail-cím mezőjét.</translation>
 <translation id="1758486001363313524">Más...</translation>
 <translation id="1806710327868736751">értesítő párbeszédpanel</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">de./du.</translation>
 <translation id="1832974991323546415">lejátszás távoli eszközön</translation>
 <translation id="1854180393107901205">Küldés leállítása</translation>
-<translation id="1880518467580572141">áttekintés</translation>
 <translation id="1921819250265091946">nn</translation>
 <translation id="1930711995431081526">állapot</translation>
 <translation id="1938124657309484470">Az érték <ph name="MAXIMUM_DATE_OR_TIME" /> vagy azt megelőző kell, hogy legyen.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Némítás</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="588258955323874662">Teljes képernyő</translation>
+<translation id="5888666972993069672">Átküldés ide: <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5966707198760109579">Hét</translation>
 <translation id="5987525920412732405">léptetőnyíl</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="668171684555832681">Egyéb...</translation>
 <translation id="6692633176391053278">léptető</translation>
-<translation id="6739588121953935928">vonalzó</translation>
 <translation id="6755330956360078551">elemleírás</translation>
 <translation id="6790428901817661496">Játék</translation>
 <translation id="6820355525329141109">Nem sikerült betölteni a beépülő modult.</translation>

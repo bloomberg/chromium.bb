@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">下一行</translation>
 <translation id="3153024374267644603">開啟語音功能</translation>
+<translation id="3153928844647607688">「<ph name="TABLENAME" />」表格，含 <ph name="TABLEROWS" /> 列 <ph name="TABLECOLS" /> 欄</translation>
 <translation id="3155083529632865074">沒有上一個按鈕。</translation>
 <translation id="3163593631834463955">欄標題沒有內容</translation>
 <translation id="316542773973815724">導覽</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">表單</translation>
 <translation id="4597896406374528575">4 月</translation>
 <translation id="460018603901637538">將顯示樣式變更為並排。</translation>
+<translation id="4601367666219428522">「<ph name="TABLENAME" />」表格 <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">忽略下一個按鍵</translation>
 <translation id="461613135510474570">句子</translation>
 <translation id="4647836961514597010">顏色選擇器</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">空白儲存格。</translation>
 <translation id="8215202828671303819">多重選取</translation>
 <translation id="8224171046658870249">已切換至 ChromeVox Next</translation>
+<translation id="826991282343985864">第 $1 列，第 $2 欄</translation>
 <translation id="8276439074553447000">跳至上一個可選擇的項目</translation>
 <translation id="8278417001922463147">沒有上一篇文章。</translation>
 <translation id="8283603667300770666">下一個表單欄位</translation>

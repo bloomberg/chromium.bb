@@ -27,7 +27,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
-<translation id="1704090719919187045">Pilihan Hos Chromoting</translation>
 <translation id="174018511426417793">Anda tidak mempunyai komputer yang berdaftar. Untuk mendayakan sambungan jauh pada komputer, pasang Desktop Jauh Chrome pada komputer tersebut dan klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambung…</translation>
 <translation id="1770394049404108959">Saya tidak boleh membuka aplikasi ini.</translation>
@@ -117,8 +116,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3695446226812920698">Ketahui caranya</translation>
 <translation id="3718805989288361841">Terdapat ralat dalam tetapan dasar untuk Desktop Jauh Chrome. Hubungi pentadbir sistem anda untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Desktop Jauh Chrome anda telah tamat.</translation>
-<translation id="3785447812627779171">Hos
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Sila sahkan akaun dan PIN anda di bawah untuk membenarkan akses melalui Desktop Jauh Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
 <translation id="4155497795971509630">Sesetengah komponen yang diperlukan hilang. Sila pastikan anda telah memasang versi terkini perisian dan cuba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses kepada komputer ini, sila pilih PIN <ph name="BOLD_START" />sekurang-kurangnya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan apabila menyambung dari lokasi lain.</translation>
-<translation id="4156741816461781891">Log masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kod akses</translation>
 <translation id="4207623512727273241">Sila jalankan pemasang sebelum meneruskan.</translation>
 <translation id="4227991223508142681">Utiliti Peruntukan Hos</translation>
@@ -152,8 +148,6 @@ Chromoting</translation>
 <translation id="4517233780764084060">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Chromoting kepada 'Buka sebagai tetingkap'.</translation>
 <translation id="4563926062592110512">Klien diputuskan sambungan: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Akses</translation>
-<translation id="4573676252416618192">Hos Desktop
-Jauh Chrome</translation>
 <translation id="4592037108270173918">Caj data mungkin dikenakan apabila menyambung ke peranti melalui rangkaian mudah alih. Adakah anda mahu meneruskan?</translation>
 <translation id="4619978527973181021">Terima dan Pasang</translation>
 <translation id="4635770493235256822">Peranti jauh</translation>
@@ -212,7 +206,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google  (ht
 <translation id="5843054235973879827">Mengapa dianggap selamat?</translation>
 <translation id="5859141382851488196">Tetingkap baharu…</translation>
 <translation id="5885438903806970186">Dalam talian.</translation>
-<translation id="6001953797859482435">Pilihan Hos Desktop Jauh Chrome</translation>
 <translation id="6011539954251327702">Chromoting membolehkan anda berkongsi komputer anda dengan selamat melalui Web. Kedua-dua pengguna mesti menjalankan apl Chromoting, yang boleh didapati di <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Pilihan papan kekunci</translation>
 <translation id="6040143037577758943">Tutup</translation>

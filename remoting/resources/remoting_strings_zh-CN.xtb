@@ -27,7 +27,6 @@
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
-<translation id="1704090719919187045">Chrome 远程访问主机偏好设置</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="1742469581923031760">正在连接…</translation>
 <translation id="1770394049404108959">我无法打开此应用。</translation>
@@ -117,8 +116,6 @@
 <translation id="3695446226812920698">如何解决</translation>
 <translation id="3718805989288361841">Chrome 远程桌面的政策设置有误。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
-<translation id="3785447812627779171">Chrome 远程
-访问主机</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="3897092660631435901">菜单</translation>
@@ -134,7 +131,6 @@
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START" />至少 6 位数<ph name="BOLD_END" />的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
-<translation id="4156741816461781891">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="4176825807642096119">访问代码</translation>
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
 <translation id="4227991223508142681">主机配置实用程序</translation>
@@ -152,8 +148,7 @@
 <translation id="4517233780764084060">注意：为确保所有键盘快捷键都可使用，您可以将 Chrome 远程访问配置为“在窗口中打开”。</translation>
 <translation id="4563926062592110512">与下列客户端的连接已中断：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="4572065712096155137">访问</translation>
-<translation id="4573676252416618192">Chrome 远程
-桌面主机</translation>
+<translation id="4592037108270173918">通过移动网络连接到设备时可能会产生数据流量费。要继续操作吗？</translation>
 <translation id="4619978527973181021">接受并安装</translation>
 <translation id="4635770493235256822">远程设备</translation>
 <translation id="4660011489602794167">显示键盘</translation>
@@ -180,6 +175,12 @@
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
 <translation id="5170982930780719864">主机 ID 无效。</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
+<translation id="5196958630269420102">通过您的 iOS 设备安全地访问您的计算机。
+
+• 在您的每台计算机上，使用 Chrome 网上应用店中的“Chrome 远程桌面”应用（下载地址：https://chrome.google.com/remotedesktop）设置远程访问权限
+• 在您的 iOS 设备上，打开该应用，然后点按任一台已联网的计算机，即可建立连接。
+
+有关隐私权方面的信息，请参阅 Google 隐私权政策 (http://goo.gl/SyrVzj) 和 Chrome 隐私权政策 (http://goo.gl/0uXE5d)。</translation>
 <translation id="5204575267916639804">常见问题解答</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
@@ -205,7 +206,6 @@
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
 <translation id="5859141382851488196">打开新的窗口…</translation>
 <translation id="5885438903806970186">在线。</translation>
-<translation id="6001953797859482435">Chrome 远程桌面主机偏好设置</translation>
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL" />）。</translation>
 <translation id="6033507038939587647">键盘选项</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -235,6 +235,11 @@
 <translation id="6570205395680337606">重置该应用。所有未保存的工作都将会丢失。</translation>
 <translation id="6572345186230665992">适用于 Mac（OS X Mavericks 10.9 及更高版本）</translation>
 <translation id="6583902294974160967">支持</translation>
+<translation id="6598484667010442494">Chrome 远程桌面
+远程桌面
+远程 PC
+远程计算机
+远程访问</translation>
 <translation id="6612717000975622067">发送Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>
@@ -271,6 +276,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
+<translation id="7678209621226490279">固定到左侧</translation>
 <translation id="7693372326588366043">刷新主机列表</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
 <translation id="7810127880729796595">显示统计信息（连接：<ph name="QUALITY" />）</translation>
@@ -278,6 +284,7 @@
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="7869445566579231750">您无权运行该应用。</translation>
 <translation id="7895403300744144251">这台远程计算机的安全政策不允许从您的帐号进行连接。</translation>
+<translation id="7936528439960309876">固定到右侧</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="7981525049612125370">远程会话已过期。</translation>

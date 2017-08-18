@@ -31,6 +31,7 @@
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
+<translation id="1122282995569868661">Prikaže ikono v orodni vrstici za napravo <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
 
       Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--disk-cache-dir« ali ne. Če se želite izogniti izgubi podatkov ali drugim nepričakovanim napakam, tega pravilnika ne nastavite na korenski imenik pogona ali imenik, ki ga uporabljate za druge namene, ker <ph name="PRODUCT_NAME" /> upravlja njegovo vsebino.
@@ -53,6 +54,7 @@
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1221359380862872747">Naloži določene URL-je v predstavitveni seji</translation>
+<translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
 <translation id="1291880496936992484">Opozorilo: RC4 bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 52 (okoli septembra 2016) in ta pravilnik bo takrat prenehal delovati.
 
@@ -269,6 +271,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če pravilnik ni nastavljen, je privzeta vrednost 0 stopinj in uporabnik
       jo lahko spremeni. V tem primeru se privzeta vrednost ob vnovičnem
       zagonu ne uveljavi znova.</translation>
+<translation id="2156132677421487971">Konfiguriranje pravilnikov za napravo <ph name="PRODUCT_NAME" /> – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
 <translation id="2176565653304920879">Če je ta pravilnik nastavljen, je samodejno zaznavanje časovnega pasu odvisno od vrednosti nastavitve:
@@ -581,6 +584,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Neodvisno od tega, ali je pravilnik nastavljen oziroma kako je nastavljen, uporabniki ne morejo spremeniti nastavitve optimizacije WPAD.</translation>
 <translation id="3072045631333522102">Ohranjevalnik zaslona na zaslonu za prijavo v maloprodajnem načinu</translation>
 <translation id="3072847235228302527">Nastavitev pogojev storitve za lokalni račun v napravi.</translation>
+<translation id="3086995894968271156">Konfiguriranje sprejemnika za Google Cast v sistemu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Seznam omogočenih vtičnikov</translation>
 <translation id="3101501961102569744">Izberite, kako določiti nastavitve strežnika proxy</translation>
 <translation id="3117676313396757089">Opozorilo: DHE bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 57 (okoli marca 2017) in ta pravilnik bo takrat prenehal delovati.
@@ -974,6 +978,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 Če je vrednost tega pravilnika nastavljena na 0, bo uporabljena privzeta velikost predpomnilnika, vendar je uporabnik ne bo mogel spremeniti.
 
 Če ta pravilnik ni nastavljen, bo uporabljena privzeta vrednost in jo bo uporabnik lahko preglasil z zastavico »--media-cache-size«.</translation>
+<translation id="4508686775017063528">Če je pravilnik omogočen ali ni nastavljen, je naprava <ph name="PRODUCT_NAME" /> omogočena, uporabniki pa jo lahko zaženejo v meniju z aplikacijami, v kontekstnih menijih na straneh, s kontrolniki predstavnosti na spletnih mestih, ki podpirajo Google Cast, in (če je prikazana) z ikono za Google Cast v orodni vrstici.
+
+          Če pravilnik ni omogočen, je naprava <ph name="PRODUCT_NAME" /> onemogočena.</translation>
 <translation id="4518251772179446575">Vprašaj, ko želi mesto spremljati fizično lokacijo uporabnika</translation>
 <translation id="4519046672992331730">Omogoča predloge za iskanje v naslovni vrstici brskalnika <ph name="PRODUCT_NAME" /> in preprečuje uporabnikom spreminjanje te nastavitve.
 
@@ -1080,6 +1087,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="489803897780524242">Parameter, ki nadzira umestitev iskalnega izraza za privzetega ponudnika iskanja</translation>
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
 <translation id="4906194810004762807">Osveži oceno za pravilnik za naprave</translation>
+<translation id="494613465159630803">Sprejemnik za Google Cast</translation>
 <translation id="4962262530309732070">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli ustvarjanja novih profilov v upravitelju uporabnikov.</translation>
@@ -1401,6 +1409,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
+<translation id="6161405879872578475">Omogoča napravo <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Opozorilo: podpora za SSLv3 bo iz brskalnika <ph name="PRODUCT_NAME" /> v celoti odstranjena po različici 43 (približno julija 2015). Istočasno bo odstranjen tudi ta pravilnik.
 
       Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najmanjšo dovoljeno različico, ki je SSLv3 v brskalniku <ph name="PRODUCT_NAME" /> 39 ter TLS 1.0 v poznejših različicah.
@@ -1900,6 +1909,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je ta nastavitev omogočena, lahko ta računalnik odkrije oddaljene gostiteljske računalnike in se poveže z njimi, tudi če jih ločuje požarni zid.
 
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, se bo lahko ta računalnik povezal samo z gostiteljskimi računalniki znotraj lokalnega omrežja.</translation>
+<translation id="7976157349247117979">Ime cilja za napravo <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Ni posebnih omejitev</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>

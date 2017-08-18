@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Никада се не чува</translation>
 <translation id="1068672505746868501">Никад не преводи странице на језику <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Одјављујете се са налога којим управља <ph name="DOMAIN_NAME" />. То ће избрисати Chrome податке сачуване на овом уређају, али ће подаци остати на Google налогу.</translation>
+<translation id="1105960400813249514">Снимање екрана</translation>
 <translation id="1111673857033749125">Обележивачи сачувани на другим уређајима ће се приказати овде.</translation>
 <translation id="1121094540300013208">Извештаји о коришћењу и отказивању</translation>
 <translation id="1137305377394488060">прошли сат</translation>
@@ -123,6 +124,7 @@
 <translation id="2146738493024040262">Отвори инстант апликацију</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2154484045852737596">Измените картицу</translation>
+<translation id="2154710561487035718">Копирање URL адресе</translation>
 <translation id="2156074688469523661">Преостали сајтови (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Заштите себе и уређај од опасних сајтова</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, веб-апликација. <ph name="APP_URL" /></translation>

@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Ďalší riadok</translation>
 <translation id="3153024374267644603">Hlasová odozva je zapnutá</translation>
+<translation id="3153928844647607688">Tabuľka <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Žiadne predchádzajúce tlačidlo</translation>
 <translation id="3163593631834463955">Prázdna hlavička stĺpca</translation>
 <translation id="316542773973815724">Navigácia</translation>
@@ -404,6 +405,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4597532268155981612">formulár</translation>
 <translation id="4597896406374528575">apríl</translation>
 <translation id="460018603901637538">Zmeniť štýl zobrazenia na vedľa seba</translation>
+<translation id="4601367666219428522">tabl. <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ďalšie stlačenie klávesa bude ignorované</translation>
 <translation id="461613135510474570">Veta</translation>
 <translation id="4647836961514597010">Výber farieb</translation>
@@ -781,6 +783,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="820417203470636242">Prázdna bunka</translation>
 <translation id="8215202828671303819">Hromadný výber</translation>
 <translation id="8224171046658870249">Prepnuté na čítačku ChromeVox Next</translation>
+<translation id="826991282343985864">r$1s$2</translation>
 <translation id="8276439074553447000">Prejsť na predchádzajúcu zamerateľnú položku</translation>
 <translation id="8278417001922463147">Žiadny predchádzajúci článok</translation>
 <translation id="8283603667300770666">Ďalšie pole formulára</translation>

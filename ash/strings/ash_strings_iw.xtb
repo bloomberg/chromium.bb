@@ -21,7 +21,6 @@
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">‏מכשיר Chrome</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
 <translation id="1698760176351776263">‏כתובת IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">המכשיר הזה מנוהל על ידי ארגון</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">מקש הקיצור להפעלה או כיבוי של מצב ניגודיות גבוהה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
 <translation id="5207949376430453814">הדגשה של סמן הטקסט</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5927132638760172455">מעביר למקבל לא ידוע</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">חזרה לגרסה הקודמת</translation>
 <translation id="595202126637698455">מעקב אחר הביצועים מופעל</translation>
 <translation id="5958529069007801266">משתמש בפיקוח</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="7034339000180558234">מעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">מנהל המערכת השבית את הרשת הזו.</translation>
 <translation id="7067196344162293536">סיבוב אוטומטי</translation>
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">להפעיל ביטול נעילה באמצעות טביעת אצבע?</translation>

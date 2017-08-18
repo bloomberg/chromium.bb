@@ -21,7 +21,6 @@
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">‏جهاز Chrome</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
 <translation id="1698760176351776263">‏عنوان IPv6:‏ <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">يخضع هذا الجهاز لإدارة المؤسسة</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">تم تغيير اختصار تشغيل وضع التباين العالي. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">قبول</translation>
 <translation id="4961318399572185831">إرسال الشاشة</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
 <translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">تشغيل</translation>
 <translation id="5927132638760172455">إرسال إلى مستلم غير معروف</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="595202126637698455">تم تمكين تتبع مستوى الأداء</translation>
 <translation id="5958529069007801266">مستخدم يخضع للإدارة</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">تنشيط <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
 <translation id="7034339000180558234">إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" />.</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">تم تعطيل هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">هل ترغب في تمكين إلغاء القفل باستخدام بصمة الإصبع؟</translation>

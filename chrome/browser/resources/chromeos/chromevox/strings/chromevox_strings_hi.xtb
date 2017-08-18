@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">अगली पंक्ति</translation>
 <translation id="3153024374267644603">बोली चालू करें</translation>
+<translation id="3153928844647607688">तालिका <ph name="TABLENAME" />, <ph name="TABLEROWS" /> गुणा <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">कोई पिछला बटन नहीं.</translation>
 <translation id="3163593631834463955">खाली स्तंभ शीर्षलेख</translation>
 <translation id="316542773973815724">मार्गदर्शक</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">फ़ॉर्म</translation>
 <translation id="4597896406374528575">अप्रैल</translation>
 <translation id="460018603901637538">प्रदर्शन शैली को साथ-साथ में बदलें.</translation>
+<translation id="4601367666219428522">ता <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">अगली कुंजी दबाने पर ध्यान न देना</translation>
 <translation id="461613135510474570">वाक्य</translation>
 <translation id="4647836961514597010">रंग पिकर</translation>
@@ -782,6 +784,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="820417203470636242">खाली सेल.</translation>
 <translation id="8215202828671303819">एकाधिक चयन</translation>
 <translation id="8224171046658870249">ChromeVox Next पर स्विच किया गया</translation>
+<translation id="826991282343985864">पंक्ति$1स्तंभ$2</translation>
 <translation id="8276439074553447000">पिछले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="8278417001922463147">कोई पिछला लेख नहीं.</translation>
 <translation id="8283603667300770666">अगला फ़ॉर्म फ़ील्‍ड</translation>

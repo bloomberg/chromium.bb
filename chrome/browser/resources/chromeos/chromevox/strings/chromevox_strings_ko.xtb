@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">다음 행</translation>
 <translation id="3153024374267644603">음성 사용</translation>
+<translation id="3153928844647607688">표 <ph name="TABLENAME" />, <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">이전 버튼이 없습니다.</translation>
 <translation id="3163593631834463955">열 헤더가 비어 있음</translation>
 <translation id="316542773973815724">탐색</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">양식</translation>
 <translation id="4597896406374528575">4월</translation>
 <translation id="460018603901637538">디스플레이 스타일을 병렬식으로 변경</translation>
+<translation id="4601367666219428522">표 <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">다음 키 누름 무시</translation>
 <translation id="461613135510474570">문장</translation>
 <translation id="4647836961514597010">색상선택 도구</translation>
@@ -782,6 +784,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="820417203470636242">빈 셀입니다.</translation>
 <translation id="8215202828671303819">다중 선택</translation>
 <translation id="8224171046658870249">ChromeVox Next로 전환됨</translation>
+<translation id="826991282343985864">행$1열$2</translation>
 <translation id="8276439074553447000">이전 초점 가능 항목으로 이동</translation>
 <translation id="8278417001922463147">이전 도움말이 없습니다.</translation>
 <translation id="8283603667300770666">다음 양식 입력란</translation>

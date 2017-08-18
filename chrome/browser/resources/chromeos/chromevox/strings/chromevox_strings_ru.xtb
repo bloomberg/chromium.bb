@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Перейти к следующей строке</translation>
 <translation id="3153024374267644603">Включить озвучивание действий</translation>
+<translation id="3153928844647607688">Таблица "<ph name="TABLENAME" />", <ph name="TABLEROWS" /> на <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Предыдущей кнопки нет.</translation>
 <translation id="3163593631834463955">Нет заголовка столбца</translation>
 <translation id="316542773973815724">Навигация</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">форма</translation>
 <translation id="4597896406374528575">апрель</translation>
 <translation id="460018603901637538">Изменить стиль дисплея на параллельный</translation>
+<translation id="4601367666219428522">тбл <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Игнорировать нажатие следующей клавиши.</translation>
 <translation id="461613135510474570">Предложение.</translation>
 <translation id="4647836961514597010">Палитра цветов</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">Пустая ячейка.</translation>
 <translation id="8215202828671303819">Множественный выбор</translation>
 <translation id="8224171046658870249">Вы перешли на ChromeVox Next</translation>
+<translation id="826991282343985864">стр$1стлб$2</translation>
 <translation id="8276439074553447000">Перейти к предыдущему активируемому элементу</translation>
 <translation id="8278417001922463147">Предыдущей статьи нет.</translation>
 <translation id="8283603667300770666">Перейти к следующему полю формы</translation>

@@ -27,7 +27,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1643640058022401035">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="1654128982815600832">Mengaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
-<translation id="1704090719919187045">Preferensi Host Chromoting</translation>
 <translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambungkan...</translation>
 <translation id="1770394049404108959">Saya tidak dapat membuka aplikasi ini.</translation>
@@ -117,8 +116,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="3695446226812920698">Pelajari caranya</translation>
 <translation id="3718805989288361841">Terjadi error pada setelan kebijakan untuk Chrome Desktop Jarak Jauh. Hubungi administrator sistem untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
-<translation id="3785447812627779171">Host
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chrome Desktop Jarak Jauh</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang software versi terbaru dan coba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, gunakan PIN <ph name="BOLD_START" />setidaknya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan saat menyambung dari lokasi lainnya.</translation>
-<translation id="4156741816461781891">Masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kode akses</translation>
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="4227991223508142681">Utilitas Penyediaan Host</translation>
@@ -152,8 +148,6 @@ Chromoting</translation>
 <translation id="4517233780764084060">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chromoting menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="4563926062592110512">Klien terputus: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Akses</translation>
-<translation id="4573676252416618192">Host Chrome
-Desktop Jarak Jauh</translation>
 <translation id="4592037108270173918">Biaya data mungkin berlaku saat menghubungkan perangkat melalui jaringan seluler. Ingin melanjutkan?</translation>
 <translation id="4619978527973181021">Setuju dan Instal</translation>
 <translation id="4635770493235256822">Perangkat jarak jauh</translation>
@@ -212,7 +206,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="5843054235973879827">Mengapa ini aman?</translation>
 <translation id="5859141382851488196">Jendela baru...</translation>
 <translation id="5885438903806970186">Online.</translation>
-<translation id="6001953797859482435">Preferensi Host Chrome Desktop Jarak Jauh</translation>
 <translation id="6011539954251327702">Chromoting memungkinkan Anda berbagi komputer melalui Web secara aman. Kedua pengguna harus menjalankan aplikasi Chromoting, yang dapat ditemukan di <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opsi keyboard</translation>
 <translation id="6040143037577758943">Tutup</translation>

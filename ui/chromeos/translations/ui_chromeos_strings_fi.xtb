@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Fäärinkielinen näppäimistö</translation>
 <translation id="1646136617204068573">Näppäimistö: unkari</translation>
 <translation id="164729547906544836">Tamilinkielinen näppäimistö (itrans)</translation>
+<translation id="164969095109328410">Chrome-laite</translation>
 <translation id="1829129547161959350">Pingviini</translation>
 <translation id="184633654410729720">Thainkielinen näppäimistö (kedmanee)</translation>
 <translation id="1921986354447415460">Näppäimistö: turkki (F-tyyppi)</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Näppäimistö: kazakki</translation>
 <translation id="2384596874640104496">Sinhalinkielinen näppäimistö</translation>
 <translation id="2464079411014186876">Jäätelö</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="247772113373397749">Kanadalainen monikielinen näppäimistö</translation>
 <translation id="2494837236724268445">Gudžaratinkielinen näppäimistö (foneettinen)</translation>
 <translation id="2529133382850673012">Näppäimistö: US</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Sammakko</translation>
 <translation id="2649120831653069427">Kala</translation>
 <translation id="2735698359135166290">Romanialainen vakionäppäimistö</translation>
-<translation id="2744450304594201174">Tamagotchi</translation>
 <translation id="2771816809568414714">Juusto</translation>
 <translation id="2781645665747935084">belgialainen</translation>
 <translation id="2790805296069989825">Näppäimistö: venäjä</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">Kanada, monikielinen</translation>
 <translation id="3241720467332021590">iiri</translation>
 <translation id="3252266817569339921">ranska</translation>
+<translation id="3280987981688031357">Vinyylilevy</translation>
 <translation id="3296763833017966289">gruusia</translation>
 <translation id="3338239663705455570">Näppäimistö: sloveeni</translation>
 <translation id="3399597614303179694">Näppäimistö: makedonia</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">liettua</translation>
 <translation id="3603385196401704894">ranska (Kanada)</translation>
 <translation id="3606220979431771195">Turkki (tyyppi F)</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3678559383040232393">Näppäimistö: malta</translation>
 <translation id="3801082500826908679">fääri</translation>
 <translation id="3809272675881623365">Jänis</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Jalkapallo</translation>
 <translation id="497244430928947428">Malajalaminkielinen näppäimistö (foneettinen)</translation>
 <translation id="498902553138568924">Punainen perhonen</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5098629044894065541">heprea</translation>
 <translation id="5123433949759960244">Koripallo</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Translitterointi (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">USA, Dvorak</translation>
 <translation id="5640179856859982418">Näppäimistö: Sveitsi</translation>
-<translation id="5656201261327432370">Cappuccino</translation>
 <translation id="5756666464756035725">Unkarilainen QWERTY</translation>
 <translation id="5771585441665576801">Translitterointi (geia → γεια)</translation>
 <translation id="5790193330357274855">kazakki</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Hangul 3-set (lopullinen)</translation>
 <translation id="5838825566232597749">Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="5892290200158927959">Ranskalainen BÉPO-näppäimistö</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Näppäimistö: Latinalainen Amerikka</translation>
 <translation id="60357267506638014">tšekki, QWERTY</translation>
 <translation id="6054173164583630569">Näppäimistö: ranska</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Pyörä</translation>
 <translation id="6878261347041253038">Devanagari-näppäimistö (foneettinen)</translation>
 <translation id="6885780034956018177">Etana</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Yhdysvallat, Workman</translation>
 <translation id="6935521024859866267">Ylösalaisin</translation>
 <translation id="6937152069980083337">Googlen japanilainen syöttötapa (yhdysvaltalaiselle näppäimistölle)</translation>
 <translation id="6939777852457331078">Näppäimistö: Yhdysvallat, Workman</translation>
 <translation id="6970230597523682626">bulgaria</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Translitterointi (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Näppäimistö: viro</translation>
 <translation id="719009910964971313">Näppäimistö: US, Dvorak ohjelmoijille</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Hangul 3-set (ei vaihtoa)</translation>
 <translation id="8299269255470343364">japani</translation>
 <translation id="8336579025507394412">Islantilainen näppäimistö</translation>
-<translation id="8391218455464584335">Vinyyli</translation>
 <translation id="8391950649760071442">Translitterointi (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Nopea syöttötapa</translation>
 <translation id="8418113698656761985">Näppäimistö: romania</translation>

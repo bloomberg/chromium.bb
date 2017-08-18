@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">región</translation>
 <translation id="1591562245178063882">Este mes</translation>
 <translation id="1637811476055996098">Elegir archivos</translation>
-<translation id="167575180612809735">indicador de carga</translation>
 <translation id="1729654308190250600">Introduce una dirección de correo electrónico que no esté vacía.</translation>
 <translation id="1758486001363313524">Otra...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">A.M./P.M.</translation>
 <translation id="1832974991323546415">reproducir en dispositivo remoto</translation>
 <translation id="1854180393107901205">Detener el envío</translation>
-<translation id="1880518467580572141">contorno</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">estado</translation>
 <translation id="1938124657309484470">El valor debe ser igual o anterior a <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Silenciar</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
+<translation id="5888666972993069672">Enviando a <ph name="DEVICE_FRIENDLY_NAME" /> en este momento</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5966707198760109579">Semana</translation>
 <translation id="5987525920412732405">botón de control numérico</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="668171684555832681">Otros...</translation>
 <translation id="6692633176391053278">secuenciador</translation>
-<translation id="6739588121953935928">regla</translation>
 <translation id="6755330956360078551">descripción emergente</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6820355525329141109">No se ha podido cargar el complemento.</translation>

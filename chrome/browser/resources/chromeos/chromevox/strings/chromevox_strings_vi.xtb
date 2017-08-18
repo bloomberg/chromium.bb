@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Dòng tiếp theo</translation>
 <translation id="3153024374267644603">Bật giọng nói</translation>
+<translation id="3153928844647607688">Bảng <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Không có nút trước nào.</translation>
 <translation id="3163593631834463955">Tiêu đề cột trống</translation>
 <translation id="316542773973815724">Điều hướng</translation>
@@ -405,6 +406,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4597532268155981612">biểu mẫu</translation>
 <translation id="4597896406374528575">Tháng 4</translation>
 <translation id="460018603901637538">Thay đổi kiểu hiển thị thành song song.</translation>
+<translation id="4601367666219428522">bảng <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Bỏ qua nhấn phím tiếp theo</translation>
 <translation id="461613135510474570">Câu</translation>
 <translation id="4647836961514597010">Công cụ chọn màu</translation>
@@ -782,6 +784,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="820417203470636242">Ô trống.</translation>
 <translation id="8215202828671303819">Đa chọn</translation>
 <translation id="8224171046658870249">Đã chuyển sang ChromeVox Next</translation>
+<translation id="826991282343985864">h$1c$2</translation>
 <translation id="8276439074553447000">Nhảy tới mục có thể đặt tiêu điểm trước</translation>
 <translation id="8278417001922463147">Không có bài viết trước nào.</translation>
 <translation id="8283603667300770666">Trường biểu mẫu tiếp theo</translation>

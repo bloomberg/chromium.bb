@@ -22,6 +22,7 @@
 <translation id="158809615184981282">ഫാറോസി കീബോർഡ്</translation>
 <translation id="1646136617204068573">ഹംഗേറിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="164729547906544836">തമിഴ് കീബോർഡ് (ഐട്രാൻസ്)</translation>
+<translation id="164969095109328410">Chrome ഉപകരണം</translation>
 <translation id="1829129547161959350">പെൻഗ്വിൻ</translation>
 <translation id="184633654410729720">തായ് കീബോർഡ് (കെഡ്‌മാനീ)</translation>
 <translation id="1921986354447415460">ടർക്കിഷ്-എഫ് കീബോർഡ്</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">കസാഖ് കീബോർഡ്</translation>
 <translation id="2384596874640104496">സിംഹള കീബോർഡ്</translation>
 <translation id="2464079411014186876">ഐസ്‌ക്രീം</translation>
+<translation id="2468402215065996499">താമഗോച്ചി</translation>
 <translation id="247772113373397749">കനേഡിയൻ ബഹുഭാഷാ കീബോർഡ്</translation>
 <translation id="2494837236724268445">ഗുജറാത്തി കീബോർഡ് (സ്വരസൂചകം)</translation>
 <translation id="2529133382850673012">യുഎസ് കീബോര്‍ഡ്</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">തവള</translation>
 <translation id="2649120831653069427">റെയിൻബോഫിഷ്</translation>
 <translation id="2735698359135166290">റൊമാനിയൻ അടിസ്ഥാന കീബോർഡ്</translation>
-<translation id="2744450304594201174">തമഗോച്ചി</translation>
 <translation id="2771816809568414714">ചീസ്</translation>
 <translation id="2781645665747935084">ബെൽജിയൻ</translation>
 <translation id="2790805296069989825">റഷ്യന്‍ കീബോര്‍ഡ്</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">കനേഡിയൻ മൾട്ടിലിംഗ്വൽ</translation>
 <translation id="3241720467332021590">ഐറിഷ്</translation>
 <translation id="3252266817569339921">ഫ്രഞ്ച്</translation>
+<translation id="3280987981688031357">വിനൈൽ റെക്കോർഡ്</translation>
 <translation id="3296763833017966289">ജോര്‍ജ്ജിയന്‍</translation>
 <translation id="3338239663705455570">സ്ലൊവേനിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="3399597614303179694">മാസിഡോണിയൻ കീബോർഡ്</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">ലിത്വാനിയന്‍</translation>
 <translation id="3603385196401704894">കനേഡിയന്‍ ഫ്രഞ്ച്</translation>
 <translation id="3606220979431771195">ടർക്കിഷ്-എഫ്</translation>
+<translation id="3619115746895587757">കാപ്പുചീനോ</translation>
 <translation id="3678559383040232393">മാൾട്ടീസ് കീബോർഡ്</translation>
 <translation id="3801082500826908679">ഫാറോസി</translation>
 <translation id="3809272675881623365">മുയൽ</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">ഫുട്‌ബോള്‍</translation>
 <translation id="497244430928947428">മലയാളം കീബോർഡ് (സ്വരസൂചകം)</translation>
 <translation id="498902553138568924">ചുവന്ന ചിത്രശലഭം</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">പിസ്സ</translation>
 <translation id="5098629044894065541">ഹീബ്രു</translation>
 <translation id="5123433949759960244">ബാസ്ക്കറ്റ്ബോൾ</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">ലിപ്യന്തരണം (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">യുകെ ദ്വരോക്ക്</translation>
 <translation id="5640179856859982418">സ്വിസ്സ് കീബോര്‍ഡ്</translation>
-<translation id="5656201261327432370">കാപൂചീനോ</translation>
 <translation id="5756666464756035725">ഹംഗേറിയൻ ക്വെർട്ടി</translation>
 <translation id="5771585441665576801">ലിപ്യന്തരണം (geia → γεια)</translation>
 <translation id="5790193330357274855">കസാഖ്</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">ഹംഗുൽ 3 സെറ്റ് (അന്തിമം)</translation>
 <translation id="5838825566232597749">യുഎസ് വർക്ക്‌മാൻ ഇന്റർനാഷണൽ</translation>
 <translation id="5892290200158927959">ഫ്രഞ്ച് BÉPO കീബോർഡ്</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">ലാറ്റിന്‍ അമേരിക്കന്‍ കീബോര്‍ഡ്</translation>
 <translation id="60357267506638014">ചെക്ക് QWERTY</translation>
 <translation id="6054173164583630569">ഫ്രഞ്ച് കീബോര്‍ഡ്</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">ബൈക്കോടിക്കുക</translation>
 <translation id="6878261347041253038">ദേവനാഗരി കീബോർഡ് (സ്വരസൂചകം)</translation>
 <translation id="6885780034956018177">ഒച്ച്</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">യുഎസ് വർക്ക്‌മാൻ</translation>
 <translation id="6935521024859866267">അപ്‌സൈഡ് ഡൗൺ</translation>
 <translation id="6937152069980083337">Google ജാപ്പനീസ് ഇന്‍‌പുട്ട് (യു‌എസ് കീബോര്‍‌ഡിന് മാത്രം)</translation>
 <translation id="6939777852457331078">യുഎസ് വർക്ക്‌മാൻ കീബോർഡ്</translation>
 <translation id="6970230597523682626">ബള്‍ഗേറിയന്‍</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">ലിപ്യന്തരണം (salam → ሰላም)</translation>
 <translation id="7172053773111046550">എസ്റ്റോണിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="719009910964971313">യുഎസ് പ്രോഗ്രാമർ ഡൊറാക്ക് കീബോർഡ്</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">ഹംഗുൽ 3 സെറ്റ് (Shift ഇല്ല)</translation>
 <translation id="8299269255470343364">ജാപ്പനീസ്</translation>
 <translation id="8336579025507394412">ഐസ്‌ലാൻഡിക് കീബോർഡ്</translation>
-<translation id="8391218455464584335">വിനൈൽ</translation>
 <translation id="8391950649760071442">ലിപ്യന്തരണം (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">ക്വിക്ക് ടൈപ്പുചെയ്യൽ രീതി</translation>
 <translation id="8418113698656761985">റൊമാനിയന്‍ കീബോര്‍ഡ്</translation>

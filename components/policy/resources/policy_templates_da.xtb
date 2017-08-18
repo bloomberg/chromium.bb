@@ -31,6 +31,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, køres den eksterne hjælpehost i brugerens kontekst, og eksterne brugere kan ikke interagere med vinduer med administratorrettigheder på skrivebordet.</translation>
 <translation id="1096105751829466145">Standardsøgemaskine</translation>
 <translation id="1117535567637097036">De protokolhandlere, der er angivet via denne politik, bruges ikke til håndtering af Android-formål.</translation>
+<translation id="1122282995569868661">Viser <ph name="PRODUCT_NAME" />-ikonet på værktøjslinjen</translation>
 <translation id="1128903365609589950">Konfigurerer det indeks, som <ph name="PRODUCT_NAME" /> anvender til at gemme cachelagrede filer på disken.
 
       Hvis du angiver denne politik, anvender <ph name="PRODUCT_NAME" /> det medfølgende indeks, uanset om brugeren har angivet markeringen "--disk-cache-dir" eller ej. For ikke at miste data eller få uventede fejl bør denne politik ikke angives som en mængdes rodindeks eller som et indeks, der bruges til andre formål, da <ph name="PRODUCT_NAME" /> administrerer indholdet.
@@ -53,6 +54,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
       tilladte frekvens er 60 sekunder.</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
+<translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
@@ -261,6 +263,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken ikke er angivet, er standardværdien 0 grader, og brugere
       kan frit ændre den. I dette tilfælde genanvendes værdien ikke
       ved genstart.</translation>
+<translation id="2156132677421487971">Konfigurer politikker for <ph name="PRODUCT_NAME" />, som er en funktion, der giver brugerne mulighed for at sende indholdet af faner, websites eller skrivebordet fra browseren til eksterne skærme og lydsystemer.</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
 <translation id="2176565653304920879">Når denne politik er indstillet, fungerer flowet for registrering af tidszoner på en af de følgende måder, alt efter hvilken værdi der bruges i indstillingen:
@@ -551,6 +554,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Uafhængigt af om politikken er indstillet og hvordan, kan indstillingen for WPAD-optimering ikke ændres af brugerne.</translation>
 <translation id="3072045631333522102">Pauseskærm, som skal bruges på loginskærmen i detailtilstand</translation>
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
+<translation id="3086995894968271156">Konfigurer Cast Receiver i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
 <translation id="3117676313396757089">Advarsel! DHE fjernes helt fra <ph name="PRODUCT_NAME" /> efter version 57 (omkring marts 2017), og på det tidspunkt holder denne politik op med at virke.
@@ -924,6 +928,9 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Hvis værdien af denne politik er 0, anvendes standardcachestørrelsen, men brugeren vil ikke kunne ændre den.
 
       Hvis denne politik ikke er indstillet, bruges standardstørrelsen, og brugeren vil kunne tilsidesætte den med flaget "--media-cache-size".</translation>
+<translation id="4508686775017063528">Hvis denne politik er angivet som Sand eller ikke er angivet, aktiveres <ph name="PRODUCT_NAME" />, og brugerne kan åbne produktet via appmenuen, genvejsmenuen til sider, mediekontrolelementer på Cast-kompatible websites og (hvis det er angivet) via Cast-ikonet på værktøjslinjen.
+
+          Hvis denne politik angives som Falsk, deaktiveres <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4518251772179446575">Spørg, hver gang et website ønsker at spore brugerens fysiske placering</translation>
 <translation id="4519046672992331730">Aktiverer søgeforslag i omnifeltet i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer denne indstilling.
 
@@ -1029,6 +1036,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="489803897780524242">Parameter, der styrer placeringen af søgeterm i standardsøgemaskinen</translation>
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="4906194810004762807">Opdateringsfrekvens for enhedspolitik</translation>
+<translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Hvis denne politik er indstillet til sand eller ikke konfigureret, tillader <ph name="PRODUCT_NAME" /> tilføjelse af personer fra brugeradministration.
 
       Hvis denne politik er indstillet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke oprettelse af nye profiler fra brugeradministration.</translation>
@@ -1305,6 +1313,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
+<translation id="6161405879872578475">Aktiverer <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Advarsel! Understøttelse af SSLv3 forsvinder helt fra <ph name="PRODUCT_NAME" /> efter version 43 (cirka juli 2015), og denne politik fjernes på samme tidspunkt.
 
       Hvis denne politik ikke konfigureres, benytter <ph name="PRODUCT_NAME" /> en standard minimumversion, som er SSLv3 i <ph name="PRODUCT_NAME" /> 39 og TLS 1.0 i senere versioner.
@@ -1764,6 +1773,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
+<translation id="7976157349247117979">Navnet på destinationen for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>

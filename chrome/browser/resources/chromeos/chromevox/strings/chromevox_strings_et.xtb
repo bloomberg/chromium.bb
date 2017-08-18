@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Järgmine rida</translation>
 <translation id="3153024374267644603">Kõne sisselülitamine</translation>
+<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Eelmist nuppu ei ole.</translation>
 <translation id="3163593631834463955">Veeru päis on tühi</translation>
 <translation id="316542773973815724">Navigeerimine</translation>
@@ -405,6 +406,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4597532268155981612">vorm</translation>
 <translation id="4597896406374528575">Aprill</translation>
 <translation id="460018603901637538">Aktiveeri kuvastiil Kõrvuti.</translation>
+<translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Järgmist klahvivajutust ignoreeritakse</translation>
 <translation id="461613135510474570">Lause</translation>
 <translation id="4647836961514597010">Värvivalija</translation>
@@ -782,6 +784,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="820417203470636242">Tühi lahter.</translation>
 <translation id="8215202828671303819">Mitmikvalimine</translation>
 <translation id="8224171046658870249">Aktiveeriti ChromeVox Next</translation>
+<translation id="826991282343985864">r$1v$2</translation>
 <translation id="8276439074553447000">Liigu eelmise fookustatava üksuse juurde</translation>
 <translation id="8278417001922463147">Eelmist artiklit pole.</translation>
 <translation id="8283603667300770666">Vormi järgmine väli</translation>

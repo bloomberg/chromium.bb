@@ -22,6 +22,7 @@
 <translation id="158809615184981282">صفحه‌کلید فاروئی</translation>
 <translation id="1646136617204068573">صفحه‌کلید مجارستانی</translation>
 <translation id="164729547906544836">صفحه‌کلید تامیل (نویسه‌گردانی هندی)</translation>
+<translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1829129547161959350">پنگوئن</translation>
 <translation id="184633654410729720">صفحه‌کلید تایلندی (کدمانی)</translation>
 <translation id="1921986354447415460">‏صفحه‌کلید ترکی F</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">صفحه‌کلید قزاقی</translation>
 <translation id="2384596874640104496">صفحه‌کلید سینهالی</translation>
 <translation id="2464079411014186876">بستنی</translation>
+<translation id="2468402215065996499">تاماگوچی</translation>
 <translation id="247772113373397749">صفحه‌کلید چندزبانه کانادایی</translation>
 <translation id="2494837236724268445">صفحه‌کلید گجراتی (آوایی)</translation>
 <translation id="2529133382850673012">صفحه‌کلید آمریکایی</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">قورباغه</translation>
 <translation id="2649120831653069427">ماهی رنگین‌مکان</translation>
 <translation id="2735698359135166290">صفحه‌کلید استاندارد رومانیایی</translation>
-<translation id="2744450304594201174">تاماگوچی</translation>
 <translation id="2771816809568414714">پنیر</translation>
 <translation id="2781645665747935084">بلژیکی</translation>
 <translation id="2790805296069989825">صفحه‌کلید روسی</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">چند زبانه کانادا</translation>
 <translation id="3241720467332021590">ایرلندی</translation>
 <translation id="3252266817569339921">فرانسوی</translation>
+<translation id="3280987981688031357">صفحه گرامافون</translation>
 <translation id="3296763833017966289">گرجستانی</translation>
 <translation id="3338239663705455570">صفحه‌کلید اسلوونیایی</translation>
 <translation id="3399597614303179694">صفحه‌کلید مقدونی</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">لیتوانیایی</translation>
 <translation id="3603385196401704894">فرانسوی کانادا</translation>
 <translation id="3606220979431771195">‏ترکی F</translation>
+<translation id="3619115746895587757">کاپوچینو</translation>
 <translation id="3678559383040232393">صفحه‌کلید مالتی</translation>
 <translation id="3801082500826908679">فاروئی</translation>
 <translation id="3809272675881623365">خرگوش</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">فوتبال</translation>
 <translation id="497244430928947428">صفحه‌کلید مالایالامی (آوایی)</translation>
 <translation id="498902553138568924">پروانه قرمز</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">پیتزا</translation>
 <translation id="5098629044894065541">عبری</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">‏نویسه‌گردانی (namaste ← ‏नमस्ते)</translation>
 <translation id="5605830556594064952">دووراک آمریکایی</translation>
 <translation id="5640179856859982418">صفحه‌کلید سویسی</translation>
-<translation id="5656201261327432370">کاپوچینو</translation>
 <translation id="5756666464756035725">‏QWERTY مجارستانی</translation>
 <translation id="5771585441665576801">‏نویسه‌گردانی (geia ← ‏γεια)</translation>
 <translation id="5790193330357274855">قزاقی</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">مجموعه هانگول ۳ (نهایی)</translation>
 <translation id="5838825566232597749">‏بین‌المللی US Workman</translation>
 <translation id="5892290200158927959">‏صفحه‌کلید BÉPO فرانسوی</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">صفحه‌کلید لاتین آمریکایی</translation>
 <translation id="60357267506638014">‏QWERTY چکی</translation>
 <translation id="6054173164583630569">صفحه‌کلید فرانسوی</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">دوچرخه‌</translation>
 <translation id="6878261347041253038">صفحه‌کلید دواناگری (آوایی)</translation>
 <translation id="6885780034956018177">حلزون</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6935521024859866267">وارونه</translation>
 <translation id="6937152069980083337">‏ورودی ژاپنی Google (برای صفحه‌کلید آمریکایی)</translation>
 <translation id="6939777852457331078">‏صفحه‌کلید US Workman</translation>
 <translation id="6970230597523682626">بلغاری</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">‏نویسه‌گردانی (salam ← ‏ሰላም)</translation>
 <translation id="7172053773111046550">صفحه‌کلید استونیایی</translation>
 <translation id="719009910964971313">استفاده از دووراک آمریکایی برنامه‌نویس‌ها</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">‏مجموعه هانگول ۳ (بدون Shift)</translation>
 <translation id="8299269255470343364">ژاپنی</translation>
 <translation id="8336579025507394412">صفحه‌کلید ایسلندی</translation>
-<translation id="8391218455464584335">صفحه گرامافون</translation>
 <translation id="8391950649760071442">‏نویسه‌گردانی (emandi ← ‏ఏమండీ)</translation>
 <translation id="8412586565681117057">روش ورودی سریع</translation>
 <translation id="8418113698656761985">صفحه‌کلید رومانیایی</translation>

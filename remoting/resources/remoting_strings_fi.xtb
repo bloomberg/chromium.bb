@@ -27,7 +27,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
-<translation id="1704090719919187045">Chromoting-isäntäasetukset</translation>
 <translation id="174018511426417793">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja klikkaamalla painiketta <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Yhdistetään…</translation>
 <translation id="1770394049404108959">Sovellus ei aukea.</translation>
@@ -117,8 +116,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="3695446226812920698">Lisätietoja</translation>
 <translation id="3718805989288361841">Chrome-etäkäytön käytäntöasetuksissa on virhe. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="3776024066357219166">Chrome-etäkäyttökerta on päättynyt.</translation>
-<translation id="3785447812627779171">Chromoting-
-isäntä</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Myönnä käyttöoikeus Chrome-etäkäytön kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
 <translation id="3897092660631435901">Valikko</translation>
@@ -134,7 +131,6 @@ isäntä</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
 <translation id="4155497795971509630">Joitakin vaadittavia komponentteja puuttuu. Varmista, että olet asentanut ohjelmiston uusimman version, ja yritä uudelleen.</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START" />vähintään kuusinumeroinen<ph name="BOLD_END" /> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
-<translation id="4156741816461781891">Kirjautunut osoitteella <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="4207623512727273241">Suorita asennusohjelma ennen kuin jatkat.</translation>
 <translation id="4227991223508142681">Isäntien hallintatyökalu</translation>
@@ -152,8 +148,6 @@ isäntä</translation>
 <translation id="4517233780764084060">Huomautus: voit varmistaa, että kaikki pikanäppäimet ovat käytettävissä, kun määrität Chromotingin avautumaan ikkunana.</translation>
 <translation id="4563926062592110512">Asiakkaan <ph name="CLIENT_USERNAME" /> yhteys katkaistiin.</translation>
 <translation id="4572065712096155137">Käyttöoikeudet</translation>
-<translation id="4573676252416618192">Chrome-etäkäytön
-isäntä</translation>
 <translation id="4592037108270173918">Tiedonsiirtomaksuja voidaan periä, jos muodostat yhteyden laitteeseen mobiiliverkossa. Haluatko jatkaa?</translation>
 <translation id="4619978527973181021">Hyväksy ja asenna</translation>
 <translation id="4635770493235256822">Etälaitteet</translation>
@@ -212,7 +206,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="5843054235973879827">Miksi tämä on turvallista?</translation>
 <translation id="5859141382851488196">Uusi ikkuna…</translation>
 <translation id="5885438903806970186">Verkossa.</translation>
-<translation id="6001953797859482435">Chrome-etäkäytön isäntäasetukset</translation>
 <translation id="6011539954251327702">Chromotingin avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL" /> löytyvää Chromoting-sovellusta.</translation>
 <translation id="6033507038939587647">Näppäimistöasetukset</translation>
 <translation id="6040143037577758943">Sulje</translation>

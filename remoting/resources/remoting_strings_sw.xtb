@@ -27,7 +27,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1643640058022401035">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Chromoting.</translation>
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
-<translation id="1704090719919187045">Mapendeleo ya Seva Pangishi ya Chromoting</translation>
 <translation id="174018511426417793">Huna kompyuta zilizosajiliwa. Ili uwashe miunganisho ya mbali, sakinisha Eneo-kazi la Mbali la Chrome hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Inaunganisha...</translation>
 <translation id="1770394049404108959">Siwezi kuifungua programu.</translation>
@@ -117,8 +116,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3695446226812920698">Pata maelezo</translation>
 <translation id="3718805989288361841">Kuna hitilafu ya mipangilio ya sera ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.  Wasiliana na msimamizi wako ili upate usaidizi.</translation>
 <translation id="3776024066357219166">Kipindi chako cha Eneo-kazi la Mbali la Chrome kimekamilika.</translation>
-<translation id="3785447812627779171">Mpangishi wa
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Kompyuta ya Mbali ya Chrome</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">DOKEZO: Mipangilio ya sera inakubali miunganisho kati ya kompyuta zilizo katika mtandao wako.</translation>
 <translation id="4155497795971509630">Baadhi ya vipengele vinavyohitajika havipo. Tafadhali hakikisha kuwa umesakinisha toleo jipya la programu na ujaribu tena.</translation>
 <translation id="4156740505453712750">Ili ulinde ufikiaji kwenye kompyuta hii, tafadhali chagua PIN ya <ph name="BOLD_START" />angalau tarakimu sita<ph name="BOLD_END" />. PIN hii itahitajika utakapounganisha kutoka eneo jingine.</translation>
-<translation id="4156741816461781891">Umeingia katika akaunti ukitumia <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Msimbo wa ufikiaji</translation>
 <translation id="4207623512727273241">Tafadhali endesha kisakinishi kabla ya kuendelea.</translation>
 <translation id="4227991223508142681">Utoaji Data wa Seva Pangishi</translation>
@@ -152,8 +148,6 @@ Chromoting</translation>
 <translation id="4517233780764084060">DOKEZO: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Chromoting ili ‘Ifunguke kama dirisha’.</translation>
 <translation id="4563926062592110512">Kiteja kimeondolewa: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Ufikiaji</translation>
-<translation id="4573676252416618192">Mpangishi wa Kompyuta
-ya Mbali ya Chrome</translation>
 <translation id="4592037108270173918">Huenda utatozwa ada za data unapounganisha kwenye kifaa kwa kutumia mtandao wa simu. Unataka kuendelea?</translation>
 <translation id="4619978527973181021">Kubali na Usakinishe</translation>
 <translation id="4635770493235256822">Vifaa vya mbali</translation>
@@ -212,7 +206,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="5843054235973879827">Kwa nini hii ni salama?</translation>
 <translation id="5859141382851488196">Dirisha jipya...</translation>
 <translation id="5885438903806970186">Mtandaoni.</translation>
-<translation id="6001953797859482435">Mapendeleo ya Seva Pangishi ya Kompyuta ya Mbali ya Chrome</translation>
 <translation id="6011539954251327702">Chromoting hukuruhusu kushiriki kompyuta yako kwa usalama kwenye Wavuti. Watumiaji wote wawili lazima wawe wakiendesha programu ya Chromoting, inayoweza kupatikana katika <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Chaguo za kibodi</translation>
 <translation id="6040143037577758943">Funga</translation>

@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Avertisment</translation>
 <translation id="1058262162121953039">Codul PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> din <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Nu se poate elimina software-ul dăunător</translation>
 <translation id="1062407476771304334">Înlocuiți</translation>
 <translation id="1062866675591297858">Gestionați utilizatorii monitorizați din <ph name="BEGIN_LINK" />Tabloul de bord pentru utilizatori monitorizați<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Verificator de fișiere din biblioteca media</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> dorește să restabilească setările Chrome la valorile inițiale. Astfel, pagina de pornire, pagina Filă nouă și motorul de căutare vor fi resetate, extensiile vor fi dezactivate și fixarea filelor va fi anulată. De asemenea, vor fi șterse alte date temporare și memorate în cache, cum ar fi cookie-urile, conținutul și datele despre site-uri.</translation>
 <translation id="1082725763867769612">Fișiere offline</translation>
 <translation id="1084824384139382525">Copiază adresa linkului</translation>
+<translation id="1089439967362294234">Schimbă parola</translation>
 <translation id="1090126737595388931">Nu rulează aplicații în fundal</translation>
 <translation id="1091767800771861448">Apăsați pe ESCAPE pentru a ignora (numai versiunile neoficiale).</translation>
 <translation id="1093457606523402488">Rețele vizibile:</translation>
@@ -449,7 +449,6 @@
     <ph name="BEGIN_BOLD" />să permiteți sau să restricționați<ph name="END_BOLD" /> accesul la anumite site-uri;
     <ph name="BEGIN_BOLD" />să examinați<ph name="END_BOLD" /> site-urile accesate de utilizatorul monitorizat;
     <ph name="BEGIN_BOLD" />să gestionați<ph name="END_BOLD" /> alte setări.</translation>
-<translation id="1648797160541174252">Proxy de rețea pentru <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Detaliile de conectare au expirat</translation>
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
 <translation id="1650371550981945235">Afișează opțiunile de introducere a textului</translation>
@@ -1017,6 +1016,7 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2498436043474441766">Adăugați imprimante</translation>
 <translation id="2498539833203011245">Minimizează</translation>
 <translation id="2498765460639677199">Foarte mare</translation>
+<translation id="2500471369733289700">Blocată pentru protecția confidențialității</translation>
 <translation id="2501173422421700905">Certificat reținut</translation>
 <translation id="2501278716633472235">Înapoi</translation>
 <translation id="2501797496290880632">Tastați o comandă rapidă</translation>
@@ -1357,6 +1357,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2951247061394563839">Centrați fereastra</translation>
 <translation id="2951721188322348056">Informații despre fișierul video</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookie-uri</translation>
+<translation id="2958721676848865875">Avertisment privind pachetul pentru extensie</translation>
 <translation id="2959614062380389916">Dezactivată de administrator</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (oferit de extensie)</translation>
 <translation id="2961695502793809356">Dă clic pentru a naviga înainte, ține apăsat pentru a vedea istoricul</translation>
@@ -1370,6 +1371,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2971213274238188218">scade luminozitatea</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
+<translation id="2972642118232180842">Rulează numai conținutul important (recomandat)</translation>
 <translation id="297870353673992530">Server DNS:</translation>
 <translation id="2979639724566107830">Deschideți într-o fereastră nouă</translation>
 <translation id="2981113813906970160">Afișați cursorul de mouse mare</translation>
@@ -1386,6 +1388,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> va crea o conexiune Wi-Fi privată.</translation>
 <translation id="3004391367407090544">Încercați din nou mai târziu</translation>
 <translation id="300544934591011246">Parola anterioară</translation>
+<translation id="3006881078666935414">Nu există date de utilizare</translation>
 <translation id="3007214526293698309">Remediază raportul de dimensiuni</translation>
 <translation id="3007771295016901659">Duplică fila</translation>
 <translation id="3009300415590184725">Sigur doriți să anulați procesul de configurare al serviciului de date mobile?</translation>
@@ -1449,6 +1452,7 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3082520371031013475">Setări pentru touchpad și mouse</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Această filă utilizează camera foto sau microfonul dvs.</translation>
+<translation id="3083193146044397360">Blocată temporar pentru protecția securității</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Plasați pentru instalare</translation>
 <translation id="3084771660770137092">Fie Chrome nu are suficientă memorie, fie procesarea paginii web a fost întreruptă dintr-un alt motiv. Pentru a continua, reîncarcă sau accesează altă pagină.</translation>
@@ -1677,6 +1681,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3423858849633684918">Repornește <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Descrie ce făceai când s-a blocat fila</translation>
 <translation id="3427092606871434483">Permite (în mod prestabilit)</translation>
+<translation id="3429275422858276529">Marchează această pagină pentru a o găsi ușor mai târziu</translation>
 <translation id="3429599832623003132">$1 elemente</translation>
 <translation id="3432227430032737297">Elimină-le pe cele afișate</translation>
 <translation id="3432757130254800023">Trimite conținut audio și video pe afișajele din rețeaua locală</translation>
@@ -1800,6 +1805,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
 <translation id="3596235046596950091">Activează serviciile cloud</translation>
 <translation id="3600456501114769456">Accesul la fișierele locale de pe dispozitiv este dezactivat de administrator.</translation>
+<translation id="3603533104205588786">Poți da clic pe pictograma stea pentru a marca o pagină</translation>
 <translation id="3603622770190368340">Obțineți certificatul de rețea</translation>
 <translation id="3604048165392640554">Nu s-a găsit o conexiune mobilă. Activează Tetheringul instantaneu pe celelalte dispozitive și încearcă din nou. &lt;a target="_blank" href="<ph name="URL" />"&gt;Află mai multe&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Om de afaceri</translation>
@@ -2575,6 +2581,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4816492930507672669">Încadrați în pagină</translation>
 <translation id="4820334425169212497">Nu, nu îl vad</translation>
 <translation id="4821086771593057290">Parola s-a modificat. Încearcă din nou cu noua parolă.</translation>
+<translation id="4821725298388681253">Aceasta este o versiune în dezvoltare. Unele funcții, cum ar fi căutarea și introducerea textului nu sunt încă disponibile.</translation>
 <translation id="4821935166599369261">&amp;Analizare activată</translation>
 <translation id="4823484602432206655">Citește și modifică setările pentru dispozitiv și pentru utilizator</translation>
 <translation id="4823651846660089135">Dispozitivul este numai în citire</translation>
@@ -3526,6 +3533,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6232017090690406397">Baterie</translation>
 <translation id="6232116551750539448">S-a pierdut conexiunea la <ph name="NAME" /></translation>
 <translation id="6237816943013845465">Cu ajutorul acestei setări, poți să ajustezi rezoluția ecranului</translation>
+<translation id="6238923052227198598">Păstrează cea mai recentă notă pe ecranul de blocare</translation>
 <translation id="6239558157302047471">Reîncarcă &amp;cadrul</translation>
 <translation id="6241530762627360640">Accesează informațiile despre dispozitivele Bluetooth conectate cu sistemul dvs. și descoperă dispozitivele Bluetooth din apropiere.</translation>
 <translation id="6243774244933267674">Server indisponibil</translation>
@@ -3778,6 +3786,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6580955892089546165">Cu această funcție poți să accesezi rapid orice utilizator conectat fără a se solicita parola.
 Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6581162200855843583">Link Disc Google</translation>
+<translation id="6582421931165117398">Pentru a proteja informațiile personale, schimbă parola acum. Pentru a putea modifica parola, trebuie să te conectezi.</translation>
 <translation id="6583851739559471707">Blocate pe site-urile care tind să afișeze anunțuri deranjante (recomandat)</translation>
 <translation id="6584878029876017575">Semnare Microsoft pe durata de viață</translation>
 <translation id="6585234750898046415">Alege o imagine pentru a fi afișată pentru contul tău pe ecranul de conectare.</translation>
@@ -3801,6 +3810,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6610183966322615106">Eroare la adăugarea imprimantei</translation>
 <translation id="6610610633807698299">Introduceți adresa URL...</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
+<translation id="6613452264606394692">Marchează această pagină pentru a o putea accesa din nou rapid</translation>
 <translation id="6615455863669487791">Afișați</translation>
 <translation id="6615807189585243369">Copiat: <ph name="BURNT_AMOUNT" /> din <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">Parolele salvate vor fi afișate aici.</translation>
@@ -4605,6 +4615,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7877451762676714207">Eroare de server necunoscută. Încercați din nou sau contactați administratorul serverului.</translation>
 <translation id="7877680364634660272">Tur</translation>
+<translation id="7878562273885520351">Este posibil ca parola să fie compromisă</translation>
 <translation id="7881483672146086348">Afișați contul</translation>
 <translation id="7881969471599061635">Dezactivează subtitrările</translation>
 <translation id="7882358943899516840">Tip furnizor</translation>
@@ -4693,6 +4704,7 @@ Fișier cheie: <ph name="KEY_FILE" />
 Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crearea noilor versiuni ale extensiei.</translation>
 <translation id="799923393800005025">Poate vedea</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
+<translation id="8001504501378762252">Este posibil ca un site să fi furat parola</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007030362289124303">Baterie descărcată</translation>
 <translation id="8008356846765065031">Internet deconectat. Verificați conexiunea la internet.</translation>
@@ -4928,6 +4940,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8366396658833131068">Conexiunea la rețea a fost restabilită. Selectați altă rețea sau apăsați mai jos pe butonul „Continuați” pentru a lansa aplicația chioșc.</translation>
 <translation id="8366947248864804596">Când telefonul este deblocat și în apropiere, pentru a debloca, trebuie doar să selectezi. Altfel, introdu parola sau codul PIN.</translation>
 <translation id="8368859634510605990">&amp;Deschideți toate marcajele</translation>
+<translation id="8371695176452482769">Rostește acum</translation>
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="8373360586245335572">Permite tuturor site-urilor să afișeze notificări</translation>
 <translation id="8373553483208508744">Dezactivează sunetul filelor</translation>
@@ -5099,6 +5112,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> sau <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Reîncarcă forțat această pagină</translation>
 <translation id="8652139471850419555">Rețele preferate</translation>
+<translation id="8652400352452647993">Eroare privind pachetul pentru extensie</translation>
 <translation id="8652487083013326477">buton radio interval de pagini</translation>
 <translation id="8654151524613148204">Din păcate, fișierul este prea mare pentru a putea fi gestionat de computerul dvs.</translation>
 <translation id="8655295600908251630">Canal</translation>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">区域</translation>
 <translation id="1591562245178063882">本月</translation>
 <translation id="1637811476055996098">选择文件</translation>
-<translation id="167575180612809735">忙碌状态指示</translation>
 <translation id="1729654308190250600">请输入有效的电子邮件地址。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="1806710327868736751">提醒对话框</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">上午/下午</translation>
 <translation id="1832974991323546415">在远程设备上播放</translation>
 <translation id="1854180393107901205">停止投射</translation>
-<translation id="1880518467580572141">大纲</translation>
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">状态</translation>
 <translation id="1938124657309484470">指定的值不得晚于<ph name="MAXIMUM_DATE_OR_TIME" />。</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">静音</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="588258955323874662">全屏</translation>
+<translation id="5888666972993069672">现正投射至“<ph name="DEVICE_FRIENDLY_NAME" />”</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5966707198760109579">周</translation>
 <translation id="5987525920412732405">微调按钮</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="668171684555832681">其他...</translation>
 <translation id="6692633176391053278">步进器</translation>
-<translation id="6739588121953935928">标尺</translation>
 <translation id="6755330956360078551">提示</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6820355525329141109">无法加载插件。</translation>

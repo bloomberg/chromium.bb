@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">क्षेत्र</translation>
 <translation id="1591562245178063882">इस माह</translation>
 <translation id="1637811476055996098">फ़ाइलें चुनें</translation>
-<translation id="167575180612809735">व्यस्त संकेतक</translation>
 <translation id="1729654308190250600">कृपया गैर-खाली ईमेल पता डालें.</translation>
 <translation id="1758486001363313524">अन्य...</translation>
 <translation id="1806710327868736751">सूचना संवाद</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">पूर्वाह्न/अपराह्न</translation>
 <translation id="1832974991323546415">दूरस्थ डिवाइस पर चलाएं</translation>
 <translation id="1854180393107901205">कास्ट करना रोकें</translation>
-<translation id="1880518467580572141">बाह्यरेखा</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिति</translation>
 <translation id="1938124657309484470">मान <ph name="MAXIMUM_DATE_OR_TIME" /> या पहले का होना चाहिए.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">आवाज़ बंद करें</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="588258955323874662">पूर्णस्‍क्रीन</translation>
+<translation id="5888666972993069672">अब <ph name="DEVICE_FRIENDLY_NAME" /> पर कास्ट किया जा रहा है</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5966707198760109579">सप्ताह</translation>
 <translation id="5987525920412732405">स्पिन बटन</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="668171684555832681">अन्य...</translation>
 <translation id="6692633176391053278">स्टेपर</translation>
-<translation id="6739588121953935928">पैमाना</translation>
 <translation id="6755330956360078551">टूलटिप</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6820355525329141109">प्लग इन लोड नहीं किया जा सका.</translation>

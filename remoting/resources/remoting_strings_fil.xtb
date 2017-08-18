@@ -27,7 +27,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
-<translation id="1704090719919187045">Mga Kagustuhan sa Chromoting Host</translation>
 <translation id="174018511426417793">Wala kang mga nakarehistrong computer. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Kumokonekta…</translation>
 <translation id="1770394049404108959">Hindi ko mabuksan ang application.</translation>
@@ -117,8 +116,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3695446226812920698">Alamin kung paano</translation>
 <translation id="3718805989288361841">Mayroong error sa mga setting ng patakaran para sa Remote na Desktop ng Chrome. Makipag-ugnayan sa iyong system administrator para sa tulong.</translation>
 <translation id="3776024066357219166">Natapos na ang iyong session sa Remote na Desktop ng Chrome.</translation>
-<translation id="3785447812627779171">Chromoting
-Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Remote na Desktop ng Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Host</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
 <translation id="4155497795971509630">Nawawala ang ilang bahagi na kinakailangan. Pakitiyak na na-install mo ang pinakabagong bersyon ng software at subukang muli.</translation>
 <translation id="4156740505453712750">Upang protektahan ang access sa computer na ito, mangyaring pumili ng PIN na may <ph name="BOLD_START" />hindi bababa sa anim na digit<ph name="BOLD_END" />. Kakailanganin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon.</translation>
-<translation id="4156741816461781891">Naka-sign in bilang <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="4227991223508142681">Host na Provisioning Utility</translation>
@@ -152,8 +148,7 @@ Host</translation>
 <translation id="4517233780764084060">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Chromoting upang 'Bumukas bilang window.’</translation>
 <translation id="4563926062592110512">Naputol ang koneksyon ng client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">I-access</translation>
-<translation id="4573676252416618192">Host ng Remote na
-Desktop ng Chrome</translation>
+<translation id="4592037108270173918">Maaaring magkaroon ng mga singilin sa data kapag kumonekta sa isang device gamit ang mobile network. Gusto mo bang magpatuloy?</translation>
 <translation id="4619978527973181021">Tanggapin at I-install</translation>
 <translation id="4635770493235256822">Mga malayong device</translation>
 <translation id="4660011489602794167">Ipakita ang keyboard</translation>
@@ -180,6 +175,12 @@ Desktop ng Chrome</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
 <translation id="5170982930780719864">Di-wastong host id.</translation>
 <translation id="518094545883702183">Ang impormasyong ito ay ginagamit lang para sa pagda-diagnose sa problemang inuulat mo, available lang sa isang taong nagsisiyasat ng iyong ulat, at pinapanatili sa loob ng hindi hihigit sa 30 araw.</translation>
+<translation id="5196958630269420102">Ligtas na i-access ang iyong mga computer mula sa iOS device mo.
+
+• Sa bawat isa sa iyong mga computer, i-set up ang malayuang pag-access gamit ang app na Remote na Desktop ng Chrome mula sa Chrome Web Store: https://chrome.google.com/remotedesktop
+• Sa iyong iOS device, buksan ang app at i-tap ang alinman sa mga online na computer mo upang makakonekta.
+
+Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj) at ang Patakaran sa Privacy ng Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Mga FAQ</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
@@ -205,7 +206,6 @@ Desktop ng Chrome</translation>
 <translation id="5843054235973879827">Bakit ito ligtas?</translation>
 <translation id="5859141382851488196">Bagong window…</translation>
 <translation id="5885438903806970186">Naka-online.</translation>
-<translation id="6001953797859482435">Mga Kagustuhan sa Host ng Remote na Desktop ng Chrome</translation>
 <translation id="6011539954251327702">Binibigyang-daan ka ng Chromoting na maibahagi nang ligtas ang iyong computer sa Web. Dapat na pinapatakbo ng parehong user ang Chromoting app, na matatagpuan sa <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Mga opsyon sa keyboard</translation>
 <translation id="6040143037577758943">Isara</translation>
@@ -235,6 +235,11 @@ Desktop ng Chrome</translation>
 <translation id="6570205395680337606">I-reset ang application. Mawawala ang anumang hindi na-save na gawa.</translation>
 <translation id="6572345186230665992">Para sa Mac (OS X Mavericks 10.9 at mas bago)</translation>
 <translation id="6583902294974160967">Suporta</translation>
+<translation id="6598484667010442494">Remote na Desktop ng Chrome
+Malayuang Desktop
+Malayuang PC
+Malayuang Computer
+Malayuang Pag-access</translation>
 <translation id="6612717000975622067">Magpadala ng Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">Na-update na ang iyong PIN.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
@@ -271,6 +276,7 @@ Desktop ng Chrome</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
+<translation id="7678209621226490279">I-dock sa Kaliwa</translation>
 <translation id="7693372326588366043">I-refresh ang listahan ng mga host</translation>
 <translation id="7782471917492991422">Pakisuri ang mga setting sa pamamahala ng power ng iyong computer at tiyakin na hindi ito naka-configure na mag-sleep kapag idle.</translation>
 <translation id="7810127880729796595">Ipakita ang mga istatistika (koneksyon: <ph name="QUALITY" />)</translation>
@@ -278,6 +284,7 @@ Desktop ng Chrome</translation>
 <translation id="7868137160098754906">Pakilagay ang iyong PIN para sa remote na computer.</translation>
 <translation id="7869445566579231750">Wala kang pahintulot na gamitin ang application na ito.</translation>
 <translation id="7895403300744144251">Hindi pinapayagan ng mga patakaran sa seguridad sa remote na computer ang mga koneksyon mula sa iyong account.</translation>
+<translation id="7936528439960309876">I-dock sa Kanan</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="7970576581263377361">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chromium.</translation>
 <translation id="7981525049612125370">Nag-expire na ang remote na session.</translation>

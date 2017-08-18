@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283">第 <ph name="INDEX" /> 個，共 <ph name="COUNT" /> 個</translation>
-<translation id="106001083577824516">無法移除有害軟體</translation>
 <translation id="1062407476771304334">取代</translation>
 <translation id="1062866675591297858">前往<ph name="BEGIN_LINK" />受監管的使用者資訊主頁<ph name="END_LINK" />管理你的受監管使用者。</translation>
 <translation id="1064662184364304002">媒體庫檔案檢查工具</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求將您的 Chrome 設定還原成原始預設值。這會重設您的首頁、新分頁和搜尋引擎，停用您的擴充功能，以及取消固定所有分頁。其他暫存資料和快取資料 (例如 Cookie、內容和網站資料) 也會一併遭到清除。</translation>
 <translation id="1082725763867769612">離線檔案</translation>
 <translation id="1084824384139382525">複製連結網址(&amp;E)</translation>
+<translation id="1089439967362294234">變更密碼</translation>
 <translation id="1090126737595388931">沒有執行中的背景應用程式</translation>
 <translation id="1091767800771861448">按下 ESCAPE 鍵可略過 (僅限非官方版本)。</translation>
 <translation id="1093457606523402488">可偵測到的網路：</translation>
@@ -449,7 +449,6 @@
     <ph name="BEGIN_BOLD" />允許或禁止<ph name="END_BOLD" />特定網站；
     <ph name="BEGIN_BOLD" />查看<ph name="END_BOLD" />受監管使用者瀏覽過的網站；以及
     <ph name="BEGIN_BOLD" />管理<ph name="END_BOLD" />其他設定。</translation>
-<translation id="1648797160541174252"><ph name="NETWORK_NAME" /> 的網路 Proxy</translation>
 <translation id="1648943974594387137">登入詳細資料過舊</translation>
 <translation id="164969095109328410">Chrome 裝置</translation>
 <translation id="1650371550981945235">顯示輸入選項</translation>
@@ -1017,6 +1016,7 @@
 <translation id="2498436043474441766">新增印表機</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2498765460639677199">最大</translation>
+<translation id="2500471369733289700">已封鎖權限，保護你的隱私</translation>
 <translation id="2501173422421700905">憑證保留中</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2501797496290880632">按下快速鍵</translation>
@@ -1357,6 +1357,7 @@
 <translation id="2951247061394563839">置中視窗</translation>
 <translation id="2951721188322348056">影片資訊</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> 個 Cookie</translation>
+<translation id="2958721676848865875">封裝擴充功能警告</translation>
 <translation id="2959614062380389916">已由管理員停用</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (擴充功能已提供)</translation>
 <translation id="2961695502793809356">按一下到下一頁，按住可查看紀錄</translation>
@@ -1370,6 +1371,7 @@
 <translation id="2971213274238188218">調低亮度鍵</translation>
 <translation id="2972557485845626008">韌體</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
+<translation id="2972642118232180842">僅執行重要內容 (建議)</translation>
 <translation id="297870353673992530">DNS 伺服器：</translation>
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981113813906970160">顯示大型滑鼠游標</translation>
@@ -1386,6 +1388,7 @@
 <translation id="3003967365858406397">你的「<ph name="PHONE_NAME" />」將建立私人 Wi-Fi 連線。</translation>
 <translation id="3004391367407090544">請稍後再返回查看</translation>
 <translation id="300544934591011246">舊密碼</translation>
+<translation id="3006881078666935414">沒有使用情況資料</translation>
 <translation id="3007214526293698309">修正比例</translation>
 <translation id="3007771295016901659">複製分頁</translation>
 <translation id="3009300415590184725">你確定要取消行動數據服務設定程序嗎？</translation>
@@ -1449,6 +1452,7 @@
 <translation id="3082520371031013475">觸控板與滑鼠設定</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">這個分頁正在使用你的相機和/或麥克風。</translation>
+<translation id="3083193146044397360">已暫時封鎖權限，保護你的安全</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">拖曳即可安裝</translation>
 <translation id="3084771660770137092">Chrome 記憶體不足或其他某些原因導致網頁處理程序終止。如要繼續執行，請重新載入或前往其他網頁。</translation>
@@ -1677,6 +1681,7 @@
 <translation id="3423858849633684918">請重新啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">說明分頁當掉時你正在執行的動作</translation>
 <translation id="3427092606871434483">允許 (預設)</translation>
+<translation id="3429275422858276529">將這個網頁加入書籤，方面日後查看</translation>
 <translation id="3429599832623003132">$1 個項目</translation>
 <translation id="3432227430032737297">將顯示的項目全部移除</translation>
 <translation id="3432757130254800023">傳送要在區域網路顯示的影音內容</translation>
@@ -1800,6 +1805,7 @@
 <translation id="3595596368722241419">電池已充滿</translation>
 <translation id="3596235046596950091">啟用雲端服務</translation>
 <translation id="3600456501114769456">你的管理員已封鎖裝置的本機檔案存取權限。</translation>
+<translation id="3603533104205588786">按一下星號即可將網頁加入書籤</translation>
 <translation id="3603622770190368340">取得網路憑證</translation>
 <translation id="3604048165392640554">找不到行動數據連線。請開啟其他裝置的即時網路共用功能，然後再試一次。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3605780360466892872">小員工</translation>
@@ -2572,6 +2578,7 @@
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4820334425169212497">否，我沒有看到</translation>
 <translation id="4821086771593057290">你的密碼已變更，請使用你的新密碼再試一次。</translation>
+<translation id="4821725298388681253">這是初期版本，目前還無法使用部分功能 (例如搜尋和輸入文字)。</translation>
 <translation id="4821935166599369261">分析已啟用(&amp;P)</translation>
 <translation id="4823484602432206655">讀取及變更使用者和裝置設定</translation>
 <translation id="4823651846660089135">裝置目前是唯讀模式</translation>
@@ -3521,6 +3528,7 @@
 <translation id="6232017090690406397">電池</translation>
 <translation id="6232116551750539448">「<ph name="NAME" />」的連線已中斷</translation>
 <translation id="6237816943013845465">讓你調整螢幕解析度</translation>
+<translation id="6238923052227198598">在鎖定畫面上顯示最新記事</translation>
 <translation id="6239558157302047471">重新載入頁框(&amp;F)</translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
 <translation id="6243774244933267674">無法與伺服器連線</translation>
@@ -3773,6 +3781,7 @@
 
 使用這項功能時，請務必只存取你信任的帳戶。</translation>
 <translation id="6581162200855843583">Google 雲端硬碟連結</translation>
+<translation id="6582421931165117398">為維護你的個人資訊安全，請立即變更密碼。系統會要求你先登入帳戶，才能變更密碼。</translation>
 <translation id="6583851739559471707">已針對經常顯示侵入式廣告的網站封鎖廣告 (建議)</translation>
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
 <translation id="6585234750898046415">請選擇登入畫面上的個人帳戶圖片。</translation>
@@ -3796,6 +3805,7 @@
 <translation id="6610183966322615106">新增印表機時發生錯誤</translation>
 <translation id="6610610633807698299">輸入網址...</translation>
 <translation id="6612358246767739896">受保護內容</translation>
+<translation id="6613452264606394692">將此頁加入書籤，方便你快速返回</translation>
 <translation id="6615455863669487791">顯示</translation>
 <translation id="6615807189585243369">已複製 <ph name="BURNT_AMOUNT" />，共 <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">你已儲存的密碼會顯示在這裡。</translation>
@@ -4598,6 +4608,7 @@
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7877451762676714207">不明的伺服器錯誤。請再試一次，或與伺服器管理員聯絡。</translation>
 <translation id="7877680364634660272">導覽</translation>
+<translation id="7878562273885520351">你的密碼可能已經外洩</translation>
 <translation id="7881483672146086348">查看帳戶</translation>
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7882358943899516840">供應商類型</translation>
@@ -4686,6 +4697,7 @@
 請妥善保管你的金鑰檔案；建立新版本的擴充功能時將需要使用該金鑰檔案。</translation>
 <translation id="799923393800005025">可以檢視</translation>
 <translation id="8000066093800657092">沒有網路</translation>
+<translation id="8001504501378762252">可能有某個網站竊取了你的密碼</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8007030362289124303">電池電量不足</translation>
 <translation id="8008356846765065031">網路連線中斷，請檢查你的網際網路連線。</translation>
@@ -4921,6 +4933,7 @@
 <translation id="8366396658833131068">你的網路連線已恢復。請選取其他網路，或按底下的 [繼續] 按鈕啟動 Kiosk 應用程式。</translation>
 <translation id="8366947248864804596">當你的手機在適當距離範圍內並已解鎖時，直接選取即可為裝置解鎖。否則，請輸入你的密碼或 PIN 碼。</translation>
 <translation id="8368859634510605990">開啟所有書籤(&amp;O)</translation>
+<translation id="8371695176452482769">請說話</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8373360586245335572">允許所有網站顯示通知</translation>
 <translation id="8373553483208508744">關閉多個分頁音訊</translation>
@@ -5092,6 +5105,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />或<ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">強制重新載入此網頁</translation>
 <translation id="8652139471850419555">慣用網路</translation>
+<translation id="8652400352452647993">封裝擴充功能錯誤</translation>
 <translation id="8652487083013326477">頁面範圍圓形按鈕</translation>
 <translation id="8654151524613148204">很抱歉，檔案過大，你的電腦無法處理。</translation>
 <translation id="8655295600908251630">頻道</translation>

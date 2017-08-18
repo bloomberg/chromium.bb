@@ -27,7 +27,6 @@
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
-<translation id="1704090719919187045">‏העדפות מארח Chromoting</translation>
 <translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב היעד ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
@@ -117,8 +116,6 @@
 <translation id="3695446226812920698">איך עושים זאת</translation>
 <translation id="3718805989288361841">‏אירעה שגיאה בהגדרות המדיניות לשולחן העבודה המרוחק של Chrome. פנה למנהל המערכת כדי לקבל עזרה.</translation>
 <translation id="3776024066357219166">‏הפעילות של 'שולחן עבודה מרוחק של Chrome' הסתיימה.</translation>
-<translation id="3785447812627779171">‏מארח
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה כדי לאפשר גישה באמצעות שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="3897092660631435901">תפריט</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">הערה: הגדרות המדיניות מתירות חיבורים רק בין מחשבים הנמצאים בתוך הרשת שלך.</translation>
 <translation id="4155497795971509630">חלק מהרכיבים הדרושים חסרים. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה ונסה שוב.</translation>
 <translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START" />שש ספרות לפחות<ph name="BOLD_END" />. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
-<translation id="4156741816461781891">מחובר באמצעות חשבון <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">קוד גישה</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
@@ -152,8 +148,6 @@ Chromoting</translation>
 <translation id="4517233780764084060">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chromoting ל'פתח כחלון'.</translation>
 <translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">גישה</translation>
-<translation id="4573676252416618192">‏מארח שולחן העבודה
-המרוחק של Chrome</translation>
 <translation id="4592037108270173918">כשמחברים מכשיר לרשת סלולרית, ייתכן שיחולו עליך חיובים בגין צריכת נתונים. להמשיך?</translation>
 <translation id="4619978527973181021">קבל והתקן</translation>
 <translation id="4635770493235256822">מכשירים מרוחקים</translation>
@@ -212,7 +206,6 @@ Chromoting</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
 <translation id="5885438903806970186">פועל במצב מקוון.</translation>
-<translation id="6001953797859482435">‏העדפות מארח שולחן העבודה המרוחק של Chrome</translation>
 <translation id="6011539954251327702">‏Chromoting מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chromoting, שניתן למצוא בכתובת <ph name="URL" />.</translation>
 <translation id="6033507038939587647">אפשרויות מקלדת</translation>
 <translation id="6040143037577758943">סגור</translation>

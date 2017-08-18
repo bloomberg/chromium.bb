@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
-<translation id="164969095109328410">Appareil Google Chrome</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
 <translation id="5170568018924773124">Afficher le dossier</translation>
 <translation id="5207949376430453814">Mettre le curseur de texte en surbrillance</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Maj+Échap</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5927132638760172455">Destinataire de la diffusion inconnu</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rétablir</translation>
 <translation id="595202126637698455">Suivi des performances activé</translation>
 <translation id="5958529069007801266">Utilisateur supervisé</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Activer le déverrouillage par empreinte digitale ?</translation>

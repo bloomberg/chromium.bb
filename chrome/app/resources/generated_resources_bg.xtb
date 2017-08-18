@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Предупреждение</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> от <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Опасният софтуер не може да бъде премахнат</translation>
 <translation id="1062407476771304334">Замяна</translation>
 <translation id="1062866675591297858">Управлявайте контролираните от вас потребители чрез <ph name="BEGIN_LINK" />съответното табло за управление<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Проверка на файлове в медийни библиотеки</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> иска да възстанови настройките ви на Chrome към първоначалните им стандартни стойности. Това ще нулира началната ви страница, новия раздел в браузъра и търсещата машина, ще деактивира разширенията ви и ще освободи всички раздели. Също така ще се изчистят други временни и кеширани данни, като „бисквитки“, съдържание и информация за сайтове.</translation>
 <translation id="1082725763867769612">Офлайн файлове</translation>
 <translation id="1084824384139382525">Копиране на адреса на вр&amp;ъзката</translation>
+<translation id="1089439967362294234">Промяна на паролата</translation>
 <translation id="1090126737595388931">Не се изпълняват приложения на заден план</translation>
 <translation id="1091767800771861448">Натиснете „ESCAPE“ за пропускане (само в неофициалните версии).</translation>
 <translation id="1093457606523402488">Видими мрежи:</translation>
@@ -446,7 +446,6 @@
 <ph name="BEGIN_BOLD" />да разрешавате или забранявате<ph name="END_BOLD" /> определени уебсайтове;
 <ph name="BEGIN_BOLD" />да преглеждате<ph name="END_BOLD" /> посетените от контролирания потребител уебсайтове;
 <ph name="BEGIN_BOLD" />да управлявате<ph name="END_BOLD" /> други настройки.</translation>
-<translation id="1648797160541174252">Мрежов прокси сървър за <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Данните за вход не са актуални</translation>
 <translation id="164969095109328410">Устройство с Chrome</translation>
 <translation id="1650371550981945235">Показване на опциите за въвеждане</translation>
@@ -1014,6 +1013,7 @@
 <translation id="2498436043474441766">Добавяне на принтери</translation>
 <translation id="2498539833203011245">Намаляване</translation>
 <translation id="2498765460639677199">Огромен</translation>
+<translation id="2500471369733289700">Блокирано с цел защита на поверителността ви</translation>
 <translation id="2501173422421700905">Сертификатът не е активен</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2501797496290880632">Въведете комбинация</translation>
@@ -1354,6 +1354,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2951247061394563839">Центриране на прозореца</translation>
 <translation id="2951721188322348056">Информация за видеофайла</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> „бисквитки“</translation>
+<translation id="2958721676848865875">Предупреждение за пакетиране на разширението</translation>
 <translation id="2959614062380389916">Деактивирано от администратора</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (предоставено от разширение)</translation>
 <translation id="2961695502793809356">Кликнете, за да преминете напред. Задръжте, за да видите историята.</translation>
@@ -1367,6 +1368,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2971213274238188218">намаляване на яркостта</translation>
 <translation id="2972557485845626008">Фърмуер</translation>
 <translation id="2972581237482394796">&amp;Възстановяване</translation>
+<translation id="2972642118232180842">Изпълняване само на важното съдържание (препоръчително)</translation>
 <translation id="297870353673992530">DNS сървър:</translation>
 <translation id="2979639724566107830">Отваряне в нов прозорец</translation>
 <translation id="2981113813906970160">Показване на голям курсор на мишката</translation>
@@ -1383,6 +1385,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3003967365858406397">Устройството ви <ph name="PHONE_NAME" /> ще създаде частна Wi-Fi връзка.</translation>
 <translation id="3004391367407090544">Моля, върнете се по-късно</translation>
 <translation id="300544934591011246">Предишна парола</translation>
+<translation id="3006881078666935414">Няма данни за използването</translation>
 <translation id="3007214526293698309">Коригиране на съотношението</translation>
 <translation id="3007771295016901659">Дублиране на раздела</translation>
 <translation id="3009300415590184725">Наистина ли искате да анулирате процеса на настройка на мобилната услуга за данни?</translation>
@@ -1446,6 +1449,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3082520371031013475">Настройки за мишката и сензорния панел</translation>
 <translation id="308268297242056490">URI адрес</translation>
 <translation id="3082780749197361769">Този раздел използва камерата или микрофона ви.</translation>
+<translation id="3083193146044397360">Временно блокирано от съображения за сигурност</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Освободете, за да инсталирате</translation>
 <translation id="3084771660770137092">Или Chrome няма достатъчно памет, или процесът за уеб страницата бе прекратен по друга причина. За да продължите, презаредете или отворете друга страница.</translation>
@@ -1674,6 +1678,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3423858849633684918">Моля, стартирайте отново <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Опишете какво правехте, когато разделът претърпя срив</translation>
 <translation id="3427092606871434483">Разрешаване (по подразбиране)</translation>
+<translation id="3429275422858276529">Запазете отметка към тази страница, за да я намирате лесно по-късно</translation>
 <translation id="3429599832623003132">$1 елемента</translation>
 <translation id="3432227430032737297">Премахване на всички показани</translation>
 <translation id="3432757130254800023">Изпращане на аудио и видео до дисплеи в локалната мрежа</translation>
@@ -1797,6 +1802,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3596235046596950091">Активиране на услугите в облака</translation>
 <translation id="3600456501114769456">Достъпът до локални файлове на устройството ви е деактивиран от администратора ви.</translation>
+<translation id="3603533104205588786">Можете да кликнете върху иконата на звезда, за да запазите отметка към страница</translation>
 <translation id="3603622770190368340">Получаване на мрежов сертификат</translation>
 <translation id="3604048165392640554">Не бе намерена мобилна връзка. Включете функцията за незабавен тетъринг на другите си устройства и опитайте отново. &lt;a target="_blank" href="<ph name="URL" />"&gt;Научете повече&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Костюмар</translation>
@@ -2572,6 +2578,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4816492930507672669">Да се побере в страницата</translation>
 <translation id="4820334425169212497">Не, не го виждам</translation>
 <translation id="4821086771593057290">Паролата ви е променена. Моля, опитайте отново с новата си парола.</translation>
+<translation id="4821725298388681253">Това е ранна версия. Някои функции, като например тези за въвеждане на текст и търсене, още не са налице.</translation>
 <translation id="4821935166599369261">&amp;Профилирането е активирано</translation>
 <translation id="4823484602432206655">Четене и промяна на настройките на потребителите и устройството</translation>
 <translation id="4823651846660089135">Устройството е само за четене</translation>
@@ -3524,6 +3531,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6232017090690406397">Батерия</translation>
 <translation id="6232116551750539448">Връзката с/ъс <ph name="NAME" /> прекъсна</translation>
 <translation id="6237816943013845465">Позволява ви да коригирате разделителната способност на екрана</translation>
+<translation id="6238923052227198598">Запазване на най-новата бележка на заключения екран</translation>
 <translation id="6239558157302047471">Презареждане на рамката</translation>
 <translation id="6241530762627360640">Да осъществява достъп до информацията за сдвоените със системата ви устройства с Bluetooth и да открива тези, които са наблизо.</translation>
 <translation id="6243774244933267674">Няма достъп до сървъра</translation>
@@ -3777,6 +3785,7 @@ PDF файл или в Google Диск.</translation>
 
 Използвайте я само с надеждни профили.</translation>
 <translation id="6581162200855843583">Връзка към Google Диск</translation>
+<translation id="6582421931165117398">За да защитите личната си информация, променете паролата си сега. Преди това ще бъдете подканени да влезете в профила си.</translation>
 <translation id="6583851739559471707">Блокиране за сайтовете, на които обикновено се показват натрапчиви реклами (препоръчително)</translation>
 <translation id="6584878029876017575">Подписване на периода на валидност от Microsoft</translation>
 <translation id="6585234750898046415">Изберете снимка, която да се показва за профила ви на екрана за вход.</translation>
@@ -3800,6 +3809,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6610183966322615106">Грешка при добавянето на принтера</translation>
 <translation id="6610610633807698299">Въведете URL адрес...</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
+<translation id="6613452264606394692">Връщайте се тук бързо, като запазите отметка към тази страница</translation>
 <translation id="6615455863669487791">Покажете ми</translation>
 <translation id="6615807189585243369">Копирано: <ph name="BURNT_AMOUNT" /> от <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">Тук ще се покажат запазените ви пароли.</translation>
@@ -4604,6 +4614,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
 <translation id="7877451762676714207">Неизвестна грешка в сървъра. Моля, опитайте отново или се свържете с администратора му.</translation>
 <translation id="7877680364634660272">Обиколка</translation>
+<translation id="7878562273885520351">Възможно е паролата ви да е компрометирана</translation>
 <translation id="7881483672146086348">Преглед на профила</translation>
 <translation id="7881969471599061635">Деактивиране на субтитрите</translation>
 <translation id="7882358943899516840">Тип на доставчика</translation>
@@ -4692,6 +4703,7 @@ PDF файл или в Google Диск.</translation>
 Пазете файла си с ключ на сигурно място. Той ви е необходим за създаване на нови версии на разширението.</translation>
 <translation id="799923393800005025">Може да преглежда</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
+<translation id="8001504501378762252">Възможно е паролата ви да е открадната от сайт</translation>
 <translation id="8004582292198964060">Браузър</translation>
 <translation id="8007030362289124303">Батерията е изтощена</translation>
 <translation id="8008356846765065031">Няма връзка с интернет. Моля, проверете връзката си.</translation>
@@ -4928,6 +4940,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8366396658833131068">Връзката ви с мрежата е възстановена. Моля, изберете друга мрежа или натиснете бутона „Напред“ по-долу, за да стартирате павилионното си приложение.</translation>
 <translation id="8366947248864804596">Когато телефонът ви е отключен и е наблизо, трябва само да го изберете, за да отключите устройството си. В противен случай въведете паролата или ПИН кода си.</translation>
 <translation id="8368859634510605990">&amp;Отваряне на всички отметки</translation>
+<translation id="8371695176452482769">Говорете сега</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
 <translation id="8373360586245335572">Разрешаване на сайтовете да показват известия</translation>
 <translation id="8373553483208508744">Спиране на звука на разделите</translation>
@@ -5099,6 +5112,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> или <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Принудително презареждане на тази страница</translation>
 <translation id="8652139471850419555">Предпочитани мрежи</translation>
+<translation id="8652400352452647993">Грешка при пакетиране на разширението</translation>
 <translation id="8652487083013326477">бутон за избор за обхват на страници</translation>
 <translation id="8654151524613148204">За съжаление файлът е твърде голям, за да се обработи от компютъра ви.</translation>
 <translation id="8655295600908251630">Канал</translation>

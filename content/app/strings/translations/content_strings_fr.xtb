@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">région</translation>
 <translation id="1591562245178063882">Ce mois</translation>
 <translation id="1637811476055996098">Sélect. fichiers</translation>
-<translation id="167575180612809735">indicateur d'état "Occupé"</translation>
 <translation id="1729654308190250600">Veuillez saisir une adresse e-mail dans le champ correspondant.</translation>
 <translation id="1758486001363313524">Autre…</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">lire sur un appareil à distance</translation>
 <translation id="1854180393107901205">Arrêter la diffusion</translation>
-<translation id="1880518467580572141">vue d'ensemble</translation>
 <translation id="1921819250265091946">jj</translation>
 <translation id="1930711995431081526">état</translation>
 <translation id="1938124657309484470">La date ou l'heure doit être égale ou antérieure à "<ph name="MAXIMUM_DATE_OR_TIME" />".</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Couper le son</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="588258955323874662">Plein écran</translation>
+<translation id="5888666972993069672">Diffusion en cours sur l'appareil "<ph name="DEVICE_FRIENDLY_NAME" />"</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5966707198760109579">Semaine</translation>
 <translation id="5987525920412732405">bouton toupie</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="668171684555832681">Autre...</translation>
 <translation id="6692633176391053278">curseur</translation>
-<translation id="6739588121953935928">règle</translation>
 <translation id="6755330956360078551">info-bulle</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6820355525329141109">Impossible de charger le plug-in.</translation>

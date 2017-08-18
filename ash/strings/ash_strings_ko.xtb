@@ -21,7 +21,6 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
-<translation id="164969095109328410">Chrome 기기</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1698760176351776263">IPv6 주소: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="4961318399572185831">화면 전송</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5170568018924773124">폴더 열기</translation>
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5927132638760172455">알 수 없는 수신자로 전송 중</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="595202126637698455">성능 추적 사용 중</translation>
 <translation id="5958529069007801266">관리 대상 사용자</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7246339268451149667">지문 잠금 해제를 사용하시겠습니까?</translation>

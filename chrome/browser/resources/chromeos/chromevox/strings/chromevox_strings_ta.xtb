@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">அடுத்த வரி</translation>
 <translation id="3153024374267644603">பேச்சை இயக்கும்</translation>
+<translation id="3153928844647607688"><ph name="TABLENAME" /> அட்டவணை, <ph name="TABLEROWS" /> வரிசை, <ph name="TABLECOLS" /> நெடுவரிசை</translation>
 <translation id="3155083529632865074">முந்தைய பொத்தான் இல்லை.</translation>
 <translation id="3163593631834463955">காலியான நெடுவரிசை மேற்தலைப்பு</translation>
 <translation id="316542773973815724">வழிச்செலுத்தல்</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">படிவம்</translation>
 <translation id="4597896406374528575">ஏப்ரல்</translation>
 <translation id="460018603901637538">தற்போதைய காட்சி நடை: அருகருகே.</translation>
+<translation id="4601367666219428522">அட்டவணை <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">அடுத்த விசை அழுத்தத்தைத் தவிர்க்கிறது</translation>
 <translation id="461613135510474570">வாக்கியம்</translation>
 <translation id="4647836961514597010">வண்ணத் தேர்வி</translation>
@@ -782,6 +784,7 @@ Chrome உலாவி மெனுவைத் திறக்க, ஆல்ட
 <translation id="820417203470636242">வெற்றுக் கலம்.</translation>
 <translation id="8215202828671303819">பலவற்றைத் தேர்ந்தெடுத்தல்</translation>
 <translation id="8224171046658870249">ChromeVox Nextக்கு மாற்றப்பட்டது</translation>
+<translation id="826991282343985864">வ$1நெ$2</translation>
 <translation id="8276439074553447000">முன்பு கவனிக்கப்பட்ட உருப்படிக்குத் தாவு</translation>
 <translation id="8278417001922463147">முந்தைய உறுப்பு இல்லை.</translation>
 <translation id="8283603667300770666">அடுத்தப் படிவப் புலம்</translation>

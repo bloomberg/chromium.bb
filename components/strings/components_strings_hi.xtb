@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">फ़्लैश</translation>
 <translation id="4558551763791394412">अपने एक्सटेंशन अक्षम करके देखें.</translation>
 <translation id="457875822857220463">वितरण</translation>
+<translation id="4582800630050655161">आप अपने Google खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chromium आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="4587425331216688090">Chrome से पता निकालें?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी आधुनिक सिफ़र सुइट का उपयोग करके एन्‍क्रिप्‍ट किया गया है.</translation>
 <translation id="4594403342090139922">&amp;हटाना वापस लाएं</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र में त्रुटियां हैं. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="4690462567478992370">अमान्य प्रमाणपत्र का उपयोग करना बंद करें</translation>
+<translation id="4690954380545377795">आप अपने Google खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chrome आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">आपका कनेक्शन बाधित था</translation>
 <translation id="471880041731876836">आपको इस साइट पर जाने की अनुमति नहीं है</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">आपका भुगतान</translation>
 <translation id="4726672564094551039">नीतियां फिर से लोड करें</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="4736825316280949806">क्रोमियम को फिर से शुरू करें</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">प्रयोग</translation>
 <translation id="5205222826937269299">नाम आवश्यक है</translation>
 <translation id="5222812217790122047">ईमेल आवश्यक है</translation>
+<translation id="522700295135997067">शायद इस साइट ने अभी-अभी आपका पासवर्ड चुरा लिया है</translation>
+<translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5277279256032773186">कार्यस्थल पर Chrome का उपयोग कर रहे हैं? कंपनियां अपने कर्मचारियों के लिए Chrome सेटिंग प्रबंधित कर सकती हैं. और जानें</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />इन चरणों का पालन करके सॉफ़्टवेयर को कुछ समय के लिए अक्षम करें ताकि आप वेब पर जा सकें. आपको व्यावस्थापकीय विशेषाधिकारों की ज़रूरत होगी.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">क्रैश की रिपोर्ट करना अक्षम कर दिया गया है.</translation>
 <translation id="5317780077021120954">सहेजें</translation>
 <translation id="5327248766486351172">नाम</translation>
+<translation id="5332219387342487447">शिपिंग का तरीका</translation>
 <translation id="5355557959165512791">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि उसका प्रमाणपत्र निरस्त कर दिया गया है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ देर के लिए होते हैं, इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
 <translation id="536296301121032821">नीति सेटिंग संग्रहित करने में विफल</translation>
 <translation id="5386426401304769735">इस साइट की प्रमाणपत्र श्रृंखला में, SHA-1 का उपयोग करके हस्ताक्षर किया गया प्रमाणपत्र शामिल है.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">इस साइट पर मौजूद हमलावर आपके ब्राउज़िंग अनुभव को हानि पहुंचा सकने वाले प्रोग्राम इंस्टॉल करने के लिए आपको भ्रमित कर सकते हैं (उदाहरण के लिए, आपके मुखपृष्ठ को बदलकर या आपकी विज़िट की जा रहीं साइट पर अतिरिक्त विज्ञापन दिखाकर).</translation>
 <translation id="7674629440242451245">शानदार नई Chrome सुविधाओं में रूचि है? तो chrome.com/dev पर हमारा डेव चैनल आज़माएं.</translation>
 <translation id="7682287625158474539">शिपिंग</translation>
+<translation id="7699293099605015246">फ़िलहाल लेख उपलब्ध नहीं हैं</translation>
 <translation id="7701040980221191251">कुछ नहीं</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> में आगे बढ़ें (असुरक्षित)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">प्रमाणपत्र</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> पर मौजूद वेबपेज संभवत: अस्थायी रूप से कार्य नहीं कर रहा है या उसे स्थायी रूप से नए वेब पते पर स्थानांतरित कर दिया गया है.</translation>
 <translation id="7800304661137206267">कनेक्शन को संदेश प्रमाणीकरण के लिए <ph name="MAC" /> और मुख्य एक्सचेंज क्रियाविधि के रूप में <ph name="KX" /> के साथ, <ph name="CIPHER" /> का उपयोग करते हुए एन्क्रिप्ट किया गया है.</translation>
+<translation id="7802523362929240268">साइट वैध है</translation>
 <translation id="780301667611848630">जी नहीं, रहने दें </translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में रहने से आपकी ब्राउज़िंग आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता या आपके द्वारा देखी जाने वाली वेबसाइट से छिपती नहीं है.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">डेबिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
+<translation id="7878562273885520351">आपके पासवर्ड से छेड़छाड़ की जा सकती है</translation>
 <translation id="7887683347370398519">अपना CVC जांचें और पुन: प्रयास करें</translation>
 <translation id="79338296614623784">मान्य फ़ोन नंबर डालें</translation>
 <translation id="7935318582918952113">DOM डिस्टिलर</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">किसी एक्सटेंशन से अवरोधित है</translation>
 <translation id="9076283476770535406">इसमें वयस्क सामग्री हो सकती है</translation>
 <translation id="9078964945751709336">अधिक जानकारी की आवश्यकता है</translation>
+<translation id="9080712759204168376">आदेश सारांश</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> आपकी जानकारी की सुरक्षा करने के लिए आमतौर पर एन्क्रिप्शन का उपयोग करती है. जब क्रोमियम ने इस बार <ph name="SITE" /> से कनेक्ट करने का प्रयास किया, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने का प्रयास कर रहा हो या किसी वाई-फ़ाई प्रवेश स्क्रीन ने कनेक्शन को बाधित कर दिया हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा के आदान-प्रदान से पहले ही क्रोमियम ने कनेक्शन को रोक दिया था.</translation>
+<translation id="910908805481542201">इसे ठीक करने में मेरी सहायता करें</translation>
 <translation id="9128870381267983090">नेटवर्क से कनेक्ट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9137248913990643158">इस ऐप्लिकेशन का उपयोग करने से पहले कृपया Chrome शुरू करके उसमें प्रवेश करें.</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{कुछ नहीं}=1{1 आइटम}one{# आइटम}other{# आइटम}}</translation>
 <translation id="981121421437150478">ऑफ़लाइन</translation>
 <translation id="988159990683914416">डेवलपर बिल्ड</translation>
+<translation id="989988560359834682">पता संपादित करें</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

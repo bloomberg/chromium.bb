@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">celulă din grilă</translation>
 <translation id="3149472044574196936">Rândul următor</translation>
 <translation id="3153024374267644603">Activează vorbirea</translation>
+<translation id="3153928844647607688">Tabelul <ph name="TABLENAME" />, <ph name="TABLEROWS" /> cu <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Nu există un buton anterior.</translation>
 <translation id="3163593631834463955">Antet de coloană gol</translation>
 <translation id="316542773973815724">Navigare</translation>
@@ -405,6 +406,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4597532268155981612">formular</translation>
 <translation id="4597896406374528575">Aprilie</translation>
 <translation id="460018603901637538">Schimbă stilul de afișare la alăturat.</translation>
+<translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Se ignoră următoarea apăsare de tastă</translation>
 <translation id="461613135510474570">Propoziție</translation>
 <translation id="4647836961514597010">Selector de culoare</translation>
@@ -750,7 +752,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7839679365527550018">Cuvânt anterior</translation>
 <translation id="7851816175263618915">Unele semne de punctuație</translation>
 <translation id="7870596830398826354">Arbore Math ML</translation>
-<translation id="7871691770940645922">Afișare Braille virtuală</translation>
+<translation id="7871691770940645922">Afișaj braille virtual</translation>
 <translation id="78826985582142166">cursor</translation>
 <translation id="7894517696028036636">Activează/dezactivează ChromeVox classic.</translation>
 <translation id="7895896691902835279">Link necunoscut</translation>
@@ -782,6 +784,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="820417203470636242">Celulă goală.</translation>
 <translation id="8215202828671303819">Selectare multiplă</translation>
 <translation id="8224171046658870249">Ai trecut la ChromeVox Next</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Salt la elementul focalizabil anterior</translation>
 <translation id="8278417001922463147">Nu există niciun articol anterior.</translation>
 <translation id="8283603667300770666">Câmpul următor din formular</translation>

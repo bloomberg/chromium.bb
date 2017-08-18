@@ -459,6 +459,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">尝试停用扩展程序。</translation>
 <translation id="457875822857220463">递送</translation>
+<translation id="4582800630050655161">您可能会无法再访问自己的 Google 帐号，或者遭遇身份信息被盗用。Chromium 建议您立即更改密码。</translation>
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
@@ -467,10 +468,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4690462567478992370">停止使用无效的证书</translation>
+<translation id="4690954380545377795">您可能会无法再访问自己的 Google 帐号，或者遭遇身份信息被盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
 <translation id="471880041731876836">您无权访问此网站</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">您的付款</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4736825316280949806">重新启动 Chromium</translation>
@@ -532,6 +535,8 @@
 <translation id="5199729219167945352">实验</translation>
 <translation id="5205222826937269299">需要提供名称</translation>
 <translation id="5222812217790122047">需要提供电子邮件地址</translation>
+<translation id="522700295135997067">此网站可能刚刚盗取了您的密码</translation>
+<translation id="5230733896359313003">送货地址</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5277279256032773186">使用 Chrome 办公？企业可以为其员工管理 Chrome 设置。了解详情</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />按照下述步骤操作可临时停用此类软件，以便您能够连接到网络。您需要具有管理员权限。<ph name="END_PARAGRAPH" />
@@ -550,6 +555,7 @@
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
+<translation id="5332219387342487447">送货方式</translation>
 <translation id="5355557959165512791">您目前无法访问 <ph name="SITE" />，因为此证书已被撤消。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
@@ -820,6 +826,7 @@
 <translation id="7669271284792375604">此网站上的攻击者可能会试图诱骗您安装有损浏览体验的程序（例如：通过更改您的主页或在您访问的网站上显示额外的广告）。</translation>
 <translation id="7674629440242451245">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/dev，试用我们的测试版！</translation>
 <translation id="7682287625158474539">送货地址</translation>
+<translation id="7699293099605015246">目前没有文章可显示</translation>
 <translation id="7701040980221191251">无</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />继续前往<ph name="SITE" />（不安全）<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">证书</translation>
@@ -837,6 +844,7 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="7793809570500803535">网址为 <ph name="SITE" /> 的网页可能暂时无法连接或已永久性地移动到了新网址。</translation>
 <translation id="7800304661137206267">该连接是使用 <ph name="CIPHER" /> 进行加密的，同时使用 <ph name="MAC" /> 进行讯息身份验证并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
+<translation id="7802523362929240268">网站是合规的</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -846,6 +854,7 @@
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">接受借记卡和预付卡。</translation>
+<translation id="7878562273885520351">您的密码可能会被盗用</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="79338296614623784">请输入有效的电话号码</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -973,7 +982,9 @@
 <translation id="9069693763241529744">已被某款扩展程序阻止</translation>
 <translation id="9076283476770535406">此网站可能包含成人内容</translation>
 <translation id="9078964945751709336">必须提供更多信息</translation>
+<translation id="9080712759204168376">订单摘要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
+<translation id="910908805481542201">帮我解决此问题</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9137248913990643158">在使用此应用前，请先启动并登录 Chrome。</translation>
@@ -995,5 +1006,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{无}=1{1 项内容}other{# 项内容}}</translation>
 <translation id="981121421437150478">离线</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
+<translation id="989988560359834682">修改地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

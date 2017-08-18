@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cel</translation>
 <translation id="3149472044574196936">Naslednja vrstica</translation>
 <translation id="3153024374267644603">Vklop govora</translation>
+<translation id="3153928844647607688">Razpredelnica <ph name="TABLENAME" />, <ph name="TABLEROWS" /> krat <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Ni prejšnjega gumba.</translation>
 <translation id="3163593631834463955">Prazna glava stolpca</translation>
 <translation id="316542773973815724">Krmarjenje</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">obrazec</translation>
 <translation id="4597896406374528575">april</translation>
 <translation id="460018603901637538">Preklop na vzporedni slog prikaza.</translation>
+<translation id="4601367666219428522">razpr <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Prezrtje naslednjega pritiska tipke</translation>
 <translation id="461613135510474570">Stavčna</translation>
 <translation id="4647836961514597010">Izbirnik barve</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">Prazna celica.</translation>
 <translation id="8215202828671303819">Sočasna izbira več elementov</translation>
 <translation id="8224171046658870249">Preklopljeno na ChromeVox Next</translation>
+<translation id="826991282343985864">v$1s$2</translation>
 <translation id="8276439074553447000">Pomik na prejšnji element, ki ga je mogoče izbrati</translation>
 <translation id="8278417001922463147">Ni prejšnjega članka.</translation>
 <translation id="8283603667300770666">Naslednje polje obrazca</translation>

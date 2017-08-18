@@ -22,6 +22,7 @@
 <translation id="158809615184981282">ஃபாரோயீஸ் விசைப்பலகை</translation>
 <translation id="1646136617204068573">ஹங்கேரியன் விசைப்பலகை</translation>
 <translation id="164729547906544836">தமிழ் விசைப்பலகை (ஐடிரான்ஸ்)</translation>
+<translation id="164969095109328410">Chrome சாதனம்</translation>
 <translation id="1829129547161959350">பென்குயின்</translation>
 <translation id="184633654410729720">தாய் விசைப்பலகை (கேட்மேனி)</translation>
 <translation id="1921986354447415460">டர்கிஷ்-F விசைப்பலகை</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">கஸக் விசைப்பலகை</translation>
 <translation id="2384596874640104496">சிங்கள விசைப்பலகை</translation>
 <translation id="2464079411014186876">ஐஸ்கிரீம்</translation>
+<translation id="2468402215065996499">தாமகோட்சி</translation>
 <translation id="247772113373397749">கனடியன் பன்மொழி விசைப்பலகை</translation>
 <translation id="2494837236724268445">குஜராத்தி விசைப்பலகை (ஒலிப்புமுறை)</translation>
 <translation id="2529133382850673012">யுஎஸ் விசைப்பலகை</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">தவளை</translation>
 <translation id="2649120831653069427">ரெய்ன்போஃபிஷ்</translation>
 <translation id="2735698359135166290">வழக்கமான ரோமானியன் விசைப்பலகை</translation>
-<translation id="2744450304594201174">தமாகோச்சி</translation>
 <translation id="2771816809568414714">பாலாடைக் கட்டி</translation>
 <translation id="2781645665747935084">பெல்ஜியன்</translation>
 <translation id="2790805296069989825">ரஷ்யன் விசைப்பலகை</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">கனடியன் பன்மொழி</translation>
 <translation id="3241720467332021590">ஐரிஷ்</translation>
 <translation id="3252266817569339921">பிரெஞ்ச்</translation>
+<translation id="3280987981688031357">வினைல் ரெக்கார்டு</translation>
 <translation id="3296763833017966289">ஜார்ஜியன்</translation>
 <translation id="3338239663705455570">ஸ்லோவேனியன் விசைப்பலகை</translation>
 <translation id="3399597614303179694">மாஸிடோனியன் விசைப்பலகை</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">லிதுவேனியன்</translation>
 <translation id="3603385196401704894">கனடியன் ஃபிரெஞ்சு</translation>
 <translation id="3606220979431771195">டர்கிஷ்-F</translation>
+<translation id="3619115746895587757">காப்பச்சினோ</translation>
 <translation id="3678559383040232393">மால்டீஸ் விசைப்பலகை</translation>
 <translation id="3801082500826908679">ஃபாரோயீஸ்</translation>
 <translation id="3809272675881623365">முயல்</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">கால்பந்து</translation>
 <translation id="497244430928947428">மலையாள விசைப்பலகை (ஒலிப்புமுறை)</translation>
 <translation id="498902553138568924">சிவப்புப் பட்டாம்பூச்சி</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">பீட்சா</translation>
 <translation id="5098629044894065541">ஹீப்ரு</translation>
 <translation id="5123433949759960244">கூடைப்பந்து</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">ஒலிபெயர்ப்பு (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">யு.எஸ். டிவாரக்</translation>
 <translation id="5640179856859982418">ஸ்விஸ் விசைப்பலகை</translation>
-<translation id="5656201261327432370">கேப்பசீனோ</translation>
 <translation id="5756666464756035725">ஹங்கேரியன் QWERTY</translation>
 <translation id="5771585441665576801">ஒலிபெயர்ப்பு (geia → γεια)</translation>
 <translation id="5790193330357274855">கஸக்</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">ஹாங்குல் 3 செட் (இறுதி)</translation>
 <translation id="5838825566232597749">யுஎஸ் ஒர்க்மேன் இன்டர்நேஷனல்</translation>
 <translation id="5892290200158927959">ஃபிரஞ்சு பீபோ விசைப்பலகை</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">லத்தீன் அமெரிக்கன் விசைப்பலகை</translation>
 <translation id="60357267506638014">செக் க்வெர்டி</translation>
 <translation id="6054173164583630569">ஃபிரெஞ்ச் விசைப்பலகை</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">பைக்</translation>
 <translation id="6878261347041253038">தேவநாகரி விசைப்பலகை (ஒலிப்புமுறை)</translation>
 <translation id="6885780034956018177">நத்தை</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">யுஎஸ் ஒர்க்மேன்</translation>
 <translation id="6935521024859866267">தலைகீழ்</translation>
 <translation id="6937152069980083337">Google ஜப்பானிய உள்ளீடு (யுஎஸ் விசைப்பலகைக்காக)</translation>
 <translation id="6939777852457331078">யுஎஸ் ஒர்க்மேன் விசைப்பலகை</translation>
 <translation id="6970230597523682626">பல்கேரியன்</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">ஒலிபெயர்ப்பு (salam → ሰላም)</translation>
 <translation id="7172053773111046550">எஸ்தோனியன் விசைப்பலகை</translation>
 <translation id="719009910964971313">US புரோகிராமர் டிவோரக் விசைப்பலகை</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">ஹாங்குல் 3 செட் (ஷிஃப்ட் இல்லை)</translation>
 <translation id="8299269255470343364">ஜாப்பனீஸ்</translation>
 <translation id="8336579025507394412">ஐஸ்லாண்டிக் விசைப்பலகை</translation>
-<translation id="8391218455464584335">வினைல்</translation>
 <translation id="8391950649760071442">ஒலிபெயர்ப்பு (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">விரைவு உள்ளீட்டு முறை</translation>
 <translation id="8418113698656761985">ரோமானியன் விசைப்பலகை</translation>

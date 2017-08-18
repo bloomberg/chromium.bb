@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Dispositiu Chrome</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adreça IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Aquest dispositiu està gestionat per una empresa</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">La drecera per activar/desactivar el mode d'alt contrast ha canviat. A partir d'ara, utilitza <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4961318399572185831">Emet la pantalla</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="5170568018924773124">Mostra a la carpeta</translation>
 <translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Maj + Esc</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="595202126637698455">Seguiment del rendiment activat</translation>
 <translation id="5958529069007801266">Usuari supervisat</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Cerca + L</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Vols activar el desbloqueig amb empremta digital?</translation>

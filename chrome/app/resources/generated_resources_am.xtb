@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">ማስጠንቀቂያ</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> ከ<ph name="COUNT" /></translation>
-<translation id="106001083577824516">ጎጂ ሶፍትዌርን ማስወገድ አልተቻለም</translation>
 <translation id="1062407476771304334">ተካ</translation>
 <translation id="1062866675591297858">በክትትል ስር ያሉ ተጠቃሚዎችዎን በ<ph name="BEGIN_LINK" />በክትትል ስር ያሉ ተጠቃሚዎች ዳሽቦርድ<ph name="END_LINK" /> በኩል ያስተዳድሩ።</translation>
 <translation id="1064662184364304002">የሚዲያ ቤተ መዛግብት ፋይል ፈታሽ</translation>
@@ -450,7 +449,6 @@
 የተወሰኑ ድር ጣቢያዎችን <ph name="BEGIN_BOLD" />መፍቃድ ወይም መከልከል<ph name="END_BOLD" />፣
 በቁጥጥር ስር ያለው ተጠቃሚ የጎበኛቸውን ድር ጣቢያዎች <ph name="BEGIN_BOLD" />መገምገም<ph name="END_BOLD" /> እና
 ሌሎች ቅንብሮችን <ph name="BEGIN_BOLD" />ማስተዳደር<ph name="END_BOLD" />።</translation>
-<translation id="1648797160541174252">የ<ph name="NETWORK_NAME" /> አውታረ መረብ ተኪ</translation>
 <translation id="1648943974594387137">የመለያ መግቢያ ዝርዝሮች ጊዜ ያለፈባቸው ናቸው</translation>
 <translation id="164969095109328410">የChrome መሣሪያ</translation>
 <translation id="1650371550981945235">የግቤት አማራጮችን አሳይ</translation>
@@ -2582,6 +2580,7 @@
 <translation id="4816492930507672669">ገጹን አመጣጥን</translation>
 <translation id="4820334425169212497">አይ፣ አይታየኝም</translation>
 <translation id="4821086771593057290">የይለፍ ቃልዎ ተቀይሯል። እባክዎ በአዲሱ የይለፍ ቃልዎ እንደገና ይሞክሩ።</translation>
+<translation id="4821725298388681253">ይህ ገና የመጀመሪያ ልቀት ነው። እንደ ፍለጋ እና የጽሑፍ ግቤት ያሉ አንዳንድ ባህሪያት እስካሁን ሊገኙ የሚችሉ አይደሉም።</translation>
 <translation id="4821935166599369261">&amp;መገለጫ መስራት ነቅቷል</translation>
 <translation id="4823484602432206655">የተጠቃሚ እና የመሣሪያ ቅንብሮችን ያንብቡ እና ይለውጡ</translation>
 <translation id="4823651846660089135">መሣሪያው ተነባቢ-ብቻ ነው</translation>
@@ -3532,6 +3531,7 @@
 <translation id="6232017090690406397">ባትሪ</translation>
 <translation id="6232116551750539448">ወደ <ph name="NAME" /> ግንኙነት ጠፍቷል</translation>
 <translation id="6237816943013845465">የእርስዎን ማያ ገጽ ምስል ጥራት እንዲቀይሩ ያስችልዎታል</translation>
+<translation id="6238923052227198598">በማያ ገጽ መቆለፊያ ላይ የቅርብ ጊዜውን ማስታወሻ አቆይ</translation>
 <translation id="6239558157302047471">&amp;ክፈፍን ዳግም ጫን</translation>
 <translation id="6241530762627360640">ከስርዓትዎ ጋር ስለተጣመሩ የብሉቱዝ መሣሪያዎች ያለ መረጃ ይደርሳልና አቅራቢያ ያሉ የብሉቱዝ መሣሪያዎችን ያገኛል።</translation>
 <translation id="6243774244933267674">አገልጋይ አይገኝም</translation>
@@ -4947,6 +4947,7 @@ nil</translation>
 <translation id="8366396658833131068">የአውታረ መረብ ግንኙነትዎ ወደነበረበት ተመልሷል። እባክዎ የተለየ አውታረ መረብ ይምረጡ ወይም የኪዮስክ መተግበሪያዎን ለማስጀመር «ቀጥል»ን ይጫኑ።</translation>
 <translation id="8366947248864804596">የእርስዎ ስልክ ሲከፈት እና በአቅራቢያ ሲሆን ለመክፈት ይምረጡ ብቻ። አለበለዚያ የእርስዎን የይለፍ ቃል ወይም ፒን ያስገቡ።</translation>
 <translation id="8368859634510605990">&amp;ሁሉንም እልባቶች ክፈት</translation>
+<translation id="8371695176452482769">አሁን ይናገሩ</translation>
 <translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
 <translation id="8373360586245335572">ሁሉም ጣቢያዎች ማሳወቂያዎችን እንዲያሳዩ ፍቀድላቸው</translation>
 <translation id="8373553483208508744">ትሮች ላይ ድምጸ-ከል ያድርጉ</translation>

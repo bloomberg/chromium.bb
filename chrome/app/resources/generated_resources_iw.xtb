@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">אזהרה</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> מתוך <ph name="COUNT" /></translation>
-<translation id="106001083577824516">לא ניתן להסיר תוכנה מזיקה</translation>
 <translation id="1062407476771304334">החלף</translation>
 <translation id="1062866675591297858">נהל את המשתמשים שבפיקוח באמצעות <ph name="BEGIN_LINK" />לוח הבקרה למשתמשים בפיקוח<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">בודק הקבצים בספריית המדיה</translation>
@@ -447,7 +446,6 @@
     <ph name="BEGIN_BOLD" />להתיר או לאסור<ph name="END_BOLD" /> כניסה לאתרים מסוימים,
     <ph name="BEGIN_BOLD" />לסקור<ph name="END_BOLD" /> אתרים שהמשתמש המנוהל ביקר בהם, וכן
     <ph name="BEGIN_BOLD" />לנהל<ph name="END_BOLD" /> הגדרות נוספות.</translation>
-<translation id="1648797160541174252">‏שרת proxy של רשת עבור <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">פרטי הכניסה אינם מעודכנים</translation>
 <translation id="164969095109328410">‏מכשיר Chrome</translation>
 <translation id="1650371550981945235">הצג אפשרויות קלט</translation>
@@ -2579,6 +2577,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4816492930507672669">התאמה לדף</translation>
 <translation id="4820334425169212497">לא, אני לא רואה אותו</translation>
 <translation id="4821086771593057290">הסיסמה שלך השתנתה. נסה שוב עם הסיסמה החדשה.</translation>
+<translation id="4821725298388681253">זוהי הפצה מוקדמת. חלק מהתכונות, כמו חיפוש והזנת טקסט, עדיין לא זמינות.</translation>
 <translation id="4821935166599369261">&amp;יצירת פרופילים מופעלת</translation>
 <translation id="4823484602432206655">קריאה ושינוי של הגדרות המשתמש והמכשיר</translation>
 <translation id="4823651846660089135">המכשיר מוגדר לקריאה בלבד</translation>
@@ -3531,6 +3530,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6232017090690406397">סוללה</translation>
 <translation id="6232116551750539448">החיבור אל <ph name="NAME" /> נותק</translation>
 <translation id="6237816943013845465">הגדרה זו מאפשרת לך לקבוע את רזולוציית המסך</translation>
+<translation id="6238923052227198598">המשך הצגת ההודעה האחרונה במסך הנעילה</translation>
 <translation id="6239558157302047471">טען מחדש את ה&amp;מסגרת</translation>
 <translation id="6241530762627360640">‏פרטי גישה של מכשירי Bluetooth המותאמים למערכת שלך ומגלים מכשירי Bluetooth קרובים.</translation>
 <translation id="6243774244933267674">השרת אינו זמין</translation>
@@ -4929,6 +4929,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8366396658833131068">קישוריות הרשת שלך התחדשה. בחר רשת אחרת או לחץ על הלחצן 'המשך' שלמטה כדי להפעיל את יישום הקיוסק.</translation>
 <translation id="8366947248864804596">‏כשהטלפון שלך בקרבת מקום ואינו נעול, עליך לבחור באפשרות של ביטול נעילה. אחרת, עליך להזין סיסמה או קוד PIN.</translation>
 <translation id="8368859634510605990">&amp;פתח את כל הסימניות</translation>
+<translation id="8371695176452482769">דבר עכשיו</translation>
 <translation id="8372369524088641025">‏מקש WEP גרוע</translation>
 <translation id="8373360586245335572">התר לכל האתרים להציג הודעות</translation>
 <translation id="8373553483208508744">השתק כרטיסיות</translation>

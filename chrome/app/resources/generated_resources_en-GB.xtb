@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Warning</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> of <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Can't remove harmful software</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1062866675591297858">Manage your supervised users via the <ph name="BEGIN_LINK" />Supervised Users Dashboard<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Media Library File Checker</translation>
@@ -451,7 +450,6 @@
     <ph name="BEGIN_BOLD" />allow or prohibit<ph name="END_BOLD" /> certain websites,
     <ph name="BEGIN_BOLD" />review<ph name="END_BOLD" /> websites the supervised user has visited and
     <ph name="BEGIN_BOLD" />manage<ph name="END_BOLD" /> other settings.</translation>
-<translation id="1648797160541174252">Network proxy for <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Sign-in details are out of date</translation>
 <translation id="164969095109328410">Chrome device</translation>
 <translation id="1650371550981945235">Show input options</translation>
@@ -2584,6 +2582,7 @@ Press any key to continue exploring.</translation>
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="4820334425169212497">No, I don't see it</translation>
 <translation id="4821086771593057290">Your password has changed. Please try again with your new password.</translation>
+<translation id="4821725298388681253">This is an early release. Some features, like search and text entry, are not yet available.</translation>
 <translation id="4821935166599369261">&amp;Profiling Enabled</translation>
 <translation id="4823484602432206655">Read and change user and device settings</translation>
 <translation id="4823651846660089135">Device is read-only</translation>
@@ -3535,6 +3534,7 @@ Press any key to continue exploring.</translation>
 <translation id="6232017090690406397">Battery</translation>
 <translation id="6232116551750539448">Connection to <ph name="NAME" /> has been lost</translation>
 <translation id="6237816943013845465">Allows you to adjust your screen resolution</translation>
+<translation id="6238923052227198598">Keep latest note on lock screen</translation>
 <translation id="6239558157302047471">Reload &amp;frame</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
@@ -4945,6 +4945,7 @@ Calculating time until full</translation>
 <translation id="8366396658833131068">Your network connectivity is restored. Please select a different network or press 'Continue' button below to launch your kiosk app.</translation>
 <translation id="8366947248864804596">When your phone is unlocked and nearby, just select to unlock. Otherwise, enter your password or PIN.</translation>
 <translation id="8368859634510605990">&amp;Open all bookmarks</translation>
+<translation id="8371695176452482769">Speak now</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="8373360586245335572">Allow all sites to show notifications</translation>
 <translation id="8373553483208508744">Mute tabs</translation>

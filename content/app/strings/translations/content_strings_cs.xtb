@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">oblast</translation>
 <translation id="1591562245178063882">Tento měsíc</translation>
 <translation id="1637811476055996098">Zvolit soubory</translation>
-<translation id="167575180612809735">indikátor stavu zaneprázdnění</translation>
 <translation id="1729654308190250600">Vyplňte e-mailovou adresu.</translation>
 <translation id="1758486001363313524">Jiné…</translation>
 <translation id="1806710327868736751">dialog upozornění</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">přehrát ve vzdáleném zařízení</translation>
 <translation id="1854180393107901205">Zastavit odesílání</translation>
-<translation id="1880518467580572141">osnova</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stav</translation>
 <translation id="1938124657309484470">Datum musí být <ph name="MAXIMUM_DATE_OR_TIME" /> nebo dříve.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Ztlumit</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
+<translation id="5888666972993069672">Odesílání do zařízení <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5966707198760109579">Týden</translation>
 <translation id="5987525920412732405">číselník</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="668171684555832681">Další...</translation>
 <translation id="6692633176391053278">stepper</translation>
-<translation id="6739588121953935928">pravítko</translation>
 <translation id="6755330956360078551">popisek</translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6820355525329141109">Plugin se nepodařilo načíst.</translation>

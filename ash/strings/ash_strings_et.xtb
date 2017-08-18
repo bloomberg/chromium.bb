@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Suur hiirekursor</translation>
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
 <translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome'i seade</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tühjenemiseni</translation>
 <translation id="1698760176351776263">IPv6-aadress: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Seda seadet haldab ettevõte</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
 <translation id="5207949376430453814">Tekstisisestusmärgi esiletõstmine</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Tõstuklahv + ESC</translation>
 <translation id="5916664084637901428">Sees</translation>
 <translation id="5927132638760172455">Ülekandmine teadmata vastuvõtjasse</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Ennista</translation>
 <translation id="595202126637698455">Toimivuse jälgimine on lubatud</translation>
 <translation id="5958529069007801266">Valvatav kasutaja</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Otsing + L</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
 <translation id="7034339000180558234">Vahelehe <ph name="TAB_NAME" /> ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7067196344162293536">Automaatne pööramine</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7246339268451149667">Kas lubada sõrmejäljega avamine?</translation>

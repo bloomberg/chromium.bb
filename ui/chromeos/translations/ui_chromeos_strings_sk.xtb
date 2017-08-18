@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Faerská klávesnica</translation>
 <translation id="1646136617204068573">maďarská klávesnica</translation>
 <translation id="164729547906544836">Tamilská klávesnica (itrans)</translation>
+<translation id="164969095109328410">Zariadenie Chrome</translation>
 <translation id="1829129547161959350">Tučniak</translation>
 <translation id="184633654410729720">Thajská klávesnica (Kedmanee)</translation>
 <translation id="1921986354447415460">Turecká klávesnica (typ F)</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Kazašská klávesnica</translation>
 <translation id="2384596874640104496">Klávesnica pre sinhálčinu</translation>
 <translation id="2464079411014186876">Zmrzlina</translation>
+<translation id="2468402215065996499">Tamagoči</translation>
 <translation id="247772113373397749">Kanadská viacjazyčná klávesnica</translation>
 <translation id="2494837236724268445">Gudžarátska klávesnica (fonetický prepis)</translation>
 <translation id="2529133382850673012">americká klávesnica</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Žaba</translation>
 <translation id="2649120831653069427">Dúhovka</translation>
 <translation id="2735698359135166290">Rumunská štandardná klávesnica</translation>
-<translation id="2744450304594201174">Tamagoči</translation>
 <translation id="2771816809568414714">Syr</translation>
 <translation id="2781645665747935084">Belgická klávesnica</translation>
 <translation id="2790805296069989825">ruská klávesnica</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">Kanadská viacjazyčná klávesnica</translation>
 <translation id="3241720467332021590">Írčina</translation>
 <translation id="3252266817569339921">Francúzština</translation>
+<translation id="3280987981688031357">Vinylová platňa</translation>
 <translation id="3296763833017966289">Gruzínčina</translation>
 <translation id="3338239663705455570">slovinská klávesnica</translation>
 <translation id="3399597614303179694">Macedónska klávesnica</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">Litovčina</translation>
 <translation id="3603385196401704894">Kanadská francúzska klávesnica</translation>
 <translation id="3606220979431771195">Turecká (typ F)</translation>
+<translation id="3619115746895587757">Kapučíno</translation>
 <translation id="3678559383040232393">Maltézska klávesnica</translation>
 <translation id="3801082500826908679">Faerčina</translation>
 <translation id="3809272675881623365">Králik</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Futbal</translation>
 <translation id="497244430928947428">Malajálamska klávesnica (fonetický prepis)</translation>
 <translation id="498902553138568924">Červený motýľ</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5098629044894065541">Hebrejčina</translation>
 <translation id="5123433949759960244">Basketbal</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Prepis (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Americká klávesnica s rozložením klávesov Dvorak</translation>
 <translation id="5640179856859982418">švajčiarska klávesnica</translation>
-<translation id="5656201261327432370">Kapučíno</translation>
 <translation id="5756666464756035725">Maďarská QWERTY</translation>
 <translation id="5771585441665576801">Prepis (geia → γεια)</translation>
 <translation id="5790193330357274855">Kazaština</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Hangul 3 Set (konečné)</translation>
 <translation id="5838825566232597749">US Workman international – medzinárodná</translation>
 <translation id="5892290200158927959">Francúzska klávesnica BÉPO</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">latinskoamerická klávesnica</translation>
 <translation id="60357267506638014">Česká klávesnica QWERTY</translation>
 <translation id="6054173164583630569">francúzska klávesnica</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Bicykel</translation>
 <translation id="6878261347041253038">Klávesnica dévanágarí (fonetický prepis)</translation>
 <translation id="6885780034956018177">Slimák</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6935521024859866267">Hore nohami</translation>
 <translation id="6937152069980083337">Japonská metóda vstupu Google (pre americkú klávesnicu)</translation>
 <translation id="6939777852457331078">Klávesnica US Workman</translation>
 <translation id="6970230597523682626">Bulharčina</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Prepis (salam → ሰላም)</translation>
 <translation id="7172053773111046550">estónska klávesnica</translation>
 <translation id="719009910964971313">Klávesnica US Programmer Dvorak</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Hangul 3 Set (bez klávesa Shift)</translation>
 <translation id="8299269255470343364">Japončina</translation>
 <translation id="8336579025507394412">Islandská klávesnica</translation>
-<translation id="8391218455464584335">Vinyl</translation>
 <translation id="8391950649760071442">Prepis (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Rýchla metóda vstupu</translation>
 <translation id="8418113698656761985">rumunská klávesnica</translation>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">Region</translation>
 <translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1637811476055996098">Dateien auswählen</translation>
-<translation id="167575180612809735">Anzeige für fehlende Verfügbarkeit</translation>
 <translation id="1729654308190250600">Geben Sie eine E-Mail-Adresse ein.</translation>
 <translation id="1758486001363313524">Andere...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">auf Remote-Gerät wiedergeben</translation>
 <translation id="1854180393107901205">Übertragung beenden</translation>
-<translation id="1880518467580572141">Übersicht</translation>
 <translation id="1921819250265091946">tt</translation>
 <translation id="1930711995431081526">Status</translation>
 <translation id="1938124657309484470">Verwenden Sie <ph name="MAXIMUM_DATE_OR_TIME" /> oder einen früheren Wert.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Stummschalten</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="588258955323874662">Vollbild</translation>
+<translation id="5888666972993069672">Wird gerade auf <ph name="DEVICE_FRIENDLY_NAME" /> gestreamt</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5966707198760109579">Woche</translation>
 <translation id="5987525920412732405">Drehfeld</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="668171684555832681">Andere...</translation>
 <translation id="6692633176391053278">Stepper</translation>
-<translation id="6739588121953935928">Lineal</translation>
 <translation id="6755330956360078551">Kurzinfo</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6820355525329141109">Plug-in konnte nicht geladen werden.</translation>

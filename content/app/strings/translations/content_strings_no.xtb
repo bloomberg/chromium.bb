@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">område</translation>
 <translation id="1591562245178063882">Denne måneden</translation>
 <translation id="1637811476055996098">Velg filer</translation>
-<translation id="167575180612809735">opptatt-indikator</translation>
 <translation id="1729654308190250600">Skriv inn en ikke-tom e-postadresse.</translation>
 <translation id="1758486001363313524">Andre</translation>
 <translation id="1806710327868736751">varseldialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">spill på ekstern enhet</translation>
 <translation id="1854180393107901205">Stopp castingen</translation>
-<translation id="1880518467580572141">omriss</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Verdien må være <ph name="MAXIMUM_DATE_OR_TIME" /> eller før.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Kutt lyden</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="588258955323874662">Fullskjerm</translation>
+<translation id="5888666972993069672">Caster nå til <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5966707198760109579">Uke</translation>
 <translation id="5987525920412732405">verdisettingsknapp</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="668171684555832681">Annen</translation>
 <translation id="6692633176391053278">stepper</translation>
-<translation id="6739588121953935928">linjal</translation>
 <translation id="6755330956360078551">verktøytips</translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6820355525329141109">Kunne ikke laste inn programtillegget.</translation>

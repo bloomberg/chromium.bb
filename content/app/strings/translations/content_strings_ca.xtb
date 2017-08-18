@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">regió</translation>
 <translation id="1591562245178063882">Aquest mes</translation>
 <translation id="1637811476055996098">Trieu els fitxers</translation>
-<translation id="167575180612809735">indicador d'ocupat</translation>
 <translation id="1729654308190250600">Introduïu una adreça electrònica.</translation>
 <translation id="1758486001363313524">Altres...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">a. m./p. m.</translation>
 <translation id="1832974991323546415">reprodueix al dispositiu remot</translation>
 <translation id="1854180393107901205">Atura l'emissió</translation>
-<translation id="1880518467580572141">esquema</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">estat</translation>
 <translation id="1938124657309484470">El valor ha de ser <ph name="MAXIMUM_DATE_OR_TIME" /> o anterior.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Silencia</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
+<translation id="5888666972993069672">S'està emetent a <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="5966707198760109579">Setmana</translation>
 <translation id="5987525920412732405">botó de selecció de valors</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="668171684555832681">Altres...</translation>
 <translation id="6692633176391053278">desplaçador</translation>
-<translation id="6739588121953935928">regle</translation>
 <translation id="6755330956360078551">descripció emergent</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6820355525329141109">El connector no s'ha pogut carregar.</translation>

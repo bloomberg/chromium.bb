@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">اخطار</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> از <ph name="COUNT" /></translation>
-<translation id="106001083577824516">نرم‌افزار مضر پاک شد</translation>
 <translation id="1062407476771304334">جایگزینی</translation>
 <translation id="1062866675591297858">کاربران نظارت‌شده‌تان را از طریق <ph name="BEGIN_LINK" />داشبورد کاربران نظارت‌شده<ph name="END_LINK" /> مدیریت کنید.</translation>
 <translation id="1064662184364304002">بررسی‌کننده فایل کتابخانه رسانه‌ای</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481">‏<ph name="THIRD_PARTY_TOOL_NAME" /> می‌خواهد تنظیمات Chrome شما را به پیش‌فرض‌های اصلی‌شان بازیابی کند. با این کار صفحه اصلی، صفحه برگه جدید و موتور جستجویتان بازنشانی می‌شود، افزونه‌های شما غیرفعال می‌شوند و پین همه برگه‌ها برداشته می‌شود. همچنین سایر داده‌های موقت و داده‌های ذخیره شده در حافظه موقت، مانند کوکی‌ها، اطلاعات سایت و محتوا پاک می‌شوند.</translation>
 <translation id="1082725763867769612">فایل‌های آفلاین</translation>
 <translation id="1084824384139382525">کپی آدر&amp;س پیوند</translation>
+<translation id="1089439967362294234">تغییر گذرواژه</translation>
 <translation id="1090126737595388931">بدون برنامه‌های در حال اجرا در پس‌زمینه</translation>
 <translation id="1091767800771861448">‏برای رد شدن، ESCAPE را فشار دهید (فقط ساخت‌های غیررسمی).</translation>
 <translation id="1093457606523402488">شبکه‌های قابل مشاهده:</translation>
@@ -446,7 +446,6 @@
 وب‌سایت‌های خاصی را <ph name="BEGIN_BOLD" />مجاز یا ممنوع کنید<ph name="END_BOLD" />،
 وب‌سایت‌های بازدید شده توسط کاربر نظارت شده را <ph name="BEGIN_BOLD" />بررسی کنید<ph name="END_BOLD" />،
 و سایر تنظیمات را <ph name="BEGIN_BOLD" />مدیریت کنید<ph name="END_BOLD" />.</translation>
-<translation id="1648797160541174252">پراکسی شبکه برای <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">جزئیات ورود به سیستم قدیمی هستند</translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1650371550981945235">نمایش گزینه‌های ورودی</translation>
@@ -1014,6 +1013,7 @@
 <translation id="2498436043474441766">افزودن چاپگرها</translation>
 <translation id="2498539833203011245">کوچک کردن</translation>
 <translation id="2498765460639677199">بسیار بزرگ</translation>
+<translation id="2500471369733289700">برای محافظت از حریم خصوصی‌تان مسدود شده است</translation>
 <translation id="2501173422421700905">گواهی در انتظار</translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2501797496290880632">تایپ کردن میان‌بر</translation>
@@ -1353,6 +1353,7 @@
 <translation id="2951247061394563839">پنجره مرکزی</translation>
 <translation id="2951721188322348056">اطلاعات ویدئو</translation>
 <translation id="2956763290572484660">کوکی‌های <ph name="COOKIES" /></translation>
+<translation id="2958721676848865875">هشدار در مورد بسته‌بندی افزونه</translation>
 <translation id="2959614062380389916">سرپرست سیستم غیرفعال کرده است</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (تمدید امکان‌پذیر است)</translation>
 <translation id="2961695502793809356">برای رفتن به جلو کلیک کنید، برای دیدن سابقه نگه دارید</translation>
@@ -1366,6 +1367,7 @@
 <translation id="2971213274238188218">کاهش روشنایی</translation>
 <translation id="2972557485845626008">میان افزار</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
+<translation id="2972642118232180842">فقط محتوای مهم اجرا شود (توصیه می‌شود)</translation>
 <translation id="297870353673992530">‏سرور DNS:</translation>
 <translation id="2979639724566107830">باز کردن در پنجرهٔ جدید</translation>
 <translation id="2981113813906970160">نمایش نشانگر موشواره بزرگ</translation>
@@ -1382,6 +1384,7 @@
 <translation id="3003967365858406397">‏<ph name="PHONE_NAME" /> شما اتصال Wi-Fi خصوصی ایجاد خواهد کرد.</translation>
 <translation id="3004391367407090544">لطفاً بعداً دوباره برگردید</translation>
 <translation id="300544934591011246">گذرواژه قبلی</translation>
+<translation id="3006881078666935414">هیچ داده مصرفی وجود ندارد</translation>
 <translation id="3007214526293698309">تثبیت نسبت</translation>
 <translation id="3007771295016901659">کپی کردن برگه</translation>
 <translation id="3009300415590184725">آیا مطمئن هستید که می‌خواهید مرحله تنظیم سرویس داده تلفن همراه را لغو کنید؟</translation>
@@ -1445,6 +1448,7 @@
 <translation id="3082520371031013475">تنظیمات موشواره و پد لمسی</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">این برگه از دوربین یا میکروفن شما استفاده می‌کند.</translation>
+<translation id="3083193146044397360">برای محافظت از امنیت شما، به‌طور موقت مسدود شده است</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">رهاکردن جهت نصب</translation>
 <translation id="3084771660770137092">‏ممکن است حافظه Chrome تمام شده باشد یا فرآیند مربوط به صفحهٔ وب به دلایل دیگری متوقف شده باشد. برای ادامه، صفحه را تازه‌سازی کنید یا به یک صفحه دیگر بروید.</translation>
@@ -1673,6 +1677,7 @@
 <translation id="3423858849633684918">لطفاً <ph name="PRODUCT_NAME" /> را مجدداً راه‌اندازی کنید</translation>
 <translation id="3424969259347320884">توضیح دهید وقتی برگه خراب شد مشغول انجام چه کاری بودید</translation>
 <translation id="3427092606871434483">اجازه (پیش‌فرض)</translation>
+<translation id="3429275422858276529">این صفحه را نشانک‌گذاری کنید تا بعداً آن را به‌آسانی پیدا کنید</translation>
 <translation id="3429599832623003132">$1 مورد</translation>
 <translation id="3432227430032737297">حذف همه موارد نشان‌ داده‌شده</translation>
 <translation id="3432757130254800023">ارسال صوت و تصویر برای نمایش در شبکه محلی</translation>
@@ -1796,6 +1801,7 @@
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="3596235046596950091">فعال کردن سرویس‌های ابری</translation>
 <translation id="3600456501114769456">دسترسی به فایل‌های محلی بر روی دستگاه شما توسط سرپرست سیستم شما از کار افتاده است.</translation>
+<translation id="3603533104205588786">می‌توانید برای نشانک‌گذاری صفحه‌ای، روی ستاره کلیک کنید</translation>
 <translation id="3603622770190368340">دریافت گواهی‌نامه شبکه</translation>
 <translation id="3604048165392640554">‏اتصال داده شبکه همراهی پیدا نشد. «اتصال فوری به اینترنت با تلفن همراه» را در دستگاه‌های دیگرتان روشن کنید و دوباره امتحان کنید. &lt;a target="_blank" href="<ph name="URL" />"&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="3605780360466892872">تاجر</translation>
@@ -2569,6 +2575,7 @@
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4820334425169212497">نه، آن را نمی‌بینم</translation>
 <translation id="4821086771593057290">گذرواژه شما تغییر کرده است. لطفاً یک بار دیگر با گذرواژه جدید خود را امتحان کنید.</translation>
+<translation id="4821725298388681253">این یک نسخه اولیه است. بعضی از قابلیت‌ها (مانند جستجو و ورود متن) هنوز دردسترس نیستند.</translation>
 <translation id="4821935166599369261">&amp;ایجاد نمایه فعال شد</translation>
 <translation id="4823484602432206655">تغییر و خواندن تنظیمات کاربر و دستگاه</translation>
 <translation id="4823651846660089135">دستگاه فقط خواندنی است</translation>
@@ -3521,6 +3528,7 @@
 <translation id="6232017090690406397">باتری</translation>
 <translation id="6232116551750539448">اتصال به <ph name="NAME" /> قطع شده است</translation>
 <translation id="6237816943013845465">به شما امکان می‌دهد وضوح صفحه را تنظیم کنید</translation>
+<translation id="6238923052227198598">نگه داشتن جدیدترین یادداشت در صفحه درحالت قفل</translation>
 <translation id="6239558157302047471">تازه‌سازی قاب</translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="6243774244933267674">سرور در دسترس نیست</translation>
@@ -3774,6 +3782,7 @@
 
 از این قابلیت تنها با حساب‌های مورد اعتمادتان استفاده کنید.</translation>
 <translation id="6581162200855843583">‏پیوند Google Drive</translation>
+<translation id="6582421931165117398">برای محافظت از اطلاعات شخصی، هم‌اکنون گذرواژه را تغییر دهید. قبل از اینکه بتوانید گذرواژه را تغییر دهید، از شما درخواست می‌شود به سیستم وارد شوید.</translation>
 <translation id="6583851739559471707">در سایت‌هایی که تمایل دارند آگهی‌های مزاحم نشان دهند مسدود شوند (توصیه می‌شود)</translation>
 <translation id="6584878029876017575">‏امضای دائمی Microsoft</translation>
 <translation id="6585234750898046415">تصویری انتخاب کنید تا برای حساب شما در صفحه ثبت‌نام نشان داده شود.</translation>
@@ -3797,6 +3806,7 @@
 <translation id="6610183966322615106">خطا در افزودن چاپگر</translation>
 <translation id="6610610633807698299">نشانی وب را وارد کنید...</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
+<translation id="6613452264606394692">با نشانک‌گذاری این صفحه، سریع به اینجا بازگردید</translation>
 <translation id="6615455863669487791">به من نشان بده</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> از <ph name="TOTAL_SIZE" /> کپی شد</translation>
 <translation id="661719348160586794">گذرواژه‌های ذخیره‌شده شما اینجا نمایان می‌شوند.</translation>
@@ -4602,6 +4612,7 @@
 <translation id="7876243839304621966">حذف همه</translation>
 <translation id="7877451762676714207">خطای سرور ناشناس. لطفاً دوباره سعی کنید یا با سرپرست سرور تماس بگیرید.</translation>
 <translation id="7877680364634660272">گشت</translation>
+<translation id="7878562273885520351">ممکن است گذرواژه‌تان درمعرض خطر باشد</translation>
 <translation id="7881483672146086348">مشاهده حساب</translation>
 <translation id="7881969471599061635">غیرفعال کردن زیرنویس</translation>
 <translation id="7882358943899516840">نوع ارائه‌دهنده</translation>
@@ -4690,6 +4701,7 @@
 فایل کلید خود را در جای امن نگه دارید. برای ایجاد نسخه‌های جدید برنامهٔ افزودنی خود به آن نیاز دارید.</translation>
 <translation id="799923393800005025">می‌تواند مشاهده کند</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
+<translation id="8001504501378762252">ممکن است سایتی گذرواژه‌تان را سرقت کرده باشد</translation>
 <translation id="8004582292198964060">مرورگر</translation>
 <translation id="8007030362289124303">باتری ضعیف است</translation>
 <translation id="8008356846765065031">اینترنت قطع است. لطفاً اتصال اینترنتتان را بررسی کنید.</translation>
@@ -4925,6 +4937,7 @@
 <translation id="8366396658833131068">اتصالتان به شبکه بازیابی شد. لطفاً شبکه دیگری را انتخاب کنید یا دکمه «ادامه» را در زیر فشار دهید تا برنامه کیوسکتان را راه‌اندازی کنید.</translation>
 <translation id="8366947248864804596">وقتی تلفنتان قفل نیست و همین اطراف است، برای باز کردن قفل، فقط آن را انتخاب کنید. در غیراین‌صورت، گذرواژه یا پینتان را وارد کنید.</translation>
 <translation id="8368859634510605990">&amp;باز کردن همه نشانک‌ها</translation>
+<translation id="8371695176452482769">اکنون صحبت کنید</translation>
 <translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="8373360586245335572">به همه سایت‌ها برای نمایش اعلان‌ها اجازه داده شود</translation>
 <translation id="8373553483208508744">بی‌صدا کردن برگه‌ها</translation>
@@ -5096,6 +5109,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> یا <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">تازه سازی اجباری این صفحه</translation>
 <translation id="8652139471850419555">شبکه‌های برگزیده</translation>
+<translation id="8652400352452647993">خطا در بسته‌بندی افزونه</translation>
 <translation id="8652487083013326477">دکمه رادیویی محدوده صفحه</translation>
 <translation id="8654151524613148204">فایل برای استفاده در رایانهٔ شما خیلی بزرگ است. متأسفیم.</translation>
 <translation id="8655295600908251630">کانال</translation>

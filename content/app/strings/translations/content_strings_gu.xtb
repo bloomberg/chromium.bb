@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">પ્રદેશ</translation>
 <translation id="1591562245178063882">આ મહિને</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
-<translation id="167575180612809735">વ્યસ્ત સૂચક</translation>
 <translation id="1729654308190250600">કૃપા કરીને એક બિન-ખાલી ઇમેઇલ સરનામું દાખલ કરો.</translation>
 <translation id="1758486001363313524">અન્ય...</translation>
 <translation id="1806710327868736751">ચેતવણી_સંવાદ</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">રિમોટ ઉપકરણ પર ચલાવો</translation>
 <translation id="1854180393107901205">કાસ્ટ કરવાનું રોકો</translation>
-<translation id="1880518467580572141">રૂપરેખા</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">સ્થિતિ</translation>
 <translation id="1938124657309484470">મૂલ્ય <ph name="MAXIMUM_DATE_OR_TIME" /> અથવા પહેલાંનું હોવું આવશ્યક છે.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="588258955323874662">પૂર્ણસ્ક્રીન</translation>
+<translation id="5888666972993069672">હવે <ph name="DEVICE_FRIENDLY_NAME" /> પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5966707198760109579">અઠવાડિયું</translation>
 <translation id="5987525920412732405">સ્પિન બટન</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="668171684555832681">અન્ય...</translation>
 <translation id="6692633176391053278">સ્ટેપર</translation>
-<translation id="6739588121953935928">આંકણી</translation>
 <translation id="6755330956360078551">ટૂલટીપ</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6820355525329141109">પ્લગિન લોડ કરી શક્યાં નથી.</translation>

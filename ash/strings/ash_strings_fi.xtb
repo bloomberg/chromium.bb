@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
-<translation id="164969095109328410">Chrome-laite</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
 <translation id="1698760176351776263">IPv6-osoite: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Suuren kontrastin tilan pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5170568018924773124">Näytä kansiossa</translation>
 <translation id="5207949376430453814">Korosta tekstikursori</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">Käytössä</translation>
 <translation id="5927132638760172455">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Palauta</translation>
 <translation id="595202126637698455">Tehokkuuden seuranta on käytössä</translation>
 <translation id="5958529069007801266">Valvottu käyttäjä</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Haku+L</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
 <translation id="7067196344162293536">Automaattinen kierto</translation>
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Vaihto+K</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Sallitaanko lukituksen avaaminen sormenjäljellä?</translation>

@@ -26,10 +26,10 @@
 <translation id="415767770115540173">आपल्या स्थानावर आधारित Chrome मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
 <translation id="4248297594476034182">आपल्या सर्व डिव्हाइसेसवर आपले टॅब प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
-<translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती विस्थापित करा:</translation>
+<translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून आपण साइन आउट करीत आहात. हे आपला Chrome डेटा या डीव्हाइस वरून हटवेल परंतु आपला डेटा आपल्या Google खात्यामध्ये असेल.</translation>
-<translation id="5389212809648216794">Google Chrome आपला कॅमेरा वापरू शकत नाही कारण दुसरा अनुप्रयोग सध्या तो वापरत आहे.</translation>
-<translation id="5566557026214762153">हा अनुप्रयोग वापरून, आपण Chrome च्या <ph name="BEGIN_LINK" />सेवा अटीं<ph name="END_LINK" /> ना सहमती देता.</translation>
+<translation id="5389212809648216794">Google Chrome आपला कॅमेरा वापरू शकत नाही कारण दुसरा अॅप्लिकेशन सध्या तो वापरत आहे.</translation>
+<translation id="5566557026214762153">हा अॅप्लिकेशन वापरून, आपण Chrome च्या <ph name="BEGIN_LINK" />सेवा अटीं<ph name="END_LINK" /> ना सहमती देता.</translation>
 <translation id="5639704535586432836">सेटिंग्ज &gt; गोपनीयता &gt; कॅमेरा &gt; Google Chrome उघडा आणि कॅमेरा चालू करा.</translation>
 <translation id="5642200033778930880">विभाजित दृश्य मोडमध्ये Google Chrome आपला कॅमेरा वापरू शकत नाही</translation>
 <translation id="5703130498371792817">Chrome चा आनंद घेत आहात? <ph name="BEGIN_LINK" />या अॅपला रेट करा<ph name="END_LINK" /></translation>
@@ -48,7 +48,7 @@
 <translation id="7437998757836447326">Chrome मधून साइन आउट करा</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
-<translation id="840168496893712993">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ते विस्थापित करून पहा.</translation>
+<translation id="840168496893712993">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ते अनइंस्टॉल करून पहा.</translation>
 <translation id="8459495907675268833">निवडलेला डेटा Chrome आणि संकालित केलेल्या डिव्हाइसेस मधून काढला गेला आहे. आपल्या Google खात्यामध्ये history.google.com येथे Google च्या इतर सेवांमधील शोध आणि क्रियाकलाप यासारख्या ब्राउझिंग इतिहासाची इतर स्वरूपे असू शकतात.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8606668294522778825">Google Chrome आपला ब्राउझिंग अनुभव सुधारण्यासाठी वेब सेवा वापरू शकते. आपण या सेवा वैकल्पिकपणे अक्षम करू शकता. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>

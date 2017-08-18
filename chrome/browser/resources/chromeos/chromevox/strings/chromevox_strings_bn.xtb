@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">পরবর্তী লাইন</translation>
 <translation id="3153024374267644603">ভাষ্য চালু করুন</translation>
+<translation id="3153928844647607688"><ph name="TABLENAME" /> সারণী, <ph name="TABLECOLS" /> দ্বারা <ph name="TABLEROWS" /></translation>
 <translation id="3155083529632865074">কোনো পূর্ববর্তী বোতাম নেই৷</translation>
 <translation id="3163593631834463955">ফাঁকা কলাম শিরোলেখ</translation>
 <translation id="316542773973815724">নেভিগেশন</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">ফর্ম</translation>
 <translation id="4597896406374528575">এপ্রিল</translation>
 <translation id="460018603901637538">প্রদর্শন শৈলী পাশাপাশি হিসেবে পরিবর্তন করুন।</translation>
+<translation id="4601367666219428522">সারণী <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">পরবর্তী কি টেপা উপেক্ষা করা হচ্ছে</translation>
 <translation id="461613135510474570">বাক্য</translation>
 <translation id="4647836961514597010">রঙ চয়নকারী</translation>
@@ -782,6 +784,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="820417203470636242">ফাঁকা কক্ষ৷</translation>
 <translation id="8215202828671303819">একাধিক নির্বাচন</translation>
 <translation id="8224171046658870249">ChromeVox Next এ পাল্টানো হয়েছে</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">পূর্ববর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
 <translation id="8278417001922463147">এর পূর্বে কোনো নিবন্ধ নেই৷</translation>
 <translation id="8283603667300770666">পরবর্তী ফর্ম ক্ষেত্র</translation>

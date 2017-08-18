@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Næste linje</translation>
 <translation id="3153024374267644603">Slå tale til</translation>
+<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> af <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Ingen tidligere knapper.</translation>
 <translation id="3163593631834463955">Tom kolonneoverskrift</translation>
 <translation id="316542773973815724">Navigation</translation>
@@ -405,6 +406,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4597532268155981612">formular</translation>
 <translation id="4597896406374528575">April</translation>
 <translation id="460018603901637538">Skift visningsformat til side om side.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorerer næste tastetryk</translation>
 <translation id="461613135510474570">Sætning</translation>
 <translation id="4647836961514597010">Farvevælger</translation>
@@ -782,6 +784,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="820417203470636242">Tom celle.</translation>
 <translation id="8215202828671303819">Valg af flere</translation>
 <translation id="8224171046658870249">Skiftet til ChromeVox Next</translation>
+<translation id="826991282343985864">r$1k$2</translation>
 <translation id="8276439074553447000">Gå til forrige element, der kan fokuseres på</translation>
 <translation id="8278417001922463147">Ingen tidligere artikel.</translation>
 <translation id="8283603667300770666">Næste formularfelt</translation>

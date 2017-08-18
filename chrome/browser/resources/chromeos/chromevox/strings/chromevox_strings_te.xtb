@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">తదుపరి పంక్తి</translation>
 <translation id="3153024374267644603">ప్రసంగాన్ని ఆన్ చేయండి</translation>
+<translation id="3153928844647607688">పట్టిక <ph name="TABLENAME" />, <ph name="TABLEROWS" /> X <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">మునుపటి బటన్ లేదు.</translation>
 <translation id="3163593631834463955">ఖాళీ నిలువు వరుస శీర్షిక</translation>
 <translation id="316542773973815724">నావిగేషన్</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">ఫారమ్</translation>
 <translation id="4597896406374528575">ఏప్రిల్</translation>
 <translation id="460018603901637538">ప్రదర్శన శైలిని ప్రక్కప్రక్కకు ఉండే ఎంపికకు మార్చండి.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">తదుపరి కీ ప్రెస్‌ను విస్మరిస్తోంది</translation>
 <translation id="461613135510474570">వాక్యం</translation>
 <translation id="4647836961514597010">రంగు ఎంపిక</translation>
@@ -782,6 +784,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="820417203470636242">ఖాళీ సెల్.</translation>
 <translation id="8215202828671303819">బహుళ ఎంపిక</translation>
 <translation id="8224171046658870249">ChromeVox Nextకి మార్చబడింది</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">మునుపటి ఫోకస్ చేయగల అంశానికి వెళ్లండి</translation>
 <translation id="8278417001922463147">మునుపటి కథనం లేదు.</translation>
 <translation id="8283603667300770666">తదుపరి ఫారమ్ ఫీల్డ్</translation>

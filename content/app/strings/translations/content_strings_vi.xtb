@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">khu vực</translation>
 <translation id="1591562245178063882">Tháng này</translation>
 <translation id="1637811476055996098">Chọn tệp</translation>
-<translation id="167575180612809735">chỉ báo bận</translation>
 <translation id="1729654308190250600">Vui lòng nhập địa chỉ email không trống.</translation>
 <translation id="1758486001363313524">Khác...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">SA/CH</translation>
 <translation id="1832974991323546415">phát trên thiết bị từ xa</translation>
 <translation id="1854180393107901205">Dừng truyền</translation>
-<translation id="1880518467580572141">đường viền</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">trạng thái</translation>
 <translation id="1938124657309484470">Giá trị phải là <ph name="MAXIMUM_DATE_OR_TIME" /> hoặc sớm hơn.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
+<translation id="5888666972993069672">Hiện đang truyền tới <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5966707198760109579">Tuần</translation>
 <translation id="5987525920412732405">nút quay tròn</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="668171684555832681">Khác...</translation>
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
-<translation id="6739588121953935928">thước</translation>
 <translation id="6755330956360078551">chú giải công cụ</translation>
 <translation id="6790428901817661496">Phát</translation>
 <translation id="6820355525329141109">Không thể tải plugin.</translation>

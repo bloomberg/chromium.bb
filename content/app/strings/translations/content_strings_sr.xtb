@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">Овај месец</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
-<translation id="167575180612809735">индикатор да је заузето</translation>
 <translation id="1729654308190250600">Унесите имејл адресу која није празна.</translation>
 <translation id="1758486001363313524">Друго...</translation>
 <translation id="1806710327868736751">дијалог обавештења</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">пре подне/по подне</translation>
 <translation id="1832974991323546415">пуштајте на удаљеном уређају</translation>
 <translation id="1854180393107901205">Заустави пребацивање</translation>
-<translation id="1880518467580572141">граница</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME" /> или старија.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Искључи звук</translation>
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="588258955323874662">Цеo екран</translation>
+<translation id="5888666972993069672">Тренутно се пребацује на <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="5966707198760109579">Недеља</translation>
 <translation id="5987525920412732405">дугме за промену вредности</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="668171684555832681">Друго...</translation>
 <translation id="6692633176391053278">контрола за промене у корацима</translation>
-<translation id="6739588121953935928">лењир</translation>
 <translation id="6755330956360078551">објашњење</translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6820355525329141109">Учитавање додатне компоненте није успело.</translation>

@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Sonraki Satır</translation>
 <translation id="3153024374267644603">Konuşma açık</translation>
+<translation id="3153928844647607688"><ph name="TABLENAME" /> tablosu, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Önceki düğme yok.</translation>
 <translation id="3163593631834463955">Boş sütun üst bilgisi</translation>
 <translation id="316542773973815724">Gezinme</translation>
@@ -404,6 +405,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">Nisan</translation>
 <translation id="460018603901637538">Görüntüleme stilini yan yana olarak değiştir.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Basılacak bir sonraki tuş yoksayılacak</translation>
 <translation id="461613135510474570">Cümle</translation>
 <translation id="4647836961514597010">Renk seçici</translation>
@@ -781,6 +783,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="820417203470636242">Boş hücre.</translation>
 <translation id="8215202828671303819">Çoklu seçim</translation>
 <translation id="8224171046658870249">ChromeVox Next'e geçildi</translation>
+<translation id="826991282343985864">sa$1sü$2</translation>
 <translation id="8276439074553447000">Odaklanabilir önceki öğeye atla</translation>
 <translation id="8278417001922463147">Önceki makale yok.</translation>
 <translation id="8283603667300770666">Sonraki form alanı</translation>

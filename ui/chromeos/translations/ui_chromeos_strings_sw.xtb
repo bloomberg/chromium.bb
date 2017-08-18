@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Kibodi ya Kifaroe</translation>
 <translation id="1646136617204068573">Kibodi ya Kihangari</translation>
 <translation id="164729547906544836">Kibodi ya Kitamil (itrans)</translation>
+<translation id="164969095109328410">Kifaa cha Chrome</translation>
 <translation id="1829129547161959350">Ngwini</translation>
 <translation id="184633654410729720">Kibodi ya Kithai (Kedmanee)</translation>
 <translation id="1921986354447415460">Kibodi ya Kituruki-F</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Kibodi ya Kikazakhi</translation>
 <translation id="2384596874640104496">Kibodi ya Kisinhala</translation>
 <translation id="2464079411014186876">Aiskrimu</translation>
+<translation id="2468402215065996499">Tamagochi</translation>
 <translation id="247772113373397749">Kibodi ya Lugha nyingi ya Kanada</translation>
 <translation id="2494837236724268445">Kibodi ya Gujarati (Fonetiki)</translation>
 <translation id="2529133382850673012">Kibodi ya Kimarekani</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Chura</translation>
 <translation id="2649120831653069427">Samakiupinde</translation>
 <translation id="2735698359135166290">Kibodi wastani ya Kiromania</translation>
-<translation id="2744450304594201174">Tamagochi</translation>
 <translation id="2771816809568414714">Jibini</translation>
 <translation id="2781645665747935084">Kibelgiji</translation>
 <translation id="2790805296069989825">Kibodi ya Kirusi</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">Lugha nyingi za Kanada</translation>
 <translation id="3241720467332021590">Kiairish</translation>
 <translation id="3252266817569339921">Kifaransa</translation>
+<translation id="3280987981688031357">Santuri</translation>
 <translation id="3296763833017966289">Kijiojia</translation>
 <translation id="3338239663705455570">Kibodi ya Kislovenia</translation>
 <translation id="3399597614303179694">Kibodi ya Kimasedonia</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">Kilithuania</translation>
 <translation id="3603385196401704894">Kifaransa cha Kanada</translation>
 <translation id="3606220979431771195">Kituruki-F</translation>
+<translation id="3619115746895587757">Kapuchino</translation>
 <translation id="3678559383040232393">Kibodi ya Kimalta</translation>
 <translation id="3801082500826908679">Kifaroe</translation>
 <translation id="3809272675881623365">Sungura</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Kandanda</translation>
 <translation id="497244430928947428">Kibodi ya Malayalam (Fonetiki)</translation>
 <translation id="498902553138568924">Kipepeo mwekundu</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Piza</translation>
 <translation id="5098629044894065541">Kiyahudi</translation>
 <translation id="5123433949759960244">Mpira wa kikapu</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Unukuzi wa mfumo wa kuandika (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Dvorak ya Marekani</translation>
 <translation id="5640179856859982418">Kibodi ya Kiswizi</translation>
-<translation id="5656201261327432370">Kapuchino</translation>
 <translation id="5756666464756035725">QWERTY ya Kihungaria</translation>
 <translation id="5771585441665576801">Unukuzi wa mfumo wa kuandika (geia → γεια)</translation>
 <translation id="5790193330357274855">Kikazakhi</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Seti ya Hangul 3 (Ya mwisho)</translation>
 <translation id="5838825566232597749">Kibodi ya US Workman ya kimataifa</translation>
 <translation id="5892290200158927959">Kibodi ya BEPO ya Kifaransa</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Kibodi ya Amerika Kusini</translation>
 <translation id="60357267506638014">QWERTY ya Kicheki</translation>
 <translation id="6054173164583630569">Kibodi ya Kifaransa</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Baiskeli</translation>
 <translation id="6878261347041253038">Kibodi ya Kidevanagari (Fonetiki)</translation>
 <translation id="6885780034956018177">Konokono</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Kibodi ya US Workman</translation>
 <translation id="6935521024859866267">Juu Chini</translation>
 <translation id="6937152069980083337">Ingizo la Kijapani la Google (kwa kibodi ya Marekani)</translation>
 <translation id="6939777852457331078">Kibodi ya US Workman</translation>
 <translation id="6970230597523682626">Kibulgaria</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Unukuzi wa mfumo wa kuandika (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Kibodi ya Kiestoni</translation>
 <translation id="719009910964971313">Kibodi ya Programmer Dvorak, Marekani</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Seti ya Hangul 3 (Hakuna Shift)</translation>
 <translation id="8299269255470343364">Kijapani</translation>
 <translation id="8336579025507394412">Kibodi ya Kiayalandi</translation>
-<translation id="8391218455464584335">Ngozi ya plastiki</translation>
 <translation id="8391950649760071442">Unukuzi wa mfumo wa kuandika (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Mbinu ya kuingiza data ya Quick</translation>
 <translation id="8418113698656761985">Kibodi ya Kiromania</translation>

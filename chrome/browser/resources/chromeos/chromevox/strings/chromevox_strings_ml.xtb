@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">അടുത്ത വരി</translation>
 <translation id="3153024374267644603">സംഭാഷണം ഓണാക്കുക</translation>
+<translation id="3153928844647607688">പട്ടിക <ph name="TABLENAME" />, <ph name="TABLECOLS" />-ൽ <ph name="TABLEROWS" /></translation>
 <translation id="3155083529632865074">മുൻ ബട്ടൺ ഒന്നുമില്ല.</translation>
 <translation id="3163593631834463955">ശൂന്യമായ നിര ശീർഷകം</translation>
 <translation id="316542773973815724">നാവിഗേഷൻ</translation>
@@ -404,6 +405,7 @@
 <translation id="4597532268155981612">ഫോം</translation>
 <translation id="4597896406374528575">ഏപ്രിൽ</translation>
 <translation id="460018603901637538">ഡിസ്‌പ്ലേ ശൈലിയെ വശങ്ങളിൽ കാണിക്കുന്ന രീതിയിലേക്ക് മാറ്റുക.</translation>
+<translation id="4601367666219428522">പട്ടിക <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">അടുത്ത കീ അമർത്തുന്നത് ഒഴിവാക്കുന്നു</translation>
 <translation id="461613135510474570">വാക്യം</translation>
 <translation id="4647836961514597010">വർണ്ണ പിക്കർ</translation>
@@ -781,6 +783,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="820417203470636242">ശൂന്യ സെൽ.</translation>
 <translation id="8215202828671303819">ഒന്നിലധികം തിരഞ്ഞെടുക്കൽ</translation>
 <translation id="8224171046658870249">ChromeVox Next-ലേക്ക് മാറി</translation>
+<translation id="826991282343985864">വ$1നി$2</translation>
 <translation id="8276439074553447000">ഫോക്കസ് ചെയ്യാനാകുന്ന മുമ്പത്തെ ഇനത്തിലേക്ക് പോകുക</translation>
 <translation id="8278417001922463147">മുമ്പത്തെ ലേഖനമൊന്നുമില്ല.</translation>
 <translation id="8283603667300770666">അടുത്ത ഫോം ഫീൽഡ്</translation>
