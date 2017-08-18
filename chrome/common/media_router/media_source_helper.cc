@@ -32,8 +32,8 @@ constexpr char kCastPresentationUrlPath[] = "/cast";
 constexpr char kAutoJoinPresentationId[] = "auto-join";
 
 // List of non-http(s) schemes that are allowed in a Presentation URL.
-constexpr std::array<const char* const, 4> kAllowedSchemes{
-    {"cast", "dial", "remote-playback", "test"}};
+constexpr std::array<const char* const, 5> kAllowedSchemes{
+    {"cast", "cast-dial", "dial", "remote-playback", "test"}};
 
 bool IsSchemeAllowed(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() ||
