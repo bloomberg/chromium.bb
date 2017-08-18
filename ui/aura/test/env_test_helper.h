@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/env.h"
+#include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/input_state_lookup.h"
 
 namespace aura {
@@ -28,6 +29,8 @@ class EnvTestHelper {
   void ResetEventState() {
     env_->mouse_button_flags_ = 0;
     env_->is_touch_down_ = false;
+    env_->last_mouse_location_ = gfx::Point();
+    env_->env_controller_->touch_ids_down_ = 0;
   }
 
   void SetMode(Env::Mode mode) {
