@@ -9,6 +9,6 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 class MapsExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('Maps.maps_001',
+    # self.Fail('Maps.maps',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
     pass

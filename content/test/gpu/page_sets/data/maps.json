@@ -1,8 +1,0 @@
-{
-    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
-    "archives": {
-        "maps_004.wpr.updated": [
-            "http://map-test/performance.html"
-        ]
-    }
-}
