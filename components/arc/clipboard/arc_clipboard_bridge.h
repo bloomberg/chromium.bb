@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "components/arc/common/clipboard.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -23,6 +25,7 @@ class ArcBridgeService;
 
 class ArcClipboardBridge
     : public KeyedService,
+      public ui::ClipboardObserver,
       public InstanceHolder<mojom::ClipboardInstance>::Observer,
       public mojom::ClipboardHost {
  public:
@@ -38,15 +41,22 @@ class ArcClipboardBridge
   // InstanceHolder<mojom::ClipboardInstance>::Observer overrides.
   void OnInstanceReady() override;
 
+  // ClipboardObserver overrides.
+  void OnClipboardDataChanged() override;
+
   // mojom::ClipboardHost overrides.
-  void SetTextContent(const std::string& text) override;
-  void GetTextContent() override;
+  void SetTextContentDeprecated(const std::string& text) override;
+  void GetTextContentDeprecated() override;
+  void SetClipContent(mojom::ClipDataPtr clip_data) override;
+  void GetClipContent(const GetClipContentCallback& callback) override;
 
  private:
-  THREAD_CHECKER(thread_checker_);
-
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::ClipboardHost> binding_;
+
+  bool event_originated_at_instance_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ArcClipboardBridge);
 };
