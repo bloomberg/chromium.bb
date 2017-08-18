@@ -2739,6 +2739,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
           (!is_inter && ext_tx_used_intra[ext_tx_set][tx_type])) {
         rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type,
                       rect_tx_size);
+        ref_best_rd = AOMMIN(rd, ref_best_rd);
         if (rd < best_rd) {
 #if CONFIG_TXK_SEL
           memcpy(best_txk_type, mbmi->txk_type, sizeof(best_txk_type[0]) * 256);
@@ -2845,6 +2846,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
         break;
 
       last_rd = rd;
+      ref_best_rd = AOMMIN(rd, ref_best_rd);
       if (rd < best_rd) {
 #if CONFIG_TXK_SEL
         memcpy(best_txk_type, mbmi->txk_type, sizeof(best_txk_type[0]) * 256);
@@ -5274,7 +5276,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
     rd = select_tx_size_fix_type(cpi, x, &this_rd_stats, bsize, ref_best_rd,
                                  tx_type, rd_stats_stack);
-
+    ref_best_rd = AOMMIN(rd, ref_best_rd);
     if (rd < best_rd) {
       best_rd = rd;
       *rd_stats = this_rd_stats;
