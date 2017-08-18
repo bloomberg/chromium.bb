@@ -56,6 +56,8 @@ class MEDIA_EXPORT AudioRendererImpl
       public base::PowerObserver,
       public AudioRendererSink::RenderCallback {
  public:
+  using PlayDelayCBForTesting = base::RepeatingCallback<void(base::TimeDelta)>;
+
   // |task_runner| is the thread on which AudioRendererImpl will execute.
   //
   // |sink| is used as the destination for the rendered audio.
@@ -92,9 +94,10 @@ class MEDIA_EXPORT AudioRendererImpl
   void OnSuspend() override;
   void OnResume() override;
 
+  void SetPlayDelayCBForTesting(PlayDelayCBForTesting cb);
+
  private:
   friend class AudioRendererImplTest;
-  friend class PipelineIntegrationTestBase;  // For |first_packet_timestamp_|.
 
   // Important detail: being in kPlaying doesn't imply that audio is being
   // rendered. Rather, it means that the renderer is ready to go. The actual
@@ -316,6 +319,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Set by OnSuspend() and OnResume() to indicate when the system is about to
   // suspend/is suspended and when it resumes.
   bool is_suspending_;
+
+  // Set and used only in tests to report positive play_delay values in
+  // Render().
+  PlayDelayCBForTesting play_delay_cb_for_testing_;
 
   // End variables which must be accessed under |lock_|. ----------------------
 

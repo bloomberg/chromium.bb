@@ -591,6 +591,11 @@ void AudioRendererImpl::OnResume() {
   is_suspending_ = false;
 }
 
+void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
+  DCHECK_EQ(state_, kUninitialized);
+  play_delay_cb_for_testing_ = std::move(cb);
+}
+
 void AudioRendererImpl::DecodedAudioReady(
     AudioBufferStream::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
@@ -869,6 +874,9 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
           first_packet_timestamp_ - audio_clock_->back_timestamp();
       if (play_delay > base::TimeDelta()) {
         DCHECK_EQ(frames_written, 0);
+
+        if (!play_delay_cb_for_testing_.is_null())
+          play_delay_cb_for_testing_.Run(play_delay);
 
         // Don't multiply |play_delay| out since it can be a huge value on
         // poorly encoded media and multiplying by the sample rate could cause
