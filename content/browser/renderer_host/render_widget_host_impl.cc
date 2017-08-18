@@ -1164,7 +1164,8 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     const blink::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& latency) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
+  TRACE_EVENT1("input", "RenderWidgetHostImpl::ForwardGestureEvent", "type",
+               WebInputEvent::GetName(gesture_event.GetType()));
   // Early out if necessary, prior to performing latency logic.
   if (ShouldDropInputEvents())
     return;
