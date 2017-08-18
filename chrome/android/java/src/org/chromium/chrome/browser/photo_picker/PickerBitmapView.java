@@ -340,6 +340,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
                 fgColorId = R.color.photo_picker_special_tile_disabled_color;
             }
 
+            setEnabled(!anySelection);
             mSpecialTileLabel.setTextColor(ApiCompatibilityUtils.getColor(resources, fgColorId));
             Drawable drawable = mSpecialTileIcon.getDrawable();
             int color = ApiCompatibilityUtils.getColor(resources, fgColorId);
