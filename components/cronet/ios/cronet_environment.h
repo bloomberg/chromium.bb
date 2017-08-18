@@ -121,6 +121,9 @@ class CronetEnvironment {
   // Performs initialization tasks that must happen on the network thread.
   void InitializeOnNetworkThread();
 
+  // Returns the task runner for the network thread.
+  base::SingleThreadTaskRunner* GetNetworkThreadTaskRunner();
+
   // Runs a closure on the network thread.
   void PostToNetworkThread(const tracked_objects::Location& from_here,
                            const base::Closure& task);

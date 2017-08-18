@@ -13,5 +13,6 @@ source_set("global_state") {
   sources = [
     "ios_global_state.h",
     "ios_global_state.mm",
+    "ios_global_state_configuration.h",
   ]
 }
