@@ -2302,7 +2302,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int tmp_width[MAX_MB_PLANE],
                                          int tmp_height[MAX_MB_PLANE],
                                          int tmp_stride[MAX_MB_PLANE]) {
-  if (mi_row <= xd->tile.mi_row_start) return;
+  if (!xd->up_available) return;
 
   // Adjust mb_to_bottom_edge to have the correct value for the OBMC
   // prediction block. This is half the height of the original block,
@@ -2402,7 +2402,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int tmp_width[MAX_MB_PLANE],
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]) {
-  if (mi_col <= xd->tile.mi_col_start) return;
+  if (!xd->left_available) return;
 
   // Adjust mb_to_right_edge to have the correct value for the OBMC
   // prediction block. This is half the width of the original block,
