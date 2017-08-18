@@ -68,7 +68,9 @@ void ParamTraits<cc::FilterOperation>::GetSize(base::PickleSizer* s,
       GetParamSize(s, p.image_filter());
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
-      NOTREACHED();
+      GetParamSize(s, p.amount());
+      GetParamSize(s, p.outer_threshold());
+      GetParamSize(s, p.shape());
       break;
   }
 }
@@ -111,7 +113,9 @@ void ParamTraits<cc::FilterOperation>::Write(base::Pickle* m,
       WriteParam(m, p.image_filter());
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
-      NOTREACHED();
+      WriteParam(m, p.amount());
+      WriteParam(m, p.outer_threshold());
+      WriteParam(m, p.shape());
       break;
   }
 }
@@ -123,9 +127,11 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
                "ParamTraits::FilterOperation::Read");
   cc::FilterOperation::FilterType type;
   float amount;
+  float outer_threshold;
   gfx::Point drop_shadow_offset;
   SkColor drop_shadow_color;
   SkScalar matrix[20];
+  cc::FilterOperation::ShapeRects shape;
   int zoom_inset;
   SkBlurImageFilter::TileMode tile_mode;
 
@@ -197,6 +203,14 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
       break;
     }
     case cc::FilterOperation::ALPHA_THRESHOLD:
+      if (ReadParam(m, iter, &amount) && ReadParam(m, iter, &outer_threshold) &&
+          ReadParam(m, iter, &shape) && amount >= 0.f &&
+          outer_threshold >= 0.f) {
+        r->set_amount(amount);
+        r->set_outer_threshold(amount);
+        r->set_shape(shape);
+        success = true;
+      }
       break;
   }
   return success;
@@ -248,7 +262,11 @@ void ParamTraits<cc::FilterOperation>::Log(const param_type& p,
       LogParam(p.image_filter(), l);
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
-      NOTREACHED();
+      LogParam(p.amount(), l);
+      l->append(", ");
+      LogParam(p.outer_threshold(), l);
+      l->append(", ");
+      LogParam(p.shape(), l);
       break;
   }
   l->append(")");

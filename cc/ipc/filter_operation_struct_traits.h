@@ -45,7 +45,6 @@ cc::mojom::FilterType CCFilterTypeToMojo(
     case cc::FilterOperation::SATURATING_BRIGHTNESS:
       return cc::mojom::FilterType::SATURATING_BRIGHTNESS;
     case cc::FilterOperation::ALPHA_THRESHOLD:
-      NOTREACHED();
       return cc::mojom::FilterType::ALPHA_THRESHOLD;
   }
   NOTREACHED();
@@ -84,7 +83,6 @@ cc::FilterOperation::FilterType MojoFilterTypeToCC(
     case cc::mojom::FilterType::SATURATING_BRIGHTNESS:
       return cc::FilterOperation::SATURATING_BRIGHTNESS;
     case cc::mojom::FilterType::ALPHA_THRESHOLD:
-      NOTREACHED();
       return cc::FilterOperation::ALPHA_THRESHOLD;
   }
   NOTREACHED();
@@ -105,6 +103,12 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
       return 0.f;
     }
     return operation.amount();
+  }
+
+  static float outer_threshold(const cc::FilterOperation& operation) {
+    if (operation.type() != cc::FilterOperation::ALPHA_THRESHOLD)
+      return 0.f;
+    return operation.outer_threshold();
   }
 
   static gfx::Point drop_shadow_offset(const cc::FilterOperation& operation) {
@@ -130,6 +134,13 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
     if (operation.type() != cc::FilterOperation::COLOR_MATRIX)
       return ConstCArray<float>();
     return ConstCArray<float>(operation.matrix());
+  }
+
+  static ConstCArray<gfx::Rect> shape(const cc::FilterOperation& operation) {
+    if (operation.type() != cc::FilterOperation::ALPHA_THRESHOLD)
+      return ConstCArray<gfx::Rect>();
+    return ConstCArray<gfx::Rect>(operation.shape().data(),
+                                  operation.shape().size());
   }
 
   static int32_t zoom_inset(const cc::FilterOperation& operation) {
@@ -202,8 +213,13 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
         return true;
       }
       case cc::FilterOperation::ALPHA_THRESHOLD:
-        // TODO(fsamuel): We cannot serialize this type.
-        return false;
+        out->set_amount(data.amount());
+        out->set_outer_threshold(data.outer_threshold());
+        cc::FilterOperation::ShapeRects shape;
+        if (!data.ReadShape(&shape))
+          return false;
+        out->set_shape(shape);
+        return true;
     }
     return false;
   }

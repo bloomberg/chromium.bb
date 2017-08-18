@@ -24,7 +24,6 @@
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_delegate.h"
 #include "ui/compositor/layer_delegate.h"
@@ -68,6 +67,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                 public cc::TextureLayerClient,
                                 public cc::LayerClient {
  public:
+  using ShapeRects = std::vector<gfx::Rect>;
   Layer();
   explicit Layer(LayerType type);
   ~Layer() override;
@@ -235,8 +235,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetBackgroundZoom(float zoom, int inset);
 
   // Set the shape of this layer.
-  SkRegion* alpha_shape() const { return alpha_shape_.get(); }
-  void SetAlphaShape(std::unique_ptr<SkRegion> region);
+  const ShapeRects* alpha_shape() const { return alpha_shape_.get(); }
+  void SetAlphaShape(std::unique_ptr<ShapeRects> shape);
 
   // Invert the layer.
   bool layer_inverted() const { return layer_inverted_; }
@@ -555,7 +555,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   int zoom_inset_;
 
   // Shape of the window.
-  std::unique_ptr<SkRegion> alpha_shape_;
+  std::unique_ptr<ShapeRects> alpha_shape_;
 
   std::string name_;
 

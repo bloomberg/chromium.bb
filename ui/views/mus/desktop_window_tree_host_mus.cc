@@ -539,7 +539,7 @@ gfx::Rect DesktopWindowTreeHostMus::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopWindowTreeHostMus::SetShape(
-    std::unique_ptr<SkRegion> native_region) {
+    std::unique_ptr<Widget::ShapeRects> native_shape) {
   NOTIMPLEMENTED();
 }
 

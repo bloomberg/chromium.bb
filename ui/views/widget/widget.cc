@@ -567,7 +567,7 @@ void Widget::StackAtTop() {
   native_widget_->StackAtTop();
 }
 
-void Widget::SetShape(std::unique_ptr<SkRegion> shape) {
+void Widget::SetShape(std::unique_ptr<ShapeRects> shape) {
   native_widget_->SetShape(std::move(shape));
 }
 

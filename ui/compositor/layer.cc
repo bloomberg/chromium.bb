@@ -184,7 +184,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetLayerInverted(layer_inverted_);
   clone->SetLayerBlur(layer_blur_sigma_);
   if (alpha_shape_)
-    clone->SetAlphaShape(base::MakeUnique<SkRegion>(*alpha_shape_));
+    clone->SetAlphaShape(base::MakeUnique<ShapeRects>(*alpha_shape_));
 
   // cc::Layer state.
   if (surface_layer_) {
@@ -479,8 +479,8 @@ void Layer::SetBackgroundZoom(float zoom, int inset) {
   SetLayerBackgroundFilters();
 }
 
-void Layer::SetAlphaShape(std::unique_ptr<SkRegion> region) {
-  alpha_shape_ = std::move(region);
+void Layer::SetAlphaShape(std::unique_ptr<ShapeRects> shape) {
+  alpha_shape_ = std::move(shape);
 
   SetLayerFilters();
 }
