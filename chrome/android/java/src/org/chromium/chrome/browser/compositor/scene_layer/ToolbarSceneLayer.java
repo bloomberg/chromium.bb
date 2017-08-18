@@ -9,7 +9,6 @@ import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout.ViewportMode;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
@@ -157,8 +156,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         }
 
         boolean useModernDesign = fullscreenManager.areBrowserControlsAtBottom()
-                && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
+                && FeatureUtilities.isChromeHomeModernEnabled();
 
         // In the modern design, the url bar is always drawn in the Java layer rather than the
         // compositor layer.

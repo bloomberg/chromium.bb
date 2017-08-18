@@ -25,7 +25,6 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -571,7 +570,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
 
-        mUseModernDesign = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
+        mUseModernDesign = FeatureUtilities.isChromeHomeModernEnabled();
         mUseToolbarHandle = !FeatureUtilities.isChromeHomeExpandButtonEnabled();
 
         if (!mUseToolbarHandle) {

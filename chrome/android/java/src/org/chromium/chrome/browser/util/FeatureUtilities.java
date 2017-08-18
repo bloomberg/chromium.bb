@@ -316,6 +316,15 @@ public class FeatureUtilities {
         return sChromeHomeSwipeLogicType;
     }
 
+    /**
+     * @return Whether or not the Chrome Home Modern layout is enabled.
+     */
+    public static boolean isChromeHomeModernEnabled() {
+        if (!isChromeHomeEnabled()) return false;
+        if (!ChromeFeatureList.isInitialized()) return false;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
