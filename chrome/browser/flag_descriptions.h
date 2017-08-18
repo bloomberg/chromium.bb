@@ -1332,6 +1332,9 @@ extern const char kAllowTouchpadThreeFingerClickDescription[];
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];
 
+extern const char kArcNativeBridgeExperimentName[];
+extern const char kArcNativeBridgeExperimentDescription[];
+
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 

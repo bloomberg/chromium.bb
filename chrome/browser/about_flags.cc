@@ -2758,6 +2758,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
+    {"arc-native-bridge-experiment",
+     flag_descriptions::kArcNativeBridgeExperimentName,
+     flag_descriptions::kArcNativeBridgeExperimentDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kNativeBridgeExperimentFeature)},
 #endif  // OS_CHROMEOS
     {"enable-generic-sensor", flag_descriptions::kEnableGenericSensorName,
      flag_descriptions::kEnableGenericSensorDescription, kOsAll,
