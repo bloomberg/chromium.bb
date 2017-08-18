@@ -53,7 +53,7 @@ namespace libgtkui {
 class SelectFileDialogImplKDE : public SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
-                          ui::SelectFilePolicy* policy,
+                          std::unique_ptr<ui::SelectFilePolicy> policy,
                           base::nix::DesktopEnvironment desktop);
 
  protected:
@@ -198,16 +198,16 @@ bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
 // static
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
     Listener* listener,
-    ui::SelectFilePolicy* policy,
+    std::unique_ptr<ui::SelectFilePolicy> policy,
     base::nix::DesktopEnvironment desktop) {
-  return new SelectFileDialogImplKDE(listener, policy, desktop);
+  return new SelectFileDialogImplKDE(listener, std::move(policy), desktop);
 }
 
 SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     Listener* listener,
-    ui::SelectFilePolicy* policy,
+    std::unique_ptr<ui::SelectFilePolicy> policy,
     base::nix::DesktopEnvironment desktop)
-    : SelectFileDialogImpl(listener, policy),
+    : SelectFileDialogImpl(listener, std::move(policy)),
       desktop_(desktop),
       pipe_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,

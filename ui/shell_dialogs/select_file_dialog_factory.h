@@ -9,6 +9,7 @@
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
+
 class SelectFilePolicy;
 
 // Some chrome components want to create their own SelectFileDialog objects
@@ -20,8 +21,9 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogFactory {
  public:
   virtual ~SelectFileDialogFactory();
 
-  virtual SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                                   ui::SelectFilePolicy* policy) = 0;
+  virtual SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) = 0;
 };
 
 }  // namespace ui

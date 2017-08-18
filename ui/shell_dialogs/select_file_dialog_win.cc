@@ -31,6 +31,7 @@
 #include "ui/base/win/open_file_name_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -163,7 +164,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
  public:
   SelectFileDialogImpl(
       Listener* listener,
-      ui::SelectFilePolicy* policy,
+      std::unique_ptr<ui::SelectFilePolicy> policy,
       const base::Callback<bool(OPENFILENAME*)>& get_open_file_name_impl,
       const base::Callback<bool(OPENFILENAME*)>& get_save_file_name_impl);
 
@@ -306,15 +307,14 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
 
 SelectFileDialogImpl::SelectFileDialogImpl(
     Listener* listener,
-    ui::SelectFilePolicy* policy,
+    std::unique_ptr<ui::SelectFilePolicy> policy,
     const base::Callback<bool(OPENFILENAME*)>& get_open_file_name_impl,
     const base::Callback<bool(OPENFILENAME*)>& get_save_file_name_impl)
-    : SelectFileDialog(listener, policy),
+    : SelectFileDialog(listener, std::move(policy)),
       BaseShellDialogImpl(),
       has_multiple_file_type_choices_(false),
       get_open_file_name_impl_(get_open_file_name_impl),
-      get_save_file_name_impl_(get_save_file_name_impl) {
-}
+      get_save_file_name_impl_(get_save_file_name_impl) {}
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
 }
@@ -701,17 +701,18 @@ std::wstring AppendExtensionIfNeeded(
 
 SelectFileDialog* CreateWinSelectFileDialog(
     SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy,
+    std::unique_ptr<SelectFilePolicy> policy,
     const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl,
     const base::Callback<bool(OPENFILENAME* ofn)>& get_save_file_name_impl) {
-  return new SelectFileDialogImpl(
-      listener, policy, get_open_file_name_impl, get_save_file_name_impl);
+  return new SelectFileDialogImpl(listener, std::move(policy),
+                                  get_open_file_name_impl,
+                                  get_save_file_name_impl);
 }
 
-SelectFileDialog* CreateSelectFileDialog(SelectFileDialog::Listener* listener,
-                                         SelectFilePolicy* policy) {
-  return CreateWinSelectFileDialog(listener,
-                                   policy,
+SelectFileDialog* CreateSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    std::unique_ptr<SelectFilePolicy> policy) {
+  return CreateWinSelectFileDialog(listener, std::move(policy),
                                    base::Bind(&CallBuiltinGetOpenFileName),
                                    base::Bind(&CallBuiltinGetSaveFileName));
 }

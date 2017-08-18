@@ -49,7 +49,7 @@ EntryPicker::EntryPicker(EntryPickerClient* client,
   }
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents));
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
 
   gfx::NativeWindow owning_window = web_contents ?
       platform_util::GetTopLevel(web_contents->GetNativeView()) :

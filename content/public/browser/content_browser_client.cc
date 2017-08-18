@@ -26,6 +26,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -372,9 +373,9 @@ std::unique_ptr<VpnServiceProxy> ContentBrowserClient::GetVpnServiceProxy(
   return nullptr;
 }
 
-ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
-    WebContents* web_contents) {
-  return nullptr;
+std::unique_ptr<ui::SelectFilePolicy>
+ContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
+  return std::unique_ptr<ui::SelectFilePolicy>();
 }
 
 DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {

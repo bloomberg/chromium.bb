@@ -14,6 +14,7 @@
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
+
 class SelectFilePolicy;
 
 // Implementation detail exported for unit tests.
@@ -24,7 +25,7 @@ SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
 
 SHELL_DIALOGS_EXPORT SelectFileDialog* CreateWinSelectFileDialog(
     SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy,
+    std::unique_ptr<SelectFilePolicy> policy,
     const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl,
     const base::Callback<bool(OPENFILENAME* ofn)>& get_save_file_name_impl);
 

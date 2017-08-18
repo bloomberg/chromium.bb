@@ -31,7 +31,7 @@ class SHELL_DIALOGS_EXPORT ShellDialogLinux {
   // Returns a native file selection dialog.
   virtual SelectFileDialog* CreateSelectFileDialog(
       SelectFileDialog::Listener* listener,
-      SelectFilePolicy* policy) const = 0;
+      std::unique_ptr<SelectFilePolicy> policy) const = 0;
 };
 
 }  // namespace ui

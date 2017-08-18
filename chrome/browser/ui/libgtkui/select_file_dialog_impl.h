@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
@@ -24,17 +25,18 @@ namespace libgtkui {
 class SelectFileDialogImpl : public ui::SelectFileDialog {
  public:
   // Main factory method which returns correct type.
-  static ui::SelectFileDialog* Create(Listener* listener,
-                                      ui::SelectFilePolicy* policy);
+  static ui::SelectFileDialog* Create(
+      Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy);
 
   // Factory method for creating a GTK-styled SelectFileDialogImpl
   static SelectFileDialogImpl* NewSelectFileDialogImplGTK(
       Listener* listener,
-      ui::SelectFilePolicy* policy);
+      std::unique_ptr<ui::SelectFilePolicy> policy);
   // Factory method for creating a KDE-styled SelectFileDialogImpl
   static SelectFileDialogImpl* NewSelectFileDialogImplKDE(
       Listener* listener,
-      ui::SelectFilePolicy* policy,
+      std::unique_ptr<ui::SelectFilePolicy> policy,
       base::nix::DesktopEnvironment desktop);
 
   // Returns true if the SelectFileDialog class returned by
@@ -46,7 +48,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
 
  protected:
   explicit SelectFileDialogImpl(Listener* listener,
-                                ui::SelectFilePolicy* policy);
+                                std::unique_ptr<ui::SelectFilePolicy> policy);
   ~SelectFileDialogImpl() override;
 
   // SelectFileDialog implementation.

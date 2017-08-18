@@ -20,6 +20,7 @@
 #include "ppapi/shared_impl/test_utils.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(FULL_SAFE_BROWSING)
@@ -53,19 +54,21 @@ class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
   }
 
   // SelectFileDialogFactory
-  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                               ui::SelectFilePolicy* policy) override {
-    return new SelectFileDialog(listener, policy, selected_file_info_, mode_);
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    return new SelectFileDialog(listener, std::move(policy),
+                                selected_file_info_, mode_);
   }
 
  private:
   class SelectFileDialog : public ui::SelectFileDialog {
    public:
     SelectFileDialog(Listener* listener,
-                     ui::SelectFilePolicy* policy,
+                     std::unique_ptr<ui::SelectFilePolicy> policy,
                      const SelectedFileInfoList& selected_file_info,
                      Mode mode)
-        : ui::SelectFileDialog(listener, policy),
+        : ui::SelectFileDialog(listener, std::move(policy)),
           selected_file_info_(selected_file_info),
           mode_(mode) {}
 

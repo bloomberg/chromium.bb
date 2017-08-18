@@ -25,7 +25,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
  public:
   explicit FilePicker(BrowserWindow* window) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(nullptr));
+        this, std::make_unique<ChromeSelectFilePolicy>(nullptr));
 
     gfx::NativeWindow parent_window = window->GetNativeWindow();
     ui::SelectFileDialog::FileTypeInfo file_types;

@@ -141,7 +141,8 @@ void ChangePictureHandler::SendDefaultImages() {
 void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
   DCHECK(args && args->empty());
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
 
   base::FilePath downloads_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {

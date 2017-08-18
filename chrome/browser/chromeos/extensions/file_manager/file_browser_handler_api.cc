@@ -206,7 +206,7 @@ bool FileSelectorImpl::StartSelectFile(
     return false;
 
   dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents));
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
 
   // Convert |allowed_extensions| to ui::SelectFileDialog::FileTypeInfo.
   ui::SelectFileDialog::FileTypeInfo allowed_file_info =

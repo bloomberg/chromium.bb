@@ -17,7 +17,8 @@ namespace libgtkui {
 class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                 public aura::WindowObserver {
  public:
-  SelectFileDialogImplGTK(Listener* listener, ui::SelectFilePolicy* policy);
+  SelectFileDialogImplGTK(Listener* listener,
+                          std::unique_ptr<ui::SelectFilePolicy> policy);
 
  protected:
   ~SelectFileDialogImplGTK() override;

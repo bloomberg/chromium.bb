@@ -55,6 +55,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -748,8 +749,8 @@ void GtkUi::GetDefaultFontDescription(std::string* family_out,
 
 ui::SelectFileDialog* GtkUi::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
-    ui::SelectFilePolicy* policy) const {
-  return SelectFileDialogImpl::Create(listener, policy);
+    std::unique_ptr<ui::SelectFilePolicy> policy) const {
+  return SelectFileDialogImpl::Create(listener, std::move(policy));
 }
 
 bool GtkUi::UnityIsRunning() {

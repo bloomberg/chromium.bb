@@ -241,7 +241,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                      const GURL& url) override;
   std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context) override;
-  ui::SelectFilePolicy* CreateSelectFilePolicy(
+  std::unique_ptr<ui::SelectFilePolicy> CreateSelectFilePolicy(
       content::WebContents* web_contents) override;
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) override;

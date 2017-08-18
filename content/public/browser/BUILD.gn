@@ -333,6 +333,7 @@ source_set("browser_sources") {
     "//ui/base",
     "//ui/events",
     "//ui/gl",
+    "//ui/shell_dialogs",
     "//ui/surface",
   ]
 

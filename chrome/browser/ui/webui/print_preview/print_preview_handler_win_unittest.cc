@@ -20,6 +20,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 using content::WebContents;
 

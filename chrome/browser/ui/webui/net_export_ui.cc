@@ -374,7 +374,7 @@ void NetExportMessageHandler::ShowSelectFileDialog(
   WebContents* webcontents = web_ui()->GetWebContents();
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(webcontents));
+      this, std::make_unique<ChromeSelectFilePolicy>(webcontents));
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
   gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();

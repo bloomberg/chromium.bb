@@ -217,7 +217,7 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
       : web_contents_(web_contents),
         callback_(callback) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(web_contents));
+        this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   }
 
   void Show(const base::FilePath& default_path) {

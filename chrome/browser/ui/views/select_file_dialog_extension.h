@@ -41,7 +41,7 @@ class SelectFileDialogExtension
 
   static SelectFileDialogExtension* Create(
       ui::SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy);
+      std::unique_ptr<ui::SelectFilePolicy> policy);
 
   // BaseShellDialog implementation.
   bool IsRunning(gfx::NativeWindow owner_window) const override;
@@ -80,8 +80,9 @@ class SelectFileDialogExtension
   friend class SelectFileDialogExtensionTest;
 
   // Object is ref-counted, use Create().
-  explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener,
-                                     ui::SelectFilePolicy* policy);
+  explicit SelectFileDialogExtension(
+      SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy);
   ~SelectFileDialogExtension() override;
 
   // Invokes the appropriate file selection callback on our listener.

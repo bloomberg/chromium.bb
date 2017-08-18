@@ -83,7 +83,8 @@ void DownloadsHandler::HandleSelectDownloadLocation(
     const base::ListValue* args) {
   PrefService* pref_service = profile_->GetPrefs();
   select_folder_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   ui::SelectFileDialog::FileTypeInfo info;
   info.allowed_paths = ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
   select_folder_dialog_->SelectFile(

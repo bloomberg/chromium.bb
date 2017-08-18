@@ -41,7 +41,7 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
   void StartFileSelection() {
     CHECK(!select_file_dialog_.get());
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(NULL));
+        this, std::make_unique<ChromeSelectFilePolicy>(nullptr));
 
     const base::FilePath file_path;
     const base::string16 title = base::string16();

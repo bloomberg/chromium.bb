@@ -577,7 +577,8 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
           ->DownloadPath();
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   gfx::NativeWindow owning_window =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents())
           ->window()

@@ -70,13 +70,14 @@ static const int kPreviewHeight = 512;
 
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplGTK(
     Listener* listener,
-    ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogImplGTK(listener, policy);
+    std::unique_ptr<ui::SelectFilePolicy> policy) {
+  return new SelectFileDialogImplGTK(listener, std::move(policy));
 }
 
-SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener,
-                                                 ui::SelectFilePolicy* policy)
-    : SelectFileDialogImpl(listener, policy), preview_(nullptr) {}
+SelectFileDialogImplGTK::SelectFileDialogImplGTK(
+    Listener* listener,
+    std::unique_ptr<ui::SelectFilePolicy> policy)
+    : SelectFileDialogImpl(listener, std::move(policy)), preview_(nullptr) {}
 
 SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
   for (std::set<aura::Window*>::iterator iter = parents_.begin();

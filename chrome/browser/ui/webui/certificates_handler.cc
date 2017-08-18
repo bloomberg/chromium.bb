@@ -549,7 +549,8 @@ void CertificatesHandler::HandleExportPersonal(const base::ListValue* args) {
       l10n_util::GetStringUTF16(IDS_SETTINGS_CERTIFICATE_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(),
       base::FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
@@ -633,7 +634,8 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
           IDS_SETTINGS_CERTIFICATE_MANAGER_USAGE_SSL_CLIENT));
   file_type_info.include_all_files = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(),
       base::FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
@@ -783,7 +785,8 @@ void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
   AssignWebUICallbackId(args);
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(
       select_file_dialog_.get(), ui::SelectFileDialog::SELECT_OPEN_FILE,
       base::FilePath(), GetParentWindow(),
@@ -849,7 +852,8 @@ void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
   AssignWebUICallbackId(args);
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            ui::SelectFileDialog::SELECT_OPEN_FILE,
                            base::FilePath(), GetParentWindow(),
