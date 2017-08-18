@@ -136,8 +136,7 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 
 // Tests that cookies are partitioned between web views created with a
 // non-OTR BrowserState and an OTR BrowserState.
-// Flaky: crbug/684024
-TEST_F(BrowserStateWebViewPartitionTest, FLAKY_Cookies) {
+TEST_F(BrowserStateWebViewPartitionTest, Cookies) {
   WKWebView* web_view_1 = web::BuildWKWebView(CGRectZero, GetBrowserState());
   LoadTestWebPage(web_view_1);
   SetCookie(@"someCookieName1", @"someCookieValue1", web_view_1);
