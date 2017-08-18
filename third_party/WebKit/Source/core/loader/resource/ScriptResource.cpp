@@ -120,4 +120,14 @@ AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
   return kNotSharableCrossOrigin;
 }
 
+bool ScriptResource::CanUseCacheValidator() const {
+  // Do not revalidate until ClassicPendingScript is removed, i.e. the script
+  // content is retrieved in ScriptLoader::ExecuteScriptBlock().
+  // crbug.com/692856
+  if (HasClientsOrObservers())
+    return false;
+
+  return Resource::CanUseCacheValidator();
+}
+
 }  // namespace blink

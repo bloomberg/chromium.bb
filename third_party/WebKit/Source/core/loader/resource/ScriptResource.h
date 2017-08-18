@@ -103,6 +103,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                  const ResourceLoaderOptions&,
                  const TextResourceDecoderOptions&);
 
+  bool CanUseCacheValidator() const override;
+
   AtomicString source_text_;
 };
 
