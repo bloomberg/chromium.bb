@@ -349,16 +349,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     int index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     DCHECK_GE(index, 0);
     ash::ShelfItem item = model_->items()[index];
-    Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
-    std::unique_ptr<LauncherContextMenu> menu(
-        LauncherContextMenu::Create(controller_, &item, shelf));
-    return menu;
-  }
-
-  aura::Window* CurrentContext() {
-    aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
-    DCHECK(root_window);
-    return root_window;
+    int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    return LauncherContextMenu::Create(controller_, &item, display_id);
   }
 
   bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {

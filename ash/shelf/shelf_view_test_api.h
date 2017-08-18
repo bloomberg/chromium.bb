@@ -71,8 +71,8 @@ class ShelfViewTestAPI {
   // Runs message loop and waits until all add/remove animations are done.
   void RunMessageLoopUntilAnimationsDone();
 
-  // Closes the app list or context menu if it is running.
-  void CloseMenu();
+  // Close any open app list or context menu; returns true if a menu was closed.
+  bool CloseMenu();
 
   // An accessor for |shelf_view|.
   ShelfView* shelf_view() { return shelf_view_; }

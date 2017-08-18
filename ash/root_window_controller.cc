@@ -22,11 +22,11 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
@@ -642,11 +642,11 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
-  ShellDelegate* delegate = Shell::Get()->shell_delegate();
-  DCHECK(delegate);
-  menu_model_.reset(delegate->CreateContextMenu(shelf_.get(), nullptr));
-  if (!menu_model_)
-    return;
+  const int64_t display_id = display::Screen::GetScreen()
+                                 ->GetDisplayNearestWindow(GetRootWindow())
+                                 .id();
+  menu_model_ = base::MakeUnique<ShelfContextMenuModel>(
+      std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
 
   menu_model_adapter_ = base::MakeUnique<views::MenuModelAdapter>(
       menu_model_.get(),

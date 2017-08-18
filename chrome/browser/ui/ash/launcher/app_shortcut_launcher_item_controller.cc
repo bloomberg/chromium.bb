@@ -144,8 +144,20 @@ ash::MenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
   return items;
 }
 
-void AppShortcutLauncherItemController::ExecuteCommand(uint32_t command_id,
-                                                       int32_t event_flags) {
+std::unique_ptr<ui::MenuModel>
+AppShortcutLauncherItemController::GetContextMenu(int64_t display_id) {
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  const ash::ShelfItem* item = controller->GetItem(shelf_id());
+  return LauncherContextMenu::Create(controller, item, display_id);
+}
+
+void AppShortcutLauncherItemController::ExecuteCommand(bool from_context_menu,
+                                                       int64_t command_id,
+                                                       int32_t event_flags,
+                                                       int64_t display_id) {
+  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
+    return;
+
   if (static_cast<size_t>(command_id) >= app_menu_items_.size()) {
     app_menu_items_.clear();
     return;

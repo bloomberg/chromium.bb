@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -77,25 +76,13 @@ class LauncherContextMenuTest : public ash::AshTestBase {
     ash::AshTestBase::SetUp();
   }
 
-  ash::Shelf* GetShelf(int64_t display_id) {
-    ash::RootWindowController* root_window_controller =
-        ash::Shell::GetRootWindowControllerWithDisplayId(display_id);
-    EXPECT_NE(nullptr, root_window_controller);
-    return root_window_controller->shelf();
-  }
-
-  LauncherContextMenu* CreateLauncherContextMenu(
+  std::unique_ptr<LauncherContextMenu> CreateLauncherContextMenu(
       ash::ShelfItemType shelf_item_type,
-      ash::Shelf* shelf) {
+      int64_t display_id) {
     ash::ShelfItem item;
     item.id = ash::ShelfID("idmockidmockidmockidmockidmockid");
     item.type = shelf_item_type;
-    return LauncherContextMenu::Create(controller(), &item, shelf);
-  }
-
-  LauncherContextMenu* CreateLauncherContextMenuForDesktopShell(
-      ash::Shelf* shelf) {
-    return LauncherContextMenu::Create(controller(), nullptr, shelf);
+    return LauncherContextMenu::Create(controller(), &item, display_id);
   }
 
   // Creates app window and set optional ARC application id.
@@ -133,8 +120,8 @@ TEST_F(LauncherContextMenuTest,
        NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff) {
   int64_t primary_id = GetPrimaryDisplay().id();
   // Initially, "New Incognito window" should be enabled.
-  std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
-      ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
+  std::unique_ptr<LauncherContextMenu> menu =
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(
@@ -143,8 +130,7 @@ TEST_F(LauncherContextMenuTest,
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);
-  menu.reset(CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT,
-                                       GetShelf(primary_id)));
+  menu = CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   // The item should be disabled.
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
@@ -158,8 +144,8 @@ TEST_F(LauncherContextMenuTest,
        NewWindowMenuIsDisabledWhenIncognitoModeForced) {
   int64_t primary_id = GetPrimaryDisplay().id();
   // Initially, "New window" should be enabled.
-  std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
-      ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
+  std::unique_ptr<LauncherContextMenu> menu =
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_WINDOW));
@@ -167,34 +153,10 @@ TEST_F(LauncherContextMenuTest,
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
                                       IncognitoModePrefs::FORCED);
-  menu.reset(CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT,
-                                       GetShelf(primary_id)));
+  menu = CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
   EXPECT_FALSE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_WINDOW));
-}
-
-// Verifies status of contextmenu items for desktop shell.
-TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
-  int64_t primary_id = GetPrimaryDisplay().id();
-  std::unique_ptr<LauncherContextMenu> menu(
-      CreateLauncherContextMenuForDesktopShell(GetShelf(primary_id)));
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_TRUE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
-  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_AUTO_HIDE));
-  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
-                                  LauncherContextMenu::MENU_ALIGNMENT_MENU));
-  EXPECT_TRUE(
-      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_ALIGNMENT_MENU));
-  // By default, screen is not locked and ChangeWallPaper item is added in
-  // menu. ChangeWallPaper item is not enabled in default mode.
-  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
-                                  LauncherContextMenu::MENU_CHANGE_WALLPAPER));
-  EXPECT_FALSE(
-      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
 }
 
 // Verifies that "Close" is not shown in context menu if no browser window is
@@ -202,8 +164,8 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
 TEST_F(LauncherContextMenuTest,
        DesktopShellLauncherContextMenuVerifyCloseItem) {
   int64_t primary_id = GetPrimaryDisplay().id();
-  std::unique_ptr<LauncherContextMenu> menu(CreateLauncherContextMenu(
-      ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
+  std::unique_ptr<LauncherContextMenu> menu =
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   ASSERT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
 }
@@ -221,10 +183,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
   ASSERT_TRUE(item);
   int64_t primary_id = GetPrimaryDisplay().id();
-  ash::Shelf* shelf = GetShelf(primary_id);
-
-  std::unique_ptr<LauncherContextMenu> menu(
-      new ArcLauncherContextMenu(controller(), item, shelf));
+  std::unique_ptr<LauncherContextMenu> menu =
+      base::MakeUnique<ArcLauncherContextMenu>(controller(), item, primary_id);
 
   // ARC app is pinned but not running.
   EXPECT_TRUE(
@@ -235,26 +195,13 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
 
-  EXPECT_TRUE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
-  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_AUTO_HIDE));
-  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
-                                  LauncherContextMenu::MENU_ALIGNMENT_MENU));
-  EXPECT_TRUE(
-      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_ALIGNMENT_MENU));
-  // By default, screen is not locked and ChangeWallPaper item is added in
-  // menu. ChangeWallPaper item is not enabled in default mode.
-  EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
-                                  LauncherContextMenu::MENU_CHANGE_WALLPAPER));
-  EXPECT_FALSE(
-      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
-
   // ARC app is running.
   std::string window_app_id1("org.chromium.arc.1");
   CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
                                              std::string());
-  menu.reset(new ArcLauncherContextMenu(controller(), item, shelf));
+  menu =
+      base::MakeUnique<ArcLauncherContextMenu>(controller(), item, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -271,7 +218,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
                                              std::string());
   const ash::ShelfItem* item2 = controller()->GetItem(ash::ShelfID(app_id2));
   ASSERT_TRUE(item2);
-  menu.reset(new ArcLauncherContextMenu(controller(), item2, shelf));
+  menu =
+      base::MakeUnique<ArcLauncherContextMenu>(controller(), item2, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -294,38 +242,15 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
                                              shortcuts[0].intent_uri);
   const ash::ShelfItem* item3 = controller()->GetItem(ash::ShelfID(app_id3));
   ASSERT_TRUE(item3);
-  menu.reset(new ArcLauncherContextMenu(controller(), item3, shelf));
+
+  menu =
+      base::MakeUnique<ArcLauncherContextMenu>(controller(), item3, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
   EXPECT_FALSE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
   EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
-}
-
-// Tests that fullscreen which makes "Autohide shelf" option disappeared on
-// shelf is a per-display setting (crbug.com/496681).
-TEST_F(LauncherContextMenuTest, AutohideShelfOptionOnExternalDisplay) {
-  UpdateDisplay("940x550,940x550");
-  int64_t primary_id = GetPrimaryDisplay().id();
-  int64_t secondary_id = GetSecondaryDisplay().id();
-
-  // Create a normal window on primary display.
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.context = ash::Shell::GetPrimaryRootWindow();
-  widget->Init(params);
-  widget->Show();
-
-  widget->SetFullscreen(true);
-  std::unique_ptr<LauncherContextMenu> primary_menu(CreateLauncherContextMenu(
-      ash::TYPE_BROWSER_SHORTCUT, GetShelf(primary_id)));
-  std::unique_ptr<LauncherContextMenu> secondary_menu(CreateLauncherContextMenu(
-      ash::TYPE_BROWSER_SHORTCUT, GetShelf(secondary_id)));
-  EXPECT_FALSE(IsItemPresentInMenu(primary_menu.get(),
-                                   LauncherContextMenu::MENU_AUTO_HIDE));
-  EXPECT_TRUE(IsItemPresentInMenu(secondary_menu.get(),
-                                  LauncherContextMenu::MENU_AUTO_HIDE));
 }
 
 }  // namespace

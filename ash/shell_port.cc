@@ -41,9 +41,10 @@ void ShellPort::Shutdown() {}
 
 void ShellPort::ShowContextMenu(const gfx::Point& location_in_screen,
                                 ui::MenuSourceType source_type) {
-  // Bail if there is no active user session or if the screen is locked.
+  // Bail with no active user session, in the lock screen, or in app/kiosk mode.
   if (Shell::Get()->session_controller()->NumberOfLoggedInUsers() < 1 ||
-      Shell::Get()->session_controller()->IsScreenLocked()) {
+      Shell::Get()->session_controller()->IsScreenLocked() ||
+      Shell::Get()->session_controller()->IsRunningInAppMode()) {
     return;
   }
 

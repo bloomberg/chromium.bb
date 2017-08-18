@@ -21,9 +21,18 @@ void RemoteShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
                           std::move(callback));
 }
 
-void RemoteShelfItemDelegate::ExecuteCommand(uint32_t command_id,
-                                             int32_t event_flags) {
-  delegate_->ExecuteCommand(command_id, event_flags);
+void RemoteShelfItemDelegate::GetContextMenuItems(
+    int64_t display_id,
+    GetContextMenuItemsCallback callback) {
+  delegate_->GetContextMenuItems(display_id, std::move(callback));
+}
+
+void RemoteShelfItemDelegate::ExecuteCommand(bool from_context_menu,
+                                             int64_t command_id,
+                                             int32_t event_flags,
+                                             int64_t display_id) {
+  delegate_->ExecuteCommand(from_context_menu, command_id, event_flags,
+                            display_id);
 }
 
 void RemoteShelfItemDelegate::Close() {

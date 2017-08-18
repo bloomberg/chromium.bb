@@ -7,6 +7,7 @@ include_rules = [
   "+components/quirks",
   "+components/session_manager",
   "+components/signin/core/account_id",
+  "+components/strings",
   "+components/ui_devtools",
   "+components/user_manager",
   "+components/vector_icons",

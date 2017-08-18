@@ -46,7 +46,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
                     ItemSelectedCallback callback) override;
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
+  std::unique_ptr<ui::MenuModel> GetContextMenu(int64_t display_id) override;
   void Close() override;
 
   // aura::WindowObserver overrides:

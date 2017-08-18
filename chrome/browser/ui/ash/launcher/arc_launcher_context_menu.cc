@@ -15,8 +15,8 @@
 ArcLauncherContextMenu::ArcLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
-    ash::Shelf* shelf)
-    : LauncherContextMenu(controller, item, shelf) {
+    int64_t display_id)
+    : LauncherContextMenu(controller, item, display_id) {
   Init();
 }
 
@@ -49,11 +49,4 @@ void ArcLauncherContextMenu::Init() {
   if (app_is_open)
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddShelfOptionsMenu();
-}
-
-bool ArcLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
-  if (command_id == MENU_OPEN_NEW)
-    return true;
-  return LauncherContextMenu::IsCommandIdEnabled(command_id);
 }

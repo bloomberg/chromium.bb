@@ -25,6 +25,10 @@ void TestWallpaperDelegate::UpdateWallpaper(bool clear_cache) {
   update_wallpaper_count_++;
 }
 
+bool TestWallpaperDelegate::CanOpenSetWallpaperPage() {
+  return true;
+}
+
 int TestWallpaperDelegate::GetUpdateWallpaperCountAndReset() {
   int count = update_wallpaper_count_;
   update_wallpaper_count_ = 0;

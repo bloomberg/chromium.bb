@@ -35,7 +35,10 @@ class ArcAppDeferredLauncherItemController : public ash::ShelfItemDelegate {
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
                     ItemSelectedCallback callback) override;
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override;
   void Close() override;
 
  private:

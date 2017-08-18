@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -74,34 +73,6 @@ Shelf::~Shelf() {}
 // static
 Shelf* Shelf::ForWindow(aura::Window* window) {
   return RootWindowController::ForWindow(window)->shelf();
-}
-
-// static
-bool Shelf::CanChangeShelfAlignment() {
-  if (Shell::Get()->session_controller()->IsUserSupervised())
-    return false;
-
-  const LoginStatus login_status =
-      Shell::Get()->session_controller()->login_status();
-
-  switch (login_status) {
-    case LoginStatus::LOCKED:
-    // Shelf alignment changes can be requested while being locked, but will
-    // be applied upon unlock.
-    case LoginStatus::USER:
-    case LoginStatus::OWNER:
-      return true;
-    case LoginStatus::PUBLIC:
-    case LoginStatus::SUPERVISED:
-    case LoginStatus::GUEST:
-    case LoginStatus::KIOSK_APP:
-    case LoginStatus::ARC_KIOSK_APP:
-    case LoginStatus::NOT_LOGGED_IN:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 void Shelf::CreateShelfWidget(aura::Window* root) {

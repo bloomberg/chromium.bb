@@ -28,8 +28,6 @@ source_set("lib") {
     "bridge/shell_port_mash.h",
     "bridge/workspace_event_handler_mus.cc",
     "bridge/workspace_event_handler_mus.h",
-    "context_menu_mus.cc",
-    "context_menu_mus.h",
     "disconnected_app_handler.cc",
     "disconnected_app_handler.h",
     "display_synchronizer.cc",

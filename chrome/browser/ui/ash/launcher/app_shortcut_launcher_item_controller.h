@@ -42,7 +42,11 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
                     ash::ShelfLaunchSource source,
                     ItemSelectedCallback callback) override;
   ash::MenuItemList GetAppMenuItems(int event_flags) override;
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
+  std::unique_ptr<ui::MenuModel> GetContextMenu(int64_t display_id) override;
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override;
   void Close() override;
 
   // Get the refocus url pattern, which can be used to identify this application
