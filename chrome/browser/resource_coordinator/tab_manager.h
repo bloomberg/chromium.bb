@@ -267,6 +267,11 @@ class TabManager : public TabStripModelObserver,
                            IsLoadingBackgroundTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionRestoreSwitchToTab);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
+                           HistogramSessionRestoreExpectedTaskQueueingDuration);
+  FRIEND_TEST_ALL_PREFIXES(
+      TabManagerStatsCollectorTest,
+      HistogramBackgroundTabOpeningExpectedTaskQueueingDuration);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownSingleTabProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSingleTabProcess);

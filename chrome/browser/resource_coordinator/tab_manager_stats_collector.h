@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 
 namespace base {
@@ -55,6 +56,16 @@ class TabManagerStatsCollector : public SessionRestoreObserver {
 
  private:
   class SessionRestoreSwapMetricsDelegate;
+  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
+                           HistogramSessionRestoreExpectedTaskQueueingDuration);
+  FRIEND_TEST_ALL_PREFIXES(
+      TabManagerStatsCollectorTest,
+      HistogramBackgroundTabOpeningExpectedTaskQueueingDuration);
+
+  static const char
+      kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[];
+  static const char
+      kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration[];
 
   TabManager* tab_manager_;
   std::unique_ptr<content::SwapMetricsDriver>
