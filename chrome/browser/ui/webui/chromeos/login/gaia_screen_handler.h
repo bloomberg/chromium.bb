@@ -14,19 +14,15 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
 
 class AccountId;
 
-namespace authpolicy {
-class ActiveDirectoryAccountInfo;
-}
-
 namespace chromeos {
 
-class AuthPolicyLoginHelper;
+class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
@@ -45,7 +41,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   GaiaScreenHandler(
       CoreOobeView* core_oobe_view,
-      const scoped_refptr<NetworkStateInformer>& network_state_informer);
+      const scoped_refptr<NetworkStateInformer>& network_state_informer,
+      ActiveDirectoryPasswordChangeScreenHandler*
+          active_directory_password_change_screen_handler);
   ~GaiaScreenHandler() override;
 
   // GaiaView:
@@ -106,10 +104,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleCompleteAdAuthentication(const std::string& username,
                                       const std::string& password);
 
-  void HandleCompleteAdPasswordChange(const std::string& username,
-                                      const std::string& old_password,
-                                      const std::string& new_password);
-
   void HandleCancelActiveDirectoryAuth();
 
   void HandleUsingSAMLAPI();
@@ -148,11 +142,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                 const Key& key,
                 authpolicy::ErrorType error,
                 const authpolicy::ActiveDirectoryAccountInfo& account_info);
-
-  // Callback for writing password into pipe.
-  void OnPasswordPipeReady(const std::string& username,
-                           const Key& key,
-                           base::ScopedFD password_fd);
 
   // Show sign-in screen for the given credentials.
   void ShowSigninScreenForTest(const std::string& username,
@@ -224,6 +213,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   CoreOobeView* core_oobe_view_ = nullptr;
+
+  ActiveDirectoryPasswordChangeScreenHandler*
+      active_directory_password_change_screen_handler_ = nullptr;
 
   // Email to pre-populate with.
   std::string populated_email_;

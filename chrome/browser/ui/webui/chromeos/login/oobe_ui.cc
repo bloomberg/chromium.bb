@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/about_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
@@ -297,8 +298,24 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(base::MakeUnique<UserBoardScreenHandler>());
 
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  ActiveDirectoryPasswordChangeScreenHandler*
+      active_directory_password_change_screen_handler = nullptr;
+  // Create Active Directory password change screen for corresponding devices
+  // only.
+  if (connector->IsActiveDirectoryManaged()) {
+    auto password_change_handler =
+        base::MakeUnique<ActiveDirectoryPasswordChangeScreenHandler>(
+            core_handler_);
+    active_directory_password_change_screen_handler =
+        password_change_handler.get();
+    AddScreenHandler(std::move(password_change_handler));
+  }
+
   AddScreenHandler(base::MakeUnique<GaiaScreenHandler>(
-      core_handler_, network_state_informer_));
+      core_handler_, network_state_informer_,
+      active_directory_password_change_screen_handler));
 
   auto signin_screen_handler = base::MakeUnique<SigninScreenHandler>(
       network_state_informer_, error_screen, core_handler_,

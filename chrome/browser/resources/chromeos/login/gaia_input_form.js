@@ -14,6 +14,15 @@ Polymer({
     buttonText: String
   },
 
+  /** @public */
+  reset: function() {
+    var inputs = this.getInputs_();
+    for (i = 0; i < inputs.length; ++i) {
+      inputs[i].value = '';
+      inputs[i].isInvalid = false;
+    }
+  },
+
   submit: function() {
     this.fire('submit');
   },
