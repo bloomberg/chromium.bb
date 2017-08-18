@@ -334,6 +334,7 @@ base::TimeDelta CrossFadeAnimation(
     // Animation observer owns the old layer and deletes itself.
     settings.AddObserver(
         new CrossFadeObserver(window, std::move(old_layer_owner)));
+    settings.CacheRenderSurface();
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     // Only add reporter to |old_layer|.
@@ -376,6 +377,7 @@ base::TimeDelta CrossFadeAnimation(
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.CacheRenderSurface();
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     window->layer()->SetTransform(gfx::Transform());
