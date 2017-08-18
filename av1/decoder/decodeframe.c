@@ -3569,18 +3569,18 @@ static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
 }
 #endif  // #if CONFIG_PVQ
 
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
 static void dec_setup_across_tile_boundary_info(
     const AV1_COMMON *const cm, const TileInfo *const tile_info) {
   if (tile_info->mi_row_start >= tile_info->mi_row_end ||
       tile_info->mi_col_start >= tile_info->mi_col_end)
     return;
 
-  if (cm->width != cm->last_width || cm->height != cm->last_height ||
-      cm->tile_cols != cm->last_tile_cols ||
-      cm->tile_rows != cm->last_tile_rows) {
+  if (!cm->loop_filter_across_tiles_enabled) {
     av1_setup_across_tile_boundary_info(cm, tile_info);
   }
 }
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end) {
@@ -3748,7 +3748,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
 
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
       dec_setup_across_tile_boundary_info(cm, &tile_info);
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
            mi_row += cm->mib_size) {
@@ -4070,7 +4072,9 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         av1_tile_init(tile_info, cm, tile_row, buf->col);
         av1_tile_init(&twd->xd.tile, cm, tile_row, buf->col);
 
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
         dec_setup_across_tile_boundary_info(cm, tile_info);
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
         setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                            &twd->bit_reader,
@@ -5142,9 +5146,15 @@ void superres_post_decode(AV1Decoder *pbi) {
 #endif  // CONFIG_FRAME_SUPERRES
 
 static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
-  if (cm->width != cm->last_width || cm->height != cm->last_height ||
-      cm->tile_cols != cm->last_tile_cols ||
-      cm->tile_rows != cm->last_tile_rows) {
+// Note: When LOOPFILTERING_ACROSS_TILES is enabled, we need to clear the
+// boundary information every frame, since the tile boundaries may
+// change every frame (particularly when dependent-horztiles is also
+// enabled); when it is disabled, the only information stored is the frame
+// boundaries, which only depend on the frame size.
+#if !CONFIG_LOOPFILTERING_ACROSS_TILES
+  if (cm->width != cm->last_width || cm->height != cm->last_height)
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
+  {
     int row, col;
     for (row = 0; row < cm->mi_rows; ++row) {
       MODE_INFO *mi = cm->mi + row * cm->mi_stride;
