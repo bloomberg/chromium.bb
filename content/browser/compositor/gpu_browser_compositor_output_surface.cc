@@ -147,6 +147,11 @@ unsigned GpuBrowserCompositorOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+gfx::BufferFormat GpuBrowserCompositorOutputSurface::GetOverlayBufferFormat()
+    const {
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool GpuBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }
