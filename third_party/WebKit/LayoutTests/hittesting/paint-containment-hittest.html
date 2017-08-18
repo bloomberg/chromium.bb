@@ -1,27 +1,6 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script>
-var centerX;
-var centerY;
-function hitTestCenterOfElement(elementID, expectedID)
-{
-    var element = document.getElementById(elementID);
-    var rect = element.getBoundingClientRect();
-    centerX = rect.left + (rect.width / 2);
-    centerY = rect.top + (rect.height / 2);
-    shouldBe("document.elementFromPoint(centerX, centerY).id", "'" + expectedID + "'");
-}
-
-function test() {
-    hitTestCenterOfElement("containTransform", "containTransform");
-    hitTestCenterOfElement("containAbsolute", "containAbsolute");
-    hitTestCenterOfElement("containFixed", "containFixed");
-
-    hitTestCenterOfElement("transform", "body");
-    hitTestCenterOfElement("absolute", "body");
-    hitTestCenterOfElement("fixed", "body");
-}
-</script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
 div {
     width: 100px;
@@ -49,7 +28,7 @@ div > div {
     left: 100px;
 }
 </style>
-<body onload="test()" id="body">
+<body id="body">
     <p>Hit testing should respect clips established by contain: paint.</p>
 <div id="containTransform" class="paintContainment">
     <div id="transform"></div>
@@ -60,4 +39,24 @@ div > div {
 <div id="containFixed" class="paintContainment">
     <div id="fixed"></div>
 </div>
-<pre id="console"></pre>
+<script>
+function hitTestCenterOfElement(elementID)
+{
+    var element = document.getElementById(elementID);
+    var rect = element.getBoundingClientRect();
+    var centerX = rect.left + (rect.width / 2);
+    var centerY = rect.top + (rect.height / 2);
+    return document.elementFromPoint(centerX, centerY).id;
+}
+
+test(function(t)
+{
+    assert_equals(hitTestCenterOfElement("containTransform"), "containTransform");
+    assert_equals(hitTestCenterOfElement("containAbsolute"), "containAbsolute");
+    assert_equals(hitTestCenterOfElement("containFixed"), "containFixed");
+
+    assert_equals(hitTestCenterOfElement("transform"), "body");
+    assert_equals(hitTestCenterOfElement("absolute"), "body");
+    assert_equals(hitTestCenterOfElement("fixed"), "body");
+}, "Hit testing should respect clips established by contain: paint.");
+</script>

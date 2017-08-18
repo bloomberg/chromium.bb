@@ -1,26 +1,4 @@
-The inner border radius clip should be respected for hit testing.
-
- 
- PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS document.elementFromPoint(x + 20, y + 20).id is 'container'
-PASS document.elementFromPoint(x + 35, y + 35).id is 'roundedBoxWithoutScrollbars'
-PASS document.elementFromPoint(x + 60, y + 60).id is 'roundedBoxWithoutScrollbars'
-PASS document.elementFromPoint(x + 68, y + 68).id is 'roundedBoxChildWithoutScrollbars'
-PASS document.elementFromPoint(x + 80, y + 80).id is 'roundedBoxChildWithoutScrollbars'
-PASS document.elementFromPoint(x + 230, y + 230).id is 'roundedBoxChildWithoutScrollbars'
-PASS document.elementFromPoint(x + 240, y + 240).id is 'roundedBoxWithoutScrollbars'
-PASS document.elementFromPoint(x + 265, y + 265).id is 'roundedBoxWithoutScrollbars'
-PASS document.elementFromPoint(x + 275, y + 275).id is 'container'
-PASS document.elementFromPoint(x + 20, y + 20).id is 'container'
-PASS document.elementFromPoint(x + 35, y + 35).id is 'roundedBoxWithScrollbars'
-FAIL document.elementFromPoint(x + 60, y + 60).id should be roundedBoxWithScrollbars. Was roundedBoxWithScrollbarsChild.
-PASS document.elementFromPoint(x + 68, y + 68).id is 'roundedBoxWithScrollbarsChild'
-PASS document.elementFromPoint(x + 80, y + 80).id is 'roundedBoxWithScrollbarsChild'
-PASS document.elementFromPoint(x + 230, y + 230).id is 'roundedBoxWithScrollbarsChild'
-PASS document.elementFromPoint(x + 265, y + 265).id is 'roundedBoxWithScrollbars'
-PASS document.elementFromPoint(x + 275, y + 275).id is 'container'
-PASS document.elementFromPoint(x + 150, y + 240).id is 'roundedBoxWithScrollbars'
-PASS document.elementFromPoint(x + 240, y + 150).id is 'roundedBoxWithScrollbars'
+This is a testharness.js-based test.
+FAIL The inner border radius clip should be respected for hit testing. assert_equals: expected "roundedBoxWithScrollbars" but got "roundedBoxWithScrollbarsChild"
+Harness: the test ran to completion.
 
