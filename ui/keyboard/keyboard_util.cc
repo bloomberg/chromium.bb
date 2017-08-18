@@ -17,6 +17,7 @@
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -134,10 +135,14 @@ bool IsKeyboardOverscrollEnabled() {
   if (!IsKeyboardEnabled())
     return false;
 
-  // Users of the accessibility on-screen keyboard are likely to be using mouse
-  // input, which may interfere with overscrolling.
-  if (g_accessibility_keyboard_enabled)
+  // Users of the sticky accessibility on-screen keyboard are likely to be using
+  // mouse input, which may interfere with overscrolling.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior) ||
+      (keyboard::KeyboardController::GetInstance() &&
+       keyboard::KeyboardController::GetInstance()->keyboard_locked())) {
     return false;
+  }
 
   // If overscroll enabled override is set, use it instead. Currently
   // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
