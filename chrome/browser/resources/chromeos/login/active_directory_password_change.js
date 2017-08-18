@@ -5,6 +5,16 @@
 /**
  * @fileoverview Polymer element for Active Directory password change screen.
  */
+/**
+ * Possible error states of the screen. Must be in the same order as
+ * ActiveDirectoryPasswordChangeErrorState enum values.
+ * @enum {number}
+ */
+var ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE = {
+  WRONG_OLD_PASSWORD: 0,
+  NEW_PASSWORD_REJECTED: 1,
+};
+
 Polymer({
   is: 'active-directory-password-change',
 
@@ -18,15 +28,32 @@ Polymer({
   /** @public */
   reset: function() {
     this.$.animatedPages.selected = 0;
-    this.$.oldPassword.value = '';
-    this.$.newPassword1.value = '';
-    this.$.newPassword2.value = '';
+    this.$.inputForm.reset();
     this.updateNavigation_();
+  },
+
+  /**
+   * @public
+   *  Invalidates a password input. Either the input for old password or for new
+   *  password depending on passed error.
+   * @param {ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE} error
+   */
+  setInvalid: function(error) {
+    switch (error) {
+      case ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE.WRONG_OLD_PASSWORD:
+        this.$.oldPassword.isInvalid = true;
+        break;
+      case ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE.NEW_PASSWORD_REJECTED:
+        this.$.newPassword1.isInvalid = true;
+        break;
+      default:
+        console.error('Not handled error: ' + error);
+    }
   },
 
   /** @private */
   computeWelcomeMessage_: function(username) {
-    return loadTimeData.getStringF('adPasswordChangeMessage', username);
+    return loadTimeData.getStringF('adPassChangeMessage', username);
   },
 
   /** @private */

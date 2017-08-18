@@ -124,10 +124,6 @@ class EnrollmentScreenHandler
   // enrollment sign-in page.
   bool IsEnrollmentScreenHiddenByError() const;
 
-  // Helper function to wait for AD password written to a pipe.
-  void OnPasswordPipeReady(const std::string& machine_name,
-                           const std::string& user_name,
-                           base::ScopedFD password_fd);
   // Handler callback from AuthPolicyClient.
   void HandleAdDomainJoin(const std::string& machine_name,
                           const std::string& user_name,
