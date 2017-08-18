@@ -212,15 +212,12 @@ class GPU_EXPORT GpuControlList {
   // system and returns the union of features specified in each entry.
   // If os is kOsAny, use the current OS; if os_version is empty, use the
   // current OS version.
-  std::set<int32_t> MakeDecision(OsType os,
-                                 const std::string& os_version,
-                                 const GPUInfo& gpu_info);
+  std::set<int> MakeDecision(OsType os,
+                             const std::string& os_version,
+                             const GPUInfo& gpu_info);
 
-  // Return the active entry indices from the last MakeDecision() call.
-  std::vector<uint32_t> GetActiveEntries() const;
-  // Return corresponding entry IDs from entry indices.
-  std::vector<uint32_t> GetEntryIDsFromIndices(
-      const std::vector<uint32_t>& entry_indices) const;
+  // Collects the active entries from the last MakeDecision() call.
+  void GetDecisionEntries(std::vector<uint32_t>* entry_ids) const;
 
   // Collects all disabled extensions.
   std::vector<std::string> GetDisabledExtensions();
@@ -234,14 +231,6 @@ class GPU_EXPORT GpuControlList {
   //    "crBugs": [1234],
   // }
   void GetReasons(base::ListValue* problem_list, const std::string& tag) const;
-  // Similar to the previous function, but instead of using the active entries
-  // from the last MakeDecision() call, which may not happen at all, entries
-  // are provided.
-  // The use case is we compute the entries from GPU process and send them to
-  // browser process, and call GetReasons() in browser process.
-  void GetReasons(base::ListValue* problem_list,
-                  const std::string& tag,
-                  const std::vector<uint32_t>& entries) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32_t max_entry_id() const;
@@ -279,7 +268,7 @@ class GPU_EXPORT GpuControlList {
   // This records all the entries that are appliable to the current user
   // machine.  It is updated everytime MakeDecision() is called and is used
   // later by GetDecisionEntries().
-  std::vector<uint32_t> active_entries_;
+  std::vector<size_t> active_entries_;
 
   uint32_t max_entry_id_;
 

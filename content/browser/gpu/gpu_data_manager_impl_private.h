@@ -277,6 +277,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // True if --single-process or --in-process-gpu is passed in.
   bool in_process_gpu_;
 
+  std::string disabled_extensions_;
+
   // If one tries to call a member before initialization then it is defered
   // until Initialize() is completed.
   std::vector<base::Closure> post_init_tasks_;
