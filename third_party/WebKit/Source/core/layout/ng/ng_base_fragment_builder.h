@@ -21,13 +21,15 @@ class CORE_EXPORT NGBaseFragmentBuilder {
     DCHECK(style_);
     return *style_;
   }
-  NGBaseFragmentBuilder& SetStyle(const ComputedStyle&);
+  NGBaseFragmentBuilder& SetStyle(RefPtr<const ComputedStyle>);
 
   NGWritingMode WritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
 
  protected:
-  NGBaseFragmentBuilder(const ComputedStyle&, NGWritingMode, TextDirection);
+  NGBaseFragmentBuilder(RefPtr<const ComputedStyle>,
+                        NGWritingMode,
+                        TextDirection);
   NGBaseFragmentBuilder(NGWritingMode, TextDirection);
 
  private:

@@ -25,14 +25,14 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
 
  public:
   NGFragmentBuilder(NGLayoutInputNode,
-                    const ComputedStyle&,
+                    RefPtr<const ComputedStyle>,
                     NGWritingMode,
                     TextDirection);
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
   NGFragmentBuilder(LayoutObject*,
-                    const ComputedStyle&,
+                    RefPtr<const ComputedStyle>,
                     NGWritingMode,
                     TextDirection);
 

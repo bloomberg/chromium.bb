@@ -22,7 +22,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   STACK_ALLOCATED();
 
  public:
-  NGLineBoxFragmentBuilder(NGInlineNode, const ComputedStyle&, NGWritingMode);
+  NGLineBoxFragmentBuilder(NGInlineNode,
+                           RefPtr<const ComputedStyle>,
+                           NGWritingMode);
 
   NGLineBoxFragmentBuilder& SetInlineSize(LayoutUnit);
 

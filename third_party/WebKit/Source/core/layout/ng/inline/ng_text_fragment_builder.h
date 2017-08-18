@@ -20,7 +20,9 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode, const ComputedStyle&, NGWritingMode);
+  NGTextFragmentBuilder(NGInlineNode,
+                        RefPtr<const ComputedStyle>,
+                        NGWritingMode);
   NGTextFragmentBuilder(NGInlineNode, NGWritingMode);
 
   NGTextFragmentBuilder& SetSize(const NGLogicalSize&);

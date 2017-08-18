@@ -537,7 +537,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
 
-  NGFragmentBuilder container_builder(node, node.Style(), space->WritingMode(),
+  NGFragmentBuilder container_builder(node, &node.Style(), space->WritingMode(),
                                       TextDirection::kLtr);
   container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
