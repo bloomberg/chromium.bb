@@ -741,8 +741,7 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
-      notification.type() == NOTIFICATION_TYPE_MULTIPLE ||
-      notification.type() == NOTIFICATION_TYPE_IMAGE) {
+      notification.type() == NOTIFICATION_TYPE_MULTIPLE) {
     DCHECK(!icon_view_ || right_content_->Contains(icon_view_));
     delete icon_view_;
     icon_view_ = nullptr;
@@ -754,8 +753,18 @@ void NotificationViewMD::CreateOrUpdateIconView(
     right_content_->AddChildView(icon_view_);
   }
 
-  gfx::ImageSkia icon = notification.icon().AsImageSkia();
+  // If |use_image_as_icon| is set, use |image| as the icon on the right
+  // side, instead of |icon|.
+  gfx::ImageSkia icon;
+  if (notification.use_image_as_icon())
+    icon = notification.image().AsImageSkia();
+  else
+    icon = notification.icon().AsImageSkia();
   icon_view_->SetImage(icon, icon.size());
+
+  // If |use_image_as_icon| is set, hide the icon on the right side when
+  // the notification is expanded.
+  hide_icon_on_expanded_ = notification.use_image_as_icon();
 }
 
 void NotificationViewMD::CreateOrUpdateSmallIconView(
@@ -881,6 +890,9 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   header_row_->SetOverflowIndicator(
       list_items_count_ -
       (expanded ? item_views_.size() : kMaxLinesForMessageView));
+
+  if (icon_view_)
+    icon_view_->SetVisible(!hide_icon_on_expanded_ || !expanded);
 }
 
 // TODO(yoshiki): Move this to the parent class (MessageView) and share the code

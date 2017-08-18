@@ -73,7 +73,8 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       renotify(other.renotify),
       silent(other.silent),
       accessible_name(other.accessible_name),
-      accent_color(other.accent_color) {
+      accent_color(other.accent_color),
+      use_image_as_icon(other.use_image_as_icon) {
 }
 
 RichNotificationData::~RichNotificationData() = default;
