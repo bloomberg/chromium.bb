@@ -23,6 +23,7 @@ class DownloadService;
 
 namespace offline_pages {
 
+class PrefetchService;
 class PrefetchServiceTestTaco;
 
 // Asynchronously downloads the archive.
@@ -33,8 +34,7 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
   ~PrefetchDownloaderImpl() override;
 
   // PrefetchDownloader implementation:
-  void SetCompletedCallback(
-      const PrefetchDownloadCompletedCallback& callback) override;
+  void SetPrefetchService(PrefetchService* service) override;
   void StartDownload(const std::string& download_id,
                      const std::string& download_location) override;
   void CancelDownload(const std::string& download_id) override;
@@ -60,8 +60,10 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
   // Unowned. It is valid until |this| instance is disposed.
   download::DownloadService* download_service_;
 
+  // Unowned, owns |this|.
+  PrefetchService* prefetch_service_ = nullptr;
+
   version_info::Channel channel_;
-  PrefetchDownloadCompletedCallback callback_;
 
   // Flag to indicate if the download service is ready to take downloads.
   bool service_started_ = false;

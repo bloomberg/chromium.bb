@@ -49,7 +49,9 @@ void TestPrefetchDispatcher::GCMOperationCompletedMessageReceived(
 }
 
 void TestPrefetchDispatcher::DownloadCompleted(
-    const PrefetchDownloadResult& download_result) {}
+    const PrefetchDownloadResult& download_result) {
+  download_results.push_back(download_result);
+}
 
 void TestPrefetchDispatcher::ImportCompleted(int64_t offline_id, bool success) {
 }

@@ -16,6 +16,7 @@
 #include "components/download/public/service_config.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,17 +63,17 @@ class PrefetchDownloaderTest : public testing::Test {
 
   void SetUp() override {
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
+    dispatcher_ = new TestPrefetchDispatcher();
 
     auto downloader = base::MakeUnique<PrefetchDownloaderImpl>(
         &download_service_, kTestChannel);
     download_service_.SetFailedDownload(kFailedDownloadId, false);
     download_client_ = base::MakeUnique<TestDownloadClient>(downloader.get());
     download_service_.set_client(download_client_.get());
+    prefetch_service_taco_->SetPrefetchDispatcher(
+        base::WrapUnique(dispatcher_));
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
-
     prefetch_service_taco_->CreatePrefetchService();
-    GetPrefetchDownloader()->SetCompletedCallback(base::Bind(
-        &PrefetchDownloaderTest::OnDownloadCompleted, base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -107,14 +108,10 @@ class PrefetchDownloaderTest : public testing::Test {
   void PumpLoop() { task_runner_->RunUntilIdle(); }
 
   const std::vector<PrefetchDownloadResult>& completed_downloads() const {
-    return completed_downloads_;
+    return dispatcher_->download_results;
   }
 
  private:
-  void OnDownloadCompleted(const PrefetchDownloadResult& result) {
-    completed_downloads_.push_back(result);
-  }
-
   PrefetchDownloader* GetPrefetchDownloader() const {
     return prefetch_service_taco_->prefetch_service()->GetPrefetchDownloader();
   }
@@ -124,7 +121,7 @@ class PrefetchDownloaderTest : public testing::Test {
   download::test::TestDownloadService download_service_;
   std::unique_ptr<TestDownloadClient> download_client_;
   std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
-  std::vector<PrefetchDownloadResult> completed_downloads_;
+  TestPrefetchDispatcher* dispatcher_;
 };
 
 TEST_F(PrefetchDownloaderTest, DownloadParams) {

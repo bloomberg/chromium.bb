@@ -23,6 +23,12 @@ PrefetchDownloadResult::PrefetchDownloadResult(const std::string& download_id,
 PrefetchDownloadResult::PrefetchDownloadResult(
     const PrefetchDownloadResult& other) = default;
 
+bool PrefetchDownloadResult::operator==(
+    const PrefetchDownloadResult& other) const {
+  return download_id == other.download_id && success == other.success &&
+         file_path == other.file_path && file_size == other.file_size;
+}
+
 PrefetchArchiveInfo::PrefetchArchiveInfo() = default;
 
 PrefetchArchiveInfo::PrefetchArchiveInfo(const PrefetchArchiveInfo& other) =

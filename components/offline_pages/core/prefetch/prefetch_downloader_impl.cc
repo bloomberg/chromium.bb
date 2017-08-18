@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "components/download/public/download_service.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -30,9 +32,8 @@ PrefetchDownloaderImpl::PrefetchDownloaderImpl(version_info::Channel channel)
 
 PrefetchDownloaderImpl::~PrefetchDownloaderImpl() = default;
 
-void PrefetchDownloaderImpl::SetCompletedCallback(
-    const PrefetchDownloadCompletedCallback& callback) {
-  callback_ = callback;
+void PrefetchDownloaderImpl::SetPrefetchService(PrefetchService* service) {
+  prefetch_service_ = service;
 }
 
 void PrefetchDownloaderImpl::StartDownload(
@@ -107,17 +108,18 @@ void PrefetchDownloaderImpl::OnDownloadSucceeded(
     return;
   }
 
-  if (callback_) {
-    callback_.Run(PrefetchDownloadResult(download_id, file_path,
-                                         static_cast<int64_t>(file_size)));
+  if (prefetch_service_) {
+    prefetch_service_->GetPrefetchDispatcher()->DownloadCompleted(
+        PrefetchDownloadResult(download_id, file_path,
+                               static_cast<int64_t>(file_size)));
   }
 }
 
 void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
-  if (callback_) {
+  if (prefetch_service_) {
     PrefetchDownloadResult result;
     result.download_id = download_id;
-    callback_.Run(result);
+    prefetch_service_->GetPrefetchDispatcher()->DownloadCompleted(result);
   }
 }
 
