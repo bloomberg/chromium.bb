@@ -17,6 +17,8 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
+#include "ui/events/test/test_event_target.h"
+#include "ui/gfx/transform.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -1096,6 +1098,32 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
 
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 #endif
+}
+
+TEST(EventTest, UpdateForRootTransformation) {
+  gfx::Transform empty_transform;
+  const gfx::Point location(10, 10);
+  const gfx::Point root_location(20, 20);
+
+  // A mouse event that is untargeted should reset the root location when
+  // transformed. Though the events start out with different locations and
+  // root_locations, they should be equal afterwards.
+  ui::MouseEvent untargeted(ET_MOUSE_PRESSED, location, root_location,
+                            EventTimeForNow(), 0, 0);
+  untargeted.UpdateForRootTransform(empty_transform);
+  EXPECT_EQ(untargeted.location(), location);
+  EXPECT_EQ(untargeted.root_location(), location);
+
+  // A mouse event that is targeted should not set the root location to the
+  // normal location. They start with different locations and should stay
+  // unequal after a transform is applied.
+  ui::test::TestEventTarget target;
+  ui::MouseEvent targeted(ET_MOUSE_PRESSED, location, root_location,
+                          EventTimeForNow(), 0, 0);
+  Event::DispatcherApi(&targeted).set_target(&target);
+  targeted.UpdateForRootTransform(empty_transform);
+  EXPECT_EQ(targeted.location(), location);
+  EXPECT_EQ(targeted.root_location(), root_location);
 }
 
 }  // namespace ui

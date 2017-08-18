@@ -485,7 +485,16 @@ void LocatedEvent::UpdateForRootTransform(
   gfx::Point3F p(location_);
   reversed_root_transform.TransformPoint(&p);
   location_ = p.AsPointF();
-  root_location_ = location_;
+  if (target()) {
+    // If a target is already set, that means that |location_| and
+    // |root_location_| are in different coordinate space. So apply the
+    // transformation separately.
+    p = gfx::Point3F(root_location_);
+    reversed_root_transform.TransformPoint(&p);
+    root_location_ = p.AsPointF();
+  } else {
+    root_location_ = location_;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
