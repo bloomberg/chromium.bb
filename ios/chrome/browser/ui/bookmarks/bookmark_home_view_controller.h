@@ -49,6 +49,10 @@ class BookmarkNode;
 
   // The root node, whose child nodes are shown in the bookmark table view.
   const bookmarks::BookmarkNode* _rootNode;
+
+  // Container for bookmarksTableView and contextBar to enable the use of
+  // autolayout contraints.
+  UIView* _containerView;
 }
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
