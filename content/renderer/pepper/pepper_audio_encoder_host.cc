@@ -53,7 +53,7 @@ class PepperAudioEncoderHost::AudioEncoderImpl {
  public:
   // Callback used to signal encoded data. If |size| is negative, an error
   // occurred.
-  using BitstreamBufferReadyCB = base::Callback<void(int32_t size)>;
+  using BitstreamBufferReadyCB = base::OnceCallback<void(int32_t size)>;
 
   AudioEncoderImpl();
   ~AudioEncoderImpl();
@@ -154,7 +154,7 @@ void PepperAudioEncoderHost::AudioEncoderImpl::Encode(
       opus_encoder_, reinterpret_cast<opus_int16*>(input_data),
       (input_size / parameters_.channels) / parameters_.input_sample_size,
       output_data, output_size);
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void PepperAudioEncoderHost::AudioEncoderImpl::RequestBitrateChange(
@@ -293,8 +293,8 @@ int32_t PepperAudioEncoderHost::OnHostMsgRequestBitrateChange(
     return encoder_last_error_;
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioEncoderImpl::RequestBitrateChange,
-                            base::Unretained(encoder_.get()), bitrate));
+      FROM_HERE, base::BindOnce(&AudioEncoderImpl::RequestBitrateChange,
+                                base::Unretained(encoder_.get()), bitrate));
 
   return PP_OK;
 }
@@ -433,17 +433,18 @@ void PepperAudioEncoderHost::DoEncode() {
 
   media_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioEncoderImpl::Encode, base::Unretained(encoder_.get()),
-                 static_cast<uint8_t*>(audio_buffer->audio.data),
-                 audio_buffer_manager_->buffer_size() -
-                     sizeof(ppapi::MediaStreamBuffer::Audio),
-                 static_cast<uint8_t*>(bitstream_buffer->bitstream.data),
-                 bitstream_buffer_manager_->buffer_size() -
-                     sizeof(ppapi::MediaStreamBuffer::Bitstream),
-                 media::BindToCurrentLoop(
-                     base::Bind(&PepperAudioEncoderHost::BitstreamBufferReady,
-                                weak_ptr_factory_.GetWeakPtr(), audio_buffer_id,
-                                bitstream_buffer_id))));
+      base::BindOnce(&AudioEncoderImpl::Encode,
+                     base::Unretained(encoder_.get()),
+                     static_cast<uint8_t*>(audio_buffer->audio.data),
+                     audio_buffer_manager_->buffer_size() -
+                         sizeof(ppapi::MediaStreamBuffer::Audio),
+                     static_cast<uint8_t*>(bitstream_buffer->bitstream.data),
+                     bitstream_buffer_manager_->buffer_size() -
+                         sizeof(ppapi::MediaStreamBuffer::Bitstream),
+                     media::BindToCurrentLoop(base::BindOnce(
+                         &PepperAudioEncoderHost::BitstreamBufferReady,
+                         weak_ptr_factory_.GetWeakPtr(), audio_buffer_id,
+                         bitstream_buffer_id))));
 }
 
 void PepperAudioEncoderHost::BitstreamBufferReady(int32_t audio_buffer_id,
@@ -489,9 +490,9 @@ void PepperAudioEncoderHost::Close() {
   // to avoid freeing memory the encoder might still be working on.
   media_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&StopAudioEncoder, base::Passed(std::move(encoder_)),
-                 base::Passed(std::move(audio_buffer_manager_)),
-                 base::Passed(std::move(bitstream_buffer_manager_))));
+      base::BindOnce(&StopAudioEncoder, base::Passed(std::move(encoder_)),
+                     base::Passed(std::move(audio_buffer_manager_)),
+                     base::Passed(std::move(bitstream_buffer_manager_))));
 }
 
 // static

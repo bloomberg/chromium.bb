@@ -143,14 +143,10 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
     return PP_ERROR_FAILED;
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PepperHostResolverMessageFilter::DoResolve,
-                 this,
-                 context->MakeReplyMessageContext(),
-                 host_port,
-                 hint,
-                 browser_context->GetResourceContext()));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperHostResolverMessageFilter::DoResolve, this,
+                     context->MakeReplyMessageContext(), host_port, hint,
+                     browser_context->GetResourceContext()));
   return PP_OK_COMPLETIONPENDING;
 }
 

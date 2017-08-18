@@ -209,7 +209,8 @@ PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FrameDeliverer::DeliverFrameOnIO, this, frame));
+      FROM_HERE,
+      base::BindOnce(&FrameDeliverer::DeliverFrameOnIO, this, frame));
 }
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(

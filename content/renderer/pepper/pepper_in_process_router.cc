@@ -112,9 +112,9 @@ bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
     // destroyed message is always the last one sent for a resource.
     if (message->type() == PpapiHostMsg_ResourceDestroyed::ID) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&PepperInProcessRouter::DispatchHostMsg,
-                                weak_factory_.GetWeakPtr(),
-                                base::Owned(message.release())));
+          FROM_HERE, base::BindOnce(&PepperInProcessRouter::DispatchHostMsg,
+                                    weak_factory_.GetWeakPtr(),
+                                    base::Owned(message.release())));
       return true;
     } else {
       bool result = host_impl_->GetPpapiHost()->OnMessageReceived(*message);
@@ -146,9 +146,9 @@ bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
     CHECK(!pending_message_id_);
     // Dispatch plugin messages from the message loop.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&PepperInProcessRouter::DispatchPluginMsg,
-                   weak_factory_.GetWeakPtr(), base::Owned(message.release())));
+        FROM_HERE, base::BindOnce(&PepperInProcessRouter::DispatchPluginMsg,
+                                  weak_factory_.GetWeakPtr(),
+                                  base::Owned(message.release())));
   }
   return true;
 }

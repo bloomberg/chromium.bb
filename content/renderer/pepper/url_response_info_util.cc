@@ -113,8 +113,8 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
                                                      renderer_pending_host_id,
                                                      callback));
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, data));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, data));
   }
 }
 

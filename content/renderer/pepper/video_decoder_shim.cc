@@ -736,8 +736,8 @@ void VideoDecoderShim::DecoderImpl::Reset() {
     std::unique_ptr<PendingFrame> pending_frame(
         new PendingFrame(decode.decode_id));
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_, PP_OK,
-                              decode.decode_id));
+        FROM_HERE, base::BindOnce(&VideoDecoderShim::OnDecodeComplete, shim_,
+                                  PP_OK, decode.decode_id));
     pending_decodes_.pop();
   }
   // Don't need to call Reset() if the |decoder_| hasn't been initialized.
@@ -763,7 +763,8 @@ void VideoDecoderShim::DecoderImpl::Stop() {
 void VideoDecoderShim::DecoderImpl::OnInitDone(bool success) {
   if (!success) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoDecoderShim::OnInitializeFailed, shim_));
+        FROM_HERE,
+        base::BindOnce(&VideoDecoderShim::OnInitializeFailed, shim_));
     return;
   }
 
@@ -801,8 +802,8 @@ void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_, result,
-                            decode_id_));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::OnDecodeComplete, shim_,
+                                result, decode_id_));
 
   DoDecode();
 }
@@ -820,13 +821,13 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
     pending_frame.reset(new PendingFrame(decode_id_));
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoDecoderShim::OnOutputComplete, shim_,
-                            base::Passed(&pending_frame)));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::OnOutputComplete, shim_,
+                                base::Passed(&pending_frame)));
 }
 
 void VideoDecoderShim::DecoderImpl::OnResetComplete() {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoDecoderShim::OnResetComplete, shim_));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::OnResetComplete, shim_));
 }
 
 VideoDecoderShim::VideoDecoderShim(
@@ -863,9 +864,8 @@ VideoDecoderShim::~VideoDecoderShim() {
   // The callback now holds the only reference to the DecoderImpl, which will be
   // deleted when Stop completes.
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoDecoderShim::DecoderImpl::Stop,
-                 base::Owned(decoder_impl_.release())));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::DecoderImpl::Stop,
+                                base::Owned(decoder_impl_.release())));
 }
 
 bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
@@ -902,9 +902,9 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
       media::EmptyExtraData(), media::Unencrypted());
 
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoDecoderShim::DecoderImpl::Initialize,
-                 base::Unretained(decoder_impl_.get()), video_decoder_config));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::DecoderImpl::Initialize,
+                                base::Unretained(decoder_impl_.get()),
+                                video_decoder_config));
 
   state_ = DECODING;
 
@@ -923,10 +923,9 @@ void VideoDecoderShim::Decode(const media::BitstreamBuffer& bitstream_buffer) {
 
   media_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &VideoDecoderShim::DecoderImpl::Decode,
-          base::Unretained(decoder_impl_.get()),
-          bitstream_buffer.id(),
+          base::Unretained(decoder_impl_.get()), bitstream_buffer.id(),
           media::DecoderBuffer::CopyFrom(buffer, bitstream_buffer.size())));
   num_pending_decodes_++;
 }
@@ -980,9 +979,8 @@ void VideoDecoderShim::Reset() {
   DCHECK_EQ(state_, DECODING);
   state_ = RESETTING;
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoDecoderShim::DecoderImpl::Reset,
-                 base::Unretained(decoder_impl_.get())));
+      FROM_HERE, base::BindOnce(&VideoDecoderShim::DecoderImpl::Reset,
+                                base::Unretained(decoder_impl_.get())));
 }
 
 void VideoDecoderShim::Destroy() {

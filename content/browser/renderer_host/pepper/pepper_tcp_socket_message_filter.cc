@@ -233,12 +233,10 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
 
   bind_input_addr_ = net_addr;
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&PepperTCPSocketMessageFilter::DoBind,
-                                     this,
-                                     context->MakeReplyMessageContext(),
-                                     net_addr));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperTCPSocketMessageFilter::DoBind, this,
+                     context->MakeReplyMessageContext(), net_addr));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -272,14 +270,11 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   if (!browser_context || !browser_context->GetResourceContext())
     return PP_ERROR_FAILED;
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&PepperTCPSocketMessageFilter::DoConnect,
-                                     this,
-                                     context->MakeReplyMessageContext(),
-                                     host,
-                                     port,
-                                     browser_context->GetResourceContext()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperTCPSocketMessageFilter::DoConnect, this,
+                     context->MakeReplyMessageContext(), host, port,
+                     browser_context->GetResourceContext()));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -300,12 +295,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnectWithNetAddress(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PepperTCPSocketMessageFilter::DoConnectWithNetAddress,
-                 this,
-                 context->MakeReplyMessageContext(),
-                 net_addr));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperTCPSocketMessageFilter::DoConnectWithNetAddress,
+                     this, context->MakeReplyMessageContext(), net_addr));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -452,12 +444,10 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&PepperTCPSocketMessageFilter::DoListen,
-                                     this,
-                                     context->MakeReplyMessageContext(),
-                                     backlog));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperTCPSocketMessageFilter::DoListen, this,
+                     context->MakeReplyMessageContext(), backlog));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -967,9 +957,10 @@ void PepperTCPSocketMessageFilter::OpenFirewallHole(
   pepper_socket_utils::FirewallHoleOpenCallback callback =
       base::Bind(&PepperTCPSocketMessageFilter::OnFirewallHoleOpened, this,
                  context, pp_result);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&pepper_socket_utils::OpenTCPFirewallHole,
-                                     local_addr, callback));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&pepper_socket_utils::OpenTCPFirewallHole, local_addr,
+                     callback));
 }
 
 void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(
@@ -981,8 +972,8 @@ void PepperTCPSocketMessageFilter::OnFirewallHoleOpened(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperTCPSocketMessageFilter::OnListenCompleted, this,
-                 context, result));
+      base::BindOnce(&PepperTCPSocketMessageFilter::OnListenCompleted, this,
+                     context, result));
 }
 #endif  // defined(OS_CHROMEOS)
 

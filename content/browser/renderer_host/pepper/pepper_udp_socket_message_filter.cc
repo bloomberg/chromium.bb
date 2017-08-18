@@ -291,12 +291,10 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&PepperUDPSocketMessageFilter::DoBind,
-                                     this,
-                                     context->MakeReplyMessageContext(),
-                                     addr));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperUDPSocketMessageFilter::DoBind, this,
+                     context->MakeReplyMessageContext(), addr));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -318,13 +316,10 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
     return PP_ERROR_NOACCESS;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&PepperUDPSocketMessageFilter::DoSendTo,
-                                     this,
-                                     context->MakeReplyMessageContext(),
-                                     data,
-                                     addr));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperUDPSocketMessageFilter::DoSendTo, this,
+                     context->MakeReplyMessageContext(), data, addr));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -529,9 +524,10 @@ void PepperUDPSocketMessageFilter::OpenFirewallHole(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   pepper_socket_utils::FirewallHoleOpenCallback callback = base::Bind(
       &PepperUDPSocketMessageFilter::OnFirewallHoleOpened, this, bind_complete);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&pepper_socket_utils::OpenUDPFirewallHole,
-                                     local_address, callback));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&pepper_socket_utils::OpenUDPFirewallHole, local_address,
+                     callback));
 }
 
 void PepperUDPSocketMessageFilter::OnFirewallHoleOpened(

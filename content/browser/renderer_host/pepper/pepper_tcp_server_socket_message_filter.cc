@@ -123,13 +123,9 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PepperTCPServerSocketMessageFilter::DoListen,
-                 this,
-                 context->MakeReplyMessageContext(),
-                 addr,
-                 backlog));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperTCPServerSocketMessageFilter::DoListen, this,
+                     context->MakeReplyMessageContext(), addr, backlog));
   return PP_OK_COMPLETIONPENDING;
 }
 

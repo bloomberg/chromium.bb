@@ -270,9 +270,9 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(
     if (active_buffer_frame_offset_ == frames_per_buffer) {
       main_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&AudioSink::SendEnqueueBufferMessageOnMainThread,
-                     weak_factory_.GetWeakPtr(), active_buffer_index_,
-                     buffers_generation_));
+          base::BindOnce(&AudioSink::SendEnqueueBufferMessageOnMainThread,
+                         weak_factory_.GetWeakPtr(), active_buffer_index_,
+                         buffers_generation_));
       active_buffer_index_ = -1;
     }
   }
@@ -302,9 +302,9 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
 
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AudioSink::SetFormatOnMainThread,
-                   weak_factory_.GetWeakPtr(), params.GetBytesPerSecond(),
-                   params.GetBytesPerFrame()));
+        base::BindOnce(&AudioSink::SetFormatOnMainThread,
+                       weak_factory_.GetWeakPtr(), params.GetBytesPerSecond(),
+                       params.GetBytesPerFrame()));
   }
 }
 

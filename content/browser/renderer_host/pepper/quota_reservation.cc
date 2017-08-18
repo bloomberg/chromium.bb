@@ -121,10 +121,9 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
 
   if (file_system_context_.get()) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(
-            callback, quota_reservation_->remaining_quota(), file_sizes));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(callback, quota_reservation_->remaining_quota(),
+                       file_sizes));
   } else {
     // Unit testing code path.
     callback.Run(quota_reservation_->remaining_quota(), file_sizes);

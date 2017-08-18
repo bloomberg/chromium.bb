@@ -61,7 +61,7 @@ void PepperPlatformAudioOutputDev::RequestDeviceAuthorization() {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &PepperPlatformAudioOutputDev::RequestDeviceAuthorizationOnIOThread,
             this));
   }
@@ -71,8 +71,8 @@ bool PepperPlatformAudioOutputDev::StartPlayback() {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputDev::StartPlaybackOnIOThread,
-                   this));
+        base::BindOnce(&PepperPlatformAudioOutputDev::StartPlaybackOnIOThread,
+                       this));
     return true;
   }
   return false;
@@ -82,8 +82,8 @@ bool PepperPlatformAudioOutputDev::StopPlayback() {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputDev::StopPlaybackOnIOThread,
-                   this));
+        base::BindOnce(&PepperPlatformAudioOutputDev::StopPlaybackOnIOThread,
+                       this));
     return true;
   }
   return false;
@@ -93,8 +93,8 @@ bool PepperPlatformAudioOutputDev::SetVolume(double volume) {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputDev::SetVolumeOnIOThread, this,
-                   volume));
+        base::BindOnce(&PepperPlatformAudioOutputDev::SetVolumeOnIOThread, this,
+                       volume));
     return true;
   }
   return false;
@@ -106,7 +106,7 @@ void PepperPlatformAudioOutputDev::ShutDown() {
   client_ = NULL;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutputDev::ShutDownOnIOThread, this));
+      base::BindOnce(&PepperPlatformAudioOutputDev::ShutDownOnIOThread, this));
 }
 
 void PepperPlatformAudioOutputDev::OnError() {
@@ -175,8 +175,8 @@ void PepperPlatformAudioOutputDev::OnDeviceAuthorized(
     OnIPCClosed();
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutputDev::NotifyStreamCreationFailed,
-                   this));
+        base::BindOnce(
+            &PepperPlatformAudioOutputDev::NotifyStreamCreationFailed, this));
   }
 }
 
@@ -207,8 +207,9 @@ void PepperPlatformAudioOutputDev::OnStreamCreated(
       StartPlaybackOnIOThread();
 
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PepperPlatformAudioOutputDev::OnStreamCreated,
-                              this, handle, socket_handle, length));
+        FROM_HERE,
+        base::BindOnce(&PepperPlatformAudioOutputDev::OnStreamCreated, this,
+                       handle, socket_handle, length));
   }
 }
 
@@ -269,8 +270,8 @@ bool PepperPlatformAudioOutputDev::Initialize(int sample_rate,
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutputDev::CreateStreamOnIOThread, this,
-                 params_));
+      base::BindOnce(&PepperPlatformAudioOutputDev::CreateStreamOnIOThread,
+                     this, params_));
 
   return true;
 }
@@ -306,8 +307,8 @@ void PepperPlatformAudioOutputDev::CreateStreamOnIOThread(
     case IPC_CLOSED:
       main_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&PepperPlatformAudioOutputDev::NotifyStreamCreationFailed,
-                     this));
+          base::BindOnce(
+              &PepperPlatformAudioOutputDev::NotifyStreamCreationFailed, this));
       break;
 
     case IDLE:
