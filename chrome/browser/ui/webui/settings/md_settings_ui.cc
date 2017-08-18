@@ -94,6 +94,11 @@
 #include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/ui/webui/settings/change_password_handler.h"
+#endif
+
 namespace settings {
 
 // static
@@ -208,6 +213,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(GOOGLE_CHROME_BUILD)
   }
 #endif  // defined(OS_WIN)
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  AddSettingsPageUIHandler(base::MakeUnique<ChangePasswordHandler>(profile));
+  html_source->AddBoolean("changePasswordEnabled",
+                          safe_browsing::ChromePasswordProtectionService::
+                              ShouldShowChangePasswordSettingUI(profile));
+#endif
 
 #if defined(OS_CHROMEOS)
   chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =
