@@ -833,10 +833,10 @@ void InputHandler::OnScrollFinished(
   if (repeat_count > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&InputHandler::SynthesizeRepeatingScroll,
-                   weak_factory_.GetWeakPtr(), gesture_params, repeat_count - 1,
-                   repeat_delay, interaction_marker_name, id,
-                   base::Passed(std::move(callback))),
+        base::BindOnce(&InputHandler::SynthesizeRepeatingScroll,
+                       weak_factory_.GetWeakPtr(), gesture_params,
+                       repeat_count - 1, repeat_delay, interaction_marker_name,
+                       id, base::Passed(std::move(callback))),
         repeat_delay);
   } else {
     SendSynthesizeScrollGestureResponse(std::move(callback), result);

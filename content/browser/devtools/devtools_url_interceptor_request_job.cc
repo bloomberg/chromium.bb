@@ -226,8 +226,8 @@ DevToolsURLInterceptorRequestJob::~DevToolsURLInterceptorRequestJob() {
                                resource_type_ == RESOURCE_TYPE_SUB_FRAME;
   if (is_navigation_request) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(UnregisterNavigationRequestOnUI,
-                                       network_handler_, interception_id_));
+                            base::BindOnce(UnregisterNavigationRequestOnUI,
+                                           network_handler_, interception_id_));
   }
   devtools_url_request_interceptor_state_->JobFinished(interception_id_);
 }
@@ -254,9 +254,9 @@ void DevToolsURLInterceptorRequestJob::Start() {
         protocol::NetworkHandler::CreateRequestFromURLRequest(request());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(SendRequestInterceptedEventOnUiThread, network_handler_,
-                   interception_id_, global_request_id_,
-                   base::Passed(&network_request), resource_type_));
+        base::BindOnce(SendRequestInterceptedEventOnUiThread, network_handler_,
+                       interception_id_, global_request_id_,
+                       base::Passed(&network_request), resource_type_));
   }
 }
 
@@ -392,9 +392,9 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(SendAuthRequiredEventOnUiThread, network_handler_,
-                 interception_id_, base::Passed(&network_request),
-                 resource_type_, base::Passed(&auth_challenge)));
+      base::BindOnce(SendAuthRequiredEventOnUiThread, network_handler_,
+                     interception_id_, base::Passed(&network_request),
+                     resource_type_, base::Passed(&auth_challenge)));
 }
 
 void DevToolsURLInterceptorRequestJob::OnCertificateRequested(
@@ -484,10 +484,10 @@ void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
       protocol::Object::fromValue(headers_dict.get(), nullptr);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(SendRedirectInterceptedEventOnUiThread, network_handler_,
-                 interception_id_, base::Passed(&network_request),
-                 resource_type_, base::Passed(&headers_object),
-                 redirectinfo.status_code, redirectinfo.new_url.spec()));
+      base::BindOnce(SendRedirectInterceptedEventOnUiThread, network_handler_,
+                     interception_id_, base::Passed(&network_request),
+                     resource_type_, base::Passed(&headers_object),
+                     redirectinfo.status_code, redirectinfo.new_url.spec()));
 }
 
 void DevToolsURLInterceptorRequestJob::StopIntercepting() {

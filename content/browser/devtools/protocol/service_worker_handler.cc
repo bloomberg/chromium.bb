@@ -104,7 +104,7 @@ void GetDevToolsRouteInfoOnIO(
           context->GetLiveVersion(version_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             callback, version->embedded_worker()->process_id(),
             version->embedded_worker()->worker_devtools_agent_route_id()));
   }
@@ -249,7 +249,7 @@ Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&StopServiceWorkerOnIO, context_, id));
+                          base::BindOnce(&StopServiceWorkerOnIO, context_, id));
   return Response::OK();
 }
 
@@ -274,9 +274,9 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetDevToolsRouteInfoOnIO, context_, id,
-                 base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
-                            weak_factory_.GetWeakPtr())));
+      base::BindOnce(&GetDevToolsRouteInfoOnIO, context_, id,
+                     base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
+                                weak_factory_.GetWeakPtr())));
   return Response::OK();
 }
 
@@ -328,9 +328,9 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
   BackgroundSyncContext* sync_context = partition->GetBackgroundSyncContext();
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&DispatchSyncEventOnIO, context_,
-                                     make_scoped_refptr(sync_context),
-                                     GURL(origin), id, tag, last_chance));
+                          base::BindOnce(&DispatchSyncEventOnIO, context_,
+                                         make_scoped_refptr(sync_context),
+                                         GURL(origin), id, tag, last_chance));
   return Response::OK();
 }
 

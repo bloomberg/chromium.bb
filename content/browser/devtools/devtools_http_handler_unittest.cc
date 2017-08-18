@@ -76,7 +76,7 @@ class DummyServerSocketFactory : public DevToolsSocketFactory {
  protected:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
+        FROM_HERE, base::BindOnce(&QuitFromHandlerThread, quit_closure_1_));
     return base::WrapUnique(new DummyServerSocket());
   }
 
@@ -99,7 +99,7 @@ class FailingServerSocketFactory : public DummyServerSocketFactory {
  private:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
+        FROM_HERE, base::BindOnce(&QuitFromHandlerThread, quit_closure_1_));
     return nullptr;
   }
 };

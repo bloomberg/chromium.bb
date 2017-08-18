@@ -148,10 +148,9 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
       : callback_(std::move(callback)),
         weak_factory_(this) {
     BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SystemInfoHandlerGpuObserver::ObserverWatchdogCallback,
-                   weak_factory_.GetWeakPtr()),
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SystemInfoHandlerGpuObserver::ObserverWatchdogCallback,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kGPUInfoWatchdogTimeoutMs));
 
     GpuDataManager::GetInstance()->AddObserver(this);
@@ -208,10 +207,9 @@ void SystemInfoHandler::GetInfo(
     // Waiting for complete GPU info in the if-test above seems to
     // frequently hit internal timeouts in the launching of the unsandboxed
     // GPU process in debug builds on Windows.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SendGetInfoResponse, base::Passed(std::move(callback))));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&SendGetInfoResponse,
+                                           base::Passed(std::move(callback))));
   } else {
     // We will be able to get more information from the GpuDataManager.
     // Register a transient observer with it to call us back when the

@@ -261,9 +261,9 @@ void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
   TRACE_EVENT0("devtools", "DevToolsAgent::OnDispatchOnInspectorBackend");
   if (method == kPageGetAppManifest) {
     ManifestManager* manager = frame_->manifest_manager();
-    manager->GetManifest(
-        base::Bind(&DevToolsAgent::GotManifest,
-        weak_factory_.GetWeakPtr(), session_id, call_id));
+    manager->GetManifest(base::BindOnce(&DevToolsAgent::GotManifest,
+                                        weak_factory_.GetWeakPtr(), session_id,
+                                        call_id));
     return;
   }
   GetWebAgent()->DispatchOnInspectorBackend(session_id, call_id,

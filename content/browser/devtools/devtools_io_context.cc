@@ -501,8 +501,8 @@ scoped_refptr<DevToolsIOContext::ROStream> DevToolsIOContext::OpenBlob(
   bool inserted = streams_.insert(std::make_pair(handle, result)).second;
 
   result->Open(context, partition, uuid,
-               base::Bind(&DevToolsIOContext::OnBlobOpenComplete,
-                          weak_factory_.GetWeakPtr(), handle));
+               base::BindOnce(&DevToolsIOContext::OnBlobOpenComplete,
+                              weak_factory_.GetWeakPtr(), handle));
   DCHECK(inserted);
   return std::move(result);
 }

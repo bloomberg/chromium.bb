@@ -81,15 +81,15 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
 void DevToolsAgentFilter::AddEmbeddedWorkerRouteOnMainThread(
     int32_t routing_id) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DevToolsAgentFilter::AddEmbeddedWorkerRoute, this,
-                            routing_id));
+      FROM_HERE, base::BindOnce(&DevToolsAgentFilter::AddEmbeddedWorkerRoute,
+                                this, routing_id));
 }
 
 void DevToolsAgentFilter::RemoveEmbeddedWorkerRouteOnMainThread(
     int32_t routing_id) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DevToolsAgentFilter::RemoveEmbeddedWorkerRoute,
-                            this, routing_id));
+      FROM_HERE, base::BindOnce(&DevToolsAgentFilter::RemoveEmbeddedWorkerRoute,
+                                this, routing_id));
 }
 
 void DevToolsAgentFilter::AddEmbeddedWorkerRoute(int32_t routing_id) {
