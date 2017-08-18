@@ -296,6 +296,7 @@
       'Linux Builder (dbg)(32)': 'debug_bot_x86',
       'Linux Builder': 'release_bot',
       'Deterministic Linux': 'release_bot',
+      'Fuchsia Compile': 'release_bot_fuchsia',
     },
 
     'chromium.lkgr': {
