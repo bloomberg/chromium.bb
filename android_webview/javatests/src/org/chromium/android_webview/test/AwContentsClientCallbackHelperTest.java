@@ -177,12 +177,7 @@ public class AwContentsClientCallbackHelperTest {
 
         final Picture thePicture = new Picture();
 
-        final Callable<Picture> pictureProvider = new Callable<Picture>() {
-            @Override
-            public Picture call() {
-                return thePicture;
-            }
-        };
+        final Callable<Picture> pictureProvider = () -> thePicture;
 
         // AwContentsClientCallbackHelper rate limits photo callbacks so two posts in close
         // succession should only result in one callback.
@@ -191,12 +186,9 @@ public class AwContentsClientCallbackHelperTest {
         // before mLooper processes the first. To do this we run both posts as a single block
         // and we do it in the thread that is processes the callbacks (mLooper).
         Handler mainHandler = new Handler(mLooper);
-        Runnable postPictures = new Runnable() {
-            @Override
-            public void run() {
-                mClientHelper.postOnNewPicture(pictureProvider);
-                mClientHelper.postOnNewPicture(pictureProvider);
-            }
+        Runnable postPictures = () -> {
+            mClientHelper.postOnNewPicture(pictureProvider);
+            mClientHelper.postOnNewPicture(pictureProvider);
         };
         mainHandler.post(postPictures);
 
@@ -208,10 +200,7 @@ public class AwContentsClientCallbackHelperTest {
         // Then we post a runnable on the callback handler thread. Since both posts have happened
         // and the first callback has happened a second callback (if it exists) must be
         // in the queue before this runnable.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
         });
 
         // When that runnable has finished we assert that one and only on callback happened.
@@ -287,10 +276,7 @@ public class AwContentsClientCallbackHelperTest {
         cancelCallbackPollerHelper.waitForCallback(pollCount);
 
         // Flush main queue.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
         });
 
         // Neither callback should actually happen.

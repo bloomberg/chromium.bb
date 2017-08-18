@@ -18,8 +18,6 @@ import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
-import java.util.concurrent.Callable;
-
 /**
  * TestSuite for EME key systems.
  *
@@ -66,12 +64,7 @@ public class KeySystemTest {
         mActivityTestRule.executeJavaScriptAndWaitForResult(
                 mAwContents, mContentsClient, "isKeySystemSupported('" + keySystem + "')");
 
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return !getResultFromJS().equals("null");
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(() -> !getResultFromJS().equals("null"));
 
         return getResultFromJS();
     }

@@ -29,8 +29,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
 
-import java.util.concurrent.Callable;
-
 /**
  * AwContents garbage collection tests. Most apps relies on WebView being
  * garbage collected to release memory. These tests ensure that nothing
@@ -145,14 +143,10 @@ public class AwContentsGarbageCollectionTest {
             // Instead, we simply emulate Android's behavior by keeping strong references.
             // See crbug.com/595613 for details.
             resultReceivers[i] =
-                    mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<ResultReceiver>() {
-                        @Override
-                        public ResultReceiver call() throws Exception {
-                            return containerView.getContentViewCore()
+                    mActivityTestRule.runTestOnUiThreadAndGetResult(
+                            () -> containerView.getContentViewCore()
                                     .getImeAdapterForTest()
-                                    .getNewShowKeyboardReceiver();
-                        }
-                    });
+                                    .getNewShowKeyboardReceiver());
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -250,12 +244,8 @@ public class AwContentsGarbageCollectionTest {
     }
 
     private void removeAllViews() throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().removeAllViews();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mActivityTestRule.getActivity().removeAllViews());
     }
 
     private void gcAndCheckAllAwContentsDestroyed() {
@@ -265,14 +255,11 @@ public class AwContentsGarbageCollectionTest {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() {
-                            int count_aw_contents = AwContents.getNativeInstanceCount();
-                            int count_aw_functor = AwGLFunctor.getNativeInstanceCount();
-                            return count_aw_contents <= MAX_IDLE_INSTANCES
-                                    && count_aw_functor <= MAX_IDLE_INSTANCES;
-                        }
+                    return mActivityTestRule.runTestOnUiThreadAndGetResult(() -> {
+                        int count_aw_contents = AwContents.getNativeInstanceCount();
+                        int count_aw_functor = AwGLFunctor.getNativeInstanceCount();
+                        return count_aw_contents <= MAX_IDLE_INSTANCES
+                                && count_aw_functor <= MAX_IDLE_INSTANCES;
                     });
                 } catch (Exception e) {
                     return false;

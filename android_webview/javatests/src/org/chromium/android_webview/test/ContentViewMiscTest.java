@@ -87,12 +87,7 @@ public class ContentViewMiscTest {
         // Set up a delegate so we know when native code is about to get
         // informed of a proxy change.
         final AtomicBoolean proxyChanged = new AtomicBoolean();
-        final ProxyChangeListener.Delegate delegate = new ProxyChangeListener.Delegate() {
-            @Override
-            public void proxySettingsChanged() {
-                proxyChanged.set(true);
-            }
-        };
+        final ProxyChangeListener.Delegate delegate = () -> proxyChanged.set(true);
         Intent intent = new Intent();
         intent.setAction(Proxy.PROXY_CHANGE_ACTION);
 

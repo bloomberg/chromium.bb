@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -71,14 +70,10 @@ public class AwContentsTest {
     @Feature({"AndroidWebView"})
     public void testCreateDestroy() throws Throwable {
         // NOTE this test runs on UI thread, so we cannot call any async methods.
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.createAwTestContainerView(mContentsClient)
-                        .getAwContents()
-                        .destroy();
-            }
-        });
+        mActivityTestRule.runOnUiThread(() -> mActivityTestRule.createAwTestContainerView(
+                mContentsClient)
+                .getAwContents()
+                .destroy());
     }
 
     @Test
@@ -134,43 +129,40 @@ public class AwContentsTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testWebViewApisFailGracefullyAfterDestruction() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AwContents awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
-                                                .getAwContents();
-                awContents.destroy();
+        mActivityTestRule.runOnUiThread(() -> {
+            AwContents awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                    .getAwContents();
+            awContents.destroy();
 
-                // The documentation for WebView#destroy() reads "This method should be called
-                // after this WebView has been removed from the view system. No other methods
-                // may be called on this WebView after destroy".
-                // However, some apps do not respect that restriction so we need to ensure that
-                // we fail gracefully and do not crash when APIs are invoked after destruction.
-                // Due to the large number of APIs we only test a representative selection here.
-                awContents.clearHistory();
-                awContents.loadUrl("http://www.google.com");
-                awContents.findAllAsync("search");
-                Assert.assertNull(awContents.getUrl());
-                Assert.assertFalse(awContents.canGoBack());
-                awContents.disableJavascriptInterfacesInspection();
-                awContents.invokeZoomPicker();
-                awContents.onResume();
-                awContents.stopLoading();
-                awContents.onWindowVisibilityChanged(View.VISIBLE);
-                awContents.requestFocus();
-                awContents.isMultiTouchZoomSupported();
-                awContents.setOverScrollMode(View.OVER_SCROLL_NEVER);
-                awContents.pauseTimers();
-                awContents.onContainerViewScrollChanged(200, 200, 100, 100);
-                awContents.computeScroll();
-                awContents.onMeasure(100, 100);
-                awContents.onDraw(new Canvas());
-                awContents.getMostRecentProgress();
-                Assert.assertEquals(0, awContents.computeHorizontalScrollOffset());
-                Assert.assertEquals(0, awContents.getContentWidthCss());
-                awContents.onKeyUp(KeyEvent.KEYCODE_BACK,
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
-            }
+            // The documentation for WebView#destroy() reads "This method should be called
+            // after this WebView has been removed from the view system. No other methods
+            // may be called on this WebView after destroy".
+            // However, some apps do not respect that restriction so we need to ensure that
+            // we fail gracefully and do not crash when APIs are invoked after destruction.
+            // Due to the large number of APIs we only test a representative selection here.
+            awContents.clearHistory();
+            awContents.loadUrl("http://www.google.com");
+            awContents.findAllAsync("search");
+            Assert.assertNull(awContents.getUrl());
+            Assert.assertFalse(awContents.canGoBack());
+            awContents.disableJavascriptInterfacesInspection();
+            awContents.invokeZoomPicker();
+            awContents.onResume();
+            awContents.stopLoading();
+            awContents.onWindowVisibilityChanged(View.VISIBLE);
+            awContents.requestFocus();
+            awContents.isMultiTouchZoomSupported();
+            awContents.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            awContents.pauseTimers();
+            awContents.onContainerViewScrollChanged(200, 200, 100, 100);
+            awContents.computeScroll();
+            awContents.onMeasure(100, 100);
+            awContents.onDraw(new Canvas());
+            awContents.getMostRecentProgress();
+            Assert.assertEquals(0, awContents.computeHorizontalScrollOffset());
+            Assert.assertEquals(0, awContents.getContentWidthCss());
+            awContents.onKeyUp(KeyEvent.KEYCODE_BACK,
+                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU));
         });
     }
 
@@ -209,12 +201,8 @@ public class AwContentsTest {
                 s.release();
             }
         });
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                awContents.documentHasImages(msg);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> awContents.documentHasImages(msg));
         Assert.assertTrue(s.tryAcquire(AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         int result = val.get();
         return result;
@@ -301,12 +289,9 @@ public class AwContentsTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(new TestAwContentsClient());
         final AwContents awContents = testContainer.getAwContents();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < 10; ++i) {
-                    awContents.clearCache(true);
-                }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            for (int i = 0; i < 10; ++i) {
+                awContents.clearCache(true);
             }
         });
     }
@@ -336,13 +321,8 @@ public class AwContentsTest {
             mActivityTestRule.loadUrlSync(
                     awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-            mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return awContents.getFavicon() != null
-                            && !awContents.getFavicon().sameAs(defaultFavicon);
-                }
-            });
+            mActivityTestRule.pollUiThread(() -> awContents.getFavicon() != null
+                    && !awContents.getFavicon().sameAs(defaultFavicon));
 
             final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
             final Bitmap originalFavicon =
@@ -444,15 +424,12 @@ public class AwContentsTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final CallbackHelper callback = new CallbackHelper();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                AwContents awContents = testView.getAwContents();
-                AwSettings awSettings = awContents.getSettings();
-                awSettings.setJavaScriptEnabled(true);
-                awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
-                awContents.evaluateJavaScriptForTests("window.bridge.run();", null);
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AwContents awContents = testView.getAwContents();
+            AwSettings awSettings = awContents.getSettings();
+            awSettings.setJavaScriptEnabled(true);
+            awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
+            awContents.evaluateJavaScriptForTests("window.bridge.run();", null);
         });
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
@@ -744,12 +721,8 @@ public class AwContentsTest {
         final AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                awContents.setRendererPriorityPolicy(RendererPriority.WAIVED, false);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> awContents.setRendererPriorityPolicy(RendererPriority.WAIVED, false));
         mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 "<html></html>", "text/html", false);
 
@@ -776,24 +749,15 @@ public class AwContentsTest {
         final AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                awContents.setRendererPriorityPolicy(RendererPriority.HIGH, true);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> awContents.setRendererPriorityPolicy(RendererPriority.HIGH, true));
         mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
                 "<html></html>", "text/html", false);
 
         Assert.assertTrue(awContents.isPageVisible());
         Assert.assertTrue(bindingManager.isChildProcessCreated());
         bindingManager.assertSetInForegroundCall(true);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                awContents.onPause();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> awContents.onPause());
         bindingManager.assertSetInForegroundCall(false);
     }
 
@@ -803,19 +767,16 @@ public class AwContentsTest {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
     public void testPauseDestroyResume() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AwContents awContents;
-                awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
-                                     .getAwContents();
-                awContents.pauseTimers();
-                awContents.pauseTimers();
-                awContents.destroy();
-                awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
-                                     .getAwContents();
-                awContents.resumeTimers();
-            }
+        mActivityTestRule.runOnUiThread(() -> {
+            AwContents awContents;
+            awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                    .getAwContents();
+            awContents.pauseTimers();
+            awContents.pauseTimers();
+            awContents.destroy();
+            awContents = mActivityTestRule.createAwTestContainerView(mContentsClient)
+                    .getAwContents();
+            awContents.resumeTimers();
         });
     }
 
@@ -829,14 +790,11 @@ public class AwContentsTest {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Run javascript navigation immediately, without waiting for the completion of data
-                // URL.
-                awContents.loadData("<html>test</html>", "text/html", "utf-8");
-                awContents.loadUrl("javascript: void(0)");
-            }
+        mActivityTestRule.runOnUiThread(() -> {
+            // Run javascript navigation immediately, without waiting for the completion of data
+            // URL.
+            awContents.loadData("<html>test</html>", "text/html", "utf-8");
+            awContents.loadUrl("javascript: void(0)");
         });
 
         mContentsClient.getOnPageFinishedHelper().waitForCallback(

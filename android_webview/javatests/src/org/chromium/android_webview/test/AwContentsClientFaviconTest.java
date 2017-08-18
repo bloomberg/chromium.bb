@@ -23,7 +23,6 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.concurrent.Callable;
 
 /**
  * Tests for the Favicon and TouchIcon related APIs.
@@ -110,12 +109,8 @@ public class AwContentsClientFaviconTest {
 
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mWebServer.getRequestCount(FAVICON1_URL) == 1;
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> mWebServer.getRequestCount(FAVICON1_URL) == 1);
 
         // Make sure the request counter for favicon is not incremented, since we already got 404.
         mActivityTestRule.loadUrlSync(

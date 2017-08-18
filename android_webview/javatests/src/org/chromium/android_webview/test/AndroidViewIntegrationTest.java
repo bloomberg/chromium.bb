@@ -100,14 +100,11 @@ public class AndroidViewIntegrationTest {
             final AwContentsClient awContentsClient, final int visibility) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<>();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                testContainerView.set(
-                        mActivityTestRule.createAwTestContainerView(awContentsClient));
-                testContainerView.get().setLayoutParams(mWrapContentLayoutParams);
-                testContainerView.get().setVisibility(visibility);
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            testContainerView.set(
+                    mActivityTestRule.createAwTestContainerView(awContentsClient));
+            testContainerView.get().setLayoutParams(mWrapContentLayoutParams);
+            testContainerView.get().setVisibility(visibility);
         });
         return testContainerView.get();
     }
@@ -116,34 +113,22 @@ public class AndroidViewIntegrationTest {
             final AwContentsClient awContentsClient) {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<>();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                testContainerView.set(
-                        mActivityTestRule.createDetachedAwTestContainerView(awContentsClient));
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> testContainerView.set(
+                mActivityTestRule.createDetachedAwTestContainerView(awContentsClient)));
         return testContainerView.get();
     }
 
     private void assertZeroHeight(final AwTestContainerView testContainerView) throws Throwable {
         // Make sure the test isn't broken by the view having a non-zero height.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals(0, testContainerView.getHeight());
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> Assert.assertEquals(0, testContainerView.getHeight()));
     }
 
     private int getRootLayoutWidthOnMainThread() throws Exception {
         final AtomicReference<Integer> width = new AtomicReference<>();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                width.set(Integer.valueOf(mActivityTestRule.getActivity().getRootLayoutWidth()));
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> width.set(
+                        Integer.valueOf(mActivityTestRule.getActivity().getRootLayoutWidth())));
         return width.get();
     }
 
@@ -194,12 +179,8 @@ public class AndroidViewIntegrationTest {
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
         Assert.assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals(View.INVISIBLE, testContainerView.getVisibility());
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> Assert.assertEquals(View.INVISIBLE, testContainerView.getVisibility()));
     }
 
     /**
@@ -439,12 +420,8 @@ public class AndroidViewIntegrationTest {
         final int narrowLayoutHeight = mOnContentSizeChangedHelper.getHeight();
 
         contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                testContainerView.onSizeChanged(physicalWidth, 0, 0, 0);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> testContainerView.onSizeChanged(physicalWidth, 0, 0, 0));
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
 
         // As a result of calling the onSizeChanged method the layout size should be updated to

@@ -127,12 +127,7 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindNextFirst() throws Throwable {
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                contents().findNext(true);
-            }
-        });
+        runTestOnUiThread(() -> contents().findNext(true));
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         assertEquals(1, findNextOnUiThread(true));
         assertEquals(0, findNextOnUiThread(false));

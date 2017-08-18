@@ -18,7 +18,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Test suite for {@link CleanupReference}. */
@@ -73,12 +72,7 @@ public class CleanupReferenceTest {
         // Ensure compiler / instrumentation does not strip out the assignment.
         Assert.assertNull(instance);
         collectGarbage();
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return sObjectCount.get();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> sObjectCount.get()));
     }
 
     @Test
@@ -103,12 +97,7 @@ public class CleanupReferenceTest {
         // to be GC'ed only when building using GN.
         Assert.assertNotEquals(sObjectCount.get(), -1);
         collectGarbage();
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return sObjectCount.get();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> sObjectCount.get()));
     }
 
 }

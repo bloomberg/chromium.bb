@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.test.util.DisabledTest;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -118,12 +117,7 @@ public class AwSecondBrowserProcessTest {
         // Context.stopService would result in the opposite outcome.
         Process.killProcess(mSecondBrowserServicePid);
         if (sync) {
-            AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return !isSecondBrowserServiceRunning();
-                }
-            });
+            AwActivityTestRule.pollInstrumentationThread(() -> !isSecondBrowserServiceRunning());
         }
         mSecondBrowserServicePid = 0;
     }
@@ -133,15 +127,12 @@ public class AwSecondBrowserProcessTest {
         // The activity must be launched in order for proper webview statics to be setup.
         mActivityTestRule.getActivity();
         // runOnMainSync does not catch RuntimeExceptions, they just terminate the test.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    AwBrowserProcess.start();
-                    success[0] = true;
-                } catch (RuntimeException e) {
-                    success[0] = false;
-                }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            try {
+                AwBrowserProcess.start();
+                success[0] = true;
+            } catch (RuntimeException e) {
+                success[0] = false;
             }
         });
         Assert.assertNotNull(success[0]);

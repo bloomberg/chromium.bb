@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -491,19 +490,10 @@ public class AwContentsClientShouldInterceptRequestTest {
         // delete it to make sure that the dangling 'read' task doesn't cause a crash. Unfortunately
         // this will not always lead to a crash but it should happen often enough for us to notice.
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().removeAllViews();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mActivityTestRule.getActivity().removeAllViews());
         mActivityTestRule.destroyAwContentsOnMainSync(mAwContents);
-        mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return AwContents.getNativeInstanceCount() == 0;
-            }
-        });
+        mActivityTestRule.pollUiThread(() -> AwContents.getNativeInstanceCount() == 0);
 
         slowAwWebResourceResponse.unblockReads();
     }

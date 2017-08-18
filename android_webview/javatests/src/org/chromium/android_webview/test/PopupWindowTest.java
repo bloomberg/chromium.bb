@@ -27,8 +27,6 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests for pop up window flow.
  */
@@ -142,13 +140,9 @@ public class PopupWindowTest {
         // Now long press on some texts and see if the text handles show up.
         DOMUtils.longPressNode(popupContents.getContentViewCore(), "plain_text");
         assertWaitForSelectActionBarStatus(true, popupContents.getContentViewCore());
-        Assert.assertTrue(mActivityTestRule.runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return popupContents.getContentViewCore()
-                        .getSelectionPopupControllerForTesting().hasSelection();
-            }
-        }));
+        Assert.assertTrue(mActivityTestRule.runTestOnUiThreadAndGetResult(
+                () -> popupContents.getContentViewCore()
+                        .getSelectionPopupControllerForTesting().hasSelection()));
 
         // Now hide the select action bar. This should hide the text handles and
         // clear the selection.
@@ -164,20 +158,11 @@ public class PopupWindowTest {
 
     // Copied from imeTest.java.
     private void assertWaitForSelectActionBarStatus(boolean show, final ContentViewCore cvc) {
-        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return cvc.isSelectActionBarShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(Criteria.equals(show, () -> cvc.isSelectActionBarShowing()));
     }
 
     private void hideSelectActionMode(final ContentViewCore cvc) {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                cvc.destroySelectActionMode();
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> cvc.destroySelectActionMode());
     }
 }

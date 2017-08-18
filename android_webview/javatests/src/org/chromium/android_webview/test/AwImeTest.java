@@ -53,23 +53,20 @@ public class AwImeTest {
     @Before
     public void setUp() throws Exception {
         mContentsClient = new TestAwContentsClient();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Use detached container view to avoid focus request.
-                mTestContainerView =
-                        mActivityTestRule.createDetachedAwTestContainerView(mContentsClient);
-                mEditText = new EditText(mActivityTestRule.getActivity());
-                mActivityTestRule.getActivity().addView(mEditText);
-                mActivityTestRule.getActivity().addView(mTestContainerView);
-                mTestContainerView.getAwContents().addJavascriptInterface(
-                        mTestJavascriptInterface, "test");
-                // Let's not test against real input method.
-                mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(
-                        mTestContainerView.getContentViewCore());
-                mTestContainerView.getContentViewCore().getImeAdapterForTest()
-                        .setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Use detached container view to avoid focus request.
+            mTestContainerView =
+                    mActivityTestRule.createDetachedAwTestContainerView(mContentsClient);
+            mEditText = new EditText(mActivityTestRule.getActivity());
+            mActivityTestRule.getActivity().addView(mEditText);
+            mActivityTestRule.getActivity().addView(mTestContainerView);
+            mTestContainerView.getAwContents().addJavascriptInterface(
+                    mTestJavascriptInterface, "test");
+            // Let's not test against real input method.
+            mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(
+                    mTestContainerView.getContentViewCore());
+            mTestContainerView.getContentViewCore().getImeAdapterForTest()
+                    .setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
         });
     }
 
@@ -83,25 +80,17 @@ public class AwImeTest {
     }
 
     private void focusOnEditTextAndShowKeyboard() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mEditText.requestFocus();
-                InputMethodManager imm =
-                        (InputMethodManager) mActivityTestRule.getActivity().getSystemService(
-                                Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(mEditText, 0);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mEditText.requestFocus();
+            InputMethodManager imm =
+                    (InputMethodManager) mActivityTestRule.getActivity().getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(mEditText, 0);
         });
     }
 
     private void focusOnWebViewAndEnableEditing() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mTestContainerView.requestFocus();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTestContainerView.requestFocus());
 
         mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         // View focus may not have been propagated to the renderer process yet. If document is not
