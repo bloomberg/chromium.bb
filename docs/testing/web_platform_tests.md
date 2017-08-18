@@ -44,7 +44,11 @@ The easiest way to check the status of recent imports is to look at:
 -   Recent CLs created by
     [blink-w3c-test-autoroller@chromium.org](https://chromium-review.googlesource.com/q/owner:blink-w3c-test-autoroller%40chromium.org).
 
-Automatic imports are intended to run at least once every 24 hours.
+The import jobs will generally be green if either there was nothing to do,
+or a CL was successfully submitted.
+
+If the importer starts misbehaving, it could be disabled by turning off the
+auto-import mode by landing [this CL](https://crrev.com/c/617479/).
 
 ### Failures caused by automatic imports.
 
