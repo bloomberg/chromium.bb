@@ -4,7 +4,11 @@
 
 package org.chromium.mojo;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
+
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
@@ -15,44 +19,47 @@ import org.chromium.base.library_loader.LibraryProcessType;
  * Base class to test mojo. Setup the environment.
  */
 @JNINamespace("mojo::android")
-public class MojoTestCase extends InstrumentationTestCase {
+public class MojoTestRule implements TestRule {
 
     private long mTestEnvironmentPointer;
 
-    /**
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public void ruleSetUp() throws Exception {
         ContextUtils.initApplicationContext(
-                getInstrumentation().getTargetContext().getApplicationContext());
+                InstrumentationRegistry.getTargetContext().getApplicationContext());
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         nativeInit();
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
     }
 
-    /**
-     * @see android.test.InstrumentationTestCase#tearDown()
-     */
-    @Override
-    protected void tearDown() throws Exception {
+    public void ruleTearDown() throws Exception {
         nativeTearDownTestEnvironment(mTestEnvironmentPointer);
-        super.tearDown();
     }
+
 
     /**
      * Runs the run loop for the given time.
      */
-    protected void runLoop(long timeoutMS) {
+    public void runLoop(long timeoutMS) {
         nativeRunLoop(timeoutMS);
     }
 
     /**
      * Runs the run loop until no handle or task are immediately available.
      */
-    protected void runLoopUntilIdle() {
+    public void runLoopUntilIdle() {
         nativeRunLoop(0);
+    }
+
+    @Override
+    public Statement apply(final Statement base, Description desc) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                ruleSetUp();
+                base.evaluate();
+                ruleTearDown();
+            }
+        };
     }
 
     private native void nativeInit();

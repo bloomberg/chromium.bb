@@ -6,7 +6,14 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import org.chromium.mojo.MojoTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
 import org.chromium.mojo.bindings.test.mojom.imported.ImportedInterface;
 import org.chromium.mojo.bindings.test.mojom.sample.Factory;
@@ -27,7 +34,13 @@ import java.util.List;
 /**
  * Tests for interfaces / proxies / stubs generated for sample_factory.mojom.
  */
-public class InterfacesTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class InterfacesTest {
+
+
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
+
 
     private static final String OBJECT_NAME = "hello world";
 
@@ -164,15 +177,14 @@ public class InterfacesTest extends MojoTestCase {
     /**
      * @see MojoTestCase#tearDown()
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+        public void tearDown() throws Exception {
         // Close the elements in the reverse order they were added. This is needed because it is an
         // error to close the handle of a proxy without closing the proxy first.
         Collections.reverse(mCloseablesToClose);
         for (Closeable c : mCloseablesToClose) {
             c.close();
         }
-        super.tearDown();
     }
 
     /**
@@ -185,40 +197,42 @@ public class InterfacesTest extends MojoTestCase {
         proxy.getProxyHandler().setErrorHandler(errorHandler);
 
         if (impl != null) {
-            assertNull(impl.getLastMojoException());
-            assertEquals("", impl.getNameSynchronously());
+            Assert.assertNull(impl.getLastMojoException());
+            Assert.assertEquals("", impl.getNameSynchronously());
         }
 
         proxy.getName(callback);
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertNull(errorHandler.getLastMojoException());
-        assertTrue(callback.wasCalled());
-        assertEquals("", callback.getName());
+        Assert.assertNull(errorHandler.getLastMojoException());
+        Assert.assertTrue(callback.wasCalled());
+        Assert.assertEquals("", callback.getName());
 
         callback.reset();
         proxy.setName(OBJECT_NAME);
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertNull(errorHandler.getLastMojoException());
+        Assert.assertNull(errorHandler.getLastMojoException());
         if (impl != null) {
-            assertNull(impl.getLastMojoException());
-            assertEquals(OBJECT_NAME, impl.getNameSynchronously());
+            Assert.assertNull(impl.getLastMojoException());
+            Assert.assertEquals(OBJECT_NAME, impl.getNameSynchronously());
         }
 
         proxy.getName(callback);
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertNull(errorHandler.getLastMojoException());
-        assertTrue(callback.wasCalled());
-        assertEquals(OBJECT_NAME, callback.getName());
+        Assert.assertNull(errorHandler.getLastMojoException());
+        Assert.assertTrue(callback.wasCalled());
+        Assert.assertEquals(OBJECT_NAME, callback.getName());
     }
 
+    @Test
     @SmallTest
     public void testName() {
-        assertEquals("sample::NamedObject", NamedObject.MANAGER.getName());
+        Assert.assertEquals("sample::NamedObject", NamedObject.MANAGER.getName());
     }
 
+    @Test
     @SmallTest
     public void testProxyAndStub() {
         MockNamedObjectImpl impl = new MockNamedObjectImpl();
@@ -228,6 +242,7 @@ public class InterfacesTest extends MojoTestCase {
         checkProxy(proxy, impl);
     }
 
+    @Test
     @SmallTest
     public void testProxyAndStubOverPipe() {
         MockNamedObjectImpl impl = new MockNamedObjectImpl();
@@ -237,6 +252,7 @@ public class InterfacesTest extends MojoTestCase {
         checkProxy(proxy, impl);
     }
 
+    @Test
     @SmallTest
     public void testFactoryOverPipe() {
         Factory.Proxy proxy = BindingsTestUtils.newProxyOverPipe(
@@ -249,20 +265,22 @@ public class InterfacesTest extends MojoTestCase {
         checkProxy(request.first, null);
     }
 
+    @Test
     @SmallTest
     public void testInterfaceClosing() {
         MockFactoryImpl impl = new MockFactoryImpl();
         Factory.Proxy proxy =
                 BindingsTestUtils.newProxyOverPipe(Factory.MANAGER, impl, mCloseablesToClose);
 
-        assertFalse(impl.isClosed());
+        Assert.assertFalse(impl.isClosed());
 
         proxy.close();
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertTrue(impl.isClosed());
+        Assert.assertTrue(impl.isClosed());
     }
 
+    @Test
     @SmallTest
     public void testResponse() {
         MockFactoryImpl impl = new MockFactoryImpl();
@@ -275,10 +293,10 @@ public class InterfacesTest extends MojoTestCase {
         DoStuffResponseImpl response = new DoStuffResponseImpl();
         proxy.doStuff(request, handles.first, response);
 
-        assertFalse(response.wasResponseCalled());
+        Assert.assertFalse(response.wasResponseCalled());
 
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertTrue(response.wasResponseCalled());
+        Assert.assertTrue(response.wasResponseCalled());
     }
 }

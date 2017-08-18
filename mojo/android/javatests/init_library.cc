@@ -7,7 +7,7 @@
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
-#include "mojo/android/javatests/mojo_test_case.h"
+#include "mojo/android/javatests/mojo_test_rule.h"
 #include "mojo/android/javatests/validation_test_util.h"
 #include "mojo/android/system/mojo_jni_registrar.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -16,7 +16,7 @@ namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
     {"MojoSystem", mojo::android::RegisterSystemJni},
-    {"MojoTestCase", mojo::android::RegisterMojoTestCase},
+    {"MojoTestRule", mojo::android::RegisterMojoTestRule},
     {"ValidationTestUtil", mojo::android::RegisterValidationTestUtil},
 };
 

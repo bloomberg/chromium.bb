@@ -6,7 +6,15 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import org.chromium.mojo.MojoTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiver;
 import org.chromium.mojo.system.Core;
@@ -23,7 +31,13 @@ import java.util.ArrayList;
 /**
  * Testing the {@link Connector} class.
  */
-public class ConnectorTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ConnectorTest {
+
+
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
+
 
     private static final int DATA_LENGTH = 1024;
 
@@ -36,9 +50,8 @@ public class ConnectorTest extends MojoTestCase {
     /**
      * @see MojoTestCase#setUp()
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+        public void setUp() throws Exception {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(
                 new MessagePipeHandle.CreateOptions());
@@ -50,58 +63,60 @@ public class ConnectorTest extends MojoTestCase {
         mConnector.setErrorHandler(mErrorHandler);
         mConnector.start();
         mTestMessage = BindingsTestUtils.newRandomMessage(DATA_LENGTH);
-        assertNull(mErrorHandler.getLastMojoException());
-        assertEquals(0, mReceiver.messages.size());
+        Assert.assertNull(mErrorHandler.getLastMojoException());
+        Assert.assertEquals(0, mReceiver.messages.size());
     }
 
     /**
      * @see MojoTestCase#tearDown()
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+        public void tearDown() throws Exception {
         mConnector.close();
         mHandle.close();
-        super.tearDown();
     }
 
     /**
      * Test sending a message through a {@link Connector}.
      */
+    @Test
     @SmallTest
     public void testSendingMessage() {
         mConnector.accept(mTestMessage);
-        assertNull(mErrorHandler.getLastMojoException());
+        Assert.assertNull(mErrorHandler.getLastMojoException());
         ResultAnd<MessagePipeHandle.ReadMessageResult> result =
                 mHandle.readMessage(MessagePipeHandle.ReadFlags.NONE);
-        assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(DATA_LENGTH, result.getValue().mData.length);
-        assertEquals(mTestMessage.getData(), ByteBuffer.wrap(result.getValue().mData));
+        Assert.assertEquals(MojoResult.OK, result.getMojoResult());
+        Assert.assertEquals(DATA_LENGTH, result.getValue().mData.length);
+        Assert.assertEquals(mTestMessage.getData(), ByteBuffer.wrap(result.getValue().mData));
     }
 
     /**
      * Test receiving a message through a {@link Connector}
      */
+    @Test
     @SmallTest
     public void testReceivingMessage() {
         mHandle.writeMessage(mTestMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        runLoopUntilIdle();
-        assertNull(mErrorHandler.getLastMojoException());
-        assertEquals(1, mReceiver.messages.size());
+        mTestRule.runLoopUntilIdle();
+        Assert.assertNull(mErrorHandler.getLastMojoException());
+        Assert.assertEquals(1, mReceiver.messages.size());
         Message received = mReceiver.messages.get(0);
-        assertEquals(0, received.getHandles().size());
-        assertEquals(mTestMessage.getData(), received.getData());
+        Assert.assertEquals(0, received.getHandles().size());
+        Assert.assertEquals(mTestMessage.getData(), received.getData());
     }
 
     /**
      * Test receiving an error through a {@link Connector}.
      */
+    @Test
     @SmallTest
     public void testErrors() {
         mHandle.close();
-        runLoopUntilIdle();
-        assertNotNull(mErrorHandler.getLastMojoException());
-        assertEquals(MojoResult.FAILED_PRECONDITION,
+        mTestRule.runLoopUntilIdle();
+        Assert.assertNotNull(mErrorHandler.getLastMojoException());
+        Assert.assertEquals(MojoResult.FAILED_PRECONDITION,
                 mErrorHandler.getLastMojoException().getMojoResult());
     }
 }

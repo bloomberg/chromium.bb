@@ -6,7 +6,14 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import org.chromium.mojo.MojoTestCase;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStruct;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStructV0;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStructV1;
@@ -21,7 +28,14 @@ import org.chromium.mojo.system.impl.CoreImpl;
  * mojo/public/interfaces/bindings/tests/rect.mojom and
  * mojo/public/interfaces/bindings/tests/test_structs.mojom
  */
-public class BindingsVersioningTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class BindingsVersioningTest {
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
+
+
     private static Rect newRect(int factor) {
         Rect rect = new Rect();
         rect.x = factor;
@@ -45,6 +59,7 @@ public class BindingsVersioningTest extends MojoTestCase {
     /**
      * Testing serializing old struct version to newer one.
      */
+    @Test
     @SmallTest
     public void testOldToNew() {
         {
@@ -54,9 +69,9 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fInt32 = 123;
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v0.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(0, v0.getVersion());
-            assertEquals(0, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(0, v0.getVersion());
+            Assert.assertEquals(0, output.getVersion());
         }
 
         {
@@ -68,9 +83,9 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fRect = newRect(5);
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v1.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(1, v1.getVersion());
-            assertEquals(1, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(1, v1.getVersion());
+            Assert.assertEquals(1, output.getVersion());
         }
 
         {
@@ -84,9 +99,9 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fString = "hello";
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v3.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(3, v3.getVersion());
-            assertEquals(3, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(3, v3.getVersion());
+            Assert.assertEquals(3, output.getVersion());
         }
 
         {
@@ -102,9 +117,9 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fArray = new byte[] {10, 9, 8};
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v5.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(5, v5.getVersion());
-            assertEquals(5, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(5, v5.getVersion());
+            Assert.assertEquals(5, output.getVersion());
         }
 
         {
@@ -128,18 +143,19 @@ public class BindingsVersioningTest extends MojoTestCase {
             MultiVersionStruct output = MultiVersionStruct.deserialize(v7.serialize(null));
 
             // Handles must be tested separately.
-            assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
+            Assert.assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
             output.fMessagePipe = expected.fMessagePipe;
 
-            assertEquals(expected, output);
-            assertEquals(7, v7.getVersion());
-            assertEquals(7, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(7, v7.getVersion());
+            Assert.assertEquals(7, output.getVersion());
         }
     }
 
     /**
      * Testing serializing new struct version to older one.
      */
+    @Test
     @SmallTest
     public void testNewToOld() {
         MultiVersionStruct struct = newStruct();
@@ -148,8 +164,8 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fInt32 = 123;
 
             MultiVersionStructV0 output = MultiVersionStructV0.deserialize(struct.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(9, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(9, output.getVersion());
         }
 
         {
@@ -158,8 +174,8 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fRect = newRect(5);
 
             MultiVersionStructV1 output = MultiVersionStructV1.deserialize(struct.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(9, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(9, output.getVersion());
         }
 
         {
@@ -169,8 +185,8 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fString = "hello";
 
             MultiVersionStructV3 output = MultiVersionStructV3.deserialize(struct.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(9, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(9, output.getVersion());
         }
 
         {
@@ -181,8 +197,8 @@ public class BindingsVersioningTest extends MojoTestCase {
             expected.fArray = new byte[] {10, 9, 8};
 
             MultiVersionStructV5 output = MultiVersionStructV5.deserialize(struct.serialize(null));
-            assertEquals(expected, output);
-            assertEquals(9, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(9, output.getVersion());
         }
 
         {
@@ -201,11 +217,11 @@ public class BindingsVersioningTest extends MojoTestCase {
 
             MultiVersionStructV7 output = MultiVersionStructV7.deserialize(input.serialize(null));
 
-            assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
+            Assert.assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
             output.fMessagePipe = expected.fMessagePipe;
 
-            assertEquals(expected, output);
-            assertEquals(9, output.getVersion());
+            Assert.assertEquals(expected, output);
+            Assert.assertEquals(9, output.getVersion());
         }
     }
 }
