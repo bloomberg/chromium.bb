@@ -792,9 +792,9 @@ instrumentation_test_apk(
   apk_under_test = ":cronet_smoketests_platform_only_apk"
   android_manifest = "test/javatests/AndroidManifest.xml"
   deps = [
+    ":cronet_smoketests_platform_only_java",
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
-    ":cronet_smoketests_platform_only_java",
   ]
 
   proguard_enabled = true
@@ -935,17 +935,23 @@ action("extract_cronet_jars") {
   script = "//components/cronet/tools/extract_from_jars.py"
   depfile = "$target_gen_dir/$target_name.d"
 
-  sources = [
-    "$root_out_dir/lib.java/base/base_java.jar",
-    "$root_out_dir/lib.java/components/cronet/android/cronet_impl_native_java.jar",
-    "$root_out_dir/lib.java/net/android/net_java.jar",
-    "$root_out_dir/lib.java/url/url_java.jar",
-  ]
-
   _stamp_file = "$target_gen_dir/$target_name.stamp"
   outputs = [
     _stamp_file,
   ]
+
+  deps = [
+    ":cronet_impl_native_java",
+    "//base:base_java",
+    "//net/android:net_java",
+    "//url:url_java",
+  ]
+
+  sources = []
+  foreach(dep, deps) {
+    sources += [ get_label_info(dep, "target_gen_dir") + "/" +
+                 get_label_info(dep, "name") + "__compile_java.javac.jar" ]
+  }
 
   _rebased_sources = rebase_path(sources, root_build_dir)
 
@@ -957,13 +963,6 @@ action("extract_cronet_jars") {
     rebase_path(depfile, root_build_dir),
     "--stamp",
     rebase_path(_stamp_file, root_build_dir),
-  ]
-
-  deps = [
-    ":cronet_impl_native_java",
-    "//base:base_java",
-    "//net/android:net_java",
-    "//url:url_java",
   ]
 }
 
