@@ -7,8 +7,10 @@ LIBRARY  "chrome_elf.dll"
 EXPORTS
   ; From components/crash/content/app/crashpad.cc
   ClearCrashKeyValueImpl
+  ClearCrashKeyValueImplEx
   RequestSingleCrashUploadImpl
   SetCrashKeyValueImpl
+  SetCrashKeyValueImplEx
   SetUploadConsentImpl
 
   ; From components/crash/content/app/crashpad_win.cc

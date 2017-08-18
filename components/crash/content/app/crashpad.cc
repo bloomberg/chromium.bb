@@ -336,6 +336,14 @@ void ClearCrashKeyValueImpl(const wchar_t* key) {
   crash_reporter::ClearCrashKey(base::UTF16ToUTF8(key));
 }
 
+void SetCrashKeyValueImplEx(const char* key, const char* value) {
+  crash_reporter::SetCrashKeyValue(key, value);
+}
+
+void ClearCrashKeyValueImplEx(const char* key) {
+  crash_reporter::ClearCrashKey(key);
+}
+
 // This helper is invoked by code in chrome.dll to request a single crash report
 // upload. See CrashUploadListCrashpad.
 void RequestSingleCrashUploadImpl(const std::string& local_id) {
