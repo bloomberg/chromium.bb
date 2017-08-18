@@ -254,7 +254,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
   }
   // Copy last column to extra columns.
   if (cols < plane_block_width) {
-    for (int i = 0; i < plane_block_height; ++i) {
+    for (int i = 0; i < rows; ++i) {
       memset(color_map + i * plane_block_width + cols,
              color_map[i * plane_block_width + cols - 1],
              (plane_block_width - cols));
