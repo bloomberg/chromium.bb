@@ -30,6 +30,9 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   ChromeToolbarModelDelegate();
   ~ChromeToolbarModelDelegate() override;
 
+  // Helper method to get the navigation entry from the navigation controller.
+  content::NavigationEntry* GetNavigationEntry() const;
+
  private:
   base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
@@ -45,10 +48,6 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   // from which the states are retrieved. If this returns null, default values
   // are used.
   content::NavigationController* GetNavigationController() const;
-
-  // Helper method to extract the navigation entry from the navigation
-  // controller.
-  content::NavigationEntry* GetNavigationEntry() const;
 
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;

@@ -37,6 +37,12 @@ ChromeToolbarModelDelegate::ChromeToolbarModelDelegate() {}
 
 ChromeToolbarModelDelegate::~ChromeToolbarModelDelegate() {}
 
+content::NavigationEntry* ChromeToolbarModelDelegate::GetNavigationEntry()
+    const {
+  content::NavigationController* controller = GetNavigationController();
+  return controller ? controller->GetVisibleEntry() : nullptr;
+}
+
 base::string16 ChromeToolbarModelDelegate::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {
@@ -150,12 +156,6 @@ ChromeToolbarModelDelegate::GetNavigationController() const {
   // window).
   content::WebContents* current_tab = GetActiveWebContents();
   return current_tab ? &current_tab->GetController() : nullptr;
-}
-
-content::NavigationEntry* ChromeToolbarModelDelegate::GetNavigationEntry()
-    const {
-  content::NavigationController* controller = GetNavigationController();
-  return controller ? controller->GetVisibleEntry() : nullptr;
 }
 
 Profile* ChromeToolbarModelDelegate::GetProfile() const {
