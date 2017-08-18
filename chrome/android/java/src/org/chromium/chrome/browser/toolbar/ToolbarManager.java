@@ -1019,7 +1019,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
-     * Sets the drawable that the close button shows.
+     * Sets the drawable that the close button shows, or hides it if {@code drawable} is
+     * {@code null}.
      */
     public void setCloseButtonDrawable(Drawable drawable) {
         mToolbar.setCloseButtonImageResource(drawable);
@@ -1207,11 +1208,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
 
         if (mCurrentProfile != profile) {
-            if (mBookmarkBridge != null) mBookmarkBridge.destroy();
-            mBookmarkBridge = new BookmarkBridge(profile);
-            mBookmarkBridge.addObserver(mBookmarksObserver);
-            mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
-            mLocationBar.setAutocompleteProfile(profile);
+            if (mBookmarkBridge != null) {
+                mBookmarkBridge.destroy();
+                mBookmarkBridge = null;
+            }
+            if (profile != null) {
+                mBookmarkBridge = new BookmarkBridge(profile);
+                mBookmarkBridge.addObserver(mBookmarksObserver);
+                mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
+                mLocationBar.setAutocompleteProfile(profile);
+            }
             mCurrentProfile = profile;
         }
 
