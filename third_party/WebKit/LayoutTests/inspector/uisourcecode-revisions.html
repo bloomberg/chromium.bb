@@ -31,11 +31,11 @@ function test()
                 revisionsString += ", ";
             revisionsString += "'" + revision.content + "'";
         }
-        InspectorTest.addResult("UISourceCode content: " + content);
-        InspectorTest.addResult("    revisions: " + revisionsString);
+        TestRunner.addResult("UISourceCode content: " + content);
+        TestRunner.addResult("    revisions: " + revisionsString);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testAddRevisionsRevertToOriginal(next)
         {
             var uiSourceCode = new Workspace.UISourceCode(createMockProject(), "url", Common.resourceTypes.Script);
@@ -43,19 +43,19 @@ function test()
             uiSourceCode.setWorkingCopy("content2");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("First revision added.");
+            TestRunner.addResult("First revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.setWorkingCopy("content3");
             uiSourceCode.setWorkingCopy("content4");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("Second revision added.");
+            TestRunner.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.revertToOriginal().then(onReverted);
 
             function onReverted()
             {
-                InspectorTest.addResult("Reverted to original.");
+                TestRunner.addResult("Reverted to original.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 next();
             }
@@ -69,19 +69,19 @@ function test()
             uiSourceCode.setWorkingCopy("content2");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("First revision added.");
+            TestRunner.addResult("First revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.setWorkingCopy("content3");
             uiSourceCode.setWorkingCopy("content4");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("Second revision added.");
+            TestRunner.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.revertAndClearHistory(revertedAndClearedHistory);
 
             function revertedAndClearedHistory()
             {
-                InspectorTest.addResult("Reverted and cleared history.");
+                TestRunner.addResult("Reverted and cleared history.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 next();
             }
@@ -95,19 +95,19 @@ function test()
             uiSourceCode.setWorkingCopy("content2");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("First revision added.");
+            TestRunner.addResult("First revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.setWorkingCopy("content3");
             uiSourceCode.setWorkingCopy("content4");
             uiSourceCode.commitWorkingCopy(function() { });
 
-            InspectorTest.addResult("Second revision added.");
+            TestRunner.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
             uiSourceCode.history()[0].revertToThis().then(onReverted);
 
             function onReverted()
             {
-                InspectorTest.addResult("Reverted to previous revision.");
+                TestRunner.addResult("Reverted to previous revision.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 next();
             }
@@ -120,25 +120,25 @@ function test()
 
             function contentReceived()
             {
-                InspectorTest.addResult("Content requested.");
+                TestRunner.addResult("Content requested.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content1");
                 uiSourceCode.setWorkingCopy("content2");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("First revision added.");
+                TestRunner.addResult("First revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content3");
                 uiSourceCode.setWorkingCopy("content4");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("Second revision added.");
+                TestRunner.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.revertToOriginal().then(onReverted);
 
                 function onReverted()
                 {
-                    InspectorTest.addResult("Reverted to original.");
+                    TestRunner.addResult("Reverted to original.");
                     dumpUISourceCodeWithRevisions(uiSourceCode);
                     next();
                 }
@@ -152,25 +152,25 @@ function test()
 
             function contentReceived()
             {
-                InspectorTest.addResult("Content requested.");
+                TestRunner.addResult("Content requested.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content1");
                 uiSourceCode.setWorkingCopy("content2");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("First revision added.");
+                TestRunner.addResult("First revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content3");
                 uiSourceCode.setWorkingCopy("content4");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("Second revision added.");
+                TestRunner.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.revertAndClearHistory(revertedAndClearedHistory);
 
                 function revertedAndClearedHistory()
                 {
-                    InspectorTest.addResult("Reverted and cleared history.");
+                    TestRunner.addResult("Reverted and cleared history.");
                     dumpUISourceCodeWithRevisions(uiSourceCode);
                     next();
                 }
@@ -184,25 +184,25 @@ function test()
 
             function contentReceived()
             {
-                InspectorTest.addResult("Content requested.");
+                TestRunner.addResult("Content requested.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content1");
                 uiSourceCode.setWorkingCopy("content2");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("First revision added.");
+                TestRunner.addResult("First revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.setWorkingCopy("content3");
                 uiSourceCode.setWorkingCopy("content4");
                 uiSourceCode.commitWorkingCopy(function() { });
 
-                InspectorTest.addResult("Second revision added.");
+                TestRunner.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
                 uiSourceCode.history()[0].revertToThis().then(onReverted);
 
                 function onReverted()
                 {
-                    InspectorTest.addResult("Reverted to previous revision.");
+                    TestRunner.addResult("Reverted to previous revision.");
                     dumpUISourceCodeWithRevisions(uiSourceCode);
                     next();
                 }

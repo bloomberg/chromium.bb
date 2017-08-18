@@ -32,11 +32,11 @@ var test = function()
     tabbedLocation.tabbedPane().closeTab("sensors");
     logPersistenceSetting();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function logPersistenceSetting()
     {
-        InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedLocation._closeableTabSetting.get()));
+        TestRunner.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedLocation._closeableTabSetting.get()));
     }
 }
 </script>

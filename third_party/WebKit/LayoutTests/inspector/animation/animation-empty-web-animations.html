@@ -17,13 +17,13 @@ function test()
 {
     UI.viewManager.showView("animations");
     var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    InspectorTest.evaluateInPage("startAnimation()");
-    InspectorTest.addSniffer(Animation.AnimationModel.prototype, "animationStarted", animationStarted);
+    TestRunner.evaluateInPage("startAnimation()");
+    TestRunner.addSniffer(Animation.AnimationModel.prototype, "animationStarted", animationStarted);
 
     function animationStarted()
     {
-        InspectorTest.addResult(timeline._previewMap.size);
-        InspectorTest.completeTest();
+        TestRunner.addResult(timeline._previewMap.size);
+        TestRunner.completeTest();
     }
 }
 

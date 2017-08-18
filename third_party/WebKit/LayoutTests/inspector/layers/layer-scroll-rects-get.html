@@ -7,12 +7,12 @@ function test()
 {
     function onGotLayers()
     {
-        InspectorTest.addResult("Scroll rectangles");
-        InspectorTest.dumpModelScrollRects();
-        InspectorTest.completeTest();
+        TestRunner.addResult("Scroll rectangles");
+        LayersTestRunner.dumpModelScrollRects();
+        TestRunner.completeTest();
     }
 
-    InspectorTest.requestLayers(onGotLayers);
+    LayersTestRunner.requestLayers(onGotLayers);
 }
 </script>
 </head>

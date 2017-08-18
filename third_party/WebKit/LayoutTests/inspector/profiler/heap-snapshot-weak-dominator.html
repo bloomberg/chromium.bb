@@ -6,75 +6,75 @@
 
 function test()
 {
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testWeakReferencesDoNotAffectRetainedSize(next)
         {
             function createHeapSnapshot()
             {
                 // Mocking results of running the following code:
                 // root = [new Uint8Array(1000), new Uint8Array(1000), new Uint8Array(1000)]
-                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var builder = new ProfilerTestRunner.HeapSnapshotBuilder();
                 var rootNode = builder.rootNode;
 
-                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)");
-                rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
+                var gcRootsNode = new ProfilerTestRunner.HeapNode("(GC roots)");
+                rootNode.linkNode(gcRootsNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var windowNode = new InspectorTest.HeapNode("Window", 20);
-                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
-                gcRootsNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
+                var windowNode = new ProfilerTestRunner.HeapNode("Window", 20);
+                rootNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.shortcut);
+                gcRootsNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var arrayNode = new InspectorTest.HeapNode("Array", 10);
-                windowNode.linkNode(arrayNode, InspectorTest.HeapEdge.Type.property, "root");
+                var arrayNode = new ProfilerTestRunner.HeapNode("Array", 10);
+                windowNode.linkNode(arrayNode, ProfilerTestRunner.HeapEdge.Type.property, "root");
                 var prevBufferNode = null;
                 for (var i = 0; i < 3; i++) {
-                    var typedArrayNode = new InspectorTest.HeapNode("Uint8Array", 100);
-                    arrayNode.linkNode(typedArrayNode, InspectorTest.HeapEdge.Type.element);
+                    var typedArrayNode = new ProfilerTestRunner.HeapNode("Uint8Array", 100);
+                    arrayNode.linkNode(typedArrayNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                    var bufferNode = new InspectorTest.HeapNode("ArrayBuffer", 1000);
-                    typedArrayNode.linkNode(bufferNode, InspectorTest.HeapEdge.Type.internal);
+                    var bufferNode = new ProfilerTestRunner.HeapNode("ArrayBuffer", 1000);
+                    typedArrayNode.linkNode(bufferNode, ProfilerTestRunner.HeapEdge.Type.internal);
                     if (prevBufferNode)
-                        prevBufferNode.linkNode(bufferNode, InspectorTest.HeapEdge.Type.weak, "weak_next");
+                        prevBufferNode.linkNode(bufferNode, ProfilerTestRunner.HeapEdge.Type.weak, "weak_next");
                     prevBufferNode = bufferNode;
                 }
 
                 return builder.generateSnapshot();
             }
 
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             function step2()
             {
-                var row = InspectorTest.findRow("Array");
-                InspectorTest.assertEquals(true, !!row, "\"Array\" row");
-                InspectorTest.expandRow(row, step3);
+                var row = ProfilerTestRunner.findRow("Array");
+                TestRunner.assertEquals(true, !!row, "\"Array\" row");
+                ProfilerTestRunner.expandRow(row, step3);
             }
 
             function step3(row)
             {
-                InspectorTest.assertEquals(1, row._count);
-                InspectorTest.assertEquals(3310, row._retainedSize);
-                InspectorTest.assertEquals(10, row._shallowSize);
-                InspectorTest.expandRow(row.children[0], step4);
+                TestRunner.assertEquals(1, row._count);
+                TestRunner.assertEquals(3310, row._retainedSize);
+                TestRunner.assertEquals(10, row._shallowSize);
+                ProfilerTestRunner.expandRow(row.children[0], step4);
             }
 
             function step4(arrayInstanceRow)
             {
-                InspectorTest.assertEquals(2, arrayInstanceRow._distance);
-                InspectorTest.assertEquals(3310, arrayInstanceRow._retainedSize);
-                InspectorTest.assertEquals(10, arrayInstanceRow._shallowSize);
+                TestRunner.assertEquals(2, arrayInstanceRow._distance);
+                TestRunner.assertEquals(3310, arrayInstanceRow._retainedSize);
+                TestRunner.assertEquals(10, arrayInstanceRow._shallowSize);
 
                 var children = arrayInstanceRow.children;
-                InspectorTest.assertEquals(3, children.length);
+                TestRunner.assertEquals(3, children.length);
 
                 for (var i = 0; i < children.length; i++) {
-                    InspectorTest.assertEquals("Uint8Array", children[i]._name);
-                    InspectorTest.assertEquals(100, children[i]._shallowSize);
-                    InspectorTest.assertEquals(1100, children[i]._retainedSize);
+                    TestRunner.assertEquals("Uint8Array", children[i]._name);
+                    TestRunner.assertEquals(100, children[i]._shallowSize);
+                    TestRunner.assertEquals(1100, children[i]._retainedSize);
                 }
                 setTimeout(next, 0);
             }

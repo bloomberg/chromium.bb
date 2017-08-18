@@ -1,4 +1,4 @@
-Tests InspectorTest.RuntimeAgent.callFunctionOn usages.
+Tests TestRunner.RuntimeAgent.callFunctionOn usages.
 
 
 Running: testThis

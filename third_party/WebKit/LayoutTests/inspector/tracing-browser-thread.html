@@ -34,15 +34,15 @@ function test()
         ]
     };
     for (var testCase of Object.keys(testCases)) {
-        var model = InspectorTest.createTracingModel(testCases[testCase]);
+        var model = PerformanceTestRunner.createTracingModel(testCases[testCase]);
         var browserMain = SDK.TracingModel.browserMainThread(model);
         if (!browserMain) {
-            InspectorTest.addResult(`${testCase} failed, no browser main thread found`);
+            TestRunner.addResult(`${testCase} failed, no browser main thread found`);
             continue;
         }
-        InspectorTest.addResult(`${testCase}: main browser thread is ${browserMain.name()} (#${browserMain.id()})`);
+        TestRunner.addResult(`${testCase}: main browser thread is ${browserMain.name()} (#${browserMain.id()})`);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

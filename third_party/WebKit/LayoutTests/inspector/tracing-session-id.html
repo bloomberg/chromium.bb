@@ -6,16 +6,16 @@
 <script>
 function test()
 {
-    InspectorTest.evaluateWithTimeline("(function() {})", processTracingEvents);
+    PerformanceTestRunner.evaluateWithTimeline("(function() {})", processTracingEvents);
 
     function processTracingEvents()
     {
-        InspectorTest.tracingModel().sortedProcesses().forEach(function(process) {
+        PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
             process.sortedThreads().forEach(function(thread) {
                 thread.events().forEach(processEvent);
             });
         });
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function processEvent(event)
@@ -28,8 +28,8 @@ function test()
         if (!event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory) || metadataEvents.indexOf(event.name) < 0)
             return;
 
-        InspectorTest.assertEquals(InspectorTest.timelineModel().sessionId(), event.args["data"]["sessionId"]);
-        InspectorTest.addResult("Got DevTools metadata event: " + event.name);
+        TestRunner.assertEquals(PerformanceTestRunner.timelineModel().sessionId(), event.args["data"]["sessionId"]);
+        TestRunner.addResult("Got DevTools metadata event: " + event.name);
     }
 }
 </script>

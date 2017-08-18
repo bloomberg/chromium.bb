@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testMatchQuotes(next)
         {
             var testStrings = [
@@ -23,11 +23,11 @@ function test()
 
             for (var i = 0; i < testStrings.length; ++i) {
                 var string = JSON.stringify(testStrings[i]);
-                InspectorTest.addResult("\nParsing " + string);
-                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest));
+                TestRunner.addResult("\nParsing " + string);
+                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest));
                 var result = tokenizer.write(string);
                 if (!result)
-                    InspectorTest.addResult(`tokenizer.write() returned ${result}, true expected`);
+                    TestRunner.addResult(`tokenizer.write() returned ${result}, true expected`);
             }
             next();
         },
@@ -42,11 +42,11 @@ function test()
 
             for (var i = 0; i < testData.length; ++i) {
                 var string = JSON.stringify(testData[i]);
-                InspectorTest.addResult("\nParsing " + string);
-                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest));
+                TestRunner.addResult("\nParsing " + string);
+                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest));
                 var result = tokenizer.write(string);
                 if (!result)
-                    InspectorTest.addResult(`tokenizer.write() returned ${result}, false expected`);
+                    TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
             }
             next();
         },
@@ -61,12 +61,12 @@ function test()
 
             for (var i = 0; i < testData.length; ++i) {
                 var string = JSON.stringify(testData[i]);
-                InspectorTest.addResult("\nParsing " + string);
-                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
+                TestRunner.addResult("\nParsing " + string);
+                var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
                 var result = tokenizer.write(string);
                 var expectedResult = !(testData[i] instanceof Array);
                 if (result != expectedResult)
-                    InspectorTest.addResult(`tokenizer.write() returned ${result}, ${expectedResult} expected`);
+                    TestRunner.addResult(`tokenizer.write() returned ${result}, ${expectedResult} expected`);
             }
             next();
         },
@@ -86,20 +86,20 @@ function test()
                 {"etc":{"\\\\\"":"\\\\\""}}
             ];
             var string = JSON.stringify(testStrings);
-            var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
-            InspectorTest.addResult("\nRunning at once:");
+            var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+            TestRunner.addResult("\nRunning at once:");
             var result = tokenizer.write(string);
             if (result)
-                InspectorTest.addResult(`tokenizer.write() returned ${result}, false expected`);
+                TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
 
             for (var sample of [3, 15, 50]) {
-                tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
-                InspectorTest.addResult("\nRunning by " + sample + ":");
+                tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+                TestRunner.addResult("\nRunning by " + sample + ":");
                 for (var i = 0; i < string.length; i += sample) {
                     var result = tokenizer.write(string.substring(i, i + sample));
                     var expectedResult = (i + sample < string.length);
                     if (!!result !== expectedResult)
-                        InspectorTest.addResult(`tokenizer.write() returned ${result}, ${expectedResult} expected`);
+                        TestRunner.addResult(`tokenizer.write() returned ${result}, ${expectedResult} expected`);
                 }
             }
             next();
@@ -108,10 +108,10 @@ function test()
         function testGarbageAfterObject(next)
         {
             var testString = "[{a: 'b'}], {'x': {a: 'b'}}";
-            InspectorTest.addResult("\nParsing " + testString);
-            var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(InspectorTest.addResult.bind(InspectorTest), true);
+            TestRunner.addResult("\nParsing " + testString);
+            var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
             var result = tokenizer.write(testString);
-            InspectorTest.addResult(`tokenizer.write() returned ${result}, false expected`);
+            TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
             next();
         }
     ]);

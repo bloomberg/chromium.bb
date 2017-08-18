@@ -12,7 +12,7 @@ function test()
     var searchString = "FINDME";
     var searchableView = UI.panels.sources.searchableView();
     var sourceFrame;
-    InspectorTest.showScriptSource("search-me.js", didShowScriptSource);
+    SourcesTestRunner.showScriptSource("search-me.js", didShowScriptSource);
 
     function didShowScriptSource(shownSourceFrame)
     {
@@ -26,35 +26,35 @@ function test()
     {
         searchableView.showSearchField();
 
-        InspectorTest.addResult("Performing search...");
+        TestRunner.addResult("Performing search...");
         searchableView._searchInputElement.value = searchString;
         searchableView._performSearch(true, true);
-        InspectorTest.addResult("Recording editor viewport after searching...");
+        TestRunner.addResult("Recording editor viewport after searching...");
 
         var originalViewport = { from: textEditor.firstVisibleLine(), to: textEditor.lastVisibleLine() };
         var originalSelectionRange = textEditor.selection();
 
-        InspectorTest.showScriptSource("edit-me.js", didShowAnotherSource);
+        SourcesTestRunner.showScriptSource("edit-me.js", didShowAnotherSource);
 
         function didShowAnotherSource(anotherSourceFrame)
         {
-            InspectorTest.showScriptSource("search-me.js", didShowScriptSourceAgain);
+            SourcesTestRunner.showScriptSource("search-me.js", didShowScriptSourceAgain);
         }
 
         function didShowScriptSourceAgain(sourceFrame)
         {
-            InspectorTest.addResult("Recording editor viewport after switching tabs...");
+            TestRunner.addResult("Recording editor viewport after switching tabs...");
             var newViewport = { from: textEditor.firstVisibleLine(), to: textEditor.lastVisibleLine() };
             var newSelectionRange = textEditor.selection();
-            InspectorTest.addResult("Comparing viewports...");
+            TestRunner.addResult("Comparing viewports...");
             if (originalViewport.from === newViewport.from && originalViewport.to === newViewport.to)
-                InspectorTest.addResult("  viewports match, SUCCESS");
+                TestRunner.addResult("  viewports match, SUCCESS");
             else
-                InspectorTest.addResult("  viewports do not match, FAIL");
-            InspectorTest.addResult("Comparing selection ranges...");
-            InspectorTest.addResult("  original selection range: " + originalSelectionRange.toString());
-            InspectorTest.addResult("  current selection range: " + newSelectionRange.toString());
-            InspectorTest.completeTest();
+                TestRunner.addResult("  viewports do not match, FAIL");
+            TestRunner.addResult("Comparing selection ranges...");
+            TestRunner.addResult("  original selection range: " + originalSelectionRange.toString());
+            TestRunner.addResult("  current selection range: " + newSelectionRange.toString());
+            TestRunner.completeTest();
         }
     }
 };

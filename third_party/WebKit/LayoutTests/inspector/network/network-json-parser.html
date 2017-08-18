@@ -21,12 +21,12 @@ function test() {
                 return;
             }
             resultData.data = data;
-            InspectorTest.addResult("");
-            InspectorTest.addResult("Input: " + cleanData(jsonText));
+            TestRunner.addResult("");
+            TestRunner.addResult("Input: " + cleanData(jsonText));
 
-            InspectorTest.addResult("Prefix: " + cleanData(resultData.prefix));
-            InspectorTest.addResult("Suffix: " + cleanData(resultData.suffix));
-            InspectorTest.addResult("Data: " + cleanData(JSON.stringify(resultData.data, function(k, v) {
+            TestRunner.addResult("Prefix: " + cleanData(resultData.prefix));
+            TestRunner.addResult("Suffix: " + cleanData(resultData.suffix));
+            TestRunner.addResult("Data: " + cleanData(JSON.stringify(resultData.data, function(k, v) {
                 if (v === undefined)
                     return "!<undefined>!";
                 else if (v === Infinity)
@@ -40,10 +40,10 @@ function test() {
 
         function failure()
         {
-            InspectorTest.addResult("");
-            InspectorTest.addResult("Input: " + cleanData(jsonText));
+            TestRunner.addResult("");
+            TestRunner.addResult("Input: " + cleanData(jsonText));
 
-            InspectorTest.addResult("Invalid JSON");
+            TestRunner.addResult("Invalid JSON");
             runNext();
         }
     }
@@ -57,7 +57,7 @@ function test() {
             currentTestIndex++;
             check(tests[currentTestIndex - 1]);
         } else {
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
         }
     }
 

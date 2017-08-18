@@ -16,20 +16,20 @@ b = new B();
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("window.b");
-    var properties = await InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
+    var result = await TestRunner.RuntimeAgent.evaluate("window.b");
+    var properties = await TestRunner.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
 
     if (!properties) {
-        InspectorTest.addResult("Properties do not exist");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Properties do not exist");
+        TestRunner.completeTest();
         return;
     }
  
     for (var property of properties) {
         if (property.name.match(/^test/)) 
-            InspectorTest.addResult("property.name==\"" + property.name + "\" isOwn==\"" + property.isOwn + "\"");
+            TestRunner.addResult("property.name==\"" + property.name + "\" isOwn==\"" + property.isOwn + "\"");
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
 }
 </script>

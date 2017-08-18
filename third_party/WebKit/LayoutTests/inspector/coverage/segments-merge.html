@@ -18,7 +18,7 @@ function test()
     testAndDump([{end: 30, count: 1}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
     testAndDump([{end: 30, count: undefined}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function testAndDump(a, b)
     {
@@ -34,7 +34,7 @@ function test()
 
     function dumpSegments(prefix, arr)
     {
-        InspectorTest.addResult((prefix || "") + JSON.stringify(arr));
+        TestRunner.addResult((prefix || "") + JSON.stringify(arr));
     }
 
     function rangesEqual(a, b)

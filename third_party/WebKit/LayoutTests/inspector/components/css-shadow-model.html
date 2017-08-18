@@ -8,7 +8,7 @@ var initialize_Test = function() {
 
 function test()
 {
-    InspectorTest.addResult("-----CSSLengths-----");
+    TestRunner.addResult("-----CSSLengths-----");
     dumpCSSLength("10px");
     dumpCSSLength("10PX");
     dumpCSSLength("-10px");
@@ -33,7 +33,7 @@ function test()
     dumpCSSLength("10.10.10px");
     dumpCSSLength("hello10pxhello");
 
-    InspectorTest.addResult("\n-----Text Shadows-----");
+    TestRunner.addResult("\n-----Text Shadows-----");
     dumpTextShadow("0 0");
     dumpTextShadow("1px 2px");
     dumpTextShadow("1px 2px black");
@@ -57,7 +57,7 @@ function test()
     dumpTextShadow("1px 2pxrgb(0, 0, 0)");
     dumpTextShadow("1px 2px black,, 0 0 #ffffff");
 
-    InspectorTest.addResult("\n-----Box Shadows-----");
+    TestRunner.addResult("\n-----Box Shadows-----");
     dumpBoxShadow("0 0");
     dumpBoxShadow("1px 2px");
     dumpBoxShadow("1px 2px black");
@@ -87,13 +87,13 @@ function test()
     dumpBoxShadow("1px 2pxrgb(0, 0, 0)");
     dumpBoxShadow("1px 2px black,, 0 0 #ffffff");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 
     function dumpCSSLength(lengthText)
     {
         var length = InlineEditor.CSSLength.parse(lengthText);
         var statusText = length !== null ? "Succeeded: " + length.asCSSText() : "Failed";
-        InspectorTest.addResult("\"" + lengthText  + "\", Parsing " + statusText);
+        TestRunner.addResult("\"" + lengthText  + "\", Parsing " + statusText);
     }
 
     function dumpTextShadow(shadowText)
@@ -113,7 +113,7 @@ function test()
         for (var i = 0; i < shadows.length; i++)
             output.push(shadows[i].asCSSText());
         var statusText = shadows.length !== 0 ? "Succeeded: " + output.join(", ") : "Failed";
-        InspectorTest.addResult("\"" + shadowText  + "\", Parsing " + statusText);
+        TestRunner.addResult("\"" + shadowText  + "\", Parsing " + statusText);
     }
 }
 

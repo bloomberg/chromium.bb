@@ -33,29 +33,29 @@ function test()
         layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
     }
 
-    InspectorTest.requestLayers(step1);
+    LayersTestRunner.requestLayers(step1);
 
     function step1()
     {
         // Assure layer objects are not re-created during updates.
-        InspectorTest.layerTreeModel().layerTree().forEachLayer(addDepthMarker);
-        InspectorTest.addResult("Initial layer tree");
-        InspectorTest.dumpLayerTree();
-        InspectorTest.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateTree)", step2);
+        LayersTestRunner.layerTreeModel().layerTree().forEachLayer(addDepthMarker);
+        TestRunner.addResult("Initial layer tree");
+        LayersTestRunner.dumpLayerTree();
+        LayersTestRunner.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateTree)", step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult("Updated layer tree");
-        InspectorTest.dumpLayerTree();
-        InspectorTest.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateGeometry)", step3);
+        TestRunner.addResult("Updated layer tree");
+        LayersTestRunner.dumpLayerTree();
+        LayersTestRunner.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateGeometry)", step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("Updated layer geometry");
-        InspectorTest.dumpLayerTree();
-        InspectorTest.completeTest();
+        TestRunner.addResult("Updated layer geometry");
+        LayersTestRunner.dumpLayerTree();
+        TestRunner.completeTest();
     }
 }
 

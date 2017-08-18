@@ -6,15 +6,15 @@
 
 function test()
 {
-    InspectorTest.runProfilerTestSuite([
+    ProfilerTestRunner.runProfilerTestSuite([
         function testProfiling(next)
         {
-            var cpuProfiler = InspectorTest.cpuProfilerModel;
+            var cpuProfiler = TestRunner.cpuProfilerModel;
             var targetManager = SDK.targetManager;
             targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, onSuspendStateChanged);
             var profilesPanel = UI.panels.js_profiler;
-            InspectorTest.addSniffer(cpuProfiler, "stopRecording", stopRecording);
-            InspectorTest.addSniffer(profilesPanel, "_addProfileHeader", onAddProfileHeader);
+            TestRunner.addSniffer(cpuProfiler, "stopRecording", stopRecording);
+            TestRunner.addSniffer(profilesPanel, "_addProfileHeader", onAddProfileHeader);
             profilesPanel.toggleRecord();  // Start profiling.
 
             function onAddProfileHeader()
@@ -26,22 +26,22 @@ function test()
             function onSuspendStateChanged()
             {
                 if (SDK.targetManager.allTargetsSuspended()) {
-                    InspectorTest.addResult("Suspending targets");
+                    TestRunner.addResult("Suspending targets");
                     return;
                 }
-                InspectorTest.addResult("Resuming targets");
-                InspectorTest.completeProfilerTest();
+                TestRunner.addResult("Resuming targets");
+                ProfilerTestRunner.completeProfilerTest();
             }
 
             function stopRecording(resultPromise)
             {
-                InspectorTest.addResult("Stop recording command issued.");
+                TestRunner.addResult("Stop recording command issued.");
                 resultPromise.then(didStopRecording);
             }
 
             function didStopRecording(profile)
             {
-                InspectorTest.addResult("Recording stopped. profile (should be null): " + profile);
+                TestRunner.addResult("Recording stopped. profile (should be null): " + profile);
             }
         }
     ]);

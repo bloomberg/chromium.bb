@@ -5,7 +5,7 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimple(next)
         {
             var regexes = [/hello/g, /[0-9]+/g];
@@ -67,7 +67,7 @@ function test()
     {
         for (var i = 0; i < results.length; i++) {
             var result = results[i];
-            InspectorTest.addResult("\"" + result.value + "\", " + result.position + ", " + result.regexIndex);
+            TestRunner.addResult("\"" + result.value + "\", " + result.position + ", " + result.regexIndex);
         }
     }
 }

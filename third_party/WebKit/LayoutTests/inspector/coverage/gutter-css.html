@@ -13,11 +13,11 @@ var initialize_Coverage = function() {
 
 async function test()
 {
-    InspectorTest.startCoverage();
-    await InspectorTest.evaluateInPagePromise("performActions()");
-    await InspectorTest.stopCoverage();
-    await InspectorTest.dumpDecorations("highlight-in-source.css");
-    InspectorTest.completeTest();
+    CoverageTestRunner.startCoverage();
+    await TestRunner.evaluateInPagePromise("performActions()");
+    await CoverageTestRunner.stopCoverage();
+    await CoverageTestRunner.dumpDecorations("highlight-in-source.css");
+    TestRunner.completeTest();
 }
 </script>
 </head>

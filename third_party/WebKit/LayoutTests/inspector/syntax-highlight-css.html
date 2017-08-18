@@ -8,7 +8,7 @@ function test()
 {
     function dumpSyntaxHighlightSCSS(str)
     {
-        return InspectorTest.dumpSyntaxHighlight(str, "text/x-scss");
+        return TestRunner.dumpSyntaxHighlight(str, "text/x-scss");
     }
 
     dumpSyntaxHighlightSCSS("a[href='/']");
@@ -63,7 +63,7 @@ function test()
             "}\n" +
         "}")
 
-    .then(InspectorTest.completeTest.bind(InspectorTest));
+    .then(TestRunner.completeTest.bind(InspectorTest));
 }
 
 </script>

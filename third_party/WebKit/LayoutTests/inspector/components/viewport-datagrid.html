@@ -12,53 +12,53 @@ function test()
             parent.insertChild(child, index);
         else
             parent.appendChild(child);
-        InspectorTest.addResult("Attached " + child.data.id + " to " + parentName + (typeof index === "number" ? " at " + index : ""));
+        TestRunner.addResult("Attached " + child.data.id + " to " + parentName + (typeof index === "number" ? " at " + index : ""));
     }
 
     function detach(parent, child)
     {
         var parentName = parent === root ? "root" : parent.data.id;
-        InspectorTest.addResult("Removing " + child.data.id + " from " + parentName);
+        TestRunner.addResult("Removing " + child.data.id + " from " + parentName);
         parent.removeChild(child);
     }
 
     function dumpNodes()
     {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Tree:");
-        InspectorTest.dumpAndValidateDataGrid(dataGrid.rootNode());
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
+        TestRunner.addResult("Tree:");
+        DataGridTestRunner.dumpAndValidateDataGrid(dataGrid.rootNode());
+        TestRunner.addResult("");
     }
 
     function expand(node)
     {
         node.expand();
-        InspectorTest.addResult("Expanded node " + node.data.id);
+        TestRunner.addResult("Expanded node " + node.data.id);
     }
 
     function collapse(node)
     {
         node.collapse();
-        InspectorTest.addResult("Collapsed node " + node.data.id);
+        TestRunner.addResult("Collapsed node " + node.data.id);
     }
 
     function dumpFlattenChildren()
     {
         var nodes = dataGrid.rootNode().flatChildren();
-        InspectorTest.addResult("Checking flatChildren():");
+        TestRunner.addResult("Checking flatChildren():");
         for (var node of nodes)
-            InspectorTest.addResult("  " + node.data.id);
-        InspectorTest.addResult("");
+            TestRunner.addResult("  " + node.data.id);
+        TestRunner.addResult("");
     }
 
     function revealChildAndDumpClassAndVisibleNodes(index) {
         root.children[index].revealAndSelect();
         dataGrid.updateInstantly();
 
-        InspectorTest.addResult(`Class list: ${dataGrid.element.classList}`);
+        TestRunner.addResult(`Class list: ${dataGrid.element.classList}`);
 
         for (var node of dataGrid._visibleNodes)
-            InspectorTest.addResult(node.data.id);
+            TestRunner.addResult(node.data.id);
     }
 
     var columns = [{id: "id", title: "ID column", width: "250px"}];
@@ -82,7 +82,7 @@ function test()
     dataGrid.element.style.width = "100%";
     dataGrid.element.style.height = "100%";
 
-    InspectorTest.addResult("Building tree.");
+    TestRunner.addResult("Building tree.");
 
     // Appending to detached node.
     attach(aa, aaa);
@@ -130,7 +130,7 @@ function test()
     attach(ab, aac);
     aac.revealAndSelect();
     dumpFlattenChildren();
-    InspectorTest.addResult("Removed children of aa");
+    TestRunner.addResult("Removed children of aa");
     aa.removeChildren();
     dumpFlattenChildren();
     dumpNodes();
@@ -177,15 +177,15 @@ function test()
     dataGrid.updateInstantly();
 
     dataGrid.setStriped(true);
-    InspectorTest.addResult('Scrolling to the top');
+    TestRunner.addResult('Scrolling to the top');
     revealChildAndDumpClassAndVisibleNodes(0);
-    InspectorTest.addResult('Scrolling 1 node down');
+    TestRunner.addResult('Scrolling 1 node down');
     revealChildAndDumpClassAndVisibleNodes(dataGrid._visibleNodes.length);
-    InspectorTest.addResult('Disabling the stripes');
+    TestRunner.addResult('Disabling the stripes');
     dataGrid.setStriped(false);
-    InspectorTest.addResult(`Class list: ${dataGrid.element.classList}`);
+    TestRunner.addResult(`Class list: ${dataGrid.element.classList}`);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

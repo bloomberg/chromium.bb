@@ -52,11 +52,11 @@ function performActions() {
 
 async function test()
 {
-    InspectorTest.startCoverage();
-    await InspectorTest.evaluateInPagePromise("performActions()");
-    await InspectorTest.stopCoverage();
-    await InspectorTest.dumpDecorations("gutter-html.html");
-    InspectorTest.completeTest();
+    CoverageTestRunner.startCoverage();
+    await TestRunner.evaluateInPagePromise("performActions()");
+    await CoverageTestRunner.stopCoverage();
+    await CoverageTestRunner.dumpDecorations("gutter-html.html");
+    TestRunner.completeTest();
 }
 </script>
 </head>

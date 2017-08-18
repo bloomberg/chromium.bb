@@ -9,16 +9,16 @@ function test()
         return { sourceFileId: uiSourceCodeId, lineNumber: lineNumber, condition: condition, enabled: enabled };
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testMethodsToRunToUpdateVersion(next)
         {
             function runVersionControllerTest(oldVersion, currentVersion)
             {
-                InspectorTest.addResult("Testing methods to run to upgrade from " + oldVersion + " to " + currentVersion + ".");
+                TestRunner.addResult("Testing methods to run to upgrade from " + oldVersion + " to " + currentVersion + ".");
                 var versionController = new Common.VersionController();
                 var methodsToRun = versionController._methodsToRunToUpdateVersion(oldVersion, currentVersion);
-                InspectorTest.addResult("Methods to run: " + JSON.stringify(methodsToRun));
-                InspectorTest.addResult("");
+                TestRunner.addResult("Methods to run: " + JSON.stringify(methodsToRun));
+                TestRunner.addResult("");
             }
 
             runVersionControllerTest(0, 0);
@@ -37,15 +37,15 @@ function test()
         {
             function runClearBreakpointsTest(breakpointsCount, maxBreakpointsCount)
             {
-                InspectorTest.addResult("Starting test with " + breakpointsCount + " breakpoints and " + maxBreakpointsCount + " allowed at max.");
+                TestRunner.addResult("Starting test with " + breakpointsCount + " breakpoints and " + maxBreakpointsCount + " allowed at max.");
                 var versionController = new Common.VersionController();
                 var serializedBreakpoints = [];
                 for (var i = 0; i < breakpointsCount; ++i)
                     serializedBreakpoints.push(createBreakpoint("file" + i + ".js", i % 10, "", true));
-                var breakpointsSetting = new InspectorTest.MockSetting(serializedBreakpoints);
+                var breakpointsSetting = new TestRunner.MockSetting(serializedBreakpoints);
                 versionController._clearBreakpointsWhenTooMany(breakpointsSetting, maxBreakpointsCount);
-                InspectorTest.addResult("Number of breakpoints left in the setting after the test: " + breakpointsSetting.get().length + ".");
-                InspectorTest.addResult("");
+                TestRunner.addResult("Number of breakpoints left in the setting after the test: " + breakpointsSetting.get().length + ".");
+                TestRunner.addResult("");
             }
 
             runClearBreakpointsTest(0, 500);

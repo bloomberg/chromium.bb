@@ -10,36 +10,36 @@
 
 function test()
 {
-    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
 
-    InspectorTest.runCSSEditTests(header, [
+    SASSTestRunner.runCSSEditTests(header, [
         function testRemoveProperty(text)
         {
             return [
-                InspectorTest.createEdit(text, "margin: 10px;", "")
+                SASSTestRunner.createEdit(text, "margin: 10px;", "")
             ];
         },
 
         function testRemovePropertyVariable(text)
         {
             return [
-                InspectorTest.createEdit(text, "color: red;", "")
+                SASSTestRunner.createEdit(text, "color: red;", "")
             ];
         },
 
         function testRemoveMultipleProperties(text)
         {
             return [
-                InspectorTest.createEdit(text, "margin: 10px;", "", 0),
-                InspectorTest.createEdit(text, "margin: 10px;", "", 2),
+                SASSTestRunner.createEdit(text, "margin: 10px;", "", 0),
+                SASSTestRunner.createEdit(text, "margin: 10px;", "", 2),
             ];
         },
 
         function testRemoveMultipleDifferentProperties(text)
         {
             return [
-                InspectorTest.createEdit(text, "margin: 10px;", "", 1),
-                InspectorTest.createEdit(text, "color: red;", "", 2),
+                SASSTestRunner.createEdit(text, "margin: 10px;", "", 1),
+                SASSTestRunner.createEdit(text, "color: red;", "", 2),
             ];
         },
     ]);

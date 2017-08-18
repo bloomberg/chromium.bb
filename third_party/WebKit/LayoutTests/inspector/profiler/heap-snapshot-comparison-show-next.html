@@ -9,42 +9,42 @@ function test()
     var instanceCount = 24;
     function createHeapSnapshotA()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount, 5);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
     }
     function createHeapSnapshotB()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowNext(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
             function createSnapshotB() {
-                InspectorTest.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+                ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
             }
 
             function step1()
             {
-                InspectorTest.switchToView("Comparison", step2);
+                ProfilerTestRunner.switchToView("Comparison", step2);
             }
 
             function step2()
             {
-                var row = InspectorTest.findRow("A");
-                InspectorTest.assertEquals(true, !!row, "\"A\" row");
-                InspectorTest.expandRow(row, step3);
+                var row = ProfilerTestRunner.findRow("A");
+                TestRunner.assertEquals(true, !!row, "\"A\" row");
+                ProfilerTestRunner.expandRow(row, step3);
             }
 
             function step3(row)
             {
                 var expectedRowCountA = parseInt(row.data["addedCount"]);
-                var rowsShown = InspectorTest.countDataRows(row, function(node) { return node.data.addedCount; });
-                InspectorTest.assertEquals(true, rowsShown <= expectedRowCountA, "shown more instances than created: " + rowsShown + " > " + expectedRowCountA);
+                var rowsShown = ProfilerTestRunner.countDataRows(row, function(node) { return node.data.addedCount; });
+                TestRunner.assertEquals(true, rowsShown <= expectedRowCountA, "shown more instances than created: " + rowsShown + " > " + expectedRowCountA);
                 if (rowsShown < expectedRowCountA) {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(true, !!buttonsNode, "buttons node");
-                    InspectorTest.clickShowMoreButton("showNext", buttonsNode, step3);
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(true, !!buttonsNode, "buttons node");
+                    ProfilerTestRunner.clickShowMoreButton("showNext", buttonsNode, step3);
                 } else if (rowsShown === expectedRowCountA)
                     setTimeout(step4.bind(null, row), 0);
             }
@@ -52,15 +52,15 @@ function test()
             function step4(row)
             {
                 var expectedRowCountB = parseInt(row.data["removedCount"]);
-                var rowsShown = InspectorTest.countDataRows(row, function(node) { return node.data.removedCount; });
-                InspectorTest.assertEquals(true, rowsShown <= expectedRowCountB, "shown more instances than created: " + rowsShown + " > " + expectedRowCountB);
+                var rowsShown = ProfilerTestRunner.countDataRows(row, function(node) { return node.data.removedCount; });
+                TestRunner.assertEquals(true, rowsShown <= expectedRowCountB, "shown more instances than created: " + rowsShown + " > " + expectedRowCountB);
                 if (rowsShown < expectedRowCountB) {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(true, !!buttonsNode, "buttons node");
-                    InspectorTest.clickShowMoreButton("showNext", buttonsNode, step4);
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(true, !!buttonsNode, "buttons node");
+                    ProfilerTestRunner.clickShowMoreButton("showNext", buttonsNode, step4);
                 } else if (rowsShown === expectedRowCountB) {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(false, !!buttonsNode, "buttons node found after all rows shown");
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(false, !!buttonsNode, "buttons node found after all rows shown");
                     setTimeout(next, 0);
                 }
             }

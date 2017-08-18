@@ -8,7 +8,7 @@ function test()
 {
     function dumpSyntaxHighlightHTML(str)
     {
-        return InspectorTest.dumpSyntaxHighlight(str, "text/html");
+        return TestRunner.dumpSyntaxHighlight(str, "text/html");
     }
 
     dumpSyntaxHighlightHTML("<html>");
@@ -20,7 +20,7 @@ function test()
     dumpSyntaxHighlightHTML("<script></" + "script><!--div-->");
     dumpSyntaxHighlightHTML("<script type=\"text/javascript\">document.write('<script type=\"text/javascript\"></' + 'script>');</" + "script>")
 
-    .then(InspectorTest.completeTest.bind(InspectorTest));
+    .then(TestRunner.completeTest.bind(InspectorTest));
 }
 
 </script>

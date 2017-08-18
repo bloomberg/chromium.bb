@@ -20,26 +20,26 @@ function test()
         return thread.events().filter(function(event) { return event.name === name; })[0];
     }
 
-    var model = InspectorTest.createTracingModel(testData);
+    var model = PerformanceTestRunner.createTracingModel(testData);
     var process = model.sortedProcesses()[0];
     var thread = process.sortedThreads()[0];
-    InspectorTest.assertEquals("лет ми спик фром май харт", getEventByName("NonAscii").args["nonascii"]);
+    TestRunner.assertEquals("лет ми спик фром май харт", getEventByName("NonAscii").args["nonascii"]);
     getEventByName("ShortSnapshot").requestObject(step1);
     function step1(object)
     {
-        InspectorTest.assertEquals("short snapshot data", object);
+        TestRunner.assertEquals("short snapshot data", object);
         getEventByName("LongSnapshot").requestObject(step2);
     }
     function step2(object)
     {
-        InspectorTest.assertEquals("abcdef".repeat(10000), object);
+        TestRunner.assertEquals("abcdef".repeat(10000), object);
         getEventByName("NonAsciiSnapshot").requestObject(step3);
     }
     function step3(object)
     {
-        InspectorTest.assertEquals("тест", object);
-        InspectorTest.addResult("DONE");
-        InspectorTest.completeTest();
+        TestRunner.assertEquals("тест", object);
+        TestRunner.addResult("DONE");
+        TestRunner.completeTest();
     }
 }
 

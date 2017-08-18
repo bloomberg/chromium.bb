@@ -18,17 +18,17 @@ function test()
 {
     var obj1, name;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.evaluateInPage("dumpSymbolProperty('Initial')", step0);
+            TestRunner.evaluateInPage("dumpSymbolProperty('Initial')", step0);
 
             async function step0()
             {
-                var result = await InspectorTest.RuntimeAgent.evaluate("object1");
-                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
-                result = await InspectorTest.RuntimeAgent.evaluate("symbol1");
-                name = SDK.RemoteObject.toCallArgument(InspectorTest.runtimeModel.createRemoteObject(result));
+                var result = await TestRunner.RuntimeAgent.evaluate("object1");
+                obj1 = TestRunner.runtimeModel.createRemoteObject(result);
+                result = await TestRunner.RuntimeAgent.evaluate("symbol1");
+                name = SDK.RemoteObject.toCallArgument(TestRunner.runtimeModel.createRemoteObject(result));
                 next();
             }
         },
@@ -36,13 +36,13 @@ function test()
         async function testSetSymbolPropertyValue(next)
         {
             await obj1.setPropertyValue(name, "3");
-            InspectorTest.evaluateInPage("dumpSymbolProperty('Set property')", next);
+            TestRunner.evaluateInPage("dumpSymbolProperty('Set property')", next);
         },
 
         async function testDeleteSymbolProperty(next)
         {
             await obj1.deleteProperty(name);
-            InspectorTest.evaluateInPage("dumpSymbolProperty('Delete property')", next);
+            TestRunner.evaluateInPage("dumpSymbolProperty('Delete property')", next);
         }
     ]);
 }

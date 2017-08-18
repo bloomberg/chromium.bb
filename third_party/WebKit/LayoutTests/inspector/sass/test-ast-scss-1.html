@@ -12,15 +12,15 @@ pre {
 
 function test()
 {
-    InspectorTest.evaluateInPage("getSASS()", onSASS);
+    TestRunner.evaluateInPage("getSASS()", onSASS);
 
     function onSASS(result)
     {
-        InspectorTest.parseSCSS("", result.value)
-            .then(InspectorTest.dumpAST)
-            .then(InspectorTest.validateASTRanges)
+        SASSTestRunner.parseSCSS("", result.value)
+            .then(SASSTestRunner.dumpAST)
+            .then(SASSTestRunner.validateASTRanges)
             .catch(console.error.bind(console))
-            .then(InspectorTest.completeTest);
+            .then(TestRunner.completeTest);
     }
 }
 

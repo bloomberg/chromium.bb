@@ -15,12 +15,12 @@ function test()
 {
     var heapProfileType =  Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
     heapProfileType.addEventListener(Profiler.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
-    InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
+    TestRunner.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
     heapProfileType._takeHeapSnapshot();
 
     function finishHeapSnapshot(uid)
     {
-        InspectorTest.addResult("PASS: snapshot was taken");
+        TestRunner.addResult("PASS: snapshot was taken");
         var profiles = heapProfileType.getProfiles();
 
         if (!profiles.length)
@@ -35,26 +35,26 @@ function test()
 
     async function snapshotReceived(profile)
     {
-        InspectorTest.addResult("PASS: snapshot was received");
+        TestRunner.addResult("PASS: snapshot was received");
         var snapshotProxy = profile._snapshotProxy;
         var bodyWrapperIds = await snapshotProxy._callMethodPromise("idsOfObjectsWithName", "HTMLBodyElement");
 
         if (bodyWrapperIds.length < 3)
             return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
 
-        InspectorTest.addResult("PASS: more than 2 HTMLBodyElements were found");
+        TestRunner.addResult("PASS: more than 2 HTMLBodyElements were found");
 
         var remoteObjects = [];
         for (var i = 0; i < bodyWrapperIds.length; i++) {
-            var object = await InspectorTest.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i]);
+            var object = await TestRunner.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i]);
             if (object)
-                remoteObjects.push(InspectorTest.runtimeModel.createRemoteObject(object));
+                remoteObjects.push(TestRunner.runtimeModel.createRemoteObject(object));
         }
 
         if (!remoteObjects.length)
             return clear("FAILED: no resolved objects were detected");
 
-        InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
+        TestRunner.addResult("PASS: got at least one HTMLBodyElement wrapper");
 
         for (var remoteObject of remoteObjects)
             await remoteObject.getOwnProperties(false);
@@ -65,7 +65,7 @@ function test()
     function clear(errorMessage)
     {
         if (errorMessage)
-            InspectorTest.addResult(errorMessage);
+            TestRunner.addResult(errorMessage);
         setTimeout(done, 0);
         UI.panels.heap_profiler._reset();
         return !errorMessage;
@@ -73,8 +73,8 @@ function test()
 
     function done()
     {
-        InspectorTest.addResult("PASS: profile was deleted");
-        InspectorTest.completeTest();
+        TestRunner.addResult("PASS: profile was deleted");
+        TestRunner.completeTest();
     }
 }
 

@@ -23,7 +23,7 @@ function test()
     function dumpUISourceCodeForURL(url)
     {
         var uiSourceCode = workspace.uiSourceCodeForURL(url);
-        InspectorTest.addResult("uiSourceCode for url " + url + ": " + (uiSourceCode ? "EXISTS" : "null"));
+        TestRunner.addResult("uiSourceCode for url " + url + ": " + (uiSourceCode ? "EXISTS" : "null"));
     }
 
     createUISourceCode("file:///var/www", "localhost/index.html");
@@ -40,7 +40,7 @@ function test()
     dumpUISourceCodeForURL("file:///var/www/localhost/index.html");
     dumpUISourceCodeForURL("file:///var/www/localhost/index2.html");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

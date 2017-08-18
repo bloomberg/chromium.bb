@@ -5,7 +5,7 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function traverseNextNodeInShadowDom(next)
         {
             function createContent(parent, selection)
@@ -44,9 +44,9 @@ function test()
             var node = component1;
             while ((node = node.traverseNextNode(component1))) {
                 if (node.nodeType === Node.TEXT_NODE)
-                    InspectorTest.addResult(node.nodeValue);
+                    TestRunner.addResult(node.nodeValue);
                 else
-                    InspectorTest.addResult(node.nodeName + (node.className ? "." + node.className : ""));
+                    TestRunner.addResult(node.nodeName + (node.className ? "." + node.className : ""));
             }
             next();
         },

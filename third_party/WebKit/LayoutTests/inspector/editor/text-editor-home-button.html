@@ -10,14 +10,14 @@ function foo()
 {
     return 42;
 }
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
 
     textEditor.setText(foo.toString());
 
-    InspectorTest.addResult(textEditor.text());
+    TestRunner.addResult(textEditor.text());
 
     function homeButton(shift, callback)
     {
@@ -25,7 +25,7 @@ function foo()
         var modifiers = Host.isMac() ? ["metaKey"] : [];
         if (shift)
             modifiers.push("shiftKey");
-        InspectorTest.fakeKeyEvent(textEditor, key, modifiers, callback);
+        SourcesTestRunner.fakeKeyEvent(textEditor, key, modifiers, callback);
     }
 
     function hitHomeButton(shift, times, callback)
@@ -33,7 +33,7 @@ function foo()
         function hitButtonCallback()
         {
             --times;
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             if (times > 0) {
                 homeButton(shift, hitButtonCallback);
                 return;
@@ -43,12 +43,12 @@ function foo()
         homeButton(shift, hitButtonCallback);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testFirstNonBlankCharacter(next)
         {
             var selection = TextUtils.TextRange.createFromLocation(2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
         },
 
@@ -56,7 +56,7 @@ function foo()
         {
             var selection = TextUtils.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
         },
 
@@ -64,7 +64,7 @@ function foo()
         {
             var selection = TextUtils.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 3, next);
         },
 
@@ -72,7 +72,7 @@ function foo()
         {
             var selection = TextUtils.TextRange.createFromLocation(0, 2);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 2, next);
         },
 
@@ -80,7 +80,7 @@ function foo()
         {
             var selection = new TextUtils.TextRange(0, 0, 2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);
         },
 
@@ -88,7 +88,7 @@ function foo()
         {
             var selection = new TextUtils.TextRange(3, 1, 2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.dumpTextWithSelection(textEditor);
+            SourcesTestRunner.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);
         }
     ]);

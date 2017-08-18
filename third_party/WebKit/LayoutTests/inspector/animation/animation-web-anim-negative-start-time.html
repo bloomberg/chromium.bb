@@ -29,20 +29,20 @@ function test()
 
     UI.viewManager.showView("animations");
     var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    InspectorTest.evaluateInPage("startAnimation()");
-    InspectorTest.waitForAnimationAdded(step2);
+    TestRunner.evaluateInPage("startAnimation()");
+    ElementsTestRunner.waitForAnimationAdded(step2);
 
     function step2(group)
     {
-        InspectorTest.addResult(timeline._groupBuffer.indexOf(group) !== -1);
-        InspectorTest.waitForAnimationAdded(step3);
-        InspectorTest.evaluateInPage("startAnimationWithNegativeStartTime()");
+        TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
+        ElementsTestRunner.waitForAnimationAdded(step3);
+        TestRunner.evaluateInPage("startAnimationWithNegativeStartTime()");
     }
 
     function step3(group)
     {
-        InspectorTest.addResult(timeline._groupBuffer.indexOf(group) !== -1);
-        InspectorTest.completeTest();
+        TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
+        TestRunner.completeTest();
     }
 }
 

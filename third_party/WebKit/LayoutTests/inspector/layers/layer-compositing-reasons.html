@@ -32,7 +32,7 @@ function test()
         var reasons = await layer.requestCompositingReasons();
         var node = layer.nodeForSelfOrAncestor();
         var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
-        InspectorTest.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(","));
+        TestRunner.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(","));
     }
 
     var idsToTest = [
@@ -52,13 +52,13 @@ function test()
 
     async function onGotLayers()
     {
-        dumpCompositingReasons(InspectorTest.layerTreeModel().layerTree().contentRoot());
+        dumpCompositingReasons(LayersTestRunner.layerTreeModel().layerTree().contentRoot());
         for (var i = 0; i < idsToTest.length - 1; ++i)
-            dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[i]));
-        await dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]));
-        InspectorTest.completeTest();
+            dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[i]));
+        await dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]));
+        TestRunner.completeTest();
     }
-    InspectorTest.requestLayers(onGotLayers);
+    LayersTestRunner.requestLayers(onGotLayers);
 }
 
 </script>

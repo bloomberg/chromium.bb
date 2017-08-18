@@ -30,43 +30,43 @@ function test()
             sourceURL = sourceURL.substr(sourceURL.lastIndexOf('/') + 1);
             listener._sourceURL = sourceURL;
 
-            InspectorTest.addResult("type: " + listener.type());
-            InspectorTest.addResult("useCapture: " + listener.useCapture());
-            InspectorTest.addResult(`location: ${listener.location().lineNumber}:${listener.location().columnNumber}`);
-            InspectorTest.addResult("handler: " + listener.handler().description);
-            InspectorTest.addResult("sourceURL: " + listener.sourceURL());
-            InspectorTest.addResult("");
+            TestRunner.addResult("type: " + listener.type());
+            TestRunner.addResult("useCapture: " + listener.useCapture());
+            TestRunner.addResult(`location: ${listener.location().lineNumber}:${listener.location().columnNumber}`);
+            TestRunner.addResult("handler: " + listener.handler().description);
+            TestRunner.addResult("sourceURL: " + listener.sourceURL());
+            TestRunner.addResult("");
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         async function testSetUp(next)
         {
-            var result = await InspectorTest.RuntimeAgent.evaluate("window", "get-event-listeners-test");
+            var result = await TestRunner.RuntimeAgent.evaluate("window", "get-event-listeners-test");
 
-            windowObject = InspectorTest.runtimeModel.createRemoteObject(result);
-            result = await InspectorTest.RuntimeAgent.evaluate("document.getElementById(\"with-handlers\")", "get-event-listeners-test");
+            windowObject = TestRunner.runtimeModel.createRemoteObject(result);
+            result = await TestRunner.RuntimeAgent.evaluate("document.getElementById(\"with-handlers\")", "get-event-listeners-test");
 
-            divWithHandlers = InspectorTest.runtimeModel.createRemoteObject(result);
-            result = await InspectorTest.RuntimeAgent.evaluate("document.getElementById(\"without-handlers\")", "get-event-listeners-test");
+            divWithHandlers = TestRunner.runtimeModel.createRemoteObject(result);
+            result = await TestRunner.RuntimeAgent.evaluate("document.getElementById(\"without-handlers\")", "get-event-listeners-test");
 
-            divWithoutHandlers = InspectorTest.runtimeModel.createRemoteObject(result);
+            divWithoutHandlers = TestRunner.runtimeModel.createRemoteObject(result);
             next();
         },
 
         function testWindowEventListeners(next)
         {
-            InspectorTest.domDebuggerModel.eventListeners(windowObject).then(dumpListeners).then(next);
+            TestRunner.domDebuggerModel.eventListeners(windowObject).then(dumpListeners).then(next);
         },
 
         function testDivEventListeners(next)
         {
-            InspectorTest.domDebuggerModel.eventListeners(divWithHandlers).then(dumpListeners).then(next);
+            TestRunner.domDebuggerModel.eventListeners(divWithHandlers).then(dumpListeners).then(next);
         },
 
         function testDivWithoutEventListeners(next)
         {
-            InspectorTest.domDebuggerModel.eventListeners(divWithoutHandlers).then(dumpListeners).then(next);
+            TestRunner.domDebuggerModel.eventListeners(divWithoutHandlers).then(dumpListeners).then(next);
         }
     ]);
 }

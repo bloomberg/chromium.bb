@@ -26,8 +26,8 @@ var test = function()
 
     function dumpRequest(headers, data, opt_url)
     {
-        InspectorTest.addResult("Windows: " + logView._generateCurlCommand(newRequest(headers, data, opt_url), "win"));
-        InspectorTest.addResult("Unix: " + logView._generateCurlCommand(newRequest(headers, data, opt_url), "unix"));
+        TestRunner.addResult("Windows: " + logView._generateCurlCommand(newRequest(headers, data, opt_url), "win"));
+        TestRunner.addResult("Unix: " + logView._generateCurlCommand(newRequest(headers, data, opt_url), "unix"));
     }
 
     dumpRequest({})
@@ -43,7 +43,7 @@ var test = function()
     dumpRequest({"Content-Type": "application/binary"}, "%PATH%$PATH");
     dumpRequest({":host": "h", "version": "v"});
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

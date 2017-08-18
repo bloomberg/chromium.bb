@@ -11,28 +11,28 @@
 <script>
 async function test()
 {
-    InspectorTest.startCoverage();
-    await InspectorTest.evaluateInPagePromise("performActions()");
-    await InspectorTest.stopCoverage();
-    var node = InspectorTest.findCoverageNodeForURL("long-mangled.css");
+    CoverageTestRunner.startCoverage();
+    await TestRunner.evaluateInPagePromise("performActions()");
+    await CoverageTestRunner.stopCoverage();
+    var node = CoverageTestRunner.findCoverageNodeForURL("long-mangled.css");
     var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
-    var decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
+    var decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
     node.select();
     coverageListView._revealSourceForSelectedNode();
     await decoratePromise;
-    InspectorTest.addResult("The below should be formatted");
-    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+    TestRunner.addResult("The below should be formatted");
+    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
 
 
-    node = InspectorTest.findCoverageNodeForURL("decorations-after-inplace-formatter.css");
+    node = CoverageTestRunner.findCoverageNodeForURL("decorations-after-inplace-formatter.css");
     node.select();
-    decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
+    decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
     coverageListView._revealSourceForSelectedNode();
     await decoratePromise;
-    InspectorTest.addResult("The below should NOT be formatted");
-    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+    TestRunner.addResult("The below should NOT be formatted");
+    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

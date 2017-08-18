@@ -20,13 +20,13 @@ function testMyCamelMove(foo, bar)
 {}
 }
 
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.setText(testFunction.toString());
     textEditor.element.focus();
 
-    InspectorTest.addResult(textEditor.text());
+    TestRunner.addResult(textEditor.text());
     const wordJumpModifier = Host.isMac() ? "altKey" : "ctrlKey";
     const camelJumpModifier = Host.isMac() ? "ctrlKey" : "altKey";
 
@@ -35,9 +35,9 @@ function testMyCamelMove(foo, bar)
         var selection = textEditor.selection();
         if (selection.isEmpty()) {
             var line = textEditor.line(selection.startLine);
-            InspectorTest.addResult(line.substring(0, selection.startColumn) + "|" + line.substring(selection.startColumn));
+            TestRunner.addResult(line.substring(0, selection.startColumn) + "|" + line.substring(selection.startColumn));
         } else {
-            InspectorTest.addResult(">>" + textEditor.text(selection.normalize()) + "<<");
+            TestRunner.addResult(">>" + textEditor.text(selection.normalize()) + "<<");
         }
         return selection;
     }
@@ -63,15 +63,15 @@ function testMyCamelMove(foo, bar)
             var selection = dumpEditorSelection();
             if (selection.collapseToEnd().compareTo(oldSelection.collapseToEnd()) !== 0) {
                 oldSelection = selection;
-                InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+                SourcesTestRunner.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
             } else {
                 callback();
             }
         }
-        InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+        SourcesTestRunner.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testCtrlRightArrow(next)
         {
             setCursorAtBeginning();
@@ -103,23 +103,23 @@ function testMyCamelMove(foo, bar)
         function testCtrlBackspace(next)
         {
             setCursorAtEnd();
-            InspectorTest.addResult("===============");
-            InspectorTest.addResult(textEditor.text());
+            TestRunner.addResult("===============");
+            TestRunner.addResult(textEditor.text());
             function eventCallback()
             {
-                InspectorTest.addResult("===============");
-                InspectorTest.addResult(textEditor.text() + "<<");
+                TestRunner.addResult("===============");
+                TestRunner.addResult(textEditor.text() + "<<");
                 if (textEditor.text() !== "")
-                    InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+                    SourcesTestRunner.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
                 else
                     next();
             }
-            InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+            SourcesTestRunner.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
         },
 
         function testAltRight(next)
         {
-            InspectorTest.addResult("====== CAMEL CASE MOVEMENTS ======");
+            TestRunner.addResult("====== CAMEL CASE MOVEMENTS ======");
             textEditor.setText(testMyCamelMove.toString());
             setCursorAtBeginning();
             dumpEditorSelection();

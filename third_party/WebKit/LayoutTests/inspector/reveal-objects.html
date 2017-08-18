@@ -28,12 +28,12 @@ function test() {
     var requestWithResource;
     var requestWithoutResource;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function init(next)
         {
             installHooks();
 
-            InspectorTest.resourceTreeModel.forAllResources(function(r) {
+            TestRunner.resourceTreeModel.forAllResources(function(r) {
                 if (r.url.indexOf("inspector-test.js") !== -1) {
                     resource = r;
                     return true;
@@ -41,24 +41,24 @@ function test() {
             });
             uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
 
-            InspectorTest.nodeWithId("div", nodeCallback);
+            ElementsTestRunner.nodeWithId("div", nodeCallback);
 
             function nodeCallback(foundNode)
             {
                 node = foundNode;
-                InspectorTest.recordNetwork();
-                InspectorTest.evaluateInPage("loadResource('../http/tests/inspector/inspector-test.js')", firstXhrCallback);
+                NetworkTestRunner.recordNetwork();
+                TestRunner.evaluateInPage("loadResource('../http/tests/inspector/inspector-test.js')", firstXhrCallback);
             }
 
             function firstXhrCallback()
             {
-                requestWithResource = InspectorTest.networkLog.requestForURL(resource.url);
-                InspectorTest.evaluateInPage("loadResource('missing.js')", secondXhrCallback);
+                requestWithResource = TestRunner.networkLog.requestForURL(resource.url);
+                TestRunner.evaluateInPage("loadResource('missing.js')", secondXhrCallback);
             }
 
             function secondXhrCallback()
             {
-                var requests = InspectorTest.networkRequests();
+                var requests = NetworkTestRunner.networkRequests();
                 for (var i = 0; i < requests.length; ++i) {
                     if (requests[i].url().indexOf("missing.js") !== -1) {
                         requestWithoutResource = requests[i];
@@ -97,30 +97,30 @@ function test() {
 
     function installHooks()
     {
-        InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
-        InspectorTest.addSniffer(Sources.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
-        InspectorTest.addSniffer(Resources.ApplicationPanelSidebar.prototype, "showResource", resourceRevealed, true);
-        InspectorTest.addSniffer(Network.NetworkPanel.prototype, "revealAndHighlightRequest", revealed, true);
+        TestRunner.addSniffer(Elements.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
+        TestRunner.addSniffer(Sources.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
+        TestRunner.addSniffer(Resources.ApplicationPanelSidebar.prototype, "showResource", resourceRevealed, true);
+        TestRunner.addSniffer(Network.NetworkPanel.prototype, "revealAndHighlightRequest", revealed, true);
     }
 
     function nodeRevealed(node)
     {
-        InspectorTest.addResult("Node revealed in the Elements panel");
+        TestRunner.addResult("Node revealed in the Elements panel");
     }
 
     function uiLocationRevealed(uiLocation)
     {
-        InspectorTest.addResult("UILocation " + uiLocation.uiSourceCode.name() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber + " revealed in the Sources panel");
+        TestRunner.addResult("UILocation " + uiLocation.uiSourceCode.name() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber + " revealed in the Sources panel");
     }
 
     function resourceRevealed(resource, lineNumber)
     {
-        InspectorTest.addResult("Resource " + resource.displayName + " revealed in the Resources panel");
+        TestRunner.addResult("Resource " + resource.displayName + " revealed in the Resources panel");
     }
 
     function revealed(request)
     {
-        InspectorTest.addResult("Request " + new Common.ParsedURL(request.url()).lastPathComponent + " revealed in the Network panel");
+        TestRunner.addResult("Request " + new Common.ParsedURL(request.url()).lastPathComponent + " revealed in the Network panel");
     }
 }
 

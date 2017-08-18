@@ -7,8 +7,8 @@ function test()
 {
     function testCase(testName, data, merge, expectSameBackwards)
     {
-        InspectorTest.addResult("Test case: " + testName);
-        InspectorTest.addResult("Input Segments: " + JSON.stringify(data));
+        TestRunner.addResult("Test case: " + testName);
+        TestRunner.addResult("Input Segments: " + JSON.stringify(data));
 
         var forwardRange = new Common.SegmentedRange(merge);
         data.map(entry => new Common.Segment(entry[0], entry[1], entry[2])).forEach(forwardRange.append, forwardRange);
@@ -20,27 +20,27 @@ function test()
 
         // Only do reverse if we merge, otherwise result is order-dependent.
         if (expectSameBackwards && forward.length !== backward.length) {
-            InspectorTest.addResult(`FAIL: mismatch between forward and backward results, ${forward.length} vs. ${backward.length}`);
+            TestRunner.addResult(`FAIL: mismatch between forward and backward results, ${forward.length} vs. ${backward.length}`);
             expectSameBackwards = false;
         }
-        InspectorTest.addResult("Result:");
+        TestRunner.addResult("Result:");
         for (var i = 0; i < forward.length; ++i) {
             var f = forward[i], b = backward[i];
-            InspectorTest.addResult(`${f.begin} - ${f.end}: ${f.data}`);
+            TestRunner.addResult(`${f.begin} - ${f.end}: ${f.data}`);
             if (expectSameBackwards && b && (f.begin !== b.begin || f.end !== b.end || f.data !== b.data))
-                 InspectorTest.addResult(`FAIL: Forward/backward mismatch, reverse segment is ${b.begin} - ${b.end}: ${b.data}`);
+                 TestRunner.addResult(`FAIL: Forward/backward mismatch, reverse segment is ${b.begin} - ${b.end}: ${b.data}`);
         }
         if (!expectSameBackwards) {
-            InspectorTest.addResult("Result backwards:");
+            TestRunner.addResult("Result backwards:");
             for (var b of backward)
-                InspectorTest.addResult(`${b.begin} - ${b.end}: ${b.data}`);
+                TestRunner.addResult(`${b.begin} - ${b.end}: ${b.data}`);
         }
     }
 
     function merge(first, second)
     {
          if (first.begin > second.begin)
-             InspectorTest.addResult(`FAIL: merge() callback called with arguments in wrong order, ${first.begin} vs. ${second.begin}`);
+             TestRunner.addResult(`FAIL: merge() callback called with arguments in wrong order, ${first.begin} vs. ${second.begin}`);
          return first.end >= second.begin && first.data === second.data ? first : null;
     }
 
@@ -57,7 +57,7 @@ function test()
     testCase("one overlapping two others, no merge", [[0, 2, "a"], [3, 5, "b"], [1, 4, "a"]]);
     testCase("one consuming many:", [[0, 1, "a"], [2, 3, "a"], [4, 5, "a"], [6, 7, "a"], [2, 6, "a"]], merge, true);
     testCase("one consuming many, no merge:", [[0, 1, "a"], [2, 3, "a"], [4, 5, "a"], [6, 7, "a"], [2, 6, "a"]]);
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

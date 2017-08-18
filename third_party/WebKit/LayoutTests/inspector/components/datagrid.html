@@ -12,34 +12,34 @@ function test()
             parent.insertChild(child, index);
         else
             parent.appendChild(child);
-        InspectorTest.addResult("Attached " + child.data.id + " to " + parentName + (typeof index === "number" ? " at " + index : ""));
+        TestRunner.addResult("Attached " + child.data.id + " to " + parentName + (typeof index === "number" ? " at " + index : ""));
     }
 
     function detach(parent, child)
     {
         var parentName = parent === root ? "root" : parent.data.id;
-        InspectorTest.addResult("Removing " + child.data.id + " from " + parentName);
+        TestRunner.addResult("Removing " + child.data.id + " from " + parentName);
         parent.removeChild(child);
     }
 
     function dumpNodes()
     {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("Tree:");
-        InspectorTest.dumpAndValidateDataGrid(dataGrid.rootNode());
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
+        TestRunner.addResult("Tree:");
+        DataGridTestRunner.dumpAndValidateDataGrid(dataGrid.rootNode());
+        TestRunner.addResult("");
     }
 
     function expand(node)
     {
         node.expand();
-        InspectorTest.addResult("Expanded node " + node.data.id);
+        TestRunner.addResult("Expanded node " + node.data.id);
     }
 
     function collapse(node)
     {
         node.collapse();
-        InspectorTest.addResult("Collapsed node " + node.data.id);
+        TestRunner.addResult("Collapsed node " + node.data.id);
     }
 
     var columns = [{id: "id"}];
@@ -53,13 +53,13 @@ function test()
 
     var root = dataGrid.rootNode();
 
-    InspectorTest.addResult(dataGrid.element.classList);
+    TestRunner.addResult(dataGrid.element.classList);
     dataGrid.setStriped(true);
-    InspectorTest.addResult(dataGrid.element.classList);
+    TestRunner.addResult(dataGrid.element.classList);
     dataGrid.setStriped(false);
-    InspectorTest.addResult(dataGrid.element.classList);
+    TestRunner.addResult(dataGrid.element.classList);
 
-    InspectorTest.addResult("Building tree.");
+    TestRunner.addResult("Building tree.");
 
     // Appending to detached node.
     attach(aa, aaa);
@@ -121,15 +121,15 @@ function test()
     attach(root, a);
     dumpNodes();
     dataGrid.addColumn({id: "secondCol"});
-    InspectorTest.addResult("Added secondCol");
+    TestRunner.addResult("Added secondCol");
     dumpNodes();
     attach(root, b);
     dumpNodes();
     dataGrid.removeColumn("secondCol");
-    InspectorTest.addResult("Removed secondCol");
+    TestRunner.addResult("Removed secondCol");
     dumpNodes();
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

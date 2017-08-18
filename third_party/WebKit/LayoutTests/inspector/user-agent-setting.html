@@ -15,18 +15,18 @@ function test()
 
     for (var i = 0; i < cases.length; i++) {
         var result = SDK.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[i]);
-        InspectorTest.addResult(result);
+        TestRunner.addResult(result);
     }
 
-    InspectorTest.addResult("\nManually setting custom user agent");
+    TestRunner.addResult("\nManually setting custom user agent");
     SDK.multitargetNetworkManager.setCustomUserAgentOverride("foobar with %s inside");
 
-    InspectorTest.evaluateInPage("navigator.userAgent", step2);
+    TestRunner.evaluateInPage("navigator.userAgent", step2);
 
     function step2(result)
     {
-        InspectorTest.addResult(result.value)
-        InspectorTest.completeTest();
+        TestRunner.addResult(result.value)
+        TestRunner.completeTest();
     }
 }
 

@@ -8,28 +8,28 @@ var test = function()
     function dumpColor(colorText)
     {
         var color = Common.Color.parse(colorText);
-        InspectorTest.addResult("Dumping '" + colorText + "' in different formats:");
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.RGB));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.RGBA));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HSL));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HSLA));
+        TestRunner.addResult("Dumping '" + colorText + "' in different formats:");
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.RGB));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.RGBA));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.HSL));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.HSLA));
 
         var hsv = color.hsva();
         var hsvString = String.sprintf("hsv(%d, %d%, %d%)", Math.round(hsv[0] * 360), Math.round(hsv[1] * 100), Math.round(hsv[2] * 100));
-        InspectorTest.addResult(" - " + hsvString);
+        TestRunner.addResult(" - " + hsvString);
         var hsva = color.hsva();
         var hsvaString = String.sprintf("hsva(%d, %d%, %d%, %f)", Math.round(hsva[0] * 360), Math.round(hsva[1] * 100), Math.round(hsva[2] * 100), hsva[3]);
-        InspectorTest.addResult(" - " + hsvaString);
+        TestRunner.addResult(" - " + hsvaString);
 
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HEXA));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HEX));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.ShortHEXA));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.ShortHEX));
-        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.Nickname));
-        InspectorTest.addResult(" - default: " + color.asString());
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.HEXA));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.HEX));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.ShortHEXA));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.ShortHEX));
+        TestRunner.addResult(" - " + color.asString(Common.Color.Format.Nickname));
+        TestRunner.addResult(" - default: " + color.asString());
 
-        InspectorTest.addResult(" - inverse color: " + color.invert().asString());
-        InspectorTest.addResult(" - setAlpha(0.42): " + color.setAlpha(0.42).asString());
+        TestRunner.addResult(" - inverse color: " + color.invert().asString());
+        TestRunner.addResult(" - setAlpha(0.42): " + color.setAlpha(0.42).asString());
     }
 
     dumpColor("red");
@@ -51,7 +51,7 @@ var test = function()
     dumpColor("#00FFFF");
     dumpColor("#1234");
     dumpColor("#0FF");
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

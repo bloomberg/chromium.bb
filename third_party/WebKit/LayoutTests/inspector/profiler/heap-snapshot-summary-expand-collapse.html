@@ -9,22 +9,22 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowAll(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             function step2()
             {
-                InspectorTest.findAndExpandRow("A", step3);
+                ProfilerTestRunner.findAndExpandRow("A", step3);
             }
 
             function step3(row)
@@ -32,7 +32,7 @@ function test()
                 row.collapse();
                 row.expand();
                 var visibleChildren = row.children.filter(c => c._element.classList.contains('revealed'));
-                InspectorTest.assertEquals(11, visibleChildren.length);
+                TestRunner.assertEquals(11, visibleChildren.length);
                 next();
             }
         }

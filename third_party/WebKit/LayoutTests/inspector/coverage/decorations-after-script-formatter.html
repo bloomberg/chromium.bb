@@ -10,13 +10,13 @@
 <script>
 async function test()
 {
-    InspectorTest.startCoverage();
-    await InspectorTest.evaluateInPagePromise("performActions()");
-    await InspectorTest.stopCoverage();
+    CoverageTestRunner.startCoverage();
+    await TestRunner.evaluateInPagePromise("performActions()");
+    await CoverageTestRunner.stopCoverage();
     await UI.inspectorView.showPanel("sources");
-    await InspectorTest.sourceDecorated("coverage.js");
+    await CoverageTestRunner.sourceDecorated("coverage.js");
 
-    var decoratorPromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
+    var decoratorPromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
     var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
     for (action of editorActions) {
         if (action instanceof Sources.ScriptFormatterEditorAction) {
@@ -25,8 +25,8 @@ async function test()
         }
     }
     await decoratorPromise;
-    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
-    InspectorTest.completeTest();
+    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+    TestRunner.completeTest();
 }
 </script>
 </head>

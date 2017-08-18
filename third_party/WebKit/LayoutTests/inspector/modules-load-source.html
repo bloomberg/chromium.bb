@@ -4,22 +4,22 @@
 <script>
 async function test()
 {
-    var initialModules = InspectorTest.loadedModules();
+    var initialModules = TestRunner.loadedModules();
     await UI.inspectorView.panel("sources");
-    var sourcesModules = InspectorTest.dumpLoadedModules(initialModules);
+    var sourcesModules = TestRunner.dumpLoadedModules(initialModules);
 
     var resource;
-    InspectorTest.resourceTreeModel.forAllResources(function(r) {
+    TestRunner.resourceTreeModel.forAllResources(function(r) {
         if (r.url.indexOf("inspector-test.js") !== -1) {
             resource = r;
             return true;
         }
     });
-    InspectorTest.addResult("Now with source code opened");
+    TestRunner.addResult("Now with source code opened");
     var uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
     Common.Revealer.reveal(uiLocation);
-    InspectorTest.dumpLoadedModules(sourcesModules);
-    InspectorTest.completeTest();
+    TestRunner.dumpLoadedModules(sourcesModules);
+    TestRunner.completeTest();
 }
 </script>
 </head>

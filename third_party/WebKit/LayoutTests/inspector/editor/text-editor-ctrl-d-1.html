@@ -9,17 +9,17 @@ function codeSnippet() {
 
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
-    InspectorTest.evaluateInPage("codeSnippet();", onCodeSnippet);
+    TestRunner.evaluateInPage("codeSnippet();", onCodeSnippet);
 
     function onCodeSnippet(result)
     {
         var codeLines = result.value;
         textEditor.setText(codeLines);
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     function nextOccurrence(times)
@@ -37,7 +37,7 @@ function test()
     {
         if (typeof to !== "number")
             to = from;
-        InspectorTest.setLineSelections(textEditor, [
+        SourcesTestRunner.setLineSelections(textEditor, [
             { line: line, from: from, to: to }
         ]);
     }
@@ -47,7 +47,7 @@ function test()
         {
             lineSelection(0, 3);
             nextOccurrence(3);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -55,7 +55,7 @@ function test()
         {
             lineSelection(0, 9, 13);
             nextOccurrence(3);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -63,7 +63,7 @@ function test()
         {
             lineSelection(2, 13);
             nextOccurrence(3);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -72,7 +72,7 @@ function test()
             lineSelection(2, 13);
             nextOccurrence(3);
             undoLastSelection();
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -82,9 +82,9 @@ function test()
             nextOccurrence(3);
             undoLastSelection();
             nextOccurrence(1);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             var lastSelection = textEditor.selections().pop();
-            InspectorTest.addResult("Last selection: " + lastSelection.toString());
+            TestRunner.addResult("Last selection: " + lastSelection.toString());
             next();
         },
 
@@ -94,9 +94,9 @@ function test()
             nextOccurrence(2);
             undoLastSelection();
             nextOccurrence(1);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             var lastSelection = textEditor.selections().pop();
-            InspectorTest.addResult("Last selection: " + lastSelection.toString());
+            TestRunner.addResult("Last selection: " + lastSelection.toString());
             next();
         },
 
@@ -104,7 +104,7 @@ function test()
         {
             lineSelection(17, 45);
             nextOccurrence(5);
-            InspectorTest.dumpSelectionStats(textEditor);
+            SourcesTestRunner.dumpSelectionStats(textEditor);
             next();
         },
     ];

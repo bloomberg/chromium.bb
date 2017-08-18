@@ -18,8 +18,8 @@ InspectorTest.dumpCookie = function(cookie)
         ", expires: " + (expires ? expires.getTime() : "n/a") +
         ", size: " + cookie.size();
 
-    InspectorTest.addResult(output);
-    InspectorTest.addObject(cookie.attributes());
+    TestRunner.addResult(output);
+    TestRunner.addObject(cookie.attributes());
 }
 
 InspectorTest.dumpCookies = function(cookies)
@@ -31,14 +31,14 @@ InspectorTest.dumpCookies = function(cookies)
 InspectorTest.parseAndDumpCookie = function(header)
 {
     var parser = new SDK.CookieParser();
-    InspectorTest.addResult("source: " + header);
+    TestRunner.addResult("source: " + header);
     InspectorTest.dumpCookies(parser.parseCookie(header));
 }
 
 InspectorTest.parseAndDumpSetCookie = function(header)
 {
     var parser = new SDK.CookieParser();
-    InspectorTest.addResult("source: " + header);
+    TestRunner.addResult("source: " + header);
     InspectorTest.dumpCookies(parser.parseSetCookie(header));
 }
 
@@ -65,7 +65,7 @@ var test = function()
     InspectorTest.parseAndDumpSetCookie("cooke1 = value; HttpOnly; Secure; SameSite=Secure;");
     InspectorTest.parseAndDumpSetCookie("cooke1; Path=/; Domain=.example.com;");
     InspectorTest.parseAndDumpSetCookie("cooke1=; Path=/; Domain=.example.com;");
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

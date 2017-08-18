@@ -25,21 +25,21 @@ function handler(evt)
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function setUp(next)
         {
-            InspectorTest.evaluateInPage("setup()", next);
+            TestRunner.evaluateInPage("setup()", next);
         },
 
         function setOverride(next)
         {
-            InspectorTest.addConsoleSniffer(next);
-            InspectorTest.DeviceOrientationAgent.setDeviceOrientationOverride(20, 30, 40);
+            ConsoleTestRunner.addConsoleSniffer(next);
+            TestRunner.DeviceOrientationAgent.setDeviceOrientationOverride(20, 30, 40);
         },
 
         function clearOverride(next)
         {
-            InspectorTest.DeviceOrientationAgent.clearDeviceOrientationOverride().then(next);
+            TestRunner.DeviceOrientationAgent.clearDeviceOrientationOverride().then(next);
         }
     ]);
 }

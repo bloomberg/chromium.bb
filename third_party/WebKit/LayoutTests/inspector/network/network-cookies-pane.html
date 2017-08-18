@@ -18,14 +18,14 @@ function test() {
 
         // Ensure this runs after all Promise.resolve
         setTimeout(() => {
-            InspectorTest.addResult("--------------------------");
+            TestRunner.addResult("--------------------------");
             const value = panel._detailsWidget.element.innerText
                 .split('\n')
                 .map(line => line.trim())
                 .join('\n')
                 .trim();
-            InspectorTest.addResult(value);
-            InspectorTest.completeTest();
+            TestRunner.addResult(value);
+            TestRunner.completeTest();
         }, 0);
     }
 

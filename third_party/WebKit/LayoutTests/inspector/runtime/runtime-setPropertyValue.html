@@ -31,16 +31,16 @@ function test()
     var obj1, obj2;
     var nameFoo = SDK.RemoteObject.toCallArgument("foo");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSetUp(next)
         {
-            InspectorTest.evaluateInPage("dumpObject('Initial')", step0);
+            TestRunner.evaluateInPage("dumpObject('Initial')", step0);
 
             async function step0() {
-                var result = await InspectorTest.RuntimeAgent.evaluate("object1");
-                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
-                result = await InspectorTest.RuntimeAgent.evaluate("object2");
-                obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
+                var result = await TestRunner.RuntimeAgent.evaluate("object1");
+                obj1 = TestRunner.runtimeModel.createRemoteObject(result);
+                result = await TestRunner.RuntimeAgent.evaluate("object2");
+                obj2 = TestRunner.runtimeModel.createRemoteObject(result);
                 next();
             }
         },
@@ -48,44 +48,44 @@ function test()
         async function testSetPrimitive(next)
         {
             await obj1.setPropertyValue(nameFoo, "2");
-            InspectorTest.evaluateInPage("dumpObject('Set primitive')", next);
+            TestRunner.evaluateInPage("dumpObject('Set primitive')", next);
         },
 
         async function testSetHandle(next)
         {
             await obj1.setPropertyValue(nameFoo, "object2");
-            InspectorTest.evaluateInPage("dumpObject('Set handle')", next);
+            TestRunner.evaluateInPage("dumpObject('Set handle')", next);
         },
 
         async function testSetUndefined(next)
         {
             await obj1.setPropertyValue(nameFoo, "undefined");
-            InspectorTest.evaluateInPage("dumpObject('Set undefined')", next);
+            TestRunner.evaluateInPage("dumpObject('Set undefined')", next);
         },
 
         async function testSetZero(next)
         {
             await obj1.setPropertyValue(nameFoo, "0");
-            InspectorTest.evaluateInPage("dumpObject('Set zero')", next);
+            TestRunner.evaluateInPage("dumpObject('Set zero')", next);
         },
 
         async function testSetNull(next)
         {
             await obj1.setPropertyValue(nameFoo, "null");
-            InspectorTest.evaluateInPage("dumpObject('Set null')", next);
+            TestRunner.evaluateInPage("dumpObject('Set null')", next);
         },
 
         async function testSetEmptyString(next)
         {
             await obj1.setPropertyValue(nameFoo, "\"\"");
-            InspectorTest.evaluateInPage("dumpObject('Set empty string')", next);
+            TestRunner.evaluateInPage("dumpObject('Set empty string')", next);
         },
 
         async function testSetException(next)
         {
             var error = await obj1.setPropertyValue(nameFoo, "throw 'exception'");
-            InspectorTest.addResult(error);
-            InspectorTest.evaluateInPage("dumpObject('Set exception')", next);
+            TestRunner.addResult(error);
+            TestRunner.evaluateInPage("dumpObject('Set exception')", next);
         },
 
         async function testSetNonFiniteNumbers(next)
@@ -93,19 +93,19 @@ function test()
             await obj1.setPropertyValue(nameFoo, "NaN");
             await obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo1"), "Infinity");
             await obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo2"), "-Infinity");
-            InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
+            TestRunner.evaluateInPage("dumpObject('Set non-finite numbers')", next);
         },
 
         async function testNegativeZero(next)
         {
             await obj1.setPropertyValue(nameFoo, "1/-Infinity");
-            InspectorTest.evaluateInPage("checkNegativeZero()", next);
+            TestRunner.evaluateInPage("checkNegativeZero()", next);
         },
 
         function testReleaseObjectIsCalled(next)
         {
             // If failed, this test will time out.
-            InspectorTest.addSniffer(InspectorTest.RuntimeAgent, "releaseObject", next);
+            TestRunner.addSniffer(TestRunner.RuntimeAgent, "releaseObject", next);
             obj1.setPropertyValue(nameFoo, "[1,2,3]");
         }
     ]);

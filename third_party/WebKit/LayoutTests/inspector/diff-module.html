@@ -35,10 +35,10 @@ function test()
             "    console.log('changed');",
             "}"
         ]));
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
     function print(results)
     {
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
         for (var i = 0; i < results.length; i++) {
             var result = results[i];
             var type = "Unknown";
@@ -50,7 +50,7 @@ function test()
                 type = "-";
             else if (result[0] === Diff.Diff.Operation.Edit)
                 type = "E";
-            InspectorTest.addResult(type + ": " + JSON.stringify(result[1], null, 4));
+            TestRunner.addResult(type + ": " + JSON.stringify(result[1], null, 4));
         }
     }
 }

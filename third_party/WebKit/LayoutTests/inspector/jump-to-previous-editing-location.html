@@ -33,7 +33,7 @@ function test()
             selectionText = "line: " + selection.startLine + " column: " + selection.startColumn;
         else
             selectionText = "(NOT EMPTY): " + selection.toString();
-        InspectorTest.addResult(label + " " + selectionText + " " + fileName);
+        TestRunner.addResult(label + " " + selectionText + " " + fileName);
     }
 
     function eventSenderClickAtEditor(editor, lineNumber, columnNumber)
@@ -58,10 +58,10 @@ function test()
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testSimpleMovements(next)
         {
-            InspectorTest.showScriptSource("example-fileset-for-test.js", onContentLoaded);
+            SourcesTestRunner.showScriptSource("example-fileset-for-test.js", onContentLoaded);
 
             function onContentLoaded()
             {
@@ -69,7 +69,7 @@ function test()
                 dumpSelection("Initial position");
                 eventSenderClickAtEditor(editor, 4, 7, true);
 
-                InspectorTest.typeIn(editor, "\nSome more text here", step2);
+                SourcesTestRunner.typeIn(editor, "\nSome more text here", step2);
             }
 
             function step2() {
@@ -78,7 +78,7 @@ function test()
 
                 rollback();
                 dumpSelection("Rolled back");
-                InspectorTest.typeIn(editor, "\nSome more text here as well\n", step3);
+                SourcesTestRunner.typeIn(editor, "\nSome more text here as well\n", step3);
             }
 
             function step3() {
@@ -95,7 +95,7 @@ function test()
         {
             var editor = panel.visibleView.textEditor;
             // Hide inspector view to significantly speed up following tests from testsuite.
-            InspectorTest.hideInspectorView();
+            TestRunner.hideInspectorView();
             const jumpsToDo = 4;
             clickAndDump(editor, [10, 11, 12, 13], [3, 4, 5, 6]);
 
@@ -140,7 +140,7 @@ function test()
 
         function testCrossFileJump(next)
         {
-            InspectorTest.showScriptSource("editor-test.js", onContentLoaded);
+            SourcesTestRunner.showScriptSource("editor-test.js", onContentLoaded);
             function onContentLoaded()
             {
                 var editor = panel.visibleView.textEditor;
@@ -216,7 +216,7 @@ function test()
         function testShowAnchorLocation(next)
         {
             dumpSelection("Before switching to other panel");
-            InspectorTest.waitForScriptSource("editor-test.js", onScriptSource);
+            SourcesTestRunner.waitForScriptSource("editor-test.js", onScriptSource);
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new Components.Linkifier();
@@ -224,7 +224,7 @@ function test()
                 var anchor = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, anchorURI, 10, 1);
                 var info = Components.Linkifier._linkInfo(anchor);
                 Common.Revealer.revealPromise(info.uiLocation).then(function() {
-                    InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
+                    TestRunner.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
                     dumpSelection("Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
                     rollback();
                     dumpSelection("Rolled back");
@@ -239,7 +239,7 @@ function test()
         {
             dumpSelection("Initial state");
 
-            InspectorTest.waitForScriptSource("example-fileset-for-test.js", onScriptSourceLoaded);
+            SourcesTestRunner.waitForScriptSource("example-fileset-for-test.js", onScriptSourceLoaded);
             function onScriptSourceLoaded(uiSourceCode)
             {
                 var jumps = [20, 10, 30];

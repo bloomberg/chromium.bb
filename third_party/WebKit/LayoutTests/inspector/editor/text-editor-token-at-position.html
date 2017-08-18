@@ -23,19 +23,19 @@ function test()
     {
         for(var i = 0; i < positions.length; ++i) {
             var columns = positions[i];
-            InspectorTest.addResult("Line: " + text[i]);
+            TestRunner.addResult("Line: " + text[i]);
             for(var j = 0; j < columns.length; ++j) {
                 var column = columns[j];
-                InspectorTest.addResult("Column #" + column + " (char '" + text[i].charAt(column) + "') - token: " + JSON.stringify(textEditor.tokenAtTextPosition(i, column)));
+                TestRunner.addResult("Column #" + column + " (char '" + text[i].charAt(column) + "') - token: " + JSON.stringify(textEditor.tokenAtTextPosition(i, column)));
             }
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testHighlightedText(next)
         {
-            var textEditor = InspectorTest.createTestEditor();
-            InspectorTest.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(step1);
+            var textEditor = SourcesTestRunner.createTestEditor();
+            TestRunner.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(step1);
             textEditor.setMimeType("text/javascript");
             function step1()
             {

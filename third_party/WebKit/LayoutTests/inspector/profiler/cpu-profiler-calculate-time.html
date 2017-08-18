@@ -99,11 +99,11 @@ function test()
     function checkExpectations(node)
     {
         if (Math.abs(node.selfTime - node.expectedSelfTime) > 0.0001) {
-            InspectorTest.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
+            TestRunner.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
             return false;
         }
         if (Math.abs(node.totalTime - node.expectedTotalTime) > 0.0001) {
-            InspectorTest.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
+            TestRunner.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
             return false;
         }
         for (var i = 0; i < node.children.length; i++) {
@@ -113,10 +113,10 @@ function test()
         return true;
     }
     if (checkExpectations(profileAndExpectations.head))
-        InspectorTest.addResult("SUCCESS: all nodes have correct self and total times");
+        TestRunner.addResult("SUCCESS: all nodes have correct self and total times");
     else
-        InspectorTest.addResult("FAIL: incorrect node times\n" + JSON.stringify(profileAndExpectations, null, 4));
-    InspectorTest.completeTest();
+        TestRunner.addResult("FAIL: incorrect node times\n" + JSON.stringify(profileAndExpectations, null, 4));
+    TestRunner.completeTest();
 }
 
 </script>

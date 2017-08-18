@@ -54,13 +54,13 @@ function test()
         {"name": "Outer", "ts": 130000, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"test" }
     ];
 
-    var model = InspectorTest.createTracingModel(testData);
+    var model = PerformanceTestRunner.createTracingModel(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).events();
     for (var i = 0; i < events.length; ++i) {
         var event = events[i];
-        InspectorTest.addResult(event.phase + " " + event.name + " " + event.startTime + " - " + event.endTime);
+        TestRunner.addResult(event.phase + " " + event.name + " " + event.startTime + " - " + event.endTime);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

@@ -7,12 +7,12 @@ function test()
 {
     function onGotLayers()
     {
-      InspectorTest.addResult("Sticky position constraint");
-      InspectorTest.dumpModelStickyPositionConstraint();
-      InspectorTest.completeTest();
+      TestRunner.addResult("Sticky position constraint");
+      LayersTestRunner.dumpModelStickyPositionConstraint();
+      TestRunner.completeTest();
     }
 
-    InspectorTest.requestLayers(onGotLayers);
+    LayersTestRunner.requestLayers(onGotLayers);
 }
 </script>
 <style>

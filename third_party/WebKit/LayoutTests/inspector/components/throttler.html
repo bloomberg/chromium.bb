@@ -77,7 +77,7 @@ function test()
     ProcessMock.prototype = {
         run: function()
         {
-            InspectorTest.addResult("Process '" + this.processName + "' STARTED.");
+            TestRunner.addResult("Process '" + this.processName + "' STARTED.");
             this._startCallback();
             if (this._runnable)
                 this._runnable.call(null);
@@ -90,7 +90,7 @@ function test()
 
             function onFinish()
             {
-                InspectorTest.addResult("Process '" + this.processName + "' FINISHED.");
+                TestRunner.addResult("Process '" + this.processName + "' FINISHED.");
                 this._finishCallback();
             }
         },
@@ -100,7 +100,7 @@ function test()
     var timeoutMock = new TimeoutMock();
     throttler._setTimeout = timeoutMock.setTimeout;
     throttler._clearTimeout = timeoutMock.clearTimeout;
-    InspectorTest.addSniffer(throttler, "schedule", logSchedule, true);
+    TestRunner.addSniffer(throttler, "schedule", logSchedule, true);
 
     function testSimpleSchedule(next, runningProcess)
     {
@@ -165,7 +165,7 @@ function test()
         }).then(next);
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         testSimpleSchedule,
 
         testAsSoonAsPossibleOverrideTimeout,
@@ -240,7 +240,7 @@ function test()
     {
         var promiseResolve;
         var hasFinished;
-        InspectorTest.addSniffer(Common.Throttler.prototype, "_processCompletedForTests", onFinished);
+        TestRunner.addSniffer(Common.Throttler.prototype, "_processCompletedForTests", onFinished);
         function onFinished()
         {
             hasFinished = true;
@@ -268,27 +268,27 @@ function test()
     {
         var timeouts = timeoutMock.activeTimersTimeouts();
         if (timeouts.length !== 0) {
-            InspectorTest.addResult("ERROR: throttler is not in idle state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
-            InspectorTest.completeTest();
+            TestRunner.addResult("ERROR: throttler is not in idle state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult("Throttler is in IDLE state (doesn't have any timers set up)");
+        TestRunner.addResult("Throttler is in IDLE state (doesn't have any timers set up)");
     }
 
     function assertThrottlerTimeout()
     {
         var timeouts = timeoutMock.activeTimersTimeouts();
         if (timeouts.length === 0) {
-            InspectorTest.addResult("ERROR: throttler is not in timeout state. Scheduled timers timeouts are empty!");
-            InspectorTest.completeTest();
+            TestRunner.addResult("ERROR: throttler is not in timeout state. Scheduled timers timeouts are empty!");
+            TestRunner.completeTest();
             return;
         }
-        InspectorTest.addResult("Throttler is in TIMEOUT state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
+        TestRunner.addResult("Throttler is in TIMEOUT state. Scheduled timers timeouts: [" + timeouts.sort().join(", ") + "]");
     }
 
     function logSchedule(operation, asSoonAsPossible)
     {
-        InspectorTest.addResult("SCHEDULED: '" + operation.processName + "' asSoonAsPossible: " + asSoonAsPossible);
+        TestRunner.addResult("SCHEDULED: '" + operation.processName + "' asSoonAsPossible: " + asSoonAsPossible);
     }
 }
 

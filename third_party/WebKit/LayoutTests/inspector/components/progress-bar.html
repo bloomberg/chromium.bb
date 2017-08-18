@@ -19,7 +19,7 @@ InspectorTest.MockProgressIndicator.prototype = {
 
     done: function()
     {
-        InspectorTest.addResult("progress indicator: done");
+        TestRunner.addResult("progress indicator: done");
     },
 
     setTotalWork: function(totalWork)
@@ -57,7 +57,7 @@ InspectorTest.MockProgressIndicator.prototype = {
         if (typeof totalWork === "number")
             totalWork = Math.round(totalWork * roundFactor) / roundFactor;
 
-        InspectorTest.addResult("progress: `" + this._title + "' " + worked + " out of " + totalWork + " done.");
+        TestRunner.addResult("progress: `" + this._title + "' " + worked + " out of " + totalWork + " done.");
     }    
 }
 
@@ -65,14 +65,14 @@ InspectorTest.MockProgressIndicator.prototype = {
 
 var test = function()
 {    
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testOneSubProgress(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
             var composite = new Common.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
 
-            InspectorTest.addResult("Testing CompositeProgress with a single subprogress:");
+            TestRunner.addResult("Testing CompositeProgress with a single subprogress:");
             indicator.dump();
             subProgress.setTitle("cuckooing");
             subProgress.setWorked(10);
@@ -93,7 +93,7 @@ var test = function()
             var subProgress1 = composite.createSubProgress();
             var subProgress2 = composite.createSubProgress(3);
 
-            InspectorTest.addResult("Testing CompositeProgress with multiple subprogresses:");
+            TestRunner.addResult("Testing CompositeProgress with multiple subprogresses:");
             indicator.dump();
 
             subProgress1.setTitle("cuckooing");
@@ -126,10 +126,10 @@ var test = function()
             var composite = new Common.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
 
-            InspectorTest.addResult("Testing isCanceled:");
-            InspectorTest.assertTrue(!subProgress.isCanceled(), "progress should not be canceled");
+            TestRunner.addResult("Testing isCanceled:");
+            TestRunner.assertTrue(!subProgress.isCanceled(), "progress should not be canceled");
             indicator.cancel();
-            InspectorTest.assertTrue(subProgress.isCanceled(), "progress should be canceled");
+            TestRunner.assertTrue(subProgress.isCanceled(), "progress should be canceled");
             next();
         },
 
@@ -141,7 +141,7 @@ var test = function()
             var composite1 = new Common.CompositeProgress(subProgress01);
             var subProgress11 = composite1.createSubProgress(10); // Weight should have no effect.
 
-            InspectorTest.addResult("Testing nested subprogresses:");
+            TestRunner.addResult("Testing nested subprogresses:");
             indicator.dump();
 
             subProgress11.setWorked(10);
@@ -153,9 +153,9 @@ var test = function()
             subProgress11.setWorked(50, "meowing");
             indicator.dump();
 
-            InspectorTest.assertTrue(!subProgress11.isCanceled());
+            TestRunner.assertTrue(!subProgress11.isCanceled());
             indicator.cancel();
-            InspectorTest.assertTrue(subProgress11.isCanceled());
+            TestRunner.assertTrue(subProgress11.isCanceled());
 
             subProgress11.done();
             indicator.dump();

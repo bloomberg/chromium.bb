@@ -11,8 +11,8 @@ function test()
     ];
 
     function testMaybeShowInDrawer(lastSeenVersion) {
-        InspectorTest.addResult(`Last seen version: ${lastSeenVersion}`);
-        InspectorTest.addSniffer(UI.viewManager, "showView", onShowView);
+        TestRunner.addResult(`Last seen version: ${lastSeenVersion}`);
+        TestRunner.addSniffer(UI.viewManager, "showView", onShowView);
         var showedReleaseNote = false;
 
         Help._showReleaseNoteIfNeeded(lastSeenVersion, Help.latestReleaseNote().version);
@@ -21,12 +21,12 @@ function test()
             showedReleaseNote = true;
         }
         if (showedReleaseNote)
-            InspectorTest.addResult(`Showed release note in drawer - version: ${Help.latestReleaseNote().version}`);
+            TestRunner.addResult(`Showed release note in drawer - version: ${Help.latestReleaseNote().version}`);
         else
-            InspectorTest.addResult('Did not show release note drawer');
+            TestRunner.addResult('Did not show release note drawer');
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function getLatestReleaseNote(next) {
             var lastSeenVersion = 4;
             testMaybeShowInDrawer(lastSeenVersion);
@@ -45,7 +45,7 @@ function test()
         function doNotShowReleaseNoteOnFreshProfile(next) {
             var lastSeenVersion = 0;
             testMaybeShowInDrawer(lastSeenVersion);
-            InspectorTest.addResult(`Release note version in setting: ${Help.releaseNoteVersionSetting().get()}`);
+            TestRunner.addResult(`Release note version in setting: ${Help.releaseNoteVersionSetting().get()}`);
             next();
         },
     ]);

@@ -29,7 +29,7 @@ InspectorTest.TracingManagerClient.prototype = {
 
     tracingComplete: function()
     {
-        InspectorTest.addResult("Tracing complete");
+        TestRunner.addResult("Tracing complete");
         this._tracingModel.tracingComplete();
         this._completionCallback(this._tracingModel);
     },
@@ -49,10 +49,10 @@ function doWork()
 function test()
 {
     var tracingClient = new InspectorTest.TracingManagerClient(runEventsSanityCheck);
-    var tracingManager = InspectorTest.tracingManager;
+    var tracingManager = TestRunner.tracingManager;
     tracingManager.start(tracingClient, "", "").then(() => {
-        InspectorTest.addResult("Tracing started");
-        InspectorTest.evaluateInPage("doWork()", tracingManager.stop.bind(tracingManager));
+        TestRunner.addResult("Tracing started");
+        TestRunner.evaluateInPage("doWork()", tracingManager.stop.bind(tracingManager));
     });
 
     function runEventsSanityCheck(tracingModel)
@@ -83,14 +83,14 @@ function test()
             if (event.name in knownEvents)
                 ++knownEvents[event.name];
         }
-        InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
-        InspectorTest.assertGreaterOrEqual(knownEvents["UpdateLayoutTree"], 1, "Too few UpdateLayoutTree");
-        InspectorTest.assertGreaterOrEqual(knownEvents["LocalFrameView::layout"], 1, "Too few LocalFrameView::layout");
-        InspectorTest.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");
-        InspectorTest.assertGreaterOrEqual(processes, 2, "Too few processes");
-        InspectorTest.assertGreaterOrEqual(threads, 4, "Too few threads");
-        InspectorTest.addResult("Event sanity test done");
-        InspectorTest.completeTest();
+        TestRunner.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
+        TestRunner.assertGreaterOrEqual(knownEvents["UpdateLayoutTree"], 1, "Too few UpdateLayoutTree");
+        TestRunner.assertGreaterOrEqual(knownEvents["LocalFrameView::layout"], 1, "Too few LocalFrameView::layout");
+        TestRunner.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");
+        TestRunner.assertGreaterOrEqual(processes, 2, "Too few processes");
+        TestRunner.assertGreaterOrEqual(threads, 4, "Too few threads");
+        TestRunner.addResult("Event sanity test done");
+        TestRunner.completeTest();
     }
 }
 

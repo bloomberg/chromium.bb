@@ -9,7 +9,7 @@ function test() {
   var workspace = new Workspace.Workspace();
   var project = new Bindings.ContentProviderBasedProject(workspace, "mockProject", Workspace.projectTypes.Network, "", false);
   var workspaceDiff = new WorkspaceDiff.WorkspaceDiff(workspace);
-  InspectorTest.addSniffer(WorkspaceDiff.WorkspaceDiff.prototype, "_uiSourceCodeProcessedForTest", modifiedStatusChanged, true);
+  TestRunner.addSniffer(WorkspaceDiff.WorkspaceDiff.prototype, "_uiSourceCodeProcessedForTest", modifiedStatusChanged, true);
 
   var uiSourceCodeList = new Changes.ChangesSidebar(workspaceDiff);
 
@@ -18,7 +18,7 @@ function test() {
   var thirdUISC = addUISourceCode("third.css", ".third {color: red}");
   uiSourceCodeList.show(UI.inspectorView.element);
 
-  InspectorTest.runTestSuite([
+  TestRunner.runTestSuite([
     function initialState(next) {
       dumpAfterLoadingFinished().then(next);
     },
@@ -47,7 +47,7 @@ function test() {
 
   function dumpUISourceCodeList() {
     uiSourceCodeList._treeoutline.rootElement().children().forEach(treeElement => {
-      InspectorTest.addResult(treeElement.title);
+      TestRunner.addResult(treeElement.title);
     });
   }
 

@@ -8,20 +8,20 @@ function test()
 
     console.error = function()
     {
-        InspectorTest.addResult(String.sprintf.apply(this, arguments));
+        TestRunner.addResult(String.sprintf.apply(this, arguments));
     }
 
-    InspectorTest.NetworkAgent.setUserAgentOverride(1);
-    InspectorTest.NetworkAgent.setUserAgentOverride();
-    InspectorTest.NetworkAgent.setUserAgentOverride("123", "not a function");
-    InspectorTest.NetworkAgent.setUserAgentOverride("123", undefined);
-    InspectorTest.RuntimeAgent.evaluate("true", "test");
-    InspectorTest.RuntimeAgent.evaluate("true", "test", function(){});
-    InspectorTest.RuntimeAgent.evaluate("true", "test", undefined, function(){});
-    InspectorTest.mainTarget._onMessage('{"method": "wrongDomain.something-strange", "params": {}}');
-    InspectorTest.mainTarget._onMessage('{"method": "Inspector.something-strange", "params": {}}');
+    TestRunner.NetworkAgent.setUserAgentOverride(1);
+    TestRunner.NetworkAgent.setUserAgentOverride();
+    TestRunner.NetworkAgent.setUserAgentOverride("123", "not a function");
+    TestRunner.NetworkAgent.setUserAgentOverride("123", undefined);
+    TestRunner.RuntimeAgent.evaluate("true", "test");
+    TestRunner.RuntimeAgent.evaluate("true", "test", function(){});
+    TestRunner.RuntimeAgent.evaluate("true", "test", undefined, function(){});
+    TestRunner.mainTarget._onMessage('{"method": "wrongDomain.something-strange", "params": {}}');
+    TestRunner.mainTarget._onMessage('{"method": "Inspector.something-strange", "params": {}}');
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

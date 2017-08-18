@@ -29,10 +29,10 @@ function extension_testAudits(nextTest)
         webInspector.inspectedWindow.eval("location.href", function(inspectedPageURL) {
             nestedNode.addChild(results.createResourceLink(inspectedPageURL, 20));
 
-            evaluateOnFrontend("InspectorTest.dumpAuditProgress(); reply();", function() {
+            evaluateOnFrontend("ExtensionsTestRunner.dumpAuditProgress(); reply();", function() {
                 results.addResult("Rule with details subtree (1)", "This rule has a lot of details", results.Severity.Warning, node);
                 results.updateProgress(10, 20);
-                evaluateOnFrontend("InspectorTest.dumpAuditProgress(); reply();", results.done.bind(results));
+                evaluateOnFrontend("ExtensionsTestRunner.dumpAuditProgress(); reply();", results.done.bind(results));
             });
         });
     }

@@ -11,24 +11,24 @@ function test()
         "    var f = /*.[a]/.test(a);",
         "    return f;"
     ];
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setText(text.join("\n"));
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testCoordinatesToCursorPositionOuter(next)
         {
-            InspectorTest.addResult("Request char at (-1000, -1000)");
-            InspectorTest.addResult("Result:" + JSON.stringify(textEditor.coordinatesToCursorPosition(-1000, -1000)));
+            TestRunner.addResult("Request char at (-1000, -1000)");
+            TestRunner.addResult("Result:" + JSON.stringify(textEditor.coordinatesToCursorPosition(-1000, -1000)));
             next();
         },
 
         function testTextToCoordinatesCornerCases(next)
         {
-            InspectorTest.addResult("Request (-1, 0):" + JSON.stringify(textEditor.cursorPositionToCoordinates(-1, 0)));
-            InspectorTest.addResult("Request (100, 0):" + JSON.stringify(textEditor.cursorPositionToCoordinates(100, 0)));
-            InspectorTest.addResult("Request (0, -1):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, -1)));
-            InspectorTest.addResult("Request (0, 100):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, 100)));
-            InspectorTest.addResult("Request (-100, -1100):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, 100)));
+            TestRunner.addResult("Request (-1, 0):" + JSON.stringify(textEditor.cursorPositionToCoordinates(-1, 0)));
+            TestRunner.addResult("Request (100, 0):" + JSON.stringify(textEditor.cursorPositionToCoordinates(100, 0)));
+            TestRunner.addResult("Request (0, -1):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, -1)));
+            TestRunner.addResult("Request (0, 100):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, 100)));
+            TestRunner.addResult("Request (-100, -1100):" + JSON.stringify(textEditor.cursorPositionToCoordinates(0, 100)));
             next();
         },
 
@@ -36,17 +36,17 @@ function test()
         {
             for(var i = 0; i < textEditor.linesCount; ++i) {
                 var line = textEditor.line(i);
-                InspectorTest.addResult("Testing line '" + line + "'");
+                TestRunner.addResult("Testing line '" + line + "'");
                 for(var j = 0; j < textEditor.length; ++j) {
                     var xy = textEditor.cursorPositionToCoordinates(i, j);
                     if (!xy) {
-                        InspectorTest.addResult("Failed inversion for line=" + i + " column=" + j);
+                        TestRunner.addResult("Failed inversion for line=" + i + " column=" + j);
                         continue;
                     }
 
                     var range = textEditor.coordinatesToCursorPosition(xy.x, xy.y);
                     if (range.startLine !== i || range.startColumn !== j)
-                        InspectorTest.addResult("Failed inversion for line=" + i + " column=" + j);
+                        TestRunner.addResult("Failed inversion for line=" + i + " column=" + j);
                 }
             }
             next();

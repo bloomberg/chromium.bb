@@ -77,32 +77,32 @@ function test()
         };
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowAll(next)
         {
             // Make sure all nodes are visible.
             Profiler.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 100; };
 
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
             function createSnapshotB() {
-                InspectorTest.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+                ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
             }
 
             function step1()
             {
-                InspectorTest.switchToView("Comparison", step2);
+                ProfilerTestRunner.switchToView("Comparison", step2);
             }
 
             function step2()
             {
-                var row = InspectorTest.findRow("A");
-                InspectorTest.assertEquals(true, !!row, "\"A\" row");
-                InspectorTest.expandRow(row, step3);
+                var row = ProfilerTestRunner.findRow("A");
+                TestRunner.assertEquals(true, !!row, "\"A\" row");
+                ProfilerTestRunner.expandRow(row, step3);
             }
 
             function step3(row)
             {
-                InspectorTest.addResult("Delta: +" + row._addedCount + " -" + row._removedCount);
+                TestRunner.addResult("Delta: +" + row._addedCount + " -" + row._removedCount);
                 var added = [];
                 var removed = [];
                 for (var i = 0; i < row.children.length; i++) {
@@ -113,8 +113,8 @@ function test()
                         added.push(child.snapshotNodeId);
                 }
 
-                InspectorTest.addResult("Deleted node id(s): " + removed.sort());
-                InspectorTest.addResult("Added node id(s): " + added.sort());
+                TestRunner.addResult("Deleted node id(s): " + removed.sort());
+                TestRunner.addResult("Added node id(s): " + added.sort());
                 next();
             }
         }
