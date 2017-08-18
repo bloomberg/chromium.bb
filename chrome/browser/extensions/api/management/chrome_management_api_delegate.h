@@ -53,7 +53,7 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
   void DisableExtension(
       content::BrowserContext* context,
       const std::string& extension_id,
-      extensions::Extension::DisableReason disable_reason) const override;
+      extensions::disable_reason::DisableReason disable_reason) const override;
   bool UninstallExtension(content::BrowserContext* context,
                           const std::string& transient_extension_id,
                           extensions::UninstallReason reason,

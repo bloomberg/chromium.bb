@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   ASSERT_TRUE(extension);
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, registry_->disabled_extensions().size());
-  EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
+  EXPECT_EQ(extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE,
             ExtensionPrefs::Get(service_->profile())
                 ->GetDisableReasons(extension_id));
   EXPECT_TRUE(GetExtensionDisabledGlobalError());
@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   specifics.mutable_extension()->set_enabled(false);
   specifics.mutable_extension()->set_remote_install(true);
   specifics.mutable_extension()->set_disable_reasons(
-      Extension::DISABLE_REMOTE_INSTALL);
+      extensions::disable_reason::DISABLE_REMOTE_INSTALL);
   specifics.mutable_extension()->set_update_url(
       "http://localhost/autoupdate/updates.xml");
   specifics.mutable_extension()->set_version("2");
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   ASSERT_TRUE(extension);
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, registry_->disabled_extensions().size());
-  EXPECT_EQ(Extension::DISABLE_REMOTE_INSTALL,
+  EXPECT_EQ(extensions::disable_reason::DISABLE_REMOTE_INSTALL,
             ExtensionPrefs::Get(service_->profile())
                 ->GetDisableReasons(extension_id));
   EXPECT_TRUE(GetExtensionDisabledGlobalError());

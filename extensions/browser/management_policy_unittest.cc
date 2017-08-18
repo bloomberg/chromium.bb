@@ -21,7 +21,8 @@ class ManagementPolicyTest : public testing::Test {
         TestProvider::MUST_REMAIN_ENABLED);
     must_remain_disabled_.SetProhibitedActions(
         TestProvider::MUST_REMAIN_DISABLED);
-    must_remain_disabled_.SetDisableReason(Extension::DISABLE_SIDELOAD_WIPEOUT);
+    must_remain_disabled_.SetDisableReason(
+        extensions::disable_reason::DISABLE_SIDELOAD_WIPEOUT);
     must_remain_installed_.SetProhibitedActions(
         TestProvider::MUST_REMAIN_INSTALLED);
     restrict_all_.SetProhibitedActions(TestProvider::PROHIBIT_MODIFY_STATUS |
@@ -166,11 +167,12 @@ TEST_F(ManagementPolicyTest, MustRemainDisabled) {
   EXPECT_TRUE(error.empty());
 
   // Three providers, one with a relevant restriction.
-  Extension::DisableReason reason = Extension::DISABLE_NONE;
+  extensions::disable_reason::DisableReason reason =
+      extensions::disable_reason::DISABLE_NONE;
   policy_.RegisterProvider(&must_remain_disabled_);
   EXPECT_TRUE(policy_.MustRemainDisabled(NULL, &reason, &error));
   EXPECT_FALSE(error.empty());
-  EXPECT_EQ(Extension::DISABLE_SIDELOAD_WIPEOUT, reason);
+  EXPECT_EQ(extensions::disable_reason::DISABLE_SIDELOAD_WIPEOUT, reason);
 
   // Remove the restriction.
   policy_.UnregisterProvider(&must_remain_disabled_);

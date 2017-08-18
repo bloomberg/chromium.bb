@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(ExternalInstallErrorTest, TestShutdown) {
   EXPECT_FALSE(registry->enabled_extensions().Contains(kId));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(kId));
-  EXPECT_EQ(Extension::DISABLE_EXTERNAL_EXTENSION,
+  EXPECT_EQ(disable_reason::DISABLE_EXTERNAL_EXTENSION,
             prefs->GetDisableReasons(kId));
 
   // Verify the external error.

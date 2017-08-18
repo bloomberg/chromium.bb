@@ -124,12 +124,12 @@ bool StandardManagementPolicyProvider::MustRemainEnabled(
 
 bool StandardManagementPolicyProvider::MustRemainDisabled(
     const Extension* extension,
-    Extension::DisableReason* reason,
+    disable_reason::DisableReason* reason,
     base::string16* error) const {
   std::string required_version;
   if (!settings_->CheckMinimumVersion(extension, &required_version)) {
     if (reason)
-      *reason = Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY;
+      *reason = disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY;
     if (error) {
       *error = l10n_util::GetStringFUTF16(
           IDS_EXTENSION_DISABLED_UPDATE_REQUIRED_BY_POLICY,

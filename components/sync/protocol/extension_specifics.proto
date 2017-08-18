@@ -49,7 +49,8 @@ message ExtensionSpecifics {
   optional bool all_urls_enabled = 9;
 
   // Bitmask of the set of reasons why the extension is disabled (see
-  // Extension::DisableReason). Only relevant when enabled == false. Note that
-  // old clients (<M45) won't set this, even when enabled is false.
+  // extensions::disable_reason::DisableReason). Only relevant when enabled ==
+  // false. Note that old clients (<M45) won't set this, even when enabled is
+  // false.
   optional int32 disable_reasons = 10;
 }

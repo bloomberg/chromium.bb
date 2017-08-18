@@ -691,7 +691,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByReenablingExternalComponents) {
   service_->AddExtension(ext.get());
 
   service_->DisableExtension(ext->id(),
-                             extensions::Extension::DISABLE_USER_ACTION);
+                             extensions::disable_reason::DISABLE_USER_ACTION);
   EXPECT_FALSE(registry()->enabled_extensions().Contains(ext->id()));
   EXPECT_TRUE(registry()->disabled_extensions().Contains(ext->id()));
 

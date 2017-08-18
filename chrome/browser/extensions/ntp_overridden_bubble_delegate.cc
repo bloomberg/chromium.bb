@@ -110,8 +110,8 @@ void NtpOverriddenBubbleDelegate::AcknowledgeExtension(
 void NtpOverriddenBubbleDelegate::PerformAction(
     const extensions::ExtensionIdList& list) {
   for (size_t i = 0; i < list.size(); ++i) {
-    service()->DisableExtension(list[i],
-                                extensions::Extension::DISABLE_USER_ACTION);
+    service()->DisableExtension(
+        list[i], extensions::disable_reason::DISABLE_USER_ACTION);
   }
 }
 

@@ -29,8 +29,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
@@ -195,7 +194,8 @@ void ChromeContentVerifierDelegate::VerifyFailed(
                       << extension_id << " installed at: "
                       << extension->path().value();
       pending_manager->ExpectPolicyReinstallForCorruption(extension_id);
-      service->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+      service->DisableExtension(extension_id,
+                                disable_reason::DISABLE_CORRUPTED);
       // Attempt to reinstall.
       policy_extension_reinstaller_->NotifyExtensionDisabledDueToCorruption();
       return;
@@ -205,7 +205,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
                   << "') due to content verification failure. In tests you "
                   << "might want to use a ScopedIgnoreContentVerifierForTest "
                   << "instance to prevent this.";
-    service->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+    service->DisableExtension(extension_id, disable_reason::DISABLE_CORRUPTED);
     ExtensionPrefs::Get(context_)->IncrementCorruptedDisableCount();
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
     UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason",

@@ -60,7 +60,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension_set.h"
 #include "net/url_request/url_request_file_job.h"
 
@@ -526,7 +526,8 @@ void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
 void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
-  service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
+  service->DisableExtension(extension_id,
+                            extensions::disable_reason::DISABLE_USER_ACTION);
 }
 
 void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {

@@ -382,11 +382,12 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // Disable reasons.
   int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
   info->disable_reasons.suspicious_install =
-      (disable_reasons & Extension::DISABLE_NOT_VERIFIED) != 0;
+      (disable_reasons & disable_reason::DISABLE_NOT_VERIFIED) != 0;
   info->disable_reasons.corrupt_install =
-      (disable_reasons & Extension::DISABLE_CORRUPTED) != 0;
+      (disable_reasons & disable_reason::DISABLE_CORRUPTED) != 0;
   info->disable_reasons.update_required =
-      (disable_reasons & Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY) != 0;
+      (disable_reasons & disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY) !=
+      0;
 
   // Error collection.
   bool error_console_enabled =

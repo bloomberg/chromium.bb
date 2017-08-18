@@ -14,7 +14,7 @@ TestManagementPolicyProvider::TestManagementPolicyProvider()
       must_remain_enabled_(false),
       must_remain_disabled_(false),
       must_remain_installed_(false),
-      disable_reason_(Extension::DISABLE_NONE) {
+      disable_reason_(disable_reason::DISABLE_NONE) {
   error_message_ = base::UTF8ToUTF16(expected_error());
 }
 
@@ -34,7 +34,7 @@ void TestManagementPolicyProvider::SetProhibitedActions(
 }
 
 void TestManagementPolicyProvider::SetDisableReason(
-    Extension::DisableReason reason) {
+    disable_reason::DisableReason reason) {
   disable_reason_ = reason;
 }
 
@@ -66,7 +66,7 @@ bool TestManagementPolicyProvider::MustRemainEnabled(const Extension* extension,
 
 bool TestManagementPolicyProvider::MustRemainDisabled(
     const Extension* extension,
-    Extension::DisableReason* reason,
+    disable_reason::DisableReason* reason,
     base::string16* error) const {
   if (must_remain_disabled_) {
     if (error)

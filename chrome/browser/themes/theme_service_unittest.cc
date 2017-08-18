@@ -217,7 +217,7 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   theme_service->OnInfobarDestroyed();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
   service_->DisableExtension(extension2_id,
-      extensions::Extension::DISABLE_USER_ACTION);
+                             extensions::disable_reason::DISABLE_USER_ACTION);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
   EXPECT_FALSE(service_->GetInstalledExtension(extension1_id));

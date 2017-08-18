@@ -42,7 +42,7 @@ bool ManagementPolicy::Provider::MustRemainEnabled(const Extension* extension,
 
 bool ManagementPolicy::Provider::MustRemainDisabled(
     const Extension* extension,
-    Extension::DisableReason* reason,
+    disable_reason::DisableReason* reason,
     base::string16* error) const {
   return false;
 }
@@ -86,7 +86,7 @@ bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
 }
 
 bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
-                                          Extension::DisableReason* reason,
+                                          disable_reason::DisableReason* reason,
                                           base::string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
        it != providers_.end(); ++it)

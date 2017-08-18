@@ -269,7 +269,7 @@ class SupervisedUserService : public KeyedService,
   bool MustRemainInstalled(const extensions::Extension* extension,
                            base::string16* error) const override;
   bool MustRemainDisabled(const extensions::Extension* extension,
-                          extensions::Extension::DisableReason* reason,
+                          extensions::disable_reason::DisableReason* reason,
                           base::string16* error) const override;
 
   // extensions::ExtensionRegistryObserver overrides:

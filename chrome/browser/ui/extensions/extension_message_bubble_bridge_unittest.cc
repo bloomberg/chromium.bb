@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
@@ -165,8 +166,8 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest, SuspiciousExtensionBubble) {
   ASSERT_TRUE(registry()->enabled_extensions().GetByID(id));
 
   // Disable the extension for being from outside the webstore.
-  service()->DisableExtension(
-      extension->id(), extensions::Extension::DISABLE_NOT_VERIFIED);
+  service()->DisableExtension(extension->id(),
+                              extensions::disable_reason::DISABLE_NOT_VERIFIED);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(id));
 
   // Create a new message bubble; it should want to display for the disabled

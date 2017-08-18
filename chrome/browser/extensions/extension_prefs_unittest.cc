@@ -127,7 +127,7 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
   void Initialize() override {
     extension = prefs_.AddExtension("test");
     prefs()->SetExtensionDisabled(extension->id(),
-                                  Extension::DISABLE_USER_ACTION);
+                                  disable_reason::DISABLE_USER_ACTION);
   }
 
   void Verify() override {
@@ -144,7 +144,7 @@ class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
   void Initialize() override {
     extension = prefs_.AddExtension("test");
     prefs()->SetExtensionDisabled(extension->id(),
-                                  Extension::DISABLE_PERMISSIONS_INCREASE);
+                                  disable_reason::DISABLE_PERMISSIONS_INCREASE);
   }
 
   void Verify() override {

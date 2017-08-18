@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
 
   // WebstoreReinstaller expects corrupted extension.
   extension_service()->DisableExtension(kTestExtensionId,
-                                        Extension::DISABLE_CORRUPTED);
+                                        disable_reason::DISABLE_CORRUPTED);
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

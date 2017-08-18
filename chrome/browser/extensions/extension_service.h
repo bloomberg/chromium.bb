@@ -279,9 +279,10 @@ class ExtensionService
   virtual void EnableExtension(const std::string& extension_id);
 
   // Disables the extension. If the extension is already disabled, just adds
-  // the |disable_reasons| (a bitmask of Extension::DisableReason - there can
-  // be multiple DisableReasons e.g. when an extension comes in disabled from
-  // Sync). If the extension cannot be disabled (due to policy), does nothing.
+  // the |disable_reasons| (a bitmask of disable_reason::DisableReason - there
+  // can be multiple DisableReasons e.g. when an extension comes in disabled
+  // from Sync). If the extension cannot be disabled (due to policy), does
+  // nothing.
   virtual void DisableExtension(const std::string& extension_id,
                                 int disable_reasons);
 
@@ -537,8 +538,8 @@ class ExtensionService
   void UpdateActiveExtensionsInCrashReporter();
 
   // Helper to get the disable reasons for an installed (or upgraded) extension.
-  // A return value of Extension::DISABLE_NONE indicates that we should enable
-  // this extension initially.
+  // A return value of disable_reason::DISABLE_NONE indicates that we should
+  // enable this extension initially.
   int GetDisableReasonsOnInstalled(const extensions::Extension* extension);
 
   // Helper method to determine if an extension can be blocked.

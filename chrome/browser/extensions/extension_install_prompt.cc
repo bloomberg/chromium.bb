@@ -28,7 +28,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/install/extension_install_ui.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
@@ -589,7 +589,7 @@ ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
   bool is_remote_install =
       context &&
       extensions::ExtensionPrefs::Get(context)->HasDisableReason(
-          extension->id(), extensions::Extension::DISABLE_REMOTE_INSTALL);
+          extension->id(), extensions::disable_reason::DISABLE_REMOTE_INSTALL);
 
   return is_remote_install ? REMOTE_INSTALL_PROMPT : RE_ENABLE_PROMPT;
 }

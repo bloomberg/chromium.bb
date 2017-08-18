@@ -75,13 +75,12 @@ ExtensionSyncData::ExtensionSyncData()
       uninstalled_(false),
       enabled_(false),
       supports_disable_reasons_(false),
-      disable_reasons_(Extension::DISABLE_NONE),
+      disable_reasons_(disable_reason::DISABLE_NONE),
       incognito_enabled_(false),
       remote_install_(false),
       all_urls_enabled_(BOOLEAN_UNSET),
       installed_by_custodian_(false),
-      launch_type_(LAUNCH_TYPE_INVALID) {
-}
+      launch_type_(LAUNCH_TYPE_INVALID) {}
 
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool enabled,

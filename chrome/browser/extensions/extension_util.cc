@@ -209,8 +209,8 @@ bool WasInstalledByCustodian(const std::string& extension_id,
 bool IsAppLaunchable(const std::string& extension_id,
                      content::BrowserContext* context) {
   int reason = ExtensionPrefs::Get(context)->GetDisableReasons(extension_id);
-  return !((reason & Extension::DISABLE_UNSUPPORTED_REQUIREMENT) ||
-           (reason & Extension::DISABLE_CORRUPTED));
+  return !((reason & disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT) ||
+           (reason & disable_reason::DISABLE_CORRUPTED));
 }
 
 bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,

@@ -512,7 +512,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   EXPECT_EQ(0U, controller->dismiss_click_count());
 
   // Now disable an extension, specifying the wipeout flag.
-  service_->DisableExtension(kId1, Extension::DISABLE_NOT_VERIFIED);
+  service_->DisableExtension(kId1, disable_reason::DISABLE_NOT_VERIFIED);
 
   EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
   EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
@@ -538,7 +538,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
 
   // Now disable the other extension and exercise the link click code path.
-  service_->DisableExtension(kId2, Extension::DISABLE_NOT_VERIFIED);
+  service_->DisableExtension(kId2, disable_reason::DISABLE_NOT_VERIFIED);
 
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
@@ -652,8 +652,8 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kId2) != NULL);
 
   // Now disable the unpacked extension.
-  service_->DisableExtension(kId1, Extension::DISABLE_USER_ACTION);
-  service_->DisableExtension(kId2, Extension::DISABLE_USER_ACTION);
+  service_->DisableExtension(kId1, disable_reason::DISABLE_USER_ACTION);
+  service_->DisableExtension(kId2, disable_reason::DISABLE_USER_ACTION);
 
   controller.reset(
       new TestExtensionMessageBubbleController(
@@ -1200,7 +1200,8 @@ TEST_F(ExtensionMessageBubbleTest, TestShouldShowMethod) {
   EXPECT_EQ(kId1, ntp_bubble_controller->GetExtensionIdList()[0]);
 
   // Disable the extension for being from outside the webstore.
-  service_->DisableExtension(kId1, extensions::Extension::DISABLE_NOT_VERIFIED);
+  service_->DisableExtension(kId1,
+                             extensions::disable_reason::DISABLE_NOT_VERIFIED);
   EXPECT_TRUE(registry->disabled_extensions().GetByID(kId1));
   EXPECT_FALSE(ntp_bubble_controller->ShouldShow());
 }

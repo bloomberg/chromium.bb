@@ -54,7 +54,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/image_loader.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_messages.h"
@@ -436,7 +436,7 @@ void TabHelper::DoInlineInstall(
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   if (registry->disabled_extensions().Contains(webstore_item_id) &&
       (ExtensionPrefs::Get(profile_)->GetDisableReasons(webstore_item_id) &
-       Extension::DISABLE_PERMISSIONS_INCREASE) != 0) {
+       disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0) {
     // The extension was disabled due to permissions increase. Prompt for
     // re-enable.
     // TODO(devlin): We should also prompt for re-enable for other reasons,

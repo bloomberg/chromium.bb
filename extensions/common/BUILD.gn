@@ -12,6 +12,7 @@ source_set("common_constants") {
   sources = [
     "constants.cc",
     "constants.h",
+    "disable_reason.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -20780,10 +20780,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asargent@chromium.org</owner>
   <summary>
     The count of disabled extensions at startup grouped by disble reason from
-    Extension::DisableReason. When an extension is disabled, it can be for one
-    or more reasons (although typically just one), so the sum of these may be
-    greater than 'Extensions.Disabled' which is a count of the number of unique
-    extensions that are disabled.
+    disable_reason::DisableReason. When an extension is disabled, it can be for
+    one or more reasons (although typically just one), so the sum of these may
+    be greater than 'Extensions.Disabled' which is a count of the number of
+    unique extensions that are disabled.
   </summary>
 </histogram>
 
