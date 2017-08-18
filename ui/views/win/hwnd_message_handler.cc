@@ -249,8 +249,8 @@ const int kTouchDownContextResetTimeout = 500;
 // location as the cursor.
 const int kSynthesizedMouseTouchMessagesTimeDifference = 500;
 
-const base::Feature kDirectManipulationStylus{
-    "DirectManipulationStylus", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDirectManipulationStylus{"DirectManipulationStylus",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 
