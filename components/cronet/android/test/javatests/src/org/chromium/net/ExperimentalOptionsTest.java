@@ -4,16 +4,29 @@
 
 package org.chromium.net;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
+import static org.chromium.net.CronetTestRule.getContext;
+import static org.chromium.net.CronetTestRule.getTestStorage;
 
 import android.support.test.filters.MediumTest;
 
 import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -28,14 +41,17 @@ import java.net.URL;
 /**
  * Tests for experimental options.
  */
+@RunWith(BaseJUnit4ClassRunner.class)
 @JNINamespace("cronet")
-public class ExperimentalOptionsTest extends CronetTestBase {
+public class ExperimentalOptionsTest {
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
+
     private static final String TAG = ExperimentalOptionsTest.class.getSimpleName();
     private ExperimentalCronetEngine.Builder mBuilder;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mBuilder = new ExperimentalCronetEngine.Builder(getContext());
         CronetTestUtil.setMockCertVerifierForTesting(
                 mBuilder, QuicTestServer.createMockCertVerifier());
@@ -43,12 +59,12 @@ public class ExperimentalOptionsTest extends CronetTestBase {
                 getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         assertTrue(Http2TestServer.shutdownHttp2TestServer());
-        super.tearDown();
     }
 
+    @Test
     @MediumTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
@@ -79,6 +95,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         cronetEngine.shutdown();
     }
 
+    @Test
     @MediumTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
@@ -145,6 +162,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         return false;
     }
 
+    @Test
     @MediumTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet

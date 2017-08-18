@@ -4,10 +4,24 @@
 
 package org.chromium.net.urlconnection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import static org.chromium.net.CronetTestRule.getContext;
+
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetTestBase;
+import org.chromium.net.CronetTestRule;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
 
@@ -19,22 +33,25 @@ import java.net.URL;
 /**
  * Tests for CronetHttpURLStreamHandler class.
  */
-public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CronetHttpURLStreamHandlerTest {
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
+
     private CronetTestFramework mTestFramework;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestFramework = startCronetTestFramework();
+    @Before
+    public void setUp() throws Exception {
+        mTestFramework = mTestRule.startCronetTestFramework();
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         NativeTestServer.shutdownNativeTestServer();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionHttp() throws Exception {
@@ -49,6 +66,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
         connection.disconnect();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionHttps() throws Exception {
@@ -60,6 +78,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
         assertNotNull(connection);
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionProtocolNotSupported() throws Exception {
@@ -74,6 +93,7 @@ public class CronetHttpURLStreamHandlerTest extends CronetTestBase {
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testOpenConnectionWithProxy() throws Exception {

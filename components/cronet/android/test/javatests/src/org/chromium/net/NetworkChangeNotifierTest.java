@@ -7,11 +7,22 @@ package org.chromium.net;
 import static android.system.OsConstants.AF_INET6;
 import static android.system.OsConstants.SOCK_STREAM;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import static org.chromium.net.CronetTestRule.assertContains;
+
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.system.Os;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
@@ -25,17 +36,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Test NetworkChangeNotifier.
  */
-public class NetworkChangeNotifierTest extends CronetTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class NetworkChangeNotifierTest {
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
+
     /**
      * Verify NetworkChangeNotifier signals trigger appropriate action, like
      * aborting pending connect() jobs.
      */
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testNetworkChangeNotifier() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFramework();
+        CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
         assertNotNull(testFramework);
 
         // Os and OsConstants aren't exposed until Lollipop so we cannot run this test.
