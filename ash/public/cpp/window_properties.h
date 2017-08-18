@@ -38,6 +38,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
 
+// A property key to indicate whether we should hide this window in overview
+// mode and Alt + Tab.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kShowInOverviewKey;
+
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager
 // will try to fullscreen the window and pin it on the top of the screen. If the

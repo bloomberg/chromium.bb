@@ -36,6 +36,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -906,6 +907,24 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   ToggleOverview();
   ClickWindow(window2.get());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+}
+
+TEST_F(WindowSelectorTest, SkipOverviewWindow) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  window2->SetProperty(ash::kShowInOverviewKey, false);
+
+  // Enter overview.
+  ToggleOverview();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+
+  // Exit overview.
+  ToggleOverview();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
 }
 
 // Tests that entering overview when a fullscreen window is active in maximized
