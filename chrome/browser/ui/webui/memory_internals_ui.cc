@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/allocator/features.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -14,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -29,6 +31,32 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
+
+// Returns the string to display at the top of the page for help.
+std::string GetMessageString() {
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  switch (profiling::ProfilingProcessHost::GetCurrentMode()) {
+    case profiling::ProfilingProcessHost::Mode::kBrowser:
+      return std::string("Memory logging is enabled for the browser only.");
+
+    case profiling::ProfilingProcessHost::Mode::kAll:
+      return std::string("Memory logging is enabled for all processes.");
+
+    case profiling::ProfilingProcessHost::Mode::kNone:
+    default:
+      return std::string("Memory logging is not enabled. Start with --") +
+             switches::kMemlog + "=" + switches::kMemlogModeAll +
+             " to log all processes, or --" + switches::kMemlog + "=" +
+             switches::kMemlogModeBrowser +
+             " to log only the browser process. "
+             "This is also configurable in chrome://flags";
+  }
+#else
+  return "Memory logging is not available in this build because "
+         "USE_ALLOCATOR_SHIM is not set. It can not have sanitizers enabled "
+         "and on Windows it must be a release non-component build.";
+#endif
+}
 
 // Generates one row of the returned process info.
 base::Value MakeProcessInfo(int pid, std::string description) {
@@ -127,15 +155,15 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     base::WeakPtr<MemoryInternalsDOMHandler> dom_handler) {
   std::vector<base::Value> result;
 
-  // Add child processes (this does not include renderers).
-  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    // Note that ChildProcessData.id is a child ID and not an OS PID.
-    const content::ChildProcessData& data = iter.GetData();
-    base::ProcessId proc_id = base::GetProcId(data.handle);
-    std::string desc =
-        base::StringPrintf("Process %lld [%s]", static_cast<long long>(proc_id),
-                           GetChildDescription(data).c_str());
-    result.push_back(MakeProcessInfo(proc_id, std::move(desc)));
+  if (profiling::ProfilingProcessHost::GetCurrentMode() ==
+      profiling::ProfilingProcessHost::Mode::kAll) {
+    // Add child processes (this does not include renderers).
+    for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+      // Note that ChildProcessData.id is a child ID and not an OS PID.
+      const content::ChildProcessData& data = iter.GetData();
+      result.push_back(MakeProcessInfo(base::GetProcId(data.handle),
+                                       GetChildDescription(data)));
+    }
   }
 
   content::BrowserThread::PostTask(
@@ -148,37 +176,43 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
     std::vector<base::Value> children) {
   // This function will be called with the child processes that are not
   // renderers. It will full in the browser and renderer processes on the UI
-  // thread (RenderProcessHost is UI-thread only).
-  base::Value result(base::Value::Type::LIST);
-  std::vector<base::Value>& result_list = result.GetList();
+  // thread (RenderProcessHost is UI-thread only) and return the full list.
+  base::Value process_list_value(base::Value::Type::LIST);
+  std::vector<base::Value>& process_list = process_list_value.GetList();
+
+  profiling::ProfilingProcessHost::Mode profiling_mode =
+      profiling::ProfilingProcessHost::GetCurrentMode();
 
   // Add browser process.
-  base::ProcessId browser_pid = base::GetCurrentProcId();
-  result_list.push_back(MakeProcessInfo(
-      browser_pid, base::StringPrintf("Process %lld [Browser]",
-                                      static_cast<long long>(browser_pid))
-                       .c_str()));
+  if (profiling_mode != profiling::ProfilingProcessHost::Mode::kNone) {
+    process_list.push_back(
+        MakeProcessInfo(base::GetCurrentProcId(), "Browser"));
+  }
 
   // Append renderer processes.
-  auto iter = content::RenderProcessHost::AllHostsIterator();
-  while (!iter.IsAtEnd()) {
-    base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
-    base::ProcessId renderer_pid = base::GetProcId(renderer_handle);
-    if (renderer_pid != 0) {
-      // TODO(brettw) make a better description of the process, maybe see
-      // what TaskManager does.
-      result_list.push_back(MakeProcessInfo(
-          renderer_pid, base::StringPrintf("Process %lld [Renderer]",
-                                           static_cast<long long>(renderer_pid))
-                            .c_str()));
+  if (profiling_mode == profiling::ProfilingProcessHost::Mode::kAll) {
+    auto iter = content::RenderProcessHost::AllHostsIterator();
+    while (!iter.IsAtEnd()) {
+      base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
+      base::ProcessId renderer_pid = base::GetProcId(renderer_handle);
+      if (renderer_pid != 0) {
+        // TODO(brettw) make a better description of the process, maybe see
+        // what TaskManager does to get the page title.
+        process_list.push_back(MakeProcessInfo(renderer_pid, "Renderer"));
+      }
+      iter.Advance();
     }
-    iter.Advance();
   }
 
   // Append all child processes collected on the IO thread.
-  result_list.insert(result_list.end(),
-                     std::make_move_iterator(std::begin(children)),
-                     std::make_move_iterator(std::end(children)));
+  process_list.insert(process_list.end(),
+                      std::make_move_iterator(std::begin(children)),
+                      std::make_move_iterator(std::end(children)));
+
+  // Pass the results in a dictionary.
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetKey("message", base::Value(GetMessageString()));
+  result.SetKey("processes", std::move(process_list_value));
 
   AllowJavascript();
   CallJavascriptFunction("returnProcessList", result);

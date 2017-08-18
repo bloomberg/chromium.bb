@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 
+#include "base/allocator/features.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -118,6 +119,33 @@ void ProfilingProcessHost::SendPipeToClientProcess(
     profiling::mojom::MemlogClientPtr memlog_client,
     mojo::ScopedHandle handle) {
   memlog_client->StartProfiling(std::move(handle));
+}
+
+// static
+ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  std::string mode =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kMemlog);
+  if (mode.empty())
+    return Mode::kNone;
+
+  if (mode == switches::kMemlogModeAll)
+    return Mode::kAll;
+  if (mode == switches::kMemlogModeBrowser)
+    return Mode::kBrowser;
+
+  LOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
+             << switches::kMemlog;
+  return Mode::kNone;
+#else
+  LOG_IF(ERROR,
+         base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemlog))
+      << "--" << switches::kMemlog
+      << " specified but it will have no effect because the use_allocator_shim "
+      << "is not available in this build.";
+  return Mode::kNone;
+#endif
 }
 
 // static

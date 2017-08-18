@@ -468,9 +468,8 @@ split_static_library("ui") {
     "//content/public/browser",
   ]
   deps = [
-    # NOTE: New dependencies should generally be added in the OS!="ios"
-    # dependencies block below, rather than here.
     "//base",
+    "//base/allocator:features",
     "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",
