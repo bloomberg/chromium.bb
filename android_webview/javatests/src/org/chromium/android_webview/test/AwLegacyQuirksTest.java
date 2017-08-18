@@ -23,7 +23,6 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.Locale;
-import java.util.concurrent.Callable;
 
 /**
  * Tests for legacy quirks (compatibility with WebView Classic).
@@ -228,13 +227,9 @@ public class AwLegacyQuirksTest {
         mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         // ContentView must update itself according to the viewport setup.
         // As we specify 'user-scalable=0', the page must become non-zoomable.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return !mActivityTestRule.canZoomInOnUiThread(awContents)
-                        && !mActivityTestRule.canZoomOutOnUiThread(awContents);
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> !mActivityTestRule.canZoomInOnUiThread(awContents)
+                        && !mActivityTestRule.canZoomOutOnUiThread(awContents));
         int width = Integer.parseInt(mActivityTestRule.getTitleOnUiThread(awContents));
         Assert.assertEquals(pageWidth, width);
         Assert.assertEquals(pageScale, mActivityTestRule.getScaleOnUiThread(awContents), 0);
@@ -377,11 +372,7 @@ public class AwLegacyQuirksTest {
 
     private void ensureScaleBecomes(final float targetScale, final AwContents awContents)
             throws Throwable {
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return targetScale == mActivityTestRule.getScaleOnUiThread(awContents);
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> targetScale == mActivityTestRule.getScaleOnUiThread(awContents));
     }
 }

@@ -339,15 +339,12 @@ public class ClientOnPageFinishedTest {
             final CountDownLatch latch = new CountDownLatch(1);
             final String url = webServer.setResponseWithRunnableAction(
                     "/about.html", CommonResources.ABOUT_HTML, null,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Assert.assertTrue(latch.await(WAIT_TIMEOUT_MS,
-                                        java.util.concurrent.TimeUnit.MILLISECONDS));
-                            } catch (InterruptedException e) {
-                                Assert.fail("Caught InterruptedException " + e);
-                            }
+                    () -> {
+                        try {
+                            Assert.assertTrue(latch.await(WAIT_TIMEOUT_MS,
+                                    java.util.concurrent.TimeUnit.MILLISECONDS));
+                        } catch (InterruptedException e) {
+                            Assert.fail("Caught InterruptedException " + e);
                         }
                     });
             TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -483,15 +480,12 @@ public class ClientOnPageFinishedTest {
         final CountDownLatch testDoneLatch = new CountDownLatch(1);
         try {
             final String url = webServer.setResponseWithRunnableAction(
-                    "/slow_page.html", "", null /* headers */, new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Assert.assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
-                                        java.util.concurrent.TimeUnit.MILLISECONDS));
-                            } catch (InterruptedException e) {
-                                Assert.fail("Caught InterruptedException " + e);
-                            }
+                    "/slow_page.html", "", null /* headers */, () -> {
+                        try {
+                            Assert.assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
+                                    java.util.concurrent.TimeUnit.MILLISECONDS));
+                        } catch (InterruptedException e) {
+                            Assert.fail("Caught InterruptedException " + e);
                         }
                     });
             TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -534,16 +528,13 @@ public class ClientOnPageFinishedTest {
         final CountDownLatch testDoneLatch = new CountDownLatch(1);
         try {
             final String stallingImageUrl = webServer.setResponseWithRunnableAction(
-                    "/stallingImage.html", "", null /* headers */, new Runnable() {
-                        @Override
-                        public void run() {
-                            serverImageUrlLatch.countDown();
-                            try {
-                                Assert.assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
-                                        java.util.concurrent.TimeUnit.MILLISECONDS));
-                            } catch (InterruptedException e) {
-                                Assert.fail("Caught InterruptedException " + e);
-                            }
+                    "/stallingImage.html", "", null /* headers */, () -> {
+                        serverImageUrlLatch.countDown();
+                        try {
+                            Assert.assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
+                                    java.util.concurrent.TimeUnit.MILLISECONDS));
+                        } catch (InterruptedException e) {
+                            Assert.fail("Caught InterruptedException " + e);
                         }
                     });
 

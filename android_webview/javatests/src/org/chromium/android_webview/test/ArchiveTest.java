@@ -62,21 +62,13 @@ public class ArchiveTest {
         // Set up a handler to handle the completion callback
         final Semaphore s = new Semaphore(0);
         final AtomicReference<String> msgPath = new AtomicReference<String>();
-        final ValueCallback<String> callback = new ValueCallback<String>() {
-            @Override
-            public void onReceiveValue(String path) {
-                msgPath.set(path);
-                s.release();
-            }
+        final ValueCallback<String> callback = path1 -> {
+            msgPath.set(path1);
+            s.release();
         };
 
         // Generate MHTML and wait for completion
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                contents.saveWebArchive(path, autoName, callback);
-            }
-        });
+        ThreadUtils.runOnUiThread(() -> contents.saveWebArchive(path, autoName, callback));
         Assert.assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
 
         Assert.assertEquals(expectedPath, msgPath.get());
@@ -189,19 +181,12 @@ public class ArchiveTest {
 
     private void saveWebArchiveAndWaitForUiPost(
             final String path, boolean autoname, final ValueCallback<String> callback) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mTestContainerView.getAwContents().saveWebArchive(path, false, callback);
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Just wait for this task to having been posted on the UI thread.
-                // This ensures that if the implementation of saveWebArchive posts a task to the UI
-                // thread we will allow that task to run before finishing our test.
-            }
+        ThreadUtils.runOnUiThread(
+                () -> mTestContainerView.getAwContents().saveWebArchive(path, false, callback));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Just wait for this task to having been posted on the UI thread.
+            // This ensures that if the implementation of saveWebArchive posts a task to the UI
+            // thread we will allow that task to run before finishing our test.
         });
     }
 }

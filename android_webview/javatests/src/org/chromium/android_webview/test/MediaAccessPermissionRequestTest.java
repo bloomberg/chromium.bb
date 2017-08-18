@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -24,8 +23,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.util.TestWebServer;
-
-import java.util.concurrent.Callable;
 
 /**
  * Test MediaAccessPermissionRequest.
@@ -139,12 +136,8 @@ public class MediaAccessPermissionRequestTest {
 
     private void pollTitleAs(final String title, final AwContents awContents)
             throws Exception {
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return title.equals(mActivityTestRule.getTitleOnUiThread(awContents));
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> title.equals(mActivityTestRule.getTitleOnUiThread(awContents)));
     }
 
     @Test
@@ -177,13 +170,9 @@ public class MediaAccessPermissionRequestTest {
         Runtime.getRuntime().gc();
 
         // Poll with gc in each iteration to reduce flake.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @SuppressFBWarnings("DM_GC")
-            @Override
-            public Boolean call() throws Exception {
-                Runtime.getRuntime().gc();
-                return "deny".equals(mActivityTestRule.getTitleOnUiThread(awContents));
-            }
+        AwActivityTestRule.pollInstrumentationThread(() -> {
+            Runtime.getRuntime().gc();
+            return "deny".equals(mActivityTestRule.getTitleOnUiThread(awContents));
         });
     }
 

@@ -25,12 +25,9 @@ public class AwFormDatabaseTest {
     @Test
     @SmallTest
     public void testSmoke() throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                AwFormDatabase.clearFormData();
-                Assert.assertFalse(AwFormDatabase.hasFormData());
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AwFormDatabase.clearFormData();
+            Assert.assertFalse(AwFormDatabase.hasFormData());
         });
     }
 }

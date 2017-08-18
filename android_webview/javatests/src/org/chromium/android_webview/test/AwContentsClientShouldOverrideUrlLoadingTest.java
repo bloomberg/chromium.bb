@@ -28,7 +28,8 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer
+        .OnEvaluateJavaScriptResultHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -37,7 +38,6 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -96,12 +96,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
 
     // Since this value is read on the UI thread, it's simpler to set it there too.
     void setShouldOverrideUrlLoadingReturnValueOnUiThread(final boolean value) throws Throwable {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mShouldOverrideUrlLoadingHelper.setShouldOverrideUrlLoadingReturnValue(value);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mShouldOverrideUrlLoadingHelper.setShouldOverrideUrlLoadingReturnValue(
+                        value));
     }
 
     private String getTestPageCommonHeaders() {
@@ -202,36 +199,16 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         }
         Assert.assertEquals(0, mShouldOverrideUrlLoadingHelper.getCallCount());
 
-        waitForNavigationRunnableAndAssertTitleChanged(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAwContents.goBack();
-                    }
-                });
+        waitForNavigationRunnableAndAssertTitleChanged(() -> mAwContents.goBack());
         Assert.assertEquals(0, mShouldOverrideUrlLoadingHelper.getCallCount());
 
-        waitForNavigationRunnableAndAssertTitleChanged(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAwContents.goForward();
-                    }
-                });
+        waitForNavigationRunnableAndAssertTitleChanged(() -> mAwContents.goForward());
         Assert.assertEquals(0, mShouldOverrideUrlLoadingHelper.getCallCount());
 
-        waitForNavigationRunnableAndAssertTitleChanged(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAwContents.goBackOrForward(-2);
-                    }
-                });
+        waitForNavigationRunnableAndAssertTitleChanged(() -> mAwContents.goBackOrForward(-2));
         Assert.assertEquals(0, mShouldOverrideUrlLoadingHelper.getCallCount());
 
-        waitForNavigationRunnableAndAssertTitleChanged(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAwContents.goBackOrForward(1);
-                    }
-                });
+        waitForNavigationRunnableAndAssertTitleChanged(() -> mAwContents.goBackOrForward(1));
         Assert.assertEquals(0, mShouldOverrideUrlLoadingHelper.getCallCount());
     }
 
@@ -555,12 +532,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         clickOnLinkUsingJs();
 
         // Wait for the target URL to be fetched from the server.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1);
 
         // Since the targetURL was loaded from the test server it means all processing related
         // to dispatching a shouldOverrideUrlLoading callback had finished and checking the call
@@ -590,12 +563,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
         // Wait for the target URL to be fetched from the server.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1);
 
         Assert.assertEquals(redirectTargetUrl,
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
@@ -625,12 +594,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
 
         // Wait for the redirect target URL to be fetched from the server.
-        AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
-            }
-        });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1);
 
         Assert.assertEquals(
                 shouldOverrideUrlLoadingCallCount, mShouldOverrideUrlLoadingHelper.getCallCount());
@@ -723,20 +688,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         Assert.assertTrue(mShouldOverrideUrlLoadingHelper.isMainFrame());
 
         // Make sure the redirect target page has finished loading.
-        mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return !mAwContents.getTitle().equals(pageTitle);
-            }
-        });
+        mActivityTestRule.pollUiThread(() -> !mAwContents.getTitle().equals(pageTitle));
         indirectLoadCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, pageWithLinkToRedirectUrl);
-        mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mAwContents.getTitle().equals(pageTitle);
-            }
-        });
+        mActivityTestRule.pollUiThread(() -> mAwContents.getTitle().equals(pageTitle));
         Assert.assertEquals(indirectLoadCallCount, mShouldOverrideUrlLoadingHelper.getCallCount());
 
         // Simulate touch, hasUserGesture must be true only on the first call.
@@ -827,14 +782,11 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         // Do a double navigagtion, the second being an effective no-op, in quick succession (i.e.
         // without yielding the main thread inbetween).
         int currentCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mAwContents.loadUrl(LoadUrlParams.createLoadDataParams(
-                        CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html",
-                        false));
-                mAwContents.loadUrl(new LoadUrlParams(jsUrl));
-            }
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mAwContents.loadUrl(LoadUrlParams.createLoadDataParams(
+                    CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html",
+                    false));
+            mAwContents.loadUrl(new LoadUrlParams(jsUrl));
         });
         mContentsClient.getOnPageFinishedHelper().waitForCallback(currentCallCount, 1,
                 WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -871,12 +823,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         clickOnLinkUsingJs();
         mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
-        mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return AwContents.getNativeInstanceCount() == 0;
-            }
-        });
+        mActivityTestRule.pollUiThread(() -> AwContents.getNativeInstanceCount() == 0);
     }
 
     @Test
@@ -905,12 +852,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
                     path2, CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             mActivityTestRule.loadUrlAsync(mAwContents, fromUrl);
 
-            mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mActivityTestRule.getActivity().getLastSentIntent() != null;
-                }
-            });
+            mActivityTestRule.pollUiThread(
+                    () -> mActivityTestRule.getActivity().getLastSentIntent() != null);
             Assert.assertEquals(toUrl,
                     mActivityTestRule.getActivity().getLastSentIntent().getData().toString());
         } finally {
@@ -982,12 +925,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
 
             // Clicking on a link should create an intent.
             DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
-            mActivityTestRule.pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mActivityTestRule.getActivity().getLastSentIntent() != null;
-                }
-            });
+            mActivityTestRule.pollUiThread(
+                    () -> mActivityTestRule.getActivity().getLastSentIntent() != null);
             Assert.assertEquals(testUrl,
                     mActivityTestRule.getActivity().getLastSentIntent().getData().toString());
         } finally {
