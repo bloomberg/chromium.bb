@@ -125,8 +125,8 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   network_service_->RegisterNetworkContext(this);
-  binding_.set_connection_error_handler(
-      base::Bind(&NetworkContext::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &NetworkContext::OnConnectionError, base::Unretained(this)));
 }
 
 // TODO(mmenke): Share URLRequestContextBulder configuration between two

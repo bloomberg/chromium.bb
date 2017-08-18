@@ -100,8 +100,8 @@ void CallDispatcherOnMainThread(
   if (!main_thread_task_runner->BelongsToCurrentThread()) {
     main_thread_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&CallDispatcherOnMainThread<Method, Params>,
-                   main_thread_task_runner, method, params, nullptr));
+        base::BindOnce(&CallDispatcherOnMainThread<Method, Params>,
+                       main_thread_task_runner, method, params, nullptr));
     if (!waitable_results)
       return;
     waitable_results->WaitAndRun();
@@ -200,8 +200,8 @@ void DispatchResultsClosure(
     waitable_results->AddResultsAndSignal(results_closure);
     // In case no one is waiting, post a task to run the closure.
     task_runner->PostTask(FROM_HERE,
-                          base::Bind(&WaitableCallbackResults::Run,
-                                     make_scoped_refptr(waitable_results)));
+                          base::BindOnce(&WaitableCallbackResults::Run,
+                                         make_scoped_refptr(waitable_results)));
     return;
   }
   task_runner->PostTask(FROM_HERE, results_closure);
@@ -349,7 +349,7 @@ void DidCreateSnapshotFile(
   // TODO(michaeln,kinuko): Use ThreadSafeSender when Blob becomes
   // non-bridge model.
   main_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&DidReceiveSnapshotFile, request_id));
+      FROM_HERE, base::BindOnce(&DidReceiveSnapshotFile, request_id));
 }
 
 void CreateSnapshotFileCallbackAdapter(

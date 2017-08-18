@@ -25,7 +25,7 @@ class ChildMessageFilter::Internal : public IPC::MessageFilter {
     if (runner.get() && !runner->RunsTasksInCurrentSequence()) {
       if (!runner->PostTask(
               FROM_HERE,
-              base::Bind(
+              base::BindOnce(
                   base::IgnoreResult(&ChildMessageFilter::OnMessageReceived),
                   filter_, msg)))
         filter_->OnStaleMessageReceived(msg);

@@ -122,22 +122,23 @@ IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() {
 void IndexedDBCallbacksImpl::Error(int32_t code,
                                    const base::string16& message) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::Error,
-                            base::Unretained(internal_state_), code, message));
+      FROM_HERE,
+      base::BindOnce(&InternalState::Error, base::Unretained(internal_state_),
+                     code, message));
 }
 
 void IndexedDBCallbacksImpl::SuccessStringList(
     const std::vector<base::string16>& value) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::SuccessStringList,
-                            base::Unretained(internal_state_), value));
+      FROM_HERE, base::BindOnce(&InternalState::SuccessStringList,
+                                base::Unretained(internal_state_), value));
 }
 
 void IndexedDBCallbacksImpl::Blocked(int64_t existing_version) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InternalState::Blocked, base::Unretained(internal_state_),
-                 existing_version));
+      base::BindOnce(&InternalState::Blocked, base::Unretained(internal_state_),
+                     existing_version));
 }
 
 void IndexedDBCallbacksImpl::UpgradeNeeded(
@@ -148,18 +149,18 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
     const content::IndexedDBDatabaseMetadata& metadata) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InternalState::UpgradeNeeded,
-                 base::Unretained(internal_state_), base::Passed(&database),
-                 old_version, data_loss, data_loss_message, metadata));
+      base::BindOnce(&InternalState::UpgradeNeeded,
+                     base::Unretained(internal_state_), base::Passed(&database),
+                     old_version, data_loss, data_loss_message, metadata));
 }
 
 void IndexedDBCallbacksImpl::SuccessDatabase(
     DatabaseAssociatedPtrInfo database,
     const content::IndexedDBDatabaseMetadata& metadata) {
   callback_runner_->PostTask(FROM_HERE,
-                             base::Bind(&InternalState::SuccessDatabase,
-                                        base::Unretained(internal_state_),
-                                        base::Passed(&database), metadata));
+                             base::BindOnce(&InternalState::SuccessDatabase,
+                                            base::Unretained(internal_state_),
+                                            base::Passed(&database), metadata));
 }
 
 void IndexedDBCallbacksImpl::SuccessCursor(
@@ -169,17 +170,17 @@ void IndexedDBCallbacksImpl::SuccessCursor(
     indexed_db::mojom::ValuePtr value) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InternalState::SuccessCursor,
-                 base::Unretained(internal_state_), base::Passed(&cursor), key,
-                 primary_key, base::Passed(&value)));
+      base::BindOnce(&InternalState::SuccessCursor,
+                     base::Unretained(internal_state_), base::Passed(&cursor),
+                     key, primary_key, base::Passed(&value)));
 }
 
 void IndexedDBCallbacksImpl::SuccessValue(
     indexed_db::mojom::ReturnValuePtr value) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InternalState::SuccessValue,
-                 base::Unretained(internal_state_), base::Passed(&value)));
+      base::BindOnce(&InternalState::SuccessValue,
+                     base::Unretained(internal_state_), base::Passed(&value)));
 }
 
 void IndexedDBCallbacksImpl::SuccessCursorContinue(
@@ -187,45 +188,45 @@ void IndexedDBCallbacksImpl::SuccessCursorContinue(
     const IndexedDBKey& primary_key,
     indexed_db::mojom::ValuePtr value) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::SuccessCursorContinue,
-                            base::Unretained(internal_state_), key, primary_key,
-                            base::Passed(&value)));
+      FROM_HERE, base::BindOnce(&InternalState::SuccessCursorContinue,
+                                base::Unretained(internal_state_), key,
+                                primary_key, base::Passed(&value)));
 }
 
 void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     std::vector<indexed_db::mojom::ValuePtr> values) {
-  callback_runner_->PostTask(FROM_HERE,
-                             base::Bind(&InternalState::SuccessCursorPrefetch,
-                                        base::Unretained(internal_state_), keys,
-                                        primary_keys, base::Passed(&values)));
+  callback_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&InternalState::SuccessCursorPrefetch,
+                                base::Unretained(internal_state_), keys,
+                                primary_keys, base::Passed(&values)));
 }
 
 void IndexedDBCallbacksImpl::SuccessArray(
     std::vector<indexed_db::mojom::ReturnValuePtr> values) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&InternalState::SuccessArray,
-                 base::Unretained(internal_state_), base::Passed(&values)));
+      base::BindOnce(&InternalState::SuccessArray,
+                     base::Unretained(internal_state_), base::Passed(&values)));
 }
 
 void IndexedDBCallbacksImpl::SuccessKey(const IndexedDBKey& key) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::SuccessKey,
-                            base::Unretained(internal_state_), key));
+      FROM_HERE, base::BindOnce(&InternalState::SuccessKey,
+                                base::Unretained(internal_state_), key));
 }
 
 void IndexedDBCallbacksImpl::SuccessInteger(int64_t value) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::SuccessInteger,
-                            base::Unretained(internal_state_), value));
+      FROM_HERE, base::BindOnce(&InternalState::SuccessInteger,
+                                base::Unretained(internal_state_), value));
 }
 
 void IndexedDBCallbacksImpl::Success() {
-  callback_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InternalState::Success, base::Unretained(internal_state_)));
+  callback_runner_->PostTask(FROM_HERE,
+                             base::BindOnce(&InternalState::Success,
+                                            base::Unretained(internal_state_)));
 }
 
 IndexedDBCallbacksImpl::InternalState::InternalState(

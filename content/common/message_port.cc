@@ -170,7 +170,7 @@ void MessagePort::State::ArmWatcher() {
   if (ready_result == MOJO_RESULT_OK) {
     // The handle is already signaled, so we trigger a callback now.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&State::OnHandleReady, this, MOJO_RESULT_OK));
+        FROM_HERE, base::BindOnce(&State::OnHandleReady, this, MOJO_RESULT_OK));
     return;
   }
 

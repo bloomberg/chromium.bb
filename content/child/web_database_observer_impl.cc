@@ -99,8 +99,8 @@ void WebDatabaseObserverImpl::DatabaseClosed(const WebSecurityOrigin& origin,
   base::string16 database_name_utf16 = database_name.Utf16();
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
-                 new DatabaseHostMsg_Closed(origin, database_name_utf16)));
+      base::BindOnce(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
+                     new DatabaseHostMsg_Closed(origin, database_name_utf16)));
   open_connections_->RemoveOpenConnection(GetIdentifierFromOrigin(origin),
                                           database_name_utf16);
 }

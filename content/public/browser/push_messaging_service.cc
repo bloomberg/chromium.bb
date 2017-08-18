@@ -28,7 +28,7 @@ void CallStringCallbackFromIO(
     result = data[0];
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result, success, not_found));
+                          base::BindOnce(callback, result, success, not_found));
 }
 
 void CallClosureFromIO(const base::Closure& callback,
@@ -93,13 +93,11 @@ void PushMessagingService::GetSenderId(BrowserContext* browser_context,
                                        const StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GetUserDataOnIO,
-                 GetServiceWorkerContext(browser_context, origin),
-                 service_worker_registration_id,
-                 kPushSenderIdServiceWorkerKey,
-                 callback));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GetUserDataOnIO,
+                     GetServiceWorkerContext(browser_context, origin),
+                     service_worker_registration_id,
+                     kPushSenderIdServiceWorkerKey, callback));
 }
 
 // static
@@ -111,9 +109,9 @@ void PushMessagingService::ClearPushSubscriptionId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearPushSubscriptionIdOnIO,
-                 GetServiceWorkerContext(browser_context, origin),
-                 service_worker_registration_id, callback));
+      base::BindOnce(&ClearPushSubscriptionIdOnIO,
+                     GetServiceWorkerContext(browser_context, origin),
+                     service_worker_registration_id, callback));
 }
 
 // static
@@ -127,10 +125,10 @@ void PushMessagingService::StorePushSubscriptionForTesting(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&StorePushSubscriptionOnIOForTesting,
-                 GetServiceWorkerContext(browser_context, origin),
-                 service_worker_registration_id, origin, subscription_id,
-                 sender_id, callback));
+      base::BindOnce(&StorePushSubscriptionOnIOForTesting,
+                     GetServiceWorkerContext(browser_context, origin),
+                     service_worker_registration_id, origin, subscription_id,
+                     sender_id, callback));
 }
 
 }  // namespace content

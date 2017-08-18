@@ -1020,8 +1020,8 @@ TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
   ASSERT_TRUE(t.Start());
 
   t.task_runner()->PostTask(FROM_HERE,
-                            base::Bind(&ReadDataOperation::ReadData,
-                                       base::Unretained(operation.get())));
+                            base::BindOnce(&ReadDataOperation::ReadData,
+                                           base::Unretained(operation.get())));
 
   logger->Add("1");
   writer_->AddData(

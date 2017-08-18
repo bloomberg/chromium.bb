@@ -69,8 +69,8 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
   // net::URLRequestJob implementation:
   void Start() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&URLRequestMultipleWritesJob::StartAsync,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&URLRequestMultipleWritesJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {

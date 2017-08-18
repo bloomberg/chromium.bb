@@ -108,7 +108,7 @@ class ArcTracingReader {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, base::RefCountedString::TakeString(&data)));
+        base::BindOnce(callback, base::RefCountedString::TakeString(&data)));
   }
 
   base::WeakPtr<ArcTracingReader> GetWeakPtr() {
@@ -148,7 +148,7 @@ class ArcTracingAgentImpl : public ArcTracingAgent {
       // Use PostTask as the convention of TracingAgent. The caller expects
       // callback to be called after this function returns.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, GetTracingAgentName(), false));
+          FROM_HERE, base::BindOnce(callback, GetTracingAgentName(), false));
       return;
     }
 
@@ -164,8 +164,8 @@ class ArcTracingAgentImpl : public ArcTracingAgent {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ArcTracingReader::StartTracing, reader_.GetWeakPtr(),
-                   base::Passed(&read_fd)));
+        base::BindOnce(&ArcTracingReader::StartTracing, reader_.GetWeakPtr(),
+                       base::Passed(&read_fd)));
   }
 
   void StopAgentTracing(const StopAgentTracingCallback& callback) override {
@@ -214,9 +214,9 @@ class ArcTracingAgentImpl : public ArcTracingAgent {
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ArcTracingReader::StopTracing, reader_.GetWeakPtr(),
-                   base::Bind(&ArcTracingAgentImpl::OnTracingReaderStopped,
-                              weak_ptr_factory_.GetWeakPtr(), callback)));
+        base::BindOnce(&ArcTracingReader::StopTracing, reader_.GetWeakPtr(),
+                       base::Bind(&ArcTracingAgentImpl::OnTracingReaderStopped,
+                                  weak_ptr_factory_.GetWeakPtr(), callback)));
   }
 
   void OnTracingReaderStopped(

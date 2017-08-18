@@ -41,8 +41,8 @@ class MockCursorImpl : public Cursor {
  public:
   explicit MockCursorImpl(indexed_db::mojom::CursorAssociatedRequest request)
       : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(
-        base::Bind(&MockCursorImpl::CursorDestroyed, base::Unretained(this)));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &MockCursorImpl::CursorDestroyed, base::Unretained(this)));
   }
 
   void Prefetch(
