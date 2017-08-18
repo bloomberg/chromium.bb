@@ -38,12 +38,6 @@ class MemlogClient : public mojom::MemlogClient {
   std::unique_ptr<mojo::Binding<mojom::MemlogClient>> binding_;
 
   std::unique_ptr<MemlogSenderPipe> memlog_sender_pipe_;
-
-  // Used to remove the connection filter on destruction.
-  int connection_filter_id_ = 0;
-
-  // The ServiceManagerConnection must outlive this instance.
-  content::ServiceManagerConnection* connection_ = nullptr;
 };
 
 }  // namespace profiling
