@@ -141,7 +141,10 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
 
   // Only refresh the icon if it's different from the old one. This prevents
   // flickering.
-  if (!old_item || !item->icon().BackedBySameObjectAs(old_item->icon())) {
+  // If the new icon is null, it's being decoded asynchronously. Not updating it
+  // now to prevent flickering from showing an empty icon while decoding.
+  if (!item->icon().isNull() &&
+      (!old_item || !item->icon().BackedBySameObjectAs(old_item->icon()))) {
     OnIconChanged();
   }
   if (!old_item ||
