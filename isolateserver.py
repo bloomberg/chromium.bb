@@ -899,14 +899,14 @@ class FetchStreamVerifier(object):
         (self.expected_size != self.current_size)):
       msg = 'Incorrect file size: want %d, got %d' % (
           self.expected_size, self.current_size)
-      logging.error('%s; last chunk:\n%s', msg, chunk)
+      logging.error('%s; last chunk (%d bytes)', msg, len(chunk))
       raise IOError(msg)
 
     actual_digest = self.rolling_hash.hexdigest()
     if self.expected_digest != actual_digest:
       msg = 'Incorrect digest: want %s, got %s' % (
           self.expected_digest, actual_digest)
-      logging.error('%s; last chunk:\n%s', msg, chunk)
+      logging.error('%s; last chunk (%d bytes)', msg, len(chunk))
       # TODO(aludwin): actually raise an error. In the short term, we'll
       # continue to let this through to verify that we see the logs when we
       # expect to; if we just return IOError, the download will be retried and
