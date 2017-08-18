@@ -124,10 +124,6 @@ bool UseMediaPlayerRenderer(const GURL& url) {
   if (url.SchemeIsBlob())
     return false;
 
-  // The default renderer does not support HLS.
-  if (media::MediaCodecUtil::IsHLSURL(url))
-    return true;
-
   // Don't use the default renderer if the container likely contains a codec we
   // can't decode in software and platform decoders are not available.
   if (!media::HasPlatformDecoderSupport()) {

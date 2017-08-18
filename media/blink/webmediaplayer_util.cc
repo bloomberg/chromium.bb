@@ -41,6 +41,7 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case DEMUXER_ERROR_COULD_NOT_OPEN:
     case DEMUXER_ERROR_COULD_NOT_PARSE:
     case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
+    case DEMUXER_ERROR_DETECTED_HLS:
     case DECODER_ERROR_NOT_SUPPORTED:
       return blink::WebMediaPlayer::kNetworkStateFormatError;
 

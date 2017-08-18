@@ -1312,6 +1312,18 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   if (suppress_destruction_errors_)
     return;
 
+#if defined(OS_ANDROID)
+  if (status == PipelineStatus::DEMUXER_ERROR_DETECTED_HLS) {
+    renderer_factory_selector_->SetUseMediaPlayer(true);
+
+    pipeline_controller_.Stop();
+
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&WebMediaPlayerImpl::StartPipeline, AsWeakPtr()));
+    return;
+  }
+#endif
+
   ReportPipelineError(load_type_, status, media_log_.get());
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
 
@@ -1801,21 +1813,6 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 
   if (observer_ && IsNewRemotePlaybackPipelineEnabled() && data_source_)
     observer_->OnDataSourceInitialized(data_source_->GetUrlAfterRedirects());
-
-#if defined(OS_ANDROID)
-  // We can't play HLS URLs with WebMediaPlayerImpl, so in cases where they are
-  // encountered, instruct the HTML media element to use the MediaPlayerRenderer
-  // instead.
-  //
-  // TODO(tguilbert): Detect the presence of HLS based on demuxing results,
-  // rather than the URL string. See crbug.com/663503.
-  if (data_source_) {
-    const GURL url_after_redirects = data_source_->GetUrlAfterRedirects();
-    if (MediaCodecUtil::IsHLSURL(url_after_redirects)) {
-      renderer_factory_selector_->SetUseMediaPlayer(true);
-    }
-  }
-#endif
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);

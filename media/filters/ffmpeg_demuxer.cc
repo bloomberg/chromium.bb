@@ -26,6 +26,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decrypt_config.h"
@@ -1201,6 +1202,15 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
     status_cb.Run(PIPELINE_ERROR_ABORT);
     return;
   }
+
+#if defined(OS_ANDROID)
+  if (glue_->detected_hls()) {
+    MEDIA_LOG(INFO, media_log_)
+        << GetDisplayName() << ": detected HLS manifest";
+    status_cb.Run(DEMUXER_ERROR_DETECTED_HLS);
+    return;
+  }
+#endif
 
   if (!result) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": open context failed";
