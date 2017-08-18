@@ -34,9 +34,6 @@ constexpr int kWhiteBarLongSideLength = 17;
 constexpr int kWhiteBarDiameter = 7;
 constexpr int kWhiteBarCornerRadius = 1;
 
-// The time in milliseconds of the divider's bounds change animation.
-constexpr int kDividerBoundsChangeDurationMs = 160;
-
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
 constexpr int kDividerEdgeInsetForTouch = 5;
@@ -189,12 +186,6 @@ gfx::Size SplitViewDivider::GetDividerSize(const gfx::Rect& work_area_bounds,
 }
 
 void SplitViewDivider::UpdateDividerBounds(bool is_dragging) {
-  ui::Layer* layer = divider_widget_->GetNativeWindow()->layer();
-  ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
-  slide_settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  slide_settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kDividerBoundsChangeDurationMs));
   divider_widget_->SetBounds(GetDividerBoundsInScreen(is_dragging));
 }
 

@@ -162,7 +162,7 @@ void TabletModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
 
   defer_bounds_updates_ = defer_bounds_updates;
   if (!defer_bounds_updates_)
-    UpdateBounds(wm::GetWindowState(window_), true);
+    UpdateBounds(wm::GetWindowState(window_), true /* animated */);
 }
 
 void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
@@ -177,15 +177,18 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       ToggleFullScreen(window_state, window_state->delegate());
       break;
     case wm::WM_EVENT_FULLSCREEN:
-      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN, true);
+      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN,
+                   true /* animated */);
       break;
     case wm::WM_EVENT_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
-        UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED, true);
+        UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_PINNED,
+                     true /* animated */);
       break;
     case wm::WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
-        UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_TRUSTED_PINNED, true);
+        UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_TRUSTED_PINNED,
+                     true /* animated */);
       break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
@@ -197,22 +200,23 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_NORMAL:
     case wm::WM_EVENT_MAXIMIZE:
       UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
-                   true);
+                   true /* animated */);
       return;
     case wm::WM_EVENT_SNAP_LEFT:
       UpdateWindow(window_state,
                    GetSnappedWindowStateType(
                        window_state, wm::WINDOW_STATE_TYPE_LEFT_SNAPPED),
-                   true);
+                   false /* animated */);
       return;
     case wm::WM_EVENT_SNAP_RIGHT:
       UpdateWindow(window_state,
                    GetSnappedWindowStateType(
                        window_state, wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED),
-                   true);
+                   false /* animated */);
       return;
     case wm::WM_EVENT_MINIMIZE:
-      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_MINIMIZED, true);
+      UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_MINIMIZED,
+                   true /* animated */);
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
@@ -250,17 +254,17 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
           current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
         wm::WindowStateType new_state =
             GetMaximizedOrCenteredWindowType(window_state);
-        UpdateWindow(window_state, new_state, true);
+        UpdateWindow(window_state, new_state, true /* animated */);
       }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
       if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED)
-        UpdateBounds(window_state, true);
+        UpdateBounds(window_state, true /* animated */);
       break;
     case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       // Don't animate on a screen rotation - just snap to new size.
       if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED)
-        UpdateBounds(window_state, false);
+        UpdateBounds(window_state, false /* animated */);
       break;
   }
 }
@@ -289,7 +293,7 @@ void TabletModeWindowState::AttachState(
       current_state_type_ != wm::WINDOW_STATE_TYPE_PINNED &&
       current_state_type_ != wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
-                 true);
+                 true /* animated */);
   }
 
   window_state->set_can_be_dragged(false);
@@ -335,11 +339,11 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
     if (window_state->IsActive())
       window_state->Deactivate();
   } else if (target_state == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED) {
-    window_state->SetBoundsDirectAnimated(
+    window_state->SetBoundsDirect(
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
             window_state->window(), SplitViewController::LEFT));
   } else if (target_state == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED) {
-    window_state->SetBoundsDirectAnimated(
+    window_state->SetBoundsDirect(
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
             window_state->window(), SplitViewController::RIGHT));
   } else {
