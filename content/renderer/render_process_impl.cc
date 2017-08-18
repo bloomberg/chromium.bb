@@ -146,6 +146,8 @@ RenderProcessImpl::RenderProcessImpl(
                         "--no-harmony-sharedarraybuffer");
 
   SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
+  SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
+                        "--no-wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
     base::debug::SetStackDumpFirstChanceCallback(v8::V8::TryHandleSignal);
