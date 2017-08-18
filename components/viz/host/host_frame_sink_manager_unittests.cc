@@ -56,9 +56,7 @@ class FakeHostFrameSinkClient : public HostFrameSinkClient {
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
-  MockFrameSinkManagerImpl()
-      : FrameSinkManagerImpl(nullptr,
-                             SurfaceManager::LifetimeType::REFERENCES) {}
+  MockFrameSinkManagerImpl() = default;
   ~MockFrameSinkManagerImpl() override = default;
 
   // mojom::FrameSinkManager:

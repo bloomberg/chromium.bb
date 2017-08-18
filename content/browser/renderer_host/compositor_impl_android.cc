@@ -110,8 +110,8 @@ struct CompositorDependencies {
 
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
-    frame_sink_manager_impl = base::MakeUnique<viz::FrameSinkManagerImpl>(
-        nullptr /* display_provider */, surface_lifetime_type);
+    frame_sink_manager_impl =
+        std::make_unique<viz::FrameSinkManagerImpl>(surface_lifetime_type);
     surface_utils::ConnectWithLocalFrameSinkManager(
         &host_frame_sink_manager, frame_sink_manager_impl.get());
   }

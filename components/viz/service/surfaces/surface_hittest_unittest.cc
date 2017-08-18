@@ -67,11 +67,8 @@ using namespace test;
 
 class SurfaceHittestTest : public testing::Test {
  public:
-  SurfaceHittestTest()
-      : frame_sink_manager_(nullptr /* display_provider */,
-                            SurfaceManager::LifetimeType::REFERENCES) {}
-
-  ~SurfaceHittestTest() override {}
+  SurfaceHittestTest() = default;
+  ~SurfaceHittestTest() override = default;
 
   CompositorFrameSinkSupport& root_support() { return *supports_[0]; }
 
