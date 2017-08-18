@@ -40,6 +40,7 @@
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
@@ -424,6 +425,18 @@ void NavigationRequest::BeginNavigation() {
     return;
   }
 
+  if (CheckCredentialedSubresource() ==
+      CredentialedSubresourceCheckResult::BLOCK_REQUEST) {
+    // Create a navigation handle so that the correct error code can be set on
+    // it by OnRequestFailed().
+    CreateNavigationHandle();
+    OnRequestFailed(false, net::ERR_ABORTED);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
+    return;
+  }
+
   CreateNavigationHandle();
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url) &&
@@ -577,6 +590,18 @@ void NavigationRequest::OnRequestRedirected(
   if (CheckContentSecurityPolicyFrameSrc(true /* is redirect */) ==
       CONTENT_SECURITY_POLICY_CHECK_FAILED) {
     OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
+    return;
+  }
+
+  if (CheckCredentialedSubresource() ==
+      CredentialedSubresourceCheckResult::BLOCK_REQUEST) {
+    // Create a navigation handle so that the correct error code can be set on
+    // it by OnRequestFailed().
+    CreateNavigationHandle();
+    OnRequestFailed(false, net::ERR_ABORTED);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
@@ -1042,6 +1067,44 @@ NavigationRequest::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
   }
 
   return CONTENT_SECURITY_POLICY_CHECK_FAILED;
+}
+
+NavigationRequest::CredentialedSubresourceCheckResult
+NavigationRequest::CheckCredentialedSubresource() const {
+  // It only applies to subframes.
+  if (frame_tree_node_->IsMainFrame())
+    return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
+
+  // URLs with no embedded credentials should load correctly.
+  if (!common_params_.url.has_username() && !common_params_.url.has_password())
+    return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
+
+  // Relative URLs on top-level pages that were loaded with embedded credentials
+  // should load correctly.
+  FrameTreeNode* parent_ftn = frame_tree_node_->parent();
+  DCHECK(parent_ftn);
+  const GURL& parent_url = parent_ftn->current_url();
+  if (url::Origin(parent_url)
+          .IsSameOriginWith(url::Origin(common_params_.url)) &&
+      parent_url.username() == common_params_.url.username() &&
+      parent_url.password() == common_params_.url.password()) {
+    return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
+  }
+
+  // Warn the user about the request being blocked.
+  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
+  DCHECK(parent);
+  const char* console_message =
+      "Subresource requests whose URLs contain embedded credentials (e.g. "
+      "`https://user:pass@host/`) are blocked. See "
+      "https://www.chromestatus.com/feature/5669008342777856 for more "
+      "details. ";
+  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_INFO, console_message);
+
+  if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
+    return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
+
+  return CredentialedSubresourceCheckResult::BLOCK_REQUEST;
 }
 
 }  // namespace content
