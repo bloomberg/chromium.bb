@@ -241,6 +241,12 @@ TEST(SpanTest, MakeSpanFromConstexprArray) {
   EXPECT_EQ(span, MakeSpan(kArray));
 }
 
+TEST(SpanTest, MakeSpanFromConstContainer) {
+  const std::vector<int> vector = {-1, -2, -3, -4, -5};
+  Span<const int> span(vector);
+  EXPECT_EQ(span, MakeSpan(vector));
+}
+
 TEST(SpanTest, MakeSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
   Span<int> span(vector);

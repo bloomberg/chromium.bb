@@ -66,16 +66,6 @@ void WontCompile() {
   Span<int> span(set);
 }
 
-#elif defined(NCTEST_RVALUE_CONTAINER_CONVERSION_DISALLOWED)  // [r"fatal error: call to deleted constructor of 'Span<int>'"]
-
-// Span's container conversion constructor should not allow it to bind to a
-// container going out of scope.
-std::vector<int> GetData();
-
-void WontCompile() {
-  Span<int> span(GetData());
-}
-
 #elif defined(NCTEST_MAKE_SPAN_FROM_SET_CONVERSION_DISALLOWED)  // [r"fatal error: no matching function for call to 'MakeSpan'"]
 
 // A std::set() should not satisfy the requirements for conversion to a Span.
