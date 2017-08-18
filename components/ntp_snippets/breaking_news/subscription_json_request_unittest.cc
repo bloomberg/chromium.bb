@@ -101,6 +101,8 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
       builder.SetToken(token)
           .SetUrl(url)
           .SetUrlRequestContextGetter(GetRequestContext())
+          .SetLocale("en-US")
+          .SetCountryCode("us")
           .Build();
   request->Start(callback.Get());
 
@@ -116,11 +118,13 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
   EXPECT_TRUE(headers.GetHeader("Content-Type", &header));
   EXPECT_EQ(header, "application/json; charset=UTF-8");
 
-  std::string expected_body =
-      "{"
-      "  \"token\": "
-      "    \"1234567890\""
-      "}";
+  std::string expected_body = R"(
+    {
+      "token": "1234567890",
+      "locale": "en-US",
+      "country_code": "us"
+    }
+  )";
   EXPECT_THAT(url_fetcher->upload_data(), EqualsJSON(expected_body));
 }
 

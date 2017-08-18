@@ -104,6 +104,19 @@ SubscriptionJsonRequest::Builder::SetAuthenticationHeader(
   return *this;
 }
 
+SubscriptionJsonRequest::Builder& SubscriptionJsonRequest::Builder::SetLocale(
+    const std::string& locale) {
+  locale_ = locale;
+  return *this;
+}
+
+SubscriptionJsonRequest::Builder&
+SubscriptionJsonRequest::Builder::SetCountryCode(
+    const std::string& country_code) {
+  country_code_ = country_code;
+  return *this;
+}
+
 std::string SubscriptionJsonRequest::Builder::BuildHeaders() const {
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentType,
@@ -125,6 +138,9 @@ std::string SubscriptionJsonRequest::Builder::BuildHeaders() const {
 std::string SubscriptionJsonRequest::Builder::BuildBody() const {
   base::DictionaryValue request;
   request.SetString("token", token_);
+
+  request.SetString("locale", locale_);
+  request.SetString("country_code", country_code_);
 
   std::string request_json;
   bool success = base::JSONWriter::Write(request, &request_json);
