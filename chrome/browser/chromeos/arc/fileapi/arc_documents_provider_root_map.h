@@ -53,6 +53,10 @@ class ArcDocumentsProviderRootMap : public KeyedService {
   ArcDocumentsProviderRoot* ParseAndLookup(const storage::FileSystemURL& url,
                                            base::FilePath* path) const;
 
+  // Looks up a root by an authority and a root document ID.
+  ArcDocumentsProviderRoot* Lookup(const std::string& authority,
+                                   const std::string& root_document_id) const;
+
   // KeyedService overrides:
   void Shutdown() override;
 

@@ -22,6 +22,9 @@ class RecentContext;
 // local directories and cloud storages. To provide files to Recent file
 // system, this interface should be implemented for each source.
 //
+// Note: If a source implementation depends on KeyedServices, remember to add
+// dependencies in RecentModelFactory.
+//
 // All member functions must be called on the UI thread.
 class RecentSource {
  public:
@@ -32,7 +35,7 @@ class RecentSource {
 
   // Retrieves a list of recent files from this source.
   //
-  // You can assumed that, once this function is called, it is not called again
+  // You can assume that, once this function is called, it is not called again
   // until the callback is invoked. This means that you can safely save internal
   // states to compute recent files in member variables.
   virtual void GetRecentFiles(RecentContext context,
