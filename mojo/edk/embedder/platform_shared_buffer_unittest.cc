@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/process/process_metrics.h"
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,7 +136,9 @@ TEST(PlatformSharedBufferTest, InvalidMappings) {
 TEST(PlatformSharedBufferTest, TooBig) {
   // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
   // (since it only involves creating a 4 GB file).
-  size_t max_size = std::numeric_limits<size_t>::max();
+  // Ask for one page less than the maximum |size_t| can express, otherwise the
+  // |Create()| call will round-up the size, and it'll wrap to zero bytes.
+  size_t max_size = std::numeric_limits<size_t>::max() - base::GetPageSize();
   if (base::SysInfo::AmountOfVirtualMemory() &&
       max_size > static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory()))
     max_size = static_cast<size_t>(base::SysInfo::AmountOfVirtualMemory());

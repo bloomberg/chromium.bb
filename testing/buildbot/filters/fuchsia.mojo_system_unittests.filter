@@ -7,6 +7,3 @@
 # These tests require support for named channels. See crbug.com/754038.
 -MultiprocessMessagePipeTestWithPeerSupport*/2
 -MultiprocessMessagePipeTestWithPeerSupport*/3
-
-# These tests depend on POSIX features missing in Fuchsia.
--PlatformSharedBufferTest.TooBig
