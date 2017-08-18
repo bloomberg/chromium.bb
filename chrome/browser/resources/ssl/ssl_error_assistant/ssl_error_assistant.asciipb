@@ -150,3 +150,8 @@ captive_portal_cert {
 captive_portal_cert {
   sha256_hash: "sha256/LKtpdq9q7F7msGK0w1+b/gKoDHaQcZKTHIf9PTz2u+U="
 }
+
+mitm_software {
+  name: "Kaspersky Internet Security",
+  regex: "Kaspersky Anti-Virus Personal Root Certificate"
+}
