@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-cssmediarule-interface
+// https://drafts.csswg.org/cssom/#the-cssmediarule-interface
 
 interface CSSMediaRule : CSSConditionRule {
     // TODO(foolip): media should have [PutForwards=mediaText].

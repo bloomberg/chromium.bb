@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dev.w3.org/csswg/css-conditional/#the-csssupportsrule-interface
+// https://drafts.csswg.org/css-conditional/#the-csssupportsrule-interface
 
 interface CSSSupportsRule : CSSConditionRule {
 };

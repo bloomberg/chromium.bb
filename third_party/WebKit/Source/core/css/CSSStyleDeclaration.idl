@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-cssstyledeclaration-interface
+// https://drafts.csswg.org/cssom/#the-cssstyledeclaration-interface
 
 [
     DependentLifetime
@@ -38,8 +38,8 @@
     [CEReactions, RaisesException=Setter, TreatNullAs=EmptyString] attribute DOMString cssFloat;
 
     // The camel-cased and dashed attribute getters have custom bindings.
-    // https://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-camel-cased-attribute
-    // https://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-dashed-attribute
+    // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel-cased-attribute
+    // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-dashed-attribute
     [Custom=(PropertyGetter,PropertyEnumerator,PropertyQuery)] getter (DOMString or float) (DOMString name);
     [Custom] setter void (DOMString property, DOMString? propertyValue);
 };

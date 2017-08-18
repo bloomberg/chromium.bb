@@ -144,7 +144,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // FIXME: clear(), captureEvents(), releaseEvents() and all are on HTMLDocument.
 
     // CSS Object Model (CSSOM)
-    // https://dev.w3.org/csswg/cssom/#extensions-to-the-document-interface
+    // https://drafts.csswg.org/cssom/#extensions-to-the-document-interface
     attribute DOMString? selectedStylesheetSet;
     readonly attribute DOMString? preferredStylesheetSet;
 

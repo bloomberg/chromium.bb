@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dev.w3.org/csswg/cssom/#the-cssimportrule-interface
+// https://drafts.csswg.org/cssom/#the-cssimportrule-interface
 
 interface CSSImportRule : CSSRule {
     readonly attribute DOMString href;

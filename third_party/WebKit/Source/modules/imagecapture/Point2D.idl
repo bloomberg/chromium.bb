@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/mediacapture-image/index.html#Point2D
+// https://w3c.github.io/mediacapture-image/#point2d-section
 
 dictionary Point2D {
   float x = 0.0;
