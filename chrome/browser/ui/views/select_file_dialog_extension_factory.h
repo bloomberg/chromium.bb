@@ -16,8 +16,9 @@ class SelectFileDialogExtensionFactory : public ui::SelectFileDialogFactory {
 
  private:
   // Override from ui::SelectFileDialogFactory:
-  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                               ui::SelectFilePolicy* policy) override;
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtensionFactory);
 };

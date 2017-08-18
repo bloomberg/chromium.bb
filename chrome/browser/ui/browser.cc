@@ -892,8 +892,8 @@ bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
 void Browser::OpenFile() {
   base::RecordAction(UserMetricsAction("OpenFile"));
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(
-          tab_strip_model_->GetActiveWebContents()));
+      this, std::make_unique<ChromeSelectFilePolicy>(
+                tab_strip_model_->GetActiveWebContents()));
 
   const base::FilePath directory = profile_->last_selected_directory();
 

@@ -30,7 +30,8 @@ class SelectFileDialogMacTest;
 // Exported for unit tests.
 class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
  public:
-  SelectFileDialogImpl(Listener* listener, ui::SelectFilePolicy* policy);
+  SelectFileDialogImpl(Listener* listener,
+                       std::unique_ptr<ui::SelectFilePolicy> policy);
 
   // BaseShellDialog implementation.
   bool IsRunning(gfx::NativeWindow parent_window) const override;

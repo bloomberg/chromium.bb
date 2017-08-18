@@ -33,7 +33,7 @@ FileEntryPicker::FileEntryPicker(
   gfx::NativeWindow owning_window =
       platform_util::GetTopLevel(web_contents->GetNativeView());
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, base::MakeUnique<ChromeSelectFilePolicy>(web_contents).release());
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   select_file_dialog_->SelectFile(
       picker_type, base::string16(), suggested_name, &file_type_info, 0,
       base::FilePath::StringType(), owning_window, nullptr);

@@ -72,7 +72,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
         canceled_callback_(canceled_callback),
         web_contents_(web_contents) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(web_contents));
+        this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   }
 
   void Show(ui::SelectFileDialog::Type type,

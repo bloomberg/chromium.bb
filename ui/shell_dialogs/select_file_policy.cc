@@ -6,6 +6,6 @@
 
 namespace ui {
 
-SelectFilePolicy::~SelectFilePolicy() {}
+SelectFilePolicy::~SelectFilePolicy() = default;
 
 }  // namespace ui

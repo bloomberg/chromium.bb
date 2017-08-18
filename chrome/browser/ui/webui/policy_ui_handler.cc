@@ -54,6 +54,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
@@ -890,8 +891,8 @@ void PolicyUIHandler::HandleExportPoliciesJSON(const base::ListValue* args) {
   // This is done for the following reason: the admin might want to set this
   // policy for the user to forbid the select file dialogs, but this shouldn't
   // block the possibility to export the policies.
-  export_policies_select_file_dialog_ =
-      ui::SelectFileDialog::Create(this, nullptr);
+  export_policies_select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, std::unique_ptr<ui::SelectFilePolicy>());
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
   gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();

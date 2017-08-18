@@ -576,7 +576,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     return;
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents_));
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents_));
   if (!select_file_dialog_.get())
     return;
 

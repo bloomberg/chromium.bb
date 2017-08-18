@@ -21,8 +21,10 @@ class ChromeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   ~ChromeSelectFileDialogFactory() override;
 
   // ui::SelectFileDialogFactory:
-  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                               ui::SelectFilePolicy* policy) override;
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override;
+
  private:
   static bool BlockingGetOpenFileName(OPENFILENAME* ofn);
   static bool BlockingGetSaveFileName(OPENFILENAME* ofn);

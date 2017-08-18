@@ -108,7 +108,7 @@ void MediaRouterFileDialog::FileSystemDelegate::OpenFileDialog(
     const base::FilePath& default_directory,
     const ui::SelectFileDialog::FileTypeInfo* file_type_info) {
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      listener, new ChromeSelectFilePolicy(
+      listener, std::make_unique<ChromeSelectFilePolicy>(
                     browser->tab_strip_model()->GetActiveWebContents()));
 
   gfx::NativeWindow parent_window = browser->window()->GetNativeWindow();

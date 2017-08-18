@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/open_file_name_win.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace {
 
@@ -53,9 +54,9 @@ ChromeSelectFileDialogFactory::~ChromeSelectFileDialogFactory() = default;
 
 ui::SelectFileDialog* ChromeSelectFileDialogFactory::Create(
     ui::SelectFileDialog::Listener* listener,
-    ui::SelectFilePolicy* policy) {
+    std::unique_ptr<ui::SelectFilePolicy> policy) {
   return ui::CreateWinSelectFileDialog(
-      listener, policy,
+      listener, std::move(policy),
       base::Bind(&ChromeSelectFileDialogFactory::BlockingGetOpenFileName),
       base::Bind(&ChromeSelectFileDialogFactory::BlockingGetSaveFileName));
 }

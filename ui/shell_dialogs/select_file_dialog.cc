@@ -41,17 +41,17 @@ void SelectFileDialog::Listener::FileSelectedWithExtraInfo(
   // Most of the dialogs need actual local path, so default to it.
   // If local path is empty, use file_path instead.
   FileSelected(file.local_path.empty() ? file.file_path : file.local_path,
-               index,
-               params);
+               index, params);
 }
 
 void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
   std::vector<base::FilePath> file_paths;
-  for (size_t i = 0; i < files.size(); ++i)
-    file_paths.push_back(files[i].local_path.empty() ? files[i].file_path
-                                                     : files[i].local_path);
+  for (const ui::SelectedFileInfo& file : files) {
+    file_paths.push_back(file.local_path.empty() ? file.file_path
+                                                 : file.local_path);
+  }
 
   MultiFilesSelected(file_paths, params);
 }
@@ -65,14 +65,10 @@ void SelectFileDialog::SetFactory(ui::SelectFileDialogFactory* factory) {
 // static
 scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
     Listener* listener,
-    ui::SelectFilePolicy* policy) {
-  if (dialog_factory_) {
-    SelectFileDialog* dialog = dialog_factory_->Create(listener, policy);
-    if (dialog)
-      return dialog;
-  }
-
-  return CreateSelectFileDialog(listener, policy);
+    std::unique_ptr<ui::SelectFilePolicy> policy) {
+  if (dialog_factory_)
+    return dialog_factory_->Create(listener, std::move(policy));
+  return CreateSelectFileDialog(listener, std::move(policy));
 }
 
 base::FilePath SelectFileDialog::GetShortenedFilePath(
@@ -135,9 +131,8 @@ bool SelectFileDialog::HasMultipleFileTypeChoices() {
 }
 
 SelectFileDialog::SelectFileDialog(Listener* listener,
-                                   ui::SelectFilePolicy* policy)
-    : listener_(listener),
-      select_file_policy_(policy) {
+                                   std::unique_ptr<ui::SelectFilePolicy> policy)
+    : listener_(listener), select_file_policy_(std::move(policy)) {
   DCHECK(listener_);
 }
 

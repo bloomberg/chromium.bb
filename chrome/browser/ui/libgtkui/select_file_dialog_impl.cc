@@ -34,7 +34,7 @@ base::FilePath* SelectFileDialogImpl::last_opened_path_ = nullptr;
 // static
 ui::SelectFileDialog* SelectFileDialogImpl::Create(
     ui::SelectFileDialog::Listener* listener,
-    ui::SelectFilePolicy* policy) {
+    std::unique_ptr<ui::SelectFilePolicy> policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (use_kde_ == UNKNOWN) {
     // Start out assumimg we are not going to use KDE.
@@ -57,19 +57,22 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
     }
   }
 
-  if (use_kde_ == NO_KDE)
-    return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener, policy);
+  if (use_kde_ == NO_KDE) {
+    return SelectFileDialogImpl::NewSelectFileDialogImplGTK(listener,
+                                                            std::move(policy));
+  }
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop =
       base::nix::GetDesktopEnvironment(env.get());
   return SelectFileDialogImpl::NewSelectFileDialogImplKDE(
-      listener, policy, desktop);
+      listener, std::move(policy), desktop);
 }
 
-SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
-                                           ui::SelectFilePolicy* policy)
-    : SelectFileDialog(listener, policy),
+SelectFileDialogImpl::SelectFileDialogImpl(
+    Listener* listener,
+    std::unique_ptr<ui::SelectFilePolicy> policy)
+    : SelectFileDialog(listener, std::move(policy)),
       file_type_index_(0),
       type_(SELECT_NONE) {
   if (!last_saved_path_) {

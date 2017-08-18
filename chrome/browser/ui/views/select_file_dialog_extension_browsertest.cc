@@ -30,6 +30,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using content::BrowserContext;

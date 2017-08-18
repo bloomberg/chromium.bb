@@ -2635,9 +2635,9 @@ ChromeContentBrowserClient::GetVpnServiceProxy(
 #endif
 }
 
-ui::SelectFilePolicy* ChromeContentBrowserClient::CreateSelectFilePolicy(
-    WebContents* web_contents) {
-  return new ChromeSelectFilePolicy(web_contents);
+std::unique_ptr<ui::SelectFilePolicy>
+ChromeContentBrowserClient::CreateSelectFilePolicy(WebContents* web_contents) {
+  return std::make_unique<ChromeSelectFilePolicy>(web_contents);
 }
 
 void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(

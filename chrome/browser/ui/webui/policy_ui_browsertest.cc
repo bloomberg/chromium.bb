@@ -41,6 +41,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
 
 using testing::Return;
@@ -142,8 +143,8 @@ class PolicyUITest : public InProcessBrowserTest {
 class TestSelectFileDialog : public ui::SelectFileDialog {
  public:
   TestSelectFileDialog(ui::SelectFileDialog::Listener* listener,
-                       ui::SelectFilePolicy* policy)
-      : ui::SelectFileDialog(listener, policy) {}
+                       std::unique_ptr<ui::SelectFilePolicy> policy)
+      : ui::SelectFileDialog(listener, std::move(policy)) {}
 
   void SelectFileImpl(Type type,
                       const base::string16& title,
@@ -171,9 +172,10 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
 // A factory associated with the artificial file picker.
 class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
  private:
-  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                               ui::SelectFilePolicy* policy) override {
-    return new TestSelectFileDialog(listener, policy);
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    return new TestSelectFileDialog(listener, std::move(policy));
   }
 };
 

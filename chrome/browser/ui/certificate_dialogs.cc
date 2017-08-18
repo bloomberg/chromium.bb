@@ -83,7 +83,7 @@ Exporter::Exporter(content::WebContents* web_contents,
                    net::X509Certificate::OSCertHandles::iterator certs_end)
     : select_file_dialog_(ui::SelectFileDialog::Create(
           this,
-          new ChromeSelectFilePolicy(web_contents))) {
+          std::make_unique<ChromeSelectFilePolicy>(web_contents))) {
   DCHECK(certs_begin != certs_end);
   for (net::X509Certificate::OSCertHandles::iterator i = certs_begin;
        i != certs_end;

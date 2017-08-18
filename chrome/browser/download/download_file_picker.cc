@@ -66,7 +66,7 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
     return;
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents));
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
   // |select_file_dialog_| could be null in Linux. See CreateSelectFileDialog()
   // in shell_dialog_linux.cc.
   if (!select_file_dialog_.get())

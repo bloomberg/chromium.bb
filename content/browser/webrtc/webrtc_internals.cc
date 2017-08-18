@@ -25,6 +25,7 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
@@ -293,16 +294,11 @@ void WebRTCInternals::EnableAudioDebugRecordings(
 #else
   selecting_event_log_ = false;
   DCHECK(!select_file_dialog_);
-  select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
+  select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
   select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-      base::string16(),
-      audio_debug_recordings_file_path_,
-      NULL,
-      0,
-      FILE_PATH_LITERAL(""),
-      web_contents->GetTopLevelNativeWindow(),
-      NULL);
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(),
+      audio_debug_recordings_file_path_, NULL, 0, base::FilePath::StringType(),
+      web_contents->GetTopLevelNativeWindow(), NULL);
 #endif
 #endif
 }

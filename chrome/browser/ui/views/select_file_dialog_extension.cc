@@ -159,22 +159,21 @@ SelectFileDialogExtension::GetRoutingIDFromWebContents(
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
     Listener* listener,
-    ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogExtension(listener, policy);
+    std::unique_ptr<ui::SelectFilePolicy> policy) {
+  return new SelectFileDialogExtension(listener, std::move(policy));
 }
 
 SelectFileDialogExtension::SelectFileDialogExtension(
     Listener* listener,
-    ui::SelectFilePolicy* policy)
-    : SelectFileDialog(listener, policy),
+    std::unique_ptr<ui::SelectFilePolicy> policy)
+    : SelectFileDialog(listener, std::move(policy)),
       has_multiple_file_type_choices_(false),
       routing_id_(),
       profile_(NULL),
       owner_window_(NULL),
       selection_type_(CANCEL),
       selection_index_(0),
-      params_(NULL) {
-}
+      params_(NULL) {}
 
 SelectFileDialogExtension::~SelectFileDialogExtension() {
   if (extension_dialog_.get())

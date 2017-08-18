@@ -599,8 +599,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<VpnServiceProxy> GetVpnServiceProxy(
       BrowserContext* browser_context);
 
-  // Returns an implementation of a file selecition policy. Can return nullptr.
-  virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
+  // Returns an implementation of a file selecition policy. Can return null.
+  virtual std::unique_ptr<ui::SelectFilePolicy> CreateSelectFilePolicy(
       WebContents* web_contents);
 
   // Returns additional allowed scheme set which can access files in
