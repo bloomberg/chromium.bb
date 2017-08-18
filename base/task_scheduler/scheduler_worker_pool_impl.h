@@ -157,7 +157,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Synchronizes accesses to |workers_|, |worker_capacity_|,
   // |idle_workers_stack_|, |idle_workers_stack_cv_for_testing_|,
-  // |num_wake_ups_before_start_|, and |cleanup_timestamps_| . Has
+  // |num_wake_ups_before_start_|, |cleanup_timestamps_|, and
+  // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|. Has
   // |shared_priority_queue_|'s lock as its predecessor so that a worker can be
   // pushed to |idle_workers_stack_| within the scope of a Transaction (more
   // details in GetWork()).
