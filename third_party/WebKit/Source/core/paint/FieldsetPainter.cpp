@@ -58,8 +58,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
       .PaintFillLayers(paint_info, box_decoration_data.background_color,
                        layout_fieldset_.Style()->BackgroundLayers(), paint_rect,
                        geometry);
-  BoxPainterBase::PaintInsetBoxShadow(paint_info, paint_rect,
-                                      layout_fieldset_.StyleRef());
+  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+      paint_info, paint_rect, layout_fieldset_.StyleRef());
 
   if (!box_decoration_data.has_border_decoration)
     return;

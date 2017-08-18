@@ -157,16 +157,35 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
   }
 }
 
+void BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+    const PaintInfo& info,
+    const LayoutRect& border_rect,
+    const ComputedStyle& style,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) {
+  if (!style.BoxShadow())
+    return;
+  auto bounds = style.GetRoundedInnerBorderFor(
+      border_rect, include_logical_left_edge, include_logical_right_edge);
+  PaintInsetBoxShadow(info, bounds, style, include_logical_left_edge,
+                      include_logical_right_edge);
+}
+
+void BoxPainterBase::PaintInsetBoxShadowWithInnerRect(
+    const PaintInfo& info,
+    const LayoutRect& inner_rect,
+    const ComputedStyle& style) {
+  if (!style.BoxShadow())
+    return;
+  auto bounds = style.GetRoundedInnerBorderFor(inner_rect, LayoutRectOutsets());
+  PaintInsetBoxShadow(info, bounds, style);
+}
+
 void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
-                                         const LayoutRect& paint_rect,
+                                         const FloatRoundedRect& bounds,
                                          const ComputedStyle& style,
                                          bool include_logical_left_edge,
                                          bool include_logical_right_edge) {
-  if (!style.BoxShadow())
-    return;
-  FloatRoundedRect bounds = style.GetRoundedInnerBorderFor(
-      paint_rect, include_logical_left_edge, include_logical_right_edge);
-
   GraphicsContext& context = info.context;
   bool is_horizontal = style.IsHorizontalWritingMode();
   GraphicsContextStateSaver state_saver(context, false);

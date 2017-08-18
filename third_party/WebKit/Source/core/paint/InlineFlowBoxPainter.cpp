@@ -139,9 +139,9 @@ void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,
 void InlineFlowBoxPainter::PaintInsetBoxShadow(const PaintInfo& info,
                                                const ComputedStyle& s,
                                                const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintInsetBoxShadow(info, paint_rect, s,
-                                      IncludeLogicalLeftEdgeForBoxShadow(),
-                                      IncludeLogicalRightEdgeForBoxShadow());
+  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
+      info, paint_rect, s, IncludeLogicalLeftEdgeForBoxShadow(),
+      IncludeLogicalRightEdgeForBoxShadow());
 }
 
 static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
