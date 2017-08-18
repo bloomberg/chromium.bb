@@ -11,6 +11,8 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_GLX_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_GLX_H_
 
+#include <string>
+
 namespace gl {
 
 class GLContext;
@@ -228,6 +230,8 @@ class GL_EXPORT GLXApi {
  public:
   GLXApi();
   virtual ~GLXApi();
+
+  virtual void SetDisabledExtensions(const std::string& disabled_extensions) {}
 
   virtual void glXBindTexImageEXTFn(Display* dpy,
                                     GLXDrawable drawable,

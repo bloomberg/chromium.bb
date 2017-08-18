@@ -17,9 +17,39 @@
 namespace gl {
 namespace init {
 
-bool InitializeGLOneOff() {
-  TRACE_EVENT0("gpu,startup", "gl::init::InitializeOneOff");
+namespace {
 
+bool InitializeGLOneOffImplementationHelper(GLImplementation impl,
+                                            bool fallback_to_software_gl,
+                                            bool gpu_service_logging,
+                                            bool disable_gl_drawing,
+                                            bool init_extensions) {
+  bool initialized =
+      InitializeStaticGLBindings(impl) && InitializeGLOneOffPlatform();
+  if (!initialized && fallback_to_software_gl) {
+    ShutdownGL();
+    initialized = InitializeStaticGLBindings(GetSoftwareGLImplementation()) &&
+                  InitializeGLOneOffPlatform();
+  }
+  if (initialized && init_extensions) {
+    initialized = InitializeExtensionSettingsOneOffPlatform();
+  }
+
+  if (!initialized)
+    ShutdownGL();
+
+  if (initialized) {
+    DVLOG(1) << "Using " << GetGLImplementationName(GetGLImplementation())
+             << " GL implementation.";
+    if (gpu_service_logging)
+      InitializeDebugGLBindings();
+    if (disable_gl_drawing)
+      InitializeNullDrawGLBindings();
+  }
+  return initialized;
+}
+
+bool InitializeGLOneOffHelper(bool init_extensions) {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
   std::vector<GLImplementation> allowed_impls = GetAllowedGLImplementations();
@@ -56,33 +86,30 @@ bool InitializeGLOneOff() {
   bool gpu_service_logging = cmd->HasSwitch(switches::kEnableGPUServiceLogging);
   bool disable_gl_drawing = cmd->HasSwitch(switches::kDisableGLDrawingForTests);
 
-  return InitializeGLOneOffImplementation(
-      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing);
+  return InitializeGLOneOffImplementationHelper(
+      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing,
+      init_extensions);
+}
+
+}  // namespace
+
+bool InitializeGLOneOff() {
+  TRACE_EVENT0("gpu,startup", "gl::init::InitializeOneOff");
+  return InitializeGLOneOffHelper(true);
+}
+
+bool InitializeGLNoExtensionsOneOff() {
+  TRACE_EVENT0("gpu,startup", "gl::init::InitializeNoExtensionsOneOff");
+  return InitializeGLOneOffHelper(false);
 }
 
 bool InitializeGLOneOffImplementation(GLImplementation impl,
                                       bool fallback_to_software_gl,
                                       bool gpu_service_logging,
                                       bool disable_gl_drawing) {
-  bool initialized =
-      InitializeStaticGLBindings(impl) && InitializeGLOneOffPlatform();
-  if (!initialized && fallback_to_software_gl) {
-    ShutdownGL();
-    initialized = InitializeStaticGLBindings(GetSoftwareGLImplementation()) &&
-                  InitializeGLOneOffPlatform();
-  }
-  if (!initialized)
-    ShutdownGL();
-
-  if (initialized) {
-    DVLOG(1) << "Using " << GetGLImplementationName(GetGLImplementation())
-             << " GL implementation.";
-    if (gpu_service_logging)
-      InitializeDebugGLBindings();
-    if (disable_gl_drawing)
-      InitializeNullDrawGLBindings();
-  }
-  return initialized;
+  return InitializeGLOneOffImplementationHelper(impl, fallback_to_software_gl,
+                                                gpu_service_logging,
+                                                disable_gl_drawing, true);
 }
 
 void ShutdownGL() {

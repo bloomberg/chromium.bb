@@ -11,6 +11,8 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
 
+#include <string>
+
 namespace gl {
 
 class GLContext;
@@ -68,6 +70,8 @@ class GL_EXPORT OSMESAApi {
  public:
   OSMESAApi();
   virtual ~OSMESAApi();
+
+  virtual void SetDisabledExtensions(const std::string& disabled_extensions) {}
 
   virtual void OSMesaColorClampFn(GLboolean enable) = 0;
   virtual OSMesaContext OSMesaCreateContextFn(GLenum format,

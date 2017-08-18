@@ -383,25 +383,31 @@ GLXContext SGIVideoSyncProviderThreadShim::context_ = 0;
 
 }  // namespace
 
+bool GLSurfaceGLX::initialized_ = false;
+
 GLSurfaceGLX::GLSurfaceGLX() {}
 
 bool GLSurfaceGLX::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
+  if (initialized_)
     return true;
 
   // http://crbug.com/245466
   setenv("force_s3tc_enable", "true", 1);
 
+  {
+    // As a hack to avoid sandbox threading violation on certain NVidia drivers,
+    // this block of code needs to be put before gfx::InitializeThreadedX11().
+    // See crbug.com/756885.
+    g_display = gfx::GetXDisplay();
+    if (!g_display) {
+      LOG(ERROR) << "XOpenDisplay failed.";
+      return false;
+    }
+    glXQueryExtensionsString(g_display, 0);
+  }
   // SGIVideoSyncProviderShim (if instantiated) will issue X commands on
   // it's own thread.
   gfx::InitializeThreadedX11();
-  g_display = gfx::GetXDisplay();
-
-  if (!g_display) {
-    LOG(ERROR) << "XOpenDisplay failed.";
-    return false;
-  }
 
   int major, minor;
   if (!glXQueryVersion(g_display, &major, &minor)) {
@@ -413,21 +419,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
     LOG(ERROR) << "GLX 1.3 or later is required.";
     return false;
   }
-
-  g_glx_context_create = HasGLXExtension("GLX_ARB_create_context");
-  g_glx_create_context_robustness_supported =
-      HasGLXExtension("GLX_ARB_create_context_robustness");
-  g_glx_create_context_profile_supported =
-      HasGLXExtension("GLX_ARB_create_context_profile");
-  g_glx_create_context_profile_es2_supported =
-      HasGLXExtension("GLX_ARB_create_context_es2_profile");
-  g_glx_texture_from_pixmap_supported =
-      HasGLXExtension("GLX_EXT_texture_from_pixmap");
-  g_glx_oml_sync_control_supported = HasGLXExtension("GLX_OML_sync_control");
-  g_glx_get_msc_rate_oml_supported = g_glx_oml_sync_control_supported;
-  g_glx_ext_swap_control_supported = HasGLXExtension("GLX_EXT_swap_control");
-  g_glx_mesa_swap_control_supported = HasGLXExtension("GLX_MESA_swap_control");
-  g_glx_sgi_video_sync_supported = HasGLXExtension("GLX_SGI_video_sync");
 
   const XVisualInfo& visual_info =
       gl::GLVisualPickerGLX::GetInstance()->system_visual();
@@ -447,6 +438,32 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
+  initialized_ = true;
+  return true;
+}
+
+// static
+bool GLSurfaceGLX::InitializeExtensionSettingsOneOff() {
+  if (!initialized_)
+    return false;
+
+  g_driver_glx.InitializeExtensionBindings();
+
+  g_glx_context_create = HasGLXExtension("GLX_ARB_create_context");
+  g_glx_create_context_robustness_supported =
+      HasGLXExtension("GLX_ARB_create_context_robustness");
+  g_glx_create_context_profile_supported =
+      HasGLXExtension("GLX_ARB_create_context_profile");
+  g_glx_create_context_profile_es2_supported =
+      HasGLXExtension("GLX_ARB_create_context_es2_profile");
+  g_glx_texture_from_pixmap_supported =
+      HasGLXExtension("GLX_EXT_texture_from_pixmap");
+  g_glx_oml_sync_control_supported = HasGLXExtension("GLX_OML_sync_control");
+  g_glx_get_msc_rate_oml_supported = g_glx_oml_sync_control_supported;
+  g_glx_ext_swap_control_supported = HasGLXExtension("GLX_EXT_swap_control");
+  g_glx_mesa_swap_control_supported = HasGLXExtension("GLX_MESA_swap_control");
+  g_glx_sgi_video_sync_supported = HasGLXExtension("GLX_SGI_video_sync");
+
   if (!g_glx_get_msc_rate_oml_supported && g_glx_sgi_video_sync_supported) {
     Display* video_sync_display = gfx::OpenNewXDisplay();
     if (!CreateDummyWindow(video_sync_display)) {
@@ -455,8 +472,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
     }
     SGIVideoSyncProviderThreadShim::display_ = video_sync_display;
   }
-
-  initialized = true;
   return true;
 }
 

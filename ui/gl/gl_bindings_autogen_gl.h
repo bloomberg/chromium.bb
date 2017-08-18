@@ -11,6 +11,8 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
 
+#include <string>
+
 namespace gl {
 
 class GLContext;
@@ -2013,6 +2015,8 @@ class GL_EXPORT GLApi {
  public:
   GLApi();
   virtual ~GLApi();
+
+  virtual void SetDisabledExtensions(const std::string& disabled_extensions) {}
 
   virtual void glActiveTextureFn(GLenum texture) = 0;
   virtual void glApplyFramebufferAttachmentCMAAINTELFn(void) = 0;

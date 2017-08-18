@@ -494,8 +494,7 @@ void RealGLApi::InitializeFilteredExtensionsIfNeeded() {
   }
 }
 
-void RealGLApi::SetDisabledGLExtensions(
-    const std::string& disabled_extensions) {
+void RealGLApi::SetDisabledExtensions(const std::string& disabled_extensions) {
   ClearCachedGLExtensions();
   disabled_exts_.clear();
   if (disabled_extensions.empty())
