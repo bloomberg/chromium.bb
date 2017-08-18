@@ -12,11 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/common/media/media_stream.mojom.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "media/base/audio_parameters.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "content/renderer/media/mock_mojo_media_stream_dispatcher_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -28,27 +26,6 @@ const int kVideoSessionId = 5;
 const int kScreenSessionId = 7;
 const int kRequestId1 = 10;
 const int kRequestId2 = 20;
-
-class MockMojoMediaStreamDispatcherHost
-    : public mojom::MediaStreamDispatcherHost {
- public:
-  MockMojoMediaStreamDispatcherHost() {}
-
-  MOCK_METHOD5(
-      GenerateStream,
-      void(int32_t, int32_t, const StreamControls&, const url::Origin&, bool));
-  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
-  MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
-  MOCK_METHOD5(OpenDevice,
-               void(int32_t,
-                    int32_t,
-                    const std::string&,
-                    MediaStreamType,
-                    const url::Origin&));
-  MOCK_METHOD1(CloseDevice, void(const std::string&));
-  MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
-  MOCK_METHOD1(StreamStarted, void(const std::string&));
-};
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -127,7 +104,9 @@ class MediaStreamDispatcherTest : public ::testing::Test {
       : dispatcher_(new MediaStreamDispatcherUnderTest()),
         handler_(new MockMediaStreamDispatcherEventHandler),
         security_origin_(GURL("http://test.com")) {
-    dispatcher_->dispatcher_host_ = &mock_dispatcher_host_;
+    mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+        mock_dispatcher_host_.CreateInterfacePtrAndBind();
+    dispatcher_->dispatcher_host_ = std::move(dispatcher_host);
   }
 
   // Generates a request for a MediaStream and returns the request id that is
@@ -226,8 +205,9 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
   auto dispatcher = base::MakeUnique<MediaStreamDispatcher>(nullptr);
   auto handler1 = base::MakeUnique<MockMediaStreamDispatcherEventHandler>();
   auto handler2 = base::MakeUnique<MockMediaStreamDispatcherEventHandler>();
-  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
-  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+      mock_dispatcher_host_.CreateInterfacePtrAndBind();
+  dispatcher->dispatcher_host_ = std::move(dispatcher_host);
   url::Origin security_origin;
 
   StreamDeviceInfoArray video_device_array(1);
@@ -288,8 +268,9 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
 TEST_F(MediaStreamDispatcherTest, TestFailure) {
   auto dispatcher = base::MakeUnique<MediaStreamDispatcher>(nullptr);
   auto handler = base::MakeUnique<MockMediaStreamDispatcherEventHandler>();
-  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
-  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+      mock_dispatcher_host_.CreateInterfacePtrAndBind();
+  dispatcher->dispatcher_host_ = std::move(dispatcher_host);
   StreamControls components(true, true);
   url::Origin security_origin;
 
@@ -335,8 +316,9 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
 TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
   auto dispatcher = base::MakeUnique<MediaStreamDispatcher>(nullptr);
   auto handler = base::MakeUnique<MockMediaStreamDispatcherEventHandler>();
-  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
-  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+      mock_dispatcher_host_.CreateInterfacePtrAndBind();
+  dispatcher->dispatcher_host_ = std::move(dispatcher_host);
   StreamControls components(true, true);
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
@@ -392,8 +374,9 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
 TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
   auto dispatcher = base::MakeUnique<MediaStreamDispatcher>(nullptr);
   auto handler = base::MakeUnique<MockMediaStreamDispatcherEventHandler>();
-  MockMojoMediaStreamDispatcherHost mock_dispatcher_host;
-  dispatcher->dispatcher_host_ = &mock_dispatcher_host;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+      mock_dispatcher_host_.CreateInterfacePtrAndBind();
+  dispatcher->dispatcher_host_ = std::move(dispatcher_host);
   url::Origin security_origin;
 
   StreamDeviceInfo video_device_info;

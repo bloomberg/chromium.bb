@@ -231,12 +231,11 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
   }
 }
 
-mojom::MediaStreamDispatcherHost*
+const mojom::MediaStreamDispatcherHostPtr&
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &dispatcher_host_ptr_);
-    dispatcher_host_ = dispatcher_host_ptr_.get();
+        mojom::kBrowserServiceName, &dispatcher_host_);
   }
   return dispatcher_host_;
 };

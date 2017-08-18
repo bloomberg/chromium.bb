@@ -134,10 +134,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void BindMediaStreamDispatcherRequest(
       mojom::MediaStreamDispatcherRequest request);
 
-  mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
+  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
 
-  mojom::MediaStreamDispatcherHostPtr dispatcher_host_ptr_;
-  mojom::MediaStreamDispatcherHost* dispatcher_host_;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
   mojo::Binding<mojom::MediaStreamDispatcher> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
