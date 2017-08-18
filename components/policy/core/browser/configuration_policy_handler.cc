@@ -77,6 +77,73 @@ bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
   return true;
 }
 
+// StringListPolicyHandler implementation --------------------------------------
+
+ListPolicyHandler::ListPolicyHandler(const char* policy_name,
+                                     base::Value::Type list_entry_type)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::LIST),
+      list_entry_type_(list_entry_type) {}
+
+ListPolicyHandler::~ListPolicyHandler() {}
+
+bool ListPolicyHandler::CheckPolicySettings(const policy::PolicyMap& policies,
+                                            policy::PolicyErrorMap* errors) {
+  return CheckAndGetList(policies, errors, nullptr);
+}
+
+void ListPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
+                                            PrefValueMap* prefs) {
+  std::unique_ptr<base::ListValue> list;
+  if (CheckAndGetList(policies, nullptr, &list) && list)
+    ApplyList(std::move(list), prefs);
+}
+
+bool ListPolicyHandler::CheckAndGetList(
+    const policy::PolicyMap& policies,
+    policy::PolicyErrorMap* errors,
+    std::unique_ptr<base::ListValue>* filtered_list) {
+  if (filtered_list)
+    filtered_list->reset();
+
+  const base::Value* value = nullptr;
+  if (!CheckAndGetValue(policies, errors, &value))
+    return false;
+
+  if (!value)
+    return true;
+
+  // Filter the list, rejecting any invalid strings.
+  const base::Value::ListStorage& list = value->GetList();
+  if (filtered_list)
+    *filtered_list = base::MakeUnique<base::ListValue>();
+  for (size_t list_index = 0; list_index < list.size(); ++list_index) {
+    const base::Value& entry = list[list_index];
+    if (entry.GetType() != list_entry_type_) {
+      if (errors) {
+        errors->AddError(policy_name(), list_index, IDS_POLICY_TYPE_ERROR,
+                         base::Value::GetTypeName(list_entry_type_));
+      }
+      continue;
+    }
+
+    if (!CheckListEntry(entry)) {
+      if (errors) {
+        errors->AddError(policy_name(), list_index,
+                         IDS_POLICY_VALUE_FORMAT_ERROR);
+      }
+      continue;
+    }
+
+    if (filtered_list)
+      (*filtered_list)->Append(entry.CreateDeepCopy());
+  }
+
+  return true;
+}
+
+bool ListPolicyHandler::CheckListEntry(const base::Value& value) {
+  return true;
+}
 
 // IntRangePolicyHandlerBase implementation ------------------------------------
 

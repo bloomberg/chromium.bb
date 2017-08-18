@@ -102,6 +102,50 @@ class POLICY_EXPORT TypeCheckingPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(TypeCheckingPolicyHandler);
 };
 
+// Policy handler that makes sure the policy value is a list and filters out any
+// list entries that are not of type |list_entry_type|. Derived methods may
+// apply additional filters on list entries and transform the filtered list.
+class POLICY_EXPORT ListPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  ListPolicyHandler(const char* policy_name, base::Value::Type list_entry_type);
+  ~ListPolicyHandler() override;
+
+  // TypeCheckingPolicyHandler methods:
+  // Marked as final since overriding them could bypass filtering. Override
+  // CheckListEntry() and ApplyList() instead.
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) final;
+
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) final;
+
+ protected:
+  // Override this method to apply a filter for each |value| in the list.
+  // |value| is guaranteed to be of type |list_entry_type_| at this point.
+  // Returning false removes the value from |filtered_list| passed into
+  // ApplyList(). By default, any value of type |list_entry_type_| is accepted.
+  virtual bool CheckListEntry(const base::Value& value);
+
+  // Implement this method to apply the |filtered_list| of values of type
+  // |list_entry_type_| as returned from CheckAndGetList() to |prefs|.
+  virtual void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
+                         PrefValueMap* prefs) = 0;
+
+ private:
+  // Checks whether the policy value is indeed a list, filters out all entries
+  // that are not of type |list_entry_type_| or where CheckListEntry() returns
+  // false, and returns the |filtered_list| if not nullptr. Sets errors for
+  // filtered list entries if |errors| is not nullptr.
+  bool CheckAndGetList(const policy::PolicyMap& policies,
+                       policy::PolicyErrorMap* errors,
+                       std::unique_ptr<base::ListValue>* filtered_list);
+
+  // Expected value type for list entries. All other types are filtered out.
+  base::Value::Type list_entry_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ListPolicyHandler);
+};
+
 // Abstract class derived from TypeCheckingPolicyHandler that ensures an int
 // policy's value lies in an allowed range. Either clamps or rejects values
 // outside the range.
