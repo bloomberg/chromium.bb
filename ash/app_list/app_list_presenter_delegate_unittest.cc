@@ -118,7 +118,7 @@ class FullscreenAppListPresenterDelegateTest
     return app_list_presenter_impl_.GetView()
         ->search_box_view()
         ->GetBoundsInScreen()
-        .origin();
+        .CenterPoint();
   }
 
  private:
