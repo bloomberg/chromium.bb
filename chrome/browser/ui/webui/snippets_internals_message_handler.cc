@@ -577,21 +577,26 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
 }
 
 void SnippetsInternalsMessageHandler::PushDummySuggestion() {
-  std::string json =
-      "{\"categories\" : [{"
-      "  \"id\": 1,"
-      "  \"localizedTitle\": \"section title\","
-      "  \"suggestions\" : [{"
-      "    \"ids\" : [\"http://url.com\"],"
-      "    \"title\" : \"Pushed Dummy Title %s\","
-      "    \"snippet\" : \"Pushed Dummy Snippet\","
-      "    \"fullPageUrl\" : \"http://url.com\","
-      "    \"creationTime\" : \"%s\","
-      "    \"expirationTime\" : \"%s\","
-      "    \"attribution\" : \"Pushed Dummy Publisher\","
-      "    \"imageUrl\" : \"https://www.google.com/favicon.ico\" "
-      "  }]"
-      "}]}";
+  std::string json = R"(
+      {"categories" : [{
+        "id": 1,
+        "localizedTitle": "section title",
+        "suggestions" : [{
+          "ids" : ["http://url.com"],
+          "title" : "Pushed Dummy Title %s",
+          "snippet" : "Pushed Dummy Snippet",
+          "fullPageUrl" : "http://url.com",
+          "creationTime" : "%s",
+          "expirationTime" : "%s",
+          "attribution" : "Pushed Dummy Publisher",
+          "imageUrl" : "https://www.google.com/favicon.ico",
+          "notificationInfo": {
+            "shouldNotify": true,
+            "deadline": "2100-01-01T00:00:01.000Z"
+           }
+        }]
+      }]}
+  )";
 
   const base::Time now = base::Time::Now();
   json = base::StringPrintf(
