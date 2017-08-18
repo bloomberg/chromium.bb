@@ -168,12 +168,8 @@ void ShellDevToolsManagerDelegate::StartHttpHandler(
   frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
 #endif
   DevToolsAgentHost::StartRemoteDebuggingServer(
-      CreateSocketFactory(),
-      frontend_url,
-      browser_context->GetPath(),
-      base::FilePath(),
-      std::string(),
-      GetShellUserAgent());
+      CreateSocketFactory(), frontend_url, browser_context->GetPath(),
+      base::FilePath());
 }
 
 // static

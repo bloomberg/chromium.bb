@@ -115,9 +115,7 @@ class CONTENT_EXPORT DevToolsAgentHost
       std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       const base::FilePath& active_port_output_directory,
-      const base::FilePath& debug_frontend_dir,
-      const std::string& product_name,
-      const std::string& user_agent);
+      const base::FilePath& debug_frontend_dir);
 
   // Stops remote debugging.
   static void StopRemoteDebuggingServer();

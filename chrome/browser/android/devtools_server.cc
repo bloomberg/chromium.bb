@@ -156,8 +156,7 @@ void DevToolsServer::Start(bool allow_debug_permission) {
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      base::FilePath(), base::FilePath(),
-      version_info::GetProductNameAndVersionForUserAgent(), ::GetUserAgent());
+      base::FilePath(), base::FilePath());
   is_started_ = true;
 }
 

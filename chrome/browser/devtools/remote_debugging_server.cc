@@ -16,9 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "net/base/net_errors.h"
@@ -109,12 +107,8 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
-      base::MakeUnique<TCPServerSocketFactory>(ip, port),
-      std::string(),
-      output_dir,
-      debug_frontend_dir,
-      version_info::GetProductNameAndVersionForUserAgent(),
-      ::GetUserAgent());
+      base::MakeUnique<TCPServerSocketFactory>(ip, port), std::string(),
+      output_dir, debug_frontend_dir);
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

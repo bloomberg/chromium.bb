@@ -119,7 +119,7 @@ void StartLocalDevToolsHttpHandler(HeadlessBrowser::Options* options) {
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(socket_factory), std::string(),
       options->user_data_dir,  // TODO(altimin): Figure a proper value for this.
-      base::FilePath(), options->product_name_and_version, options->user_agent);
+      base::FilePath());
 }
 
 void StopLocalDevToolsHttpHandler() {

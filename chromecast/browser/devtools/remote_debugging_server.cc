@@ -153,12 +153,8 @@ void RemoteDebuggingServer::EnableWebContentsForDebugging(
 
   if (!is_started_) {
     content::DevToolsAgentHost::StartRemoteDebuggingServer(
-        CreateSocketFactory(port_),
-        GetFrontendUrl(),
-        base::FilePath(),
-        base::FilePath(),
-        std::string(),
-        GetUserAgent());
+        CreateSocketFactory(port_), GetFrontendUrl(), base::FilePath(),
+        base::FilePath());
     LOG(INFO) << "Devtools started: port=" << port_;
     is_started_ = true;
   }

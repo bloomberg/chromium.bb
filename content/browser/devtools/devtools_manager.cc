@@ -17,19 +17,16 @@ namespace content {
 
 // static
 void DevToolsAgentHost::StartRemoteDebuggingServer(
-      std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
-      const std::string& frontend_url,
-      const base::FilePath& active_port_output_directory,
-      const base::FilePath& debug_frontend_dir,
-      const std::string& product_name,
-      const std::string& user_agent) {
+    std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
+    const std::string& frontend_url,
+    const base::FilePath& active_port_output_directory,
+    const base::FilePath& debug_frontend_dir) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (!manager->delegate())
     return;
   manager->SetHttpHandler(base::WrapUnique(new DevToolsHttpHandler(
       manager->delegate(), std::move(server_socket_factory), frontend_url,
-      active_port_output_directory, debug_frontend_dir, product_name,
-      user_agent)));
+      active_port_output_directory, debug_frontend_dir)));
 }
 
 // static
