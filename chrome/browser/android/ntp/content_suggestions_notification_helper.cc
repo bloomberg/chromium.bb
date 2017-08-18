@@ -31,8 +31,10 @@ namespace ntp_snippets {
 namespace {
 
 // Whether auto opt out is enabled. Note that this does not disable collection
-// of data required for auto opt out.
-const bool kEnableAutoOptOutDefault = true;
+// of data required for auto opt out. Auto opt out is currently disabled,
+// because notification settings page is shown when kNotificationsFeature is
+// enabled.
+const bool kEnableAutoOptOutDefault = false;
 const char kEnableAutoOptOutParamName[] = "enable_auto_opt_out";
 
 bool IsAutoOptOutEnabled() {
