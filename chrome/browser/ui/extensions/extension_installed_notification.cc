@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center_style.h"
 
 namespace {
 const char* kNotifierId = "app.downloaded-notification";
@@ -51,9 +52,11 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
                                        gfx::kGoogleGreen700)),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierId),
-      base::string16() /* display_source */,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
       GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
       kNotificationId, optional_field, this));
+  notification->set_accent_color(
+      message_center::kSystemNotificationColorNormal);
   g_browser_process->notification_ui_manager()->Add(*notification, profile_);
 }
 
