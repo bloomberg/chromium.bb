@@ -4,7 +4,14 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwWebContentsObserver;
@@ -15,7 +22,11 @@ import org.chromium.ui.base.PageTransition;
 /**
  * Tests for the AwWebContentsObserver class.
  */
-public class AwWebContentsObserverTest extends AwTestBase  {
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwWebContentsObserverTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private AwWebContentsObserver mWebContentsObserver;
@@ -26,14 +37,13 @@ public class AwWebContentsObserverTest extends AwTestBase  {
     private static final String ERROR_DESCRIPTION = "description";
     private String mUnreachableWebDataUrl;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         mContentsClient = new TestAwContentsClient();
-        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
+        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mUnreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
         // AwWebContentsObserver constructor must be run on the UI thread.
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mWebContentsObserver = new AwWebContentsObserver(
@@ -43,6 +53,7 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnPageFinished() throws Throwable {
@@ -56,10 +67,10 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         mWebContentsObserver.didFinishLoad(frameId, EXAMPLE_URL, mainFrame);
         mWebContentsObserver.didStopLoading(EXAMPLE_URL);
         onPageFinishedHelper.waitForCallback(callCount);
-        assertEquals("onPageFinished should be called for main frame navigations.", callCount + 1,
-                onPageFinishedHelper.getCallCount());
-        assertEquals("onPageFinished should be called for main frame navigations.", EXAMPLE_URL,
-                onPageFinishedHelper.getUrl());
+        Assert.assertEquals("onPageFinished should be called for main frame navigations.",
+                callCount + 1, onPageFinishedHelper.getCallCount());
+        Assert.assertEquals("onPageFinished should be called for main frame navigations.",
+                EXAMPLE_URL, onPageFinishedHelper.getUrl());
 
         // In order to check that callbacks are *not* firing, first we execute code
         // that shoudn't emit callbacks, then code that emits a callback, and check that we
@@ -70,9 +81,9 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         mWebContentsObserver.didFinishLoad(frameId, SYNC_URL, mainFrame);
         mWebContentsObserver.didStopLoading(SYNC_URL);
         onPageFinishedHelper.waitForCallback(callCount);
-        assertEquals("onPageFinished should only be called for the main frame.", callCount + 1,
-                onPageFinishedHelper.getCallCount());
-        assertEquals("onPageFinished should only be called for the main frame.", SYNC_URL,
+        Assert.assertEquals("onPageFinished should only be called for the main frame.",
+                callCount + 1, onPageFinishedHelper.getCallCount());
+        Assert.assertEquals("onPageFinished should only be called for the main frame.", SYNC_URL,
                 onPageFinishedHelper.getUrl());
 
         callCount = onPageFinishedHelper.getCallCount();
@@ -80,9 +91,9 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         mWebContentsObserver.didFinishLoad(frameId, SYNC_URL, mainFrame);
         mWebContentsObserver.didStopLoading(SYNC_URL);
         onPageFinishedHelper.waitForCallback(callCount);
-        assertEquals("onPageFinished should not be called for the error url.", callCount + 1,
+        Assert.assertEquals("onPageFinished should not be called for the error url.", callCount + 1,
                 onPageFinishedHelper.getCallCount());
-        assertEquals("onPageFinished should not be called for the error url.", SYNC_URL,
+        Assert.assertEquals("onPageFinished should not be called for the error url.", SYNC_URL,
                 onPageFinishedHelper.getUrl());
 
         String baseUrl = null;
@@ -102,9 +113,9 @@ public class AwWebContentsObserverTest extends AwTestBase  {
                 isErrorPage, hasCommitted, isSameDocument, fragmentNavigation, PageTransition.TYPED,
                 errorCode, errorDescription, httpStatusCode);
         onPageFinishedHelper.waitForCallback(callCount);
-        assertEquals("onPageFinished should be called for main frame fragment navigations.",
+        Assert.assertEquals("onPageFinished should be called for main frame fragment navigations.",
                 callCount + 1, onPageFinishedHelper.getCallCount());
-        assertEquals("onPageFinished should be called for main frame fragment navigations.",
+        Assert.assertEquals("onPageFinished should be called for main frame fragment navigations.",
                 EXAMPLE_URL_WITH_FRAGMENT, onPageFinishedHelper.getUrl());
 
         callCount = onPageFinishedHelper.getCallCount();
@@ -115,12 +126,15 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         mWebContentsObserver.didStopLoading(SYNC_URL);
         onPageFinishedHelper.waitForCallback(callCount);
         onPageFinishedHelper.waitForCallback(callCount);
-        assertEquals("onPageFinished should be called only for main frame fragment navigations.",
+        Assert.assertEquals(
+                "onPageFinished should be called only for main frame fragment navigations.",
                 callCount + 1, onPageFinishedHelper.getCallCount());
-        assertEquals("onPageFinished should be called only for main frame fragment navigations.",
+        Assert.assertEquals(
+                "onPageFinished should be called only for main frame fragment navigations.",
                 SYNC_URL, onPageFinishedHelper.getUrl());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDidFinishNavigation() throws Throwable {
@@ -142,22 +156,22 @@ public class AwWebContentsObserverTest extends AwTestBase  {
                 !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
-        assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
                 doUpdateVisitedHistoryHelper.getCallCount());
-        assertEquals("doUpdateVisitedHistory should be called for any url.", nullUrl,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for any url.", nullUrl,
                 doUpdateVisitedHistoryHelper.getUrl());
-        assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+        Assert.assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
                 hasCommitted, !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
-        assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for any url.", callCount + 1,
                 doUpdateVisitedHistoryHelper.getCallCount());
-        assertEquals("doUpdateVisitedHistory should be called for any url.", EXAMPLE_URL,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for any url.", EXAMPLE_URL,
                 doUpdateVisitedHistoryHelper.getUrl());
-        assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+        Assert.assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(nullUrl, isInMainFrame, isErrorPage, hasCommitted,
@@ -167,21 +181,21 @@ public class AwWebContentsObserverTest extends AwTestBase  {
                 hasCommitted, !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
-        assertEquals("doUpdateVisitedHistory should only be called for the main frame.",
+        Assert.assertEquals("doUpdateVisitedHistory should only be called for the main frame.",
                 callCount + 1, doUpdateVisitedHistoryHelper.getCallCount());
-        assertEquals("doUpdateVisitedHistory should only be called for the main frame.", nullUrl,
-                doUpdateVisitedHistoryHelper.getUrl());
-        assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+        Assert.assertEquals("doUpdateVisitedHistory should only be called for the main frame.",
+                nullUrl, doUpdateVisitedHistoryHelper.getUrl());
+        Assert.assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
                 hasCommitted, isSameDocument, !fragmentNavigation, PageTransition.RELOAD, errorCode,
                 errorDescription, httpStatusCode);
         doUpdateVisitedHistoryHelper.waitForCallback(callCount);
-        assertEquals("doUpdateVisitedHistory should be called for reloads.", callCount + 1,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for reloads.", callCount + 1,
                 doUpdateVisitedHistoryHelper.getCallCount());
-        assertEquals("doUpdateVisitedHistory should be called for reloads.", EXAMPLE_URL,
+        Assert.assertEquals("doUpdateVisitedHistory should be called for reloads.", EXAMPLE_URL,
                 doUpdateVisitedHistoryHelper.getUrl());
-        assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
+        Assert.assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
     }
 }

@@ -4,8 +4,15 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
+
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.CallbackHelper;
@@ -25,8 +32,12 @@ import java.util.concurrent.TimeoutException;
  * used to trigger switch occupies almost the whole WebView so the simulated click event
  * can't miss it.
  */
-public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
+@RunWith(AwJUnit4ClassRunner.class)
+public class AwContentsClientGetVideoLoadingProgressViewTest
         implements View.OnAttachStateChangeListener {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
     private static final String VIDEO_TEST_URL =
             "file:///android_asset/full_screen_video_test_not_preloaded.html";
     // These values must be kept in sync with the element ids in the above file.
@@ -50,26 +61,29 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
                 TimeUnit.MILLISECONDS);
     }
 
+    @Test
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient =
-                new FullScreenVideoTestAwContentsClient(
-                        getActivity(), isHardwareAcceleratedTest()) {
+                new FullScreenVideoTestAwContentsClient(mActivityTestRule.getActivity(),
+                        mActivityTestRule.isHardwareAcceleratedTest()) {
                     @Override
                     protected View getVideoLoadingProgressView() {
-                        View view = new View(getInstrumentation().getTargetContext());
+                        View view = new View(
+                                InstrumentationRegistry.getInstrumentation().getTargetContext());
                         view.addOnAttachStateChangeListener(
                                 AwContentsClientGetVideoLoadingProgressViewTest.this);
                         return view;
                     }
                 };
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(contentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         awContents.getSettings().setFullscreenSupported(true);
-        enableJavaScriptOnUiThread(awContents);
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), VIDEO_TEST_URL);
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        mActivityTestRule.loadUrlSync(
+                awContents, contentsClient.getOnPageFinishedHelper(), VIDEO_TEST_URL);
         Thread.sleep(5 * 1000);
         DOMUtils.clickNode(awContents.getContentViewCore(), CUSTOM_FULLSCREEN_CONTROL_ID);
         Thread.sleep(1 * 1000);

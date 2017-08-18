@@ -85,7 +85,7 @@ public class CookieManagerStartupTest extends AwTestBase {
             AwCookieManager cookieManager = new AwCookieManager();
             assertNotNull(cookieManager);
 
-            CookieUtils.clearCookies(this, cookieManager);
+            CookieUtils.clearCookies(getInstrumentation(), cookieManager);
             assertFalse(cookieManager.hasCookies());
 
             cookieManager.setAcceptCookie(true);
