@@ -31,7 +31,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -82,8 +81,7 @@ public class HomeSheetUiCaptureTest {
 
         scrollToFirstItemOfType(ItemViewType.PROMO);
 
-        mScreenShooter.shoot(
-                "SignInPromo" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
+        mScreenShooter.shoot("SignInPromo" + (SuggestionsConfig.useModern() ? "_modern" : ""));
     }
 
     private void scrollToFirstItemOfType(@ItemViewType int itemViewType) {

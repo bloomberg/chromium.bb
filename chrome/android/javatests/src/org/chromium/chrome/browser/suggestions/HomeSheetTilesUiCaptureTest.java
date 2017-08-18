@@ -24,7 +24,6 @@ import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -70,8 +69,7 @@ public class HomeSheetTilesUiCaptureTest {
     @ScreenShooter.Directory("Tiles")
     public void testTiles() {
         setSheetState(BottomSheet.SHEET_STATE_FULL);
-        mScreenShooter.shoot(
-                "Tiles" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
+        mScreenShooter.shoot("Tiles" + (SuggestionsConfig.useModern() ? "_modern" : ""));
     }
 
     private void setSheetState(final int position) {
