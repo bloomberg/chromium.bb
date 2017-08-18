@@ -106,7 +106,6 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   ETypingCommand CommandTypeOfOpenCommand() const { return command_type_; }
   TextCompositionType CompositionType() const { return composition_type_; }
-  bool PreventsSpellChecking() const { return should_prevent_spell_checking_; }
   // |TypingCommand| may contain multiple |InsertTextCommand|, should return
   // |textDataForInputEvent()| of the last one.
   String TextDataForInputEvent() const final;
