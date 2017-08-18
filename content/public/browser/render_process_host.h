@@ -10,7 +10,7 @@
 
 #include <list>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -62,7 +62,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                          public IPC::Listener,
                                          public base::SupportsUserData {
  public:
-  using iterator = IDMap<RenderProcessHost*>::iterator;
+  using iterator = base::IDMap<RenderProcessHost*>::iterator;
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {

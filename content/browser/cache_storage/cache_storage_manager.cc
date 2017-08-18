@@ -12,9 +12,9 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/id_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/id_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sha1.h"

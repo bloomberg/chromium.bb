@@ -14,9 +14,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/id_map.h"
 #include "base/files/file_util.h"  // for FileAccessProvider
 #include "base/i18n/string_compare.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/safe_strerror.h"
@@ -196,7 +196,7 @@ class CertIdMap {
   typedef std::map<net::X509Certificate*, int32_t> CertMap;
 
   // Creates an ID for cert and looks up the cert for an ID.
-  IDMap<net::X509Certificate*> id_map_;
+  base::IDMap<net::X509Certificate*> id_map_;
 
   // Finds the ID for a cert.
   CertMap cert_map_;

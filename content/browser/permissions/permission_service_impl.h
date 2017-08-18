@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_PERMISSIONS_PERMISSION_SERVICE_IMPL_H_
 
 #include "base/callback.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -38,7 +38,7 @@ class CONTENT_EXPORT PermissionServiceImpl
       base::OnceCallback<void(blink::mojom::PermissionStatus)>;
 
   class PendingRequest;
-  using RequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
+  using RequestsMap = base::IDMap<std::unique_ptr<PendingRequest>>;
 
   // blink::mojom::PermissionService.
   void HasPermission(blink::mojom::PermissionDescriptorPtr permission,

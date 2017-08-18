@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "ipc/ipc_listener.h"
@@ -144,7 +144,7 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidFail(int request_id, base::File::Error error_code);
   void OnDidWrite(int request_id, int64_t bytes, bool complete);
 
-  IDMap<std::unique_ptr<CallbackDispatcher>> dispatchers_;
+  base::IDMap<std::unique_ptr<CallbackDispatcher>> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };

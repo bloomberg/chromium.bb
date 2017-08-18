@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -704,7 +704,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Holds in-flight requests, including requests due to outstanding push,
   // fetch, sync, etc. events.
-  IDMap<std::unique_ptr<PendingRequest>> pending_requests_;
+  base::IDMap<std::unique_ptr<PendingRequest>> pending_requests_;
 
   // Container for pending external requests for this service worker.
   // (key, value): (request uuid, request id).

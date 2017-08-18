@@ -190,7 +190,8 @@ void RendererWebMediaPlayerDelegate::DidPlayerSizeChange(
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 
-  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (base::IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd();
+       it.Advance())
     it.GetCurrentValue()->OnFrameHidden();
 
   ScheduleUpdateTask();
@@ -200,7 +201,8 @@ void RendererWebMediaPlayerDelegate::WasShown() {
   RecordAction(base::UserMetricsAction("Media.Shown"));
   is_frame_closed_ = false;
 
-  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (base::IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd();
+       it.Advance())
     it.GetCurrentValue()->OnFrameShown();
 
   ScheduleUpdateTask();
@@ -279,7 +281,8 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
   is_frame_closed_ = true;
 
-  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (base::IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd();
+       it.Advance())
     it.GetCurrentValue()->OnFrameClosed();
 }
 

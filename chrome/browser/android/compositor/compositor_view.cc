@@ -14,7 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"

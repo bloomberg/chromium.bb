@@ -27,7 +27,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -112,9 +112,9 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   P2PSocketClientImpl* GetClient(int socket_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  IDMap<P2PSocketClientImpl*> clients_;
+  base::IDMap<P2PSocketClientImpl*> clients_;
 
-  IDMap<P2PAsyncAddressResolver*> host_address_requests_;
+  base::IDMap<P2PAsyncAddressResolver*> host_address_requests_;
 
   bool network_notifications_started_;
   scoped_refptr<base::ObserverListThreadSafe<NetworkListObserver>>

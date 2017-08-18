@@ -10,7 +10,7 @@
 #include <map>
 #include <string>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -55,7 +55,7 @@ class CookiesTreeModelUtil {
                                              const base::string16& title);
 
  private:
-  using CookiesTreeNodeIdMap = IDMap<const CookieTreeNode*>;
+  using CookiesTreeNodeIdMap = base::IDMap<const CookieTreeNode*>;
   using CookieTreeNodeMap = std::map<const CookieTreeNode*, int32_t>;
 
   // Populate given |dict| with cookie tree node properties. |id_map| maps

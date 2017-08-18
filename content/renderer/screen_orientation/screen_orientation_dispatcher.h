@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
@@ -68,7 +68,8 @@ class CONTENT_EXPORT ScreenOrientationDispatcher
   // pointer in the sense that it will destroy it when Remove() will be called.
   // Furthermore, we only expect to have one callback at a time in this map,
   // which is what IDMap was designed for.
-  using CallbackMap = IDMap<std::unique_ptr<blink::WebLockOrientationCallback>>;
+  using CallbackMap =
+      base::IDMap<std::unique_ptr<blink::WebLockOrientationCallback>>;
   CallbackMap pending_callbacks_;
 
   ScreenOrientationAssociatedPtr screen_orientation_;

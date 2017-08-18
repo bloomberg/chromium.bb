@@ -571,7 +571,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
-  IDMap<IPC::Listener*> listeners_;
+  base::IDMap<IPC::Listener*> listeners_;
 
   // Mojo interfaces provided to the child process are registered here if they
   // need consistent delivery ordering with legacy IPC, and are process-wide in

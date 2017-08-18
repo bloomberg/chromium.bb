@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
@@ -95,7 +95,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
 
   device::mojom::WakeLock* GetWakeLock();
 
-  IDMap<std::unique_ptr<media::cast::CastTransport>> id_map_;
+  base::IDMap<std::unique_ptr<media::cast::CastTransport>> id_map_;
 
   // Clock used by Cast transport.
   base::DefaultTickClock clock_;
@@ -108,7 +108,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
 
   // This map records all active remoting senders. It uses the unique RTP
   // stream ID as the key.
-  IDMap<std::unique_ptr<CastRemotingSender>> remoting_sender_map_;
+  base::IDMap<std::unique_ptr<CastRemotingSender>> remoting_sender_map_;
 
   // This map stores all active remoting streams for each channel. It uses the
   // channel ID as the key.

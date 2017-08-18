@@ -91,7 +91,7 @@ void LayerTitleCache::UpdateFavicon(JNIEnv* env,
 void LayerTitleCache::ClearExcept(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jint except_id) {
-  IDMap<std::unique_ptr<DecorationTitle>>::iterator iter(&layer_cache_);
+  base::IDMap<std::unique_ptr<DecorationTitle>>::iterator iter(&layer_cache_);
   for (; !iter.IsAtEnd(); iter.Advance()) {
     const int id = iter.GetCurrentKey();
     if (id != except_id)
@@ -113,7 +113,7 @@ void LayerTitleCache::SetResourceManager(
     ui::ResourceManager* resource_manager) {
   resource_manager_ = resource_manager;
 
-  IDMap<std::unique_ptr<DecorationTitle>>::iterator iter(&layer_cache_);
+  base::IDMap<std::unique_ptr<DecorationTitle>>::iterator iter(&layer_cache_);
   for (; !iter.IsAtEnd(); iter.Advance()) {
     iter.GetCurrentValue()->SetResourceManager(resource_manager_);
   }

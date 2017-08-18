@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_sync/background_sync_manager.h"

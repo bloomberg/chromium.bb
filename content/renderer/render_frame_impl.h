@@ -16,9 +16,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/id_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -1305,7 +1305,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // plugins) are normally only on "regular" pages and the regular pages will
   // always respond properly to the request, so we don't have to worry so
   // much about leaks.
-  IDMap<ContextMenuClient*> pending_context_menus_;
+  base::IDMap<ContextMenuClient*> pending_context_menus_;
 
   // The text selection the last time DidChangeSelection got called. May contain
   // additional characters before and after the selected text, for IMEs. The

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"

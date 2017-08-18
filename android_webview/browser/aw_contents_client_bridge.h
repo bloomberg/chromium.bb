@@ -12,7 +12,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/supports_user_data.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -142,11 +142,13 @@ class AwContentsClientBridge {
   typedef const base::Callback<
       void(AwUrlCheckerDelegateImpl::SafeBrowsingAction, bool)>
       SafeBrowsingActionCallback;
-  IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
-  IDMap<std::unique_ptr<SafeBrowsingActionCallback>> safe_browsing_callbacks_;
-  IDMap<std::unique_ptr<content::JavaScriptDialogManager::DialogClosedCallback>>
+  base::IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
+  base::IDMap<std::unique_ptr<SafeBrowsingActionCallback>>
+      safe_browsing_callbacks_;
+  base::IDMap<
+      std::unique_ptr<content::JavaScriptDialogManager::DialogClosedCallback>>
       pending_js_dialog_callbacks_;
-  IDMap<std::unique_ptr<content::ClientCertificateDelegate>>
+  base::IDMap<std::unique_ptr<content::ClientCertificateDelegate>>
       pending_client_cert_request_delegates_;
 };
 

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "storage/common/quota/quota_types.h"
@@ -52,7 +52,7 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
   storage::QuotaManager* quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
 
-  IDMap<std::unique_ptr<RequestDispatcher>> outstanding_requests_;
+  base::IDMap<std::unique_ptr<RequestDispatcher>> outstanding_requests_;
 
   base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
 

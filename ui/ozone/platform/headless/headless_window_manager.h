@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#include "base/containers/id_map.h"
 #include "base/files/file_path.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
@@ -43,7 +43,7 @@ class HeadlessWindowManager {
  private:
   base::FilePath location_;
 
-  IDMap<HeadlessWindow*> windows_;
+  base::IDMap<HeadlessWindow*> windows_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWindowManager);
