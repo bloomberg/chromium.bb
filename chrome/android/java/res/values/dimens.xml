@@ -293,6 +293,8 @@
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>
     <dimen name="tile_grid_layout_padding_top">8dp</dimen>
+    <dimen name="tile_grid_layout_padding_start">12dp</dimen>
+    <dimen name="tile_grid_layout_padding_end">12dp</dimen>
     <dimen name="tile_grid_layout_no_logo_padding_top">20dp</dimen>
     <dimen name="tile_grid_layout_bleed">8dp</dimen>
     <dimen name="tile_grid_layout_vertical_spacing">3dp</dimen>
