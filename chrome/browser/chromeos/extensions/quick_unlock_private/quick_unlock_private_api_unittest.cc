@@ -46,6 +46,8 @@ class FakeEasyUnlockService : public EasyUnlockServiceRegular {
   ~FakeEasyUnlockService() override {}
 
   // EasyUnlockServiceRegular:
+  void InitializeInternal() override {}
+  void ShutdownInternal() override {}
   void HandleUserReauth(const chromeos::UserContext& user_context) override {
     ++reauth_count_;
   }

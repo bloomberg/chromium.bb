@@ -115,6 +115,10 @@ ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
 
 ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
   LogBuffer::GetInstance()->RemoveObserver(this);
+  cryptauth::CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (device_manager)
+    device_manager->RemoveObserver(this);
 }
 
 void ProximityAuthWebUIHandler::RegisterMessages() {
