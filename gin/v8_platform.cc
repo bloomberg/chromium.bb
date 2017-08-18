@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/location.h"
@@ -194,6 +195,10 @@ V8Platform* V8Platform::Get() { return g_v8_platform.Pointer(); }
 V8Platform::V8Platform() : tracing_controller_(new TracingControllerImpl) {}
 
 V8Platform::~V8Platform() {}
+
+void V8Platform::OnCriticalMemoryPressure() {
+  base::ReleaseReservation();
+}
 
 size_t V8Platform::NumberOfAvailableBackgroundThreads() {
   return std::max(1, base::TaskScheduler::GetInstance()
