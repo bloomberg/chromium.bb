@@ -28,7 +28,6 @@ static INLINE TX_SIZE get_txsize_context(TX_SIZE tx_size) {
   return txsize_sqr_up_map[tx_size];
 }
 
-#define BASE_CONTEXT_POSITION_NUM 12
 static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
   { -2, 0 }, { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -2 }, { 0, -1 }, { 0, 1 },
@@ -129,9 +128,8 @@ static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
 }
 
 static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
-                                              int mag, int level) {
+                                              int sig_mag) {
   const int ctx = (count + 1) >> 1;
-  const int sig_mag = mag > level;
   int ctx_idx = -1;
   if (row == 0 && col == 0) {
     ctx_idx = (ctx << 1) + sig_mag;
@@ -160,7 +158,7 @@ static INLINE int get_base_ctx(const tran_low_t *tcoeffs,
   int count =
       get_level_count_mag(&mag, tcoeffs, bwl, height, row, col, level_minus_1,
                           base_ref_offset, BASE_CONTEXT_POSITION_NUM);
-  int ctx_idx = get_base_ctx_from_count_mag(row, col, count, mag, level);
+  int ctx_idx = get_base_ctx_from_count_mag(row, col, count, mag > level);
   return ctx_idx;
 }
 
@@ -429,4 +427,6 @@ static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
 
 void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
                          unsigned int update_factor);
+
+void av1_init_lv_map(AV1_COMMON *cm);
 #endif  // AV1_COMMON_TXB_COMMON_H_

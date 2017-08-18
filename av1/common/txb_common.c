@@ -10,6 +10,9 @@
  */
 #include "aom/aom_integer.h"
 #include "av1/common/onyxc_int.h"
+#if CONFIG_LV_MAP
+#include "av1/common/txb_common.h"
+#endif
 
 const int16_t av1_coeff_band_4x4[16] = { 0, 1, 2,  3,  4,  5,  6,  7,
                                          8, 9, 10, 11, 12, 13, 14, 15 };
@@ -146,5 +149,19 @@ void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
         fc->coeff_lps[tx_size][plane][ctx] = merge_probs(
             pre_fc->coeff_lps[tx_size][plane][ctx],
             counts->coeff_lps[tx_size][plane][ctx], count_sat, update_factor);
+  }
+}
+
+void av1_init_lv_map(AV1_COMMON *cm) {
+  LV_MAP_CTX_TABLE *coeff_ctx_table = &cm->coeff_ctx_table;
+  for (int row = 0; row < 2; ++row) {
+    for (int col = 0; col < 2; ++col) {
+      for (int sig_mag = 0; sig_mag < 2; ++sig_mag) {
+        for (int count = 0; count < BASE_CONTEXT_POSITION_NUM + 1; ++count) {
+          coeff_ctx_table->base_ctx_table[row][col][sig_mag][count] =
+              get_base_ctx_from_count_mag(row, col, count, sig_mag);
+        }
+      }
+    }
   }
 }

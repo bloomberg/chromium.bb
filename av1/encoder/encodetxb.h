@@ -39,6 +39,7 @@ typedef struct TxbInfo {
   const SCAN_ORDER *scan_order;
   TXB_CTX *txb_ctx;
   int64_t rdmult;
+  const LV_MAP_CTX_TABLE *coeff_ctx_table;
 } TxbInfo;
 
 typedef struct TxbCache {

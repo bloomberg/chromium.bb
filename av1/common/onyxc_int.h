@@ -170,6 +170,15 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
+#if CONFIG_LV_MAP
+typedef struct {
+  int base_ctx_table[2 /*row*/][2 /*col*/][2 /*sig_map*/]
+                    [BASE_CONTEXT_POSITION_NUM + 1];
+} LV_MAP_CTX_TABLE;
+typedef int BASE_CTX_TABLE[2 /*col*/][2 /*sig_map*/]
+                          [BASE_CONTEXT_POSITION_NUM + 1];
+#endif
+
 typedef struct AV1Common {
   struct aom_internal_error_info error;
   aom_color_space_t color_space;
@@ -459,6 +468,9 @@ typedef struct AV1Common {
 #endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   NCOBMC_KERNELS ncobmc_kernels[ADAPT_OVERLAP_BLOCKS][ALL_NCOBMC_MODES];
+#endif
+#if CONFIG_LV_MAP
+  LV_MAP_CTX_TABLE coeff_ctx_table;
 #endif
 } AV1_COMMON;
 

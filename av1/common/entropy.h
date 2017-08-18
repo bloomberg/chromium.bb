@@ -74,6 +74,8 @@ extern "C" {
 
 #define COEFF_CONTEXT_BITS 6
 #define COEFF_CONTEXT_MASK ((1 << COEFF_CONTEXT_BITS) - 1)
+
+#define BASE_CONTEXT_POSITION_NUM 12
 #endif
 
 DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);

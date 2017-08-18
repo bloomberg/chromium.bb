@@ -448,6 +448,8 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
   const int bwl = txb_info->bwl;
   const int height = txb_info->height;
   tran_low_t *qcoeff = txb_info->qcoeff;
+  const BASE_CTX_TABLE *base_ctx_table =
+      txb_info->coeff_ctx_table->base_ctx_table;
   for (int c = 0; c < txb_info->eob; ++c) {
     const int coeff_idx = scan[c];  // raster order
     const int row = coeff_idx >> bwl;
@@ -469,7 +471,7 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
       txb_cache->base_count_arr[i][coeff_idx] = count[i];
       const int level = i + 1;
       txb_cache->base_ctx_arr[i][coeff_idx] =
-          get_base_ctx_from_count_mag(row, col, count[i], base_mag[0], level);
+          base_ctx_table[row != 0][col != 0][base_mag[0] > level][count[i]];
     }
 
     // gen_br_count_mag_arr
@@ -609,6 +611,8 @@ static int try_neighbor_level_down_base(int coeff_idx, int nb_coeff_idx,
                                         const TxbInfo *txb_info) {
   const tran_low_t qc = txb_info->qcoeff[coeff_idx];
   const tran_low_t abs_qc = abs(qc);
+  const BASE_CTX_TABLE *base_ctx_table =
+      txb_info->coeff_ctx_table->base_ctx_table;
 
   int cost_diff = 0;
   for (int base_idx = 0; base_idx < NUM_BASE_LEVELS; ++base_idx) {
@@ -633,7 +637,7 @@ static int try_neighbor_level_down_base(int coeff_idx, int nb_coeff_idx,
           abs_qc, ctx, txb_costs->base_cost[base_idx][ctx], base_idx);
 
       const int new_ctx =
-          get_base_ctx_from_count_mag(row, col, new_count, new_mag, level);
+          base_ctx_table[row != 0][col != 0][new_mag > level][new_count];
       const int new_cost = get_base_cost(
           abs_qc, new_ctx, txb_costs->base_cost[base_idx][new_ctx], base_idx);
       cost_diff += -org_cost + new_cost;
@@ -977,6 +981,8 @@ void update_level_down(int coeff_idx, TxbCache *txb_cache, TxbInfo *txb_info) {
     }
   }
 
+  const BASE_CTX_TABLE *base_ctx_table =
+      txb_info->coeff_ctx_table->base_ctx_table;
   for (int i = 0; i < BASE_CONTEXT_POSITION_NUM; ++i) {
     const int nb_row = row - base_ref_offset[i][0];
     const int nb_col = col - base_ref_offset[i][1];
@@ -1003,7 +1009,7 @@ void update_level_down(int coeff_idx, TxbCache *txb_cache, TxbInfo *txb_info) {
         }
         const int count = txb_cache->base_count_arr[base_idx][nb_coeff_idx];
         txb_cache->base_ctx_arr[base_idx][nb_coeff_idx] =
-            get_base_ctx_from_count_mag(nb_row, nb_col, count, mag, level);
+            base_ctx_table[nb_row != 0][nb_col != 0][mag > level][count];
         // int ref_ctx = get_base_ctx(txb_info->qcoeff, nb_coeff_idx,
         // txb_info->bwl, level);
         // if (ref_ctx != txb_cache->base_ctx_arr[base_idx][nb_coeff_idx]) {
@@ -1410,9 +1416,10 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const int64_t rdmult =
       (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
 
-  TxbInfo txb_info = { qcoeff,  dqcoeff, tcoeff,     dequant, shift,
-                       tx_size, txs_ctx, bwl,        stride,  height,
-                       eob,     seg_eob, scan_order, txb_ctx, rdmult };
+  TxbInfo txb_info = { qcoeff,     dqcoeff, tcoeff,  dequant,
+                       shift,      tx_size, txs_ctx, bwl,
+                       stride,     height,  eob,     seg_eob,
+                       scan_order, txb_ctx, rdmult,  &cm->coeff_ctx_table };
 
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);

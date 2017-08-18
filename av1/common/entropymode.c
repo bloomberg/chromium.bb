@@ -15,6 +15,9 @@
 #include "av1/common/scan.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
+#if CONFIG_LV_MAP
+#include "av1/common/txb_common.h"
+#endif
 
 #if CONFIG_LV_MAP
 const aom_prob default_txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS] = {
@@ -5130,6 +5133,9 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
   av1_init_mv_probs(cm);
+#if CONFIG_LV_MAP
+  av1_init_lv_map(cm);
+#endif
 #if CONFIG_PVQ
   av1_default_pvq_probs(cm);
 #endif  // CONFIG_PVQ
