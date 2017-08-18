@@ -29,6 +29,7 @@
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/win/window_impl.h"
 #include "ui/views/views_export.h"
+#include "ui/views/win/pen_event_processor.h"
 
 namespace gfx {
 class ImageSkia;
@@ -683,6 +684,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Generates touch-ids for touch-events.
   ui::SequentialIDGenerator id_generator_;
+
+  PenEventProcessor pen_processor_;
 
   // Set to true if we are in the context of a sizing operation.
   bool in_size_loop_;

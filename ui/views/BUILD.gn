@@ -495,6 +495,7 @@ component("views") {
       "win/hwnd_message_handler.h",
       "win/hwnd_message_handler_delegate.h",
       "win/hwnd_util.h",
+      "win/pen_event_processor.h",
       "win/scoped_fullscreen_visibility.h",
       "win/windows_session_change_observer.h",
     ]
@@ -503,6 +504,7 @@ component("views") {
       "win/fullscreen_handler.cc",
       "win/hwnd_message_handler.cc",
       "win/hwnd_util_aurawin.cc",
+      "win/pen_event_processor.cc",
       "win/scoped_fullscreen_visibility.cc",
       "win/windows_session_change_observer.cc",
     ]
@@ -1001,6 +1003,7 @@ source_set("views_unittests_sources") {
       "oleacc.lib",
       "comctl32.lib",
     ]
+    sources += [ "win/pen_event_processor_unittest.cc" ]
   }
 
   if (has_native_accessibility) {
