@@ -28,9 +28,6 @@ namespace proxy {
 
 namespace {
 
-const int32_t kCommandBufferSize = 1024 * 1024;
-const int32_t kTransferBufferSize = 1024 * 1024;
-
 #if !defined(OS_NACL)
 base::SharedMemoryHandle TransportSHMHandle(
     Dispatcher* dispatcher,
@@ -68,8 +65,7 @@ bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2,
       host_resource(), dispatcher, capabilities, shared_state,
       command_buffer_id));
 
-  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize,
-                         share_gles2);
+  return CreateGLES2Impl(share_gles2);
 }
 
 PP_Bool Graphics3D::SetGetBuffer(int32_t /* transfer_buffer_id */) {

@@ -431,6 +431,7 @@ class GLES2ImplementationTest : public testing::Test {
                     bool timer_queries,
                     int major_version,
                     int minor_version) {
+      SharedMemoryLimits limits = SharedMemoryLimitsForTesting();
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
 
       transfer_buffer_.reset(
@@ -441,7 +442,7 @@ class GLES2ImplementationTest : public testing::Test {
                                  transfer_buffer_initialize_fail));
 
       helper_.reset(new GLES2CmdHelper(command_buffer()));
-      helper_->Initialize(kCommandBufferSizeBytes);
+      helper_->Initialize(limits.command_buffer_size);
 
       gpu_control_.reset(new StrictMock<MockClientGpuControl>());
       Capabilities capabilities;
@@ -497,8 +498,7 @@ class GLES2ImplementationTest : public testing::Test {
       // The client should be set to something non-null.
       EXPECT_CALL(*gpu_control_, SetGpuControlClient(gl_.get())).Times(1);
 
-      if (!gl_->Initialize(kTransferBufferSize, kTransferBufferSize,
-                           kTransferBufferSize, SharedMemoryLimits::kNoLimit))
+      if (!gl_->Initialize(limits))
         return false;
 
       helper_->CommandBufferHelper::Finish();
@@ -690,6 +690,16 @@ class GLES2ImplementationTest : public testing::Test {
 
   bool AllowExtraTransferBufferSize() {
     return gl_->max_extra_transfer_buffer_size_ > 0;
+  }
+
+  static SharedMemoryLimits SharedMemoryLimitsForTesting() {
+    SharedMemoryLimits limits;
+    limits.command_buffer_size = kCommandBufferSizeBytes;
+    limits.start_transfer_buffer_size = kTransferBufferSize;
+    limits.min_transfer_buffer_size = kTransferBufferSize;
+    limits.max_transfer_buffer_size = kTransferBufferSize;
+    limits.mapped_memory_reclaim_limit = SharedMemoryLimits::kNoLimit;
+    return limits;
   }
 
   TestContext test_contexts_[kNumTestContexts];

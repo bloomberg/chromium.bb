@@ -77,9 +77,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
                                 const gfx::Size& size) = 0;
 
   bool HasPendingSwap() const;
-  bool CreateGLES2Impl(int32_t command_buffer_size,
-                       int32_t transfer_buffer_size,
-                       gpu::gles2::GLES2Implementation* share_gles2);
+  bool CreateGLES2Impl(gpu::gles2::GLES2Implementation* share_gles2);
   void DestroyGLES2Impl();
 
  private:

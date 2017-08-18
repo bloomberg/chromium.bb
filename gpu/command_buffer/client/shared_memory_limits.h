@@ -7,18 +7,43 @@
 
 #include <stddef.h>
 
+#include "base/sys_info.h"
+#include "build/build_config.h"
+
 namespace gpu {
 
 struct SharedMemoryLimits {
-  SharedMemoryLimits() = default;
+  SharedMemoryLimits() {
+// We can't call AmountOfPhysicalMemory under NACL, so leave the default.
+#if !defined(OS_NACL)
+    // Max mapped memory to use for a texture upload depends on device ram.
+    // Do not use more than 5% of extra shared memory, and do not use any extra
+    // for memory contrained devices (<=1GB).
+    max_mapped_memory_for_texture_upload =
+        base::SysInfo::AmountOfPhysicalMemory() > 1024 * 1024 * 1024
+            ? base::saturated_cast<uint32_t>(
+                  base::SysInfo::AmountOfPhysicalMemory() / 20)
+            : 0;
+
+    // On memory constrained devices, switch to lower limits.
+    if (base::SysInfo::AmountOfPhysicalMemoryMB() < 512) {
+      command_buffer_size = 512 * 1024;
+      start_transfer_buffer_size = 256 * 1024;
+      min_transfer_buffer_size = 128 * 1024;
+      mapped_memory_chunk_size = 256 * 1024;
+    }
+#endif
+  }
 
   int32_t command_buffer_size = 1024 * 1024;
-  uint32_t start_transfer_buffer_size = 1 * 1024 * 1024;
-  uint32_t min_transfer_buffer_size = 1 * 256 * 1024;
+  uint32_t start_transfer_buffer_size = 1024 * 1024;
+  uint32_t min_transfer_buffer_size = 256 * 1024;
   uint32_t max_transfer_buffer_size = 16 * 1024 * 1024;
 
   static constexpr uint32_t kNoLimit = 0;
   uint32_t mapped_memory_reclaim_limit = kNoLimit;
+  uint32_t mapped_memory_chunk_size = 2 * 1024 * 1024;
+  uint32_t max_mapped_memory_for_texture_upload = 0;
 
   // These are limits for contexts only used for creating textures, mailboxing
   // them and dealing with synchronization.

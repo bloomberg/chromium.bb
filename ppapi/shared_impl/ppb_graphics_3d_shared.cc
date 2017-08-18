@@ -117,21 +117,18 @@ bool PPB_Graphics3D_Shared::HasPendingSwap() const {
 }
 
 bool PPB_Graphics3D_Shared::CreateGLES2Impl(
-    int32_t command_buffer_size,
-    int32_t transfer_buffer_size,
     gpu::gles2::GLES2Implementation* share_gles2) {
+  gpu::SharedMemoryLimits limits;
   gpu::CommandBuffer* command_buffer = GetCommandBuffer();
   DCHECK(command_buffer);
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer));
-  if (!gles2_helper_->Initialize(command_buffer_size))
+  if (!gles2_helper_->Initialize(limits.command_buffer_size))
     return false;
 
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
-  const int32_t kMinTransferBufferSize = 256 * 1024;
-  const int32_t kMaxTransferBufferSize = 16 * 1024 * 1024;
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   const bool bind_creates_resources = true;
@@ -148,12 +145,8 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
       support_client_side_arrays,
       GetGpuControl()));
 
-  if (!gles2_impl_->Initialize(
-          transfer_buffer_size, kMinTransferBufferSize,
-          std::max(kMaxTransferBufferSize, transfer_buffer_size),
-          gpu::SharedMemoryLimits::kNoLimit)) {
+  if (!gles2_impl_->Initialize(limits))
     return false;
-  }
 
   gles2_impl_->TraceBeginCHROMIUM("gpu_toplevel", "PPAPIContext");
 
