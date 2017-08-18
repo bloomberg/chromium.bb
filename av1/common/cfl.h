@@ -22,8 +22,10 @@ static INLINE int get_scaled_luma_q0(int alpha_q3, int y_pix, int avg_q3) {
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int plane);
 
-void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
-               int col, TX_SIZE tx_size, BLOCK_SIZE bsize);
+void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size);
+
+void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
+                  BLOCK_SIZE bsize);
 
 void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size);
 

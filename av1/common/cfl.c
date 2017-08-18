@@ -276,57 +276,10 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   }
 }
 
-void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
-               int col, TX_SIZE tx_size, BLOCK_SIZE bsize) {
-  const int tx_width = tx_size_wide[tx_size];
-  const int tx_height = tx_size_high[tx_size];
+static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
+                             int input_stride, int row, int col, int width,
+                             int height) {
   const int tx_off_log2 = tx_size_wide_log2[0];
-
-#if CONFIG_CHROMA_SUB8X8
-  if (bsize < BLOCK_8X8) {
-    // Transform cannot be smaller than
-    assert(tx_width >= 4);
-    assert(tx_height >= 4);
-
-    const int bw = block_size_wide[bsize];
-    const int bh = block_size_high[bsize];
-
-    // For chroma_sub8x8, the CfL prediction for prediction blocks smaller than
-    // 8X8 uses non chroma reference reconstructed luma pixels. To do so, we
-    // combine the 4X4 non chroma reference into the CfL pixel buffers based on
-    // their row and column index.
-
-    // The following code is adapted from the is_chroma_reference() function.
-    if ((cfl->mi_row &
-         0x01)        // Increment the row index for odd indexed 4X4 blocks
-        && (bh == 4)  // But not for 4X8 blocks
-        && cfl->subsampling_y) {  // And only when chroma is subsampled
-      assert(row == 0);
-      row++;
-    }
-
-    if ((cfl->mi_col &
-         0x01)        // Increment the col index for odd indexed 4X4 blocks
-        && (bw == 4)  // But not for 8X4 blocks
-        && cfl->subsampling_x) {  // And only when chroma is subsampled
-      assert(col == 0);
-      col++;
-    }
-#if CONFIG_DEBUG
-    for (int unit_r = 0; unit_r < tx_size_high_unit[tx_size]; unit_r++) {
-      assert(row + unit_r < CFL_SUB8X8_VAL_MI_SIZE);
-      int row_off = (row + unit_r) * CFL_SUB8X8_VAL_MI_SIZE;
-      for (int unit_c = 0; unit_c < tx_size_wide_unit[tx_size]; unit_c++) {
-        assert(col + unit_c < CFL_SUB8X8_VAL_MI_SIZE);
-        assert(cfl->sub8x8_val[row_off + col + unit_c] == 0);
-        cfl->sub8x8_val[row_off + col + unit_c] = 1;
-      }
-    }
-#endif  // CONFIG_DEBUG
-  }
-#else
-  (void)bsize;
-#endif  // CONFIG_CHROMA_SUB8X8
 
   // Invalidate current parameters
   cfl->are_parameters_computed = 0;
@@ -335,28 +288,103 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
   // can manage chroma overrun (e.g. when the chroma surfaces goes beyond the
   // frame boundary)
   if (col == 0 && row == 0) {
-    cfl->y_width = tx_width;
-    cfl->y_height = tx_height;
+    cfl->y_width = width;
+    cfl->y_height = height;
   } else {
-    cfl->y_width = OD_MAXI((col << tx_off_log2) + tx_width, cfl->y_width);
-    cfl->y_height = OD_MAXI((row << tx_off_log2) + tx_height, cfl->y_height);
+    cfl->y_width = OD_MAXI((col << tx_off_log2) + width, cfl->y_width);
+    cfl->y_height = OD_MAXI((row << tx_off_log2) + height, cfl->y_height);
   }
 
   // Check that we will remain inside the pixel buffer.
-  assert((row << tx_off_log2) + tx_height <= MAX_SB_SIZE);
-  assert((col << tx_off_log2) + tx_width <= MAX_SB_SIZE);
+  assert((row << tx_off_log2) + height <= MAX_SB_SIZE);
+  assert((col << tx_off_log2) + width <= MAX_SB_SIZE);
 
   // Store the input into the CfL pixel buffer
   uint8_t *y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
 
   // TODO(ltrudeau) Speedup possible by moving the downsampling to cfl_store
-  for (int j = 0; j < tx_height; j++) {
-    for (int i = 0; i < tx_width; i++) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
       y_pix[i] = input[i];
     }
     y_pix += MAX_SB_SIZE;
     input += input_stride;
   }
+}
+#if CONFIG_CHROMA_SUB8X8
+// Adjust the row and column of blocks smaller than 8X8, as chroma-referenced
+// and non-chroma-referenced blocks are stored together in the CfL buffer.
+static INLINE void sub8x8_adjust_offset(const CFL_CTX *cfl, int *row_out,
+                                        int *col_out) {
+  // Increment row index for bottom: 8x4, 16x4 or both bottom 4x4s.
+  if ((cfl->mi_row & 0x01) && cfl->subsampling_y) {
+    assert(*row_out == 0);
+    (*row_out)++;
+  }
+
+  // Increment col index for right: 4x8, 4x16 or both right 4x4s.
+  if ((cfl->mi_col & 0x01) && cfl->subsampling_x) {
+    assert(*col_out == 0);
+    (*col_out)++;
+  }
+}
+#if CONFIG_DEBUG
+static INLINE void sub8x8_set_val(CFL_CTX *cfl, int row, int col, int val_high,
+                                  int val_wide) {
+  for (int val_r = 0; val_r < val_high; val_r++) {
+    assert(row + val_r < CFL_SUB8X8_VAL_MI_SIZE);
+    int row_off = (row + val_r) * CFL_SUB8X8_VAL_MI_SIZE;
+    for (int val_c = 0; val_c < val_wide; val_c++) {
+      assert(col + val_c < CFL_SUB8X8_VAL_MI_SIZE);
+      assert(cfl->sub8x8_val[row_off + col + val_c] == 0);
+      cfl->sub8x8_val[row_off + col + val_c]++;
+    }
+  }
+}
+#endif  // CONFIG_DEBUG
+#endif  // CONFIG_CHROMA_SUB8X8
+
+void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
+                  BLOCK_SIZE bsize) {
+  CFL_CTX *const cfl = xd->cfl;
+  struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
+  uint8_t *dst =
+      &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
+  (void)bsize;
+#if CONFIG_CHROMA_SUB8X8
+
+  if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
+    // Only dimensions of size 4 can have an odd offset.
+    assert(!((col & 1) && tx_size_wide[tx_size] != 4));
+    assert(!((row & 1) && tx_size_high[tx_size] != 4));
+    sub8x8_adjust_offset(cfl, &row, &col);
+#if CONFIG_DEBUG
+    sub8x8_set_val(cfl, row, col, tx_size_high_unit[tx_size],
+                   tx_size_wide_unit[tx_size]);
+#endif  // CONFIG_DEBUG
+  }
+#endif
+  cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size_wide[tx_size],
+            tx_size_high[tx_size]);
+}
+
+void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
+  CFL_CTX *const cfl = xd->cfl;
+  struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
+  int row = 0;
+  int col = 0;
+#if CONFIG_CHROMA_SUB8X8
+  bsize = AOMMAX(BLOCK_4X4, bsize);
+  if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
+    sub8x8_adjust_offset(cfl, &row, &col);
+#if CONFIG_DEBUG
+    sub8x8_set_val(cfl, row, col, mi_size_high[bsize], mi_size_wide[bsize]);
+#endif  // CONFIG_DEBUG
+  }
+#endif  // CONFIG_CHROMA_SUB8X8
+  const int width = max_intra_block_width(xd, bsize, AOM_PLANE_Y, tx_size);
+  const int height = max_intra_block_height(xd, bsize, AOM_PLANE_Y, tx_size);
+  cfl_store(cfl, pd->dst.buf, pd->dst.stride, row, col, width, height);
 }
 
 void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
@@ -393,7 +421,7 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
     assert(cfl->y_width <= cfl->uv_width << cfl->subsampling_x);
     assert(cfl->y_height <= cfl->uv_height << cfl->subsampling_y);
   }
-#endif
+#endif  // CONFIG_DEBUG
 
   // Compute block-level DC_PRED for both chromatic planes.
   // DC_PRED replaces beta in the linear model.

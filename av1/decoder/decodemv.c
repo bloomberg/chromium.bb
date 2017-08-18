@@ -1214,9 +1214,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, &mbmi->cfl_alpha_signs);
-      // TODO(ltrudeau) Remove key_frame check (used to test CfL only in Intra
-      // frame).
-      xd->cfl->store_y = cm->frame_type == KEY_FRAME;
+      xd->cfl->store_y = 1;
     } else {
       xd->cfl->store_y = 0;
     }
@@ -1228,9 +1226,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     mbmi->uv_mode = UV_DC_PRED;
 #if CONFIG_CFL
     xd->cfl->is_chroma_reference = 0;
-    // TODO(ltrudeau) Remove key_frame check (used to test CfL only in Intra
-    // frame).
-    xd->cfl->store_y = cm->frame_type == KEY_FRAME;
+    xd->cfl->store_y = 1;
 #endif
   }
 #endif
@@ -1811,15 +1807,20 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx =
           read_cfl_alphas(xd->tile_ctx, r, &mbmi->cfl_alpha_signs);
-      // TODO(ltrudeau) Remove key_frame check (used to test CfL only in Intra
-      // frame).
-      xd->cfl->store_y = cm->frame_type == KEY_FRAME;
+      xd->cfl->store_y = 1;
     } else {
       xd->cfl->store_y = 0;
     }
 #endif  // CONFIG_CFL
 
 #if CONFIG_CB4X4
+  } else {
+    // Avoid decoding angle_info if there is is no chroma prediction
+    mbmi->uv_mode = UV_DC_PRED;
+#if CONFIG_CFL
+    xd->cfl->is_chroma_reference = 0;
+    xd->cfl->store_y = 1;
+#endif
   }
 #endif
 
@@ -2275,6 +2276,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
 
+  mbmi->uv_mode = UV_DC_PRED;
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
 

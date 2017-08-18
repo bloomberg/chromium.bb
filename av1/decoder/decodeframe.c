@@ -519,20 +519,9 @@ static void predict_and_reconstruct_intra_block(
   }
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
-    struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CHROMA_SUB8X8
-    const BLOCK_SIZE plane_bsize =
-        AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
-#else
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
-    uint8_t *dst =
-        &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-    // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
-    // intra predicted.
-    cfl_store(xd->cfl, dst, pd->dst.stride, row, col, tx_size, plane_bsize);
+    cfl_store_tx(xd, row, col, tx_size, mbmi->sb_type);
   }
-#endif  // CONFIG_CFL
+#endif  // CONFIG_CFL && CONFIG_COEFF_INTERLEAVE
 }
 
 #if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
@@ -1769,6 +1758,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+  CFL_CTX *const cfl = xd->cfl;
+  cfl->is_chroma_reference = is_chroma_reference(
+      mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
+#endif  // CONFIG_CFL && CONFIG_CHROMA_SUB8X8
 
 #if CONFIG_DELTA_Q
   if (cm->delta_q_present_flag) {
@@ -1966,11 +1960,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         }
       }
     }
-#if CONFIG_CFL && CONFIG_CB4X4 && CONFIG_DEBUG
-    if (xd->cfl->is_chroma_reference) {
-      cfl_clear_sub8x8_val(xd->cfl);
-    }
-#endif  // CONFIG_CFL && CONFIG_CB4X4 && CONFIG_DEBUG
   } else {
     int ref;
 
@@ -2103,6 +2092,18 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
+#if CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+  if (mbmi->uv_mode != UV_CFL_PRED) {
+#if CONFIG_DEBUG
+    if (cfl->is_chroma_reference) {
+      cfl_clear_sub8x8_val(cfl);
+    }
+#endif
+    if (!cfl->is_chroma_reference && is_inter_block(mbmi)) {
+      cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
+    }
+  }
+#endif  // CONFIG_CFL && CONFIG_CHROMA_SUB8X8
 #endif  // CONFIG_COEF_INTERLEAVE
 
   int reader_corrupted_flag = aom_reader_has_error(r);

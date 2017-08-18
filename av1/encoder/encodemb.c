@@ -741,27 +741,29 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   if (p->eobs[block]) *(args->skip) = 0;
 
-  if (p->eobs[block] == 0) return;
+  if (p->eobs[block] != 0)
 #else
   (void)ctx;
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
 
-  if (x->pvq_skip[plane]) return;
+  if (!x->pvq_skip[plane])
 #endif
+  {
 #if CONFIG_LGT
-  PREDICTION_MODE mode = xd->mi[0]->mbmi.mode;
+    PREDICTION_MODE mode = xd->mi[0]->mbmi.mode;
 #endif  // CONFIG_LGT
-  TX_TYPE tx_type =
-      av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
-  av1_inverse_transform_block(xd, dqcoeff,
+    TX_TYPE tx_type =
+        av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
+    av1_inverse_transform_block(xd, dqcoeff,
 #if CONFIG_LGT
-                              mode,
+                                mode,
 #endif  // CONFIG_LGT
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              mrc_mask,
+                                mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              tx_type, tx_size, dst, pd->dst.stride,
-                              p->eobs[block]);
+                                tx_type, tx_size, dst, pd->dst.stride,
+                                p->eobs[block]);
+  }
 }
 
 #if CONFIG_VAR_TX
@@ -1113,9 +1115,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
-    // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
-    // intra predicted.
-    cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size, plane_bsize);
+    cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
 #endif  // CONFIG_CFL
 }
