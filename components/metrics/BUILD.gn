@@ -130,6 +130,10 @@ static_library("metrics") {
     sources -= [ "machine_id_provider_stub.cc" ]
     deps += [ "//components/browser_watcher:stability_client" ]
   }
+
+  if (is_fuchsia) {
+    sources += [ "drive_metrics_provider_fuchsia.cc" ]
+  }
 }
 
 # The component metrics provider is a separate target because it depends upon
