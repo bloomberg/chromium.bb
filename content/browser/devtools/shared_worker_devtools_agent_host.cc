@@ -50,8 +50,9 @@ void SharedWorkerDevToolsAgentHost::Reload() {
 }
 
 bool SharedWorkerDevToolsAgentHost::Close() {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&TerminateSharedWorkerOnIO, worker_id()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&TerminateSharedWorkerOnIO, worker_id()));
   return true;
 }
 

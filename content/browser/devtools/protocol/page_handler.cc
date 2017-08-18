@@ -684,8 +684,9 @@ void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
     if (capture_retry_count_) {
       --capture_retry_count_;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&PageHandler::InnerSwapCompositorFrame,
-                                weak_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&PageHandler::InnerSwapCompositorFrame,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kFrameRetryDelayMs));
     }
     --frames_in_flight_;

@@ -1252,10 +1252,9 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
     // Unblock the compositor.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
-            dtah.get(),
-            base::Passed(std::move(frame_metadata))));
+            dtah.get(), base::Passed(std::move(frame_metadata))));
   }
 }
 

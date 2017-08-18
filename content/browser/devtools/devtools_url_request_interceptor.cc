@@ -93,10 +93,11 @@ void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequest(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DevToolsURLRequestInterceptor::State::
-                     ContinueInterceptedRequestOnIoThread,
-                 this, interception_id, base::Passed(std::move(modifications)),
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&DevToolsURLRequestInterceptor::State::
+                         ContinueInterceptedRequestOnIoThread,
+                     this, interception_id,
+                     base::Passed(std::move(modifications)),
+                     base::Passed(std::move(callback))));
 }
 
 void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIoThread(

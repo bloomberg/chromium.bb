@@ -75,10 +75,11 @@ void GotUsageAndQuotaDataCallback(
     int64_t quota,
     base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(ReportUsageAndQuotaDataOnUIThread,
-                                     base::Passed(std::move(callback)), code,
-                                     usage, quota, std::move(usage_breakdown)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(ReportUsageAndQuotaDataOnUIThread,
+                     base::Passed(std::move(callback)), code, usage, quota,
+                     std::move(usage_breakdown)));
 }
 
 void GetUsageAndQuotaOnIOThread(
@@ -174,8 +175,8 @@ void StorageHandler::GetUsageAndQuota(
       host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
-                 origin_url, base::Passed(std::move(callback))));
+      base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
+                     origin_url, base::Passed(std::move(callback))));
 }
 
 // Observer that listens on the IO thread for cache storage notifications and
@@ -190,8 +191,8 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
       : owner_(owner_storage_handler), context_(cache_storage_context) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CacheStorageObserver::AddObserverOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&CacheStorageObserver::AddObserverOnIOThread,
+                       base::Unretained(this)));
   }
 
   ~CacheStorageObserver() override {
@@ -223,8 +224,8 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
       return;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&StorageHandler::NotifyCacheStorageListChanged, owner_,
-                   origin.GetURL().spec()));
+        base::BindOnce(&StorageHandler::NotifyCacheStorageListChanged, owner_,
+                       origin.GetURL().spec()));
   }
 
   void OnCacheContentChanged(const url::Origin& origin,
@@ -234,8 +235,8 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
       return;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&StorageHandler::NotifyCacheStorageContentChanged, owner_,
-                   origin.GetURL().spec(), cache_name));
+        base::BindOnce(&StorageHandler::NotifyCacheStorageContentChanged,
+                       owner_, origin.GetURL().spec(), cache_name));
   }
 
   // Maintained on the IO thread to avoid mutex contention.
@@ -257,9 +258,9 @@ Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CacheStorageObserver::TrackOriginOnIOThread,
-                 base::Unretained(GetCacheStorageObserver()),
-                 url::Origin(origin_url)));
+      base::BindOnce(&CacheStorageObserver::TrackOriginOnIOThread,
+                     base::Unretained(GetCacheStorageObserver()),
+                     url::Origin(origin_url)));
   return Response::OK();
 }
 
@@ -274,9 +275,9 @@ Response StorageHandler::UntrackCacheStorageForOrigin(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CacheStorageObserver::UntrackOriginOnIOThread,
-                 base::Unretained(GetCacheStorageObserver()),
-                 url::Origin(origin_url)));
+      base::BindOnce(&CacheStorageObserver::UntrackOriginOnIOThread,
+                     base::Unretained(GetCacheStorageObserver()),
+                     url::Origin(origin_url)));
   return Response::OK();
 }
 
