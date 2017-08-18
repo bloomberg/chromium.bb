@@ -39,7 +39,7 @@ class PrefRegistrySimple;
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
     : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the
@@ -64,8 +64,9 @@ class IntranetRedirectDetector
   // net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // NetworkChangeNotifier::IPAddressObserver
-  void OnIPAddressChanged() override;
+  // NetworkChangeNotifier::NetworkChangeObserver
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   GURL redirect_origin_;
   std::map<net::URLFetcher*, std::unique_ptr<net::URLFetcher>> fetchers_;
