@@ -123,9 +123,11 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   ended: 'boolean',
   detached: 'boolean',
   kind: 'string',
+  estimatedPlayoutTimestamp: 'number',
   frameWidth: 'number',
   frameHeight: 'number',
   framesPerSecond: 'number',
+  framesCaptured: 'number',
   framesSent: 'number',
   framesReceived: 'number',
   framesDecoded: 'number',
@@ -134,10 +136,17 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   partialFramesLost: 'number',
   fullFramesLost: 'number',
   audioLevel: 'number',
+  totalAudioEnergy: 'number',
+  voiceActivityFlag: 'boolean',
   echoReturnLoss: 'number',
   echoReturnLossEnhancement: 'number',
-  totalAudioEnergy: 'number',
-  totalSamplesDuration: 'number'
+  totalSamplesSent: 'number',
+  totalSamplesReceived: 'number',
+  totalSamplesDuration: 'number',
+  concealedSamples: 'number',
+  concealmentEvents: 'number',
+  jitterBufferDelay: 'number',
+  priority: 'string'
 });
 gStatsWhitelist.set('track', kRTCMediaStreamTrackStats);
 
