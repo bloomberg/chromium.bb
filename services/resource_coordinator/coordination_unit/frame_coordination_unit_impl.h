@@ -26,7 +26,7 @@ class FrameCoordinationUnitImpl : public CoordinationUnitImpl {
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
       CoordinationUnitType type) const override;
 
-  const WebContentsCoordinationUnitImpl* GetWebContentsCoordinationUnit() const;
+  WebContentsCoordinationUnitImpl* GetWebContentsCoordinationUnit() const;
 
   bool IsMainFrame() const;
 

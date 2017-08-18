@@ -36,8 +36,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
-  static const WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
-      const CoordinationUnitImpl* coordination_unit);
+  static WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
+      CoordinationUnitImpl* coordination_unit);
 
   static std::vector<CoordinationUnitImpl*> GetCoordinationUnitsOfType(
       CoordinationUnitType type);

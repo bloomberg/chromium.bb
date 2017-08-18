@@ -9,12 +9,13 @@
 #include "base/values.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 
 namespace resource_coordinator {
 
-#define DISPATCH_TAB_SIGNAL(observers, METHOD, cu, ...)           \
-  observers.ForAllPtrs([cu](mojom::TabSignalObserver* observer) { \
-    observer->METHOD(cu->id(), __VA_ARGS__);                      \
+#define DISPATCH_TAB_SIGNAL(observers, METHOD, cu, ...)          \
+  observers.ForAllPtrs([&](mojom::TabSignalObserver* observer) { \
+    observer->METHOD(cu->id(), __VA_ARGS__);                     \
   });
 
 TabSignalGeneratorImpl::TabSignalGeneratorImpl() = default;
@@ -33,21 +34,31 @@ bool TabSignalGeneratorImpl::ShouldObserve(
 }
 
 void TabSignalGeneratorImpl::OnFramePropertyChanged(
-    const FrameCoordinationUnitImpl* coordination_unit,
+    const FrameCoordinationUnitImpl* frame_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == mojom::PropertyType::kNetworkIdle) {
     // Ignore when the signal doesn't come from main frame.
-    if (!coordination_unit->IsMainFrame())
+    if (!frame_cu->IsMainFrame())
       return;
     // TODO(lpy) Combine CPU usage or long task idleness signal.
-    for (auto* parent : coordination_unit->parents()) {
+    for (auto* parent : frame_cu->parents()) {
       if (parent->id().type != CoordinationUnitType::kWebContents)
         continue;
       DISPATCH_TAB_SIGNAL(observers_, OnEventReceived, parent,
                           mojom::TabEvent::kDoneLoading);
       break;
     }
+  }
+}
+
+void TabSignalGeneratorImpl::OnWebContentsPropertyChanged(
+    const WebContentsCoordinationUnitImpl* web_contents_cu,
+    const mojom::PropertyType property_type,
+    int64_t value) {
+  if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
+    DISPATCH_TAB_SIGNAL(observers_, OnPropertyChanged, web_contents_cu,
+                        property_type, value);
   }
 }
 

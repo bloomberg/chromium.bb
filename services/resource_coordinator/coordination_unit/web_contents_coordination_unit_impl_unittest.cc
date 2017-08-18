@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
@@ -73,6 +74,35 @@ TEST_F(WebContentsCoordinationUnitImplTest,
   EXPECT_TRUE(cu_graph.other_tab->GetProperty(mojom::PropertyType::kCPUUsage,
                                               &cpu_usage));
   EXPECT_EQ(50, cpu_usage);
+}
+
+TEST_F(WebContentsCoordinationUnitImplTest,
+       CalculateTabEQTForSingleTabInSingleProcess) {
+  MockSingleTabInSingleProcessCoordinationUnitGraph cu_graph;
+
+  cu_graph.process->SetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, 1);
+
+  int64_t eqt;
+  ASSERT_TRUE(cu_graph.tab->GetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_EQ(1, eqt);
+}
+
+TEST_F(WebContentsCoordinationUnitImplTest,
+       CalculateTabEQTForMultipleTabsInSingleProcess) {
+  MockMultipleTabsInSingleProcessCoordinationUnitGraph cu_graph;
+
+  cu_graph.process->SetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, 1);
+
+  int64_t eqt;
+  ASSERT_TRUE(cu_graph.tab->GetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_EQ(1, eqt);
+  ASSERT_TRUE(cu_graph.other_tab->GetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_EQ(1, eqt);
 }
 
 }  // namespace resource_coordinator

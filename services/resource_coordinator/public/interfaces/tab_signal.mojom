@@ -6,6 +6,7 @@ module resource_coordinator.mojom;
 
 import "coordination_unit.mojom";
 import "mojo/common/values.mojom";
+import "signals.mojom";
 
 // Event signal scoped to a tab.
 enum TabEvent {
@@ -20,6 +21,8 @@ enum TabEvent {
 // TabSignalGenerator::AddObserver.
 interface TabSignalObserver {
   OnEventReceived(CoordinationUnitID cu_id, TabEvent event);
+  OnPropertyChanged(CoordinationUnitID cu_id, PropertyType property_type,
+      int64 value);
 };
 
 // A TabSignalGenerator implementation will be implemented inside GRC to observe
