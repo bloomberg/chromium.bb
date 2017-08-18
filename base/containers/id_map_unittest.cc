@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 
 #include <stdint.h>
 
@@ -10,6 +10,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 namespace {
 
@@ -24,6 +26,8 @@ class DestructorCounter {
  private:
   int* counter_;
 };
+
+}  // namespace
 
 TEST(IDMapTest, Basic) {
   IDMap<TestObject*> map;
@@ -374,4 +378,4 @@ TEST(IDMapTest, Int64KeyType) {
   EXPECT_TRUE(map.IsEmpty());
 }
 
-}  // namespace
+}  // namespace base

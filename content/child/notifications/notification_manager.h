@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/notifications/notification_dispatcher.h"
@@ -82,11 +82,11 @@ class NotificationManager : public blink::WebNotificationManager,
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   // Tracks pending requests for getting a list of notifications.
-  IDMap<std::unique_ptr<blink::WebNotificationGetCallbacks>>
+  base::IDMap<std::unique_ptr<blink::WebNotificationGetCallbacks>>
       pending_get_notification_requests_;
 
   // Tracks pending requests for displaying persistent notifications.
-  IDMap<std::unique_ptr<blink::WebNotificationShowCallbacks>>
+  base::IDMap<std::unique_ptr<blink::WebNotificationShowCallbacks>>
       pending_show_notification_requests_;
 
   // Structure holding the information for active non-persistent notifications.

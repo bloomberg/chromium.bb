@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/presentation_info.h"
@@ -151,7 +151,7 @@ class CONTENT_EXPORT PresentationDispatcher
   };
 
   using AvailabilityCallbacksMap =
-      IDMap<std::unique_ptr<blink::WebPresentationAvailabilityCallbacks>>;
+      base::IDMap<std::unique_ptr<blink::WebPresentationAvailabilityCallbacks>>;
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
 

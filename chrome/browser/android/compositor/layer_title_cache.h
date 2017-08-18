@@ -10,7 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/bind.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/geometry/size.h"
@@ -74,7 +74,7 @@ class LayerTitleCache {
  private:
   virtual ~LayerTitleCache();
 
-  IDMap<std::unique_ptr<DecorationTitle>> layer_cache_;
+  base::IDMap<std::unique_ptr<DecorationTitle>> layer_cache_;
 
   JavaObjectWeakGlobalRef weak_java_title_cache_;
   int fade_width_;

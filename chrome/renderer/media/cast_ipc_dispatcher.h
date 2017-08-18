@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -68,7 +68,7 @@ class CastIPCDispatcher : public IPC::MessageFilter {
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_message_loop_|.
-  IDMap<CastTransportIPC*> id_map_;
+  base::IDMap<CastTransportIPC*> id_map_;
   DISALLOW_COPY_AND_ASSIGN(CastIPCDispatcher);
 };
 

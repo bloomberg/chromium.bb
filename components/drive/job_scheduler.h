@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -402,7 +402,7 @@ class JobScheduler
   std::unique_ptr<JobQueue> queue_[NUM_QUEUES];
 
   // The list of queued job info indexed by job IDs.
-  using JobIDMap = IDMap<std::unique_ptr<JobEntry>>;
+  using JobIDMap = base::IDMap<std::unique_ptr<JobEntry>>;
   JobIDMap job_map_;
 
   // The list of observers for the scheduler.

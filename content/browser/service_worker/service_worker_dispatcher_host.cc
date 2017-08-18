@@ -218,7 +218,8 @@ void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
 ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
     int provider_id,
     int64_t version_id) {
-  for (IDMap<std::unique_ptr<ServiceWorkerHandle>>::iterator iter(&handles_);
+  for (base::IDMap<std::unique_ptr<ServiceWorkerHandle>>::iterator iter(
+           &handles_);
        !iter.IsAtEnd(); iter.Advance()) {
     ServiceWorkerHandle* handle = iter.GetCurrentValue();
     DCHECK(handle);

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/sync/model/sync_change.h"

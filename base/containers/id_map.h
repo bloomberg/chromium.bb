@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ID_MAP_H_
-#define BASE_ID_MAP_H_
+#ifndef BASE_CONTAINERS_ID_MAP_H_
+#define BASE_CONTAINERS_ID_MAP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,6 +18,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+
+namespace base {
 
 // This object maintains a list of IDs that can be quickly converted to
 // pointers to objects. It is implemented as a hash table, optimized for
@@ -254,4 +256,6 @@ class IDMap final {
   DISALLOW_COPY_AND_ASSIGN(IDMap);
 };
 
-#endif  // BASE_ID_MAP_H_
+}  // namespace base
+
+#endif  // BASE_CONTAINERS_ID_MAP_H_

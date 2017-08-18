@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/id_map.h"
 #include "base/feature_list.h"
-#include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -112,7 +112,7 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>::DestructorAtExit
 
 // PrintPreviewUI IDMap used to avoid exposing raw pointer addresses to WebUI.
 // Only accessed on the UI thread.
-base::LazyInstance<IDMap<PrintPreviewUI*>>::DestructorAtExit
+base::LazyInstance<base::IDMap<PrintPreviewUI*>>::DestructorAtExit
     g_print_preview_ui_id_map = LAZY_INSTANCE_INITIALIZER;
 
 // PrintPreviewUI serves data for chrome://print requests.

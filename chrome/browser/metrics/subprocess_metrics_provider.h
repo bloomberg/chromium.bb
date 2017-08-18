@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/scoped_observer.h"
@@ -101,7 +101,7 @@ class SubprocessMetricsProvider
 
   // All of the shared-persistent-allocators for known sub-processes.
   using AllocatorByIdMap =
-      IDMap<std::unique_ptr<base::PersistentHistogramAllocator>, int>;
+      base::IDMap<std::unique_ptr<base::PersistentHistogramAllocator>, int>;
   AllocatorByIdMap allocators_by_id_;
 
   // Track all observed render processes to un-observe them on exit.

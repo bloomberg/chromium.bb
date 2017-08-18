@@ -13,7 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -81,11 +81,12 @@ class InstanceIDAndroid : public InstanceID {
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  IDMap<std::unique_ptr<GetIDCallback>> get_id_callbacks_;
-  IDMap<std::unique_ptr<GetCreationTimeCallback>> get_creation_time_callbacks_;
-  IDMap<std::unique_ptr<GetTokenCallback>> get_token_callbacks_;
-  IDMap<std::unique_ptr<DeleteTokenCallback>> delete_token_callbacks_;
-  IDMap<std::unique_ptr<DeleteIDCallback>> delete_id_callbacks_;
+  base::IDMap<std::unique_ptr<GetIDCallback>> get_id_callbacks_;
+  base::IDMap<std::unique_ptr<GetCreationTimeCallback>>
+      get_creation_time_callbacks_;
+  base::IDMap<std::unique_ptr<GetTokenCallback>> get_token_callbacks_;
+  base::IDMap<std::unique_ptr<DeleteTokenCallback>> delete_token_callbacks_;
+  base::IDMap<std::unique_ptr<DeleteIDCallback>> delete_id_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

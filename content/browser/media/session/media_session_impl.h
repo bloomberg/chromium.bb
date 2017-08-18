@@ -11,7 +11,7 @@
 #include <set>
 
 #include "base/callback_list.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"

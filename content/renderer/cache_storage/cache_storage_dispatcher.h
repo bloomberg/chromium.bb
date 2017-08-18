@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -166,25 +166,25 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
  private:
   class WebCache;
 
-  using CallbacksMap = IDMap<std::unique_ptr<
+  using CallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks>>;
-  using WithCacheCallbacksMap = IDMap<std::unique_ptr<
+  using WithCacheCallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks>>;
-  using KeysCallbacksMap = IDMap<std::unique_ptr<
+  using KeysCallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks>>;
-  using StorageMatchCallbacksMap = IDMap<std::unique_ptr<
+  using StorageMatchCallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks>>;
 
   using TimeMap = base::hash_map<int32_t, base::TimeTicks>;
 
-  using MatchCallbacksMap =
-      IDMap<std::unique_ptr<blink::WebServiceWorkerCache::CacheMatchCallbacks>>;
-  using WithResponsesCallbacksMap = IDMap<std::unique_ptr<
+  using MatchCallbacksMap = base::IDMap<
+      std::unique_ptr<blink::WebServiceWorkerCache::CacheMatchCallbacks>>;
+  using WithResponsesCallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCache::CacheWithResponsesCallbacks>>;
-  using WithRequestsCallbacksMap = IDMap<std::unique_ptr<
+  using WithRequestsCallbacksMap = base::IDMap<std::unique_ptr<
       blink::WebServiceWorkerCache::CacheWithRequestsCallbacks>>;
-  using BatchCallbacksMap =
-      IDMap<std::unique_ptr<blink::WebServiceWorkerCache::CacheBatchCallbacks>>;
+  using BatchCallbacksMap = base::IDMap<
+      std::unique_ptr<blink::WebServiceWorkerCache::CacheBatchCallbacks>>;
 
   static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
@@ -210,7 +210,7 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   TimeMap match_times_;
 
   // The individual caches created under this CacheStorage object.
-  IDMap<WebCache*> web_caches_;
+  base::IDMap<WebCache*> web_caches_;
 
   // These ID maps are held in the CacheStorage object rather than the Cache
   // object to ensure that the IDs are unique.

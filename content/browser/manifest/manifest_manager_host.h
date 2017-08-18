@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_
 
 #include "base/callback_forward.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/common/manifest_observer.mojom.h"
 #include "content/public/browser/web_contents_binding_set.h"
@@ -41,7 +41,7 @@ class ManifestManagerHost : public WebContentsObserver,
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
  private:
-  using CallbackMap = IDMap<std::unique_ptr<GetManifestCallback>>;
+  using CallbackMap = base::IDMap<std::unique_ptr<GetManifestCallback>>;
 
   blink::mojom::ManifestManager& GetManifestManager();
   void OnConnectionError();

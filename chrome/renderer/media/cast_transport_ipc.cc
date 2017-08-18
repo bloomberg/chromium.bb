@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "chrome/common/cast_messages.h"
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "ipc/ipc_channel_proxy.h"

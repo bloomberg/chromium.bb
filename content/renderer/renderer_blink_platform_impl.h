@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -305,7 +305,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
-  IDMap<std::unique_ptr<PlatformEventObserverBase>> platform_event_observers_;
+  base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
+      platform_event_observers_;
 
   blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
   TopLevelBlameContext top_level_blame_context_;

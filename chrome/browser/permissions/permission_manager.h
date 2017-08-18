@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "base/callback_forward.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -108,12 +108,12 @@ class PermissionManager : public KeyedService,
   friend class GeolocationPermissionContextTests;
 
   class PendingRequest;
-  using PendingRequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
+  using PendingRequestsMap = base::IDMap<std::unique_ptr<PendingRequest>>;
 
   class PermissionResponseCallback;
 
   struct Subscription;
-  using SubscriptionsMap = IDMap<std::unique_ptr<Subscription>>;
+  using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
 
   // KeyedService implementation
   void Shutdown() override;

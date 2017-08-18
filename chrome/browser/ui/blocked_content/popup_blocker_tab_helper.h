@@ -10,7 +10,7 @@
 
 #include <map>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
@@ -90,7 +90,7 @@ class PopupBlockerTabHelper
   // Called when the blocked popup notification is shown or hidden.
   void PopupNotificationVisibilityChanged(bool visible);
 
-  IDMap<std::unique_ptr<BlockedRequest>> blocked_popups_;
+  base::IDMap<std::unique_ptr<BlockedRequest>> blocked_popups_;
 
   base::ObserverList<Observer> observers_;
 

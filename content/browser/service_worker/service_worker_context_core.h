@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/id_map.h"
 #include "base/files/file_path.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
@@ -71,8 +71,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                              int64_t registration_id)>;
   using UnregistrationCallback =
       base::Callback<void(ServiceWorkerStatusCode status)>;
-  using ProviderMap = IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
-  using ProcessToProviderMap = IDMap<std::unique_ptr<ProviderMap>>;
+  using ProviderMap = base::IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
+  using ProcessToProviderMap = base::IDMap<std::unique_ptr<ProviderMap>>;
 
   using ProviderByClientUUIDMap =
       std::map<std::string, ServiceWorkerProviderHost*>;

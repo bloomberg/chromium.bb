@@ -11,7 +11,7 @@
 #include <memory>
 #include <set>
 
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/child/worker_thread.h"
@@ -84,7 +84,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
                             int64_t granted_quota);
   void DidFail(int request_id, storage::QuotaStatusCode error);
 
-  IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
+  base::IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;

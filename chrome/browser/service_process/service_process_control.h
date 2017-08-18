@@ -15,7 +15,7 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/id_map.h"
+#include "base/containers/id_map.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -73,7 +73,7 @@ class ServiceProcessControl : public IPC::Sender,
     SERVICE_EVENT_MAX,
   };
 
-  using iterator = IDMap<ServiceProcessControl*>::iterator;
+  using iterator = base::IDMap<ServiceProcessControl*>::iterator;
   using MessageQueue = std::queue<IPC::Message>;
   using CloudPrintProxyInfoCallback =
       base::Callback<void(const cloud_print::CloudPrintProxyInfo&)>;
