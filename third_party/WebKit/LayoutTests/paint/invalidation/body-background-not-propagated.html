@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="resources/text-based-repaint.js"></script>
+<style>
+  html { background-color: white }
+  body { width: 600px; height: 100px; background-color: red }
+</style>
+<body>Changing the body background should only repaint the body box.</body>
+<script>
+  function repaintTest() {
+    document.body.style.backgroundColor = "green";
+  }
+
+  window.onload = () => { runRepaintTest() };
+</script>

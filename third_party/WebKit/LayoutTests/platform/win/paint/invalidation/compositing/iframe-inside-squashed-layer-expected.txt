@@ -25,11 +25,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 500, 300, 150],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 508, 284, 20],
           "reason": "geometry"
@@ -43,6 +38,11 @@
           "object": "LayoutText #text",
           "rect": [8, 508, 29, 19],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [285, 500, 15, 150],
+          "reason": "incremental"
         },
         {
           "object": "LayoutView #document",
@@ -63,7 +63,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "style change"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow BODY",
