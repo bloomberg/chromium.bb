@@ -24,6 +24,10 @@
 #include "third_party/ashmem/ashmem.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace base {
 namespace {
 
@@ -383,12 +387,24 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     DPLOG(ERROR) << "madvise() failed";
   }
 #elif defined(OS_WIN)
-  // MEM_DECOMMIT the purged pages to release the physical storage,
-  // either in memory or in the paging file on disk.  Pages remain RESERVED.
-  if (!VirtualFree(reinterpret_cast<char*>(shared_memory_.memory()) +
-                       AlignToPageSize(sizeof(SharedState)),
-                   AlignToPageSize(mapped_size_), MEM_DECOMMIT)) {
-    DPLOG(ERROR) << "VirtualFree() MEM_DECOMMIT failed in Purge()";
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8_1) {
+    // Discard the purged pages, which releases the physical storage (resident
+    // memory, compressed or swapped), but leaves them reserved & committed.
+    // This does not free commit for use by other applications, but allows the
+    // system to avoid compressing/swapping these pages to free physical memory.
+    static const auto discard_virtual_memory =
+        reinterpret_cast<decltype(&::DiscardVirtualMemory)>(GetProcAddress(
+            GetModuleHandle(L"kernel32.dll"), "DiscardVirtualMemory"));
+    if (discard_virtual_memory) {
+      DWORD discard_result = discard_virtual_memory(
+          reinterpret_cast<char*>(shared_memory_.memory()) +
+              AlignToPageSize(sizeof(SharedState)),
+          AlignToPageSize(mapped_size_));
+      if (discard_result != ERROR_SUCCESS) {
+        DLOG(FATAL) << "DiscardVirtualMemory() failed in Purge(): "
+                    << logging::SystemErrorCodeToString(discard_result);
+      }
+    }
   }
 #endif
 
