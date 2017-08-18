@@ -14,6 +14,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebFeaturePolicyFeature.h"
 
 namespace {
@@ -202,6 +203,10 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
 void Deprecation::CountDeprecationFeaturePolicy(
     const Document& document,
     WebFeaturePolicyFeature feature) {
+  // If feature policy is not enabled, don't do anything.
+  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
+    return;
+
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return;
