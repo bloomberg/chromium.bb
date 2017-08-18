@@ -99,6 +99,9 @@ class CC_EXPORT OutputSurface {
   // Get the texture for the main image's overlay.
   virtual unsigned GetOverlayTextureId() const = 0;
 
+  // Get the format for the main image's overlay.
+  virtual gfx::BufferFormat GetOverlayBufferFormat() const = 0;
+
   // If this returns true, then the surface will not attempt to draw.
   virtual bool SurfaceIsSuspendForRecycle() const = 0;
 

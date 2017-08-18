@@ -65,6 +65,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
 
   uint32_t fbo() const { return fbo_; }
   uint32_t internal_format() const { return internal_format_; }
+  gfx::BufferFormat buffer_format() const { return format_; }
 
  private:
   friend class BufferQueueTest;

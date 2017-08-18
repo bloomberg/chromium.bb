@@ -66,6 +66,12 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
   return buffer_queue_->GetCurrentTextureId();
 }
 
+gfx::BufferFormat
+GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayBufferFormat() const {
+  DCHECK(buffer_queue_);
+  return buffer_queue_->buffer_format();
+}
+
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);

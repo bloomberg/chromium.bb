@@ -300,6 +300,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
         gfx::RectF(root_render_pass->output_rect);
+    output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
     output_surface_plane.quad_rect_in_target_space =
         root_render_pass->output_rect;
     output_surface_plane.use_output_surface_for_resource = true;

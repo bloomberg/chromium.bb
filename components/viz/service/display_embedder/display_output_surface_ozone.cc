@@ -101,6 +101,11 @@ unsigned DisplayOutputSurfaceOzone::GetOverlayTextureId() const {
   return buffer_queue_->GetCurrentTextureId();
 }
 
+gfx::BufferFormat DisplayOutputSurfaceOzone::GetOverlayBufferFormat() const {
+  DCHECK(buffer_queue_);
+  return buffer_queue_->buffer_format();
+}
+
 void DisplayOutputSurfaceOzone::DidReceiveSwapBuffersAck(
     gfx::SwapResult result) {
   bool force_swap = false;

@@ -175,6 +175,11 @@ unsigned OffscreenBrowserCompositorOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+gfx::BufferFormat
+OffscreenBrowserCompositorOutputSurface::GetOverlayBufferFormat() const {
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool OffscreenBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
     const {
   return false;

@@ -92,6 +92,10 @@ unsigned PixelTestOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+gfx::BufferFormat PixelTestOutputSurface::GetOverlayBufferFormat() const {
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool PixelTestOutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }

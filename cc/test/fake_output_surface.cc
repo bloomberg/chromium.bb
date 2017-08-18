@@ -90,6 +90,10 @@ OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
   return overlay_candidate_validator_;
 }
 
+gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool FakeOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }

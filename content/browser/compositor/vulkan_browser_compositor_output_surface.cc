@@ -72,6 +72,12 @@ unsigned VulkanBrowserCompositorOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+gfx::BufferFormat VulkanBrowserCompositorOutputSurface::GetOverlayBufferFormat()
+    const {
+  NOTIMPLEMENTED();
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool VulkanBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
   NOTIMPLEMENTED();
   return false;

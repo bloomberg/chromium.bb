@@ -47,6 +47,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
                bool use_stencil) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
+  gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(

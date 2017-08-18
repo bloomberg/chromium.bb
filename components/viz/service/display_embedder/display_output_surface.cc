@@ -114,6 +114,10 @@ unsigned DisplayOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+gfx::BufferFormat DisplayOutputSurface::GetOverlayBufferFormat() const {
+  return gfx::BufferFormat::RGBX_8888;
+}
+
 bool DisplayOutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }

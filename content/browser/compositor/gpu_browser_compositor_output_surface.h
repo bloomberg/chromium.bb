@@ -75,6 +75,8 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
+  gfx::BufferFormat GetOverlayBufferFormat() const override;
+
   bool SurfaceIsSuspendForRecycle() const override;
   void SetDrawRectangle(const gfx::Rect& rect) override;
 

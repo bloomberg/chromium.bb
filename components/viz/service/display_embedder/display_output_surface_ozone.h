@@ -57,6 +57,7 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
+  gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // DisplayOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
