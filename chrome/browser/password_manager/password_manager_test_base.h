@@ -65,12 +65,12 @@ class BubbleObserver {
  public:
   explicit BubbleObserver(content::WebContents* web_contents);
 
-  // Checks if the save prompt is being currently available due to both manual
+  // Checks if the save prompt is being currently available due to either manual
   // fallback or successful login.
   bool IsSavePromptAvailable() const;
 
-  // Checks if the update prompt is being currently available due to both manual
-  // fallback or successful login.
+  // Checks if the update prompt is being currently available due to either
+  // manual fallback or successful login.
   bool IsUpdatePromptAvailable() const;
 
   // Checks if the save prompt was shown automatically.
