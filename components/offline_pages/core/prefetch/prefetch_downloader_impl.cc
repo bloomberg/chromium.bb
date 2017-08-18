@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "components/download/public/download_params.h"
 #include "components/download/public/download_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
@@ -56,8 +57,6 @@ void PrefetchDownloaderImpl::StartDownload(
     return;
   }
 
-  // TODO(jianli): Specify scheduling parameters, i.e. battery, network and etc.
-  // http://crbug.com/736156
   download::DownloadParams params;
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
@@ -65,6 +64,10 @@ void PrefetchDownloaderImpl::StartDownload(
   params.guid = download_id;
   params.callback = base::Bind(&PrefetchDownloaderImpl::OnStartDownload,
                                weak_ptr_factory_.GetWeakPtr());
+  params.scheduling_params.network_requirements =
+      download::SchedulingParams::NetworkRequirements::UNMETERED;
+  params.scheduling_params.battery_requirements =
+      download::SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
   params.request_params.url = PrefetchDownloadURL(download_location, channel_);
   download_service_->StartDownload(params);
 }
