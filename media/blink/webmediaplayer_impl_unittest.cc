@@ -387,6 +387,12 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->load_type_ = load_type;
   }
 
+  bool IsVideoTrackDisabled() const { return wmpi_->video_track_disabled_; }
+
+  bool IsDisableVideoTrackPending() const {
+    return !wmpi_->update_background_status_cb_.IsCancelled();
+  }
+
   // "Renderer" thread.
   base::MessageLoop message_loop_;
 
@@ -1041,6 +1047,24 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   // videos is on. Both are on by default on Android and off on desktop.
   EXPECT_EQ(IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled(),
             ShouldPauseVideoWhenHidden());
+
+  if (!IsBackgroundOptimizationOn() || !matches_requirements ||
+      !ShouldDisableVideoWhenHidden() || IsMediaSuspendOn()) {
+    return;
+  }
+
+  // These tests start in background mode prior to having metadata, so put the
+  // test back into a normal state.
+  EXPECT_TRUE(IsDisableVideoTrackPending());
+
+  ForegroundPlayer();
+  EXPECT_FALSE(IsVideoTrackDisabled());
+  EXPECT_FALSE(IsDisableVideoTrackPending());
+
+  // Should start background disable timer, but not disable immediately.
+  BackgroundPlayer();
+  EXPECT_FALSE(IsVideoTrackDisabled());
+  EXPECT_TRUE(IsDisableVideoTrackPending());
 }
 
 INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,

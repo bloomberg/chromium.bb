@@ -1675,7 +1675,7 @@ void WebMediaPlayerImpl::OnFrameShown() {
                    BindToCurrentLoop(frame_time_report_cb_.callback())));
   }
 
-  EnableVideoTrackIfNeeded();
+  UpdateBackgroundVideoOptimizationState();
 
   if (paused_when_hidden_) {
     paused_when_hidden_ = false;
