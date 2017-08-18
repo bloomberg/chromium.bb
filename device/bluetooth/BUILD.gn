@@ -80,8 +80,6 @@ component("bluetooth") {
     "bluetooth_adapter_factory_wrapper.h",
     "bluetooth_adapter_mac.h",
     "bluetooth_adapter_mac.mm",
-    "bluetooth_adapter_mac_metrics.h",
-    "bluetooth_adapter_mac_metrics.mm",
     "bluetooth_adapter_win.cc",
     "bluetooth_adapter_win.h",
     "bluetooth_advertisement.cc",
