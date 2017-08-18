@@ -21,10 +21,6 @@ namespace message_center {
 
 class MessageCenter;
 
-// Implementation found with each supported platform's implementation of
-// MessageCenterTrayDelegate.
-MessageCenterTrayDelegate* CreateMessageCenterTray();
-
 // Class that observes a MessageCenter. Manages the popup and message center
 // bubbles. Tells the MessageCenterTrayHost when the tray is changed, as well
 // as when bubbles are shown and hidden.

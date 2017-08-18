@@ -25,12 +25,12 @@ class Window;
 
 namespace message_center {
 class MessageCenter;
-class MessageCenterBubble;
 class MessagePopupCollection;
 }
 
 namespace ash {
 class AshPopupAlignmentDelegate;
+class MessageCenterBubble;
 class SystemTray;
 class WebNotificationBubbleWrapper;
 class WebNotificationImage;
@@ -151,7 +151,7 @@ class ASH_EXPORT WebNotificationTray
 
   // Testing accessors.
   bool IsPopupVisible() const;
-  message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
+  MessageCenterBubble* GetMessageCenterBubbleForTest();
 
   aura::Window* status_area_window_;
   SystemTray* system_tray_;

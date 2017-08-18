@@ -33,6 +33,11 @@ class NotificationBlocker;
 FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 }
 
+#if !defined(OS_CHROMEOS)
+// Implementations are platform specific.
+message_center::MessageCenterTrayDelegate* CreateMessageCenterTrayDelegate();
+#endif
+
 // This class extends NotificationUIManagerImpl and delegates actual display
 // of notifications to MessageCenter, doing necessary conversions.
 class MessageCenterNotificationManager
@@ -66,8 +71,6 @@ class MessageCenterNotificationManager
                              bool by_user) override;
   void OnCenterVisibilityChanged(message_center::Visibility) override;
   void OnNotificationUpdated(const std::string& notification_id) override;
-
-  void EnsureMessageCenterClosed();
 
   // Takes ownership of |delegate|.
   void SetMessageCenterTrayDelegateForTest(

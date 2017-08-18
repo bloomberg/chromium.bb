@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/message_center_bubble.h"
+#include "ash/system/web_notification/message_center_bubble.h"
 
 #include "base/macros.h"
 #include "ui/message_center/message_center.h"
@@ -12,7 +12,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace message_center {
+using message_center::MessageCenter;
+using message_center::MessageCenterTray;
+using message_center::MessageCenterView;
+
+namespace ash {
 
 namespace {
 const int kDefaultMaxHeight = 400;
@@ -45,8 +49,7 @@ ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
   AddChildView(contents);
 }
 
-ContentsView::~ContentsView() {
-}
+ContentsView::~ContentsView() {}
 
 int ContentsView::GetHeightForWidth(int width) const {
   DCHECK_EQ(1, child_count());
@@ -135,11 +138,10 @@ size_t MessageCenterBubble::NumMessageViewsForTest() const {
 void MessageCenterBubble::UpdateBubbleView() {
   if (!bubble_view_)
     return;  // Could get called after view is closed
-  const NotificationList::Notifications& notifications =
-      message_center_->GetVisibleNotifications();
-  message_center_view_->SetNotifications(notifications);
+  message_center_view_->SetNotifications(
+      message_center_->GetVisibleNotifications());
   bubble_view_->GetWidget()->Show();
   bubble_view_->UpdateBubble();
 }
 
-}  // namespace message_center
+}  // namespace ash
