@@ -124,9 +124,6 @@ struct PendingPaymentResponse {
   // up).
   BOOL _activeWebStateEnabled;
 
-  // Coordinator used to create and present the PaymentRequest view controller.
-  PaymentRequestCoordinator* _paymentRequestCoordinator;
-
   // Timer used to periodically unblock the webview's JS event queue.
   NSTimer* _unblockEventQueueTimer;
 
@@ -148,6 +145,10 @@ struct PendingPaymentResponse {
 
 // The ios::ChromeBrowserState instance passed to the initializer.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// Coordinator used to create and present the PaymentRequest view controller.
+@property(nonatomic, strong)
+    PaymentRequestCoordinator* paymentRequestCoordinator;
 
 // Object that manages JavaScript injection into the web view.
 @property(nonatomic, weak) JSPaymentRequestManager* paymentRequestJsManager;
@@ -230,6 +231,7 @@ struct PendingPaymentResponse {
 @synthesize browserState = _browserState;
 @synthesize enabled = _enabled;
 @synthesize activeWebState = _activeWebState;
+@synthesize paymentRequestCoordinator = _paymentRequestCoordinator;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
 @synthesize pendingPaymentRequest = _pendingPaymentRequest;
 
@@ -311,10 +313,16 @@ struct PendingPaymentResponse {
   DCHECK(_pendingPaymentRequest);
   _pendingPaymentRequest = nullptr;
   [self resetIOSPaymentInstrumentLauncherDelegate];
-  [self dismissUI];
-  [_paymentRequestJsManager rejectRequestPromiseWithErrorName:kAbortErrorName
-                                                 errorMessage:errorMessage
-                                            completionHandler:callback];
+
+  __weak PaymentRequestManager* weakSelf = self;
+  ProceduralBlock dismissUICallback = ^() {
+    [weakSelf.paymentRequestJsManager
+        rejectRequestPromiseWithErrorName:kAbortErrorName
+                             errorMessage:errorMessage
+                        completionHandler:callback];
+    weakSelf.paymentRequestCoordinator = nil;
+  };
+  [self dismissUIWithCallback:dismissUICallback];
 }
 
 - (void)resetIOSPaymentInstrumentLauncherDelegate {
@@ -662,9 +670,13 @@ struct PendingPaymentResponse {
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock callback = ^{
     weakSelf.pendingPaymentRequest = nullptr;
-    [weakSelf dismissUI];
-    [weakSelf.paymentRequestJsManager
-        resolveResponsePromiseWithCompletionHandler:nil];
+    ProceduralBlock dismissUICallback = ^() {
+      [weakSelf.paymentRequestJsManager
+          resolveResponsePromiseWithCompletionHandler:nil];
+      weakSelf.paymentRequestCoordinator = nil;
+    };
+    [weakSelf dismissUIWithCallback:dismissUICallback];
+
   };
 
   // Display UI indicating failure if the value of |result| is "fail".
@@ -731,9 +743,10 @@ struct PendingPaymentResponse {
                              repeats:NO];
 }
 
-- (void)dismissUI {
-  [_paymentRequestCoordinator stop];
-  _paymentRequestCoordinator = nil;
+- (void)dismissUIWithCallback:(ProceduralBlock)callback {
+  [_paymentRequestCoordinator stopWithCallback:callback];
+  if (!callback)
+    _paymentRequestCoordinator = nil;
 }
 
 - (BOOL)webStateContentIsSecureHTML {
@@ -914,7 +927,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     [self resetIOSPaymentInstrumentLauncherDelegate];
   }
 
-  [self dismissUI];
+  [self dismissUIWithCallback:nil];
   [self enableActiveWebState];
 
   // The lifetime of a PaymentRequest is tied to the WebState it is associated
