@@ -1,25 +1,6 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script>
-var x, y;
-
-function test() {
-    var innerBox = document.getElementById('roundedBox');
-    var rect = innerBox.getBoundingClientRect();
-    x = rect.left;
-    y = rect.top;
-    // At top-left corner.
-    shouldBe("document.elementFromPoint(x + 5, y + 5).id", "'container'");
-    // At top-right corner.
-    shouldBe("document.elementFromPoint(x + 195, y + 5).id", "'container'");
-    // At bottom-left corner.
-    shouldBe("document.elementFromPoint(x + 5, y + 195).id", "'container'");
-    // At bottom-right corner.
-    shouldBe("document.elementFromPoint(x + 195, y + 195).id", "'container'");
-    // At the center.
-    shouldBe("document.elementFromPoint(x + 100, y + 100).id", "'roundedBox'");
-}
-</script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
     #container {
         width: 200px;
@@ -33,10 +14,25 @@ function test() {
         background-color: lightgreen;
     }
 </style>
-<body onload="test()">
-    <p>This test checks that div block should not get events on clicking outside the rounded border but within the bounding box of the block.</p>
-    <div id="container">
-        <div id="roundedBox"></div>
-    </div>
-    <div id="console"></div>
-</body>
+<p>This test checks that div block should not get events on clicking outside the rounded border but within the bounding box of the block.</p>
+<div id="container">
+    <div id="roundedBox"></div>
+</div>
+<script>
+test(function(t) {
+    var innerBox = document.getElementById('roundedBox');
+    var rect = innerBox.getBoundingClientRect();
+    var x = rect.left;
+    var y = rect.top;
+    // At top-left corner.
+    assert_equals(document.elementFromPoint(x + 5, y + 5).id, "container");
+    // At top-right corner.
+    assert_equals(document.elementFromPoint(x + 195, y + 5).id, "container");
+    // At bottom-left corner.
+    assert_equals(document.elementFromPoint(x + 5, y + 195).id, "container");
+    // At bottom-right corner.
+    assert_equals(document.elementFromPoint(x + 195, y + 195).id, "container");
+    // At the center.
+    assert_equals(document.elementFromPoint(x + 100, y + 100).id, "roundedBox");
+}, "Test that a block with border radius should not get events on clicking outside the rounded border but within the bounding box of the block.");
+</script>

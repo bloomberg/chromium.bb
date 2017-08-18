@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
 #culled:hover {
   background-color: green;
@@ -16,21 +15,17 @@
   border: 1px solid black;
 }
 </style>
-</head>
-<body>
 <div id="container">
 <span id="culled">
     <span class="left">Hello</span>
     <span class="right">World</span>
 </span>
 </div>
-<div id="console"></div>
-</body>
 <script>
-description('To manually test, hover between the two words to see if background color turns green.');
-
-var rect = document.getElementById('culled').getBoundingClientRect();
-element = document.elementFromPoint(rect.left + rect.width/2, rect.top + rect.height/2);
-shouldBeEqualToString('element.id', 'culled');
+test(function(t)
+{
+    var rect = document.getElementById('culled').getBoundingClientRect();
+    element = document.elementFromPoint(rect.left + rect.width/2, rect.top + rect.height/2);
+    assert_equals(element.id, 'culled');
+}, "Test that the space between two spans is returned when hittested");
 </script>
-</html>

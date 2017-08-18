@@ -1,21 +1,17 @@
 <!doctype html>
-<html>
-<head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <style>
 img{
     background-color:red;
     border-radius: 50px;
 }
 </style>
-</head>
-<body>
 <img src="../fast/borders/resources/mask.png" width="100px" height="100px" />
-<div id="console"></div>
-</body>
 <script>
-description('If this test passes, area outside is body element.');
-var element = document.elementFromPoint(100, 100);
-shouldBe('element.nodeName', '"BODY"');
+test(function(t)
+{
+    var element = document.elementFromPoint(100, 100);
+    assert_equals(element.nodeName, 'BODY');
+}, "elementFromPoint should return BODY when outside an element");
 </script>
-</html>
