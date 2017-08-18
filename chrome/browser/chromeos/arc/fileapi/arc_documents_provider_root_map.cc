@@ -75,10 +75,23 @@ ArcDocumentsProviderRoot* ArcDocumentsProviderRootMap::ParseAndLookup(
   base::FilePath tmp_path;
   if (!ParseDocumentsProviderUrl(url, &authority, &root_document_id, &tmp_path))
     return nullptr;
+
+  ArcDocumentsProviderRoot* root = Lookup(authority, root_document_id);
+  if (!root)
+    return nullptr;
+
+  *path = tmp_path;
+  return root;
+}
+
+ArcDocumentsProviderRoot* ArcDocumentsProviderRootMap::Lookup(
+    const std::string& authority,
+    const std::string& root_document_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   auto iter = map_.find(Key(authority, root_document_id));
   if (iter == map_.end())
     return nullptr;
-  *path = tmp_path;
   return iter->second.get();
 }
 

@@ -42,6 +42,8 @@ namespace arc {
 // Notes:
 // - GetChildDocuments() returns child documents in the same order as they were
 //   added with AddDocument().
+// - GetRecentDocuments() returns recent documents in the same order as they
+//   were added with AddRecentDocument().
 // - All member functions must be called on the same thread.
 class FakeFileSystemInstance : public mojom::FileSystemInstance {
  public:
@@ -121,6 +123,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // Adds a document accessible by document provider based methods.
   void AddDocument(const Document& document);
 
+  // Adds a recent document accessible by document provider based methods.
+  void AddRecentDocument(const std::string& root_id, const Document& document);
+
   // Triggers watchers installed to a document.
   void TriggerWatchers(const std::string& authority,
                        const std::string& document_id,
@@ -155,6 +160,10 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // of a document in documents providers.
   using DocumentKey = std::pair<std::string, std::string>;
 
+  // A pair of an authority and a root ID which identifies a root in
+  // documents providers.
+  using RootKey = std::pair<std::string, std::string>;
+
   THREAD_CHECKER(thread_checker_);
 
   base::ScopedTempDir temp_dir_;
@@ -169,6 +178,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a document key to its child documents.
   std::map<DocumentKey, std::vector<DocumentKey>> child_documents_;
+
+  // Mapping from a root to its recent documents.
+  std::map<RootKey, std::vector<Document>> recent_documents_;
 
   // Mapping from a document key to its watchers.
   std::map<DocumentKey, std::set<int64_t>> document_to_watchers_;
