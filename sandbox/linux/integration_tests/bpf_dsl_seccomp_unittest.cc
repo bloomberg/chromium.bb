@@ -168,6 +168,24 @@ BPF_TEST_C(SandboxBPF, UseVsyscall, BlacklistNanosleepPolicy) {
   BPF_ASSERT_NE(static_cast<time_t>(-1), time(&current_time));
 }
 
+bool IsSyscallForTestHarness(int sysno) {
+  if (sysno == __NR_exit_group || sysno == __NR_write) {
+    // exit_group is special and we really need it to work.
+    // write() is needed for BPF_ASSERT() to report a useful error message.
+    return true;
+  }
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
+  // UBSan_vptr checker needs mmap, munmap, pipe, write.
+  // ASan and MSan don't need any of these for normal operation, but they
+  // require at least mmap & munmap to print a report if an error is detected.
+  if (sysno == kMMapNr || sysno == __NR_munmap || sysno == __NR_pipe) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 // Now do a simple whitelist test
 
 class WhitelistGetpidPolicy : public Policy {
@@ -177,13 +195,10 @@ class WhitelistGetpidPolicy : public Policy {
 
   ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-    switch (sysno) {
-      case __NR_getpid:
-      case __NR_exit_group:
-        return Allow();
-      default:
-        return Error(ENOMEM);
+    if (IsSyscallForTestHarness(sysno) || sysno == __NR_getpid) {
+      return Allow();
     }
+    return Error(ENOMEM);
   }
 
  private:
@@ -418,9 +433,7 @@ class SyntheticPolicy : public Policy {
 
   ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-    if (sysno == __NR_exit_group || sysno == __NR_write) {
-      // exit_group() is special, we really need it to work.
-      // write() is needed for BPF_ASSERT() to report a useful error message.
+    if (IsSyscallForTestHarness(sysno)) {
       return Allow();
     }
     return Error(SysnoToRandomErrno(sysno));
@@ -439,8 +452,7 @@ BPF_TEST_C(SandboxBPF, SyntheticPolicy, SyntheticPolicy) {
   for (int syscall_number = static_cast<int>(MIN_SYSCALL);
        syscall_number <= static_cast<int>(MAX_PUBLIC_SYSCALL);
        ++syscall_number) {
-    if (syscall_number == __NR_exit_group || syscall_number == __NR_write) {
-      // exit_group() is special
+    if (IsSyscallForTestHarness(syscall_number)) {
       continue;
     }
     errno = 0;
@@ -2210,6 +2222,9 @@ class UnsafeTrapWithCondPolicy : public Policy {
     if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
       return Allow();
 
+    if (IsSyscallForTestHarness(sysno))
+      return Allow();
+
     switch (sysno) {
       case __NR_uname: {
         const Arg<uint32_t> arg(0);
@@ -2223,8 +2238,6 @@ class UnsafeTrapWithCondPolicy : public Policy {
             .Default(Error(EPERM));
       }
       case __NR_close:
-      case __NR_exit_group:
-      case __NR_write:
         return Allow();
       case __NR_getppid:
         return UnsafeTrap(NoOpHandler, NULL);
