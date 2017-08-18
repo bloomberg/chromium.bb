@@ -134,6 +134,74 @@ base::Optional<int32_t> ObservationBuffer::GetUnweightedAverage(
   return total_value / weighted_observations.size();
 }
 
+void ObservationBuffer::GetPercentileForEachHostWithCounts(
+    base::TimeTicks begin_timestamp,
+    int percentile,
+    const std::vector<NetworkQualityObservationSource>&
+        disallowed_observation_sources,
+    const base::Optional<std::set<IPHash>>& host_filter,
+    std::map<IPHash, int32_t>* host_keyed_percentiles,
+    std::map<IPHash, size_t>* host_keyed_counts) const {
+  DCHECK_GE(Capacity(), Size());
+  DCHECK_LE(0, percentile);
+  DCHECK_GE(100, percentile);
+
+  host_keyed_percentiles->clear();
+  host_keyed_counts->clear();
+
+  // Filter the observations based on timestamp, disallowed sources and the
+  // presence of a valid host tag. Split the observations into a map keyed by
+  // the remote host to make it easy to calculate percentiles for each host.
+  std::map<IPHash, std::vector<int32_t>> host_keyed_observations;
+  for (const auto& observation : observations_) {
+    // Look at only those observations which have a |host|.
+    if (!observation.host)
+      continue;
+
+    IPHash host = observation.host.value();
+    if (host_filter && (host_filter->find(host) == host_filter->end()))
+      continue;
+
+    // Filter the observations recorded before |begin_timestamp|.
+    if (observation.timestamp < begin_timestamp)
+      continue;
+
+    // If the source of the observation is in the list of disallowed sources,
+    // skip that observation.
+    bool disallowed = false;
+    for (const auto& disallowed_source : disallowed_observation_sources) {
+      if (disallowed_source == observation.source)
+        disallowed = true;
+    }
+    if (disallowed)
+      continue;
+
+    // Skip 0 values of RTT.
+    if (observation.value < 1)
+      continue;
+
+    // Create the map entry if it did not already exist. Does nothing if
+    // |host| was seen before.
+    host_keyed_observations.emplace(host, std::vector<int32_t>());
+    host_keyed_observations[host].push_back(observation.value);
+  }
+
+  if (host_keyed_observations.empty())
+    return;
+
+  // Calculate the percentile values for each host.
+  for (auto& host_observations : host_keyed_observations) {
+    IPHash host = host_observations.first;
+    auto& observations = host_observations.second;
+    std::sort(observations.begin(), observations.end());
+    size_t count = observations.size();
+    DCHECK_GT(count, 0u);
+    (*host_keyed_counts)[host] = count;
+    int percentile_index = ((count - 1) * percentile) / 100;
+    (*host_keyed_percentiles)[host] = observations[percentile_index];
+  }
+}
+
 void ObservationBuffer::ComputeWeightedObservations(
     const base::TimeTicks& begin_timestamp,
     const base::Optional<int32_t>& current_signal_strength,

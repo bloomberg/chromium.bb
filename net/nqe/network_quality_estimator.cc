@@ -36,6 +36,7 @@
 #include "net/http/http_status_code.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/throughput_analyzer.h"
+#include "net/nqe/weighted_observation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -238,6 +239,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           base::TimeDelta::FromSeconds(10)),
       rtt_observations_size_at_last_ect_computation_(0),
       throughput_observations_size_at_last_ect_computation_(0),
+      increase_in_transport_rtt_updater_posted_(false),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       net_log_(NetLogWithSource::Make(
           net_log,
@@ -1059,6 +1061,118 @@ void NetworkQualityEstimator::ComputeBandwidthDelayProduct() {
                           bandwidth_delay_product_kbits_.value());
 }
 
+void NetworkQualityEstimator::IncreaseInTransportRTTUpdater() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  increase_in_transport_rtt_ = ComputeIncreaseInTransportRTT();
+
+  // Stop the timer if there was no recent data and |increase_in_transport_rtt_|
+  // could not be computed. This is fine because |increase_in_transport_rtt| can
+  // only be computed if there is recent transport RTT data, and the timer is
+  // restarted when there is a new observation.
+  if (!increase_in_transport_rtt_) {
+    increase_in_transport_rtt_updater_posted_ = false;
+    return;
+  }
+
+  increase_in_transport_rtt_updater_posted_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&NetworkQualityEstimator::IncreaseInTransportRTTUpdater,
+                 weak_ptr_factory_.GetWeakPtr()),
+      params_->increase_in_transport_rtt_logging_interval());
+}
+
+base::Optional<int32_t> NetworkQualityEstimator::ComputeIncreaseInTransportRTT()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  // The time after which the observations are considered to be recent enough to
+  // be a good proxy for the current level of congestion.
+  base::TimeTicks recent_start_time = now - params_->recent_time_threshold();
+
+  // Get the median transport RTT observed over the last 5 seconds for each
+  // remote host. This is an estimate of the current RTT which will be compared
+  // to the baseline obtained from historical data to detect an increase in RTT.
+  std::map<nqe::internal::IPHash, int32_t> recent_median_rtts;
+  std::map<nqe::internal::IPHash, size_t> recent_observation_counts;
+  rtt_ms_observations_.GetPercentileForEachHostWithCounts(
+      recent_start_time, 50, disallowed_observation_sources_for_transport_,
+      base::nullopt, &recent_median_rtts, &recent_observation_counts);
+
+  if (recent_median_rtts.empty())
+    return base::nullopt;
+
+  // The time after which the observations are used to calculate the baseline.
+  // This is needed because the general network characteristics could have
+  // changed over time.
+  base::TimeTicks history_start_time =
+      now - params_->historical_time_threshold();
+
+  // Create a set of the remote hosts seen in the recent observations so that
+  // the data can be filtered while calculating the percentiles.
+  std::set<nqe::internal::IPHash> recent_hosts_set;
+  for (const auto& recent_median_rtts_for_host : recent_median_rtts)
+    recent_hosts_set.insert(recent_median_rtts_for_host.first);
+
+  // Get the minimum transport RTT observed over 1 minute for each remote host.
+  // This is an estimate of the true RTT which will be used as a baseline value
+  // to detect an increase in RTT. The minimum value is used here because the
+  // observed values cannot be lower than the true RTT. The median is used for
+  // the recent data to reduce noise in the calculation.
+  std::map<nqe::internal::IPHash, int32_t> historical_min_rtts;
+  std::map<nqe::internal::IPHash, size_t> historical_observation_counts;
+  rtt_ms_observations_.GetPercentileForEachHostWithCounts(
+      history_start_time, 0, disallowed_observation_sources_for_transport_,
+      recent_hosts_set, &historical_min_rtts, &historical_observation_counts);
+
+  // Calculate the total observation counts for the hosts common to the recent
+  // data and the historical data.
+  size_t total_historical_count = 0;
+  size_t total_recent_count = 0;
+  for (const auto& recent_median_rtts_for_host : recent_median_rtts) {
+    nqe::internal::IPHash host = recent_median_rtts_for_host.first;
+    total_historical_count += historical_observation_counts[host];
+    total_recent_count += recent_observation_counts[host];
+  }
+
+  // Compute the increases in transport RTT for each remote host. Also compute
+  // the weight for each remote host based on the number of observations.
+  double total_weight = 0.0;
+  std::vector<nqe::internal::WeightedObservation> weighted_rtts;
+  for (auto& host : recent_hosts_set) {
+    // The relative weight signifies the amount of confidence in the data. The
+    // weight is higher if there were more observations. A regularization term
+    // of |1 / recent_hosts_set.size()| is added so that if one particular
+    // remote host has a lot of observations, the results do not get skewed.
+    double weight =
+        1.0 / recent_hosts_set.size() +
+        std::min(static_cast<double>(recent_observation_counts[host]) /
+                     total_recent_count,
+                 static_cast<double>(historical_observation_counts[host]) /
+                     total_historical_count);
+    weighted_rtts.push_back(nqe::internal::WeightedObservation(
+        recent_median_rtts[host] - historical_min_rtts[host], weight));
+    total_weight += weight;
+  }
+
+  // Sort the increases in RTT for percentile computation.
+  std::sort(weighted_rtts.begin(), weighted_rtts.end());
+
+  // Calculate the weighted 50th percentile increase in transport RTT.
+  double desired_weight = 0.5 * total_weight;
+  for (nqe::internal::WeightedObservation wo : weighted_rtts) {
+    desired_weight -= wo.weight;
+    if (desired_weight <= 0)
+      return wo.value;
+  }
+
+  // Calculation will reach here when the 50th percentile is the last value.
+  return weighted_rtts.back().value;
+}
+
 void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1590,14 +1704,20 @@ double NetworkQualityEstimator::RandDouble() const {
 
 void NetworkQualityEstimator::OnUpdatedRTTAvailable(
     SocketPerformanceWatcherFactory::Protocol protocol,
-    const base::TimeDelta& rtt) {
+    const base::TimeDelta& rtt,
+    const base::Optional<nqe::internal::IPHash>& host) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::InvalidRTT(), rtt);
 
   Observation observation(rtt.InMilliseconds(), tick_clock_->NowTicks(),
                           signal_strength_,
-                          ProtocolSourceToObservationSource(protocol));
+                          ProtocolSourceToObservationSource(protocol), host);
   AddAndNotifyObserversOfRTT(observation);
+
+  // Post a task to compute and update the increase in RTT if not already
+  // posted.
+  if (!increase_in_transport_rtt_updater_posted_)
+    IncreaseInTransportRTTUpdater();
 }
 
 void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
