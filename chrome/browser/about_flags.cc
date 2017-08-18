@@ -3128,19 +3128,18 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-ui-elide-suggestion-url-after-host",
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
-     kOsDesktop,
+     kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
 
     {"omnibox-ui-hide-suggestion-url-scheme",
      flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription,
-     kOsDesktop,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlScheme)},
 
     {"omnibox-ui-hide-suggestion-url-trivial-subdomains",
      flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsName,
      flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription,
-     kOsDesktop,
+     kOsAll,
      FEATURE_VALUE_TYPE(
          omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)},
 
