@@ -948,8 +948,8 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
-  WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("https://www.example.com"));
+  const GURL url("https://www.example.test/");
+  WebContentsTester::For(web_contents())->NavigateAndCommit(url);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
@@ -962,16 +962,14 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
       content_setting_bubble_model->bubble_content().list_items;
   EXPECT_EQ(0U, list_items.size());
 
-  PopupBlockerTabHelper* popup_blocker =
-      PopupBlockerTabHelper::FromWebContents(web_contents());
-  EXPECT_NE(nullptr, popup_blocker);
-
   BlockedWindowParams params(GURL("about:blank"), content::Referrer(),
                              std::string(), WindowOpenDisposition::NEW_POPUP,
                              blink::mojom::WindowFeatures(), false, true);
   constexpr size_t kItemCount = 3;
   for (size_t i = 1; i <= kItemCount; i++) {
-    popup_blocker->AddBlockedPopup(params);
+    EXPECT_TRUE(PopupBlockerTabHelper::MaybeBlockPopup(
+        web_contents(), url, params.CreateNavigateParams(web_contents()),
+        nullptr /*=open_url_params*/, params.features()));
     EXPECT_EQ(i, list_items.size());
   }
 }

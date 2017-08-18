@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
@@ -335,21 +336,14 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   nav_params.source_contents = source;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
-
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(source);
-  DCHECK(popup_blocker_helper);
-
   if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
        params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      PopupBlockerTabHelper::ConsiderForPopupBlocking(
-          source, params.user_gesture, &params)) {
-    if (popup_blocker_helper->MaybeBlockPopup(nav_params,
-                                              blink::mojom::WindowFeatures())) {
-      return nullptr;
-    }
+      PopupBlockerTabHelper::MaybeBlockPopup(source, base::Optional<GURL>(),
+                                             nav_params, &params,
+                                             blink::mojom::WindowFeatures())) {
+    return nullptr;
   }
 
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {

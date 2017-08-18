@@ -607,25 +607,6 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
   g_io_thread_application_locale.Get() = locale;
 }
 
-void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params,
-                                  RenderFrameHost* opener,
-                                  WebContents* tab) {
-  DCHECK(tab);
-  DCHECK(opener);
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(tab);
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
-    return;
-  }
-
-  PopupBlockerTabHelper* popup_helper =
-      PopupBlockerTabHelper::FromWebContents(tab);
-  if (!popup_helper)
-    return;
-  popup_helper->AddBlockedPopup(params);
-}
-
 // An implementation of the SSLCertReporter interface used by
 // SSLErrorHandler. Uses CertificateReportingService to send reports. The
 // service handles queueing and re-sending of failed reports. Each certificate
@@ -2322,10 +2303,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-
-#if BUILDFLAG(ENABLE_PLUGINS)
   if (FlashDownloadInterception::ShouldStopFlashDownloadAction(
           content_settings, opener_top_level_frame_url, target_url,
           user_gesture)) {
@@ -2335,18 +2315,22 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  if (PopupBlockerTabHelper::ConsiderForPopupBlocking(
-          web_contents, user_gesture, /*open_url_params=*/nullptr)) {
-    if (content_settings->GetContentSetting(
-            opener_top_level_frame_url, opener_top_level_frame_url,
-            CONTENT_SETTINGS_TYPE_POPUPS,
-            std::string()) != CONTENT_SETTING_ALLOW) {
-      BlockedWindowParams blocked_params(target_url, referrer, frame_name,
-                                         disposition, features, user_gesture,
-                                         opener_suppressed);
-      HandleBlockedPopupOnUIThread(blocked_params, opener, web_contents);
-      return false;
-    }
+  // Don't let prerenders open popups.
+  if (auto* prerender_contents =
+          prerender::PrerenderContents::FromWebContents(web_contents)) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
+    return false;
+  }
+
+  BlockedWindowParams blocked_params(target_url, referrer, frame_name,
+                                     disposition, features, user_gesture,
+                                     opener_suppressed);
+  chrome::NavigateParams nav_params =
+      blocked_params.CreateNavigateParams(web_contents);
+  if (PopupBlockerTabHelper::MaybeBlockPopup(
+          web_contents, opener_top_level_frame_url, nav_params,
+          nullptr /*=open_url_params*/, blocked_params.features())) {
+    return false;
   }
 
 #if defined(OS_ANDROID)
@@ -2354,11 +2338,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       SingleTabModeTabHelper::FromWebContents(web_contents);
   if (single_tab_mode_helper->block_all_new_windows()) {
     if (TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents)) {
-      BlockedWindowParams blocked_params(target_url, referrer, frame_name,
-                                         disposition, features, user_gesture,
-                                         opener_suppressed);
-      chrome::NavigateParams nav_params =
-          blocked_params.CreateNavigateParams(web_contents);
       tab_android->HandlePopupNavigation(&nav_params);
     }
     return false;
