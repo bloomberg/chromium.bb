@@ -47,7 +47,6 @@ enum IPCMessageStart {
   ExtensionMsgStart,
   QuotaMsgStart,
   TextInputClientMsgStart,
-  MediaStreamMsgStart,
   JavaBridgeMsgStart,
   ShellMsgStart,
   AccessibilityMsgStart,

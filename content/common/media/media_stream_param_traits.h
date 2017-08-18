@@ -5,17 +5,14 @@
 // IPC messages for the media streaming.
 // Multiply-included message file, hence no include guard.
 
-#include <string>
-
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
-#include "url/origin.h"
+#include "media/base/ipc/media_param_traits.h"
+#include "media/capture/ipc/capture_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
-#define IPC_MESSAGE_START MediaStreamMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
                           content::NUM_MEDIA_TYPES - 1)

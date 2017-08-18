@@ -25,7 +25,6 @@
 #include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/media/media_player_delegate_messages.h"
-#include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/common/media/midi_messages.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
