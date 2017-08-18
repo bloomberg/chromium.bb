@@ -228,6 +228,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
+#ifndef SK_LEGACY_FRAME_INFO_ALPHA_TYPE
+#define SK_LEGACY_FRAME_INFO_ALPHA_TYPE
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
