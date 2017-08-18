@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/scoped_hide_overview_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -58,7 +59,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   ~WindowSelector() override;
 
   // Initialize with the windows that can be selected.
-  void Init(const WindowList& windows);
+  void Init(const WindowList& windows, const WindowList& hide_windows);
 
   // Perform cleanup that cannot be done in the destructor.
   void Shutdown();
@@ -226,6 +227,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // The drag controller for a window in the overview mode.
   std::unique_ptr<OverviewWindowDragController> window_drag_controller_;
+
+  std::unique_ptr<ScopedHideOverviewWindows> hide_overview_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

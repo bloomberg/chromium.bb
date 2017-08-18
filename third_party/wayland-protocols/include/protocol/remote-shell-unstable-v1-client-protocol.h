@@ -462,6 +462,26 @@ enum zcr_remote_surface_v1_orientation {
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_ORIENTATION_ENUM */
 
+#ifndef ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM
+#define ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ * window type
+ *
+ * The type of the window.
+ */
+enum zcr_remote_surface_v1_window_type {
+  /**
+   * normal app window
+   */
+  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
+  /**
+   * window is treated as systemui
+   */
+  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
+};
+#endif /* ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM */
+
 /**
  * @ingroup iface_zcr_remote_surface_v1
  * @struct zcr_remote_surface_v1_listener
@@ -560,6 +580,7 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 #define ZCR_REMOTE_SURFACE_V1_ACK_CONFIGURE 22
 #define ZCR_REMOTE_SURFACE_V1_MOVE 23
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION 24
+#define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE 25
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -674,6 +695,10 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_SINCE_VERSION 6
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE_SINCE_VERSION 7
 
 /** @ingroup iface_zcr_remote_surface_v1 */
 static inline void
@@ -1111,6 +1136,19 @@ zcr_remote_surface_v1_set_orientation(struct zcr_remote_surface_v1 *zcr_remote_s
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
 			 ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION, orientation);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Set the type of window. This is only a hint to the compositor and the
+ * compositor is free to ignore it.
+ */
+static inline void zcr_remote_surface_v1_set_window_type(
+    struct zcr_remote_surface_v1* zcr_remote_surface_v1,
+    uint32_t type) {
+  wl_proxy_marshal((struct wl_proxy*)zcr_remote_surface_v1,
+                   ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE, type);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY 0

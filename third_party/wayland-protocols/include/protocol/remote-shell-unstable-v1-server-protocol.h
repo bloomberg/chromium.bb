@@ -403,6 +403,26 @@ enum zcr_remote_surface_v1_orientation {
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_ORIENTATION_ENUM */
 
+#ifndef ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM
+#define ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ * window type
+ *
+ * The type of the window.
+ */
+enum zcr_remote_surface_v1_window_type {
+  /**
+   * normal app window
+   */
+  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
+  /**
+   * window is treated as systemui
+   */
+  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
+};
+#endif /* ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM */
+
 /**
  * @ingroup iface_zcr_remote_surface_v1
  * @struct zcr_remote_surface_v1_interface
@@ -741,6 +761,17 @@ struct zcr_remote_surface_v1_interface {
 	void (*set_orientation)(struct wl_client *client,
 				struct wl_resource *resource,
 				int32_t orientation);
+        /**
+         * set the type of the window
+         *
+         * Set the type of window. This is only a hint to the compositor
+         * and the compositor is free to ignore it.
+         * @param type type of the window
+         * @since 7
+         */
+        void (*set_window_type)(struct wl_client* client,
+                                struct wl_resource* resource,
+                                uint32_t type);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
@@ -860,6 +891,10 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_SINCE_VERSION 6
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE_SINCE_VERSION 7
 
 /**
  * @ingroup iface_zcr_remote_surface_v1

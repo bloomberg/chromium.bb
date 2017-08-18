@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="6">
+  <interface name="zcr_remote_shell_v1" version="7">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -171,7 +171,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="6">
+  <interface name="zcr_remote_surface_v1" version="7">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -202,6 +202,14 @@
       </description>
       <entry name="portrait" value="1" summary="portrait"/>
       <entry name="landscape" value="2" summary="landscape"/>
+    </enum>
+
+    <enum name="window_type">
+      <description summary="window type">
+        The type of the window.
+      </description>
+      <entry name="normal" value="1" summary="normal app window"/>
+      <entry name="system_ui" value="2" summary="window is treated as systemui"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -548,6 +556,16 @@
 	Set an orientation for the surface.
       </description>
       <arg name="orientation" type="int"/>
+    </request>
+
+    <!-- Version 7 additions -->
+
+    <request name="set_window_type" since="7">
+      <description summary="set the type of the window">
+        Set the type of window. This is only a hint to the compositor and the
+        compositor is free to ignore it.
+      </description>
+      <arg name="type" type="uint" summary="type of the window"/>
     </request>
 
   </interface>

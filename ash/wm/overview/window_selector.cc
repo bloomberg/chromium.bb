@@ -258,7 +258,10 @@ WindowSelector::~WindowSelector() {
 // NOTE: The work done in Init() is not done in the constructor because it may
 // cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
 // calls to restoring_minimized_windows() on a partially constructed object.
-void WindowSelector::Init(const WindowList& windows) {
+void WindowSelector::Init(const WindowList& windows,
+                          const WindowList& hide_windows) {
+  hide_overview_windows_ =
+      base::MakeUnique<ScopedHideOverviewWindows>(std::move(hide_windows));
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 

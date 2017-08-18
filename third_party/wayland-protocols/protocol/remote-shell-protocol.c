@@ -69,7 +69,7 @@ static const struct wl_message zcr_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
-	"zcr_remote_shell_v1", 6,
+	"zcr_remote_shell_v1", 7,
 	3, zcr_remote_shell_v1_requests,
 	4, zcr_remote_shell_v1_events,
 };
@@ -100,6 +100,7 @@ static const struct wl_message zcr_remote_surface_v1_requests[] = {
 	{ "ack_configure", "5u", types + 0 },
 	{ "move", "5", types + 0 },
 	{ "set_orientation", "6i", types + 0 },
+	{ "set_window_type", "7u", types + 0 },
 };
 
 static const struct wl_message zcr_remote_surface_v1_events[] = {
@@ -109,8 +110,8 @@ static const struct wl_message zcr_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
-	"zcr_remote_surface_v1", 6,
-	25, zcr_remote_surface_v1_requests,
+	"zcr_remote_surface_v1", 7,
+	26, zcr_remote_surface_v1_requests,
 	3, zcr_remote_surface_v1_events,
 };
 

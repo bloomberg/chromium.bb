@@ -15,6 +15,7 @@ namespace ash {
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kShowInOverviewKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);
