@@ -364,12 +364,14 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 *shadow_root, ".a ::content span { background: green}"),
             kRuleSetInvalidationFullRecalc);
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                *shadow_root, ".a /deep/ span { background: green}"),
-            kRuleSetInvalidationFullRecalc);
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                *shadow_root, ".a::shadow span { background: green}"),
-            kRuleSetInvalidationFullRecalc);
+  if (RuntimeEnabledFeatures::DeepCombinatorInCSSDynamicProfileEnabled()) {
+    EXPECT_EQ(ScheduleInvalidationsForRules(
+                  *shadow_root, ".a /deep/ span { background: green}"),
+              kRuleSetInvalidationFullRecalc);
+    EXPECT_EQ(ScheduleInvalidationsForRules(
+                  *shadow_root, ".a::shadow span { background: green}"),
+              kRuleSetInvalidationFullRecalc);
+  }
 }
 
 TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {

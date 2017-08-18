@@ -354,6 +354,12 @@
       name: "DecodeToYUV",
       status: "experimental",
     },
+    // Introduced this flag as stable so we can re-enable this feature easily
+    // after we disable this feature.
+    {
+      name: "DeepCombinatorInCSSDynamicProfile",
+      status: "stable",
+    },
     {
       name: "DeprecationReporting",
       status: "experimental",
@@ -965,6 +971,12 @@
     {
       name: "ShadowPiercingDescendantCombinator",
       status: "experimental",
+    },
+    // Introduced this flag as stable so we can re-enable this feature easily
+    // after we disable this feature.
+    {
+      name: "ShadowPseudoElementInCSSDynamicProfile",
+      status: "stable",
     },
     {
       name: "ShapeDetection",
