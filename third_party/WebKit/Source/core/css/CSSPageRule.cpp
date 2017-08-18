@@ -57,8 +57,9 @@ String CSSPageRule::selectorText() const {
 void CSSPageRule::setSelectorText(const String& selector_text) {
   CSSParserContext* context =
       CSSParserContext::Create(ParserContext(), nullptr);
+  DCHECK(context);
   CSSSelectorList selector_list = CSSParser::ParsePageSelector(
-      context, parentStyleSheet() ? parentStyleSheet()->Contents() : nullptr,
+      *context, parentStyleSheet() ? parentStyleSheet()->Contents() : nullptr,
       selector_text);
   if (!selector_list.IsValid())
     return;

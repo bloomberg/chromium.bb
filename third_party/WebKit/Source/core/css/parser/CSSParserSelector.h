@@ -29,6 +29,8 @@
 
 namespace blink {
 
+class CSSParserContext;
+
 class CORE_EXPORT CSSParserSelector {
   WTF_MAKE_NONCOPYABLE(CSSParserSelector);
   USING_FAST_MALLOC(CSSParserSelector);
@@ -74,9 +76,10 @@ class CORE_EXPORT CSSParserSelector {
   }
 
   void UpdatePseudoType(const AtomicString& value,
+                        const CSSParserContext& context,
                         bool has_arguments,
                         CSSParserMode mode) const {
-    selector_->UpdatePseudoType(value, has_arguments, mode);
+    selector_->UpdatePseudoType(value, context, has_arguments, mode);
   }
   void UpdatePseudoPage(const AtomicString& value) {
     selector_->UpdatePseudoPage(value);
