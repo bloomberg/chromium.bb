@@ -1175,6 +1175,171 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   }
 }
 
+class ResourceTrackingGLES2Interface : public cc::TestGLES2Interface {
+ public:
+  ResourceTrackingGLES2Interface() = default;
+  ~ResourceTrackingGLES2Interface() override { CheckNoResources(); }
+
+  void CheckNoResources() {
+    EXPECT_TRUE(textures_.empty());
+    EXPECT_TRUE(buffers_.empty());
+    EXPECT_TRUE(framebuffers_.empty());
+    EXPECT_TRUE(renderbuffers_.empty());
+    EXPECT_TRUE(queries_.empty());
+    EXPECT_TRUE(shaders_.empty());
+    EXPECT_TRUE(programs_.empty());
+  }
+
+  void GenTextures(GLsizei n, GLuint* textures) override {
+    GenIds(&textures_, n, textures);
+  }
+
+  void GenBuffers(GLsizei n, GLuint* buffers) override {
+    GenIds(&buffers_, n, buffers);
+  }
+
+  void GenFramebuffers(GLsizei n, GLuint* framebuffers) override {
+    GenIds(&framebuffers_, n, framebuffers);
+  }
+
+  void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) override {
+    GenIds(&renderbuffers_, n, renderbuffers);
+  }
+
+  void GenQueriesEXT(GLsizei n, GLuint* queries) override {
+    GenIds(&queries_, n, queries);
+  }
+
+  GLuint CreateProgram() override { return GenId(&programs_); }
+
+  GLuint CreateShader(GLenum type) override { return GenId(&shaders_); }
+
+  void BindTexture(GLenum target, GLuint texture) override {
+    CheckId(&textures_, texture);
+  }
+
+  void BindBuffer(GLenum target, GLuint buffer) override {
+    CheckId(&buffers_, buffer);
+  }
+
+  void BindRenderbuffer(GLenum target, GLuint renderbuffer) override {
+    CheckId(&renderbuffers_, renderbuffer);
+  }
+
+  void BindFramebuffer(GLenum target, GLuint framebuffer) override {
+    CheckId(&framebuffers_, framebuffer);
+  }
+
+  void UseProgram(GLuint program) override { CheckId(&programs_, program); }
+
+  void DeleteTextures(GLsizei n, const GLuint* textures) override {
+    DeleteIds(&textures_, n, textures);
+  }
+
+  void DeleteBuffers(GLsizei n, const GLuint* buffers) override {
+    DeleteIds(&buffers_, n, buffers);
+  }
+
+  void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) override {
+    DeleteIds(&framebuffers_, n, framebuffers);
+  }
+
+  void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) override {
+    DeleteIds(&renderbuffers_, n, renderbuffers);
+  }
+
+  void DeleteQueriesEXT(GLsizei n, const GLuint* queries) override {
+    DeleteIds(&queries_, n, queries);
+  }
+
+  void DeleteProgram(GLuint program) override { DeleteId(&programs_, program); }
+
+  void DeleteShader(GLuint shader) override { DeleteId(&shaders_, shader); }
+
+  void BufferData(GLenum target,
+                  GLsizeiptr size,
+                  const void* data,
+                  GLenum usage) override {}
+
+ private:
+  GLuint GenId(std::set<GLuint>* resource_set) {
+    GLuint id = next_id_++;
+    resource_set->insert(id);
+    return id;
+  }
+
+  void GenIds(std::set<GLuint>* resource_set, GLsizei n, GLuint* ids) {
+    for (GLsizei i = 0; i < n; ++i)
+      ids[i] = GenId(resource_set);
+  }
+
+  void CheckId(std::set<GLuint>* resource_set, GLuint id) {
+    if (id == 0)
+      return;
+    EXPECT_TRUE(resource_set->find(id) != resource_set->end());
+  }
+
+  void DeleteId(std::set<GLuint>* resource_set, GLuint id) {
+    if (id == 0)
+      return;
+    size_t num_erased = resource_set->erase(id);
+    EXPECT_EQ(1u, num_erased);
+  }
+
+  void DeleteIds(std::set<GLuint>* resource_set, GLsizei n, const GLuint* ids) {
+    for (GLsizei i = 0; i < n; ++i)
+      DeleteId(resource_set, ids[i]);
+  }
+
+  GLuint next_id_ = 1;
+  std::set<GLuint> textures_;
+  std::set<GLuint> buffers_;
+  std::set<GLuint> framebuffers_;
+  std::set<GLuint> renderbuffers_;
+  std::set<GLuint> queries_;
+  std::set<GLuint> shaders_;
+  std::set<GLuint> programs_;
+};
+
+TEST_F(GLRendererTest, NoResourceLeak) {
+  auto gl_owned = base::MakeUnique<ResourceTrackingGLES2Interface>();
+  auto* gl = gl_owned.get();
+
+  auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
+  provider->BindToCurrentThread();
+
+  cc::FakeOutputSurfaceClient output_surface_client;
+  auto output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
+  output_surface->BindToClient(&output_surface_client);
+
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
+
+  {
+    RendererSettings settings;
+    FakeRendererGL renderer(&settings, output_surface.get(),
+                            resource_provider.get());
+    renderer.Initialize();
+    renderer.SetVisible(true);
+
+    gfx::Size viewport_size(100, 100);
+
+    int root_pass_id = 1;
+    cc::RenderPass* root_pass = AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
+    root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
+
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+  }
+  gl->CheckNoResources();
+}
+
 class DrawElementsGLES2Interface : public cc::TestGLES2Interface {
  public:
   void InitializeTestContext(cc::TestWebGraphicsContext3D* context) override {

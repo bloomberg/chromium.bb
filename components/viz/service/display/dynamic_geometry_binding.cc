@@ -14,24 +14,23 @@ namespace viz {
 
 DynamicGeometryBinding::DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl)
     : gl_(gl), quad_vertices_vbo_(0), quad_elements_vbo_(0) {
-  GeometryBindingQuad quads[1];
-  GeometryBindingQuadIndex quad_indices[1];
-
-  static_assert(sizeof(GeometryBindingQuad) == 24 * sizeof(float),
-                "struct Quad should be densely packed");
-  static_assert(sizeof(GeometryBindingQuadIndex) == 6 * sizeof(uint16_t),
-                "struct QuadIndex should be densely packed");
-
-  gl_->GenBuffers(1, &quad_vertices_vbo_);
-  gl_->GenBuffers(1, &quad_elements_vbo_);
+  GLuint buffers[2];
+  gl_->GenBuffers(2, buffers);
+  quad_vertices_vbo_ = buffers[0];
+  quad_elements_vbo_ = buffers[1];
 
   gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_);
-  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 1, quads,
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad), nullptr,
                   GL_DYNAMIC_DRAW);
 
   gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_);
-  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GeometryBindingQuadIndex) * 1,
-                  &quad_indices, GL_DYNAMIC_DRAW);
+  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GeometryBindingQuadIndex),
+                  nullptr, GL_DYNAMIC_DRAW);
+}
+
+DynamicGeometryBinding::~DynamicGeometryBinding() {
+  GLuint buffers[2] = {quad_vertices_vbo_, quad_elements_vbo_};
+  gl_->DeleteBuffers(2, buffers);
 }
 
 void DynamicGeometryBinding::InitializeCustomQuad(const gfx::QuadF& quad) {
