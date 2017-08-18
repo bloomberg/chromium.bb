@@ -3,5 +3,9 @@ specific_include_rules = {
     # TODO(crbug.com/583685): remove once the //ios/web public API allow
     # access to that class.
     "+ios/web/webui/url_data_manager_ios_backend.h"
+  ],
+  "browser_state_keyed_service_factories.mm": [
+    # Allow the instantiation of BrowserStateKeyedServiceFactories in ios/clean/
+    "+ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
   ]
 }

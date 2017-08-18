@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -21,6 +22,9 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
@@ -36,9 +40,14 @@
 #endif
 
 @interface TabGridCoordinator ()<ContextMenuCommands,
+                                 OverlayServiceObserving,
                                  SettingsCommands,
                                  TabGridCommands,
-                                 ToolsMenuCommands>
+                                 ToolsMenuCommands> {
+  // Bridge that handles forwarding OverlayServiceObserver events.
+  std::unique_ptr<OverlayServiceObserverBridge> _overlayObserverBridge;
+}
+
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
@@ -46,6 +55,7 @@
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
+
 @end
 
 @implementation TabGridCoordinator
@@ -54,6 +64,14 @@
 @synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize activeTabCoordinator = _activeTabCoordinator;
 @synthesize mediator = _mediator;
+
+- (instancetype)init {
+  if ((self = [super init])) {
+    _overlayObserverBridge =
+        base::MakeUnique<OverlayServiceObserverBridge>(self);
+  }
+  return self;
+}
 
 #pragma mark - Properties
 
@@ -83,6 +101,10 @@
 
   self.mediator.consumer = self.viewController;
 
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->AddObserver(_overlayObserverBridge.get());
+
   [super start];
 }
 
@@ -90,6 +112,11 @@
   [super stop];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
   [self.mediator disconnect];
+
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->RemoveObserver(_overlayObserverBridge.get());
+
   // PLACEHOLDER: Remove child coordinators here for now. This might be handled
   // differently later on.
   for (BrowserCoordinator* child in self.children) {
@@ -129,6 +156,22 @@
   ContextMenuContextImpl* contextImpl =
       base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
   [self openURL:net::NSURLWithGURL(contextImpl.imageURL)];
+}
+
+#pragma mark - OverlayServiceObserving
+
+- (void)overlayService:(OverlayService*)overlayService
+    willShowOverlayForWebState:(web::WebState*)webState
+                     inBrowser:(Browser*)browser {
+  // If |webState| is specified, activate it in the WebStateList and ensure that
+  // its content area is visible.
+  WebStateList& webStateList = self.browser->web_state_list();
+  if (webState && webStateList.GetActiveWebState() != webState) {
+    int newActiveIndex = webStateList.GetIndexOfWebState(webState);
+    DCHECK_NE(newActiveIndex, WebStateList::kInvalidIndex);
+    webStateList.ActivateWebStateAt(newActiveIndex);
+    [self showTabGridTabAtIndex:newActiveIndex];
+  }
 }
 
 #pragma mark - SettingsCommands

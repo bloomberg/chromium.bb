@@ -13,10 +13,8 @@ source_set("coordinators") {
 
   deps = [
     "//base",
-    "//ios/chrome/app:tests_fake_hook",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/browser_list",
   ]
 }
