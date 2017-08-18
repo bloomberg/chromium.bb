@@ -44,7 +44,7 @@ index 737ed50f62..1bc9e858f5 100644
      buttonValueMap[bot.events.EventType.CLICK] = [0, 1, 2, null];
      buttonValueMap[bot.events.EventType.CONTEXTMENU] = [null, null, 2, null];
 diff --git a/javascript/chrome-driver/atoms.js b/javascript/chrome-driver/atoms.js
-index 5cf4416460..3ae27d2b11 100644
+index 5cf4416460..e2bfe1ecc8 100644
 --- a/javascript/chrome-driver/atoms.js
 +++ b/javascript/chrome-driver/atoms.js
 @@ -142,7 +142,13 @@ webdriver.chrome.scrollIntoView_ = function(elem, region, center) {
@@ -53,7 +53,7 @@ index 5cf4416460..3ae27d2b11 100644
    var windowSize = goog.dom.getDomHelper(elem).getViewportSize();
 -  scrollHelper(doc.body, windowSize, offset, region, center);
 +  var scrollable;
-+  if (goog.userAgent.product.isVersion(61) && doc.compatMode != "BackCompat") {
++  if (goog.userAgent.product.isVersion('61.0.3138') && doc.compatMode != "BackCompat") {
 +    scrollable = doc.documentElement;
 +  } else {
 +    scrollable = doc.body;
