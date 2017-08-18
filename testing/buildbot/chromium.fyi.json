@@ -9945,7 +9945,8 @@
   },
   "Fuchsia": {
     "additional_compile_targets": [
-      "gl_unittests"
+      "gl_unittests",
+      "headless_shell"
     ],
     "gtest_tests": [
       {
