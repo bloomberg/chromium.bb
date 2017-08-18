@@ -16,19 +16,35 @@ class TaskAttributionTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Used when the LongTaskV2 flag is enabled.
+  static TaskAttributionTiming* Create(String type,
+                                       String container_type,
+                                       String container_src,
+                                       String container_id,
+                                       String container_name,
+                                       double start_time,
+                                       double finish_time,
+                                       String script_url) {
+    return new TaskAttributionTiming(type, container_type, container_src,
+                                     container_id, container_name, start_time,
+                                     finish_time, script_url);
+  }
+
+  // Used when the LongTaskV2 flag is disabled.
   static TaskAttributionTiming* Create(String type,
                                        String container_type,
                                        String container_src,
                                        String container_id,
                                        String container_name) {
     return new TaskAttributionTiming(type, container_type, container_src,
-                                     container_id, container_name);
+                                     container_id, container_name, 0.0, 0.0,
+                                     g_empty_string);
   }
-
   String containerType() const;
   String containerSrc() const;
   String containerId() const;
   String containerName() const;
+  String scriptURL() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -39,12 +55,15 @@ class TaskAttributionTiming final : public PerformanceEntry {
                         String container_type,
                         String container_src,
                         String container_id,
-                        String container_name);
-
+                        String container_name,
+                        double start_time,
+                        double finish_time,
+                        String script_url);
   String container_type_;
   String container_src_;
   String container_id_;
   String container_name_;
+  String script_url_;
 };
 
 }  // namespace blink

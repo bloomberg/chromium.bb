@@ -22,6 +22,10 @@
 
 namespace blink {
 
+namespace {
+static const double kLongTaskSubTaskThresholdInSeconds = 0.012;
+}  // namespace
+
 // static
 double PerformanceMonitor::Threshold(ExecutionContext* context,
                                      Violation violation) {
@@ -205,13 +209,26 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
 }
 
 void PerformanceMonitor::Will(const probe::V8Compile& probe) {
-  // Todo(maxlg): https://crbug.com/738495 Intentionally leave out as we need to
-  // verify monotonical time is reasonable in overhead.
+  if (!enabled_ || !thresholds_[kLongTask])
+    return;
+
+  v8_compile_start_time_ = probe.CaptureStartTime();
 }
 
 void PerformanceMonitor::Did(const probe::V8Compile& probe) {
-  // Todo(maxlg): https://crbug.com/738495 Intentionally leave out as we need to
-  // verify monotonical time is reasonable in overhead.
+  if (!enabled_ || !thresholds_[kLongTask])
+    return;
+
+  double v8_compile_duration = probe.Duration();
+  if (v8_compile_duration <= kLongTaskSubTaskThresholdInSeconds)
+    return;
+  std::unique_ptr<SubTaskAttribution> sub_task_attribution =
+      SubTaskAttribution::Create(
+          String("script-compile"),
+          String::Format("%s(%d, %d)", probe.file_name.Utf8().data(),
+                         probe.line, probe.column),
+          v8_compile_start_time_, v8_compile_duration);
+  sub_task_attributions_.push_back(std::move(sub_task_attribution));
 }
 
 void PerformanceMonitor::Will(const probe::UserCallback& probe) {
@@ -253,6 +270,8 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
   layout_depth_ = 0;
   per_task_style_and_layout_time_ = 0;
   user_callback_ = nullptr;
+  v8_compile_start_time_ = 0;
+  sub_task_attributions_.clear();
 }
 
 void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
@@ -276,7 +295,7 @@ void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
         it.key->ReportLongTask(
             start_time, end_time,
             task_has_multiple_contexts_ ? nullptr : task_execution_context_,
-            task_has_multiple_contexts_);
+            task_has_multiple_contexts_, sub_task_attributions_);
       }
     }
   }

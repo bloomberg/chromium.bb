@@ -594,6 +594,9 @@
       status: "stable",
     },
     {
+      name: "LongTaskV2",
+    },
+    {
       name: "MediaCapabilities",
       status: "test",
     },

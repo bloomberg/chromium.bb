@@ -397,18 +397,26 @@ bool PerformanceBase::IsResourceTimingBufferFull() {
   return resource_timing_buffer_.size() >= resource_timing_buffer_size_;
 }
 
-void PerformanceBase::AddLongTaskTiming(double start_time,
-                                        double end_time,
-                                        const String& name,
-                                        const String& frame_src,
-                                        const String& frame_id,
-                                        const String& frame_name) {
+void PerformanceBase::AddLongTaskTiming(
+    double start_time,
+    double end_time,
+    const String& name,
+    const String& frame_src,
+    const String& frame_id,
+    const String& frame_name,
+    const SubTaskAttribution::EntriesVector& sub_task_attributions) {
   if (!HasObserverFor(PerformanceEntry::kLongTask))
     return;
+
+  for (auto&& it : sub_task_attributions) {
+    it->setHighResStartTime(
+        MonotonicTimeToDOMHighResTimeStamp(it->startTime()));
+    it->setHighResDuration(ConvertSecondsToDOMHighResTimeStamp(it->duration()));
+  }
   PerformanceEntry* entry = PerformanceLongTaskTiming::Create(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(end_time), name, frame_src, frame_id,
-      frame_name);
+      frame_name, sub_task_attributions);
   NotifyObserversOfEntry(*entry);
 }
 
@@ -465,7 +473,7 @@ void PerformanceBase::UpdatePerformanceObserverFilterOptions() {
   UpdateLongTaskInstrumentation();
 }
 
-void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) {
+void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) const {
   for (auto& observer : observers_) {
     if (observer->FilterOptions() & entry.EntryTypeEnum())
       observer->EnqueuePerformanceEntry(entry);

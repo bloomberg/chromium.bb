@@ -38,6 +38,8 @@ blink_core_sources("timing") {
     "PerformanceTiming.h",
     "PerformanceUserTiming.cpp",
     "PerformanceUserTiming.h",
+    "SubTaskAttribution.cpp",
+    "SubTaskAttribution.h",
     "TaskAttributionTiming.cpp",
     "TaskAttributionTiming.h",
     "WorkerGlobalScopePerformance.cpp",

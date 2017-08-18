@@ -117,10 +117,11 @@ TEST_F(PerformanceBaseTest, Activate) {
 TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
+  SubTaskAttribution::EntriesVector sub_task_attributions;
 
   // Add a long task entry, but no observer registered.
-  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
-                           "");
+  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "", "",
+                           sub_task_attributions);
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
@@ -134,8 +135,8 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
-                           "");
+  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "", "",
+                           sub_task_attributions);
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
