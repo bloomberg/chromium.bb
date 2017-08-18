@@ -31,7 +31,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
  public:
   SearchResultTileItemView(SearchResultContainerView* result_container,
                            AppListViewDelegate* view_delegate,
-                           bool is_suggested_app);
+                           bool is_suggested_app,
+                           bool is_fullscreen_app_list_enabled,
+                           bool is_play_store_search_enabled);
   ~SearchResultTileItemView() override;
 
   SearchResult* result() { return item_; }
@@ -68,12 +70,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
 
-  // Whether the fullscreen app list feature is enabled.
-  static bool IsFullscreenAppListEnabled();
-
-  // Whether the playstore search feature is enabled.
-  static bool IsPlaystoreSearchEnabled();
-
   // Whether the tile item view is a suggested app, used in StartPageView.
   const bool is_suggested_app_;
 
@@ -89,6 +85,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
   AppListViewDelegate* view_delegate_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };

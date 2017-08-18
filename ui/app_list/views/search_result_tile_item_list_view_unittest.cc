@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -92,6 +93,9 @@ class SearchResultTileItemListViewTest
         result->set_result_type(SearchResult::RESULT_PLAYSTORE_APP);
         result->set_title(
             base::UTF8ToUTF16(base::StringPrintf("PlayStoreApp %d", i)));
+        result->SetRating(1 + i);
+        result->SetFormattedPrice(
+            base::UTF8ToUTF16(base::StringPrintf("Price %d", i)));
         results->Add(std::move(result));
       }
     }
@@ -146,6 +150,32 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
                                        ? kMaxNumSearchResultTiles * 2
                                        : kMaxNumSearchResultTiles;
   EXPECT_EQ(expected_child_count, view()->child_count());
+
+  /// Test accessibility descriptions of tile views.
+  const int first_child = IsPlayStoreAppSearchEnabled() ? 1 : 0;
+  const int child_step = IsPlayStoreAppSearchEnabled() ? 2 : 1;
+
+  for (int i = 0; i < kInstalledApps; ++i) {
+    ui::AXNodeData node_data;
+    view()
+        ->child_at(first_child + i * child_step)
+        ->GetAccessibleNodeData(&node_data);
+    EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+    EXPECT_EQ(base::StringPrintf("InstalledApp %d", i),
+              node_data.GetStringAttribute(ui::AX_ATTR_NAME));
+  }
+
+  for (int i = kInstalledApps; i < expected_results; ++i) {
+    ui::AXNodeData node_data;
+    view()
+        ->child_at(first_child + i * child_step)
+        ->GetAccessibleNodeData(&node_data);
+    EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+    EXPECT_EQ(base::StringPrintf("PlayStoreApp %d, %d.0, Price %d",
+                                 i - kInstalledApps, i + 1 - kInstalledApps,
+                                 i - kInstalledApps),
+              node_data.GetStringAttribute(ui::AX_ATTR_NAME));
+  }
 
   // Tests item indexing by pressing TAB.
   for (int i = 1; i < results; ++i) {

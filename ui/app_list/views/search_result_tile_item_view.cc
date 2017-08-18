@@ -6,8 +6,8 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/vector_icons/vector_icons.h"
@@ -43,15 +43,18 @@ constexpr SkColor kSearchRatingStarColor =
 SearchResultTileItemView::SearchResultTileItemView(
     SearchResultContainerView* result_container,
     AppListViewDelegate* view_delegate,
-    bool is_suggested_app)
+    bool is_suggested_app,
+    bool is_fullscreen_app_list_enabled,
+    bool is_play_store_search_enabled)
     : is_suggested_app_(is_suggested_app),
       result_container_(result_container),
-      view_delegate_(view_delegate) {
+      view_delegate_(view_delegate),
+      is_fullscreen_app_list_enabled_(is_fullscreen_app_list_enabled) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
 
-  if (IsPlaystoreSearchEnabled()) {
+  if (is_play_store_search_enabled) {
     const gfx::FontList& base_font =
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::BaseFont);
@@ -109,7 +112,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetRating(item_->rating());
   SetPrice(item_->formatted_price());
 
-  if (IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     const gfx::FontList& base_font =
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::BaseFont);
@@ -145,6 +148,13 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       !item->badge_icon().BackedBySameObjectAs(old_item->badge_icon())) {
     OnBadgeIconChanged();
   }
+
+  base::string16 accessible_name = title()->text();
+  if (rating_ && rating_->visible())
+    accessible_name += base::UTF8ToUTF16(", ") + rating_->text();
+  if (price_ && price_->visible())
+    accessible_name += base::UTF8ToUTF16(", ") + price_->text();
+  SetAccessibleName(accessible_name);
 }
 
 void SearchResultTileItemView::SetRating(float rating) {
@@ -180,7 +190,7 @@ void SearchResultTileItemView::LogAppLaunch() const {
   if (!is_suggested_app_)
     return;
 
-  UMA_HISTOGRAM_BOOLEAN(IsFullscreenAppListEnabled()
+  UMA_HISTOGRAM_BOOLEAN(is_fullscreen_app_list_enabled_
                             ? kAppListAppLaunchedFullscreen
                             : kAppListAppLaunched,
                         is_suggested_app_);
@@ -257,7 +267,7 @@ void SearchResultTileItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  if (!IsFullscreenAppListEnabled() || !item_) {
+  if (!is_fullscreen_app_list_enabled_ || !item_) {
     TileItemView::Layout();
     return;
   }
@@ -319,7 +329,7 @@ void SearchResultTileItemView::Layout() {
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (IsFullscreenAppListEnabled() && item_) {
+  if (is_fullscreen_app_list_enabled_ && item_) {
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
       return gfx::Size(kGridTileWidth, kGridTileHeight);
     if (item_->display_type() == SearchResult::DISPLAY_TILE)
@@ -327,16 +337,6 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
   }
 
   return TileItemView::CalculatePreferredSize();
-}
-
-bool SearchResultTileItemView::IsFullscreenAppListEnabled() {
-  static bool enabled = features::IsFullscreenAppListEnabled();
-  return enabled;
-}
-
-bool SearchResultTileItemView::IsPlaystoreSearchEnabled() {
-  static bool enabled = features::IsPlayStoreAppSearchEnabled();
-  return enabled;
 }
 
 }  // namespace app_list
