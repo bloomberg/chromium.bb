@@ -1733,6 +1733,7 @@ split_static_library("browser") {
     "//third_party/smhasher:cityhash",
     "//third_party/webrtc/modules/desktop_capture",
     "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/widevine/cdm:headers",
     "//third_party/zlib",
     "//third_party/zlib:minizip",
