@@ -62,29 +62,29 @@ function dispatchEvents()
 
 function test()
 {
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, InspectorTest.safeWrap(onConsoleMessage));
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, TestRunner.safeWrap(onConsoleMessage));
     step1();
 
     function step1()
     {
-        InspectorTest.mainTarget.logAgent().startViolationsReport([
+        TestRunner.mainTarget.logAgent().startViolationsReport([
             {name: 'blockedEvent', threshold: 30000}]);
-        InspectorTest.evaluateInPage("dispatchEvents()", step2);
+        TestRunner.evaluateInPage("dispatchEvents()", step2);
     }
 
     function step2()
     {
-        InspectorTest.mainTarget.logAgent().startViolationsReport([
+        TestRunner.mainTarget.logAgent().startViolationsReport([
             {name: 'blockedEvent', threshold: 0.001}]);
-        InspectorTest.addResult("There should be no warnings above this line");
-        InspectorTest.evaluateInPage("dispatchEvents()", () => InspectorTest.completeTest());
+        TestRunner.addResult("There should be no warnings above this line");
+        TestRunner.evaluateInPage("dispatchEvents()", () => TestRunner.completeTest());
     }
 
     function onConsoleMessage(event)
     {
         var message = event.data;
         var text = message.messageText;
-        InspectorTest.addResult(text.replace(/ \d+ ms/, " <number> ms"));
+        TestRunner.addResult(text.replace(/ \d+ ms/, " <number> ms"));
     }
 }
 </script>

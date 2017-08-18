@@ -7,8 +7,8 @@ localStorage.testProperty = "testPropertyValue";
 
 async function test()
 {
-    var result = await InspectorTest.RuntimeAgent.evaluate("localStorage");
-    var localStorageHandle = InspectorTest.runtimeModel.createRemoteObject(result);
+    var result = await TestRunner.RuntimeAgent.evaluate("localStorage");
+    var localStorageHandle = TestRunner.runtimeModel.createRemoteObject(result);
     localStorageHandle.getOwnProperties(false, step2);
 
     function step2(properties)
@@ -17,9 +17,9 @@ async function test()
             if (property.name !== "testProperty")
                 continue;
             property.value = { type: property.value.type, description: property.value.description };
-            InspectorTest.dump(property);
+            TestRunner.dump(property);
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 }
 

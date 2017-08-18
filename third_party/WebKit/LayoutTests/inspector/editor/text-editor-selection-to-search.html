@@ -10,7 +10,7 @@ function test()
 {
     var panel = UI.panels.sources;
 
-    InspectorTest.showScriptSource("edit-me.js", step1);
+    SourcesTestRunner.showScriptSource("edit-me.js", step1);
 
     function step1(sourceFrame)
     {
@@ -21,12 +21,12 @@ function test()
     function step2()
     {
         panel.searchableView().showSearchField();
-        InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
+        TestRunner.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
         var action = new Sources.AdvancedSearchView.ActionDelegate();
         action._showSearch();
         var searchView = /** @type {!Sources.AdvancedSearchView} */ (self.runtime.sharedInstance(Sources.AdvancedSearchView));
-        InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Advanced search controller: '" + searchView._search.value + "'");
+        TestRunner.completeTest();
     }
 
     function findString(sourceFrame, string)

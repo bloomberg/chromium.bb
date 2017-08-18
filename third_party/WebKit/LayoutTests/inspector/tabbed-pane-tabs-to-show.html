@@ -20,7 +20,7 @@ var test = function()
     function getTabsToShowAndDumpResults(tabsOrdered, tabsHistory, totalWidth)
     {
         var tabsToShowIndexes = UI.TabbedPane.prototype._tabsToShowIndexes.call(tabbedPane, tabsOrdered, tabsHistory, totalWidth, dropDownButtonMeasuredWidth);
-        InspectorTest.addResult("    tabsToShowIndexes = [" + String(tabsToShowIndexes) + "]");
+        TestRunner.addResult("    tabsToShowIndexes = [" + String(tabsToShowIndexes) + "]");
     }
 
     function testWidthsAndHistory(widths, history, totalWidth)
@@ -31,10 +31,10 @@ var test = function()
             tabsOrdered.push(createFakeTab("tab " + i, widths[i]));
         for (var i = 0; i < history.length; i++)
             tabsHistory.push(tabsOrdered[history[i]]);
-        InspectorTest.addResult("Running tabs to show test:");
-        InspectorTest.addResult("    widths = [" + String(widths) + "]");
-        InspectorTest.addResult("    tabsHistory = [" + String(tabsHistory) + "]");
-        InspectorTest.addResult("    totalWidth = " + totalWidth + ", dropDownButtonMeasuredWidth = " + dropDownButtonMeasuredWidth);
+        TestRunner.addResult("Running tabs to show test:");
+        TestRunner.addResult("    widths = [" + String(widths) + "]");
+        TestRunner.addResult("    tabsHistory = [" + String(tabsHistory) + "]");
+        TestRunner.addResult("    totalWidth = " + totalWidth + ", dropDownButtonMeasuredWidth = " + dropDownButtonMeasuredWidth);
         getTabsToShowAndDumpResults(tabsOrdered, tabsHistory, totalWidth);
     }
 
@@ -50,7 +50,7 @@ var test = function()
         testWidthsAndHistory(widths, history, 100);
         testWidthsAndHistory(widths, history, 60);
         testWidthsAndHistory(widths, history, 50);
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
     }
 
     var widths = [50, 50, 60, 60, 70, 70];
@@ -66,7 +66,7 @@ var test = function()
     testWithDifferentTotalWidths(widths, [0, 2, 4, 1, 3, 5]);
     testWithDifferentTotalWidths(widths, [5, 3, 1, 4, 2, 0]);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

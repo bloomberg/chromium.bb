@@ -10,36 +10,36 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testExpansionPreservedWhenSorting(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             var columns;
             function step2()
             {
-                columns = InspectorTest.viewColumns();
-                InspectorTest.clickColumn(columns[0], step3);
+                columns = ProfilerTestRunner.viewColumns();
+                ProfilerTestRunner.clickColumn(columns[0], step3);
             }
 
             function step3()
             {
-                var row = InspectorTest.findRow("B");
-                InspectorTest.assertEquals(true, !!row, "\"B\" row");
-                InspectorTest.expandRow(row, showNext);
+                var row = ProfilerTestRunner.findRow("B");
+                TestRunner.assertEquals(true, !!row, "\"B\" row");
+                ProfilerTestRunner.expandRow(row, showNext);
                 function showNext(row)
                 {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(true, !!buttonsNode, "no buttons node found!");
-                    InspectorTest.clickShowMoreButton("showNext", buttonsNode, step4);
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(true, !!buttonsNode, "no buttons node found!");
+                    ProfilerTestRunner.clickShowMoreButton("showNext", buttonsNode, step4);
                 }
             }
 
@@ -47,23 +47,23 @@ function test()
             function step4(row)
             {
                 // There must be enough nodes to have some unrevealed.
-                var buttonsNode = InspectorTest.findButtonsNode(row);
-                InspectorTest.assertEquals(true, !!buttonsNode, "no buttons node found!");
+                var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                TestRunner.assertEquals(true, !!buttonsNode, "no buttons node found!");
 
-                nodeCount = InspectorTest.columnContents(columns[0]).length;
-                InspectorTest.assertEquals(true, nodeCount > 0, "nodeCount > 0");
+                nodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+                TestRunner.assertEquals(true, nodeCount > 0, "nodeCount > 0");
 
-                InspectorTest.clickColumn(columns[0], clickTwice);
+                ProfilerTestRunner.clickColumn(columns[0], clickTwice);
                 function clickTwice()
                 {
-                    InspectorTest.clickColumn(columns[0], step6);
+                    ProfilerTestRunner.clickColumn(columns[0], step6);
                 }
             }
 
             function step6()
             {
-                var newNodeCount = InspectorTest.columnContents(columns[0]).length;
-                InspectorTest.assertEquals(nodeCount, newNodeCount);
+                var newNodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+                TestRunner.assertEquals(nodeCount, newNodeCount);
                 setTimeout(next, 0);
             }
         }

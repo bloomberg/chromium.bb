@@ -9,17 +9,17 @@ function test()
     {
         var parsedURL = new Common.ParsedURL(url);
 
-        InspectorTest.addResult("Parsing url: " + url);
-        InspectorTest.addResult("  isValid: " + parsedURL.isValid);
-        InspectorTest.addResult("  scheme: " + parsedURL.scheme);
-        InspectorTest.addResult("  user: " + parsedURL.user);
-        InspectorTest.addResult("  host: " + parsedURL.host);
-        InspectorTest.addResult("  port: " + parsedURL.port);
-        InspectorTest.addResult("  path: " + parsedURL.path);
-        InspectorTest.addResult("  queryParams: " + parsedURL.queryParams);
-        InspectorTest.addResult("  fragment: " + parsedURL.fragment);
-        InspectorTest.addResult("  folderPathComponents: " + parsedURL.folderPathComponents);
-        InspectorTest.addResult("  lastPathComponent: " + parsedURL.lastPathComponent);
+        TestRunner.addResult("Parsing url: " + url);
+        TestRunner.addResult("  isValid: " + parsedURL.isValid);
+        TestRunner.addResult("  scheme: " + parsedURL.scheme);
+        TestRunner.addResult("  user: " + parsedURL.user);
+        TestRunner.addResult("  host: " + parsedURL.host);
+        TestRunner.addResult("  port: " + parsedURL.port);
+        TestRunner.addResult("  path: " + parsedURL.path);
+        TestRunner.addResult("  queryParams: " + parsedURL.queryParams);
+        TestRunner.addResult("  fragment: " + parsedURL.fragment);
+        TestRunner.addResult("  folderPathComponents: " + parsedURL.folderPathComponents);
+        TestRunner.addResult("  lastPathComponent: " + parsedURL.lastPathComponent);
     }
 
     parseAndDumpURL("http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
@@ -43,10 +43,10 @@ function test()
     function testSplitLineColumn(url) {
         var result = Common.ParsedURL.splitLineAndColumn(url);
 
-        InspectorTest.addResult("Splitting url: " + url);
-        InspectorTest.addResult("  URL: " + result.url);
-        InspectorTest.addResult("  Line: " + result.lineNumber);
-        InspectorTest.addResult("  Column: " + result.columnNumber);
+        TestRunner.addResult("Splitting url: " + url);
+        TestRunner.addResult("  URL: " + result.url);
+        TestRunner.addResult("  Line: " + result.lineNumber);
+        TestRunner.addResult("  Column: " + result.columnNumber);
     }
 
     testSplitLineColumn("http://www.chromium.org");
@@ -57,7 +57,7 @@ function test()
     testSplitLineColumn("http://www.chromium.org/foo.js:10");
     testSplitLineColumn("http://www.chromium.org/foo.js:10:20");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

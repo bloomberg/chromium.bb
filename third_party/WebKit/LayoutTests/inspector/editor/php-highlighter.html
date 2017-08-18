@@ -6,13 +6,13 @@
 function test()
 {
     var mimeType = "text/x-php";
-    var textEditor = InspectorTest.createTestEditor();
-    InspectorTest.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(onModesLoaded);
+    var textEditor = SourcesTestRunner.createTestEditor();
+    TestRunner.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(onModesLoaded);
     textEditor.setMimeType(mimeType);
     function onModesLoaded()
     {
-        InspectorTest.addResult("Mode loaded: " + !!CodeMirror.mimeModes[mimeType]);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Mode loaded: " + !!CodeMirror.mimeModes[mimeType]);
+        TestRunner.completeTest();
     }
 }
 

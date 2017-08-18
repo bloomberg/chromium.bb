@@ -69,13 +69,13 @@ function test()
     view._changeView();
     var tree = view.profileDataGridTree;
     if (!tree)
-        InspectorTest.addResult("no tree");
+        TestRunner.addResult("no tree");
     tree.performSearch(new UI.SearchableView.SearchConfig("foo12", true, false), false);
     for (var item of tree._searchResults) {
         var node = item.profileNode;
-        InspectorTest.addResult(`${node.callUID}: ${node.functionName} ${node.self} ${node.total}`);
+        TestRunner.addResult(`${node.callUID}: ${node.functionName} ${node.self} ${node.total}`);
     }
-    InspectorTest.completeProfilerTest();
+    ProfilerTestRunner.completeProfilerTest();
 }
 
 </script>

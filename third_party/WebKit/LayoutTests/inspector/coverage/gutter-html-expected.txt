@@ -54,11 +54,11 @@ Tests the coverage highlight in sources after the recording finishes.
 51:   
 52: - async function test()
 53: - {
-54: -     InspectorTest.startCoverage();
-55: -     await InspectorTest.evaluateInPagePromise("performActions()");
-56: -     await InspectorTest.stopCoverage();
-57: -     await InspectorTest.dumpDecorations("gutter-html.html");
-58: -     InspectorTest.completeTest();
+54: -     CoverageTestRunner.startCoverage();
+55: -     await TestRunner.evaluateInPagePromise("performActions()");
+56: -     await CoverageTestRunner.stopCoverage();
+57: -     await CoverageTestRunner.dumpDecorations("gutter-html.html");
+58: -     TestRunner.completeTest();
 59: - }
 60:   </script>
 61:   </head>

@@ -6,26 +6,26 @@ function test()
 {
     function testLoadForURL(url, next)
     {
-        var documentURL = InspectorTest.resourceTreeModel.mainFrame.url;
+        var documentURL = TestRunner.resourceTreeModel.mainFrame.url;
         var lastIndexOfSlash = documentURL.lastIndexOf("/");
         var urlPrefix = documentURL.substr(0, lastIndexOfSlash + 1);
         var fullURL = urlPrefix + url;
-        InspectorTest.addResult("Loading resource from " + url);
+        TestRunner.addResult("Loading resource from " + url);
 
         Host.ResourceLoader.load(fullURL, null, callback);
 
         function callback(statusCode, headers, content)
         {
             if (!content)
-                InspectorTest.addResult("Failed: " + statusCode);
+                TestRunner.addResult("Failed: " + statusCode);
             else {
-                InspectorTest.addResult("Content: " + content);
+                TestRunner.addResult("Content: " + content);
             }
-            InspectorTest.deprecatedRunAfterPendingDispatches(next);
+            TestRunner.deprecatedRunAfterPendingDispatches(next);
         }
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testResourceFromFileScheme(next)
         {
             testLoadForURL("resources/file-resource-to-load-for-frontend.txt", next);

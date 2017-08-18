@@ -9,24 +9,24 @@ function codeSnippet() {
 
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
-    InspectorTest.evaluateInPage("codeSnippet();", onCodeSnippet);
+    TestRunner.evaluateInPage("codeSnippet();", onCodeSnippet);
     var codeSnippetText;
 
     function onCodeSnippet(result)
     {
         codeSnippetText = result.value;
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     function dumpAndNext(next)
     {
         function innerDumpAndNext()
         {
-            InspectorTest.dumpTextWithSelection(textEditor, true);
+            SourcesTestRunner.dumpTextWithSelection(textEditor, true);
             next();
         }
         return innerDumpAndNext;
@@ -36,49 +36,49 @@ function test()
         function testSingleCursorFromOutsideOpenBracket(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 { line: 0, column: 16 }
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
         },
 
         function testSingleCursorFromInsideOpenBracket(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 { line: 0, column: 17 }
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
         },
 
         function testSingleCursorFromOutsideCloseBracket(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 { line: 3, column: 1 }
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
         },
 
         function testSingleCursorFromInsideCloseBracket(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 { line: 3, column: 0 }
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
         },
 
         function testMulticursor(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 { line: 0, column: 16 },
                 { line: 0, column: 21 },
                 { line: 3, column: 0 },
                 { line: 2, column: 10 }
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "M", ["ctrlKey"], dumpAndNext(next));
         },
     ];
 }

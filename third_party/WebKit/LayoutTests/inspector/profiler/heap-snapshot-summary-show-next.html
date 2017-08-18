@@ -9,37 +9,37 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowNext(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             function step2()
             {
-                var row = InspectorTest.findRow("A");
-                InspectorTest.assertEquals(true, !!row, "\"A\" row");
-                InspectorTest.expandRow(row, step3);
+                var row = ProfilerTestRunner.findRow("A");
+                TestRunner.assertEquals(true, !!row, "\"A\" row");
+                ProfilerTestRunner.expandRow(row, step3);
             }
 
             function step3(row)
             {
-                var rowsShown = InspectorTest.countDataRows(row);
-                InspectorTest.assertEquals(true, rowsShown <= instanceCount, "shown more instances than created: " + rowsShown + " > " + instanceCount);
+                var rowsShown = ProfilerTestRunner.countDataRows(row);
+                TestRunner.assertEquals(true, rowsShown <= instanceCount, "shown more instances than created: " + rowsShown + " > " + instanceCount);
                 if (rowsShown < instanceCount) {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(true, !!buttonsNode, "buttons node");
-                    InspectorTest.clickShowMoreButton("showNext", buttonsNode, step3);
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(true, !!buttonsNode, "buttons node");
+                    ProfilerTestRunner.clickShowMoreButton("showNext", buttonsNode, step3);
                 } else if (rowsShown === instanceCount) {
-                    var buttonsNode = InspectorTest.findButtonsNode(row);
-                    InspectorTest.assertEquals(false, !!buttonsNode, "buttons node found when all instances are shown!");
+                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                    TestRunner.assertEquals(false, !!buttonsNode, "buttons node found when all instances are shown!");
                     setTimeout(next, 0);
                 }
             }

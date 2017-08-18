@@ -15,32 +15,32 @@ function insertStyleSheet()
 function test()
 {
     var sourceCode;
-    InspectorTest.evaluateInPage("insertStyleSheet()", onStyleSheet);
+    TestRunner.evaluateInPage("insertStyleSheet()", onStyleSheet);
 
     function onStyleSheet()
     {
-        InspectorTest.waitForScriptSource("test-ssp-editing.scss", onSASS);
+        SourcesTestRunner.waitForScriptSource("test-ssp-editing.scss", onSASS);
     }
 
     function onSASS(sc)
     {
         sourceCode = sc;
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
     }
 
     function step1()
     {
-        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
         treeElement.startEditing(treeElement.valueElement);
         treeElement.valueElement.textContent = "blue";
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(step2);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(step2);
     }
 
     function step2()
     {
-        InspectorTest.addResult(sourceCode.workingCopy());
-        InspectorTest.completeTest();
+        TestRunner.addResult(sourceCode.workingCopy());
+        TestRunner.completeTest();
     }
 }
 

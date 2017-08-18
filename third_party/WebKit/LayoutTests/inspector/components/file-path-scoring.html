@@ -20,13 +20,13 @@ function test()
         ["froscr", "./Source/devtools/front_end/Script.pl"],
         ["adscon", "./Source/devtools/front_end/AdvancedSearchController.pl"]
     ];
-    InspectorTest.evaluateInPage("blinkFilePaths()", step1);
-    InspectorTest.addResult("Expected score must be equal to the actual score");
+    TestRunner.evaluateInPage("blinkFilePaths()", step1);
+    TestRunner.addResult("Expected score must be equal to the actual score");
 
     function step1(filePaths)
     {
         var files = filePaths.value.split(":");
-        InspectorTest.addResult("Test set size: " + files.length);
+        TestRunner.addResult("Test set size: " + files.length);
         for(var i = 0; i < TestQueries.length; ++i) {
             runQuery(files, TestQueries[i][0], TestQueries[i][1]);
         }
@@ -37,7 +37,7 @@ function test()
             "testing/NullExecutionContext.cpp"
         ], "execontext", "dom/ExecutionContext.cpp");
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function runQuery(paths, query, expected)
@@ -58,7 +58,7 @@ function test()
         var result = "\n=== Test query: " + query;
         result += "\n    expected return: " + render(scorer, expected);
         result += "\n      actual return: " + render(scorer, paths[bestIndex]);
-        InspectorTest.addResult(result);
+        TestRunner.addResult(result);
     }
 
     function render(scorer, value)

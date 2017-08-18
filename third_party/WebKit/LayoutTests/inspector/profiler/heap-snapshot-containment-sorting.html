@@ -9,17 +9,17 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testSorting(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Containment", step2);
+                ProfilerTestRunner.switchToView("Containment", step2);
             }
 
             var gcRoots;
@@ -29,13 +29,13 @@ function test()
 
             function step2()
             {
-                InspectorTest.findAndExpandGCRoots(step3);
+                ProfilerTestRunner.findAndExpandGCRoots(step3);
             }
 
             function step3(gcRootsRow)
             {
                 gcRoots = gcRootsRow;
-                columns = InspectorTest.viewColumns();
+                columns = ProfilerTestRunner.viewColumns();
                 currentColumn = 0;
                 currentColumnOrder = false;
                 setTimeout(step4, 0);
@@ -48,17 +48,17 @@ function test()
                     return;
                 }
 
-                InspectorTest.clickColumn(columns[currentColumn], step5);
+                ProfilerTestRunner.clickColumn(columns[currentColumn], step5);
             }
 
             function step5(newColumnState)
             {
                 columns[currentColumn] = newColumnState;
-                var contents = InspectorTest.columnContents(columns[currentColumn], gcRoots);
-                InspectorTest.assertEquals(true, !!contents.length, "column contents");
+                var contents = ProfilerTestRunner.columnContents(columns[currentColumn], gcRoots);
+                TestRunner.assertEquals(true, !!contents.length, "column contents");
                 var sortTypes = { object: "name", distance: "number", shallowSize: "size", retainedSize: "size" };
-                InspectorTest.assertEquals(true, !!sortTypes[columns[currentColumn].id], "sort by id");
-                InspectorTest.checkArrayIsSorted(contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
+                TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], "sort by id");
+                ProfilerTestRunner.checkArrayIsSorted(contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
 
                 if (!currentColumnOrder)
                     currentColumnOrder = true;

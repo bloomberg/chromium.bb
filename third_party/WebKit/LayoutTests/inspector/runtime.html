@@ -13,11 +13,11 @@ function test()
                 return module;
         }
 
-        InspectorTest.addResult("Fail: not a single module loaded");
-        InspectorTest.completeTest();
+        TestRunner.addResult("Fail: not a single module loaded");
+        TestRunner.completeTest();
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function substituteURL(next)
         {
             var module = findLoadedModule();
@@ -33,7 +33,7 @@ function test()
 
             function testValue(value)
             {
-                InspectorTest.addResult("\"" + value + "\" -> \"" + module.substituteURL(value) + "\"");
+                TestRunner.addResult("\"" + value + "\" -> \"" + module.substituteURL(value) + "\"");
             }
 
             module._name = moduleName;

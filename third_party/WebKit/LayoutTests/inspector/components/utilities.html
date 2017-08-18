@@ -5,7 +5,7 @@
 
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function remove(next)
         {
             var testArrays = [
@@ -19,11 +19,11 @@ function test()
                 var actual = testArrays[i].slice(0);
                 var expected = testArrays[i + 1];
                 actual.remove(2, true);
-                InspectorTest.assertEquals(JSON.stringify(expected), JSON.stringify(actual), "remove(2, true) passed");
+                TestRunner.assertEquals(JSON.stringify(expected), JSON.stringify(actual), "remove(2, true) passed");
                 actual = testArrays[i].slice(0);
                 expected = testArrays[i + 2];
                 actual.remove(2, false);
-                InspectorTest.assertEquals(JSON.stringify(expected), JSON.stringify(actual), "remove(2, false) passed");
+                TestRunner.assertEquals(JSON.stringify(expected), JSON.stringify(actual), "remove(2, false) passed");
             }
             next();
         },
@@ -50,10 +50,10 @@ function test()
                     var value = allValues[i];
                     expectedCount = checkOperation(count(a, value), count(b, value));
                     actualCount = count(actual, value);
-                    InspectorTest.assertEquals(expectedCount, actualCount,
+                    TestRunner.assertEquals(expectedCount, actualCount,
                         "Incorrect result for value: " + value + " at [" + a + "] " + opName + " [" + b + "] -> [" + actual + "]");
                 }
-                InspectorTest.assertEquals(JSON.stringify(actual.sort()), JSON.stringify(actual), "result array is ordered");
+                TestRunner.assertEquals(JSON.stringify(actual.sort()), JSON.stringify(actual), "result array is ordered");
             }
             var testArrays = [
                 [], [],
@@ -91,7 +91,7 @@ function test()
                 for (var i = -100; i <= 100; ++i) {
                     var reference = array.indexOf(i);
                     var actual = array.binaryIndexOf(i, comparator);
-                    InspectorTest.assertEquals(reference, actual, "binaryIndexOf");
+                    TestRunner.assertEquals(reference, actual, "binaryIndexOf");
                 }
                 return true;
             }
@@ -118,9 +118,9 @@ function test()
 
                 for (var value = -2; value <= 12; ++value) {
                     var index = useComparator ? array.lowerBound(value, comparator) : array.lowerBound(value);
-                    InspectorTest.assertTrue(0 <= index && index <= array.length, "index is within bounds");
-                    InspectorTest.assertTrue(index === 0 || array[index - 1] < value, "array[index - 1] < value");
-                    InspectorTest.assertTrue(index === array.length || array[index] >= value, "array[index] >= value");
+                    TestRunner.assertTrue(0 <= index && index <= array.length, "index is within bounds");
+                    TestRunner.assertTrue(index === 0 || array[index - 1] < value, "array[index - 1] < value");
+                    TestRunner.assertTrue(index === array.length || array[index] >= value, "array[index] >= value");
                 }
             }
 
@@ -148,9 +148,9 @@ function test()
 
                 for (var value = -2; value <= 12; ++value) {
                     var index = useComparator ? array.upperBound(value, comparator) : array.upperBound(value);
-                    InspectorTest.assertTrue(0 <= index && index <= array.length, "index is within bounds");
-                    InspectorTest.assertTrue(index === 0 || array[index - 1] <= value, "array[index - 1] <= value");
-                    InspectorTest.assertTrue(index === array.length || array[index] > value, "array[index] > value");
+                    TestRunner.assertTrue(0 <= index && index <= array.length, "index is within bounds");
+                    TestRunner.assertTrue(index === 0 || array[index - 1] <= value, "array[index - 1] <= value");
+                    TestRunner.assertTrue(index === array.length || array[index] > value, "array[index] > value");
                 }
             }
 
@@ -191,9 +191,9 @@ function test()
                     median: array.slice(0).qselect(Math.floor(array.length / 2)),
                     max: array.slice(0).qselect(array.length - 1)
                 }
-                InspectorTest.addResult("Array: " + JSON.stringify(array));
-                InspectorTest.addResult("Reference: " + JSON.stringify(reference));
-                InspectorTest.addResult("Actual:    " + JSON.stringify(actual));
+                TestRunner.addResult("Array: " + JSON.stringify(array));
+                TestRunner.addResult("Reference: " + JSON.stringify(reference));
+                TestRunner.addResult("Actual:    " + JSON.stringify(actual));
             }
             for (var i = 0, l = testArrays.length; i < l; ++i)
                 testArray(testArrays[i]);
@@ -219,7 +219,7 @@ function test()
 
                 function compareArrays(a, b, message)
                 {
-                    InspectorTest.assertEquals(JSON.stringify(a), JSON.stringify(b), message);
+                    TestRunner.assertEquals(JSON.stringify(a), JSON.stringify(b), message);
                 }
 
                 for (var left = 0, l = array.length - 1; left < l; ++left) {
@@ -281,10 +281,10 @@ function test()
             ];
 
             for (var i = 0, n = testArray.length; i < n; ++i)
-                InspectorTest.assertEquals(0, String.naturalOrderComparator(testArray[i], testArray[i]), "comparing equal strings");
+                TestRunner.assertEquals(0, String.naturalOrderComparator(testArray[i], testArray[i]), "comparing equal strings");
 
             testArray.sort(String.naturalOrderComparator);
-            InspectorTest.addResult("Sorted in natural order: [" + testArray.join(", ") + "]");
+            TestRunner.addResult("Sorted in natural order: [" + testArray.join(", ") + "]");
 
             // Check comparator's transitivity.
             for (var i = 0, n = testArray.length; i < n; ++i) {
@@ -293,11 +293,11 @@ function test()
                     var b = testArray[j];
                     var diff = String.naturalOrderComparator(a, b);
                     if (diff === 0)
-                        InspectorTest.assertEquals(a, b, "zero diff");
+                        TestRunner.assertEquals(a, b, "zero diff");
                     else if (diff < 0)
-                        InspectorTest.assertTrue(i < j);
+                        TestRunner.assertTrue(i < j);
                     else
-                        InspectorTest.assertTrue(i > j);
+                        TestRunner.assertTrue(i > j);
                 }
             }
             next();
@@ -305,11 +305,11 @@ function test()
 
         function stableSortPrimitiveTest(next)
         {
-            InspectorTest.assertEquals("", [].stableSort().join(","));
-            InspectorTest.assertEquals("1", [1].stableSort().join(","));
-            InspectorTest.assertEquals("1,2", [2,1].stableSort().join(","));
-            InspectorTest.assertEquals("1,1,1", [1,1,1].stableSort().join(","));
-            InspectorTest.assertEquals("1,2,3,4", [1,2,3,4].stableSort().join(","));
+            TestRunner.assertEquals("", [].stableSort().join(","));
+            TestRunner.assertEquals("1", [1].stableSort().join(","));
+            TestRunner.assertEquals("1,2", [2,1].stableSort().join(","));
+            TestRunner.assertEquals("1,1,1", [1,1,1].stableSort().join(","));
+            TestRunner.assertEquals("1,2,3,4", [1,2,3,4].stableSort().join(","));
 
             function defaultComparator(a, b)
             {
@@ -329,7 +329,7 @@ function test()
             var original = [0,-0,0,-0,-0,-0,0,0,0,-0,0,-0,-0,-0,0,0];
             var sorted = original.slice(0).stableSort(defaultComparator);
             for (var i = 0; i < original.length; ++i)
-                InspectorTest.assertTrue(strictNumberCmp(original[i], sorted[i]), "Sorting negative zeros");
+                TestRunner.assertTrue(strictNumberCmp(original[i], sorted[i]), "Sorting negative zeros");
 
             // Test sorted and backward-sorted arrays.
             var identity = [];
@@ -341,8 +341,8 @@ function test()
             identity.stableSort(defaultComparator);
             reverse.stableSort(defaultComparator);
             for (var i = 1; i < identity.length; ++i) {
-                InspectorTest.assertTrue(identity[i - 1] < identity[i], "identity");
-                InspectorTest.assertTrue(reverse[i - 1] < reverse[i], "reverse");
+                TestRunner.assertTrue(identity[i - 1] < identity[i], "identity");
+                TestRunner.assertTrue(reverse[i - 1] < reverse[i], "reverse");
             }
 
             next();
@@ -386,7 +386,7 @@ function test()
             var testArrayKey2Values = [];
             for (var i = 0, n = testArray.length; i < n; ++i) {
                 var value = testArray[i].key2;
-                InspectorTest.assertTrue(testArrayKey2Values.indexOf(value) === -1, "FAIL: key2 values should be unique");
+                TestRunner.assertTrue(testArrayKey2Values.indexOf(value) === -1, "FAIL: key2 values should be unique");
                 testArrayKey2Values.push(value);
             }
 
@@ -395,11 +395,11 @@ function test()
                 return a.key1 - b.key1;
             }
             testArray.stableSort(comparator);
-            InspectorTest.addResult("Stable sort result:\n" + testArray.join("\n"));
+            TestRunner.addResult("Stable sort result:\n" + testArray.join("\n"));
 
             function assertHelper(condition, message, i, a, b)
             {
-                InspectorTest.assertTrue(condition, "FAIL: " + message + " at index " + i + ": " + a + " < " + b);
+                TestRunner.assertTrue(condition, "FAIL: " + message + " at index " + i + ": " + a + " < " + b);
             }
 
             for (var i = 1, n = testArray.length; i < n; ++i) {
@@ -409,9 +409,9 @@ function test()
                 if (a.key1 !== b.key1)
                     continue;
                 var key2IndexA = testArrayKey2Values.indexOf(a.key2);
-                InspectorTest.assertTrue(key2IndexA !== -1);
+                TestRunner.assertTrue(key2IndexA !== -1);
                 var key2IndexB = testArrayKey2Values.indexOf(b.key2);
-                InspectorTest.assertTrue(key2IndexB !== -1);
+                TestRunner.assertTrue(key2IndexB !== -1);
                 assertHelper(key2IndexA < key2IndexB, "stable order", i, a, b);
             }
             next();
@@ -422,9 +422,9 @@ function test()
             var stringA = " ".repeat(10000);
             var stringB = stringA + " ";
             var hashA = String.hashCode(stringA);
-            InspectorTest.assertTrue(hashA !== String.hashCode(stringB));
-            InspectorTest.assertTrue(isFinite(hashA));
-            InspectorTest.assertTrue(hashA + 1 !== hashA);
+            TestRunner.assertTrue(hashA !== String.hashCode(stringB));
+            TestRunner.assertTrue(isFinite(hashA));
+            TestRunner.assertTrue(hashA + 1 !== hashA);
             next();
         },
 
@@ -439,7 +439,7 @@ function test()
             for (var i = 0; i < testArray.length; i += 2) {
                 var url = testArray[i];
                 var expected = testArray[i + 1];
-                InspectorTest.assertEquals(expected, url.trimURL(baseURLDomain), url);
+                TestRunner.assertEquals(expected, url.trimURL(baseURLDomain), url);
             }
             next();
         },
@@ -459,7 +459,7 @@ function test()
             for (var i = 0; i < testArray.length; i += 2) {
                 var string = testArray[i];
                 var encodedString = testArray[i + 1];
-                InspectorTest.assertEquals(encodedString, string.toBase64());
+                TestRunner.assertEquals(encodedString, string.toBase64());
             }
             next();
         },
@@ -475,8 +475,8 @@ function test()
             for (var string of testArray) {
                 for (var maxLength = string.length + 1; maxLength > 0; --maxLength) {
                     var trimmed = string.trimMiddle(maxLength);
-                    InspectorTest.addResult(trimmed);
-                    InspectorTest.assertTrue(trimmed.length <= maxLength);
+                    TestRunner.addResult(trimmed);
+                    TestRunner.assertTrue(trimmed.length <= maxLength);
                 }
             }
             next();

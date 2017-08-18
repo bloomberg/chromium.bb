@@ -19,15 +19,15 @@ function simulateBrowserSync()
 
 function test()
 {
-    InspectorTest.evaluateInPage("simulateBrowserSync()", function() { });
-    InspectorTest.cssModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onSourceMapAttached);
+    TestRunner.evaluateInPage("simulateBrowserSync()", function() { });
+    TestRunner.cssModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onSourceMapAttached);
 
     function onSourceMapAttached(event)
     {
         var header = event.data.client;
         var sourceMap = event.data.sourceMap;
-        InspectorTest.addResult("SourceMap is editable: " + sourceMap.editable());
-        InspectorTest.completeTest();
+        TestRunner.addResult("SourceMap is editable: " + sourceMap.editable());
+        TestRunner.completeTest();
     }
 }
 

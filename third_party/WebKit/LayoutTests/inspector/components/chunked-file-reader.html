@@ -21,11 +21,11 @@ async function test()
 
     var error = await reader.read(output);
 
-    InspectorTest.addResult("Read result: " + error);
-    InspectorTest.addResult("Chunks transferred: " + chunkCount);
-    InspectorTest.assertEquals(text.join(""), output.data(), "Read text is different from written text");
-    InspectorTest.addResult("DONE");
-    InspectorTest.completeTest();
+    TestRunner.addResult("Read result: " + error);
+    TestRunner.addResult("Chunks transferred: " + chunkCount);
+    TestRunner.assertEquals(text.join(""), output.data(), "Read text is different from written text");
+    TestRunner.addResult("DONE");
+    TestRunner.completeTest();
 }
 
 </script>

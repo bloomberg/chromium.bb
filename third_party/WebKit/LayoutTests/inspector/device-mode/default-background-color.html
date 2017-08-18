@@ -12,8 +12,8 @@ html {
 <script>
 function test()
 {
-    InspectorTest.evaluateInPage("testRunner.dumpAsTextWithPixelResults();", () => {
-        InspectorTest.EmulationAgent.invoke_setDefaultBackgroundColorOverride({color: {r: 0x12, g: 0x34, b: 0x56, a: 1.0}}).then(backgroundColorSet);
+    TestRunner.evaluateInPage("testRunner.dumpAsTextWithPixelResults();", () => {
+        TestRunner.EmulationAgent.invoke_setDefaultBackgroundColorOverride({color: {r: 0x12, g: 0x34, b: 0x56, a: 1.0}}).then(backgroundColorSet);
     });
 
     function backgroundColorSet(messageObject) {
@@ -21,8 +21,8 @@ function test()
           InspectorTest.log("FAIL: unexpected exception: " + messageObject[Protocol.Error]);
 
       // Complete the test without closing the inspector, so that the override stays active for the picture.
-      InspectorTest.flushResults();
-      InspectorTest.evaluateInPage("testRunner.notifyDone();");
+      TestRunner.flushResults();
+      TestRunner.evaluateInPage("testRunner.notifyDone();");
     }
 }
 </script>

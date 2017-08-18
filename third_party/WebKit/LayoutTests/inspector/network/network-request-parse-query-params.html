@@ -8,21 +8,21 @@ function test() {
     {
         var url = "http://webkit.org?" + query;
         var request = new SDK.NetworkRequest(url, url, "", "", "");
-        InspectorTest.addResult("Query: " + request.queryString());
+        TestRunner.addResult("Query: " + request.queryString());
         var params = request.queryParameters;
-        InspectorTest.addResult("Parameters: ");
+        TestRunner.addResult("Parameters: ");
         for (var i = 0; i < params.length; ++i) {
             var nameValue = params[i];
-            InspectorTest.addResult("  " + nameValue.name + ": " + nameValue.value);
+            TestRunner.addResult("  " + nameValue.name + ": " + nameValue.value);
         }
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
     }
 
     checkQuery("a=b&c=d");
     checkQuery("a&b");
     checkQuery("a=b=c=d");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

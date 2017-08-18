@@ -9,77 +9,77 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testSearch(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1a);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1a);
             function addSearchResultSniffer(step)
             {
                 function jumpToSearchResult()
                 {
-                    step(InspectorTest.currentProfileView()._searchResults.length);
+                    step(ProfilerTestRunner.currentProfileView()._searchResults.length);
                 }
-                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_jumpToSearchResult", jumpToSearchResult);
+                TestRunner.addSniffer(ProfilerTestRunner.currentProfileView(), "_jumpToSearchResult", jumpToSearchResult);
             }
 
             function addNodeSelectedSniffer(callback)
             {
-                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_selectRevealedNode", callback);
+                TestRunner.addSniffer(ProfilerTestRunner.currentProfileView(), "_selectRevealedNode", callback);
             }
 
             function step1a()
             {
-                InspectorTest.switchToView("Summary", step1b);
+                ProfilerTestRunner.switchToView("Summary", step1b);
             }
 
             function step1b()
             {
-                var row = InspectorTest.findRow("Window");
-                InspectorTest.assertEquals(true, !!row, "\"Window\" class row");
-                InspectorTest.expandRow(row, step1c);
+                var row = ProfilerTestRunner.findRow("Window");
+                TestRunner.assertEquals(true, !!row, "\"Window\" class row");
+                ProfilerTestRunner.expandRow(row, step1c);
             }
 
             function step1c(row)
             {
-                InspectorTest.assertEquals(1, row.children.length, "single Window object");
+                TestRunner.assertEquals(1, row.children.length, "single Window object");
                 var windowRow = row.children[0];
-                InspectorTest.assertEquals(true, !!windowRow, "\"Window\" instance row");
-                InspectorTest.expandRow(windowRow, step2);
+                TestRunner.assertEquals(true, !!windowRow, "\"Window\" instance row");
+                ProfilerTestRunner.expandRow(windowRow, step2);
             }
 
             function step2()
             {
                 addSearchResultSniffer(step3);
-                InspectorTest.currentProfileView().performSearch({query: "window", caseSensitive: false});
+                ProfilerTestRunner.currentProfileView().performSearch({query: "window", caseSensitive: false});
             }
 
             function step3(resultCount)
             {
-                InspectorTest.assertEquals(1, resultCount, "Search for existing node");
+                TestRunner.assertEquals(1, resultCount, "Search for existing node");
                 addSearchResultSniffer(step4);
-                InspectorTest.currentProfileView().performSearch({query: "foo", caseSensitive:false});
+                ProfilerTestRunner.currentProfileView().performSearch({query: "foo", caseSensitive:false});
             }
 
             function step4(resultCount)
             {
-                InspectorTest.assertEquals(0, resultCount, "Search for not-existing node");
+                TestRunner.assertEquals(0, resultCount, "Search for not-existing node");
                 addNodeSelectedSniffer(step5);
-                InspectorTest.currentProfileView().performSearch({query: "@999", caseSensitive: false});
+                ProfilerTestRunner.currentProfileView().performSearch({query: "@999", caseSensitive: false});
             }
 
             function step5(node)
             {
-                InspectorTest.assertEquals(false, !!node, "Search for not-existing node by id");
+                TestRunner.assertEquals(false, !!node, "Search for not-existing node by id");
                 addNodeSelectedSniffer(step6);
-                InspectorTest.currentProfileView().performSearch({query: "@83", caseSensitive:false});
+                ProfilerTestRunner.currentProfileView().performSearch({query: "@83", caseSensitive:false});
             }
 
             function step6(node)
             {
-                InspectorTest.assertEquals(true, !!node, "Search for existing node by id");
+                TestRunner.assertEquals(true, !!node, "Search for existing node by id");
                 next();
             }
         }

@@ -39,13 +39,13 @@ function test()
     function performTestForElement(element, ranges)
     {
         var changes = [];
-        InspectorTest.addResult("--------- Running test: ----------");
+        TestRunner.addResult("--------- Running test: ----------");
         UI.highlightRangesWithStyleClass(element, ranges, "highlighted", changes);
-        InspectorTest.addResult("After highlight: " + dumpTextNodesAsString(element));
+        TestRunner.addResult("After highlight: " + dumpTextNodesAsString(element));
         UI.revertDomChanges(changes);
-        InspectorTest.addResult("After revert: " + dumpTextNodesAsString(element));
+        TestRunner.addResult("After revert: " + dumpTextNodesAsString(element));
         UI.applyDomChanges(changes);
-        InspectorTest.addResult("After apply: " + dumpTextNodesAsString(element));
+        TestRunner.addResult("After apply: " + dumpTextNodesAsString(element));
     }
 
     function textElement(strings)
@@ -78,7 +78,7 @@ function test()
     performTestForElement(textElement(["function", " ", "functionName"]), [range(0, 1), range(8, 1), range(9, 1)]); // Highlight first characters in text nodes.
     performTestForElement(textElement(["function", " ", "functionName"]), [range(7, 1), range(8, 1), range(20, 1)]); // Highlight last characters in text node.
     performTestForElement(textElement(["function", " ", "functionName"]), [range(0, 1), range(7, 3), range(20, 1)]); // Highlight like that: "[f]unctio[n f]unctionNam[e]"
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

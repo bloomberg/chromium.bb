@@ -22,9 +22,9 @@ function test()
                 line += "(failed)";
             else if (request.finished)
                 line += "Finished";
-            InspectorTest.addResult(line);
+            TestRunner.addResult(line);
         }
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
     }
 
     function onRequestFinished(request)
@@ -35,9 +35,9 @@ function test()
             setTimeout(dumpRequests);
     }
 
-    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
-    InspectorTest.recordNetwork();
-    InspectorTest.evaluateInPage("loadResources()");
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
+    NetworkTestRunner.recordNetwork();
+    TestRunner.evaluateInPage("loadResources()");
 }
 
 function addScriptElement(src)

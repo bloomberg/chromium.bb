@@ -10,21 +10,21 @@
 
 function test()
 {
-    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
 
-    InspectorTest.runCSSEditTests(header, [
+    SASSTestRunner.runCSSEditTests(header, [
         function testPrependProperty(text)
         {
             return [
-                InspectorTest.createEdit(text, "{", "{ border: 1px solid black;")
+                SASSTestRunner.createEdit(text, "{", "{ border: 1px solid black;")
             ];
         },
 
         function testPrependAndAppendProperties(text)
         {
             return [
-                InspectorTest.createEdit(text, "{", "{ color: blue;"),
-                InspectorTest.createEdit(text, "}", "background: white;}"),
+                SASSTestRunner.createEdit(text, "{", "{ color: blue;"),
+                SASSTestRunner.createEdit(text, "}", "background: white;}"),
             ];
         },
     ]);

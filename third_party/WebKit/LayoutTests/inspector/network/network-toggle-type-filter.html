@@ -4,14 +4,14 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
     var target = UI.panels.network._networkLogView;
     var types = Common.resourceTypes;
 
     function toggleAndDump(buttonName, toggle)
     {
-        InspectorTest.addResult("");
-        InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
+        TestRunner.addResult("");
+        TestRunner.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
         target._resourceCategoryFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
         var request = new SDK.NetworkRequest("", "", "", "", "");
@@ -19,7 +19,7 @@ function test() {
             var type = Common.resourceTypes[typeId];
             results.push(type.name() + ": " + target._resourceCategoryFilterUI.accept(type.category().title));
         }
-        InspectorTest.addResult("Filter: " + results.join(", "));
+        TestRunner.addResult("Filter: " + results.join(", "));
     }
 
     var allTypes = "all";
@@ -41,7 +41,7 @@ function test() {
     toggleAndDump(types.Media.category().title, true);
     toggleAndDump(allTypes, false);
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

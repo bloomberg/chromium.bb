@@ -38,25 +38,25 @@ function test()
                 rows.push(node._data.key + " = " + node._data.value);
         }
         rows.sort();
-        InspectorTest.addResult("Table rows: [" + rows.join(", ") + "]");
+        TestRunner.addResult("Table rows: [" + rows.join(", ") + "]");
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function initialize(next)
         {
-            InspectorTest.evaluateInPage("clear();", next);
+            TestRunner.evaluateInPage("clear();", next);
         },
 
         function updateLocalStorageView(next)
         {
             function viewUpdated(items)
             {
-                InspectorTest.addResult("Resource Panel with localStorage view updated.");
+                TestRunner.addResult("Resource Panel with localStorage view updated.");
                 next();
             }
 
             var storage = null;
-            var storages = InspectorTest.domStorageModel().storages();
+            var storages = ApplicationTestRunner.domStorageModel().storages();
             for (var i = 0; i < storages.length; ++i) {
                 if (storages[i].isLocalStorage) {
                     storage = storages[i];
@@ -64,11 +64,11 @@ function test()
                 }
             }
 
-            InspectorTest.assertTrue(!!storage, "Local storage not found.");
+            TestRunner.assertTrue(!!storage, "Local storage not found.");
 
             UI.panels.resources.showDOMStorage(storage);
             view = UI.panels.resources._domStorageView;
-            InspectorTest.addSniffer(view, "_showDOMStorageItems", viewUpdated);
+            TestRunner.addSniffer(view, "_showDOMStorageItems", viewUpdated);
         },
 
         function addItemTest(next)
@@ -88,11 +88,11 @@ function test()
                     next();
                     return;
                 }
-                InspectorTest.addResult("");
-                InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemAdded", itemAdded);
+                TestRunner.addResult("");
+                TestRunner.addSniffer(ApplicationTestRunner.domStorageModel(), "_domStorageItemAdded", itemAdded);
                 var command = "addItem('key" + index + "', 'value" + index + "');";
-                InspectorTest.addResult(command);
-                InspectorTest.evaluateInPage(command);
+                TestRunner.addResult(command);
+                TestRunner.evaluateInPage(command);
             }
 
             addItem();
@@ -115,11 +115,11 @@ function test()
                     next();
                     return;
                 }
-                InspectorTest.addResult("");
-                InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemRemoved", itemRemoved);
+                TestRunner.addResult("");
+                TestRunner.addSniffer(ApplicationTestRunner.domStorageModel(), "_domStorageItemRemoved", itemRemoved);
                 var command = "removeItem('key" + index + "');";
-                InspectorTest.addResult(command);
-                InspectorTest.evaluateInPage(command);
+                TestRunner.addResult(command);
+                TestRunner.evaluateInPage(command);
             }
 
             removeItem();
@@ -127,11 +127,11 @@ function test()
 
         function updateItemTest(next)
         {
-            InspectorTest.addResult("");
-            InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemUpdated", itemUpdated);
+            TestRunner.addResult("");
+            TestRunner.addSniffer(ApplicationTestRunner.domStorageModel(), "_domStorageItemUpdated", itemUpdated);
             var command = "updateItem('key2', 'VALUE2');";
-            InspectorTest.addResult(command);
-            InspectorTest.evaluateInPage(command);
+            TestRunner.addResult(command);
+            TestRunner.evaluateInPage(command);
 
             function itemUpdated()
             {
@@ -148,11 +148,11 @@ function test()
                 next();
             }
 
-            InspectorTest.addResult("");
-            InspectorTest.addSniffer(InspectorTest.domStorageModel(), "_domStorageItemsCleared", itemsCleared);
+            TestRunner.addResult("");
+            TestRunner.addSniffer(ApplicationTestRunner.domStorageModel(), "_domStorageItemsCleared", itemsCleared);
             var command = "clear()";
-            InspectorTest.addResult(command);
-            InspectorTest.evaluateInPage(command);
+            TestRunner.addResult(command);
+            TestRunner.evaluateInPage(command);
         }
     ]);
 }

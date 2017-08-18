@@ -10,14 +10,14 @@ function initialize_ProductRegistry() {
 
 function test()
 {
-    InspectorTest.addResult('foobar : ' + ProductRegistryImpl.sha1('foobar'));
-    InspectorTest.addResult('hello : ' + ProductRegistryImpl.sha1('hello'));
-    InspectorTest.addResult('abcdefghijklmnopqrstuvwxyz : ' + ProductRegistryImpl.sha1('abcdefghijklmnopqrstuvwxyz'));
-    InspectorTest.addResult('ABCDEFGHIJKLMNOPQRSTUVWXYZ : ' + ProductRegistryImpl.sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-    InspectorTest.addResult('a : ' + ProductRegistryImpl.sha1('a'));
-    InspectorTest.addResult('A : ' + ProductRegistryImpl.sha1('A'));
-    InspectorTest.addResult('A1 : ' + ProductRegistryImpl.sha1('A1'));
-    InspectorTest.completeTest();
+    TestRunner.addResult('foobar : ' + ProductRegistryImpl.sha1('foobar'));
+    TestRunner.addResult('hello : ' + ProductRegistryImpl.sha1('hello'));
+    TestRunner.addResult('abcdefghijklmnopqrstuvwxyz : ' + ProductRegistryImpl.sha1('abcdefghijklmnopqrstuvwxyz'));
+    TestRunner.addResult('ABCDEFGHIJKLMNOPQRSTUVWXYZ : ' + ProductRegistryImpl.sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+    TestRunner.addResult('a : ' + ProductRegistryImpl.sha1('a'));
+    TestRunner.addResult('A : ' + ProductRegistryImpl.sha1('A'));
+    TestRunner.addResult('A1 : ' + ProductRegistryImpl.sha1('A1'));
+    TestRunner.completeTest();
 }
 
 </script>

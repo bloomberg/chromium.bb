@@ -8,7 +8,7 @@ function test() {
     {
         var request = new SDK.NetworkRequest(url, url, "", "", "");
         var result = Network.NetworkLogView.HTTPRequestsFilter(request);
-        InspectorTest.addResult((result ? "" : "Non-") + "HTTP request URL: " + url);
+        TestRunner.addResult((result ? "" : "Non-") + "HTTP request URL: " + url);
     }
 
     checkURL("http://webkit.org");
@@ -16,14 +16,14 @@ function test() {
     checkURL("ws://webkit.org");
     checkURL("wss://webkit.org");
 
-    InspectorTest.addResult("");
+    TestRunner.addResult("");
 
     checkURL("data:text/plain,foo");
     checkURL("file:///etc/passwd");
     checkURL("javascript:void()");
     checkURL("invalid");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

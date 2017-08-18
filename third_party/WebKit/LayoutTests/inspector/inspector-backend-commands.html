@@ -8,7 +8,7 @@ async function test()
     Protocol.InspectorBackend.Options.suppressRequestErrors = false;
     function dumpArgument(name, value)
     {
-        InspectorTest.addResult(name + " result: " + (typeof value === "string" ? value : JSON.stringify(value)));
+        TestRunner.addResult(name + " result: " + (typeof value === "string" ? value : JSON.stringify(value)));
     }
 
     function processResult(name, promise)
@@ -97,7 +97,7 @@ async function test()
     await processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, "alph", 345, 678)); // Error: extra arg
 
     InspectorFrontendHost.sendMessageToBackend = sendMessageToBackendOriginal;
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

@@ -5,18 +5,18 @@
 
 function test()
 {
-    InspectorTest.ProfilerAgent.start().then(onStart);
+    TestRunner.ProfilerAgent.start().then(onStart);
 
     function onStart()
     {
-        InspectorTest.addResult("ProfilerAgent started.");
-        InspectorTest.ProfilerAgent.stop().then(onStop);
+        TestRunner.addResult("ProfilerAgent started.");
+        TestRunner.ProfilerAgent.stop().then(onStop);
     }
 
     function onStop()
     {
-        InspectorTest.addResult("ProfilerAgent stopped.");
-        InspectorTest.completeTest();
+        TestRunner.addResult("ProfilerAgent stopped.");
+        TestRunner.completeTest();
     }
 }
 

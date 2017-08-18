@@ -6,89 +6,89 @@
 
 function test()
 {
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testWeakReferencesDoNotAffectRetainedSize(next)
         {
             function createHeapSnapshot()
             {
                 // Mocking a heap snapshot with a node that retained by weak references only.
-                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var builder = new ProfilerTestRunner.HeapSnapshotBuilder();
                 var rootNode = builder.rootNode;
 
-                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)");
-                rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
+                var gcRootsNode = new ProfilerTestRunner.HeapNode("(GC roots)");
+                rootNode.linkNode(gcRootsNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var windowNode = new InspectorTest.HeapNode("Window", 10);
-                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
-                gcRootsNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
+                var windowNode = new ProfilerTestRunner.HeapNode("Window", 10);
+                rootNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.shortcut);
+                gcRootsNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var orphanNode = new InspectorTest.HeapNode("Orphan", 2000);
-                windowNode.linkNode(orphanNode, InspectorTest.HeapEdge.Type.weak, "weak_ref");
+                var orphanNode = new ProfilerTestRunner.HeapNode("Orphan", 2000);
+                windowNode.linkNode(orphanNode, ProfilerTestRunner.HeapEdge.Type.weak, "weak_ref");
 
-                var orphanChildNode = new InspectorTest.HeapNode("OrphanChild", 2000);
-                orphanNode.linkNode(orphanChildNode, InspectorTest.HeapEdge.Type.property, "child");
+                var orphanChildNode = new ProfilerTestRunner.HeapNode("OrphanChild", 2000);
+                orphanNode.linkNode(orphanChildNode, ProfilerTestRunner.HeapEdge.Type.property, "child");
 
-                var aNode = new InspectorTest.HeapNode("A", 300);
-                windowNode.linkNode(aNode, InspectorTest.HeapEdge.Type.property, "a");
+                var aNode = new ProfilerTestRunner.HeapNode("A", 300);
+                windowNode.linkNode(aNode, ProfilerTestRunner.HeapEdge.Type.property, "a");
 
-                var bNode = new InspectorTest.HeapNode("B", 300);
-                aNode.linkNode(bNode, InspectorTest.HeapEdge.Type.property, "b");
-                orphanChildNode.linkNode(bNode, InspectorTest.HeapEdge.Type.property, "b");
+                var bNode = new ProfilerTestRunner.HeapNode("B", 300);
+                aNode.linkNode(bNode, ProfilerTestRunner.HeapEdge.Type.property, "b");
+                orphanChildNode.linkNode(bNode, ProfilerTestRunner.HeapEdge.Type.property, "b");
 
                 // Shortcut links should not affect retained sizes.
-                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut, "w");
-                rootNode.linkNode(aNode, InspectorTest.HeapEdge.Type.shortcut, "a");
-                rootNode.linkNode(bNode, InspectorTest.HeapEdge.Type.shortcut, "b");
-                rootNode.linkNode(orphanNode, InspectorTest.HeapEdge.Type.shortcut, "o");
+                rootNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.shortcut, "w");
+                rootNode.linkNode(aNode, ProfilerTestRunner.HeapEdge.Type.shortcut, "a");
+                rootNode.linkNode(bNode, ProfilerTestRunner.HeapEdge.Type.shortcut, "b");
+                rootNode.linkNode(orphanNode, ProfilerTestRunner.HeapEdge.Type.shortcut, "o");
 
                 return builder.generateSnapshot();
             }
 
-            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_retrieveStatistics", checkStatistics);
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            TestRunner.addSniffer(Profiler.HeapSnapshotView.prototype, "_retrieveStatistics", checkStatistics);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             async function checkStatistics(arg, result)
             {
                 var statistics = await result;
-                InspectorTest.assertEquals(4610, statistics.total);
-                InspectorTest.assertEquals(4610, statistics.v8heap);
-                InspectorTest.addResult("SUCCESS: total size is correct.");
+                TestRunner.assertEquals(4610, statistics.total);
+                TestRunner.assertEquals(4610, statistics.v8heap);
+                TestRunner.addResult("SUCCESS: total size is correct.");
             }
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             function step2()
             {
-                var row = InspectorTest.findRow("A");
-                InspectorTest.assertEquals(true, !!row, "\"A\" row");
-                InspectorTest.assertEquals(1, row._count);
-                InspectorTest.assertEquals(300, row._retainedSize);
-                InspectorTest.assertEquals(300, row._shallowSize);
+                var row = ProfilerTestRunner.findRow("A");
+                TestRunner.assertEquals(true, !!row, "\"A\" row");
+                TestRunner.assertEquals(1, row._count);
+                TestRunner.assertEquals(300, row._retainedSize);
+                TestRunner.assertEquals(300, row._shallowSize);
 
 
-                row = InspectorTest.findRow("B");
-                InspectorTest.assertEquals(true, !!row, "\"B\" row");
-                InspectorTest.assertEquals(1, row._count);
-                InspectorTest.assertEquals(300, row._retainedSize);
-                InspectorTest.assertEquals(300, row._shallowSize);
+                row = ProfilerTestRunner.findRow("B");
+                TestRunner.assertEquals(true, !!row, "\"B\" row");
+                TestRunner.assertEquals(1, row._count);
+                TestRunner.assertEquals(300, row._retainedSize);
+                TestRunner.assertEquals(300, row._shallowSize);
 
-                row = InspectorTest.findRow("Orphan");
-                InspectorTest.assertEquals(true, !!row, "\"Orphan\" row");
-                InspectorTest.assertEquals(1, row._count);
-                InspectorTest.assertEquals(4000, row._retainedSize);
-                InspectorTest.assertEquals(2000, row._shallowSize);
+                row = ProfilerTestRunner.findRow("Orphan");
+                TestRunner.assertEquals(true, !!row, "\"Orphan\" row");
+                TestRunner.assertEquals(1, row._count);
+                TestRunner.assertEquals(4000, row._retainedSize);
+                TestRunner.assertEquals(2000, row._shallowSize);
 
 
-                row = InspectorTest.findRow("OrphanChild");
-                InspectorTest.assertEquals(true, !!row, "\"OrphanChild\" row");
-                InspectorTest.assertEquals(1, row._count);
-                InspectorTest.assertEquals(2000, row._retainedSize);
-                InspectorTest.assertEquals(2000, row._shallowSize);
+                row = ProfilerTestRunner.findRow("OrphanChild");
+                TestRunner.assertEquals(true, !!row, "\"OrphanChild\" row");
+                TestRunner.assertEquals(1, row._count);
+                TestRunner.assertEquals(2000, row._retainedSize);
+                TestRunner.assertEquals(2000, row._shallowSize);
 
-                InspectorTest.addResult("SUCCESS: all nodes have expected retained sizes.");
+                TestRunner.addResult("SUCCESS: all nodes have expected retained sizes.");
                 setTimeout(next, 0);
             }
         }

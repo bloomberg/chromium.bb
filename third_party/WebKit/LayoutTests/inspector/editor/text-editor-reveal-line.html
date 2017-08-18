@@ -5,8 +5,8 @@
 <script>
 function test()
 {
-    var out = InspectorTest.addResult;
-    var textEditor = InspectorTest.createTestEditor(500);
+    var out = TestRunner.addResult;
+    var textEditor = SourcesTestRunner.createTestEditor(500);
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
@@ -35,7 +35,7 @@ function test()
         out("      is line centered: " + lineCentered);
         out("\n");
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

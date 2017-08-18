@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
@@ -16,14 +16,14 @@ function test()
         textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
     }
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testTypeBraceSequence(next)
         {
             clearEditor();
-            InspectorTest.typeIn(textEditor, "({[", onTypedIn);
+            SourcesTestRunner.typeIn(textEditor, "({[", onTypedIn);
             function onTypedIn()
             {
-                InspectorTest.dumpTextWithSelection(textEditor);
+                SourcesTestRunner.dumpTextWithSelection(textEditor);
                 next();
             }
         },
@@ -31,10 +31,10 @@ function test()
         function testBraceOverride(next)
         {
             clearEditor();
-            InspectorTest.typeIn(textEditor, "({[]})", onTypedIn);
+            SourcesTestRunner.typeIn(textEditor, "({[]})", onTypedIn);
             function onTypedIn()
             {
-                InspectorTest.dumpTextWithSelection(textEditor);
+                SourcesTestRunner.dumpTextWithSelection(textEditor);
                 next();
             }
         },
@@ -43,10 +43,10 @@ function test()
         {
             textEditor.setText("'Hello");
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 6));
-            InspectorTest.typeIn(textEditor, "\"'", onTypedIn);
+            SourcesTestRunner.typeIn(textEditor, "\"'", onTypedIn);
             function onTypedIn()
             {
-                InspectorTest.dumpTextWithSelection(textEditor);
+                SourcesTestRunner.dumpTextWithSelection(textEditor);
                 next();
             }
         },
@@ -55,10 +55,10 @@ function test()
         {
             textEditor.setText("console.log(\"information\");");
             textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 24));
-            InspectorTest.typeIn(textEditor, "\"", onTypedIn);
+            SourcesTestRunner.typeIn(textEditor, "\"", onTypedIn);
             function onTypedIn()
             {
-                InspectorTest.dumpTextWithSelection(textEditor);
+                SourcesTestRunner.dumpTextWithSelection(textEditor);
                 next();
             }
         }

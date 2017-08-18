@@ -33,33 +33,33 @@ function test()
     Protocol.InspectorBackend.Options.suppressRequestErrors = false;
     function addDumpResult(next)
     {
-        InspectorTest.evaluateInPage("dump()", dumpCallback);
+        TestRunner.evaluateInPage("dump()", dumpCallback);
 
         function dumpCallback(result)
         {
-            InspectorTest.addResult(result.value);
+            TestRunner.addResult(result.value);
             next();
         }
     }
 
     function testOverride(angle, orientation, next)
     {
-        InspectorTest.addConsoleSniffer(addDumpResult.bind(null, next));
-        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
+        ConsoleTestRunner.addConsoleSniffer(addDumpResult.bind(null, next));
+        TestRunner.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
     }
 
     async function testError(angle, orientation, next)
     {
-        await InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
+        await TestRunner.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}});
         next();
     }
 
     var original;
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function initial(next)
         {
-            InspectorTest.evaluateInPage("dump()", dumpCallback);
+            TestRunner.evaluateInPage("dump()", dumpCallback);
 
             function dumpCallback(result)
             {
@@ -100,7 +100,7 @@ function test()
 
         function restoresAfterReload(next)
         {
-            InspectorTest.reloadPage(addDumpResult.bind(null, next));
+            TestRunner.reloadPage(addDumpResult.bind(null, next));
         },
 
         function setLandscapeSecondary(next)
@@ -110,16 +110,16 @@ function test()
 
         function clearOverride(next)
         {
-            InspectorTest.EmulationAgent.clearDeviceMetricsOverride().then(checkInitial);
+            TestRunner.EmulationAgent.clearDeviceMetricsOverride().then(checkInitial);
 
             function checkInitial()
             {
-                InspectorTest.evaluateInPage("dump()", dumpCallback);
+                TestRunner.evaluateInPage("dump()", dumpCallback);
             }
 
             function dumpCallback(result)
             {
-                InspectorTest.addResult("Equals to initial: " + (original === result.value ? "true" : "false"));
+                TestRunner.addResult("Equals to initial: " + (original === result.value ? "true" : "false"));
                 next();
             }
         }

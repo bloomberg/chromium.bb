@@ -5,19 +5,19 @@
 <script>
 function test()
 {
-    InspectorTest.requestLayers(onGotLayers);
+    LayersTestRunner.requestLayers(onGotLayers);
 
     function onGotLayers()
     {
-        var layer = InspectorTest.findLayerByNodeIdAttribute("a");
+        var layer = LayersTestRunner.findLayerByNodeIdAttribute("a");
         layer.snapshots()[0].then(snapshotWithRect => snapshotWithRect.snapshot.commandLog()).then(onHistoryReceived);
     }
 
     function onHistoryReceived(items)
     {
-        InspectorTest.addResult("Canvas log:");
-        InspectorTest.addObject(items, {"uniqueID": "skip"});
-        InspectorTest.completeTest();
+        TestRunner.addResult("Canvas log:");
+        TestRunner.addObject(items, {"uniqueID": "skip"});
+        TestRunner.completeTest();
     }
 }
 </script>

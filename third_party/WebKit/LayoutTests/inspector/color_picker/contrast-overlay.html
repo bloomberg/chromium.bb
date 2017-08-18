@@ -8,11 +8,11 @@
         var contentElement = document.createElement('div');
         var overlay = new ColorPicker.ContrastOverlay(colorElement, contentElement);
         var svg = colorElement.firstChild;
-        InspectorTest.assertTrue(svg != null);
-        InspectorTest.assertEquals(svg.tagName, 'svg');
+        TestRunner.assertTrue(svg != null);
+        TestRunner.assertEquals(svg.tagName, 'svg');
         var path = svg.firstChild;
-        InspectorTest.assertTrue(path != null);
-        InspectorTest.assertEquals(path.tagName, 'path');
+        TestRunner.assertTrue(path != null);
+        TestRunner.assertEquals(path.tagName, 'path');
         overlay._width = 100;
         overlay._height = 100;
 
@@ -37,16 +37,16 @@
           overlay.setColor(fgColor.hsva(), 'rgba(255, 255, 255, 1)');
           overlay._drawContrastRatioLine();
           var d = path.getAttribute('d');
-          InspectorTest.addResult('');
-          InspectorTest.addResult('For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', path was' + (d.length ? '' : ' empty.'));
+          TestRunner.addResult('');
+          TestRunner.addResult('For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', path was' + (d.length ? '' : ' empty.'));
           if (d.length)
-            InspectorTest.addResult(path.getAttribute('d'));
+            TestRunner.addResult(path.getAttribute('d'));
       }
 
         for (var pair of colorPairs)
           logLineForColorPair(pair.fg, pair.bg);
 
-        InspectorTest.completeTest();
+        TestRunner.completeTest();
       }
     </script>
   </head>

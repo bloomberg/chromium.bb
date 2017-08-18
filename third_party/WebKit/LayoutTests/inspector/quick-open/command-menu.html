@@ -12,26 +12,26 @@ function test()
       commands.set(command.category() + ': ' + command.title(), command);
     });
 
-    InspectorTest.addResult("Categories active:");
-    Array.from(categories).sort().forEach(category => InspectorTest.addResult("Has category: " + category));
+    TestRunner.addResult("Categories active:");
+    Array.from(categories).sort().forEach(category => TestRunner.addResult("Has category: " + category));
 
-    InspectorTest.addResult("");
+    TestRunner.addResult("");
     var whitelist = ["Panel: Show Console", "Drawer: Show Console", "Appearance: Switch to dark theme", "DevTools: Auto-open DevTools for popups"];
     whitelist.forEach(item => {
       if (!commands.has(item))
-        InspectorTest.addResult(item + " is MISSING");
+        TestRunner.addResult(item + " is MISSING");
     });
 
-    InspectorTest.addResult("Switching to console panel");
+    TestRunner.addResult("Switching to console panel");
     try {
       commands.get("Panel: Show Console")._executeHandler().then(() => {
-        InspectorTest.addResult("Current panel: " + UI.inspectorView.currentPanelDeprecated().name);
-        InspectorTest.completeTest();
+        TestRunner.addResult("Current panel: " + UI.inspectorView.currentPanelDeprecated().name);
+        TestRunner.completeTest();
       });
     }
     catch (e) {
-      InspectorTest.addResult(e);
-      InspectorTest.completeTest();
+      TestRunner.addResult(e);
+      TestRunner.completeTest();
     }
   });
 }

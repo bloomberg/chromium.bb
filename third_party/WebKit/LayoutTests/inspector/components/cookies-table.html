@@ -5,16 +5,16 @@
 
 var test = function () {
   function dumpCookies(cookies) {
-    InspectorTest.addResult(cookies.map(x => x.name()).join(','));
+    TestRunner.addResult(cookies.map(x => x.name()).join(','));
   }
 
   function dumpNodeCalls(calls) {
-    InspectorTest.addResult(`# of node.appendChild calls: ${calls.appendChild.length}`);
-    InspectorTest.addResult(`# of node.removeChildren calls: ${calls.removeChildren.length}`);
+    TestRunner.addResult(`# of node.appendChild calls: ${calls.appendChild.length}`);
+    TestRunner.addResult(`# of node.removeChildren calls: ${calls.removeChildren.length}`);
     calls.appendChild.forEach(node => {
       const data = node._data;
       const selected = node._selected ? '[selected]' : '';
-      InspectorTest.addResult(`node.appendChild call: ${data.name} ${data.value} ${selected}`.trim());
+      TestRunner.addResult(`node.appendChild call: ${data.name} ${data.value} ${selected}`.trim());
     });
   }
 
@@ -88,7 +88,7 @@ var test = function () {
     const cookies = cookieData.map(createCookie);
     table._dataGrid = mockDataGrid({sortColumn, isAsc});
     table._sortCookies(cookies);
-    InspectorTest.addResult(`params: ${sortColumn} ${isAsc ? 'asc' : 'desc'}`);
+    TestRunner.addResult(`params: ${sortColumn} ${isAsc ? 'asc' : 'desc'}`);
     dumpCookies(cookies);
   }
 
@@ -116,19 +116,19 @@ var test = function () {
   }
 
   function testRebuildTable(cookieData) {
-    InspectorTest.addResult('\n--- Empty test ---\n');
+    TestRunner.addResult('\n--- Empty test ---\n');
     createBuildAndDumpTable([], null, true);
-    InspectorTest.addResult('\n--- Null test ---\n');
+    TestRunner.addResult('\n--- Null test ---\n');
     createBuildAndDumpTable(null, null, true);
-    InspectorTest.addResult('\n--- Ascending no selection test ---\n');
+    TestRunner.addResult('\n--- Ascending no selection test ---\n');
     createBuildAndDumpTable(cookieData, null, true);
-    InspectorTest.addResult('\n--- Descending selection test ---\n');
+    TestRunner.addResult('\n--- Descending selection test ---\n');
     createBuildAndDumpTable(cookieData, mockNode({cookie: createCookie(cookieData[2])}), false);
-    InspectorTest.addResult('\n--- Neighbor selection test ---\n');
+    TestRunner.addResult('\n--- Neighbor selection test ---\n');
     createBuildAndDumpTable(cookieData, mockNode({nextNeighbor: {cookie: createCookie(cookieData[0])}}), true);
-    InspectorTest.addResult('\n--- Previous neighbor selection test ---\n');
+    TestRunner.addResult('\n--- Previous neighbor selection test ---\n');
     createBuildAndDumpTable(cookieData, mockNode({nextNeighbor: {}, previousNeighbor: {cookie: createCookie(cookieData[4])}}), true);
-    InspectorTest.addResult('\n--- Inactive node test ---\n');
+    TestRunner.addResult('\n--- Inactive node test ---\n');
     createBuildAndDumpTable(cookieData, mockNode({cookie: createCookie({name: 'missing', value: 'cookie'})}), true, 'name');
   }
 
@@ -141,11 +141,11 @@ var test = function () {
       {name: 'cookieE', value: 'zz', path: '/gg', domain: 'z.example.com'},
       {name: 'cookieF', value: 'null', path: '/', domain: 'example.com'},
     ];
-    InspectorTest.addResult('\n-------- RebuildTable --------\n');
+    TestRunner.addResult('\n-------- RebuildTable --------\n');
     testRebuildTable(cookieData);
-    InspectorTest.addResult('\n-------- Sort cookies --------\n');
+    TestRunner.addResult('\n-------- Sort cookies --------\n');
     testSortCookies(cookieData);
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
   }
 
   self.runtime.loadModulePromise('cookie_table').then(run);

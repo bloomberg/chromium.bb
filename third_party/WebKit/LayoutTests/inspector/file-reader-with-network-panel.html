@@ -14,15 +14,15 @@ function readBlob()
 
 function test()
 {
-    InspectorTest.addConsoleSniffer(messageAdded);
-    InspectorTest.evaluateInPage("readBlob();");
+    ConsoleTestRunner.addConsoleSniffer(messageAdded);
+    TestRunner.evaluateInPage("readBlob();");
 
     function messageAdded(payload)
     {
-        var requests = InspectorTest.networkRequests();
-        InspectorTest.addResult("requests in the network panel: " + requests.length);
-        InspectorTest.assertTrue(requests.length == 0, "Blob load request to the browser is shown in the network panel.");
-        InspectorTest.completeTest();
+        var requests = NetworkTestRunner.networkRequests();
+        TestRunner.addResult("requests in the network panel: " + requests.length);
+        TestRunner.assertTrue(requests.length == 0, "Blob load request to the browser is shown in the network panel.");
+        TestRunner.completeTest();
     }
 }
 

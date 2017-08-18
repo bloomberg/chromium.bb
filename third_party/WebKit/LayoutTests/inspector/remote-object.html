@@ -7,10 +7,10 @@ function test()
 {
     function callback(result)
     {
-        InspectorTest.addResult("date = " + result.description.substring(0, 25));
-        InspectorTest.completeTest();
+        TestRunner.addResult("date = " + result.description.substring(0, 25));
+        TestRunner.completeTest();
     }
-    InspectorTest.evaluateInPage("new Date(2011, 11, 7, 12, 01)", callback);
+    TestRunner.evaluateInPage("new Date(2011, 11, 7, 12, 01)", callback);
 }
 
 </script>

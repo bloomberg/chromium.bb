@@ -8,7 +8,7 @@ var test = function()
 
     function dumpHistory(history)
     {
-        InspectorTest.addResult("  history = " + JSON.stringify(history._serializeToObject()) + "");
+        TestRunner.addResult("  history = " + JSON.stringify(history._serializeToObject()) + "");
     }
 
     function updateScrollAndSelectionAndDump(history, url, scrollLineNumber, selection)
@@ -69,7 +69,7 @@ var test = function()
     removeAndDump(history, url(2));
     removeAndDump(history, url(3));
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

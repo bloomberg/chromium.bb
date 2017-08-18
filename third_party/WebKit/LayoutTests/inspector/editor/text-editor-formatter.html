@@ -9,7 +9,7 @@ function codeSnippet() {
 
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
@@ -17,18 +17,18 @@ function test()
     function step2(result)
     {
         var codeLines = result.value;
-        InspectorTest.typeIn(textEditor, codeLines, step3);
+        SourcesTestRunner.typeIn(textEditor, codeLines, step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult("============ editor contents start ============");
-        InspectorTest.addResult(textEditor.text().replace(/ /g, "."));
-        InspectorTest.addResult("============ editor contents end ============");
-        InspectorTest.completeTest();
+        TestRunner.addResult("============ editor contents start ============");
+        TestRunner.addResult(textEditor.text().replace(/ /g, "."));
+        TestRunner.addResult("============ editor contents end ============");
+        TestRunner.completeTest();
     }
 
-    InspectorTest.evaluateInPage("codeSnippet();", step2);
+    TestRunner.evaluateInPage("codeSnippet();", step2);
 }
 
 </script>

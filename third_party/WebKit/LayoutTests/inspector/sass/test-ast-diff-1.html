@@ -12,8 +12,8 @@ pre {
 
 function test()
 {
-    var parseCSS = InspectorTest.parseCSS.bind(InspectorTest, "");
-    var loadCSS = InspectorTest.evaluateInPagePromise.bind(InspectorTest);
+    var parseCSS = SASSTestRunner.parseCSS.bind(InspectorTest, "");
+    var loadCSS = TestRunner.evaluateInPagePromise.bind(InspectorTest);
     var ast1, ast2;
 
     loadCSS("getCSS('.initial')")
@@ -24,12 +24,12 @@ function test()
         .then(ast => ast2 = ast)
         .then(onParsed)
         .catch(error => console.error(error))
-        .then(InspectorTest.completeTest);
+        .then(TestRunner.completeTest);
 
     function onParsed()
     {
         var diff = Sass.SASSSupport.diffModels(ast1, ast2);
-        InspectorTest.dumpASTDiff(diff);
+        SASSTestRunner.dumpASTDiff(diff);
     }
 
 }

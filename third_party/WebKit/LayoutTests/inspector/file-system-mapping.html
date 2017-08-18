@@ -13,42 +13,42 @@ function test()
 
     function addFileSystem(fileSystemMapping, path)
     {
-        InspectorTest.addResult("Adding file system " + path);
+        TestRunner.addResult("Adding file system " + path);
         fileSystemMapping.addFileSystem(path);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
 
     function removeFileSystem(fileSystemMapping, path)
     {
-        InspectorTest.addResult("Removing file system " + path);
+        TestRunner.addResult("Removing file system " + path);
         fileSystemMapping.removeFileSystem(path);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
 
     function addFileMapping(fileSystemMapping, fileSystemPath, urlPrefix, pathPrefix)
     {
-        InspectorTest.addResult("Adding file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
+        TestRunner.addResult("Adding file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
         fileSystemMapping.addFileMapping(fileSystemPath, urlPrefix, pathPrefix);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
 
     function removeFileMapping(fileSystemMapping, fileSystemPath, urlPrefix, pathPrefix)
     {
-        InspectorTest.addResult("Removing file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
+        TestRunner.addResult("Removing file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
         fileSystemMapping.removeFileMapping(fileSystemPath, urlPrefix, pathPrefix);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
 
     function removeMappingForURL(fileSystemMapping, urlPrefix)
     {
-        InspectorTest.addResult("Removing file mapping for url " + urlPrefix);
+        TestRunner.addResult("Removing file mapping for url " + urlPrefix);
         fileSystemMapping.removeMappingForURL(urlPrefix);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
 
     function addMappingForResource(fileSystemMapping, url, fileSystemPath, filePath)
     {
-        InspectorTest.addResult("Adding file mapping for resource (" + url + ", " + fileSystemPath + ", " + filePath + ")");
+        TestRunner.addResult("Adding file mapping for resource (" + url + ", " + fileSystemPath + ", " + filePath + ")");
         fileSystemMapping.addMappingForResource(url, fileSystemPath, filePath);
         checkAndDumpFileSystemMapping(fileSystemMapping);
     }
@@ -56,34 +56,34 @@ function test()
     function dumpFileForURL(fileSystemMapping, url)
     {
         var hasMappingForNetworkURL = fileSystemMapping.hasMappingForNetworkURL(url);
-        InspectorTest.addResult("    Has mapping for '" + url + "': " + hasMappingForNetworkURL);
+        TestRunner.addResult("    Has mapping for '" + url + "': " + hasMappingForNetworkURL);
         var fileForURL = fileSystemMapping.fileForURL(url);
         if (!fileForURL)
-            InspectorTest.addResult("    File for '" + url + "': null");
+            TestRunner.addResult("    File for '" + url + "': null");
         else
-            InspectorTest.addResult("    File for '" + url + "': " + fileForURL.fileURL);
+            TestRunner.addResult("    File for '" + url + "': " + fileForURL.fileURL);
     }
 
     function dumpURLForPath(fileSystemMapping, fileSystemPath, filePath)
     {
         var url = fileSystemMapping.networkURLForFileSystemURL(fileSystemPath, filePath);
-        InspectorTest.addResult("    URL for path '" + filePath + "': " + url);
+        TestRunner.addResult("    URL for path '" + filePath + "': " + url);
     }
 
     function checkAndDumpFileSystemMapping(fileSystemMapping)
     {
         var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
-        InspectorTest.addResult("Testing file system mapping.");
-        InspectorTest.addResult("    file system paths:");
+        TestRunner.addResult("Testing file system mapping.");
+        TestRunner.addResult("    file system paths:");
         for (var i = 0; i < fileSystemPaths.length; ++i) {
-            InspectorTest.addResult("     - " + fileSystemPaths[i]);
+            TestRunner.addResult("     - " + fileSystemPaths[i]);
             var entries = fileSystemMapping.mappingEntries(fileSystemPaths[i]);
             for (var j = 0; j < entries.length; ++j) {
                 var entry = entries[j];
-                    InspectorTest.addResult("         - " + JSON.stringify(entries[j]));
+                    TestRunner.addResult("         - " + JSON.stringify(entries[j]));
             }
         }
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
     }
 
     // At first create file system mapping and clear it.
@@ -106,7 +106,7 @@ function test()
     addMappingForResource(fileSystemMapping, "http://www.bar.com/foo/folder/42.js", paths.FOO, paths.FOO + "/baz/folder/42.js");
     addMappingForResource(fileSystemMapping, "http://localhost:3333/build/layout.css", paths.BUILD, paths.BUILD + "/layout.css");
 
-    InspectorTest.addResult("Testing mappings for url:");
+    TestRunner.addResult("Testing mappings for url:");
     dumpFileForURL(fileSystemMapping, "http://www.bar.com/foo/folder/42.js");
     dumpFileForURL(fileSystemMapping, "http://www.foo.com/bar/folder/42.js");
     dumpFileForURL(fileSystemMapping, "http://localhost/index.html");
@@ -114,9 +114,9 @@ function test()
     dumpFileForURL(fileSystemMapping, "http://localhost:8080/index.html");
     dumpFileForURL(fileSystemMapping, "http://localhost/");
     dumpFileForURL(fileSystemMapping, "http://localhost:3333/build/main.css");
-    InspectorTest.addResult("");
+    TestRunner.addResult("");
 
-    InspectorTest.addResult("Testing mappings for path:");
+    TestRunner.addResult("Testing mappings for path:");
     dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/baz/folder/42.js");
     dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/baz/folder/43.js");
     dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/bar/folder/42.js");
@@ -126,10 +126,10 @@ function test()
     dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/index.html");
     dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/foo");
     dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/foo/");
-    InspectorTest.addResult("");
+    TestRunner.addResult("");
 
     // Then create another file mapping to make sure it is correctly restored from the settings.
-    InspectorTest.addResult("Creating another file system mapping.");
+    TestRunner.addResult("Creating another file system mapping.");
     fileSystemMapping.dispose();
     var fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
     checkAndDumpFileSystemMapping(fileSystemMapping);
@@ -145,7 +145,7 @@ function test()
     removeFileSystem(fileSystemMapping, paths.FOO)
     removeFileSystem(fileSystemMapping, paths.BAR)
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>

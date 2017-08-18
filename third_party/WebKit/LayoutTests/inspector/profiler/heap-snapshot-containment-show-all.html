@@ -9,43 +9,43 @@ function test()
     var instanceCount = 25;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowAll(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Containment", step2);
+                ProfilerTestRunner.switchToView("Containment", step2);
             }
 
             function step2()
             {
-                InspectorTest.findAndExpandWindow(step3);
+                ProfilerTestRunner.findAndExpandWindow(step3);
             }
 
             function step3(row)
             {
-                var buttonsNode = InspectorTest.findButtonsNode(row);
-                InspectorTest.assertEquals(true, !!buttonsNode, "buttons node");
+                var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                TestRunner.assertEquals(true, !!buttonsNode, "buttons node");
                 var words = buttonsNode.showAll.textContent.split(" ");
                 for (var i = 0; i < words.length; ++i) {
                     var maybeNumber = parseInt(words[i], 10);
                     if (!isNaN(maybeNumber))
-                        InspectorTest.assertEquals(instanceCount - row._dataGrid.defaultPopulateCount(), maybeNumber, buttonsNode.showAll.textContent);
+                        TestRunner.assertEquals(instanceCount - row._dataGrid.defaultPopulateCount(), maybeNumber, buttonsNode.showAll.textContent);
                 }
-                InspectorTest.clickShowMoreButton("showAll", buttonsNode, step4);
+                ProfilerTestRunner.clickShowMoreButton("showAll", buttonsNode, step4);
             }
 
             function step4(row)
             {
-                var rowsShown = InspectorTest.countDataRows(row);
-                InspectorTest.assertEquals(instanceCount, rowsShown, "after showAll click");
-                var buttonsNode = InspectorTest.findButtonsNode(row);
-                InspectorTest.assertEquals(false, !!buttonsNode, "buttons node found when all instances are shown!");
+                var rowsShown = ProfilerTestRunner.countDataRows(row);
+                TestRunner.assertEquals(instanceCount, rowsShown, "after showAll click");
+                var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+                TestRunner.assertEquals(false, !!buttonsNode, "buttons node found when all instances are shown!");
                 setTimeout(next, 0);
             }
         },
@@ -61,78 +61,78 @@ function test()
                 // for (var i = 0; i < 5; ++i)
                 //   next = { next: next };
 
-                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var builder = new ProfilerTestRunner.HeapSnapshotBuilder();
                 var rootNode = builder.rootNode;
 
-                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)", 0, InspectorTest.HeapNode.Type.synthetic);
-                rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
+                var gcRootsNode = new ProfilerTestRunner.HeapNode("(GC roots)", 0, ProfilerTestRunner.HeapNode.Type.synthetic);
+                rootNode.linkNode(gcRootsNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var globalHandlesNode = new InspectorTest.HeapNode("(Global Handles)");
-                gcRootsNode.linkNode(globalHandlesNode, InspectorTest.HeapEdge.Type.element);
+                var globalHandlesNode = new ProfilerTestRunner.HeapNode("(Global Handles)");
+                gcRootsNode.linkNode(globalHandlesNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var nativeContextNode = new InspectorTest.HeapNode("system / NativeContext", 32);
-                globalHandlesNode.linkNode(nativeContextNode, InspectorTest.HeapEdge.Type.element);
+                var nativeContextNode = new ProfilerTestRunner.HeapNode("system / NativeContext", 32);
+                globalHandlesNode.linkNode(nativeContextNode, ProfilerTestRunner.HeapEdge.Type.element);
 
-                var windowNode = new InspectorTest.HeapNode("Window", 20);
-                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
-                nativeContextNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
-                windowNode.linkNode(nativeContextNode, InspectorTest.HeapEdge.Type.internal, "native_context");
+                var windowNode = new ProfilerTestRunner.HeapNode("Window", 20);
+                rootNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.shortcut);
+                nativeContextNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.element);
+                windowNode.linkNode(nativeContextNode, ProfilerTestRunner.HeapEdge.Type.internal, "native_context");
 
-                var headNode = new InspectorTest.HeapNode("Body", 32);
-                windowNode.linkNode(headNode, InspectorTest.HeapEdge.Type.property, "next");
+                var headNode = new ProfilerTestRunner.HeapNode("Body", 32);
+                windowNode.linkNode(headNode, ProfilerTestRunner.HeapEdge.Type.property, "next");
                 for (var i = 1; i < 5; ++i) {
-                  var nextNode = new InspectorTest.HeapNode("Body", 32);
-                  headNode.linkNode(nextNode, InspectorTest.HeapEdge.Type.property, "next");
+                  var nextNode = new ProfilerTestRunner.HeapNode("Body", 32);
+                  headNode.linkNode(nextNode, ProfilerTestRunner.HeapEdge.Type.property, "next");
                   headNode = nextNode;
                 }
-                var tailNode = new InspectorTest.HeapNode("Tail", 32);
-                headNode.linkNode(tailNode, InspectorTest.HeapEdge.Type.property, "next");
+                var tailNode = new ProfilerTestRunner.HeapNode("Tail", 32);
+                headNode.linkNode(tailNode, ProfilerTestRunner.HeapEdge.Type.property, "next");
                 return builder.generateSnapshot();
             }
 
             var distance = 1;
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function step1()
             {
-                InspectorTest.switchToView("Containment", step2);
+                ProfilerTestRunner.switchToView("Containment", step2);
             }
 
             function step2()
             {
-                InspectorTest.findAndExpandGCRoots(step3);
+                ProfilerTestRunner.findAndExpandGCRoots(step3);
             }
 
             function step3(row)
             {
-                InspectorTest.assertEquals("(GC roots)", row._name, "(GC roots) object");
-                InspectorTest.assertEquals("\u2212", row.data.distance, "(GC roots) distance should be zero");
-                InspectorTest.findAndExpandWindow(step4);
+                TestRunner.assertEquals("(GC roots)", row._name, "(GC roots) object");
+                TestRunner.assertEquals("\u2212", row.data.distance, "(GC roots) distance should be zero");
+                ProfilerTestRunner.findAndExpandWindow(step4);
             }
 
             function step4(row)
             {
-                InspectorTest.assertEquals("Window", row._name, "Window object");
-                InspectorTest.assertEquals(distance, row._distance, "Window distance should be 1");
-                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
-                InspectorTest.assertEquals(true, !!child, "next found");
-                InspectorTest.expandRow(child, step5);
+                TestRunner.assertEquals("Window", row._name, "Window object");
+                TestRunner.assertEquals(distance, row._distance, "Window distance should be 1");
+                var child = ProfilerTestRunner.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
+                TestRunner.assertEquals(true, !!child, "next found");
+                ProfilerTestRunner.expandRow(child, step5);
             }
 
             function step5(row)
             {
                 ++distance;
-                InspectorTest.assertEquals(distance, row._distance, "Check distance of objects chain");
+                TestRunner.assertEquals(distance, row._distance, "Check distance of objects chain");
                 if (row._name === "Tail") {
-                    InspectorTest.assertEquals(7, distance, "Tail distance");
+                    TestRunner.assertEquals(7, distance, "Tail distance");
                     setTimeout(next, 0);
                     return;
                 }
-                InspectorTest.assertEquals("Body", row._name, "Body");
-                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
-                InspectorTest.assertEquals(true, !!child, "next found");
+                TestRunner.assertEquals("Body", row._name, "Body");
+                var child = ProfilerTestRunner.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
+                TestRunner.assertEquals(true, !!child, "next found");
                 if (child._name !== "Tail")
-                    InspectorTest.expandRow(child, step5);
+                    ProfilerTestRunner.expandRow(child, step5);
                 else
                     step5(child);
             }

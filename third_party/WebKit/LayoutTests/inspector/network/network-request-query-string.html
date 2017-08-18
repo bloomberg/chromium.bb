@@ -7,9 +7,9 @@ function test() {
     function checkURL(url)
     {
         var request = new SDK.NetworkRequest(url, url, "", "", "");
-        InspectorTest.addResult("URL: " + url);
-        InspectorTest.addResult("Query: " + request.queryString());
-        InspectorTest.addResult("");
+        TestRunner.addResult("URL: " + url);
+        TestRunner.addResult("Query: " + request.queryString());
+        TestRunner.addResult("");
     }
 
     checkURL("http://webkit.org");
@@ -19,7 +19,7 @@ function test() {
     checkURL("http://webkit.org?foo=bar?baz");
     checkURL("http://webkit.org?foo?bar#baz");
 
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

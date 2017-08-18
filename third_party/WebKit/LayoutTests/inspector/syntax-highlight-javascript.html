@@ -8,7 +8,7 @@ function test()
 {
     function dumpSyntaxHighlightJS(str)
     {
-        return InspectorTest.dumpSyntaxHighlight(str, "text/javascript");
+        return TestRunner.dumpSyntaxHighlight(str, "text/javascript");
     }
 
     dumpSyntaxHighlightJS("return'foo';");
@@ -28,7 +28,7 @@ function test()
     dumpSyntaxHighlightJS("var foo = Infinity;");
     dumpSyntaxHighlightJS("var foo = NaN;")
 
-    .then(InspectorTest.completeTest.bind(InspectorTest));
+    .then(TestRunner.completeTest.bind(InspectorTest));
 }
 
 </script>

@@ -4,7 +4,7 @@
 <script>
 function test()
 {
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
 
             function testVectorLength(next)
             {
@@ -13,9 +13,9 @@ function test()
                     new UI.Geometry.Vector(-1, 0, -1),
                     new UI.Geometry.Vector(6, -2, 3)
                 ];
-                InspectorTest.addResult("Testing vector length");
+                TestRunner.addResult("Testing vector length");
                 for (var i = 0; i < testVectors.length; ++i)
-                    InspectorTest.addResult(String.sprintf("Vector length: %.4f", testVectors[i].length()));
+                    TestRunner.addResult(String.sprintf("Vector length: %.4f", testVectors[i].length()));
 
                 next();
             },
@@ -31,12 +31,12 @@ function test()
                 var eps = 1e-05;
                 for (var i = 0; i < testVectors.length; ++i) {
                     testVectors[i].normalize();
-                    InspectorTest.assertTrue(Math.abs(testVectors[i].length() - 1) <= eps, "Length of normalized vector is not 1")
+                    TestRunner.assertTrue(Math.abs(testVectors[i].length() - 1) <= eps, "Length of normalized vector is not 1")
                 }
 
                 var zeroVector = new UI.Geometry.Vector(0, 0, 0);
                 zeroVector.normalize();
-                InspectorTest.assertTrue(zeroVector.length() <= eps, "Zero vector after normalization isn't zero vector");
+                TestRunner.assertTrue(zeroVector.length() <= eps, "Zero vector after normalization isn't zero vector");
                 next();
             },
 
@@ -55,7 +55,7 @@ function test()
                 ];
 
                 for (var i = 0; i < vectorsU.length; ++i)
-                    InspectorTest.addResult("Scalar Product:" + UI.Geometry.scalarProduct(vectorsU[i], vectorsV[i]))
+                    TestRunner.addResult("Scalar Product:" + UI.Geometry.scalarProduct(vectorsU[i], vectorsV[i]))
 
                 next();
             },
@@ -76,7 +76,7 @@ function test()
 
                 for (var i = 0; i < vectorsU.length; ++i) {
                     var result = UI.Geometry.crossProduct(vectorsU[i], vectorsV[i]);
-                    InspectorTest.addResult(String.sprintf("Cross Product: [%.4f, %.4f, %.4f]", result.x, result.y, result.z));
+                    TestRunner.addResult(String.sprintf("Cross Product: [%.4f, %.4f, %.4f]", result.x, result.y, result.z));
                 }
 
                 next();
@@ -99,7 +99,7 @@ function test()
                 ];
 
                 for (var i = 0; i < vectorsU.length; ++i)
-                    InspectorTest.addResult(String.sprintf("Calculate angle: %.4f", UI.Geometry.calculateAngle(vectorsU[i], vectorsV[i])));
+                    TestRunner.addResult(String.sprintf("Calculate angle: %.4f", UI.Geometry.calculateAngle(vectorsU[i], vectorsV[i])));
 
                 next();
             },
@@ -108,7 +108,7 @@ function test()
             {
                 var angles = [Math.PI, Math.PI / 4, Math.PI / 6];
                 for (var i = 0; i < angles.length; ++i)
-                    InspectorTest.addResult(String.sprintf("deg: %.4f", UI.Geometry.radiansToDegrees(angles[i])));
+                    TestRunner.addResult(String.sprintf("deg: %.4f", UI.Geometry.radiansToDegrees(angles[i])));
 
                 next();
             },
@@ -117,7 +117,7 @@ function test()
             {
                 var angles = [-30, 0, 30, 90, 180];
                 for (var i = 0; i < angles.length; ++i)
-                    InspectorTest.addResult(String.sprintf("rad: %.4f", UI.Geometry.degreesToRadians(angles[i])));
+                    TestRunner.addResult(String.sprintf("rad: %.4f", UI.Geometry.degreesToRadians(angles[i])));
 
                 next();
             },
@@ -134,7 +134,7 @@ function test()
 
                 for (var i = 0; i < rotationMatrices.length; ++i) {
                     var angles = UI.Geometry.EulerAngles.fromRotationMatrix(new WebKitCSSMatrix(rotationMatrices[i]));
-                    InspectorTest.addResult(String.sprintf("Euler angles: %.4f %.4f %.4f", angles.alpha, angles.beta, angles.gamma));
+                    TestRunner.addResult(String.sprintf("Euler angles: %.4f %.4f %.4f", angles.alpha, angles.beta, angles.gamma));
                 }
                 next();
             },
@@ -153,7 +153,7 @@ function test()
 
                 for (var i = 0; i < angles.length; ++i) {
                     var rotate3DString = angles[i].toRotate3DString();
-                    InspectorTest.addResult(String.sprintf("Transform: %s", rotate3DString));
+                    TestRunner.addResult(String.sprintf("Transform: %s", rotate3DString));
                 }
                 next();
             }

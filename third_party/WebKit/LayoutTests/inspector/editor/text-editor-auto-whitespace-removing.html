@@ -8,24 +8,24 @@ function codeSnippet() {
 }
 
 function test() {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
-    InspectorTest.evaluateInPage("codeSnippet();", onCodeSnippet);
+    TestRunner.evaluateInPage("codeSnippet();", onCodeSnippet);
     var codeSnippetText;
 
     function onCodeSnippet(result)
     {
         codeSnippetText = result.value;
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
     function dumpAndNext(next)
     {
         function innerDumpAndNext()
         {
-            InspectorTest.dumpTextWithSelection(textEditor, true);
+            SourcesTestRunner.dumpTextWithSelection(textEditor, true);
             next();
         }
         return innerDumpAndNext;
@@ -35,17 +35,17 @@ function test() {
     {
         function onFirstEnter()
         {
-            InspectorTest.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
+            SourcesTestRunner.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
         }
 
-        InspectorTest.fakeKeyEvent(textEditor, "Enter", [], onFirstEnter);
+        SourcesTestRunner.fakeKeyEvent(textEditor, "Enter", [], onFirstEnter);
     }
 
     var testSuite = [
         function testCollapsedBlock(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 {line: 0, column: 12}
             ]);
             doubleEnter(next);
@@ -54,7 +54,7 @@ function test() {
         function testOpenCurlyBrace(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 {line: 1, column: 17}
             ]);
             doubleEnter(next);
@@ -63,7 +63,7 @@ function test() {
         function testSmartIndent(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 {line: 1, column: 2}
             ]);
             doubleEnter(next);
@@ -72,7 +72,7 @@ function test() {
         function testMultiCursorSelection(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 {line: 1, column: 2},
                 {line: 1, column: 4}
             ]);
@@ -82,19 +82,19 @@ function test() {
         function testEditedAutoIndent(next)
         {
             textEditor.setText(codeSnippetText);
-            InspectorTest.setLineSelections(textEditor, [
+            SourcesTestRunner.setLineSelections(textEditor, [
                 {line: 1, column: 17}
             ]);
-            InspectorTest.fakeKeyEvent(textEditor, "Enter", [], onEnter);
+            SourcesTestRunner.fakeKeyEvent(textEditor, "Enter", [], onEnter);
 
             function onEnter()
             {
-                InspectorTest.fakeKeyEvent(textEditor, "W", [], onEditedText);
+                SourcesTestRunner.fakeKeyEvent(textEditor, "W", [], onEditedText);
             }
 
             function onEditedText()
             {
-                InspectorTest.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
+                SourcesTestRunner.fakeKeyEvent(textEditor, "Enter", [], dumpAndNext(next));
             }
         },
     ];

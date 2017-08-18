@@ -10,35 +10,35 @@ function test()
     var instanceCount = 50;
     function createHeapSnapshot()
     {
-        return InspectorTest.createHeapSnapshot(instanceCount);
+        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
     }
 
-    InspectorTest.runHeapSnapshotTestSuite([
+    ProfilerTestRunner.runHeapSnapshotTestSuite([
         function testShowAll(next)
         {
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
             var row;
 
             function dumpAndPopulate(step, from, to)
             {
-                InspectorTest.addResult("");
-                InspectorTest.addResult(step);
-                InspectorTest.addResult("Retrieved ranges: " + JSON.stringify(row._retrievedChildrenRanges));
+                TestRunner.addResult("");
+                TestRunner.addResult(step);
+                TestRunner.addResult("Retrieved ranges: " + JSON.stringify(row._retrievedChildrenRanges));
                 for (var i = 0; i < row.children.length; ++i)
-                    InspectorTest.addResult("[" + i + "] " + row.children[i]._element.textContent.replace(/[^\w\d]/mg, " "));
+                    TestRunner.addResult("[" + i + "] " + row.children[i]._element.textContent.replace(/[^\w\d]/mg, " "));
                 return row._populateChildren(from, to);
             }
 
             function step1()
             {
-                InspectorTest.switchToView("Summary", step2);
+                ProfilerTestRunner.switchToView("Summary", step2);
             }
 
             function step2()
             {
-                row = InspectorTest.findRow("A");
-                InspectorTest.addResult("Row found: " + !!row);
-                InspectorTest.expandRow(row, step3);
+                row = ProfilerTestRunner.findRow("A");
+                TestRunner.addResult("Row found: " + !!row);
+                ProfilerTestRunner.expandRow(row, step3);
             }
 
             async function step3()

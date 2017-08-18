@@ -16,18 +16,18 @@ function makeFetchesInWorker(urls)
 
 function test()
 {
-    InspectorTest.recordNetwork();
+    NetworkTestRunner.recordNetwork();
 
-    InspectorTest.callFunctionInPageAsync("makeFetchesInWorker", [['./resource.php?1', './resource.php?2']])
+    TestRunner.callFunctionInPageAsync("makeFetchesInWorker", [['./resource.php?1', './resource.php?2']])
         .then((result) => {
-              InspectorTest.addResult('Parallel fetch in worker result: ' + result.value);
-              var requests = InspectorTest.networkRequests();
+              TestRunner.addResult('Parallel fetch in worker result: ' + result.value);
+              var requests = NetworkTestRunner.networkRequests();
               requests.forEach((request) => {
-                  InspectorTest.addResult(request.url());
-                  InspectorTest.addResult("resource.type: " + request.resourceType());
-                  InspectorTest.addResult("request.failed: " + !!request.failed);
+                  TestRunner.addResult(request.url());
+                  TestRunner.addResult("resource.type: " + request.resourceType());
+                  TestRunner.addResult("request.failed: " + !!request.failed);
               });
-              InspectorTest.completeTest();
+              TestRunner.completeTest();
         });
 }
 </script>

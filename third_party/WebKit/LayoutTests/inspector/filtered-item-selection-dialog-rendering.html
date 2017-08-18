@@ -14,7 +14,7 @@ function test()
     var provider = new Sources.FilteredUISourceCodeListProvider();
     provider.attach();
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testRenderingInNameOnly(next)
         {
             checkQuery("12");
@@ -42,7 +42,7 @@ function test()
 
     function checkQuery(query)
     {
-        InspectorTest.addResult("filter query: " + query);
+        TestRunner.addResult("filter query: " + query);
         var titleElement = document.createElement("div");
         var subtitleElement = document.createElement("div");
         var outputs = [];
@@ -55,7 +55,7 @@ function test()
             outputs.push(text);
         }
         outputs.sort();
-        InspectorTest.addResult(outputs.join("\n--------------------\n"));
+        TestRunner.addResult(outputs.join("\n--------------------\n"));
     }
 
     function elementHighlightedText(element)

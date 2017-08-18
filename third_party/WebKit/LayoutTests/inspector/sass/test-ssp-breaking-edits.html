@@ -15,39 +15,39 @@ function insertStyleSheet()
 function test()
 {
     var sourceCode;
-    InspectorTest.evaluateInPage("insertStyleSheet()", onStyleSheet);
+    TestRunner.evaluateInPage("insertStyleSheet()", onStyleSheet);
 
     function onStyleSheet()
     {
-        InspectorTest.waitForScriptSource("test-ssp-breaking-edits.scss", onSASS);
+        SourcesTestRunner.waitForScriptSource("test-ssp-breaking-edits.scss", onSASS);
     }
 
     function onSASS(sc)
     {
         sourceCode = sc;
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
     }
 
     function step1()
     {
-        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-family");
+        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("font-family");
         treeElement.startEditing(treeElement.valueElement);
         treeElement.valueElement.textContent = "\"Times";
         treeElement.kickFreeFlowStyleEditForTest();
-        InspectorTest.waitForStyleApplied(step2.bind(null, treeElement));
+        ElementsTestRunner.waitForStyleApplied(step2.bind(null, treeElement));
     }
 
     function step2(treeElement)
     {
         treeElement.valueElement.textContent = "\"Times New Roman\"";
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.waitForStyleApplied(step3);
+        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+        ElementsTestRunner.waitForStyleApplied(step3);
     }
 
     function step3()
     {
-        InspectorTest.addResult(sourceCode.workingCopy());
-        InspectorTest.completeTest();
+        TestRunner.addResult(sourceCode.workingCopy());
+        TestRunner.completeTest();
     }
 }
 

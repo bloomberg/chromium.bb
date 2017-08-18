@@ -10,15 +10,15 @@ function test()
     function finishWhenDone(agentName, action, errorString)
     {
         if (action === "enable")
-            InspectorTest.addResult("");
+            TestRunner.addResult("");
         if (errorString)
-            InspectorTest.addResult(agentName + "." + action + " finished with error " + errorString);
+            TestRunner.addResult(agentName + "." + action + " finished with error " + errorString);
         else
-            InspectorTest.addResult(agentName + "." + action + " finished successfully");
+            TestRunner.addResult(agentName + "." + action + " finished successfully");
 
         ++responsesReceived;
         if (responsesReceived === requestsSent)
-            InspectorTest.completeTest();
+            TestRunner.completeTest();
     }
 
     var targets = SDK.targetManager.targets();

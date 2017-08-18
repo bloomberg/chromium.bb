@@ -13,7 +13,7 @@ function codeSnippetsNumber() {
 
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
@@ -21,13 +21,13 @@ function test()
     function genericTest(snippetName, next)
     {
         var command = "codeSnippet('" + snippetName + "');";
-        InspectorTest.evaluateInPage(command, step2);
+        TestRunner.evaluateInPage(command, step2);
         function step2(result)
         {
             textEditor.setText(result.value);
             var indent = textEditor.indent();
             var description = indent === TextUtils.TextUtils.Indent.TabCharacter ? "Tab" : indent.length + " spaces";
-            InspectorTest.addResult("Autodetected indentation for " + snippetName + ": " +
+            TestRunner.addResult("Autodetected indentation for " + snippetName + ": " +
                 description);
             next();
         }
@@ -36,14 +36,14 @@ function test()
     function onTestNumberReceived(result)
     {
         var testSuite = [];
-        InspectorTest.addResult("Tests number: " + result.value);
+        TestRunner.addResult("Tests number: " + result.value);
         for(var i = 1; i <= result.value; ++i)
             testSuite.push(genericTest.bind(this, "test" + i));
 
-        InspectorTest.runTestSuite(testSuite);
+        TestRunner.runTestSuite(testSuite);
     }
 
-    InspectorTest.evaluateInPage("codeSnippetsNumber()", onTestNumberReceived);
+    TestRunner.evaluateInPage("codeSnippetsNumber()", onTestNumberReceived);
 }
 
 </script>

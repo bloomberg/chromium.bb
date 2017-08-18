@@ -6,59 +6,59 @@
 
 function test()
 {
-    var textEditor = InspectorTest.createTestEditor();
+    var textEditor = SourcesTestRunner.createTestEditor();
     textEditor.setText("1\n2\n3\n4");
 
-    InspectorTest.runTestSuite([
+    TestRunner.runTestSuite([
         function testMarkiningInitialStateAsClean(next)
         {
-            InspectorTest.addResult("Initial state: clean=" + textEditor.isClean());
+            TestRunner.addResult("Initial state: clean=" + textEditor.isClean());
             textEditor.markClean();
-            InspectorTest.addResult("After marking clean: clean=" + textEditor.isClean());
+            TestRunner.addResult("After marking clean: clean=" + textEditor.isClean());
             textEditor.editRange(TextUtils.TextRange.createFromLocation(0, 0), "newText");
-            InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
+            TestRunner.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
-            InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             textEditor.redo();
-            InspectorTest.addResult("REDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("REDO; clean=" + textEditor.isClean());
             textEditor.undo();
-            InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             textEditor.editRange(TextUtils.TextRange.createFromLocation(1, 0), "newText2");
-            InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
+            TestRunner.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
-            InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             next();
         },
 
         function testMiddleStateAsClean(next)
         {
-            InspectorTest.addResult("Initial state: clean=" + textEditor.isClean());
+            TestRunner.addResult("Initial state: clean=" + textEditor.isClean());
             for(var i = 0; i < 3; ++i) {
                 textEditor.editRange(TextUtils.TextRange.createFromLocation(i, 0), "newText" + i);
-                InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
+                TestRunner.addResult("EDIT; clean=" + textEditor.isClean());
             }
             textEditor.markClean();
-            InspectorTest.addResult("After marking clean: clean=" + textEditor.isClean());
+            TestRunner.addResult("After marking clean: clean=" + textEditor.isClean());
             textEditor.editRange(TextUtils.TextRange.createFromLocation(3, 0), "newText" + 3);
-            InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
+            TestRunner.addResult("EDIT; clean=" + textEditor.isClean());
             for(var i = 0; i < 4; ++i) {
                 textEditor.undo();
-                InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+                TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             }
             for(var i = 0; i < 4; ++i) {
                 textEditor.redo();
-                InspectorTest.addResult("REDO; clean=" + textEditor.isClean());
+                TestRunner.addResult("REDO; clean=" + textEditor.isClean());
             }
             for(var i = 0; i < 2; ++i) {
                 textEditor.undo();
-                InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+                TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             }
             textEditor.editRange(TextUtils.TextRange.createFromLocation(1, 0), "foo");
-            InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
+            TestRunner.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
-            InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             textEditor.undo();
-            InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
+            TestRunner.addResult("UNDO; clean=" + textEditor.isClean());
             next();
         },
     ]);

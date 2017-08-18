@@ -43,14 +43,14 @@ function test()
         {"cat": "blink.console", "name": "global-scope", "ph": "F", "ts": 220010, "args": {}, "scope": "s2", "id2": { global: 6}, "tid": mainThread, "pid": pid + 2},
     ];
 
-    var model = InspectorTest.createTracingModel(testData);
+    var model = PerformanceTestRunner.createTracingModel(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).asyncEvents();
     for (var i = 0; i < events.length; ++i) {
         var stepString = `${events[i].name} ${events[i].startTime}-${events[i].endTime}: ` +
             events[i].steps.map(s => `${s.phase} ${s.startTime}`).join(", ");
-        InspectorTest.addResult(stepString);
+        TestRunner.addResult(stepString);
     }
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 
 </script>

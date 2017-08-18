@@ -39,7 +39,7 @@ function test()
     };
     var file = new MockedFile();
 
-    InspectorTest.runProfilerTestSuite([
+    ProfilerTestRunner.runProfilerTestSuite([
         function testSave(next)
         {
             function saveProfileToFile(profile)
@@ -50,10 +50,10 @@ function test()
                     {
                         file.name = fileName;
                         if (fileName.endsWith(".cpuprofile")) {
-                            InspectorTest.addResult("PASS: open was called with extension '.cpuprofile'");
+                            TestRunner.addResult("PASS: open was called with extension '.cpuprofile'");
                             return true;
                         } else {
-                            InspectorTest.addResult("FAILED: open was called with wrong extension. fileName: '" + fileName + "'");
+                            TestRunner.addResult("FAILED: open was called with wrong extension. fileName: '" + fileName + "'");
                             next();
                         }
                     },
@@ -63,10 +63,10 @@ function test()
                         return new Promise(resolve => {
                             file._appendData(data);
                             if (data.length) {
-                                InspectorTest.addResult("PASS: write was called with data length more than zero");
+                                TestRunner.addResult("PASS: write was called with data length more than zero");
                                 resolve();
                             } else {
-                                InspectorTest.addResult("FAILED: write was called with zero data length");
+                                TestRunner.addResult("FAILED: write was called with zero data length");
                                 next();
                             }
                         });
@@ -74,16 +74,16 @@ function test()
 
                     close: function()
                     {
-                        InspectorTest.addResult("PASS: close was called");
+                        TestRunner.addResult("PASS: close was called");
                         next();
                     }
                 }
 
                 profile.saveToFile();
             }
-            InspectorTest.showProfileWhenAdded("manual");
-            InspectorTest.waitUntilProfileViewIsShown("manual", view => saveProfileToFile(view._profileHeader));
-            InspectorTest.evaluateInPage("pageFunction()", function done() {});
+            ProfilerTestRunner.showProfileWhenAdded("manual");
+            ProfilerTestRunner.waitUntilProfileViewIsShown("manual", view => saveProfileToFile(view._profileHeader));
+            TestRunner.evaluateInPage("pageFunction()", function done() {});
         },
 
         function testLoad(next)
@@ -92,19 +92,19 @@ function test()
             function checkLoadedContent(profileView)
             {
                 if (loadedProfileData === file._data())
-                    InspectorTest.addResult("PASS: the content of loaded profile matches with the original profile.");
+                    TestRunner.addResult("PASS: the content of loaded profile matches with the original profile.");
                 else {
-                    InspectorTest.addResult("FAIL: the content of loaded profile doesn't match with the original profile.");
-                    InspectorTest.addResult("old: " + file._data());
-                    InspectorTest.addResult("new: " + loadedProfileData);
+                    TestRunner.addResult("FAIL: the content of loaded profile doesn't match with the original profile.");
+                    TestRunner.addResult("old: " + file._data());
+                    TestRunner.addResult("new: " + loadedProfileData);
                 }
                 next();
             }
             var profilesPanel = UI.panels.js_profiler;
             var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
-            InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
+            ProfilerTestRunner.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
             profilesPanel._loadFromFile(file);
-            InspectorTest.addSniffer(Profiler.CPUProfileHeader.prototype, "updateStatus", function(statusText) {
+            TestRunner.addSniffer(Profiler.CPUProfileHeader.prototype, "updateStatus", function(statusText) {
                 if (!statusText.startsWith("Parsing"))
                     return;
                 loadedProfileData = this._jsonifiedProfile;

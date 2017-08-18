@@ -27,8 +27,8 @@ function test()
     {
         var sidebarSize = splitWidget.isVertical() ? splitWidget.sidebarWidget().element.offsetWidth : splitWidget.sidebarWidget().element.offsetHeight;
         var orientation = splitWidget.isVertical() ? "vertical" : "horizontal";
-        InspectorTest.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitWidget.showMode() + ", " + orientation);
-        InspectorTest.addResult("    Setting value: " + JSON.stringify(Common.settings.settingForTest(splitWidget._setting._name).get()));
+        TestRunner.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitWidget.showMode() + ", " + orientation);
+        TestRunner.addResult("    Setting value: " + JSON.stringify(Common.settings.settingForTest(splitWidget._setting._name).get()));
     }
 
     function testSplitWidgetSizes(useFraction, shouldSaveShowMode)
@@ -41,76 +41,76 @@ function test()
         var newHeight = useFraction ? 130 : 202;
         
         var splitWidget;
-        InspectorTest.addResult("Create default split widget");
+        TestRunner.addResult("Create default split widget");
         var params = "useFraction = " + useFraction + ", shouldSaveShowMode = " + shouldSaveShowMode;
-        InspectorTest.addResult("Running split widget test with the following parameters: " + params);
+        TestRunner.addResult("Running split widget test with the following parameters: " + params);
 
-        InspectorTest.addResult("Creating split widget");
+        TestRunner.addResult("Creating split widget");
         splitWidget = createAndShowSplitWidget(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Hiding sidebar");
+        TestRunner.addResult("Hiding sidebar");
         splitWidget.hideSidebar();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Showing sidebar");
+        TestRunner.addResult("Showing sidebar");
         splitWidget.showBoth();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Resizing");
+        TestRunner.addResult("Resizing");
         splitWidget.setSidebarSize(newWidth);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Hiding sidebar");
+        TestRunner.addResult("Hiding sidebar");
         splitWidget.hideSidebar();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Showing sidebar");
+        TestRunner.addResult("Showing sidebar");
         splitWidget.showBoth();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Making horizontal");
+        TestRunner.addResult("Making horizontal");
         splitWidget.setVertical(false);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Resizing");
+        TestRunner.addResult("Resizing");
         splitWidget.setSidebarSize(newHeight);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Hiding sidebar");
+        TestRunner.addResult("Hiding sidebar");
         splitWidget.hideSidebar();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
         splitWidget.element.remove();
 
-        InspectorTest.addResult("Recreating split widget");
+        TestRunner.addResult("Recreating split widget");
         splitWidget = createAndShowSplitWidget(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Hiding sidebar");
+        TestRunner.addResult("Hiding sidebar");
         splitWidget.hideSidebar();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Making horizontal");
+        TestRunner.addResult("Making horizontal");
         splitWidget.setVertical(false);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Showing sidebar");
+        TestRunner.addResult("Showing sidebar");
         splitWidget.showBoth();
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
         splitWidget.element.remove();
 
-        InspectorTest.addResult("Recreating split widget");
+        TestRunner.addResult("Recreating split widget");
         splitWidget = createAndShowSplitWidget(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
-        InspectorTest.addResult("Making horizontal");
+        TestRunner.addResult("Making horizontal");
         splitWidget.setVertical(false);
         dumpSplitWidgetOrientationShowModeAndSidebarSize(splitWidget);
 
         splitWidget.element.remove();
-        InspectorTest.addResult("");
+        TestRunner.addResult("");
     }
 
     // Test all combinations of useFraction and shouldSaveShowMode flags
@@ -118,7 +118,7 @@ function test()
     testSplitWidgetSizes(false, true);
     testSplitWidgetSizes(true, false);
     testSplitWidgetSizes(true, true);
-    InspectorTest.completeTest();
+    TestRunner.completeTest();
 }
 </script>
 </head>
