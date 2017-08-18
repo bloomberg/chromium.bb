@@ -5,6 +5,7 @@
 #include "components/ui_devtools/views/ui_devtools_dom_agent.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 #include "components/ui_devtools/views/ui_element.h"
@@ -21,6 +22,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
@@ -100,7 +102,8 @@ std::unique_ptr<DOM::Node> BuildDomNodeFromUIElement(UIElement* root) {
 
 }  // namespace
 
-UIDevToolsDOMAgent::UIDevToolsDOMAgent() : is_building_tree_(false) {
+UIDevToolsDOMAgent::UIDevToolsDOMAgent()
+    : is_building_tree_(false), show_size_on_canvas_(false) {
   aura::Env::GetInstance()->AddObserver(this);
 }
 
@@ -192,7 +195,9 @@ UIElement* UIDevToolsDOMAgent::GetElementFromNodeId(int node_id) {
   return node_id_to_ui_element_[node_id];
 }
 
-ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(int node_id) {
+ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
+    int node_id,
+    bool show_size) {
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
@@ -207,6 +212,7 @@ ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(int node_id) {
   if (!window_and_bounds.first)
     return ui_devtools::protocol::Response::Error("No node found with that id");
 
+  show_size_on_canvas_ = show_size;
   UpdateHighlight(window_and_bounds);
 
   if (!layer_for_highlighting_->visible())
@@ -245,38 +251,57 @@ int UIDevToolsDOMAgent::FindElementIdTargetedByPoint(
 void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
   ui::PaintRecorder recorder(context, screen_bounds.size());
-  gfx::Canvas* canvas_ = recorder.canvas();
+  gfx::Canvas* canvas = recorder.canvas();
   gfx::RectF rect_f(hovered_element_bounds_);
+  rect_f.Inset(gfx::InsetsF(-1));
 
   cc::PaintFlags flags;
   flags.setColor(SK_ColorBLUE);
-  flags.setStrokeWidth(1.f);
+  flags.setStrokeWidth(1.0f);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
 
-  constexpr SkScalar intervals[] = {1.f, 1.f};
+  // Draw ui element bounds.
+  canvas->DrawRect(rect_f, flags);
+
+  constexpr SkScalar intervals[] = {1.f, 4.f};
   flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
 
   // Top horizontal dotted line from left to right.
-  canvas_->DrawLine(gfx::PointF(0.0f, rect_f.y()),
-                    gfx::PointF(screen_bounds.right(), rect_f.y()), flags);
+  canvas->DrawLine(gfx::PointF(0.0f, rect_f.y()),
+                   gfx::PointF(screen_bounds.right(), rect_f.y()), flags);
 
   // Bottom horizontal dotted line from left to right.
-  canvas_->DrawLine(gfx::PointF(0.0f, rect_f.bottom() + 0.5f),
-                    gfx::PointF(screen_bounds.right(), rect_f.bottom() + 0.5f),
-                    flags);
+  canvas->DrawLine(gfx::PointF(0.0f, rect_f.bottom()),
+                   gfx::PointF(screen_bounds.right(), rect_f.bottom()), flags);
 
   // Left vertical dotted line from top to bottom.
-  canvas_->DrawLine(gfx::PointF(rect_f.x() - 0.5f, 0.0f),
-                    gfx::PointF(rect_f.x() - 0.5f, screen_bounds.bottom()),
-                    flags);
+  canvas->DrawLine(gfx::PointF(rect_f.x(), 0.0f),
+                   gfx::PointF(rect_f.x(), screen_bounds.bottom()), flags);
 
   // Right vertical dotted line from top to bottom.
-  canvas_->DrawLine(gfx::PointF(rect_f.right() + 0.5f, 0.0f),
-                    gfx::PointF(rect_f.right() + 0.5f, screen_bounds.bottom()),
-                    flags);
+  canvas->DrawLine(gfx::PointF(rect_f.right(), 0.0f),
+                   gfx::PointF(rect_f.right(), screen_bounds.bottom()), flags);
 
-  // Draw ui element bounds.
-  canvas_->DrawRect(rect_f, SK_ColorBLUE);
+  if (show_size_on_canvas_) {
+    base::string16 utf16_text =
+        base::UTF8ToUTF16(hovered_element_bounds_.size().ToString());
+    if (!render_text_) {
+      render_text_ =
+          base::WrapUnique<gfx::RenderText>(gfx::RenderText::CreateInstance());
+    }
+    render_text_->SetText(utf16_text);
+    const gfx::Size& text_size = render_text_->GetStringSize();
+    render_text_->SetColor(SK_ColorRED);
+    const gfx::Point text_top_left_point(hovered_element_bounds_.x() + 1,
+                                         hovered_element_bounds_.height() / 2 -
+                                             text_size.height() / 2 +
+                                             hovered_element_bounds_.y());
+    const gfx::Rect display_rect(
+        text_top_left_point, gfx::Size(text_size.width(), text_size.height()));
+    canvas->FillRect(display_rect, SK_ColorWHITE, SkBlendMode::kColor);
+    render_text_->SetDisplayRect(display_rect);
+    render_text_->Draw(canvas);
+  }
 }
 
 void UIDevToolsDOMAgent::OnHostInitialized(aura::WindowTreeHost* host) {
@@ -397,6 +422,7 @@ void UIDevToolsDOMAgent::RemoveDomNode(UIElement* ui_element) {
 
 void UIDevToolsDOMAgent::Reset() {
   is_building_tree_ = false;
+  render_text_.reset();
   layer_for_highlighting_.reset();
   window_element_root_.reset();
   node_id_to_ui_element_.clear();
