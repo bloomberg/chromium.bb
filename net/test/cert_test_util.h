@@ -13,6 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS_CERTS)
+#include "net/cert/scoped_nss_types.h"
+
 // From <pk11pub.h>
 typedef struct PK11SlotInfoStr PK11SlotInfo;
 
@@ -50,6 +52,15 @@ scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
     const std::string& cert_filename,
     const std::string& key_filename,
     PK11SlotInfo* slot);
+
+ScopedCERTCertificate ImportCERTCertificateFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file);
+
+ScopedCERTCertificateList CreateCERTCertificateListFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file,
+    int format);
 #endif
 
 // Imports all of the certificates in |cert_file|, a file in |certs_dir|, into a

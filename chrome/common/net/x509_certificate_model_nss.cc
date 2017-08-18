@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/common/net/x509_certificate_model_nss.h"
 
 #include <cert.h>
 #include <cms.h>
@@ -15,18 +15,24 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <unicode/uidna.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
+#include "components/url_formatter/url_formatter.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace psm = mozilla_security_manager;
 
@@ -75,7 +81,7 @@ std::string ProcessExtension(
   return criticality + "\n" + psm::ProcessExtensionData(extension);
 }
 
-std::string GetNickname(net::X509Certificate::OSCertHandle cert_handle) {
+std::string GetNickname(CERTCertificate* cert_handle) {
   std::string name;
   if (cert_handle->nickname) {
     name = cert_handle->nickname;
@@ -111,10 +117,9 @@ typedef std::unique_ptr<NSSCMSSignedData, FreeNSSCMSSignedData>
 
 namespace x509_certificate_model {
 
-using net::X509Certificate;
 using std::string;
 
-string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
+string GetCertNameOrNickname(CERTCertificate* cert_handle) {
   string name = ProcessIDN(
       Stringize(CERT_GetCommonName(&cert_handle->subject), std::string()));
   if (!name.empty())
@@ -122,11 +127,11 @@ string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
   return GetNickname(cert_handle);
 }
 
-string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
+string GetTokenName(CERTCertificate* cert_handle) {
   return psm::GetCertTokenName(cert_handle);
 }
 
-string GetVersion(X509Certificate::OSCertHandle cert_handle) {
+string GetVersion(CERTCertificate* cert_handle) {
   // If the version field is omitted from the certificate, the default
   // value is v1(0).
   unsigned long version = 0;
@@ -137,54 +142,55 @@ string GetVersion(X509Certificate::OSCertHandle cert_handle) {
   return std::string();
 }
 
-net::CertType GetType(X509Certificate::OSCertHandle cert_handle) {
-    return psm::GetCertType(cert_handle);
+net::CertType GetType(CERTCertificate* cert_handle) {
+  return psm::GetCertType(cert_handle);
 }
 
-void GetUsageStrings(X509Certificate::OSCertHandle cert_handle,
+void GetUsageStrings(CERTCertificate* cert_handle,
                      std::vector<string>* usages) {
   psm::GetCertUsageStrings(cert_handle, usages);
 }
 
-string GetSerialNumberHexified(X509Certificate::OSCertHandle cert_handle,
+string GetSerialNumberHexified(CERTCertificate* cert_handle,
                                const string& alternative_text) {
   return Stringize(CERT_Hexify(&cert_handle->serialNumber, true),
                    alternative_text);
 }
 
-string GetIssuerCommonName(X509Certificate::OSCertHandle cert_handle,
+string GetIssuerCommonName(CERTCertificate* cert_handle,
                            const string& alternative_text) {
   return Stringize(CERT_GetCommonName(&cert_handle->issuer), alternative_text);
 }
 
-string GetIssuerOrgName(X509Certificate::OSCertHandle cert_handle,
+string GetIssuerOrgName(CERTCertificate* cert_handle,
                         const string& alternative_text) {
   return Stringize(CERT_GetOrgName(&cert_handle->issuer), alternative_text);
 }
 
-string GetIssuerOrgUnitName(X509Certificate::OSCertHandle cert_handle,
+string GetIssuerOrgUnitName(CERTCertificate* cert_handle,
                             const string& alternative_text) {
   return Stringize(CERT_GetOrgUnitName(&cert_handle->issuer), alternative_text);
 }
 
-string GetSubjectOrgName(X509Certificate::OSCertHandle cert_handle,
+string GetSubjectOrgName(CERTCertificate* cert_handle,
                          const string& alternative_text) {
   return Stringize(CERT_GetOrgName(&cert_handle->subject), alternative_text);
 }
 
-string GetSubjectOrgUnitName(X509Certificate::OSCertHandle cert_handle,
+string GetSubjectOrgUnitName(CERTCertificate* cert_handle,
                              const string& alternative_text) {
   return Stringize(CERT_GetOrgUnitName(&cert_handle->subject),
                    alternative_text);
 }
 
-string GetSubjectCommonName(X509Certificate::OSCertHandle cert_handle,
+string GetSubjectCommonName(CERTCertificate* cert_handle,
                             const string& alternative_text) {
   return Stringize(CERT_GetCommonName(&cert_handle->subject), alternative_text);
 }
 
-bool GetTimes(X509Certificate::OSCertHandle cert_handle,
-              base::Time* issued, base::Time* expires) {
+bool GetTimes(CERTCertificate* cert_handle,
+              base::Time* issued,
+              base::Time* expires) {
   PRTime pr_issued, pr_expires;
   if (CERT_GetCertTimes(cert_handle, &pr_issued, &pr_expires) == SECSuccess) {
     *issued = crypto::PRTimeToBaseTime(pr_issued);
@@ -194,23 +200,30 @@ bool GetTimes(X509Certificate::OSCertHandle cert_handle,
   return false;
 }
 
-string GetTitle(X509Certificate::OSCertHandle cert_handle) {
+string GetTitle(CERTCertificate* cert_handle) {
   return psm::GetCertTitle(cert_handle);
 }
 
-string GetIssuerName(X509Certificate::OSCertHandle cert_handle) {
+string GetIssuerName(CERTCertificate* cert_handle) {
   return psm::ProcessName(&cert_handle->issuer);
 }
 
-string GetSubjectName(X509Certificate::OSCertHandle cert_handle) {
+string GetSubjectName(CERTCertificate* cert_handle) {
   return psm::ProcessName(&cert_handle->subject);
 }
 
-void GetExtensions(
-    const string& critical_label,
-    const string& non_critical_label,
-    X509Certificate::OSCertHandle cert_handle,
-    Extensions* extensions) {
+std::string GetIssuerDisplayName(CERTCertificate* cert_handle) {
+  return net::x509_util::GetCERTNameDisplayName(&cert_handle->issuer);
+}
+
+std::string GetSubjectDisplayName(CERTCertificate* cert_handle) {
+  return net::x509_util::GetCERTNameDisplayName(&cert_handle->subject);
+}
+
+void GetExtensions(const string& critical_label,
+                   const string& non_critical_label,
+                   CERTCertificate* cert_handle,
+                   Extensions* extensions) {
   if (cert_handle->extensions) {
     for (size_t i = 0; cert_handle->extensions[i] != NULL; ++i) {
       Extension extension;
@@ -222,16 +235,17 @@ void GetExtensions(
   }
 }
 
-string HashCertSHA256(X509Certificate::OSCertHandle cert_handle) {
+string HashCertSHA256(CERTCertificate* cert_handle) {
   return HashCert(cert_handle, HASH_AlgSHA256, SHA256_LENGTH);
 }
 
-string HashCertSHA1(X509Certificate::OSCertHandle cert_handle) {
+string HashCertSHA1(CERTCertificate* cert_handle) {
   return HashCert(cert_handle, HASH_AlgSHA1, SHA1_LENGTH);
 }
 
-string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
-                    size_t start, size_t end) {
+string GetCMSString(const std::vector<CERTCertificate*>& cert_chain,
+                    size_t start,
+                    size_t end) {
   crypto::ScopedPLArenaPool arena(PORT_NewArena(1024));
   DCHECK(arena.get());
 
@@ -281,29 +295,81 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
   return string(reinterpret_cast<const char*>(cert_p7.data), cert_p7.len);
 }
 
-string ProcessSecAlgorithmSignature(X509Certificate::OSCertHandle cert_handle) {
+string ProcessSecAlgorithmSignature(CERTCertificate* cert_handle) {
   return ProcessSecAlgorithmInternal(&cert_handle->signature);
 }
 
-string ProcessSecAlgorithmSubjectPublicKey(
-    X509Certificate::OSCertHandle cert_handle) {
+string ProcessSecAlgorithmSubjectPublicKey(CERTCertificate* cert_handle) {
   return ProcessSecAlgorithmInternal(
       &cert_handle->subjectPublicKeyInfo.algorithm);
 }
 
-string ProcessSecAlgorithmSignatureWrap(
-    X509Certificate::OSCertHandle cert_handle) {
+string ProcessSecAlgorithmSignatureWrap(CERTCertificate* cert_handle) {
   return ProcessSecAlgorithmInternal(
       &cert_handle->signatureWrap.signatureAlgorithm);
 }
 
-string ProcessSubjectPublicKeyInfo(X509Certificate::OSCertHandle cert_handle) {
+string ProcessSubjectPublicKeyInfo(CERTCertificate* cert_handle) {
   return psm::ProcessSubjectPublicKeyInfo(&cert_handle->subjectPublicKeyInfo);
 }
 
-string ProcessRawBitsSignatureWrap(X509Certificate::OSCertHandle cert_handle) {
+string ProcessRawBitsSignatureWrap(CERTCertificate* cert_handle) {
   return ProcessRawBits(cert_handle->signatureWrap.signature.data,
                         cert_handle->signatureWrap.signature.len);
+}
+
+std::string ProcessIDN(const std::string& input) {
+  // Convert the ASCII input to a string16 for ICU.
+  base::string16 input16;
+  input16.reserve(input.length());
+  input16.insert(input16.end(), input.begin(), input.end());
+
+  base::string16 output16 = url_formatter::IDNToUnicode(input);
+  if (input16 == output16)
+    return input;  // Input did not contain any encoded data.
+
+  // Input contained encoded data, return formatted string showing original and
+  // decoded forms.
+  return l10n_util::GetStringFUTF8(IDS_CERT_INFO_IDN_VALUE_FORMAT, input16,
+                                   output16);
+}
+
+std::string ProcessRawBytesWithSeparators(const unsigned char* data,
+                                          size_t data_length,
+                                          char hex_separator,
+                                          char line_separator) {
+  static const char kHexChars[] = "0123456789ABCDEF";
+
+  // Each input byte creates two output hex characters + a space or newline,
+  // except for the last byte.
+  std::string ret;
+  size_t kMin = 0U;
+
+  if (!data_length)
+    return std::string();
+
+  ret.reserve(std::max(kMin, data_length * 3 - 1));
+
+  for (size_t i = 0; i < data_length; ++i) {
+    unsigned char b = data[i];
+    ret.push_back(kHexChars[(b >> 4) & 0xf]);
+    ret.push_back(kHexChars[b & 0xf]);
+    if (i + 1 < data_length) {
+      if ((i + 1) % 16 == 0)
+        ret.push_back(line_separator);
+      else
+        ret.push_back(hex_separator);
+    }
+  }
+  return ret;
+}
+
+std::string ProcessRawBytes(const unsigned char* data, size_t data_length) {
+  return ProcessRawBytesWithSeparators(data, data_length, ' ', '\n');
+}
+
+std::string ProcessRawBits(const unsigned char* data, size_t data_length) {
+  return ProcessRawBytes(data, (data_length + 7) / 8);
 }
 
 }  // namespace x509_certificate_model

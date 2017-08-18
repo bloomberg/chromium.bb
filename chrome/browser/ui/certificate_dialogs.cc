@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
