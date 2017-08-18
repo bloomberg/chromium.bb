@@ -977,17 +977,26 @@ NSSearchFieldCell* LayoutThemeMac::Search() const {
     [search_.Get() setBezeled:YES];
     [search_.Get() setEditable:YES];
     [search_.Get() setFocusRingType:NSFocusRingTypeExterior];
-    SEL sel = @selector(setCenteredLook:);
-    if ([search_.Get() respondsToSelector:sel]) {
-      BOOL bool_value = NO;
-      NSMethodSignature* signature =
-          [NSSearchFieldCell instanceMethodSignatureForSelector:sel];
-      NSInvocation* invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setTarget:search_.Get()];
-      [invocation setSelector:sel];
-      [invocation setArgument:&bool_value atIndex:2];
-      [invocation invoke];
+
+    // Suppress NSSearchFieldCell's default placeholder text. Prior to OS10.11,
+    // this is achieved by calling |setCenteredLook| with NO. In OS10.11 and
+    // later, instead call |setPlaceholderString| with an empty string.
+    // See https://crbug.com/752362.
+    if (IsOS10_9() || IsOS10_10()) {
+      SEL sel = @selector(setCenteredLook:);
+      if ([search_.Get() respondsToSelector:sel]) {
+        BOOL bool_value = NO;
+        NSMethodSignature* signature =
+            [NSSearchFieldCell instanceMethodSignatureForSelector:sel];
+        NSInvocation* invocation =
+            [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget:search_.Get()];
+        [invocation setSelector:sel];
+        [invocation setArgument:&bool_value atIndex:2];
+        [invocation invoke];
+      }
+    } else {
+      [search_.Get() setPlaceholderString:@""];
     }
   }
 
