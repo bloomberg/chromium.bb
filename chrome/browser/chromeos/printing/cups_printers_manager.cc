@@ -130,6 +130,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     // If this is an 'add' instead of just an update, record the event.
     MaybeRecordInstallation(printer);
     synced_printers_manager_->UpdateConfiguredPrinter(printer);
+    // Note that we will rebuild our lists when we get the observer
+    // callback from |synced_printers_manager_|.
   }
 
   // Public API function.
@@ -139,6 +141,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       event_tracker_->RecordPrinterRemoved(*existing);
     }
     synced_printers_manager_->RemoveConfiguredPrinter(printer_id);
+    // Note that we will rebuild our lists when we get the observer
+    // callback from |synced_printers_manager_|.
   }
 
   // Public API function.

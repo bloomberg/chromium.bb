@@ -81,8 +81,10 @@ class SyncedPrintersManager : public KeyedService {
   // Returns a ModelTypeSyncBridge for the sync client.
   virtual PrintersSyncBridge* GetSyncBridge() = 0;
 
-  // Registers that the printer was installed in CUPS. This is independent of
-  // whether a printer is saved in profile preferences.
+  // Registers that the printer was installed in CUPS.  If |printer| is not an
+  // already known printer (either a configured printer or an enterprise
+  // printer), this will have the side effect of saving |printer| as a
+  // configured printer.
   virtual void PrinterInstalled(const Printer& printer) = 0;
 
   // Returns true if |printer| is currently installed in CUPS.

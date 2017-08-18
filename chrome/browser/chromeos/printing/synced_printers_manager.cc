@@ -142,6 +142,11 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
   void PrinterInstalled(const Printer& printer) override {
     DCHECK(!printer.last_updated().is_null());
     installed_printer_timestamps_[printer.id()] = printer.last_updated();
+
+    // Register this printer if it's the first time we're using it.
+    if (GetPrinter(printer.id()) == nullptr) {
+      UpdateConfiguredPrinter(printer);
+    }
   }
 
   bool IsConfigurationCurrent(const Printer& printer) const override {
