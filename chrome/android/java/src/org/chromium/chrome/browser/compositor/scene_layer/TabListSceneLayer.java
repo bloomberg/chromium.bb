@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.RectF;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -65,13 +66,19 @@ public class TabListSceneLayer extends SceneLayer {
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
+            float shadowAlpha = decoration;
+            if (FeatureUtilities.isChromeHomeModernEnabled()
+                    && FeatureUtilities.isChromeHomeEnabled()) {
+                shadowAlpha /= 2;
+            }
+
             boolean useModernDesign = fullscreenManager.areBrowserControlsAtBottom()
                     && FeatureUtilities.isChromeHomeModernEnabled();
 
             int defaultThemeColor =
                     ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
 
-            int toolbarBackgroundColor = t.getToolbarBackgroundColor();
+            int toolbarBackgroundColor = getTabThemeColor(context, t);
             int textBoxBackgroundColor = t.getTextBoxBackgroundColor();
             float textBoxAlpha = t.getTextBoxAlpha();
             if (t.getForceDefaultThemeColor()) {
@@ -89,8 +96,8 @@ public class TabListSceneLayer extends SceneLayer {
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
             // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part fully supports dp.
-            nativePutTabLayer(mNativePtr, t.getId(), R.id.control_container,
-                    R.drawable.btn_tab_close, R.drawable.tabswitcher_border_frame_shadow,
+            nativePutTabLayer(mNativePtr, t.getId(), R.id.control_container, getCloseButtonIconId(),
+                    R.drawable.tabswitcher_border_frame_shadow,
                     R.drawable.tabswitcher_border_frame_decoration, R.drawable.logo_card_back,
                     R.drawable.tabswitcher_border_frame,
                     R.drawable.tabswitcher_border_frame_inner_shadow, t.canUseLiveTexture(),
@@ -105,8 +112,8 @@ public class TabListSceneLayer extends SceneLayer {
                     Math.min(t.getClippedHeight(), t.getScaledContentHeight()) * dpToPx,
                     t.getTiltXPivotOffset() * dpToPx, t.getTiltYPivotOffset() * dpToPx,
                     t.getTiltX(), t.getTiltY(), t.getAlpha(), t.getBorderAlpha() * decoration,
-                    t.getBorderInnerShadowAlpha() * decoration, decoration,
-                    t.getShadowOpacity() * decoration, t.getBorderCloseButtonAlpha() * decoration,
+                    t.getBorderInnerShadowAlpha() * decoration, decoration, shadowAlpha,
+                    t.getBorderCloseButtonAlpha() * decoration,
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
                     defaultThemeColor, toolbarBackgroundColor, closeButtonColor,
@@ -119,11 +126,45 @@ public class TabListSceneLayer extends SceneLayer {
     }
 
     /**
-     * @return The background color
+     * @return The close button resource ID.
+     */
+    private int getCloseButtonIconId() {
+        if (FeatureUtilities.isChromeHomeModernEnabled()
+                && FeatureUtilities.isChromeHomeEnabled()) {
+            return R.drawable.btn_close_white;
+        }
+        return R.drawable.btn_tab_close;
+    }
+
+    /**
+     * @param context An android context for resources.
+     * @param t The layout tab to determine the color of.
+     * @return The theme color for the provided tab. This accounts for features like Chrome Home and
+     *         Chrome Modern.
+     */
+    private int getTabThemeColor(Context context, LayoutTab t) {
+        if (FeatureUtilities.isChromeHomeModernEnabled()
+                && FeatureUtilities.isChromeHomeEnabled()) {
+            if (t.isIncognito()) {
+                return ApiCompatibilityUtils.getColor(
+                        context.getResources(), R.color.incognito_primary_color);
+            }
+            return Color.WHITE;
+        }
+
+        return t.getToolbarBackgroundColor();
+    }
+
+    /**
+     * @return The background color of the scene layer.
      */
     protected int getTabListBackgroundColor(Context context) {
-        return ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.tab_switcher_background);
+        int colorId = R.color.tab_switcher_background;
+        if (FeatureUtilities.isChromeHomeModernEnabled()
+                && FeatureUtilities.isChromeHomeEnabled()) {
+            colorId = R.color.modern_grey_300;
+        }
+        return ApiCompatibilityUtils.getColor(context.getResources(), colorId);
     }
 
     @Override
