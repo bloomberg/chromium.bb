@@ -37,7 +37,7 @@
     NoInterfaceObject
 ] interface WorkerPerformance : EventTarget {
     DOMHighResTimeStamp now();
-    [RuntimeEnabled=PerformanceTimeOrigin] readonly attribute DOMHighResTimeStamp timeOrigin;
+    readonly attribute DOMHighResTimeStamp timeOrigin;
 
     // Performance Timeline
     // https://w3c.github.io/performance-timeline/#the-performance-interface

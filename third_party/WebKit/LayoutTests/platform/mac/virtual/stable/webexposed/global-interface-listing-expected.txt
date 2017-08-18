@@ -4071,6 +4071,7 @@ interface Performance : EventTarget
     getter memory
     getter navigation
     getter onresourcetimingbufferfull
+    getter timeOrigin
     getter timing
     method clearMarks
     method clearMeasures
