@@ -4,7 +4,9 @@
 
 #include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 
+#include "base/logging.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
 namespace resource_coordinator {
 
@@ -46,10 +48,20 @@ WebContentsCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
 
 void WebContentsCoordinationUnitImpl::RecalculateProperty(
     const mojom::PropertyType property_type) {
-  if (property_type == mojom::PropertyType::kCPUUsage) {
-    double cpu_usage = CalculateCPUUsage();
-
-    SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage);
+  switch (property_type) {
+    case mojom::PropertyType::kCPUUsage: {
+      double cpu_usage = CalculateCPUUsage();
+      SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage);
+      break;
+    }
+    case mojom::PropertyType::kExpectedTaskQueueingDuration: {
+      int64_t eqt;
+      if (CalculateExpectedTaskQueueingDuration(&eqt))
+        SetProperty(property_type, eqt);
+      break;
+    }
+    default:
+      NOTREACHED();
   }
 }
 
@@ -93,6 +105,40 @@ double WebContentsCoordinationUnitImpl::CalculateCPUUsage() {
   }
 
   return cpu_usage;
+}
+
+bool WebContentsCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
+    int64_t* output) {
+  // Calculate the EQT for the process of the main frame only because
+  // the smoothness of the main frame may affect the users the most.
+  CoordinationUnitImpl* main_frame_cu = GetMainFrameCoordinationUnit();
+  if (!main_frame_cu)
+    return false;
+
+  auto associated_processes =
+      main_frame_cu->GetAssociatedCoordinationUnitsOfType(
+          CoordinationUnitType::kProcess);
+
+  size_t num_processes_per_frame = associated_processes.size();
+  // A frame should not belong to more than 1 process.
+  DCHECK_LE(num_processes_per_frame, 1u);
+
+  if (num_processes_per_frame == 0)
+    return false;
+
+  return (*associated_processes.begin())
+      ->GetProperty(mojom::PropertyType::kExpectedTaskQueueingDuration, output);
+}
+
+CoordinationUnitImpl*
+WebContentsCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
+  for (auto* cu :
+       GetAssociatedCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
+    if (ToFrameCoordinationUnit(cu)->IsMainFrame())
+      return cu;
+  }
+
+  return nullptr;
 }
 
 }  // namespace resource_coordinator

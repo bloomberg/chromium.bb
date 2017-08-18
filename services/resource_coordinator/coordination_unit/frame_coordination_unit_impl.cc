@@ -60,7 +60,7 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
-const WebContentsCoordinationUnitImpl*
+WebContentsCoordinationUnitImpl*
 FrameCoordinationUnitImpl::GetWebContentsCoordinationUnit() const {
   for (auto* parent : parents_) {
     if (parent->id().type != CoordinationUnitType::kWebContents)

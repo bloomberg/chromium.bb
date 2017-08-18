@@ -30,6 +30,9 @@ class TabManager::GRCTabSignalObserver : public mojom::TabSignalObserver {
   // mojom::TabSignalObserver implementation.
   void OnEventReceived(const CoordinationUnitID& cu_id,
                        mojom::TabEvent event) override;
+  void OnPropertyChanged(const CoordinationUnitID& cu_id,
+                         mojom::PropertyType property_type,
+                         int64_t value) override;
 
   void AssociateCoordinationUnitIDWithWebContents(
       const CoordinationUnitID& cu_id,

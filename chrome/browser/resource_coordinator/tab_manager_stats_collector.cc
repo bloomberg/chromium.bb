@@ -79,6 +79,10 @@ void TabManagerStatsCollector::RecordSwitchToTab(
   }
 }
 
+void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
+    content::WebContents* contents,
+    base::TimeDelta queueing_time) {}
+
 void TabManagerStatsCollector::OnSessionRestoreStartedLoadingTabs() {
   DCHECK(!is_session_restore_loading_tabs_);
   if (session_restore_swap_metrics_driver_)

@@ -15,6 +15,7 @@ namespace resource_coordinator {
 
 class CoordinationUnitImpl;
 class FrameCoordinationUnitImpl;
+class WebContentsCoordinationUnitImpl;
 
 // The TabSignalGenerator is a dedicated |CoordinationUnitGraphObserver| for
 // calculating and emitting tab-scoped signals. This observer observes Tab
@@ -31,8 +32,11 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
 
   // CoordinationUnitGraphObserver implementation.
   bool ShouldObserve(const CoordinationUnitImpl* coordination_unit) override;
-  void OnFramePropertyChanged(
-      const FrameCoordinationUnitImpl* coordination_unit,
+  void OnFramePropertyChanged(const FrameCoordinationUnitImpl* frame_cu,
+                              const mojom::PropertyType property_type,
+                              int64_t value) override;
+  void OnWebContentsPropertyChanged(
+      const WebContentsCoordinationUnitImpl* web_contents_cu,
       const mojom::PropertyType property_type,
       int64_t value) override;
 
