@@ -493,9 +493,11 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 #if !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(PipeCount,
                         MultiprocessMessagePipeTestWithPipeCount,
-                        // TODO(rockot): Re-enable the 140-pipe case when
-                        // ChannelPosix has support for sending lots of handles.
-                        testing::Values(1u, 128u /*, 140u*/));
+                        // TODO(rockot): Enable the 128 and 250 pipe cases when
+                        // ChannelPosix and ChannelFuchsia have support for
+                        // sending larger numbers of handles per-message. See
+                        // kMaxAttachedHandles in channel.cc for details.
+                        testing::Values(1u, 64u /*, 128u, 250u*/));
 #endif
 
 DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
