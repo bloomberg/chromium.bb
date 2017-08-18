@@ -77,7 +77,8 @@ struct AuthenticationViewConstants {
   CGFloat GradientHeight;
   CGFloat ButtonHeight;
   CGFloat ButtonHorizontalPadding;
-  CGFloat ButtonVerticalPadding;
+  CGFloat ButtonTopPadding;
+  CGFloat ButtonBottomPadding;
 };
 
 const AuthenticationViewConstants kCompactConstants = {
@@ -86,7 +87,8 @@ const AuthenticationViewConstants kCompactConstants = {
     40,  // GradientHeight
     36,  // ButtonHeight
     32,  // ButtonHorizontalPadding
-    32,  // ButtonVerticalPadding
+    16,  // ButtonTopPadding
+    32,  // ButtonBottomPadding
 };
 
 const AuthenticationViewConstants kRegularConstants = {
@@ -95,7 +97,7 @@ const AuthenticationViewConstants kRegularConstants = {
     kCompactConstants.GradientHeight,
     1.5 * kCompactConstants.ButtonHeight,
     kCompactConstants.ButtonHorizontalPadding,
-    kCompactConstants.ButtonVerticalPadding,
+    kCompactConstants.ButtonBottomPadding,
 };
 
 enum AuthenticationState {
@@ -818,9 +820,9 @@ enum AuthenticationState {
   [self layoutButtons:constants];
 
   CGSize viewSize = self.view.bounds.size;
-  CGFloat collectionViewHeight = viewSize.height -
-                                 _primaryButton.frame.size.height -
-                                 constants.ButtonVerticalPadding;
+  CGFloat collectionViewHeight =
+      viewSize.height - _primaryButton.frame.size.height -
+      constants.ButtonBottomPadding - constants.ButtonTopPadding;
   CGRect collectionViewFrame =
       CGRectMake(0, 0, viewSize.width, collectionViewHeight);
   [_accountSelectorVC.view setFrame:collectionViewFrame];
@@ -828,7 +830,8 @@ enum AuthenticationState {
 
   // Layout the gradient view right above the buttons.
   CGFloat gradientOriginY = CGRectGetHeight(self.view.bounds) -
-                            constants.ButtonVerticalPadding -
+                            constants.ButtonBottomPadding -
+                            constants.ButtonTopPadding -
                             constants.ButtonHeight - constants.GradientHeight;
   [_gradientView setFrame:CGRectMake(0, gradientOriginY, viewSize.width,
                                      constants.GradientHeight)];
@@ -854,7 +857,7 @@ enum AuthenticationState {
                                          primaryButtonLayout.size.width -
                                          constants.ButtonHorizontalPadding;
   primaryButtonLayout.position.originY = CGRectGetHeight(self.view.bounds) -
-                                         constants.ButtonVerticalPadding -
+                                         constants.ButtonBottomPadding -
                                          constants.ButtonHeight;
   primaryButtonLayout.size.height = constants.ButtonHeight;
   [_primaryButton setFrame:LayoutRectGetRect(primaryButtonLayout)];
