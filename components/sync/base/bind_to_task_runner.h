@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_BASE_BIND_TO_TASK_RUNNER_H_
 #define COMPONENTS_SYNC_BASE_BIND_TO_TASK_RUNNER_H_
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -36,27 +36,8 @@
 namespace syncer {
 namespace bind_helpers {
 
-template <typename T>
-T& TrampolineForward(T& t) {
-  return t;
-}
-
-template <typename T, typename R>
-base::internal::PassedWrapper<std::unique_ptr<T, R>> TrampolineForward(
-    std::unique_ptr<T, R>& p) {
-  return base::Passed(&p);
-}
-
 template <typename Sig>
 struct BindToTaskRunnerTrampoline;
-
-template <>
-struct BindToTaskRunnerTrampoline<void()> {
-  static void Run(const scoped_refptr<base::TaskRunner>& task_runner,
-                  const base::Closure& cb) {
-    task_runner->PostTask(FROM_HERE, cb);
-  }
-};
 
 template <typename... Args>
 struct BindToTaskRunnerTrampoline<void(Args...)> {
@@ -64,7 +45,7 @@ struct BindToTaskRunnerTrampoline<void(Args...)> {
                   const base::Callback<void(Args...)>& cb,
                   Args... args) {
     task_runner->PostTask(FROM_HERE,
-                          base::Bind(cb, TrampolineForward(args)...));
+                          base::BindOnce(cb, std::forward<Args>(args)...));
   }
 };
 

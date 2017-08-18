@@ -401,23 +401,6 @@ bool ApplyCancellationTraits(const BindStateBase* base) {
       std::make_index_sequence<num_bound_args>());
 };
 
-// Template helpers to detect using Bind() on a base::Callback without any
-// additional arguments. In that case, the original base::Callback object should
-// just be directly used.
-template <typename Functor, typename... BoundArgs>
-struct BindingCallbackWithNoArgs {
-  static constexpr bool value = false;
-};
-
-template <typename Signature,
-          typename... BoundArgs,
-          CopyMode copy_mode,
-          RepeatMode repeat_mode>
-struct BindingCallbackWithNoArgs<Callback<Signature, copy_mode, repeat_mode>,
-                                 BoundArgs...> {
-  static constexpr bool value = sizeof...(BoundArgs) == 0;
-};
-
 // BindState<>
 //
 // This stores all the state passed into Bind().
@@ -439,10 +422,6 @@ struct BindState final : BindStateBase {
                   invoke_func,
                   std::forward<ForwardFunctor>(functor),
                   std::forward<ForwardBoundArgs>(bound_args)...) {
-    static_assert(!BindingCallbackWithNoArgs<Functor, BoundArgs...>::value,
-                  "Attempting to bind a base::Callback with no additional "
-                  "arguments: save a heap allocation and use the original "
-                  "base::Callback object");
   }
 
   Functor functor_;
