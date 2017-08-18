@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/optional.h"
 #include "base/process/process_info.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -1466,20 +1467,14 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   if (params.user_gesture)
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
-
-  PopupBlockerTabHelper* popup_blocker_helper =
-      source ? PopupBlockerTabHelper::FromWebContents(source) : nullptr;
   if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
        params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      popup_blocker_helper &&
-      PopupBlockerTabHelper::ConsiderForPopupBlocking(
-          source, params.user_gesture, &params)) {
-    if (popup_blocker_helper->MaybeBlockPopup(nav_params,
-                                              blink::mojom::WindowFeatures())) {
-      return nullptr;
-    }
+      PopupBlockerTabHelper::MaybeBlockPopup(source, base::Optional<GURL>(),
+                                             nav_params, &params,
+                                             blink::mojom::WindowFeatures())) {
+    return nullptr;
   }
 
   chrome::Navigate(&nav_params);
