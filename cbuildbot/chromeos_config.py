@@ -3495,8 +3495,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
-      'poppy-firmware': {
-          'sign_types': ['firmware', 'accessory_rwsig'],
+      'poppy-release': {
+          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
   }
 

@@ -19538,11 +19538,7 @@
         "boards": [
             "poppy"
         ],
-        "manifest": "official.xml",
-        "sign_types": [
-            "firmware",
-            "accessory_rwsig"
-        ]
+        "manifest": "official.xml"
     },
     "poppy-full": {
         "_template": "full",
@@ -19613,6 +19609,11 @@
             "poppy"
         ],
         "important": true,
+        "sign_types": [
+            "recovery",
+            "accessory_rwsig",
+            "factory"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
