@@ -204,7 +204,7 @@ const base::Feature kDownloadHomeShowStorageInfo{
     "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Makes "Add to Home screen" in the app menu generate an APK for the shortcut
 // URL which opens Chrome in fullscreen.
