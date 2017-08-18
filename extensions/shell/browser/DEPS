@@ -34,12 +34,12 @@ include_rules = [
   "+storage/browser/quota",
   "+third_party/skia/include",
 
-  # Additional UI dependencies for app_shell. Note that no particular UI toolkit
-  # is supported; only Aura and some necessary bits to set up display surfaces.
+  # Additional UI dependencies for app_shell.
   "+ui/aura",
   "+ui/chromeos",
   "+ui/display",
   "+ui/ozone/public",
+  "+ui/views",
   "+ui/wm",
 
   "+third_party/cros_system_api",

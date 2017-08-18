@@ -10,6 +10,7 @@
 #include "base/macros.h"
 
 #include "extensions/browser/extensions_test.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 class AppWindow;
@@ -25,7 +26,7 @@ class ShellTestBaseAura : public ExtensionsTest {
   void TearDown() override;
 
   // Initializes |app_window| for testing.
-  void InitAppWindow(AppWindow* app_window);
+  void InitAppWindow(AppWindow* app_window, const gfx::Rect& bounds = {});
 
  private:
   std::unique_ptr<ShellTestHelperAura> helper_;

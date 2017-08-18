@@ -35,7 +35,8 @@ void ShellTestBaseAura::TearDown() {
   helper_->TearDown();
 }
 
-void ShellTestBaseAura::InitAppWindow(AppWindow* app_window) {
+void ShellTestBaseAura::InitAppWindow(AppWindow* app_window,
+                                      const gfx::Rect& bounds) {
   // Create a TestAppWindowContents for the ShellAppDelegate to initialize the
   // ShellExtensionWebContentsObserver with.
   std::unique_ptr<content::WebContents> web_contents(
@@ -52,8 +53,9 @@ void ShellTestBaseAura::InitAppWindow(AppWindow* app_window) {
       app_window_contents->GetWebContents()->GetMainFrame();
   DCHECK(main_frame);
 
-  app_window->Init(GURL(), app_window_contents.release(), main_frame,
-                   AppWindow::CreateParams());
+  AppWindow::CreateParams params;
+  params.content_spec.bounds = bounds;
+  app_window->Init(GURL(), app_window_contents.release(), main_frame, params);
 }
 
 }  // namespace extensions

@@ -72,7 +72,10 @@ source_set("app_shell_lib") {
 
   # TODO(michaelpg): remove Mac support and always use aura.
   if (use_aura) {
-    deps += [ "//ui/aura" ]
+    deps += [
+      "//ui/aura",
+      "//ui/views",
+    ]
 
     if (use_x11) {
       deps += [ "//ui/events" ]
@@ -185,8 +188,6 @@ source_set("app_shell_lib") {
       "browser/shell_desktop_controller_aura.h",
       "browser/shell_native_app_window_aura.cc",
       "browser/shell_native_app_window_aura.h",
-      "browser/shell_screen.cc",
-      "browser/shell_screen.h",
     ]
     deps += [
       "//ui/wm",
@@ -205,6 +206,8 @@ source_set("app_shell_lib") {
     sources += [
       "browser/api/vpn_provider/vpn_service_factory.cc",
       "browser/api/vpn_provider/vpn_service_factory.h",
+      "browser/shell_screen.cc",
+      "browser/shell_screen.h",
     ]
     deps += [
       "//chromeos",
@@ -320,7 +323,6 @@ test("app_shell_unittests") {
       "browser/root_window_controller_unittest.cc",
       "browser/shell_desktop_controller_aura_unittest.cc",
       "browser/shell_native_app_window_aura_unittest.cc",
-      "browser/shell_screen_unittest.cc",
       "test/shell_test_base_aura.cc",
       "test/shell_test_base_aura.h",
       "test/shell_test_helper_aura.cc",
@@ -334,7 +336,10 @@ test("app_shell_unittests") {
   }
 
   if (is_chromeos) {
-    sources += [ "browser/shell_audio_controller_chromeos_unittest.cc" ]
+    sources += [
+      "browser/shell_audio_controller_chromeos_unittest.cc",
+      "browser/shell_screen_unittest.cc",
+    ]
     deps += [ "//chromeos:test_support_without_gmock" ]
   }
 
