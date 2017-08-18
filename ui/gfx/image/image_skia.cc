@@ -299,9 +299,6 @@ ImageSkia::ImageSkia(std::unique_ptr<ImageSkiaSource> source, float scale)
   DetachStorageFromSequence();
 }
 
-ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
-    : ImageSkia(base::WrapUnique(source), size) {}
-
 ImageSkia::ImageSkia(const ImageSkiaRep& image_rep) {
   Init(image_rep);
   // No other thread has reference to this, so it's safe to detach the sequence.

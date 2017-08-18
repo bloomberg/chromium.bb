@@ -106,9 +106,11 @@ class ArcPlayStoreSearchResult::IconDecodeRequest
 
     const gfx::Size resource_size(app_list::kGridIconDimension,
                                   app_list::kGridIconDimension);
-    IconSource* icon_source = new IconSource(app_list::kGridIconDimension);
+    auto icon_source =
+        base::MakeUnique<IconSource>(app_list::kGridIconDimension);
     icon_source->SetDecodedImage(bitmap);
-    const gfx::ImageSkia icon = gfx::ImageSkia(icon_source, resource_size);
+    const gfx::ImageSkia icon =
+        gfx::ImageSkia(std::move(icon_source), resource_size);
     icon.EnsureRepsForSupportedScales();
 
     search_result_->SetIcon(icon);
@@ -120,8 +122,10 @@ class ArcPlayStoreSearchResult::IconDecodeRequest
 
     const gfx::Size resource_size(app_list::kGridIconDimension,
                                   app_list::kGridIconDimension);
-    IconSource* icon_source = new IconSource(app_list::kGridIconDimension);
-    const gfx::ImageSkia icon = gfx::ImageSkia(icon_source, resource_size);
+    auto icon_source =
+        base::MakeUnique<IconSource>(app_list::kGridIconDimension);
+    const gfx::ImageSkia icon =
+        gfx::ImageSkia(std::move(icon_source), resource_size);
     icon.EnsureRepsForSupportedScales();
 
     search_result_->SetIcon(icon);

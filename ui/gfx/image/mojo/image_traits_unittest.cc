@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,7 +133,7 @@ TEST_F(ImageTraitsTest, NullImageSkia) {
 
 TEST_F(ImageTraitsTest, ImageSkiaWithNoRepsTreatedAsNull) {
   const gfx::Size kSize(1, 2);
-  ImageSkia image(new TestImageSkiaSource(kSize), kSize);
+  ImageSkia image(base::MakeUnique<TestImageSkiaSource>(kSize), kSize);
   ASSERT_FALSE(image.isNull());
 
   ImageSkia output(ImageSkiaRep(gfx::Size(1, 1), 1.0f));
@@ -143,7 +144,7 @@ TEST_F(ImageTraitsTest, ImageSkiaWithNoRepsTreatedAsNull) {
 
 TEST_F(ImageTraitsTest, ImageSkia) {
   const gfx::Size kSize(1, 2);
-  ImageSkia image(new TestImageSkiaSource(kSize), kSize);
+  ImageSkia image(base::MakeUnique<TestImageSkiaSource>(kSize), kSize);
   image.GetRepresentation(1.0f);
   image.GetRepresentation(2.0f);
 
@@ -155,7 +156,7 @@ TEST_F(ImageTraitsTest, ImageSkia) {
 
 TEST_F(ImageTraitsTest, EmptyRepPreserved) {
   const gfx::Size kSize(1, 2);
-  ImageSkia image(new TestImageSkiaSource(kSize), kSize);
+  ImageSkia image(base::MakeUnique<TestImageSkiaSource>(kSize), kSize);
   image.GetRepresentation(1.0f);
 
   SkBitmap empty_bitmap;
@@ -170,7 +171,7 @@ TEST_F(ImageTraitsTest, EmptyRepPreserved) {
 
 TEST_F(ImageTraitsTest, ImageSkiaWithOperations) {
   const gfx::Size kSize(32, 32);
-  ImageSkia image(new TestImageSkiaSource(kSize), kSize);
+  ImageSkia image(base::MakeUnique<TestImageSkiaSource>(kSize), kSize);
 
   const gfx::Size kNewSize(16, 16);
   ImageSkia resized = ImageSkiaOperations::CreateResizedImage(

@@ -5,6 +5,7 @@
 #include "ash/wm/resize_shadow.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -75,7 +76,8 @@ ResizeShadow::ResizeShadow(aura::Window* window)
 
   if (!g_shadow_image.Get()) {
     auto* source = new ResizeShadowImageSource();
-    g_shadow_image.Get().reset(new gfx::ImageSkia(source, source->size()));
+    g_shadow_image.Get() = base::MakeUnique<gfx::ImageSkia>(
+        base::WrapUnique(source), source->size());
   }
   layer_->UpdateNinePatchLayerImage(*g_shadow_image.Get());
   gfx::Rect aperture(g_shadow_image.Get()->size());

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/image_loader.h"
@@ -100,8 +101,8 @@ class IconImage::Source : public gfx::ImageSkiaSource {
 
 IconImage::Source::Source(IconImage* host, const gfx::Size& size_in_dip)
     : host_(host),
-      blank_image_(new BlankImageSource(size_in_dip), size_in_dip) {
-}
+      blank_image_(base::MakeUnique<BlankImageSource>(size_in_dip),
+                   size_in_dip) {}
 
 IconImage::Source::~Source() {
 }
@@ -140,7 +141,7 @@ IconImage::IconImage(
     AddObserver(observer);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   source_ = new Source(this, resource_size);
-  image_skia_ = gfx::ImageSkia(source_, resource_size);
+  image_skia_ = gfx::ImageSkia(base::WrapUnique(source_), resource_size);
   image_ = gfx::Image(image_skia_);
 
   registrar_.Add(this,

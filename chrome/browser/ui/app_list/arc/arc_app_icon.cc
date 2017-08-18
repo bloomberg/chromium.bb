@@ -251,9 +251,10 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
       observer_(observer),
       weak_ptr_factory_(this) {
   CHECK(observer_ != nullptr);
-  source_ = new Source(weak_ptr_factory_.GetWeakPtr(), resource_size_in_dip);
+  auto source = base::MakeUnique<Source>(weak_ptr_factory_.GetWeakPtr(),
+                                         resource_size_in_dip);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
-  image_skia_ = gfx::ImageSkia(source_, resource_size);
+  image_skia_ = gfx::ImageSkia(std::move(source), resource_size);
 }
 
 ArcAppIcon::~ArcAppIcon() {

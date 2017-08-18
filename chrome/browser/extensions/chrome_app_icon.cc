@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/extension_registry.h"
@@ -120,8 +121,9 @@ void ChromeAppIcon::UpdateIcon() {
 
   const Extension* extension = GetExtension();
   if (extension && extension->from_bookmark()) {
-    image_skia_ = gfx::ImageSkia(new RoundedCornersImageSource(image_skia_),
-                                 image_skia_.size());
+    image_skia_ =
+        gfx::ImageSkia(base::MakeUnique<RoundedCornersImageSource>(image_skia_),
+                       image_skia_.size());
   }
 
   delegate_->OnIconUpdated(this);

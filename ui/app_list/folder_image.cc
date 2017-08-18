@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"
@@ -218,8 +219,8 @@ void FolderImage::RedrawIconAndNotify() {
     top_icons.push_back(item->icon());
 
   const gfx::Size icon_size = gfx::Size(kGridIconDimension, kGridIconDimension);
-  icon_ =
-      gfx::ImageSkia(new FolderImageSource(top_icons, icon_size), icon_size);
+  icon_ = gfx::ImageSkia(
+      base::MakeUnique<FolderImageSource>(top_icons, icon_size), icon_size);
 
   for (auto& observer : observers_)
     observer.OnFolderImageUpdated();

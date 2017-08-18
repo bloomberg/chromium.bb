@@ -4,6 +4,9 @@
 
 #include "ui/app_list/views/all_apps_tile_item_view.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -54,9 +57,9 @@ AllAppsTileItemView::~AllAppsTileItemView() {
 void AllAppsTileItemView::UpdateIcon() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Size canvas_size = gfx::Size(kTileIconSize, kTileIconSize);
-  AllAppsImageSource* source = new AllAppsImageSource(
+  auto source = base::MakeUnique<AllAppsImageSource>(
       *rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia(), canvas_size);
-  gfx::ImageSkia image(source, canvas_size);
+  gfx::ImageSkia image(std::move(source), canvas_size);
 
   SetIcon(image);
 }
