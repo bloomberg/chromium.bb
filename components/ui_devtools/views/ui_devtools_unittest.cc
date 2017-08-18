@@ -15,6 +15,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/background.h"
 #include "ui/views/test/views_test_base.h"
@@ -158,7 +159,6 @@ ui::Layer* GetHighlightingLayer(aura::Window* root_window) {
     if (layer->name() == "HighlightingLayer")
       return layer;
   }
-  NOTREACHED();
   return nullptr;
 }
 
@@ -422,14 +422,14 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
 
   EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
 
-  // Clicking on the widget should request that element be inspected.
+  // Clicking on the widget should pin that element.
   generator.PressLeftButton();
   int highlight_notification_count =
       GetOverlayNodeHighlightRequestedCount(node_id);
   int inspect_node_notification_count =
       GetOverlayInspectNodeRequestedCount(node_id);
 
-  EXPECT_EQ(1, GetOverlayInspectNodeRequestedCount(node_id));
+  EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
 
   // Since the last event dispatched to the widget was a click, a subsequent
   // mouse event should generate neither a nodeHighlightRequested nor a
@@ -439,6 +439,28 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
             GetOverlayNodeHighlightRequestedCount(node_id));
   EXPECT_EQ(inspect_node_notification_count,
             GetOverlayInspectNodeRequestedCount(node_id));
+
+  dom_agent()->hideHighlight();
+
+  ui::Layer* highlighting_layer = GetHighlightingLayer(GetPrimaryRootWindow());
+  EXPECT_FALSE(highlighting_layer->visible());
+
+  // Re-enter inspect mode.
+  overlay_agent()->setInspectMode(
+      "searchForNode", protocol::Maybe<protocol::Overlay::HighlightConfig>());
+
+  generator.MoveMouseBy(p.x(), p.y());
+  generator.PressLeftButton();
+
+  inspect_node_notification_count =
+      GetOverlayInspectNodeRequestedCount(node_id);
+  // Press escape to exit inspect mode.
+  generator.PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
+
+  highlighting_layer = GetHighlightingLayer(GetPrimaryRootWindow());
+  // Upon exiting inspect mode, the element is highlighted after mouse click.
+  EXPECT_EQ(kBackgroundColor, highlighting_layer->GetTargetColor());
+  EXPECT_TRUE(highlighting_layer->visible());
 }
 
 TEST_F(UIDevToolsTest, GetDocumentWithWindowWidgetView) {

@@ -18,6 +18,7 @@ UIDevToolsOverlayAgent::~UIDevToolsOverlayAgent() {}
 ui_devtools::protocol::Response UIDevToolsOverlayAgent::setInspectMode(
     const String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
+  pinned_id_ = 0;
   if (in_mode.compare("searchForNode") == 0)
     aura::Env::GetInstance()->PrependPreTargetHandler(this);
   else if (in_mode.compare("none") == 0)
@@ -47,13 +48,31 @@ void UIDevToolsOverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
   int element_id = dom_agent_->FindElementIdTargetedByPoint(
       event->root_location(), target->GetRootWindow());
 
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
+  if (event->type() == ui::ET_MOUSE_PRESSED && (pinned_id_ != element_id)) {
     event->SetHandled();
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
-    if (element_id)
-      frontend()->inspectNodeRequested(element_id);
-  } else if (element_id) {
+    if (element_id) {
+      pinned_id_ = element_id;
+      frontend()->nodeHighlightRequested(element_id);
+      dom_agent_->HighlightNode(element_id, true);
+    }
+  } else if (element_id && !pinned_id_) {
     frontend()->nodeHighlightRequested(element_id);
+    dom_agent_->HighlightNode(element_id, false);
+  }
+}
+
+void UIDevToolsOverlayAgent::OnKeyEvent(ui::KeyEvent* event) {
+  if (!dom_agent_->window_element_root())
+    return;
+
+  // Exit inspection mode by pressing ESC key.
+  if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+    if (pinned_id_) {
+      frontend()->inspectNodeRequested(pinned_id_);
+      dom_agent_->HighlightNode(pinned_id_, true);
+    }
+    pinned_id_ = 0;
   }
 }
 

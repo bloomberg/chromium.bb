@@ -17,6 +17,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class RenderText;
+}
+
 namespace ui_devtools {
 
 class UIElement;
@@ -57,7 +61,8 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   const std::vector<aura::Window*>& root_windows() const {
     return root_windows_;
   };
-  ui_devtools::protocol::Response HighlightNode(int node_id);
+  ui_devtools::protocol::Response HighlightNode(int node_id,
+                                                bool show_size = false);
 
   // Return the id of the UI element targeted by an event located at |p|, where
   // |p| is in the local coodinate space of |root_window|. The function
@@ -95,7 +100,9 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void UpdateHighlight(
       const std::pair<aura::Window*, gfx::Rect>& window_and_bounds);
 
+  std::unique_ptr<gfx::RenderText> render_text_;
   bool is_building_tree_;
+  bool show_size_on_canvas_ = false;
   std::unique_ptr<UIElement> window_element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
 

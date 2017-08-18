@@ -32,8 +32,10 @@ class UIDevToolsOverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
  private:
   // ui:EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   UIDevToolsDOMAgent* const dom_agent_;
+  int pinned_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UIDevToolsOverlayAgent);
 };
