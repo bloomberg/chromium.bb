@@ -49,10 +49,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // widget may not exist, or the shelf may not be visible.
   static Shelf* ForWindow(aura::Window* window);
 
-  // Returns if shelf alignment options are enabled, and the user is able to
-  // adjust the alignment (eg. not allowed in guest and supervised user modes).
-  static bool CanChangeShelfAlignment();
-
   void CreateShelfWidget(aura::Window* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();

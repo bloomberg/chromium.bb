@@ -18,10 +18,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
+// A helper used to filter which menu items added by the extension are shown.
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
@@ -31,8 +31,8 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
-    ash::Shelf* shelf)
-    : LauncherContextMenu(controller, item, shelf) {
+    int64_t display_id)
+    : LauncherContextMenu(controller, item, display_id) {
   Init();
 }
 
@@ -45,7 +45,11 @@ void ExtensionLauncherContextMenu::Init() {
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     // V1 apps can be started from the menu - but V2 apps should not.
     if (!controller()->IsPlatformApp(item().id)) {
-      AddItem(MENU_OPEN_NEW, base::string16());
+      int string_id = (GetLaunchType() == extensions::LAUNCH_TYPE_PINNED ||
+                       GetLaunchType() == extensions::LAUNCH_TYPE_REGULAR)
+                          ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
+                          : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW;
+      AddItemWithStringId(MENU_OPEN_NEW, string_id);
       AddSeparator(ui::NORMAL_SEPARATOR);
     }
 
@@ -84,8 +88,7 @@ void ExtensionLauncherContextMenu::Init() {
     }
     if (!BrowserShortcutLauncherItemController(controller()->shelf_model())
              .IsListOfActiveBrowserEmpty()) {
-      AddItem(MENU_CLOSE,
-              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+      AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
     }
   } else if (item().type == ash::TYPE_DIALOG) {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
@@ -102,33 +105,6 @@ void ExtensionLauncherContextMenu::Init() {
       AddSeparator(ui::NORMAL_SEPARATOR);
     }
   }
-  AddShelfOptionsMenu();
-}
-
-bool ExtensionLauncherContextMenu::IsItemForCommandIdDynamic(
-    int command_id) const {
-  return command_id == MENU_OPEN_NEW;
-}
-
-base::string16 ExtensionLauncherContextMenu::GetLabelForCommandId(
-    int command_id) const {
-  if (command_id == MENU_OPEN_NEW) {
-    if (controller()->IsPlatformApp(item().id))
-      return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-    switch (GetLaunchType()) {
-      case extensions::LAUNCH_TYPE_PINNED:
-      case extensions::LAUNCH_TYPE_REGULAR:
-        return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
-      case extensions::LAUNCH_TYPE_FULLSCREEN:
-      case extensions::LAUNCH_TYPE_WINDOW:
-        return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-      default:
-        NOTREACHED();
-        return base::string16();
-    }
-  }
-  NOTREACHED();
-  return base::string16();
 }
 
 bool ExtensionLauncherContextMenu::IsCommandIdChecked(int command_id) const {

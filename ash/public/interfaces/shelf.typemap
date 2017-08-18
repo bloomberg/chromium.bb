@@ -6,6 +6,7 @@ mojom = "//ash/public/interfaces/shelf.mojom"
 public_headers = [
   "//ash/public/cpp/shelf_item.h",
   "//ash/public/cpp/shelf_types.h",
+  "//ui/base/models/menu_model.h",
 ]
 traits_headers = [ "//ash/public/cpp/shelf_struct_traits.h" ]
 sources = [
@@ -14,8 +15,10 @@ sources = [
 public_deps = [
   "//mojo/common:common_custom_types",
   "//skia/public/interfaces",
+  "//ui/base",
 ]
 type_mappings = [
+  "ash.mojom.MenuItemType=ui::MenuModel::ItemType",
   "ash.mojom.ShelfAction=ash::ShelfAction",
   "ash.mojom.ShelfAlignment=ash::ShelfAlignment",
   "ash.mojom.ShelfAutoHideBehavior=ash::ShelfAutoHideBehavior",

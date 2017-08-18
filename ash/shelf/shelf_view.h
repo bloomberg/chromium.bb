@@ -310,6 +310,13 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemDelegateChanged(const ShelfID& id,
                                 ShelfItemDelegate* delegate) override;
 
+  // Handles the result when querying ShelfItemDelegates for context menu items.
+  // Shows a default shelf context menu with optional extra custom |menu_items|.
+  void AfterGetContextMenuItems(const ShelfID& shelf_id,
+                                const gfx::Point& point,
+                                ui::MenuSourceType source_type,
+                                std::vector<mojom::MenuItemPtr> menu_items);
+
   // Handles the result of an item selection, records the |action| taken and
   // optionally shows an application menu with the given |menu_items|.
   void AfterItemSelected(

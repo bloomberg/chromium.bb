@@ -36,9 +36,11 @@ void WindowWatcherShelfItemDelegate::ItemSelected(
   std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
 }
 
-void WindowWatcherShelfItemDelegate::ExecuteCommand(uint32_t command_id,
-                                                    int32_t event_flags) {
-  // This delegate does not support showing an application menu.
+void WindowWatcherShelfItemDelegate::ExecuteCommand(bool from_context_menu,
+                                                    int64_t command_id,
+                                                    int32_t event_flags,
+                                                    int64_t display_id) {
+  // This delegate does not show custom context or application menu items.
   NOTIMPLEMENTED();
 }
 

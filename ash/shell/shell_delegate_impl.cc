@@ -14,7 +14,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/window_state.h"
@@ -126,11 +125,6 @@ AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
 
 std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
   return base::MakeUnique<PaletteDelegateImpl>();
-}
-
-ui::MenuModel* ShellDelegateImpl::CreateContextMenu(Shelf* shelf,
-                                                    const ShelfItem* item) {
-  return new ContextMenu(shelf);
 }
 
 GPUSupport* ShellDelegateImpl::CreateGPUSupport() {

@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -52,7 +53,6 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -166,7 +166,7 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
     item_selected_count_++;
     std::move(callback).Run(item_selected_action_, base::nullopt);
   }
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
+  void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
 
  private:
@@ -2003,6 +2003,39 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
 }
 
+// Tests that the blank shelf view area shows a context menu on right click.
+TEST_F(ShelfViewTest, ShelfViewShowsContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
+  generator.PressRightButton();
+  EXPECT_TRUE(test_api_->CloseMenu());
+}
+
+// Tests that the app list button shows a context menu on right click.
+TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  generator.MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  generator.PressRightButton();
+  EXPECT_TRUE(test_api_->CloseMenu());
+}
+
+// Tests that ShelfWindowWatcher buttons show a context menu on right click.
+TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->Show();
+  aura::Window* window = widget->GetNativeWindow();
+  ShelfID shelf_id(std::to_string(123));
+  window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
+  ShelfButton* button = GetButtonByID(shelf_id);
+  ASSERT_TRUE(button);
+  generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator.PressRightButton();
+  EXPECT_TRUE(test_api_->CloseMenu());
+}
+
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
@@ -2128,7 +2161,7 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
     items.push_back(mojom::MenuItem::New());
     std::move(callback).Run(SHELF_ACTION_NONE, std::move(items));
   }
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
+  void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
 
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
@@ -2143,19 +2176,11 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   ~ShelfViewInkDropTest() override {}
 
   void SetUp() override {
-    ash_test_helper()->set_test_shell_delegate(CreateTestShellDelegate());
-
+    ash_test_helper()->set_test_shell_delegate(new TestShellDelegate());
     ShelfViewTest::SetUp();
   }
 
  protected:
-  // Gives subclasses a chance to return a custom test shell delegate to install
-  // before calling base class's SetUp(). Shell will take ownership of the
-  // returned object.
-  virtual TestShellDelegate* CreateTestShellDelegate() {
-    return new TestShellDelegate;
-  }
-
   void InitAppListButtonInkDrop() {
     app_list_button_ = shelf_view_->GetAppListButton();
 
@@ -2727,40 +2752,6 @@ INSTANTIATE_TEST_CASE_P(
 
 namespace {
 
-// An empty menu model for shell context menu just to have a menu.
-class TestShellMenuModel : public ui::SimpleMenuModel,
-                           public ui::SimpleMenuModel::Delegate {
- public:
-  TestShellMenuModel() : ui::SimpleMenuModel(this) {}
-  ~TestShellMenuModel() override {}
-
- private:
-  // ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override { return false; }
-  bool IsCommandIdEnabled(int command_id) const override { return true; }
-  void ExecuteCommand(int command_id, int event_flags) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestShellMenuModel);
-};
-
-// A test ShellDelegate implementation for overflow button tests that returns a
-// TestShelfMenuModel for the shell context menu.
-class TestOverflowButtonShellDelegate : public TestShellDelegate {
- public:
-  TestOverflowButtonShellDelegate() {}
-  ~TestOverflowButtonShellDelegate() override {}
-
-  // TestShellDelegate:
-  ui::MenuModel* CreateContextMenu(Shelf* shelf,
-                                   const ShelfItem* item) override {
-    // Caller takes ownership of the returned object.
-    return new TestShellMenuModel;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestOverflowButtonShellDelegate);
-};
-
 std::string ToString(ShelfAlignment shelf_alignment) {
   switch (shelf_alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
@@ -2808,11 +2799,6 @@ class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
     gfx::Point point = GetScreenPointInsideOverflowButton();
     point.Offset(overflow_button_->width(), 0);
     return point;
-  }
-
-  // Overridden from ShelfViewInkDropTest:
-  TestShellDelegate* CreateTestShellDelegate() override {
-    return new TestOverflowButtonShellDelegate;
   }
 
   OverflowButton* overflow_button_ = nullptr;

@@ -22,6 +22,7 @@ class TestWallpaperDelegate : public DefaultWallpaperDelegate {
 
   // DefaultWallpaperDelegate overrides:
   void UpdateWallpaper(bool clear_cache) override;
+  bool CanOpenSetWallpaperPage() override;
 
   // Returns and clears |update_wallpaper_count_|.
   int GetUpdateWallpaperCountAndReset();

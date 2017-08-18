@@ -10,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -100,10 +101,11 @@ void AppWindowLauncherItemController::ItemSelected(
       action, GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }
 
-void AppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
-                                                     int32_t event_flags) {
-  // This delegate does not support showing an application menu.
-  NOTIMPLEMENTED();
+std::unique_ptr<ui::MenuModel> AppWindowLauncherItemController::GetContextMenu(
+    int64_t display_id) {
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  const ash::ShelfItem* item = controller->GetItem(shelf_id());
+  return LauncherContextMenu::Create(controller, item, display_id);
 }
 
 void AppWindowLauncherItemController::Close() {

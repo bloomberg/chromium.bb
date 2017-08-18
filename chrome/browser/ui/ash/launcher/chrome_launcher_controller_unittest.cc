@@ -270,7 +270,7 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
                     ItemSelectedCallback callback) override {
     std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
   }
-  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
+  void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
 
  private:
@@ -3444,7 +3444,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   {
     ash::MenuItemList items =
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_delegate->ExecuteCommand(items[1]->command_id, ui::EF_NONE);
+    item_delegate->ExecuteCommand(false, items[1]->command_id, ui::EF_NONE,
+                                  display::kInvalidDisplayId);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
 
@@ -3452,7 +3453,9 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   {
     ash::MenuItemList items =
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_delegate->ExecuteCommand(items[1]->command_id, ui::EF_SHIFT_DOWN);
+    item_delegate->ExecuteCommand(false, items[1]->command_id,
+                                  ui::EF_SHIFT_DOWN,
+                                  display::kInvalidDisplayId);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }
 }
@@ -3781,7 +3784,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   EXPECT_EQ(items[1]->command_id, 1U);
 
   // Execute command to activate first window.
-  item_delegate->ExecuteCommand(items[1]->command_id, 0);
+  item_delegate->ExecuteCommand(false, items[1]->command_id, ui::EF_NONE,
+                                display::kInvalidDisplayId);
   EXPECT_TRUE(window1->IsActive());
   EXPECT_FALSE(window2->IsActive());
 
@@ -3792,7 +3796,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   EXPECT_FALSE(window2->IsActive());
 
   // Execute command to activate second window.
-  item_delegate->ExecuteCommand(items[0]->command_id, 0);
+  item_delegate->ExecuteCommand(false, items[0]->command_id, ui::EF_NONE,
+                                display::kInvalidDisplayId);
   EXPECT_FALSE(window1->IsActive());
   EXPECT_TRUE(window2->IsActive());
 }

@@ -21,9 +21,6 @@ ASH_PUBLIC_EXPORT extern const char kShelfAlignmentBottom[];
 ASH_PUBLIC_EXPORT extern const char kShelfAlignmentLeft[];
 ASH_PUBLIC_EXPORT extern const char kShelfAlignmentRight[];
 
-// Returns true if the user can modify the |shelf|'s auto-hide behavior.
-ASH_PUBLIC_EXPORT bool CanUserModifyShelfAutoHideBehavior(PrefService* prefs);
-
 // Get the shelf auto hide behavior preference for a particular display.
 ASH_PUBLIC_EXPORT ShelfAutoHideBehavior
 GetShelfAutoHideBehaviorPref(PrefService* prefs, int64_t display_id);

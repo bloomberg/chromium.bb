@@ -116,11 +116,6 @@ std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {
   return nullptr;
 }
 
-ui::MenuModel* TestShellDelegate::CreateContextMenu(Shelf* shelf,
-                                                    const ShelfItem* item) {
-  return nullptr;
-}
-
 GPUSupport* TestShellDelegate::CreateGPUSupport() {
   // Real GPU support depends on src/content, so just use a stub.
   return new GPUSupportStub;

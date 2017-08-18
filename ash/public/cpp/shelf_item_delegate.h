@@ -17,6 +17,10 @@
 
 class AppWindowLauncherItemController;
 
+namespace ui {
+class MenuModel;
+}
+
 namespace ash {
 
 using MenuItemList = std::vector<mojom::MenuItemPtr>;
@@ -44,8 +48,18 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate : public mojom::ShelfItemDelegate {
   // Returns items for the application menu; used for convenience and testing.
   virtual MenuItemList GetAppMenuItems(int event_flags);
 
+  // Returns the context menu model; used to show ShelfItem context menus.
+  virtual std::unique_ptr<ui::MenuModel> GetContextMenu(int64_t display_id);
+
   // Returns nullptr if class is not AppWindowLauncherItemController.
   virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();
+
+  // Attempts to execute a context menu command; returns true if it was run.
+  bool ExecuteContextMenuCommand(int64_t command_id, int32_t event_flags);
+
+  // mojom::ShelfItemDelegate:
+  void GetContextMenuItems(int64_t display_id,
+                           GetContextMenuItemsCallback callback) override;
 
  private:
   // The shelf id; empty if there is no app associated with the item.
@@ -60,6 +74,9 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate : public mojom::ShelfItemDelegate {
 
   // Set to true if the launcher item image has been set by the controller.
   bool image_set_by_controller_;
+
+  // The context menu model that was last shown for the associated shelf item.
+  std::unique_ptr<ui::MenuModel> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegate);
 };

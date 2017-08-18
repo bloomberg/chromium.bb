@@ -169,15 +169,6 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
 
 }  // namespace
 
-bool CanUserModifyShelfAutoHideBehavior(PrefService* prefs) {
-  const std::string& pref = prefs::kShelfAutoHideBehaviorLocal;
-  auto* preference = prefs->FindPreference(pref);
-  if (!preference)
-    return true;
-
-  return preference->IsUserModifiable();
-}
-
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
                                                    int64_t display_id) {
   DCHECK_NE(display_id, display::kInvalidDisplayId);
