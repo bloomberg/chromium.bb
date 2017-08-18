@@ -124,7 +124,6 @@ static_library("lib") {
   ]
 
   deps = [
-    "//components/viz/host",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
@@ -138,6 +137,7 @@ static_library("lib") {
     "//cc",
     "//cc/ipc:interfaces",
     "//components/viz/common",
+    "//components/viz/host",
     "//components/viz/service",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",

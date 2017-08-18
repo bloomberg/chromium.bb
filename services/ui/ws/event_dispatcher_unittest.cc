@@ -15,7 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "services/ui/common/accelerator_util.h"
+#include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
@@ -115,6 +117,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     return last_cursor_visibility_;
   }
 
+  viz::HitTestQuery* hit_test_query() { return &hit_test_query_; }
+
+  void AddWindow(ServerWindow* window) { windows_.push_back(window); }
+
   // EventDispatcherDelegate:
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override {
     focused_window_ = window;
@@ -185,6 +191,17 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
       ServerWindow* modal_transient) override {
     window_that_blocked_event_ = modal_transient;
   }
+  viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) override {
+    return &hit_test_query_;
+  }
+  ServerWindow* GetWindowFromFrameSinkId(
+      const viz::FrameSinkId& frame_sink_id) override {
+    for (ServerWindow* window : windows_) {
+      if (window->frame_sink_id() == frame_sink_id)
+        return window;
+    }
+    return nullptr;
+  }
 
   Delegate* delegate_;
   ServerWindow* focused_window_;
@@ -196,6 +213,8 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   std::unique_ptr<ui::Event> last_event_target_not_found_;
   base::Optional<bool> last_cursor_visibility_;
   ServerWindow* window_that_blocked_event_ = nullptr;
+  viz::HitTestQuery hit_test_query_;
+  std::vector<ServerWindow*> windows_;
 
   // If true events blocked by a modal window are sent to |root_|.
   bool fallback_to_root_ = false;
@@ -411,7 +430,7 @@ void EventDispatcherTest::SetUp() {
   bool enable_async_event_targeting = GetParam();
   if (enable_async_event_targeting) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "enable-async-event-targeting");
+        switches::kUseAsyncEventTargeting);
   }
   testing::TestWithParam<bool>::SetUp();
 
@@ -427,6 +446,101 @@ void EventDispatcherTest::SetUp() {
   event_dispatcher_ =
       base::MakeUnique<EventDispatcher>(test_event_dispatcher_delegate_.get());
   test_event_dispatcher_delegate_->set_root(root_window_.get());
+}
+
+class EventDispatcherVizTargeterTest
+    : public testing::TestWithParam<bool>,
+      public TestEventDispatcherDelegate::Delegate {
+ public:
+  EventDispatcherVizTargeterTest() {}
+  ~EventDispatcherVizTargeterTest() override {}
+
+  ServerWindow* root_window() { return root_window_.get(); }
+  TestEventDispatcherDelegate* test_event_dispatcher_delegate() {
+    return test_event_dispatcher_delegate_.get();
+  }
+  EventDispatcher* event_dispatcher() { return event_dispatcher_.get(); }
+  viz::AggregatedHitTestRegion* aggregated_hit_test_region() {
+    return static_cast<viz::AggregatedHitTestRegion*>(active_buffer_.get());
+  }
+
+  void DispatchEvent(EventDispatcher* dispatcher,
+                     const ui::Event& event,
+                     int64_t display_id,
+                     EventDispatcher::AcceleratorMatchPhase match_phase) {
+    dispatcher->ProcessEvent(event, display_id, match_phase);
+
+    bool enable_async_event_targeting = GetParam();
+    if (!enable_async_event_targeting)
+      return;
+
+    base::RunLoop runloop;
+    runloop.RunUntilIdle();
+  }
+
+  std::unique_ptr<ServerWindow> CreateChildWindow(const WindowId& id) {
+    std::unique_ptr<ServerWindow> child(
+        new ServerWindow(window_delegate_.get(), id));
+    root_window_->Add(child.get());
+    child->SetVisible(true);
+    return child;
+  }
+
+ protected:
+  // testing::TestWithParam<bool>:
+  void SetUp() override;
+
+ private:
+  // TestEventDispatcherDelegate::Delegate:
+  void ReleaseCapture() override {
+    event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
+  }
+
+  std::unique_ptr<TestServerWindowDelegate> window_delegate_;
+  std::unique_ptr<ServerWindow> root_window_;
+  std::unique_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
+  std::unique_ptr<EventDispatcher> event_dispatcher_;
+  mojo::ScopedSharedBufferMapping active_buffer_;
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventDispatcherVizTargeterTest);
+};
+
+void EventDispatcherVizTargeterTest::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseVizHitTest);
+  bool enable_async_event_targeting = GetParam();
+  if (enable_async_event_targeting) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseAsyncEventTargeting);
+  }
+  testing::Test::SetUp();
+
+  window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+  root_window_ =
+      base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
+  root_window_->set_is_activation_parent(true);
+  window_delegate_->set_root_window(root_window_.get());
+  root_window_->SetVisible(true);
+
+  test_event_dispatcher_delegate_ =
+      base::MakeUnique<TestEventDispatcherDelegate>(this);
+  event_dispatcher_ =
+      base::MakeUnique<EventDispatcher>(test_event_dispatcher_delegate_.get());
+  test_event_dispatcher_delegate_->set_root(root_window_.get());
+
+  uint32_t handle_size = 100;
+  size_t num_bytes = handle_size * sizeof(viz::AggregatedHitTestRegion);
+  mojo::ScopedSharedBufferHandle active_handle =
+      mojo::SharedBufferHandle::Create(num_bytes);
+  mojo::ScopedSharedBufferHandle idle_handle =
+      mojo::SharedBufferHandle::Create(num_bytes);
+  active_buffer_ = active_handle->Map(num_bytes);
+  test_event_dispatcher_delegate_->hit_test_query()
+      ->OnAggregatedHitTestRegionListUpdated(
+          std::move(active_handle), handle_size, std::move(idle_handle),
+          handle_size);
 }
 
 TEST_P(EventDispatcherTest, ProcessEvent) {
@@ -2324,7 +2438,46 @@ TEST_P(EventDispatcherTest, MouseCursorSourceWindowChangesWithSystemModal) {
   EXPECT_EQ(root_window(), event_dispatcher()->mouse_cursor_source_window());
 }
 
+TEST_P(EventDispatcherVizTargeterTest, ProcessEvent) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+  test_event_dispatcher_delegate()->AddWindow(root_window());
+  test_event_dispatcher_delegate()->AddWindow(child.get());
+  viz::AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = viz::AggregatedHitTestRegion(
+      root_window()->frame_sink_id(), viz::mojom::kHitTestMine,
+      root_window()->bounds(), root_window()->transform(), 1);  // root_window
+  aggregated_hit_test_region_list[1] = viz::AggregatedHitTestRegion(
+      child->frame_sink_id(), viz::mojom::kHitTestMine, child->bounds(),
+      child->transform(), 0);  // child
+
+  // Send event that is over child.
+  const ui::PointerEvent ui_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), ui_event, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  std::unique_ptr<DispatchedEventDetails> details =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  ASSERT_TRUE(details);
+  ASSERT_EQ(child.get(), details->window);
+
+  ASSERT_TRUE(details->event);
+  ASSERT_TRUE(details->event->IsPointerEvent());
+
+  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
+  EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
+  EXPECT_EQ(gfx::Point(10, 15), dispatched_event->location());
+}
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */, EventDispatcherTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        EventDispatcherVizTargeterTest,
+                        testing::Bool());
 
 }  // namespace test
 }  // namespace ws

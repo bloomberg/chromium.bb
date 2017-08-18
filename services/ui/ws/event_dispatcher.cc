@@ -332,6 +332,16 @@ void EventDispatcher::ProcessNextAvailableEvent() {
   delegate_->ProcessNextAvailableEvent();
 }
 
+viz::HitTestQuery* EventDispatcher::GetHitTestQueryForDisplay(
+    int64_t display_id) {
+  return delegate_->GetHitTestQueryForDisplay(display_id);
+}
+
+ServerWindow* EventDispatcher::GetWindowFromFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  return delegate_->GetWindowFromFrameSinkId(frame_sink_id);
+}
+
 LocationTarget EventDispatcher::AdjustLocationTargetForModal(
     const LocationTarget& location_target) const {
   const ServerWindow* modal_transient =

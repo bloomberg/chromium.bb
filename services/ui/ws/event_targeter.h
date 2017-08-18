@@ -19,11 +19,14 @@ namespace ui {
 namespace ws {
 class EventTargeterDelegate;
 
-// The target |window| for a given location, |location| and |display_id| are
-// associated with the display |window| is on.
+// The target |deepest_window| for a given location, locations and |display_id|
+// are associated with the display |deepest_window| is on. |location_in_root|
+// is the location in root window's coord-space while |location_in_target| is
+// the transformed location in the |deepest_window|'s coord-space.
 struct LocationTarget {
   DeepestWindow deepest_window;
   gfx::Point location_in_root;
+  gfx::Point location_in_target;
   int64_t display_id = display::kInvalidDisplayId;
 };
 

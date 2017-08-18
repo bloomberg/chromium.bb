@@ -822,6 +822,29 @@ void WindowManagerState::OnEventOccurredOutsideOfModalWindow(
   window_tree_->OnEventOccurredOutsideOfModalWindow(modal_window);
 }
 
+viz::HitTestQuery* WindowManagerState::GetHitTestQueryForDisplay(
+    int64_t display_id) {
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (!display)
+    return nullptr;
+
+  const auto& display_hit_test_query_map =
+      window_server()->display_hit_test_query();
+  const auto iter =
+      display_hit_test_query_map.find(display->root_window()->frame_sink_id());
+  return (iter != display_hit_test_query_map.end()) ? iter->second.get()
+                                                    : nullptr;
+}
+
+ServerWindow* WindowManagerState::GetWindowFromFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  // TODO(riajiang): Use the correct id to look up window once FrameSinkId
+  // refactoring is done.
+  DCHECK(frame_sink_id.is_valid());
+  return window_tree()->GetWindow(
+      WindowIdFromTransportId(frame_sink_id.client_id()));
+}
+
 void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {
   for (auto iter = orphaned_window_manager_display_roots_.begin();
        iter != orphaned_window_manager_display_roots_.end(); ++iter) {
