@@ -7,6 +7,8 @@
 }
 
 #arc-tos[md-mode] {
+  /* To prevent appearing visual gap at the bottom for the some languages. */
+  height: 640px;
   min-height: unset;
   padding: unset;
 }
