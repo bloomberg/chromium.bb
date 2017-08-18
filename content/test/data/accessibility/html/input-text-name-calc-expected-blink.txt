@@ -5,15 +5,9 @@ rootWebArea
 ++textField description='Title3' name='LabelledBy3' descriptionFrom=attribute
 ++textField name='Placeholder4'
 ++++genericContainer
-++++++staticText name='Placeholder4'
-++++++++inlineTextBox name='Placeholder4'
 ++textField name='ARIA Placeholder4a'
 ++textField name='Placeholder4b'
 ++++genericContainer
-++++++staticText name='Placeholder4b'
-++++++++inlineTextBox name='Placeholder4b'
 ++textField description='Title5' name='Placeholder5' descriptionFrom=attribute
 ++++genericContainer
-++++++staticText name='Placeholder5'
-++++++++inlineTextBox name='Placeholder5'
 ++textField description='DescribedBy6' name='LabelledBy6' descriptionFrom=relatedElement
