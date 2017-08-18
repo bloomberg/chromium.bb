@@ -445,7 +445,6 @@ CMDLINE_SELECT="
     encode_perf_tests
     coefficient_range_checking
     lowbitdepth
-    aom_highbitdepth
     highbitdepth
     experimental
     colorspace_headers
@@ -525,9 +524,6 @@ post_process_cmdline() {
     soft_enable rect_intra_pred
     soft_enable convolve_round
     soft_enable aom_qm
-
-    # Backwards/jenkins compatibility with --enable-aom-highbitdepth
-    enabled aom_highbitdepth && enable_feature highbitdepth
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
