@@ -49,8 +49,8 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       int64_t delta,
       const QuotaReservationManager::ReserveQuotaCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
+        FROM_HERE, base::BindOnce(base::IgnoreResult(callback),
+                                  base::File::FILE_OK, delta));
   }
 
   void ReleaseReservedQuota(const GURL& origin,

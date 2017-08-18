@@ -654,8 +654,8 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
     return frame;
   }
   frame->AddDestructionObserver(
-      base::Bind(&PepperVideoEncoderHost::FrameReleased,
-                 weak_ptr_factory_.GetWeakPtr(), reply_context, frame_id));
+      base::BindOnce(&PepperVideoEncoderHost::FrameReleased,
+                     weak_ptr_factory_.GetWeakPtr(), reply_context, frame_id));
   return frame;
 }
 

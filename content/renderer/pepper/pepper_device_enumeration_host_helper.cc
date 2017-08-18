@@ -36,8 +36,9 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
       // If no delegate, return an empty list of devices.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
-                     AsWeakPtr(), std::vector<ppapi::DeviceRefData>()));
+          base::BindOnce(
+              &ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
+              AsWeakPtr(), std::vector<ppapi::DeviceRefData>()));
       return;
     }
 
@@ -65,8 +66,9 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
     if (sync_call_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
-                     AsWeakPtr(), devices));
+          base::BindOnce(
+              &ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
+              AsWeakPtr(), devices));
     } else {
       callback_.Run(devices);
       // This object may have been destroyed at this point.

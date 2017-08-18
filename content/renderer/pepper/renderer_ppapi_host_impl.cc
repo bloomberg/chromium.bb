@@ -265,7 +265,7 @@ void RendererPpapiHostImpl::CreateBrowserResourceHosts(
   if (!browser_connection) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, std::vector<int>(nested_msgs.size(), 0)));
+        base::BindOnce(callback, std::vector<int>(nested_msgs.size(), 0)));
   } else {
     browser_connection->SendBrowserCreate(
         module_->GetPluginChildId(), instance, nested_msgs, callback);

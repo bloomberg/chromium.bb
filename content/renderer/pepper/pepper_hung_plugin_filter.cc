@@ -83,7 +83,7 @@ void PepperHungPluginFilter::EnsureTimerScheduled() {
 
   timer_task_pending_ = true;
   io_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
+      FROM_HERE, base::BindOnce(&PepperHungPluginFilter::OnHangTimer, this),
       base::TimeDelta::FromSeconds(kHungThresholdSec));
 }
 
@@ -139,7 +139,7 @@ void PepperHungPluginFilter::OnHangTimer() {
     // a time).
     timer_task_pending_ = true;
     io_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
+        FROM_HERE, base::BindOnce(&PepperHungPluginFilter::OnHangTimer, this),
         delay);
     return;
   }

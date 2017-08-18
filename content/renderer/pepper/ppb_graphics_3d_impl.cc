@@ -310,8 +310,8 @@ void PPB_Graphics3D_Impl::OnGpuControlLostContext() {
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PPB_Graphics3D_Impl::SendContextLost,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&PPB_Graphics3D_Impl::SendContextLost,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PPB_Graphics3D_Impl::OnGpuControlLostContextMaybeReentrant() {

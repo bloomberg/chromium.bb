@@ -41,7 +41,8 @@ bool PepperPlatformAudioOutput::StartPlayback() {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutput::StartPlaybackOnIOThread, this));
+        base::BindOnce(&PepperPlatformAudioOutput::StartPlaybackOnIOThread,
+                       this));
     return true;
   }
   return false;
@@ -51,7 +52,8 @@ bool PepperPlatformAudioOutput::StopPlayback() {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutput::StopPlaybackOnIOThread, this));
+        base::BindOnce(&PepperPlatformAudioOutput::StopPlaybackOnIOThread,
+                       this));
     return true;
   }
   return false;
@@ -61,8 +63,8 @@ bool PepperPlatformAudioOutput::SetVolume(double volume) {
   if (ipc_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutput::SetVolumeOnIOThread,
-                   this, volume));
+        base::BindOnce(&PepperPlatformAudioOutput::SetVolumeOnIOThread, this,
+                       volume));
     return true;
   }
   return false;
@@ -74,7 +76,7 @@ void PepperPlatformAudioOutput::ShutDown() {
   client_ = NULL;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
+      base::BindOnce(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
 }
 
 void PepperPlatformAudioOutput::OnError() {}
@@ -105,8 +107,8 @@ void PepperPlatformAudioOutput::OnStreamCreated(
       client_->StreamCreated(handle, length, socket_handle);
   } else {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PepperPlatformAudioOutput::OnStreamCreated, this,
-                              handle, socket_handle, length));
+        FROM_HERE, base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated,
+                                  this, handle, socket_handle, length));
   }
 }
 
@@ -142,8 +144,9 @@ bool PepperPlatformAudioOutput::Initialize(int sample_rate,
                                 frames_per_buffer);
 
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PepperPlatformAudioOutput::InitializeOnIOThread,
-                            this, params));
+      FROM_HERE,
+      base::BindOnce(&PepperPlatformAudioOutput::InitializeOnIOThread, this,
+                     params));
   return true;
 }
 

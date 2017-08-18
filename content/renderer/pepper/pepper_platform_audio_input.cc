@@ -49,7 +49,7 @@ void PepperPlatformAudioInput::StartCapture() {
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInput::StartCaptureOnIOThread, this));
+      base::BindOnce(&PepperPlatformAudioInput::StartCaptureOnIOThread, this));
 }
 
 void PepperPlatformAudioInput::StopCapture() {
@@ -57,7 +57,7 @@ void PepperPlatformAudioInput::StopCapture() {
 
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInput::StopCaptureOnIOThread, this));
+      base::BindOnce(&PepperPlatformAudioInput::StopCaptureOnIOThread, this));
 }
 
 void PepperPlatformAudioInput::ShutDown() {
@@ -72,7 +72,7 @@ void PepperPlatformAudioInput::ShutDown() {
   client_ = NULL;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PepperPlatformAudioInput::ShutDownOnIOThread, this));
+      base::BindOnce(&PepperPlatformAudioInput::ShutDownOnIOThread, this));
 }
 
 void PepperPlatformAudioInput::OnStreamCreated(
@@ -97,8 +97,8 @@ void PepperPlatformAudioInput::OnStreamCreated(
     // cleaned up on the main thread.
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this, handle,
-                   socket_handle, length, total_segments, initially_muted));
+        base::BindOnce(&PepperPlatformAudioInput::OnStreamCreated, this, handle,
+                       socket_handle, length, total_segments, initially_muted));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
@@ -216,7 +216,7 @@ void PepperPlatformAudioInput::ShutDownOnIOThread() {
   StopCaptureOnIOThread();
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PepperPlatformAudioInput::CloseDevice, this));
+      FROM_HERE, base::BindOnce(&PepperPlatformAudioInput::CloseDevice, this));
 
   Release();  // Release for the delegate, balances out the reference taken in
               // PepperPlatformAudioInput::Create.
@@ -239,8 +239,9 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
       int session_id = device_manager->GetSessionID(
           PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
       io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&PepperPlatformAudioInput::InitializeOnIOThread,
-                                this, session_id));
+          FROM_HERE,
+          base::BindOnce(&PepperPlatformAudioInput::InitializeOnIOThread, this,
+                         session_id));
     } else {
       // Shutdown has occurred.
       CloseDevice();

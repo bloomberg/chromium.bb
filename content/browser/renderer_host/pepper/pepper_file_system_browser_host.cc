@@ -69,7 +69,7 @@ PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
   if (!files_.empty()) {
     file_system_context_->default_file_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&QuotaReservation::OnClientCrash, quota_reservation_));
+        base::BindOnce(&QuotaReservation::OnClientCrash, quota_reservation_));
   }
 
   // All FileRefs and FileIOs that reference us must have been destroyed. Cancel
@@ -147,9 +147,8 @@ void PepperFileSystemBrowserHost::CloseQuotaFile(
   }
 
   file_system_context_->default_file_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &QuotaReservation::CloseFile, quota_reservation_, id, file_growth));
+      FROM_HERE, base::BindOnce(&QuotaReservation::CloseFile,
+                                quota_reservation_, id, file_growth));
 }
 
 int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
@@ -378,13 +377,11 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
       std::max<int64_t>(kMinimumQuotaReservationSize, amount);
   file_system_context_->default_file_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&QuotaReservation::ReserveQuota,
-                 quota_reservation_,
-                 reservation_amount,
-                 file_growths,
-                 base::Bind(&PepperFileSystemBrowserHost::GotReservedQuota,
-                            weak_factory_.GetWeakPtr(),
-                            context->MakeReplyMessageContext())));
+      base::BindOnce(&QuotaReservation::ReserveQuota, quota_reservation_,
+                     reservation_amount, file_growths,
+                     base::Bind(&PepperFileSystemBrowserHost::GotReservedQuota,
+                                weak_factory_.GetWeakPtr(),
+                                context->MakeReplyMessageContext())));
 
   return PP_OK_COMPLETIONPENDING;
 }

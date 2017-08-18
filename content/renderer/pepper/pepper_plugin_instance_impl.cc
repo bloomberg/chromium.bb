@@ -1738,8 +1738,9 @@ void PepperPluginInstanceImpl::ScheduleAsyncDidChangeView() {
   if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;  // Already scheduled.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PepperPluginInstanceImpl::SendAsyncDidChangeView,
-                            view_change_weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&PepperPluginInstanceImpl::SendAsyncDidChangeView,
+                     view_change_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PepperPluginInstanceImpl::SendAsyncDidChangeView() {
@@ -2969,9 +2970,10 @@ void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
   // refcounted because we don't actually want this operation to affect the
   // lifetime of the instance.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PepperPluginInstanceImpl::RequestSurroundingText,
-                            weak_factory_.GetWeakPtr(),
-                            static_cast<size_t>(kExtraCharsForTextInput)));
+      FROM_HERE,
+      base::BindOnce(&PepperPluginInstanceImpl::RequestSurroundingText,
+                     weak_factory_.GetWeakPtr(),
+                     static_cast<size_t>(kExtraCharsForTextInput)));
 }
 
 void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
@@ -3265,7 +3267,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&PepperPluginInstanceImpl::ReportGeometry, this));
+          base::BindOnce(&PepperPluginInstanceImpl::ReportGeometry, this));
     }
   }
 
