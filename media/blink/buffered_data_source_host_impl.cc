@@ -57,9 +57,12 @@ int64_t BufferedDataSourceHostImpl::UnloadedBytesInInterval(
 void BufferedDataSourceHostImpl::AddBufferedByteRange(int64_t start,
                                                       int64_t end) {
   int64_t new_bytes = UnloadedBytesInInterval(Interval<int64_t>(start, end));
-  if (new_bytes > 0)
-    did_loading_progress_ = true;
+  if (new_bytes == 0) {
+    // No change
+    return;
+  }
   buffered_byte_ranges_.SetInterval(start, end, 1);
+  did_loading_progress_ = true;
 
   base::TimeTicks now = tick_clock_->NowTicks();
   int64_t bytes_so_far = 0;
