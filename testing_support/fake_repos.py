@@ -594,6 +594,9 @@ deps = {
   'src/repo6': '/repo_6',
 }
 deps_os = {
+  'mac': {
+    'src/repo11': '/repo_11',
+  },
   'ios': {
     'src/repo11': '/repo_11',
   }
@@ -608,7 +611,7 @@ recursedeps = [
     self._commit_git('repo_11', {
       'DEPS': """
 deps = {
-  'src/repo12': '/repo12',
+  'src/repo12': '/repo_12',
 }""",
       'origin': 'git/repo_11@1\n',
     })

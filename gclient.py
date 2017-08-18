@@ -1794,12 +1794,29 @@ class Flattener(object):
     if dep.url:
       self._deps[dep.name] = dep
 
-  def _flatten_dep(self, dep):
+  def _add_os_dep(self, os_dep, dep_os):
+    """Helper to add an OS-specific dependency to flattened DEPS.
+
+    Arguments:
+      os_dep (Dependency): dependency to add
+      dep_os (str): name of the OS
+    """
+    assert (
+        os_dep.name not in self._deps_os.get(dep_os, {}) or
+        self._deps_os.get(dep_os, {}).get(os_dep.name) == os_dep), (
+            os_dep.name, self._deps_os.get(dep_os, {}).get(os_dep.name))
+    if os_dep.url:
+      self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+
+  def _flatten_dep(self, dep, dep_os=None):
     """Visits a dependency in order to flatten it (see CMDflatten).
 
     Arguments:
       dep (Dependency): dependency to process
+      dep_os (str or None): name of the OS |dep| is specific to
     """
+    logging.debug('_flatten_dep(%s, %s)', dep.name, dep_os)
+
     if not dep.deps_parsed:
       dep.ParseDepsFile()
 
@@ -1811,31 +1828,42 @@ class Flattener(object):
       assert key not in self._vars or self._vars[key][1] == value
       self._vars[key] = (dep, value)
 
-    self._hooks.extend([(dep, hook) for hook in dep.deps_hooks])
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
+    if dep_os:
+      if dep.deps_hooks:
+        self._hooks_os.setdefault(dep_os, []).extend(
+            [(dep, hook) for hook in dep.deps_hooks])
+    else:
+      self._hooks.extend([(dep, hook) for hook in dep.deps_hooks])
+
     for sub_dep in dep.dependencies:
-      self._add_dep(sub_dep)
+      if dep_os:
+        self._add_os_dep(sub_dep, dep_os)
+      else:
+        self._add_dep(sub_dep)
 
     for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
       self._hooks_os.setdefault(hook_os, []).extend(
           [(dep, hook) for hook in os_hooks])
 
-    for dep_os, os_deps in dep.os_dependencies.iteritems():
+    for sub_dep_os, os_deps in dep.os_dependencies.iteritems():
       for os_dep in os_deps:
-        self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+        self._add_os_dep(os_dep, sub_dep_os)
 
-    # Process recursedeps.
-    deps_by_name = dict((d.name, d) for d in dep.dependencies)
-    # Allow recursedeps entries that refer to deps_os entries.
-    # In case there are multiple entries with the same name,
-    # we have to pick something - e.g. the first one.
-    for os_deps in dep.os_dependencies.itervalues():
+    # Process recursedeps. |deps_by_name| is a map where keys are dependency
+    # names, and values are maps of OS names to |Dependency| instances.
+    # |None| in place of OS name means the dependency is not OS-specific.
+    deps_by_name = dict((d.name, {None: d}) for d in dep.dependencies)
+    for sub_dep_os, os_deps in dep.os_dependencies.iteritems():
       for os_dep in os_deps:
-        if os_dep.name not in deps_by_name:
-          deps_by_name[os_dep.name] = os_dep
+        assert sub_dep_os not in deps_by_name.get(os_dep.name, {}), (
+            os_dep.name, sub_dep_os)
+        deps_by_name.setdefault(os_dep.name, {})[sub_dep_os] = os_dep
     for recurse_dep_name in (dep.recursedeps or []):
-      self._flatten_dep(deps_by_name[recurse_dep_name])
+      dep_info = deps_by_name[recurse_dep_name]
+      for sub_dep_os, os_dep in dep_info.iteritems():
+        self._flatten_dep(os_dep, dep_os=(sub_dep_os or dep_os))
 
 
 def CMDflatten(parser, args):
