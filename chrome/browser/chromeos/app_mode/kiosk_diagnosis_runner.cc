@@ -13,11 +13,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/feedback_util.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 

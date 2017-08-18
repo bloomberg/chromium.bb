@@ -446,14 +446,6 @@
     "channel": "stable",
     "contexts": ["blessed_extension"]
   },
-  "feedbackPrivate": {
-    "dependencies": ["permission:feedbackPrivate"],
-    "contexts": ["blessed_extension"]
-  },
-  "feedbackPrivate.readLogSource": {
-    "platforms": ["chromeos"],
-    "session_types": ["kiosk"]
-  },
   "fileBrowserHandler": {
     "dependencies": ["permission:fileBrowserHandler"],
     "contexts": ["blessed_extension"]

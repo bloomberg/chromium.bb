@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
+#ifndef EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
+#define EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 
 #include <memory>
 
-#include "chrome/common/extensions/api/feedback_private.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/feedback_private.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -31,11 +31,6 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
   LogSourceAccessManager* GetLogSourceAccessManager() const;
 #endif  // defined(OS_CHROMEOS)
 
-  void RequestFeedback(const std::string& description_template,
-                       const std::string& category_tag,
-                       const std::string& extra_diagnostics,
-                       const GURL& page_url);
-
   void RequestFeedbackForFlow(const std::string& description_template,
                               const std::string& category_tag,
                               const std::string& extra_diagnostics,
@@ -44,15 +39,13 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*
-      GetFactoryInstance();
+  GetFactoryInstance();
 
  private:
   friend class BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "FeedbackPrivateAPI";
-  }
+  static const char* service_name() { return "FeedbackPrivateAPI"; }
 
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
@@ -154,4 +147,4 @@ class FeedbackPrivateLogSrtPromptResultFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
+#endif  // EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_

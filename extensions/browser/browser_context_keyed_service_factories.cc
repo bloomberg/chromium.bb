@@ -13,6 +13,7 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/clipboard/clipboard_api.h"
 #include "extensions/browser/api/display_source/display_source_event_router_factory.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/api/idle/idle_manager_factory.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -72,6 +73,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   EventRouterFactory::GetInstance();
   ExtensionMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ExtensionPrefsFactory::GetInstance();
+  FeedbackPrivateAPI::GetFactoryInstance();
   HidDeviceManager::GetFactoryInstance();
   IdleManagerFactory::GetInstance();
   ManagementAPI::GetFactoryInstance();

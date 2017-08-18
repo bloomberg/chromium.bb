@@ -10,8 +10,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -124,5 +128,21 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
   }
 }
 #endif  // defined(OS_CHROMEOS)
+
+std::string ChromeFeedbackPrivateDelegate::GetSignedInUserEmail(
+    content::BrowserContext* context) const {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(Profile::FromBrowserContext(context));
+  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
+                        : std::string();
+}
+
+void ChromeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {
+  // Show a message box to indicate that sending the feedback has been delayed
+  // because the user is offline.
+  chrome::ShowWarningMessageBox(
+      nullptr, l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TITLE),
+      l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TEXT));
+}
 
 }  // namespace extensions

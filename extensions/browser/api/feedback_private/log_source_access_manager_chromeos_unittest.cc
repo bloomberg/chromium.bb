@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
 
 namespace extensions {
 
@@ -26,7 +26,7 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSources) {
   const base::TimeDelta timeout(base::TimeDelta::FromMilliseconds(0));
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);
 
-  LogSourceAccessManager manager(profile());
+  LogSourceAccessManager manager(browser_context());
 
   // Create a dummy callback to pass to FetchFromSource().
   LogSourceAccessManager::ReadLogSourceCallback callback =

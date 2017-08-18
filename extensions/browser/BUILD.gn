@@ -401,6 +401,7 @@ source_set("browser_tests") {
     "api/display_source/display_source_apitestbase.cc",
     "api/display_source/display_source_apitestbase.h",
     "api/dns/dns_apitest.cc",
+    "api/feedback_private/feedback_private_apitest.cc",
     "api/hid/hid_apitest.cc",
     "api/printer_provider/printer_provider_apitest.cc",
     "api/socket/socket_apitest.cc",
@@ -593,6 +594,10 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
+      "api/feedback_private/feedback_private_api_chromeos_unittest.cc",
+      "api/feedback_private/feedback_private_api_unittest_base_chromeos.cc",
+      "api/feedback_private/feedback_private_api_unittest_base_chromeos.h",
+      "api/feedback_private/log_source_access_manager_chromeos_unittest.cc",
       "api/lock_screen_data/data_item_unittest.cc",
       "api/lock_screen_data/lock_screen_item_storage_unittest.cc",
       "api/media_perception_private/conversion_utils_unittest.cc",
@@ -603,6 +608,8 @@ source_set("unit_tests") {
     deps += [
       "//chromeos:media_perception_proto",
       "//chromeos:test_support",
+      "//components/feedback",
+      "//extensions/shell:app_shell_lib",
     ]
   }
 }
