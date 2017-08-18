@@ -180,6 +180,7 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
   ShowHeader();
+  wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   if (minimized_widget_) {
     // TODO(oshima): Use unminimize animation instead of hiding animation.
     minimized_widget_->CloseNow();
@@ -193,7 +194,6 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   ScopedOverviewAnimationSettings animation_settings(
       OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
       window_);
-  wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
 }
 
