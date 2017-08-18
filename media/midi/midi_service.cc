@@ -68,8 +68,8 @@ void MidiService::Shutdown() {
 void MidiService::StartSession(MidiManagerClient* client) {
   base::AutoLock lock(lock_);
   if (!manager_) {
-    CHECK(is_dynamic_instantiation_enabled_);
-    CHECK_EQ(0u, active_clients_);
+    DCHECK(is_dynamic_instantiation_enabled_);
+    DCHECK_EQ(0u, active_clients_);
     manager_.reset(MidiManager::Create(this));
     if (!manager_destructor_runner_)
       manager_destructor_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -80,8 +80,11 @@ void MidiService::StartSession(MidiManagerClient* client) {
 
 void MidiService::EndSession(MidiManagerClient* client) {
   base::AutoLock lock(lock_);
-  CHECK_NE(0u, active_clients_);
-  active_clients_--;
+
+  // MidiService needs to consider invalid EndSession calls without associated
+  // StartSession calls that could be sent from a broken renderer.
+  if (active_clients_)
+    active_clients_--;
 
   // Do nothing if MidiService::Shutdown() already runs.
   if (!manager_)
@@ -103,7 +106,11 @@ void MidiService::DispatchSendMidiData(MidiManagerClient* client,
                                        const std::vector<uint8_t>& data,
                                        double timestamp) {
   base::AutoLock lock(lock_);
-  manager_->DispatchSendMidiData(client, port_index, data, timestamp);
+
+  // MidiService needs to consider invalid DispatchSendMidiData calls without
+  // an open session that could be sent from a broken renderer.
+  if (manager_)
+    manager_->DispatchSendMidiData(client, port_index, data, timestamp);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> MidiService::GetTaskRunner(
