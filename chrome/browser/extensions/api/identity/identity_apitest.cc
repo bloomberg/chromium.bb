@@ -9,9 +9,11 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/prefs/pref_service.h"
 #if defined(OS_CHROMEOS)
@@ -283,6 +285,12 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     scope_ui_failure_ = failure;
   }
 
+  void set_scope_ui_service_error(const GoogleServiceAuthError& service_error) {
+    scope_ui_result_ = false;
+    scope_ui_failure_ = GaiaWebAuthFlow::SERVICE_AUTH_ERROR;
+    scope_ui_service_error_ = service_error;
+  }
+
   void set_scope_ui_oauth_error(const std::string& oauth_error) {
     scope_ui_result_ = false;
     scope_ui_failure_ = GaiaWebAuthFlow::OAUTH_ERROR;
@@ -342,8 +350,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     if (scope_ui_result_) {
       OnGaiaFlowCompleted(kAccessToken, "3600");
     } else if (scope_ui_failure_ == GaiaWebAuthFlow::SERVICE_AUTH_ERROR) {
-      GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
-      OnGaiaFlowFailure(scope_ui_failure_, error, "");
+      OnGaiaFlowFailure(scope_ui_failure_, scope_ui_service_error_, "");
     } else {
       GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
       OnGaiaFlowFailure(scope_ui_failure_, error, scope_ui_oauth_error_);
@@ -369,6 +376,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   bool login_ui_result_;
   bool scope_ui_result_;
   GaiaWebAuthFlow::Failure scope_ui_failure_;
+  GoogleServiceAuthError scope_ui_service_error_;
   std::string scope_ui_oauth_error_;
   bool login_ui_shown_;
   bool scope_ui_shown_;
@@ -1105,7 +1113,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
-  func->set_scope_ui_failure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR);
+  func->set_scope_ui_service_error(
+      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
@@ -1145,8 +1154,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveApprovalSuccess) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalSuccess) {
   SignIn("primary@example.com");
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -1164,6 +1172,41 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken(std::string()).status());
 }
+
+#if !defined(OS_MACOSX)
+// Test for http://crbug.com/753014
+//
+// On macOS, closing all browsers does not shut down the browser process.
+// TODO(http://crbug.com/756462): Figure out how to shut down the browser
+// process on macOS and enable this test on macOS as well.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveSigninFailedDuringBrowserProcessShutDown) {
+  SignIn("primary@example.com");
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+  func->set_scope_ui_service_error(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  func->set_login_ui_result(false);
+
+  // Closing all browsers ensures that the browser process is shutting down.
+  CloseAllBrowsers();
+
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  // Check that the OAuth approval dialog is shown to ensure that the Gaia flow
+  // fails with an |SERVICE_AUTH_ERROR| error (with |INVALID_GAIA_CREDENTIALS|
+  // service error). This reproduces the crash conditions in bug
+  // http://crbug.com/753014.
+  // This condition may be fragile as it depends on the identity manager not
+  // being destroyed before the OAuth approval dialog is shown.
+  EXPECT_TRUE(func->scope_ui_shown());
+
+  // The login screen should not be shown when the browser process is shutting
+  // down.
+  EXPECT_FALSE(func->login_ui_shown());
+}
+#endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
   SignIn("primary@example.com");
