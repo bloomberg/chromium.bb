@@ -774,6 +774,14 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
     return details;
   synthesize_mouse_move_ = false;
 
+  // No need to generate mouse event if the cursor is invisible.
+  client::CursorClient* cursor_client =
+      client::GetCursorClient(host_->window());
+  if (cursor_client && (!cursor_client->IsMouseEventsEnabled() ||
+                        !cursor_client->IsCursorVisible())) {
+    return details;
+  }
+
   // If one of the mouse buttons is currently down, then do not synthesize a
   // mouse-move event. In such cases, aura could synthesize a DRAGGED event
   // instead of a MOVED event, but in multi-display/multi-host scenarios, the
