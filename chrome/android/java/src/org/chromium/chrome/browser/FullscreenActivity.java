@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -71,7 +71,7 @@ public class FullscreenActivity extends SingleTabActivity {
     @Override
     public void finishNativeInitialization() {
         ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
-        initializeCompositorContent(new LayoutManagerDocument(getCompositorViewHolder()),
+        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()),
                 (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
                 controlContainer);
 
