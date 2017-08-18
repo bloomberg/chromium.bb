@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/browser/cache_storage/cache_storage.h"
 
@@ -21,25 +20,12 @@ namespace content {
 class CONTENT_EXPORT CacheStorageIndex {
  public:
   struct CacheMetadata {
-    CacheMetadata(const std::string& name,
-                  int64_t size,
-                  int64_t padding,
-                  const std::string& padding_key)
-        : name(name), size(size), padding(padding), padding_key(padding_key) {}
+    CacheMetadata(const std::string& name, int64_t size)
+        : name(name), size(size) {}
     std::string name;
     // The size (in bytes) of the cache. Set to CacheStorage::kSizeUnknown if
     // size not known.
     int64_t size;
-
-    // The padding (in bytes) of the cache. Set to CacheStorage::kSizeUnknown
-    // if padding not known.
-    int64_t padding;
-
-    // The raw key used to calculate padding for some cache entries.
-    std::string padding_key;
-
-    // The algorithm version used to calculate this padding.
-    int32_t padding_version;
   };
 
   CacheStorageIndex();
@@ -50,17 +36,13 @@ class CONTENT_EXPORT CacheStorageIndex {
   void Insert(const CacheMetadata& cache_metadata);
   void Delete(const std::string& cache_name);
 
-  // Sets the actual (unpadded) cache size. Returns true if the new size is
-  // different than the current size else false.
+  // Sets the cache size. Returns true if the new size is different than the
+  // current size else false.
   bool SetCacheSize(const std::string& cache_name, int64_t size);
 
-  // Get the cache metadata for a given cache name. If not found nullptr is
-  // returned.
-  const CacheMetadata* GetMetadata(const std::string& cache_name) const;
-
-  // Sets the cache padding. Returns true if the new padding is different than
-  // the current padding else false.
-  bool SetCachePadding(const std::string& cache_name, int64_t padding);
+  // Return the size (in bytes) of the specified cache. Will return
+  // CacheStorage::kSizeUnknown if the specified cache does not exist.
+  int64_t GetCacheSize(const std::string& cache_name) const;
 
   const std::list<CacheMetadata>& ordered_cache_metadata() const {
     return ordered_cache_metadata_;
@@ -69,7 +51,7 @@ class CONTENT_EXPORT CacheStorageIndex {
   size_t num_entries() const { return ordered_cache_metadata_.size(); }
 
   // Will calculate (if necessary), and return the total sum of all cache sizes.
-  int64_t GetPaddedStorageSize();
+  int64_t GetStorageSize();
 
   // Mark the cache as doomed. This removes the cache metadata from the index.
   // All const methods (eg: num_entries) will behave as if the doomed cache is
@@ -84,20 +66,8 @@ class CONTENT_EXPORT CacheStorageIndex {
   void RestoreDoomedCache();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CacheStorageIndexTest, TestSetCacheSize);
-  FRIEND_TEST_ALL_PREFIXES(CacheStorageIndexTest, TestSetCachePadding);
-
   void UpdateStorageSize();
-  void CalculateStoragePadding();
   void ClearDoomedCache();
-
-  // Return the size (in bytes) of the specified cache. Will return
-  // CacheStorage::kSizeUnknown if the specified cache does not exist.
-  int64_t GetCacheSizeForTesting(const std::string& cache_name) const;
-
-  // Return the padding (in bytes) of the specified cache. Will return
-  // CacheStorage::kSizeUnknown if the specified cache does not exist.
-  int64_t GetCachePaddingForTesting(const std::string& cache_name) const;
 
   // Use a list to keep saved iterators valid during insert/erase.
   // Note: ordered by cache creation.
@@ -105,11 +75,8 @@ class CONTENT_EXPORT CacheStorageIndex {
   std::unordered_map<std::string, std::list<CacheMetadata>::iterator>
       cache_metadata_map_;
 
-  // The total unpadded size of all caches in this store.
+  // The total size of all caches in this store.
   int64_t storage_size_ = CacheStorage::kSizeUnknown;
-
-  // The total padding of all caches in this store.
-  int64_t storage_padding_ = CacheStorage::kSizeUnknown;
 
   // The doomed cache metadata saved when calling DoomCache.
   CacheMetadata doomed_cache_metadata_;
