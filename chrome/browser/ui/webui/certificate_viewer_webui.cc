@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"

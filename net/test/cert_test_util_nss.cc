@@ -97,4 +97,31 @@ scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
                                         &nss_cert);
 }
 
+ScopedCERTCertificate ImportCERTCertificateFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file) {
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(certs_dir, cert_file);
+  if (!cert)
+    return nullptr;
+  return x509_util::CreateCERTCertificateFromX509Certificate(cert.get());
+}
+
+ScopedCERTCertificateList CreateCERTCertificateListFromFile(
+    const base::FilePath& certs_dir,
+    const std::string& cert_file,
+    int format) {
+  CertificateList certs =
+      CreateCertificateListFromFile(certs_dir, cert_file, format);
+  ScopedCERTCertificateList nss_certs;
+  for (const auto& cert : certs) {
+    ScopedCERTCertificate nss_cert =
+        x509_util::CreateCERTCertificateFromX509Certificate(cert.get());
+    if (!nss_cert)
+      return {};
+    nss_certs.push_back(std::move(nss_cert));
+  }
+  return nss_certs;
+}
+
 }  // namespace net

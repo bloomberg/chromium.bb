@@ -4,6 +4,8 @@
 
 #include "net/cert/x509_util_nss.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
@@ -134,6 +136,23 @@ TEST(X509UtilNSSTest, CreateCERTCertificateListFromX509Certificate) {
             BytesForNSSCert(nss_certs[2].get()));
   EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[2]),
             BytesForNSSCert(nss_certs[3].get()));
+}
+
+TEST(X509UtilNSSTest, CreateCERTCertificateListFromBytes) {
+  base::FilePath cert_path =
+      GetTestCertsDirectory().AppendASCII("multi-root-chain1.pem");
+  std::string cert_data;
+  ASSERT_TRUE(base::ReadFileToString(cert_path, &cert_data));
+
+  ScopedCERTCertificateList certs =
+      x509_util::CreateCERTCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(4U, certs.size());
+  EXPECT_STREQ("CN=127.0.0.1,O=Test CA,L=Mountain View,ST=California,C=US",
+               certs[0]->subjectName);
+  EXPECT_STREQ("CN=B CA - Multi-root", certs[1]->subjectName);
+  EXPECT_STREQ("CN=C CA - Multi-root", certs[2]->subjectName);
+  EXPECT_STREQ("CN=D Root CA - Multi-root", certs[3]->subjectName);
 }
 
 TEST(X509UtilNSSTest, DupCERTCertificate) {

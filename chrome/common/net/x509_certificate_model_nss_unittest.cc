@@ -2,70 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/common/net/x509_certificate_model_nss.h"
 
 #include <stddef.h>
 
 #include "base/files/file_path.h"
+#include "crypto/scoped_test_nss_db.h"
+#include "net/cert/nss_cert_database.h"
+#include "net/cert/scoped_nss_types.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_CERTS)
-#include "crypto/scoped_test_nss_db.h"
-#include "net/cert/nss_cert_database.h"
-#endif
-
 TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
-  scoped_refptr<net::X509Certificate> cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "root_ca_cert.pem"));
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
-  EXPECT_EQ(
-      "Test Root CA",
-      x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle()));
+  EXPECT_EQ("Test Root CA",
+            x509_certificate_model::GetCertNameOrNickname(cert.get()));
 
-  scoped_refptr<net::X509Certificate> punycode_cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "punycodetest.pem"));
+  net::ScopedCERTCertificate punycode_cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "punycodetest.pem"));
   ASSERT_TRUE(punycode_cert.get());
   EXPECT_EQ("xn--wgv71a119e.com (日本語.com)",
-            x509_certificate_model::GetCertNameOrNickname(
-                punycode_cert->os_cert_handle()));
+            x509_certificate_model::GetCertNameOrNickname(punycode_cert.get()));
 
-  scoped_refptr<net::X509Certificate> no_cn_cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "no_subject_common_name_cert.pem"));
+  net::ScopedCERTCertificate no_cn_cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "no_subject_common_name_cert.pem"));
   ASSERT_TRUE(no_cn_cert.get());
   // Temp cert has no nickname.
   EXPECT_EQ("",
-            x509_certificate_model::GetCertNameOrNickname(
-                no_cn_cert->os_cert_handle()));
+            x509_certificate_model::GetCertNameOrNickname(no_cn_cert.get()));
 
   EXPECT_EQ("xn--wgv71a119e.com",
-            x509_certificate_model::GetTitle(
-                punycode_cert->os_cert_handle()));
+            x509_certificate_model::GetTitle(punycode_cert.get()));
 
   EXPECT_EQ("E=wtc@google.com",
-            x509_certificate_model::GetTitle(
-                no_cn_cert->os_cert_handle()));
+            x509_certificate_model::GetTitle(no_cn_cert.get()));
 
-  scoped_refptr<net::X509Certificate> no_cn_cert2(net::ImportCertFromFile(
+  net::ScopedCERTCertificate no_cn_cert2(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "ct-test-embedded-cert.pem"));
   ASSERT_TRUE(no_cn_cert2.get());
   EXPECT_EQ("L=Erw Wen,ST=Wales,O=Certificate Transparency,C=GB",
-            x509_certificate_model::GetTitle(no_cn_cert2->os_cert_handle()));
+            x509_certificate_model::GetTitle(no_cn_cert2.get()));
 }
 
 TEST(X509CertificateModelTest, GetExtensions) {
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
 
     x509_certificate_model::Extensions extensions;
-    x509_certificate_model::GetExtensions(
-        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    x509_certificate_model::GetExtensions("critical", "notcrit", cert.get(),
+                                          &extensions);
     ASSERT_EQ(3U, extensions.size());
 
     EXPECT_EQ("Certificate Basic Constraints", extensions[0].name);
@@ -85,13 +76,13 @@ TEST(X509CertificateModelTest, GetExtensions) {
   }
 
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "subjectAltName_sanity_check.pem"));
     ASSERT_TRUE(cert.get());
 
     x509_certificate_model::Extensions extensions;
-    x509_certificate_model::GetExtensions(
-        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    x509_certificate_model::GetExtensions("critical", "notcrit", cert.get(),
+                                          &extensions);
     ASSERT_EQ(2U, extensions.size());
     EXPECT_EQ("Certificate Subject Alternative Name", extensions[1].name);
     EXPECT_EQ(
@@ -102,26 +93,26 @@ TEST(X509CertificateModelTest, GetExtensions) {
   }
 
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "foaf.me.chromium-test-cert.der"));
     ASSERT_TRUE(cert.get());
 
     x509_certificate_model::Extensions extensions;
-    x509_certificate_model::GetExtensions(
-        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    x509_certificate_model::GetExtensions("critical", "notcrit", cert.get(),
+                                          &extensions);
     ASSERT_EQ(5U, extensions.size());
     EXPECT_EQ("Netscape Certificate Comment", extensions[1].name);
     EXPECT_EQ("notcrit\nOpenSSL Generated Certificate", extensions[1].value);
   }
 
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "2029_globalsign_com_cert.pem"));
     ASSERT_TRUE(cert.get());
 
     x509_certificate_model::Extensions extensions;
-    x509_certificate_model::GetExtensions(
-        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    x509_certificate_model::GetExtensions("critical", "notcrit", cert.get(),
+                                          &extensions);
     ASSERT_EQ(9U, extensions.size());
 
     EXPECT_EQ("Certificate Subject Key ID", extensions[0].name);
@@ -175,13 +166,13 @@ TEST(X509CertificateModelTest, GetExtensions) {
   }
 
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "diginotar_public_ca_2025.pem"));
     ASSERT_TRUE(cert.get());
 
     x509_certificate_model::Extensions extensions;
-    x509_certificate_model::GetExtensions(
-        "critical", "notcrit", cert->os_cert_handle(), &extensions);
+    x509_certificate_model::GetExtensions("critical", "notcrit", cert.get(),
+                                          &extensions);
     ASSERT_EQ(7U, extensions.size());
 
     EXPECT_EQ("Authority Information Access", extensions[0].name);
@@ -208,13 +199,11 @@ TEST(X509CertificateModelTest, GetExtensions) {
 }
 
 TEST(X509CertificateModelTest, GetTypeCA) {
-  scoped_refptr<net::X509Certificate> cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "root_ca_cert.pem"));
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
-  EXPECT_EQ(net::CA_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
+  EXPECT_EQ(net::CA_CERT, x509_certificate_model::GetType(cert.get()));
 
   crypto::ScopedTestNSSDB test_nssdb;
   net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
@@ -224,25 +213,22 @@ TEST(X509CertificateModelTest, GetTypeCA) {
 
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
-  EXPECT_TRUE(db.SetCertTrust(
-      cert.get(), net::CA_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
+  EXPECT_TRUE(db.SetCertTrust(cert.get(), net::CA_CERT,
+                              net::NSSCertDatabase::DISTRUSTED_SSL));
 
-  EXPECT_EQ(net::CA_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
+  EXPECT_EQ(net::CA_CERT, x509_certificate_model::GetType(cert.get()));
 }
 
 TEST(X509CertificateModelTest, GetTypeServer) {
-  scoped_refptr<net::X509Certificate> cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "google.single.der"));
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "google.single.der"));
   ASSERT_TRUE(cert.get());
 
   // Test mozilla_security_manager::GetCertType with server certs and default
   // trust.  Currently this doesn't work.
   // TODO(mattm): make mozilla_security_manager::GetCertType smarter so we can
   // tell server certs even if they have no trust bits set.
-  EXPECT_EQ(net::OTHER_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
+  EXPECT_EQ(net::OTHER_CERT, x509_certificate_model::GetType(cert.get()));
 
   crypto::ScopedTestNSSDB test_nssdb;
   net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
@@ -251,115 +237,108 @@ TEST(X509CertificateModelTest, GetTypeServer) {
                               test_nssdb.slot())) /* private slot */);
 
   // Test GetCertType with server certs and explicit trust.
-  EXPECT_TRUE(db.SetCertTrust(
-      cert.get(), net::SERVER_CERT, net::NSSCertDatabase::TRUSTED_SSL));
+  EXPECT_TRUE(db.SetCertTrust(cert.get(), net::SERVER_CERT,
+                              net::NSSCertDatabase::TRUSTED_SSL));
 
-  EXPECT_EQ(net::SERVER_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
+  EXPECT_EQ(net::SERVER_CERT, x509_certificate_model::GetType(cert.get()));
 
   // Test GetCertType with server certs and explicit distrust.
-  EXPECT_TRUE(db.SetCertTrust(
-      cert.get(), net::SERVER_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
+  EXPECT_TRUE(db.SetCertTrust(cert.get(), net::SERVER_CERT,
+                              net::NSSCertDatabase::DISTRUSTED_SSL));
 
-  EXPECT_EQ(net::SERVER_CERT,
-            x509_certificate_model::GetType(cert->os_cert_handle()));
+  EXPECT_EQ(net::SERVER_CERT, x509_certificate_model::GetType(cert.get()));
 }
 
 // An X.509 v1 certificate with the version field omitted should get
 // the default value v1.
 TEST(X509CertificateModelTest, GetVersionOmitted) {
-  scoped_refptr<net::X509Certificate> cert(
-      net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "ndn.ca.crt"));
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
+      net::GetTestCertsDirectory(), "ndn.ca.crt"));
   ASSERT_TRUE(cert.get());
 
-  EXPECT_EQ("1", x509_certificate_model::GetVersion(cert->os_cert_handle()));
+  EXPECT_EQ("1", x509_certificate_model::GetVersion(cert.get()));
 }
 
 TEST(X509CertificateModelTest, GetCMSString) {
-  net::CertificateList certs =
-      CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                    "multi-root-chain1.pem",
-                                    net::X509Certificate::FORMAT_AUTO);
-
-  net::X509Certificate::OSCertHandles cert_handles;
-  for (net::CertificateList::iterator i = certs.begin(); i != certs.end(); ++i)
-    cert_handles.push_back((*i)->os_cert_handle());
-  ASSERT_EQ(4U, cert_handles.size());
+  net::ScopedCERTCertificateList certs = CreateCERTCertificateListFromFile(
+      net::GetTestCertsDirectory(), "multi-root-chain1.pem",
+      net::X509Certificate::FORMAT_AUTO);
+  std::vector<CERTCertificate*> certs_raw;
+  for (const auto& cert : certs)
+    certs_raw.push_back(cert.get());
 
   {
     // Write the full chain.
-    std::string pkcs7_string = x509_certificate_model::GetCMSString(
-        cert_handles, 0, cert_handles.size());
+    std::string pkcs7_string =
+        x509_certificate_model::GetCMSString(certs_raw, 0, certs_raw.size());
 
     ASSERT_FALSE(pkcs7_string.empty());
 
-    net::CertificateList decoded_certs =
-        net::X509Certificate::CreateCertificateListFromBytes(
-            pkcs7_string.data(),
-            pkcs7_string.size(),
+    net::ScopedCERTCertificateList decoded_certs =
+        net::x509_util::CreateCERTCertificateListFromBytes(
+            pkcs7_string.data(), pkcs7_string.size(),
             net::X509Certificate::FORMAT_PKCS7);
 
     ASSERT_EQ(certs.size(), decoded_certs.size());
 
     // NSS sorts the certs before writing the file.
-    EXPECT_TRUE(certs[0]->Equals(decoded_certs.back().get()));
+    EXPECT_TRUE(net::x509_util::IsSameCertificate(certs[0].get(),
+                                                  decoded_certs.back().get()));
     for (size_t i = 1; i < certs.size(); ++i)
-      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i - 1].get()));
+      EXPECT_TRUE(net::x509_util::IsSameCertificate(
+          certs[i].get(), decoded_certs[i - 1].get()));
   }
 
   {
     // Write only the first cert.
     std::string pkcs7_string =
-        x509_certificate_model::GetCMSString(cert_handles, 0, 1);
+        x509_certificate_model::GetCMSString(certs_raw, 0, 1);
 
-    net::CertificateList decoded_certs =
-        net::X509Certificate::CreateCertificateListFromBytes(
-            pkcs7_string.data(),
-            pkcs7_string.size(),
+    net::ScopedCERTCertificateList decoded_certs =
+        net::x509_util::CreateCERTCertificateListFromBytes(
+            pkcs7_string.data(), pkcs7_string.size(),
             net::X509Certificate::FORMAT_PKCS7);
 
     ASSERT_EQ(1U, decoded_certs.size());
-    EXPECT_TRUE(certs[0]->Equals(decoded_certs[0].get()));
+    EXPECT_TRUE(net::x509_util::IsSameCertificate(certs[0].get(),
+                                                  decoded_certs[0].get()));
   }
 }
 
 TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
 
     EXPECT_EQ("PKCS #1 SHA-256 With RSA Encryption",
-              x509_certificate_model::ProcessSecAlgorithmSignature(
-                  cert->os_cert_handle()));
-    EXPECT_EQ("PKCS #1 SHA-256 With RSA Encryption",
-              x509_certificate_model::ProcessSecAlgorithmSignatureWrap(
-                  cert->os_cert_handle()));
+              x509_certificate_model::ProcessSecAlgorithmSignature(cert.get()));
+    EXPECT_EQ(
+        "PKCS #1 SHA-256 With RSA Encryption",
+        x509_certificate_model::ProcessSecAlgorithmSignatureWrap(cert.get()));
     EXPECT_EQ("PKCS #1 RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(
-                  cert->os_cert_handle()));
+                  cert.get()));
   }
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "weak_digest_md5_root.pem"));
     ASSERT_TRUE(cert.get());
 
     EXPECT_EQ("PKCS #1 MD5 With RSA Encryption",
-              x509_certificate_model::ProcessSecAlgorithmSignature(
-                  cert->os_cert_handle()));
-    EXPECT_EQ("PKCS #1 MD5 With RSA Encryption",
-              x509_certificate_model::ProcessSecAlgorithmSignatureWrap(
-                  cert->os_cert_handle()));
+              x509_certificate_model::ProcessSecAlgorithmSignature(cert.get()));
+    EXPECT_EQ(
+        "PKCS #1 MD5 With RSA Encryption",
+        x509_certificate_model::ProcessSecAlgorithmSignatureWrap(cert.get()));
     EXPECT_EQ("PKCS #1 RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(
-                  cert->os_cert_handle()));
+                  cert.get()));
   }
 }
 
 TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
 
@@ -384,11 +363,10 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
         "\n"
         "  Public Exponent (24 bits):\n"
         "  01 00 01",
-        x509_certificate_model::ProcessSubjectPublicKeyInfo(
-            cert->os_cert_handle()));
+        x509_certificate_model::ProcessSubjectPublicKeyInfo(cert.get()));
   }
   {
-    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+    net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "prime256v1-ecdsa-intermediate.pem"));
     ASSERT_TRUE(cert.get());
 
@@ -398,13 +376,12 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
         "2D EA 30 0F D2 9A 47 97 2C 7E 89 E6 EF 49 55 06\n"
         "C9 37 C7 99 56 16 B2 2B C9 7C 69 8E 10 7A DD 1F\n"
         "42",
-        x509_certificate_model::ProcessSubjectPublicKeyInfo(
-            cert->os_cert_handle()));
+        x509_certificate_model::ProcessSubjectPublicKeyInfo(cert.get()));
   }
 }
 
 TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
-  scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
@@ -425,6 +402,5 @@ TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
       "69 17 79 02 3A EC 1D 6F 5E BB 13 FB A6 82 5D 07\n"
       "20 FC 86 FE 6E 8B AC E1 C2 18 A2 FE 3F 95 66 D3\n"
       "69 8A 00 06 2C 56 37 34 B9 B6 31 DE 0F F6 44 39",
-      x509_certificate_model::ProcessRawBitsSignatureWrap(
-          cert->os_cert_handle()));
+      x509_certificate_model::ProcessRawBitsSignatureWrap(cert.get()));
 }

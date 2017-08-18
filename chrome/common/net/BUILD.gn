@@ -10,9 +10,6 @@ static_library("net") {
   sources = [
     "net_resource_provider.cc",
     "net_resource_provider.h",
-    "x509_certificate_model.cc",
-    "x509_certificate_model.h",
-    "x509_certificate_model_nss.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -30,18 +27,16 @@ static_library("net") {
     "//ui/base",
   ]
 
-  if (is_android) {
-    sources -= [ "x509_certificate_model.cc" ]
-  }
-
   if (use_nss_certs) {
+    sources += [
+      "x509_certificate_model_nss.cc",
+      "x509_certificate_model_nss.h",
+    ]
     deps += [
       "//chrome/third_party/mozilla_security_manager",
       "//crypto:platform",
     ]
     allow_circular_includes_from =
         [ "//chrome/third_party/mozilla_security_manager" ]
-  } else {
-    sources -= [ "x509_certificate_model_nss.cc" ]
   }
 }

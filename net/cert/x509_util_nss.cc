@@ -210,6 +210,23 @@ ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
   return nss_chain;
 }
 
+ScopedCERTCertificateList CreateCERTCertificateListFromBytes(const char* data,
+                                                             size_t length,
+                                                             int format) {
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(data, length, format);
+  ScopedCERTCertificateList nss_chain;
+  nss_chain.reserve(certs.size());
+  for (const scoped_refptr<X509Certificate>& cert : certs) {
+    ScopedCERTCertificate nss_cert =
+        CreateCERTCertificateFromX509Certificate(cert.get());
+    if (!nss_cert)
+      return {};
+    nss_chain.push_back(std::move(nss_cert));
+  }
+  return nss_chain;
+}
+
 ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert) {
   return ScopedCERTCertificate(CERT_DupCertificate(cert));
 }
