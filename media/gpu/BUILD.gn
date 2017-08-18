@@ -355,7 +355,7 @@ component("gpu") {
       "media_foundation_video_encode_accelerator_win.h",
     ]
     configs += [
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      # TODO(crbug.com/167187): Fix size_t to int truncations.
       "//build/config/compiler:no_size_t_to_int_warning",
       "//third_party/khronos:khronos_headers",
     ]
@@ -399,8 +399,7 @@ if (is_win || is_android || is_chromeos) {
       ":gpu",
       "//base",
       "//base/test:test_support",
-      "//media",
-      "//media/base:test_support",
+      "//media:test_support",
       "//testing/gtest",
       "//ui/base",
       "//ui/display/manager",
@@ -440,7 +439,7 @@ if (is_win || is_android || is_chromeos) {
     }
 
     if (is_win) {
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      # TODO(crbug.com/167187): Fix size_t to int truncations.
       configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
       deps += [
         "//third_party/angle:libEGL",
@@ -502,8 +501,7 @@ if (is_chromeos || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
       "//base",
-      "//media",
-      "//media/base:test_support",
+      "//media:test_support",
       "//media/gpu",
       "//testing/gtest",
       "//ui/base",
@@ -534,8 +532,7 @@ if (is_chromeos) {
   test("jpeg_decode_accelerator_unittest") {
     deps = [
       "//base",
-      "//media",
-      "//media/base:test_support",
+      "//media:test_support",
       "//media/gpu",
       "//testing/gtest",
       "//third_party/libyuv",
@@ -567,7 +564,7 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     "//base",
-    "//media/base:test_support",
+    "//media:test_support",
     "//media/gpu",
     "//testing/gmock",
     "//testing/gtest",

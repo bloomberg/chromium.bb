@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "media/base/media_export.h"
+#include "media/base/media_shmem_export.h"
 
 namespace media {
 namespace vector_math {
@@ -17,11 +17,17 @@ enum { kRequiredAlignment = 16 };
 
 // Multiply each element of |src| (up to |len|) by |scale| and add to |dest|.
 // |src| and |dest| must be aligned by kRequiredAlignment.
-MEDIA_EXPORT void FMAC(const float src[], float scale, int len, float dest[]);
+MEDIA_SHMEM_EXPORT void FMAC(const float src[],
+                             float scale,
+                             int len,
+                             float dest[]);
 
 // Multiply each element of |src| by |scale| and store in |dest|.  |src| and
 // |dest| must be aligned by kRequiredAlignment.
-MEDIA_EXPORT void FMUL(const float src[], float scale, int len, float dest[]);
+MEDIA_SHMEM_EXPORT void FMUL(const float src[],
+                             float scale,
+                             int len,
+                             float dest[]);
 
 // Computes the exponentially-weighted moving average power of a signal by
 // iterating the recurrence:
@@ -30,10 +36,13 @@ MEDIA_EXPORT void FMUL(const float src[], float scale, int len, float dest[]);
 //   y[n] = smoothing_factor * src[n]^2 + (1-smoothing_factor) * y[n-1]
 //
 // Returns the final average power and the maximum squared element value.
-MEDIA_EXPORT std::pair<float, float> EWMAAndMaxPower(
-    float initial_value, const float src[], int len, float smoothing_factor);
+MEDIA_SHMEM_EXPORT std::pair<float, float> EWMAAndMaxPower(
+    float initial_value,
+    const float src[],
+    int len,
+    float smoothing_factor);
 
-MEDIA_EXPORT void Crossfade(const float src[], int len, float dest[]);
+MEDIA_SHMEM_EXPORT void Crossfade(const float src[], int len, float dest[]);
 
 }  // namespace vector_math
 }  // namespace media

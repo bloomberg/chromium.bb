@@ -21,7 +21,7 @@
 #include "media/base/fake_text_track_stream.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
-#include "media/filters/webvtt_util.h"
+#include "media/base/webvtt_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

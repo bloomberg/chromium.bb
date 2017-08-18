@@ -5,21 +5,21 @@
 import("//media/media_options.gni")
 
 source_set("muxers") {
-  visibility = [ "//media/*" ]
+  visibility = [ "//media" ]
 
   sources = [
-    "//media/muxers/webm_muxer.cc",
-    "//media/muxers/webm_muxer.h",
+    "webm_muxer.cc",
+    "webm_muxer.h",
   ]
 
   deps = [
+    "//base",
+    "//media/base",
+    "//media/filters",
     "//skia",
     "//third_party/libwebm",
+    "//ui/gfx/geometry",
   ]
 
-  public_deps = [
-    "//media/base",
-  ]
-
-  configs += [ "//media:media_implementation" ]
+  configs += [ "//media:subcomponent_config" ]
 }

@@ -15,9 +15,9 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/stream_parser_buffer.h"
-#include "media/filters/h264_parser.h"
 #include "media/formats/mp2t/es_parser_h264.h"
 #include "media/formats/mp2t/es_parser_test_base.h"
+#include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

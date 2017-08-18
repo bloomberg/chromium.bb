@@ -15,9 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/fake_audio_worker.h"
 #include "media/base/media_export.h"
 
 namespace base {

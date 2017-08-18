@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
-#define MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#ifndef MEDIA_VIDEO_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#define MEDIA_VIDEO_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -102,4 +102,4 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
 }  // namespace media
 
-#endif  // MEDIA_RENDERERS_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#endif  // MEDIA_VIDEO_MOCK_GPU_VIDEO_ACCELERATOR_FACTORIES_H_

@@ -13,8 +13,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/fake_audio_worker.h"
 
 namespace media {
 

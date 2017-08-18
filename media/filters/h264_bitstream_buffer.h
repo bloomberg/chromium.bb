@@ -17,7 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_parser.h"
 
 namespace media {
 

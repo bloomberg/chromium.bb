@@ -112,7 +112,8 @@ check_targets = [
   "//mash/*",
 
   #"//media/*",  # Lots of errors.
-  #"//media/base/*",
+  "//media/base/*",
+
   #"//media/capture/*",
   "//media/cast/*",
   "//media:media",

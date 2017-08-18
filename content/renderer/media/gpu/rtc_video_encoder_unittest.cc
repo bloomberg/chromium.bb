@@ -10,7 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/renderer/media/gpu/rtc_video_encoder.h"
-#include "media/renderers/mock_gpu_video_accelerator_factories.h"
+#include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"

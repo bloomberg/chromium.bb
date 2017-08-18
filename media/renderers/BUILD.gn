@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 source_set("renderers") {
+  # Do not expand the visibility here without double-checking with OWNERS, this
+  # is a roll-up target which is part of the //media component. Most other DEPs
+  # should be using //media and not directly DEP this roll-up target.
   visibility = [ "//media" ]
 
   sources = [
@@ -23,14 +26,21 @@ source_set("renderers") {
 
   deps = [
     "//base",
+    "//cc/paint",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
     "//media/base",
+    "//media/filters",
+    "//media/video",
     "//skia",
     "//third_party/libyuv",
+    "//ui/gfx:geometry_skia",
+    "//ui/gfx:memory_buffer",
+    "//ui/gfx/geometry",
   ]
 
   configs += [
-    "//media:media_implementation",
+    "//media:subcomponent_config",
 
     # TODO(wolenetz): Fix size_t to int trunctaion in win64.
     # See http://crbug.com/171009
@@ -38,4 +48,27 @@ source_set("renderers") {
   ]
 
   all_dependent_configs = [ "//media:media_dependent_config" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "audio_renderer_impl_unittest.cc",
+    "renderer_impl_unittest.cc",
+    "skcanvas_video_renderer_unittest.cc",
+    "video_renderer_impl_unittest.cc",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [
+    "//base",
+    "//cc/paint",
+    "//gpu:test_support",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/libyuv",
+    "//ui/gfx",
+  ]
 }

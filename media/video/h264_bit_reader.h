@@ -4,8 +4,8 @@
 //
 // This file contains an implementation of an H264 Annex-B video stream parser.
 
-#ifndef MEDIA_FILTERS_H264_BIT_READER_H_
-#define MEDIA_FILTERS_H264_BIT_READER_H_
+#ifndef MEDIA_VIDEO_H264_BIT_READER_H_
+#define MEDIA_VIDEO_H264_BIT_READER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -78,4 +78,4 @@ class MEDIA_EXPORT H264BitReader {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_H264_BIT_READER_H_
+#endif  // MEDIA_VIDEO_H264_BIT_READER_H_

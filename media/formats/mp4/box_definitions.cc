@@ -14,11 +14,11 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
-#include "media/filters/h264_parser.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/media_features.h"
+#include "media/video/h264_parser.h"
 
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 #include "media/formats/mp4/dolby_vision.h"

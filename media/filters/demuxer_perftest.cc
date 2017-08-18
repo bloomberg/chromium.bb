@@ -63,7 +63,7 @@ static void OnMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks) {
   DVLOG(1) << "Got media tracks info, tracks = " << tracks->tracks().size();
 }
 
-typedef std::vector<media::DemuxerStream* > Streams;
+typedef std::vector<media::DemuxerStream*> Streams;
 
 // Simulates playback reading requirements by reading from each stream
 // present in |demuxer| in as-close-to-monotonically-increasing timestamp order.
@@ -165,8 +165,7 @@ int StreamReader::GetNextStreamIndexToRead() {
     if (last_read_timestamp_[i] == media::kNoTimestamp)
       return i;
 
-    if (index < 0 ||
-        last_read_timestamp_[i] < last_read_timestamp_[index]) {
+    if (index < 0 || last_read_timestamp_[i] < last_read_timestamp_[index]) {
       index = i;
     }
   }

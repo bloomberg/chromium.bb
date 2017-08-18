@@ -140,8 +140,7 @@ service_test("media_service_unittests") {
   deps = [
     ":services",
     "//base",
-    "//media",
-    "//media/base:test_support",
+    "//media:test_support",
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",

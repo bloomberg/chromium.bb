@@ -15,7 +15,7 @@
 #include "media/base/audio_latency.h"
 #include "media/base/audio_point.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_export.h"
+#include "media/base/media_shmem_export.h"
 
 namespace media {
 
@@ -32,14 +32,16 @@ namespace media {
 #define PARAMETERS_ALIGNMENT 16
 static_assert(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
               "Audio buffer parameters struct alignment not same as AudioBus");
-struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioInputBufferParameters {
+struct MEDIA_SHMEM_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT)
+    AudioInputBufferParameters {
   double volume;
   uint32_t size;
   uint32_t hardware_delay_bytes;
   uint32_t id;
   bool key_pressed;
 };
-struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioOutputBufferParameters {
+struct MEDIA_SHMEM_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT)
+    AudioOutputBufferParameters {
   uint32_t frames_skipped;
   int64_t delay;
   int64_t delay_timestamp;
@@ -58,16 +60,16 @@ static_assert(sizeof(AudioOutputBufferParameters) %
                   0,
               "AudioOutputBufferParameters not aligned");
 
-struct MEDIA_EXPORT AudioInputBuffer {
+struct MEDIA_SHMEM_EXPORT AudioInputBuffer {
   AudioInputBufferParameters params;
   int8_t audio[1];
 };
-struct MEDIA_EXPORT AudioOutputBuffer {
+struct MEDIA_SHMEM_EXPORT AudioOutputBuffer {
   AudioOutputBufferParameters params;
   int8_t audio[1];
 };
 
-class MEDIA_EXPORT AudioParameters {
+class MEDIA_SHMEM_EXPORT AudioParameters {
  public:
   // TODO(miu): Rename this enum to something that correctly reflects its
   // semantics, such as "TransportScheme."

@@ -10,9 +10,9 @@
 
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
-#include "media/filters/h264_parser.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
+#include "media/video/h264_parser.h"
 
 namespace media {
 namespace mp4 {

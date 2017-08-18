@@ -46,12 +46,12 @@
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/h264_parser.h"
 #include "media/filters/ivf_parser.h"
 #include "media/gpu/features.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
+#include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

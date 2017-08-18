@@ -27,16 +27,10 @@ source_set("mac") {
     ]
   }
   set_sources_assignment_filter(sources_assignment_filter)
-  configs += [
-    "//media:media_config",
-    "//media:media_implementation",
-  ]
-
-  public_deps = [
-    "//media/base",
-  ]
+  configs += [ "//media:subcomponent_config" ]
 
   deps = [
+    "//media/base",
     "//ui/gfx:color_space",
   ]
 }
@@ -49,7 +43,7 @@ source_set("unit_tests") {
   libs = [ "CoreVideo.framework" ]
   configs += [ "//media:media_config" ]
   deps = [
-    "//media/base",
+    "//media:test_support",
     "//testing/gtest",
     "//ui/gfx:color_space",
   ]

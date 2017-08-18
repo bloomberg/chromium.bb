@@ -14,7 +14,7 @@ if (is_android) {
   # APK targets that depend on this indirectly, should also
   # depend on :media_java to get the corresponding Java classes.
   source_set("android") {
-    visibility = [ "//media/base:base" ]
+    visibility = [ "//media" ]
     sources = [
       "android_cdm_factory.cc",
       "android_cdm_factory.h",
@@ -58,17 +58,17 @@ if (is_android) {
       "media_service_throttler.cc",
       "media_service_throttler.h",
       "media_url_interceptor.h",
-      "routing_token_callback.h",
       "stream_texture_wrapper.h",
     ]
-    configs += [
-      "//media:media_config",
-      "//media:media_implementation",
+    configs += [ "//media:subcomponent_config" ]
+    public_deps = [
+      ":media_jni_headers",
     ]
     deps = [
-      ":media_jni_headers",
-      "//media:media_features",
-      "//media:shared_memory_support",
+      "//media/audio",
+      "//media/base",
+      "//media/cdm",
+      "//media/formats",
       "//third_party/widevine/cdm:headers",
       "//ui/gl",
       "//url",
@@ -83,7 +83,6 @@ if (is_android) {
 
   source_set("unit_tests") {
     testonly = true
-    visibility = [ "//media/base:unit_tests" ]
     sources = [
       "media_codec_bridge_impl_unittest.cc",
       "media_codec_loop_unittest.cc",
@@ -94,9 +93,8 @@ if (is_android) {
     ]
 
     deps = [
-      "//media",
-      "//media/base:test_support",
-      "//media/base/android:test_support",
+      "//base/test:test_support",
+      "//media:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/widevine/cdm:headers",
@@ -105,7 +103,7 @@ if (is_android) {
     configs += [ "//media:media_config" ]
   }
 
-  source_set("test_support") {
+  static_library("test_support") {
     testonly = true
     sources = [
       "mock_android_overlay.cc",
@@ -116,7 +114,6 @@ if (is_android) {
       "test_destruction_observable.h",
     ]
     deps = [
-      "//media",
       "//media/base:test_support",
       "//testing/gmock",
       "//testing/gtest",
@@ -176,5 +173,11 @@ if (is_android) {
       "java/src/org/chromium/media/MediaServerCrashListener.java",
       "java/src/org/chromium/media/MediaSwitches.java",
     ]
+  }
+} else {
+  source_set("android") {
+  }
+  source_set("test_support") {
+    testonly = true
   }
 }

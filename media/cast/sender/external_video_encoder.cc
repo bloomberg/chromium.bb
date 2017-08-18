@@ -31,7 +31,7 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/vp8_quantizer_parser.h"
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_parser.h"
 
 namespace {
 
