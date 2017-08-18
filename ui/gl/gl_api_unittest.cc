@@ -46,16 +46,14 @@ class GLApiTest : public testing::Test {
     fake_extension_strings_ = nullptr;
   }
 
-  void InitializeAPI(const char* disabled_extensions) {
+  void InitializeAPI(const std::string& disabled_gl_extensions) {
     driver_.reset(new DriverGL());
     driver_->fn.glGetStringFn = &FakeGetString;
     driver_->fn.glGetStringiFn = &FakeGetStringi;
     driver_->fn.glGetIntegervFn = &FakeGetIntegervFn;
 
     api_.reset(new RealGLApi());
-    if (disabled_extensions) {
-      api_->SetDisabledExtensions(disabled_extensions);
-    }
+    api_->SetDisabledGLExtensions(disabled_gl_extensions);
     api_->Initialize(driver_.get());
 
     std::unique_ptr<GLVersionInfo> version =
@@ -133,7 +131,7 @@ TEST_F(GLApiTest, DisabledExtensionStringTest) {
   static const char* kFilteredExtensions = "GL_EXT_3 GL_EXT_4";
 
   SetFakeExtensionString(kFakeExtensions);
-  InitializeAPI(nullptr);
+  InitializeAPI("");
   EXPECT_STREQ(kFakeExtensions, GetExtensions());
 
   InitializeAPI(kFakeDisabledExtensions);
@@ -147,7 +145,7 @@ TEST_F(GLApiTest, DisabledExtensionBitTest) {
   static const char* kFakeDisabledExtensions = "GL_ARB_timer_query";
 
   SetFakeExtensionStrings(kFakeExtensions, arraysize(kFakeExtensions));
-  InitializeAPI(nullptr);
+  InitializeAPI("");
   EXPECT_TRUE(driver_->ext.b_GL_ARB_timer_query);
 
   InitializeAPI(kFakeDisabledExtensions);
@@ -168,7 +166,7 @@ TEST_F(GLApiTest, DisabledExtensionStringIndexTest) {
   };
 
   SetFakeExtensionStrings(kFakeExtensions, arraysize(kFakeExtensions));
-  InitializeAPI(nullptr);
+  InitializeAPI("");
 
   EXPECT_EQ(arraysize(kFakeExtensions), GetNumExtensions());
   for (uint32_t i = 0; i < arraysize(kFakeExtensions); ++i) {

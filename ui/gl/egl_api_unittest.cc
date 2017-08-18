@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -36,13 +37,13 @@ class EGLApiTest : public testing::Test {
     fake_extension_string_ = "";
   }
 
-  void InitializeAPI(const char* disabled_extensions) {
+  void InitializeAPI(base::CommandLine* command_line) {
     api_.reset(new RealEGLApi());
     g_current_egl_context = api_.get();
-    api_->Initialize(&g_driver_egl);
-    if (disabled_extensions) {
-      SetDisabledExtensionsEGL(disabled_extensions);
-    }
+    if (command_line)
+      api_->InitializeWithCommandLine(&g_driver_egl, command_line);
+    else
+      api_->Initialize(&g_driver_egl);
     g_driver_egl.InitializeClientExtensionBindings();
     GLSurfaceEGL::InitializeDisplay(EGL_DEFAULT_DISPLAY);
     g_driver_egl.InitializeExtensionBindings();
@@ -113,7 +114,10 @@ TEST_F(EGLApiTest, DisabledExtensionBitTest) {
 
   EXPECT_TRUE(g_driver_egl.ext.b_EGL_KHR_fence_sync);
 
-  InitializeAPI(kFakeDisabledExtensions);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kDisableGLExtensions,
+                                 kFakeDisabledExtensions);
+  InitializeAPI(&command_line);
 
   EXPECT_FALSE(g_driver_egl.ext.b_EGL_KHR_fence_sync);
 }
@@ -134,7 +138,10 @@ TEST_F(EGLApiTest, DisabledExtensionStringTest) {
   EXPECT_STREQ(kFakeClientExtensions, GetExtensions().first);
   EXPECT_STREQ(kFakeExtensions, GetExtensions().second);
 
-  InitializeAPI(kFakeDisabledExtensions);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kDisableGLExtensions,
+                                 kFakeDisabledExtensions);
+  InitializeAPI(&command_line);
 
   EXPECT_STREQ(kFilteredClientExtensions, GetExtensions().first);
   EXPECT_STREQ(kFilteredExtensions, GetExtensions().second);

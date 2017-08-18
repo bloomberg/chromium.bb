@@ -11,8 +11,6 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
 
-#include <string>
-
 namespace gl {
 
 class GLContext;
@@ -92,8 +90,6 @@ class GL_EXPORT WGLApi {
  public:
   WGLApi();
   virtual ~WGLApi();
-
-  virtual void SetDisabledExtensions(const std::string& disabled_extensions) {}
 
   virtual BOOL wglChoosePixelFormatARBFn(HDC dc,
                                          const int* int_attrib_list,

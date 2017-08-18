@@ -41,14 +41,5 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
   return nullptr;
 }
 
-void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
-  NOTIMPLEMENTED();
-}
-
-bool InitializeExtensionSettingsPlatformOneOff() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 }  // namespace init
 }  // namespace gl
