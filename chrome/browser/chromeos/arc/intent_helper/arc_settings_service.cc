@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/json/json_writer.h"
@@ -225,13 +226,13 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
       return;
     }
     SyncProxySettings();
-  } else if (pref_name == prefs::kAccessibilityFocusHighlightEnabled) {
+  } else if (pref_name == ash::prefs::kAccessibilityFocusHighlightEnabled) {
     SyncFocusHighlightEnabled();
-  } else if (pref_name == prefs::kAccessibilityLargeCursorEnabled) {
+  } else if (pref_name == ash::prefs::kAccessibilityLargeCursorEnabled) {
     SyncAccessibilityLargeMouseCursorEnabled();
-  } else if (pref_name == prefs::kAccessibilitySpokenFeedbackEnabled) {
+  } else if (pref_name == ash::prefs::kAccessibilitySpokenFeedbackEnabled) {
     SyncSpokenFeedbackEnabled();
-  } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
+  } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     SyncAccessibilityVirtualKeyboardEnabled();
   } else if (pref_name == prefs::kArcBackupRestoreEnabled) {
     if (ShouldSyncBackupEnabled())
@@ -281,10 +282,10 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   registrar_.Init(GetPrefs());
 
   // Keep these lines ordered lexicographically.
-  AddPrefToObserve(prefs::kAccessibilityFocusHighlightEnabled);
-  AddPrefToObserve(prefs::kAccessibilityLargeCursorEnabled);
-  AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
-  AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
+  AddPrefToObserve(ash::prefs::kAccessibilityFocusHighlightEnabled);
+  AddPrefToObserve(ash::prefs::kAccessibilityLargeCursorEnabled);
+  AddPrefToObserve(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+  AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(prefs::kArcLocationServiceEnabled);
   AddPrefToObserve(prefs::kResolveTimezoneByGeolocation);
@@ -360,13 +361,13 @@ bool ArcSettingsServiceImpl::ShouldSyncLocationServiceEnabled() const {
 
 void ArcSettingsServiceImpl::SyncAccessibilityLargeMouseCursorEnabled() const {
   SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilityLargeCursorEnabled,
+      ash::prefs::kAccessibilityLargeCursorEnabled,
       "org.chromium.arc.intent_helper.ACCESSIBILITY_LARGE_POINTER_ICON");
 }
 
 void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
   SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilityVirtualKeyboardEnabled,
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled,
       "org.chromium.arc.intent_helper.SET_SHOW_IME_WITH_HARD_KEYBOARD");
 }
 
@@ -387,7 +388,7 @@ void ArcSettingsServiceImpl::SyncBackupEnabled() const {
 
 void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
   SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilityFocusHighlightEnabled,
+      ash::prefs::kAccessibilityFocusHighlightEnabled,
       "org.chromium.arc.intent_helper.SET_FOCUS_HIGHLIGHT_ENABLED");
 }
 
@@ -500,7 +501,7 @@ void ArcSettingsServiceImpl::SyncReportingConsent() const {
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
   SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled,
       "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED");
 }
 

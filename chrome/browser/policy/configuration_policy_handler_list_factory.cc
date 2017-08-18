@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -516,19 +515,19 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kTermsOfServiceURL,
     base::Value::Type::STRING },
   { key::kShowAccessibilityOptionsInSystemTrayMenu,
-    prefs::kShouldAlwaysShowAccessibilityMenu,
+    ash::prefs::kShouldAlwaysShowAccessibilityMenu,
     base::Value::Type::BOOLEAN },
   { key::kLargeCursorEnabled,
-    prefs::kAccessibilityLargeCursorEnabled,
+    ash::prefs::kAccessibilityLargeCursorEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSpokenFeedbackEnabled,
-    prefs::kAccessibilitySpokenFeedbackEnabled,
+    ash::prefs::kAccessibilitySpokenFeedbackEnabled,
     base::Value::Type::BOOLEAN },
   { key::kHighContrastEnabled,
-    prefs::kAccessibilityHighContrastEnabled,
+    ash::prefs::kAccessibilityHighContrastEnabled,
     base::Value::Type::BOOLEAN },
   { key::kVirtualKeyboardEnabled,
-    prefs::kAccessibilityVirtualKeyboardEnabled,
+    ash::prefs::kAccessibilityVirtualKeyboardEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultLargeCursorEnabled,
     NULL,

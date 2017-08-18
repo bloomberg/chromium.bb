@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "url/gurl.h"
@@ -19,7 +19,7 @@ namespace accessibility {
 
 void EnableVirtualKeyboard(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
+  pref_service->SetBoolean(ash::prefs::kAccessibilityVirtualKeyboardEnabled,
                            enabled);
   pref_service->CommitPendingWrite();
 }
@@ -30,7 +30,8 @@ bool IsVirtualKeyboardEnabled() {
   }
   PrefService* prefs = g_browser_process->local_state();
   bool virtual_keyboard_enabled =
-      prefs && prefs->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled);
+      prefs &&
+      prefs->GetBoolean(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   return virtual_keyboard_enabled;
 }
 
