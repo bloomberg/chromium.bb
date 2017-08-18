@@ -49,6 +49,7 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   RealGLApi();
   ~RealGLApi() override;
   void Initialize(DriverGL* driver);
+  void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   void glGetIntegervFn(GLenum pname, GLint* params) override;
   const GLubyte* glGetStringFn(GLenum name) override;
@@ -113,7 +114,6 @@ class GL_EXPORT RealGLApi : public GLApiBase {
 
   void set_gl_workarounds(const GLWorkarounds& workarounds);
   void set_version(std::unique_ptr<GLVersionInfo> version);
-  void SetDisabledGLExtensions(const std::string& disabled_extensions);
   void ClearCachedGLExtensions();
 
  private:

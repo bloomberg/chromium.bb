@@ -11,6 +11,8 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
 
+#include <string>
+
 namespace gl {
 
 class GLContext;
@@ -320,6 +322,8 @@ class GL_EXPORT EGLApi {
  public:
   EGLApi();
   virtual ~EGLApi();
+
+  virtual void SetDisabledExtensions(const std::string& disabled_extensions) {}
 
   virtual EGLBoolean eglBindAPIFn(EGLenum api) = 0;
   virtual EGLBoolean eglBindTexImageFn(EGLDisplay dpy,
