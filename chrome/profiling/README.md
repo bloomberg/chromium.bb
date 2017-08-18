@@ -7,12 +7,11 @@ Design doc: https://docs.google.com/document/d/1eRAgOFgHwYEPge8G1_5UEvu8TJs5VkYC
 
 How To Enable Out of Process Heap Profiling
 -------------------------------------------
-Compile with the GN flag `enable_oop_heap_profiling = true`. On Windows, you
-must also build a static, release binary.
+On Windows, build a static, release binary.
 
-To turn it on, pass the command line flag `--memlog=browser` to profile just the
-browser process, or `--memlog=all` to profile all processes. Navigate to
-`chrome://memory-internals`, and press the "Dump" button to trigger a memory
+When starting Chrome, pass the command line flag `--memlog=browser` to profile
+just the browser process, or `--memlog=all` to profile all processes. Navigate
+to `chrome://memory-internals`, and press the "Dump" button to trigger a memory
 dump for a given process. This creates a dump called `memlog_dump.json.gz` in
 the profile directory.
 

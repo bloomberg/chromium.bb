@@ -52,10 +52,6 @@ declare_args() {
   # /device/gamepad as backend.
   enable_exo_ozone_gamepad = use_ozone
 
-  # Enable out-of-process logging of heap profiling data. Currently being
-  # implemented.
-  enable_oop_heap_profiling = false
-
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos

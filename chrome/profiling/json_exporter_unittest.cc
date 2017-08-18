@@ -23,16 +23,17 @@ using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 // Finds the first period_interval trace event in the given JSON trace.
 // Returns null on failure.
 const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
-  auto found_trace_events =
+  const base::Value* found_trace_events =
       root.FindKeyOfType("traceEvents", base::Value::Type::LIST);
-  if (found_trace_events == root.DictEnd())
+  if (!found_trace_events)
     return nullptr;
 
-  for (const base::Value& cur : found_trace_events->second.GetList()) {
-    auto found_name = cur.FindKeyOfType("name", base::Value::Type::STRING);
-    if (found_name == cur.DictEnd())
+  for (const base::Value& cur : found_trace_events->GetList()) {
+    const base::Value* found_name =
+        cur.FindKeyOfType("name", base::Value::Type::STRING);
+    if (!found_name)
       return nullptr;
-    if (found_name->second.GetString() == "periodic_interval")
+    if (found_name->GetString() == "periodic_interval")
       return &cur;
   }
   return nullptr;
@@ -42,28 +43,29 @@ const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
 // failure.
 const base::Value* FindFirstRegionWithAnyName(
     const base::Value* periodic_interval) {
-  auto found_args =
+  const base::Value* found_args =
       periodic_interval->FindKeyOfType("args", base::Value::Type::DICTIONARY);
-  if (found_args == periodic_interval->DictEnd())
+  if (!found_args)
     return nullptr;
-  auto found_dumps =
-      found_args->second.FindKeyOfType("dumps", base::Value::Type::DICTIONARY);
-  if (found_dumps == found_args->second.DictEnd())
+  const base::Value* found_dumps =
+      found_args->FindKeyOfType("dumps", base::Value::Type::DICTIONARY);
+  if (!found_dumps)
     return nullptr;
-  auto found_mmaps = found_dumps->second.FindKeyOfType(
+  const base::Value* found_mmaps = found_dumps->FindKeyOfType(
       "process_mmaps", base::Value::Type::DICTIONARY);
-  if (found_mmaps == found_dumps->second.DictEnd())
+  if (!found_mmaps)
     return nullptr;
-  auto found_regions =
-      found_mmaps->second.FindKeyOfType("vm_regions", base::Value::Type::LIST);
-  if (found_regions == found_mmaps->second.DictEnd())
+  const base::Value* found_regions =
+      found_mmaps->FindKeyOfType("vm_regions", base::Value::Type::LIST);
+  if (!found_regions)
     return nullptr;
 
-  for (const base::Value& cur : found_regions->second.GetList()) {
-    auto found_name = cur.FindKeyOfType("mf", base::Value::Type::STRING);
-    if (found_name == cur.DictEnd())
+  for (const base::Value& cur : found_regions->GetList()) {
+    const base::Value* found_name =
+        cur.FindKeyOfType("mf", base::Value::Type::STRING);
+    if (!found_name)
       return nullptr;
-    if (found_name->second.GetString() != "")
+    if (found_name->GetString() != "")
       return &cur;
   }
   return nullptr;
@@ -71,7 +73,7 @@ const base::Value* FindFirstRegionWithAnyName(
 
 }  // namespace
 
-TEST(ProfilingJsonExporter, Simple) {
+TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 
   std::vector<Address> stack1;
@@ -143,15 +145,17 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   const base::Value* region = FindFirstRegionWithAnyName(periodic_interval);
   ASSERT_TRUE(region) << "Array contains no named vm regions";
 
-  auto start_address = region->FindKeyOfType("sa", base::Value::Type::STRING);
-  ASSERT_NE(start_address, region->DictEnd());
-  EXPECT_NE(start_address->second.GetString(), "");
-  EXPECT_NE(start_address->second.GetString(), "0");
+  const base::Value* start_address =
+      region->FindKeyOfType("sa", base::Value::Type::STRING);
+  ASSERT_TRUE(start_address);
+  EXPECT_NE(start_address->GetString(), "");
+  EXPECT_NE(start_address->GetString(), "0");
 
-  auto size = region->FindKeyOfType("sz", base::Value::Type::STRING);
-  ASSERT_NE(size, region->DictEnd());
-  EXPECT_NE(size->second.GetString(), "");
-  EXPECT_NE(size->second.GetString(), "0");
+  const base::Value* size =
+      region->FindKeyOfType("sz", base::Value::Type::STRING);
+  ASSERT_TRUE(size);
+  EXPECT_NE(size->GetString(), "");
+  EXPECT_NE(size->GetString(), "0");
 }
 
 TEST(ProfilingJsonExporterTest, Metadata) {
@@ -182,25 +186,21 @@ TEST(ProfilingJsonExporterTest, Metadata) {
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
 
-  auto found_metadatas =
+  base::Value* found_metadatas =
       root->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
-  ASSERT_NE(found_metadatas, root->DictEnd()) << "Array contains no metadata";
+  ASSERT_TRUE(found_metadatas) << "Array contains no metadata";
   base::DictionaryValue* metadata;
-  ASSERT_TRUE(found_metadatas->second.GetAsDictionary(&metadata));
+  ASSERT_TRUE(found_metadatas->GetAsDictionary(&metadata));
 
   // Assert existence of key fields needed for symbolize_trace.
-  ASSERT_NE(metadata->FindKeyOfType("command_line", base::Value::Type::STRING),
-            metadata->DictEnd());
-  ASSERT_NE(metadata->FindKeyOfType("os-name", base::Value::Type::STRING),
-            metadata->DictEnd());
-  ASSERT_NE(metadata->FindKeyOfType("os-version", base::Value::Type::STRING),
-            metadata->DictEnd());
-  ASSERT_NE(metadata->FindKeyOfType("trace-capture-datetime",
-                                    base::Value::Type::STRING),
-            metadata->DictEnd());
-  ASSERT_NE(
-      metadata->FindKeyOfType("physical-memory", base::Value::Type::INTEGER),
-      metadata->DictEnd());
+  ASSERT_TRUE(
+      metadata->FindKeyOfType("command_line", base::Value::Type::STRING));
+  ASSERT_TRUE(metadata->FindKeyOfType("os-name", base::Value::Type::STRING));
+  ASSERT_TRUE(metadata->FindKeyOfType("os-version", base::Value::Type::STRING));
+  ASSERT_TRUE(metadata->FindKeyOfType("trace-capture-datetime",
+                                      base::Value::Type::STRING));
+  ASSERT_TRUE(
+      metadata->FindKeyOfType("physical-memory", base::Value::Type::INTEGER));
 }
 
 }  // namespace profiling

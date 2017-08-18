@@ -500,6 +500,11 @@ const char kMakeDefaultBrowser[]            = "make-default-browser";
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
+// Enables the out-of-process memory logging.
+const char kMemlog[] = "memlog";
+const char kMemlogModeAll[] = "all";
+const char kMemlogModeBrowser[] = "browser";
+
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
@@ -1052,13 +1057,6 @@ extern const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 // Uses the system default printer as the initially selected destination in
 // print preview, instead of the most recently used destination.
 const char kUseSystemDefaultPrinter[] = "use-system-default-printer";
-#endif
-
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-// Enables the out-of-process memory logging.
-const char kMemlog[] = "memlog";
-const char kMemlogModeAll[] = "all";
-const char kMemlogModeBrowser[] = "browser";
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {

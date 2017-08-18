@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/format_macros.h"
+#include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -285,8 +286,8 @@ void WriteMetadata(std::ostream& out) {
 
 // Output the OS info.
 #if defined(OS_CHROMEOS)
-  out << "\"os-name\": \"CrOS\",\n;
-      int32_t major_version;
+  out << "\"os-name\": \"CrOS\",\n";
+  int32_t major_version;
   int32_t minor_version;
   int32_t bugfix_version;
   // OperatingSystemVersion only has a POSIX implementation which returns the
@@ -338,9 +339,12 @@ void WriteMetadata(std::ostream& out) {
   // TODO(ajwong): This is the commandline for the profiling process and not the
   // target. This is completely the wrong thing, but for now it gets us going.
   // https://crbug.com/755382
-  out << "\"command_line\": \""
-      << base::CommandLine::ForCurrentProcess()->GetCommandLineString()
-      << "\",\n";
+  std::string command_line;
+  base::EscapeJSONString(
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString(), false,
+      &command_line);
+
+  out << "\"command_line\": \"" << command_line << "\",\n";
 
   out << kFakeOtherMetadata;
 

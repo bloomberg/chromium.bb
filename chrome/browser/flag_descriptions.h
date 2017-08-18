@@ -261,6 +261,11 @@ extern const char kEnableNightLightDescription[];
 extern const char kEnableOutOfBlinkCORSName[];
 extern const char kEnableOutOfBlinkCORSDescription[];
 
+extern const char kEnableOutOfProcessHeapProfilingName[];
+extern const char kEnableOutOfProcessHeapProfilingDescription[];
+extern const char kEnableOutOfProcessHeapProfilingModeBrowser[];
+extern const char kEnableOutOfProcessHeapProfilingModeAll[];
+
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
 
@@ -1569,13 +1574,6 @@ extern const char kPnaclSubzeroName[];
 extern const char kPnaclSubzeroDescription[];
 
 #endif  // !defined(DISABLE_NACL)
-
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-extern const char kEnableOutOfProcessHeapProfilingName[];
-extern const char kEnableOutOfProcessHeapProfilingDescription[];
-extern const char kEnableOutOfProcessHeapProfilingModeBrowser[];
-extern const char kEnableOutOfProcessHeapProfilingModeAll[];
-#endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 

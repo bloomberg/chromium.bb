@@ -713,7 +713,6 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
   // ChromeContentClient::OnServiceManagerConnected isn't called from the
   // browser process or utility processes. This is confusing. :(
   // For now, profiling in the the browser process is initialized by
@@ -721,5 +720,4 @@ void ChromeContentClient::OnServiceManagerConnected(
   // utility processes.
   // https://crbug.com/753106.
   memlog_client_.OnServiceManagerConnected(connection);
-#endif  // ENABLE_OOP_HEAP_PROFILING
 }

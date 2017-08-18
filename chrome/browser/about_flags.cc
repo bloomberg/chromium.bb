@@ -1058,14 +1058,12 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
      switches::kEnableHeapProfiling,
      switches::kEnableHeapProfilingTaskProfiler}};
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeBrowser,
      switches::kMemlog, switches::kMemlogModeBrowser},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAll,
      switches::kMemlog, switches::kMemlogModeAll}};
-#endif  // ENABLE_OOP_HEAP_PROFILING
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
@@ -3116,11 +3114,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableHeapProfilingChoices)},
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
     {"memlog", flag_descriptions::kEnableOutOfProcessHeapProfilingName,
      flag_descriptions::kEnableOutOfProcessHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableOutOfProcessHeapProfilingChoices)},
-#endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     {"show-cert-link", flag_descriptions::kShowCertLinkOnPageInfoName,

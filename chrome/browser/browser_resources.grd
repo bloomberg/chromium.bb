@@ -400,10 +400,8 @@
       <include name="IDR_ORIGIN_MOJO_JS" file="${root_gen_dir}\url\mojo\origin.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip"/>
       <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
-      <if expr="enable_oop_heap_profiling">
-        <include name="IDR_MEMORY_INTERNALS_HTML" file="resources/memory_internals.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MEMORY_INTERNALS_JS" file="resources/memory_internals.js" type="BINDATA" />
-      </if>
+      <include name="IDR_MEMORY_INTERNALS_HTML" file="resources\memory_internals.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MEMORY_INTERNALS_JS" file="resources\memory_internals.js" type="BINDATA" />
       <if expr="enable_plugins">
         <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json" type="BINDATA" />
       </if>

@@ -369,6 +369,8 @@ split_static_library("ui") {
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",
     "webui/media/media_engagement_ui.h",
+    "webui/memory_internals_ui.cc",
+    "webui/memory_internals_ui.h",
     "webui/metrics_handler.cc",
     "webui/metrics_handler.h",
     "webui/mojo_web_ui_controller.cc",
@@ -644,13 +646,6 @@ split_static_library("ui") {
       "//components/guest_view/browser",
       "//extensions/browser",
       "//extensions/strings",
-    ]
-  }
-
-  if (enable_oop_heap_profiling) {
-    sources += [
-      "webui/memory_internals_ui.cc",
-      "webui/memory_internals_ui.h",
     ]
   }
 

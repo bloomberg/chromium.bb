@@ -19,12 +19,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-// The .mojom include above may not be generated unless OOP heap profiling is
-// enabled.
-#if !BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-#error profiling_process_host.h should only be included with OOP heap profiling
-#endif
-
 namespace profiling {
 
 // Represents the browser side of the profiling process (//chrome/profiling).
