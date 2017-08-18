@@ -1620,25 +1620,10 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "2G.DefaultMedianKbps": "81",
-                        "2G.DefaultMedianRTTMsec": "1337",
-                        "3G.DefaultMedianKbps": "658",
-                        "3G.DefaultMedianRTTMsec": "297",
-                        "4G.DefaultMedianKbps": "1756",
-                        "4G.DefaultMedianRTTMsec": "159",
-                        "Bluetooth.DefaultMedianKbps": "449",
-                        "Bluetooth.DefaultMedianRTTMsec": "135",
-                        "Ethernet.DefaultMedianKbps": "3263",
-                        "Ethernet.DefaultMedianRTTMsec": "106",
-                        "HalfLifeSeconds": "60",
-                        "None.DefaultMedianKbps": "567",
-                        "None.DefaultMedianRTTMsec": "272",
-                        "Slow2G.ThresholdMedianHttpRTTMsec": "2000",
-                        "Unknown.DefaultMedianKbps": "1916",
-                        "Unknown.DefaultMedianRTTMsec": "121",
-                        "WiFi.DefaultMedianKbps": "2736",
-                        "WiFi.DefaultMedianRTTMsec": "168",
-                        "correlation_logging_probability": "0.001"
+                        "lower_bound_http_rtt_transport_rtt_multiplier": "1",
+                        "rssi_weight_per_signal_strength_level": "0.9",
+                        "throughput_min_requests_in_flight": "5",
+                        "upper_bound_http_rtt_transport_rtt_multiplier": "10"
                     }
                 }
             ]
