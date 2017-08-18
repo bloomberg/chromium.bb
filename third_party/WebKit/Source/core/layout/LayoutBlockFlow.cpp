@@ -3888,7 +3888,7 @@ void LayoutBlockFlow::AddIntrudingFloats(LayoutBlockFlow* prev,
   if (!prev->floating_objects_)
     return;
 
-  logical_left_offset += MarginLogicalLeft();
+  logical_left_offset += MarginLineLeft();
 
   const FloatingObjectSet& prev_set = prev->floating_objects_->Set();
   FloatingObjectSetIterator prev_end = prev_set.end();
