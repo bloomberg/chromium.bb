@@ -30,6 +30,7 @@ namespace chromeos {
 namespace {
 
 const char kTestPrinterId[] = "UUID-UUID-UUID-PRINTER";
+const char kTestPrinterId2[] = "UUID-UUID-UUID-PRINTR2";
 const char kTestUri[] = "ipps://printer.chromium.org/ipp/print";
 
 const char kLexJson[] = R"({
@@ -43,6 +44,19 @@ const char kLexJson[] = R"({
           "effective_model": "MS610de",
         },
       } )";
+
+const char kColorLaserJson[] = R"json({
+      "display_name": "Color Laser",
+      "description": "The printer next to the water cooler.",
+      "manufacturer": "Printer Manufacturer",
+      "model":"Color Laser 2004",
+      "uri":"ipps://print-server.intranet.example.com:443/ipp/cl2k4",
+      "uuid":"1c395fdb-5d93-4904-b246-b2c046e79d12",
+      "ppd_resource":{
+          "effective_manufacturer": "MakesPrinters",
+          "effective_model":"ColorLaser2k4"
+       }
+      })json";
 
 // Helper class to record observed events.
 class LoggingObserver : public SyncedPrintersManager::Observer {
@@ -166,20 +180,7 @@ TEST_F(SyncedPrintersManagerTest, RemovePrinter) {
 // Tests for policy printers
 
 TEST_F(SyncedPrintersManagerTest, EnterprisePrinters) {
-  std::string first_printer =
-      R"json({
-      "display_name": "Color Laser",
-      "description": "The printer next to the water cooler.",
-      "manufacturer": "Printer Manufacturer",
-      "model":"Color Laser 2004",
-      "uri":"ipps://print-server.intranet.example.com:443/ipp/cl2k4",
-      "uuid":"1c395fdb-5d93-4904-b246-b2c046e79d12",
-      "ppd_resource":{
-          "effective_manufacturer": "MakesPrinters",
-          "effective_model":"ColorLaser2k4"
-       }
-      })json";
-
+  std::string first_printer = kColorLaserJson;
   std::string second_printer = kLexJson;
 
   auto value = base::MakeUnique<base::ListValue>();
@@ -227,6 +228,41 @@ TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
   Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
   manager_->PrinterInstalled(printer);
   EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
+}
+
+// Test that PrinterInstalled configures a printer if it doesn't appear in the
+// enterprise or configured printer lists.
+TEST_F(SyncedPrintersManagerTest, PrinterInstalledConfiguresPrinter) {
+  // Set up an enterprise printer.
+  auto value = base::MakeUnique<base::ListValue>();
+  value->AppendString(kColorLaserJson);
+
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile_.GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
+
+  // Figure out the id of the enterprise printer that was just installed.
+  std::string enterprise_id = manager_->GetEnterprisePrinters().at(0).id();
+
+  Printer configured(kTestPrinterId, base::Time::Now());
+
+  // Install a Configured printer
+  manager_->UpdateConfiguredPrinter(configured);
+
+  // Installing the configured printer should *not* update it.
+  configured.set_display_name("display name");
+  manager_->PrinterInstalled(configured);
+  EXPECT_TRUE(manager_->GetPrinter(kTestPrinterId)->display_name().empty());
+
+  // Installing the enterprise printer should *not* generate a configuration
+  // update.
+  manager_->PrinterInstalled(Printer(enterprise_id, base::Time::Now()));
+  EXPECT_EQ(1U, manager_->GetConfiguredPrinters().size());
+
+  // Installing a printer we don't know about *should* generate a configuration
+  // update.
+  manager_->PrinterInstalled(Printer(kTestPrinterId2, base::Time::Now()));
+  EXPECT_EQ(2U, manager_->GetConfiguredPrinters().size());
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {

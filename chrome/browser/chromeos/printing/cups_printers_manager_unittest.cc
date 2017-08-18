@@ -442,6 +442,14 @@ TEST_F(CupsPrintersManagerTest, UpdateConfiguredPrinter) {
   ExpectPrintersInClassAre(
       CupsPrintersManager::kConfigured,
       {"Automatic", "Configured", "Discovered", "NewFangled"});
+
+  // Remove the automatic printer, make sure it ends up back in the automatic
+  // class after removal.
+  manager_->RemoveConfiguredPrinter("Automatic");
+  scoped_task_environment_.RunUntilIdle();
+  ExpectPrintersInClassAre(CupsPrintersManager::kConfigured,
+                           {"Configured", "Discovered", "NewFangled"});
+  ExpectPrintersInClassAre(CupsPrintersManager::kAutomatic, {"Automatic"});
 }
 
 // Test that GetPrinter() finds printers in any class, and returns null if
