@@ -301,7 +301,7 @@ TEST_F(NotificationViewMDTest, CreateOrUpdateTest) {
 
 TEST_F(NotificationViewMDTest, TestIconSizing) {
   // TODO(tetsui): Remove duplicated integer literal in CreateOrUpdateIconView.
-  const int kNotificationIconSize = 30;
+  const int kNotificationIconSize = 36;
 
   notification()->set_type(NOTIFICATION_TYPE_SIMPLE);
   ProportionalImageView* view = notification_view()->icon_view_;
