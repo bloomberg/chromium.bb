@@ -331,14 +331,13 @@ void MediaStreamDispatcher::BindMediaStreamDispatcherRequest(
   binding_.Bind(std::move(request));
 }
 
-mojom::MediaStreamDispatcherHost*
+const mojom::MediaStreamDispatcherHostPtr&
 MediaStreamDispatcher::GetMediaStreamDispatcherHost() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!dispatcher_host_) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &dispatcher_host_ptr_);
-    dispatcher_host_ = dispatcher_host_ptr_.get();
+        mojom::kBrowserServiceName, &dispatcher_host_);
   }
   return dispatcher_host_;
 };

@@ -16,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/child/child_process.h"
 #include "content/common/media/media_devices.h"
-#include "content/common/media/media_stream.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -27,6 +26,7 @@
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/mock_mojo_media_stream_dispatcher_host.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -114,27 +114,6 @@ const char kFakeAudioInputDeviceId2[] = "fake_audio_input 2";
 const char kFakeVideoInputDeviceId1[] = "fake_video_input 1";
 const char kFakeVideoInputDeviceId2[] = "fake_video_input 2";
 const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
-
-class MockMojoMediaStreamDispatcherHost
-    : public mojom::MediaStreamDispatcherHost {
- public:
-  MockMojoMediaStreamDispatcherHost() {}
-
-  MOCK_METHOD5(
-      GenerateStream,
-      void(int32_t, int32_t, const StreamControls&, const url::Origin&, bool));
-  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
-  MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
-  MOCK_METHOD5(OpenDevice,
-               void(int32_t,
-                    int32_t,
-                    const std::string&,
-                    MediaStreamType,
-                    const url::Origin&));
-  MOCK_METHOD1(CloseDevice, void(const std::string&));
-  MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
-  MOCK_METHOD1(StreamStarted, void(const std::string&));
-};
 
 class MockMediaDevicesDispatcherHost
     : public ::mojom::MediaDevicesDispatcherHost {
@@ -409,7 +388,9 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     ms_dispatcher_ = new MockMediaStreamDispatcher();
-    ms_dispatcher_->dispatcher_host_ = &mock_dispatcher_host_;
+    mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+        mock_dispatcher_host_.CreateInterfacePtrAndBind();
+    ms_dispatcher_->dispatcher_host_ = std::move(dispatcher_host);
     user_media_client_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
         std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));

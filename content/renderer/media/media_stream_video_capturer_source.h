@@ -63,10 +63,9 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnRunStateChanged(bool is_running);
 
-  mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
+  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
 
-  mojom::MediaStreamDispatcherHostPtr dispatcher_host_ptr_;
-  mojom::MediaStreamDispatcherHost* dispatcher_host_;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
 
   // The source that provides video frames.
   const std::unique_ptr<media::VideoCapturerSource> source_;

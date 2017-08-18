@@ -350,6 +350,8 @@ static_library("test_support") {
       "../renderer/media/mock_data_channel_impl.h",
       "../renderer/media/mock_media_stream_dispatcher.cc",
       "../renderer/media/mock_media_stream_dispatcher.h",
+      "../renderer/media/mock_mojo_media_stream_dispatcher_host.cc",
+      "../renderer/media/mock_mojo_media_stream_dispatcher_host.h",
       "../renderer/media/mock_peer_connection_impl.cc",
       "../renderer/media/mock_peer_connection_impl.h",
       "../renderer/media/mock_web_rtc_peer_connection_handler_client.cc",
