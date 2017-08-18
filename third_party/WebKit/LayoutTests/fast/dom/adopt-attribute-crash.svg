@@ -3,8 +3,8 @@
 <linearGradient xl:href="#tCF2" xlink:href="resources/smiley.png"></linearGradient>
 </svg>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+if (window.layoutTestController)
+    layoutTestController.dumpAsText();
 
 var element = document.querySelector('linearGradient');
 var attr1 = element.attributes[0];

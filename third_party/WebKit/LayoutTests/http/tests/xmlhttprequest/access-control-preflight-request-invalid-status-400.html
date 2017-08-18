@@ -7,9 +7,9 @@ function log(message) {
     document.getElementById("log").innerHTML += message + "<br>";
 }
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
+if (window.layoutTestController) {
+    layoutTestController.dumpAsText();
+    layoutTestController.waitUntilDone();
 }
 
 var xhr = new XMLHttpRequest();
@@ -17,13 +17,13 @@ xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-p
 xhr.setRequestHeader("X-Custom-Header", "PASS");
 xhr.onerror = function () {
     log("PASS");
-    if (window.testRunner)
-        testRunner.notifyDone();
+    if (window.layoutTestController)
+        layoutTestController.notifyDone();
 };
 xhr.onload = function () {
     log("FAIL");
-    if (window.testRunner)
-        testRunner.notifyDone();
+    if (window.layoutTestController)
+        layoutTestController.notifyDone();
 };
 xhr.send();
 </script>
