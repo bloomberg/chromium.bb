@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -202,7 +202,7 @@ public class WebappActivity extends SingleTabActivity {
 
         initializeUI(getSavedInstanceState());
         ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
-        initializeCompositorContent(new LayoutManagerDocument(getCompositorViewHolder()),
+        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()),
                 (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
                 controlContainer);
 

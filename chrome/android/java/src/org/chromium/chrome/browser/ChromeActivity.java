@@ -64,7 +64,6 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -1638,7 +1637,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * Initializes the {@link CompositorViewHolder} with the relevant content it needs to properly
      * show content on the screen.
-     * @param layoutManager             A {@link LayoutManagerDocument} instance.  This class is
+     * @param layoutManager             A {@link LayoutManager} instance.  This class is
      *                                  responsible for driving all high level screen content and
      *                                  determines which {@link Layout} is shown when.
      * @param urlBar                    The {@link View} representing the URL bar (must be
@@ -1647,9 +1646,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      *                                  {@link Layout}s.
      * @param controlContainer          A {@link ControlContainer} instance to draw.
      */
-    protected void initializeCompositorContent(
-            LayoutManagerDocument layoutManager, View urlBar, ViewGroup contentContainer,
-            ControlContainer controlContainer) {
+    protected void initializeCompositorContent(LayoutManager layoutManager, View urlBar,
+            ViewGroup contentContainer, ControlContainer controlContainer) {
         if (mContextualSearchManager != null) {
             mContextualSearchManager.initialize(contentContainer);
             mContextualSearchManager.setSearchContentViewDelegate(layoutManager);
@@ -1664,8 +1662,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this,
                 getTabContentManager(), contentContainer, mContextualSearchManager);
 
-        if (controlContainer != null
-                && DeviceClassManager.enableToolbarSwipe()) {
+        if (controlContainer != null && DeviceClassManager.enableToolbarSwipe()
+                && getCompositorViewHolder().getLayoutManager().getTopSwipeHandler() != null) {
             controlContainer.setSwipeHandler(
                     getCompositorViewHolder().getLayoutManager().getTopSwipeHandler());
         }
