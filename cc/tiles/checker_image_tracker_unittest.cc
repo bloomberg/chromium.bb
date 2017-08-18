@@ -84,8 +84,9 @@ class CheckerImageTrackerTest : public testing::Test,
   };
 
   void SetUpTracker(bool checker_images_enabled) {
+    size_t size_to_checker = 512 * 1024;
     checker_image_tracker_ = base::MakeUnique<CheckerImageTracker>(
-        &image_controller_, this, checker_images_enabled);
+        &image_controller_, this, checker_images_enabled, size_to_checker);
     checker_image_tracker_->SetMaxDecodePriorityAllowed(
         CheckerImageTracker::DecodeType::kPreDecode);
   }

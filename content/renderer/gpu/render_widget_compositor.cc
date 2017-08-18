@@ -366,6 +366,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.enable_checker_imaging =
       cmd.HasSwitch(cc::switches::kEnableCheckerImaging);
+#if defined(OS_ANDROID)
+  // We can use a more aggressive limit on Android since decodes tend to take
+  // longer on these devices.
+  settings.min_image_bytes_to_checker = 512 * 1024;  // 512kB
+#endif
 
   // TODO(danakj): This should not be a setting O_O; it should change when the
   // device scale factor on LayerTreeHost changes.

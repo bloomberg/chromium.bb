@@ -101,6 +101,10 @@ class CC_EXPORT LayerTreeSettings {
   // ready.
   bool enable_checker_imaging = false;
 
+  // The minimum size of an image we should considering decoding using the
+  // deferred path.
+  size_t min_image_bytes_to_checker = 1 * 1024 * 1024;  // 1MB.
+
   LayerTreeDebugState initial_debug_state;
 
   // Indicates that the LayerTreeHost should defer commits unless it has a valid
