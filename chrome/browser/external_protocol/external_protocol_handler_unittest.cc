@@ -61,7 +61,7 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   void BlockRequest() override {
-    ASSERT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
+    EXPECT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
                 os_state_ == shell_integration::IS_DEFAULT);
     has_blocked_ = true;
   }
@@ -71,16 +71,16 @@ class FakeExternalProtocolHandlerDelegate
                                  int routing_id,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {
-    ASSERT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
-    ASSERT_NE(os_state_, shell_integration::IS_DEFAULT);
+    EXPECT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
+    EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_prompted_ = true;
   }
 
   void LaunchUrlWithoutSecurityCheck(
       const GURL& url,
       content::WebContents* web_contents) override {
-    ASSERT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
-    ASSERT_NE(os_state_, shell_integration::IS_DEFAULT);
+    EXPECT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
+    EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
   }
 
@@ -126,15 +126,15 @@ class ExternalProtocolHandlerTest : public testing::Test {
     local_state_.reset();
   }
 
+  enum class Action { PROMPT, LAUNCH, BLOCK };
+
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               shell_integration::DefaultWebClientState os_state,
-              bool should_prompt,
-              bool should_launch,
-              bool should_block) {
+              Action expected_action) {
     GURL url("mailto:test@test.com");
-    ASSERT_FALSE(delegate_.has_prompted());
-    ASSERT_FALSE(delegate_.has_launched());
-    ASSERT_FALSE(delegate_.has_blocked());
+    EXPECT_FALSE(delegate_.has_prompted());
+    EXPECT_FALSE(delegate_.has_launched());
+    EXPECT_FALSE(delegate_.has_blocked());
 
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
@@ -143,9 +143,9 @@ class ExternalProtocolHandlerTest : public testing::Test {
     if (block_state != ExternalProtocolHandler::BLOCK)
       content::RunAllBlockingPoolTasksUntilIdle();
 
-    ASSERT_EQ(should_prompt, delegate_.has_prompted());
-    ASSERT_EQ(should_launch, delegate_.has_launched());
-    ASSERT_EQ(should_block, delegate_.has_blocked());
+    EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
+    EXPECT_EQ(expected_action == Action::LAUNCH, delegate_.has_launched());
+    EXPECT_EQ(expected_action == Action::BLOCK, delegate_.has_blocked());
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -157,93 +157,93 @@ class ExternalProtocolHandlerTest : public testing::Test {
 };
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeDefault) {
-  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::IS_DEFAULT, false,
-         false, true);
+  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::IS_DEFAULT,
+         Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeNotDefault) {
-  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::NOT_DEFAULT, false,
-         false, true);
+  DoTest(ExternalProtocolHandler::BLOCK, shell_integration::NOT_DEFAULT,
+         Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeBlockedChromeUnknown) {
   DoTest(ExternalProtocolHandler::BLOCK, shell_integration::UNKNOWN_DEFAULT,
-         false, false, true);
+         Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest,
        TestLaunchSchemeBlockedChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::BLOCK,
-         shell_integration::OTHER_MODE_IS_DEFAULT, false, false, true);
+         shell_integration::OTHER_MODE_IS_DEFAULT, Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeDefault) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK, shell_integration::IS_DEFAULT,
-         false, false, true);
+         Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeNotDefault) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK, shell_integration::NOT_DEFAULT,
-         false, true, false);
+         Action::LAUNCH);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeUnknown) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK,
-         shell_integration::UNKNOWN_DEFAULT, false, true, false);
+         shell_integration::UNKNOWN_DEFAULT, Action::LAUNCH);
 }
 
 TEST_F(ExternalProtocolHandlerTest,
        TestLaunchSchemeUnBlockedChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK,
-         shell_integration::OTHER_MODE_IS_DEFAULT, false, true, false);
+         shell_integration::OTHER_MODE_IS_DEFAULT, Action::LAUNCH);
 }
 
 TEST_F(ExternalProtocolHandlerTest,
        DISABLED_TestLaunchSchemeUnknownChromeDefault) {
-  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT, false,
-         false, true);
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT,
+         Action::BLOCK);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeNotDefault) {
-  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT, true,
-         false, false);
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
+         Action::PROMPT);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeUnknown) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::UNKNOWN_DEFAULT,
-         true, false, false);
+         Action::PROMPT);
 }
 
 TEST_F(ExternalProtocolHandlerTest,
        TestLaunchSchemeUnknownChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN,
-         shell_integration::OTHER_MODE_IS_DEFAULT, true, false, false);
+         shell_integration::OTHER_MODE_IS_DEFAULT, Action::PROMPT);
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", profile_.get());
-  ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
-  ASSERT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ASSERT_FALSE(
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("afp", profile_.get());
-  ASSERT_EQ(ExternalProtocolHandler::BLOCK, block_state);
-  ASSERT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ASSERT_FALSE(
+  EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultDontBlock) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("mailto", profile_.get());
-  ASSERT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
-  ASSERT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ASSERT_FALSE(
+  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
+  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
@@ -254,9 +254,9 @@ TEST_F(ExternalProtocolHandlerTest,
   local_state_->Set(prefs::kExcludedSchemes, prefs_local);
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", profile_.get());
-  ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
-  ASSERT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ASSERT_FALSE(
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
@@ -267,9 +267,9 @@ TEST_F(ExternalProtocolHandlerTest,
   local_state_->Set(prefs::kExcludedSchemes, prefs_local);
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", profile_.get());
-  ASSERT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
-  ASSERT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ASSERT_FALSE(
+  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
+  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
@@ -277,9 +277,9 @@ TEST_F(ExternalProtocolHandlerTest, TestClearProfileState) {
   base::DictionaryValue prefs;
   prefs.SetBoolean("tel", true);
   profile_->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
-  ASSERT_FALSE(
+  EXPECT_FALSE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
   ExternalProtocolHandler::ClearData(profile_.get());
-  ASSERT_TRUE(
+  EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
