@@ -12331,7 +12331,6 @@ crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-credential-a
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-credential-sync.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-data-saver.html [ Failure Timeout ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-headers-async.html [ Failure ]
-crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-headers-sync.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-request-header-lowercase.html [ Failure Timeout ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-request-header-sorted.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-preflight-request-headers-origin.html [ Failure ]
