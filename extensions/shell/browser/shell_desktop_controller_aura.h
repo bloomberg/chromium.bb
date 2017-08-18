@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_AURA_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_AURA_H_
 
+#include <map>
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -12,7 +13,9 @@
 #include "build/build_config.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/root_window_controller.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/display/display.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/power_manager_client.h"
@@ -21,9 +24,6 @@
 
 namespace aura {
 class WindowTreeHost;
-namespace client {
-class DefaultCaptureClient;
-}  // namespace client
 }  // namespace aura
 
 namespace base {
@@ -34,14 +34,18 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace display {
+class Screen;
+}  // namespace display
+
 namespace gfx {
 class Size;
 }  // namespace gfx
 
 namespace ui {
 class InputMethod;
-class UserActivityDetector;
 #if defined(OS_CHROMEOS)
+class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 #endif
 }  // namespace ui
@@ -54,10 +58,10 @@ class FocusController;
 
 namespace extensions {
 class AppWindowClient;
-class ShellScreen;
 
-// Simple desktop controller for app_shell. Sets up a root Aura window for the
-// primary display.
+// Simple desktop controller for app_shell. Associates each display with a
+// RootWindowController. Adds AppWindows by passing them to the nearest
+// RootWindowController.
 class ShellDesktopControllerAura
     : public DesktopController,
       public RootWindowController::DesktopDelegate,
@@ -72,9 +76,7 @@ class ShellDesktopControllerAura
 
   // DesktopController:
   void Run() override;
-  AppWindow* CreateAppWindow(content::BrowserContext* context,
-                             const Extension* extension) override;
-  void AddAppWindow(gfx::NativeWindow window) override;
+  void AddAppWindow(AppWindow* app_window, gfx::NativeWindow window) override;
   void CloseAppWindows() override;
 
   // RootWindowController::DesktopDelegate:
@@ -95,28 +97,29 @@ class ShellDesktopControllerAura
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key_event) override;
 
-  // Returns the RootWindowController's WindowTreeHost.
+  // Returns the WindowTreeHost for the primary display.
   aura::WindowTreeHost* GetPrimaryHost();
 
-  RootWindowController* root_window_controller() {
-    return root_window_controller_.get();
-  }
+  // Returns all root windows managed by RootWindowControllers.
+  aura::Window::Windows GetAllRootWindows();
 
  protected:
   // Creates and sets the aura clients and window manager stuff. Subclass may
   // initialize different sets of the clients.
   virtual void InitWindowManager();
 
-  // Tears down the window manager stuff set up in InitWindowManager().
+  // Removes all RootWindowControllers and tears down our aura clients.
   virtual void TearDownWindowManager();
 
  private:
-  // Creates the RootWindowController that hosts the app.
-  void CreateRootWindowController();
+  // Creates a RootWindowController to host AppWindows.
+  std::unique_ptr<RootWindowController> CreateRootWindowControllerForDisplay(
+      const display::Display& display);
 
-  // Finishes set-up using the RootWindowController.
-  void FinalizeWindowManager();
+  // Removes handlers from the RootWindowController so it can be destroyed.
+  void TearDownRootWindowController(RootWindowController* root);
 
+#if defined(OS_CHROMEOS)
   // Returns the desired dimensions of the RootWindowController from the command
   // line, or falls back to a default size.
   gfx::Size GetStartingWindowSize();
@@ -124,6 +127,7 @@ class ShellDesktopControllerAura
   // Returns the dimensions (in pixels) of the primary display, or an empty size
   // if the dimensions can't be determined or no display is connected.
   gfx::Size GetPrimaryDisplaySize();
+#endif
 
   content::BrowserContext* const browser_context_;
 
@@ -131,23 +135,23 @@ class ShellDesktopControllerAura
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
 #endif
 
-  std::unique_ptr<ShellScreen> screen_;
+  std::unique_ptr<display::Screen> screen_;
 
   std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;
 
-  // TODO(michaelpg): Support one RootWindowController per display.
-  std::unique_ptr<RootWindowController> root_window_controller_;
+  // Mapping from display ID to the RootWindowController created for that
+  // display.
+  std::map<int64_t, std::unique_ptr<RootWindowController>>
+      root_window_controllers_;
 
   std::unique_ptr<ui::InputMethod> input_method_;
-
-  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
   std::unique_ptr<wm::FocusController> focus_controller_;
 
   std::unique_ptr<wm::CursorManager> cursor_manager_;
 
-  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
 #if defined(OS_CHROMEOS)
+  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
 #endif
 

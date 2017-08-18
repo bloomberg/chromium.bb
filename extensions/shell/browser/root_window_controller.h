@@ -29,13 +29,13 @@ class Size;
 
 namespace extensions {
 class AppWindow;
-class Extension;
-class ShellScreen;
 
 // Owns and manages a WindowTreeHost for a display. New AppWindows will fill
 // the entire root window. Any additional AppWindows are simply drawn over the
 // existing AppWindow(s) and cannot be resized except by resizing the
 // WindowTreeHost.
+// TODO(michaelpg): Allow app windows to move between displays when bounds are
+// updated via the chrome.app.window API.
 class RootWindowController : public aura::client::WindowParentingClient,
                              public aura::WindowTreeHostObserver,
                              public AppWindowRegistry::Observer {
@@ -51,25 +51,21 @@ class RootWindowController : public aura::client::WindowParentingClient,
   };
 
   // RootWindowController initializes and displays a WindowTreeHost within
-  // |bounds|. |desktop_delegate| must outlive the RootWindowController.
+  // |bounds| (in physical pixels).
+  // |desktop_delegate| must outlive the RootWindowController.
   RootWindowController(DesktopDelegate* desktop_delegate,
-                       ShellScreen* screen,
                        const gfx::Rect& bounds,
                        content::BrowserContext* browser_context);
   ~RootWindowController() override;
 
-  // Creates a new app window and adds it to the desktop. The AppWindow deletes
-  // itself when its native window closes.
-  AppWindow* CreateAppWindow(content::BrowserContext* context,
-                             const Extension* extension);
-
   // Attaches a NativeAppWindow's window to our root window.
-  void AddAppWindow(gfx::NativeWindow window);
+  void AddAppWindow(AppWindow* app_window, gfx::NativeWindow window);
 
   // Closes the root window's AppWindows, resulting in their destruction.
   void CloseAppWindows();
 
   // Updates the size of the root window.
+  // TODO(michaelpg): Handle display events to adapt or close the window.
   void UpdateSize(const gfx::Size& size);
 
   aura::WindowTreeHost* host() { return host_.get(); }
@@ -88,7 +84,6 @@ class RootWindowController : public aura::client::WindowParentingClient,
   void DestroyWindowTreeHost();
 
   DesktopDelegate* const desktop_delegate_;
-  ShellScreen* const screen_;
 
   // The BrowserContext used to create AppWindows.
   content::BrowserContext* const browser_context_;

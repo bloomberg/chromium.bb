@@ -16,12 +16,10 @@
 #include "extensions/shell/browser/root_window_controller.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "extensions/shell/browser/shell_native_app_window_aura.h"
-#include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/test/shell_test_base_aura.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -29,18 +27,18 @@ namespace extensions {
 
 namespace {
 
+constexpr gfx::Rect kScreenBounds = gfx::Rect(0, 0, 800, 600);
+
 // A fake that creates and exposes RootWindowControllers.
 class FakeDesktopDelegate : public RootWindowController::DesktopDelegate {
  public:
-  explicit FakeDesktopDelegate(content::BrowserContext* browser_context,
-                               ShellScreen* screen,
-                               const gfx::Rect& bounds)
-      : browser_context_(browser_context), screen_(screen), bounds_(bounds) {}
+  explicit FakeDesktopDelegate(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
   ~FakeDesktopDelegate() override = default;
 
   RootWindowController* CreateRootWindowController() {
     root_window_controllers_.emplace_back(
-        base::MakeUnique<RootWindowController>(this, screen_, bounds_,
+        base::MakeUnique<RootWindowController>(this, kScreenBounds,
                                                browser_context_));
     return root_window_controllers_.back().get();
   }
@@ -63,8 +61,6 @@ class FakeDesktopDelegate : public RootWindowController::DesktopDelegate {
 
  private:
   content::BrowserContext* browser_context_;
-  ShellScreen* screen_;
-  const gfx::Rect bounds_;
   std::list<std::unique_ptr<RootWindowController>> root_window_controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopDelegate);
@@ -83,8 +79,6 @@ class TestAppWindowClient : public ShellAppWindowClient {
   }
 };
 
-constexpr gfx::Rect kScreenBounds = gfx::Rect(0, 0, 800, 600);
-
 }  // namespace
 
 class RootWindowControllerTest : public ShellTestBaseAura {
@@ -96,18 +90,14 @@ class RootWindowControllerTest : public ShellTestBaseAura {
     ShellTestBaseAura::SetUp();
 
     AppWindowClient::Set(&app_window_client_);
-    screen_ = base::MakeUnique<ShellScreen>(nullptr, kScreenBounds.size());
-    display::Screen::SetScreenInstance(screen_.get());
     extension_ = test_util::CreateEmptyExtension();
 
-    desktop_delegate_ = base::MakeUnique<FakeDesktopDelegate>(
-        browser_context(), screen_.get(), kScreenBounds);
+    desktop_delegate_ =
+        base::MakeUnique<FakeDesktopDelegate>(browser_context());
   }
 
   void TearDown() override {
     desktop_delegate_.reset();
-    display::Screen::SetScreenInstance(nullptr);
-    screen_.reset();
     AppWindowClient::Set(nullptr);
     ShellTestBaseAura::TearDown();
   }
@@ -116,29 +106,30 @@ class RootWindowControllerTest : public ShellTestBaseAura {
   // Creates and returns an AppWindow using the RootWindowController.
   AppWindow* CreateAppWindow(RootWindowController* root) {
     AppWindow* app_window =
-        root->CreateAppWindow(browser_context(), extension());
+        AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
     InitAppWindow(app_window);
-    root->AddAppWindow(app_window->GetNativeWindow());
+    root->AddAppWindow(app_window, app_window->GetNativeWindow());
     return app_window;
   }
 
-  // Checks that there are |num_expected| AppWindows open.
-  void ExpectNumAppWindows(RootWindowController* root, size_t expected) {
-    EXPECT_EQ(expected, root->host()->window()->children().size());
+  // Checks that there are |num_expected| AppWindows registered.
+  void ExpectNumAppWindows(size_t expected) {
     EXPECT_EQ(expected,
               AppWindowRegistry::Get(browser_context())->app_windows().size());
+  }
+
+  // Checks that |root|'s root window has |num_expected| child windows.
+  void ExpectNumChildWindows(size_t expected, RootWindowController* root) {
+    EXPECT_EQ(expected, root->host()->window()->children().size());
   }
 
   FakeDesktopDelegate* desktop_delegate() { return desktop_delegate_.get(); }
   const Extension* extension() { return extension_.get(); }
 
-  ShellScreen* screen() { return screen_.get(); }
-
  private:
   TestAppWindowClient app_window_client_;
 
   scoped_refptr<Extension> extension_;
-  std::unique_ptr<ShellScreen> screen_;
   std::unique_ptr<FakeDesktopDelegate> desktop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowControllerTest);
@@ -162,12 +153,9 @@ TEST_F(RootWindowControllerTest, FillLayout) {
 
   root_window_controller->host()->SetBoundsInPixels(gfx::Rect(0, 0, 500, 700));
 
-  AppWindow* app_window =
-      root_window_controller->CreateAppWindow(browser_context(), extension());
-  InitAppWindow(app_window);
-  root_window_controller->AddAppWindow(app_window->GetNativeWindow());
-
-  ExpectNumAppWindows(root_window_controller, 1u);
+  CreateAppWindow(root_window_controller);
+  ExpectNumAppWindows(1u);
+  ExpectNumChildWindows(1u, root_window_controller);
 
   // Test that reshaping the host window also resizes the child window, and
   // moving the host doesn't affect the child's position relative to the host.
@@ -192,17 +180,19 @@ TEST_F(RootWindowControllerTest, AppWindows) {
     AppWindow* middle_window = CreateAppWindow(root_window_controller);
     CreateAppWindow(root_window_controller);
 
-    ExpectNumAppWindows(root_window_controller, 3u);
+    ExpectNumAppWindows(3u);
+    ExpectNumChildWindows(3u, root_window_controller);
 
     // Close one window, which deletes |middle_window|.
     middle_window->GetBaseWindow()->Close();
   }
 
-  ExpectNumAppWindows(root_window_controller, 2u);
+  ExpectNumAppWindows(2u);
+  ExpectNumChildWindows(2u, root_window_controller);
 
   // Close all remaining windows.
   root_window_controller->CloseAppWindows();
-  ExpectNumAppWindows(root_window_controller, 0u);
+  ExpectNumAppWindows(0u);
 }
 
 // Tests that a second RootWindowController can be used independently of the
@@ -213,24 +203,25 @@ TEST_F(RootWindowControllerTest, Multiple) {
   // the test from failing on use-after-free.
   RootWindowController* longer_lived =
       desktop_delegate()->CreateRootWindowController();
+  AppWindow* longer_lived_app_window = CreateAppWindow(longer_lived);
+  ExpectNumAppWindows(1u);
+
   {
     RootWindowController* shorter_lived =
         desktop_delegate()->CreateRootWindowController();
-    {
-      AppWindow* app_window = CreateAppWindow(shorter_lived);
-      ExpectNumAppWindows(shorter_lived, 1u);
-      app_window->GetBaseWindow()->Close();  // Deletes the AppWindow.
-    }
-    ExpectNumAppWindows(shorter_lived, 0u);
-
-    // Simulate a close request to delete the controller.
-    shorter_lived->OnHostCloseRequested(shorter_lived->host());
+    AppWindow* app_window = CreateAppWindow(shorter_lived);
+    ExpectNumAppWindows(2u);
+    app_window->GetBaseWindow()->Close();  // Deletes the AppWindow.
   }
+  ExpectNumAppWindows(1u);
 
   // The still-living RootWindowController can still be used.
-  AppWindow* app_window = CreateAppWindow(longer_lived);
-  ExpectNumAppWindows(longer_lived, 1u);
-  app_window->GetBaseWindow()->Close();
+  AppWindow* longer_lived_app_window2 = CreateAppWindow(longer_lived);
+  ExpectNumAppWindows(2u);
+  longer_lived_app_window->GetBaseWindow()->Close();
+  ExpectNumAppWindows(1u);
+  longer_lived_app_window2->GetBaseWindow()->Close();
+  ExpectNumAppWindows(0u);
 }
 
 }  // namespace extensions

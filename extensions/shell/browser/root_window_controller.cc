@@ -7,11 +7,11 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
-#include "extensions/shell/browser/shell_screen.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -65,21 +65,13 @@ class FillLayout : public aura::LayoutManager {
 
 RootWindowController::RootWindowController(
     DesktopDelegate* desktop_delegate,
-    ShellScreen* screen,
     const gfx::Rect& bounds,
     content::BrowserContext* browser_context)
     : desktop_delegate_(desktop_delegate),
-      screen_(screen),
       browser_context_(browser_context) {
   DCHECK(desktop_delegate_);
-  DCHECK(screen_);
   DCHECK(browser_context_);
-  host_.reset(aura::WindowTreeHost::Create(
-      gfx::Rect(screen_->GetPrimaryDisplay().GetSizeInPixel())));
-
-  // The ShellScreen will resize the primary display when the WindowTreeHost is
-  // resized, so the display is always the size of the WindowTreeHost.
-  host_->AddObserver(screen_);
+  host_.reset(aura::WindowTreeHost::Create(bounds));
 
   host_->InitHost();
   host_->window()->Show();
@@ -98,24 +90,16 @@ RootWindowController::~RootWindowController() {
   DestroyWindowTreeHost();
 }
 
-AppWindow* RootWindowController::CreateAppWindow(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
-  // Only one BrowserContext should ever be used with this class.
-  DCHECK_EQ(browser_context_, browser_context);
-
+void RootWindowController::AddAppWindow(AppWindow* app_window,
+                                        gfx::NativeWindow window) {
   if (app_windows_.empty()) {
     // Start observing for OnAppWindowRemoved.
     AppWindowRegistry* registry = AppWindowRegistry::Get(browser_context_);
     registry->AddObserver(this);
   }
 
-  app_windows_.push_back(
-      new AppWindow(browser_context, new ShellAppDelegate, extension));
-  return app_windows_.back();
-}
+  app_windows_.push_back(app_window);
 
-void RootWindowController::AddAppWindow(gfx::NativeWindow window) {
   aura::Window* root_window = host_->window();
   root_window->AddChild(window);
 }
@@ -156,12 +140,15 @@ void RootWindowController::OnAppWindowRemoved(AppWindow* window) {
   // If we created this AppWindow, remove it from our list so we don't try to
   // close it again later.
   app_windows_.remove(window);
-  if (app_windows_.empty())
+
+  // Close when all AppWindows are closed.
+  if (app_windows_.empty()) {
     AppWindowRegistry::Get(browser_context_)->RemoveObserver(this);
+    desktop_delegate_->CloseRootWindowController(this);
+  }
 }
 
 void RootWindowController::DestroyWindowTreeHost() {
-  host_->RemoveObserver(screen_);
   host_->RemoveObserver(this);
   host_.reset();
 }

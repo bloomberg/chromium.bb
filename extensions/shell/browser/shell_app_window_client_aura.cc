@@ -11,12 +11,12 @@
 namespace extensions {
 
 NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
-      AppWindow* window,
-      AppWindow::CreateParams* params) {
+    AppWindow* window,
+    AppWindow::CreateParams* params) {
   ShellNativeAppWindow* native_app_window =
       new ShellNativeAppWindowAura(window, *params);
   DesktopController::instance()->AddAppWindow(
-      native_app_window->GetNativeWindow());
+      window, native_app_window->GetNativeWindow());
   return native_app_window;
 }
 

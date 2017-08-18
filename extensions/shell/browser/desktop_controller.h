@@ -7,13 +7,8 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 class AppWindow;
-class Extension;
 
 // DesktopController is an interface to construct the window environment in
 // extensions shell. ShellDesktopControllerAura provides a default
@@ -33,14 +28,9 @@ class DesktopController {
   // Runs the desktop and quits when finished.
   virtual void Run() = 0;
 
-  // Creates a new app window and adds it to the desktop. The desktop maintains
-  // ownership of the window. The window must be closed before |extension| is
-  // destroyed.
-  virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
-                                     const Extension* extension) = 0;
-
   // Attaches the window to our window hierarchy.
-  virtual void AddAppWindow(gfx::NativeWindow window) = 0;
+  virtual void AddAppWindow(AppWindow* app_window,
+                            gfx::NativeWindow window) = 0;
 
   // Closes and destroys the app windows.
   virtual void CloseAppWindows() = 0;

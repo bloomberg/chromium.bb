@@ -38,7 +38,7 @@ ShellScreen::ShellScreen(ShellDesktopControllerAura* desktop_controller,
 }
 
 ShellScreen::~ShellScreen() {
-  DCHECK(!desktop_controller_ || !desktop_controller_->root_window_controller())
+  DCHECK(!desktop_controller_ || !desktop_controller_->GetPrimaryHost())
       << "WindowTreeHost not closed before destroying ShellScreen";
 }
 

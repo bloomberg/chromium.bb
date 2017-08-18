@@ -4,27 +4,20 @@
 
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
+#include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
-#include "extensions/shell/browser/shell_screen.h"
-#include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -37,14 +30,18 @@
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
 #if defined(OS_CHROMEOS)
-
+#include "base/command_line.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "extensions/shell/browser/shell_screen.h"
+#include "extensions/shell/common/switches.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
-
+#else
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
@@ -108,8 +105,8 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
  private:
   // Sets |cursor| as the active cursor within Aura.
   void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
-    if (desktop_controller_->GetPrimaryHost())
-      desktop_controller_->GetPrimaryHost()->SetCursor(cursor);
+    for (auto* window : desktop_controller_->GetAllRootWindows())
+      window->GetHost()->SetCursor(cursor);
   }
 
   ShellDesktopControllerAura* desktop_controller_;  // Not owned.
@@ -169,28 +166,39 @@ void ShellDesktopControllerAura::Run() {
   run_loop_ = nullptr;
 }
 
-AppWindow* ShellDesktopControllerAura::CreateAppWindow(
-    content::BrowserContext* context,
-    const Extension* extension) {
-  return root_window_controller_->CreateAppWindow(context, extension);
-}
+void ShellDesktopControllerAura::AddAppWindow(AppWindow* app_window,
+                                              gfx::NativeWindow window) {
+  // Find the closest display to the specified bounds.
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayMatching(
+          window->GetBoundsInScreen());
 
-void ShellDesktopControllerAura::AddAppWindow(gfx::NativeWindow window) {
-  root_window_controller_->AddAppWindow(window);
+  // Create a RootWindowController for the display if necessary.
+  if (root_window_controllers_.count(display.id()) == 0) {
+    root_window_controllers_[display.id()] =
+        CreateRootWindowControllerForDisplay(display);
+  }
+  root_window_controllers_[display.id()]->AddAppWindow(app_window, window);
 }
 
 void ShellDesktopControllerAura::CloseAppWindows() {
-  root_window_controller_->CloseAppWindows();
+  for (auto& pair : root_window_controllers_)
+    pair.second->CloseAppWindows();
 }
 
 void ShellDesktopControllerAura::CloseRootWindowController(
     RootWindowController* root_window_controller) {
-  DCHECK_EQ(root_window_controller_.get(), root_window_controller);
+  const auto it = std::find_if(
+      root_window_controllers_.cbegin(), root_window_controllers_.cend(),
+      [root_window_controller](const auto& candidate_pair) {
+        return candidate_pair.second.get() == root_window_controller;
+      });
+  DCHECK(it != root_window_controllers_.end());
+  TearDownRootWindowController(it->second.get());
+  root_window_controllers_.erase(it);
 
-  // Just quit. The RootWindowController must stay alive until we begin
-  // TearDownWindowManager().
   // run_loop_ may be null in tests.
-  if (run_loop_)
+  if (run_loop_ && root_window_controllers_.empty())
     run_loop_->QuitWhenIdle();
 }
 
@@ -207,104 +215,127 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
 
 void ShellDesktopControllerAura::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& displays) {
-  gfx::Size size = GetPrimaryDisplaySize();
-  if (!size.IsEmpty())
-    root_window_controller_->UpdateSize(size);
+  for (const display::DisplaySnapshot* display_mode : displays) {
+    if (!display_mode->current_mode())
+      continue;
+    auto it = root_window_controllers_.find(display_mode->display_id());
+    if (it != root_window_controllers_.end())
+      it->second->UpdateSize(display_mode->current_mode()->size());
+  }
 }
 #endif
 
 ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
     ui::KeyEvent* key_event) {
-  DCHECK(root_window_controller_);
-
   // TODO(michaelpg): With multiple windows, determine which root window
   // triggered the event. See ash::WindowTreeHostManager for example.
   return GetPrimaryHost()->DispatchKeyEventPostIME(key_event);
 }
 
 aura::WindowTreeHost* ShellDesktopControllerAura::GetPrimaryHost() {
-  if (!root_window_controller_)
+  if (root_window_controllers_.empty())
     return nullptr;
-  return root_window_controller_->host();
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  if (root_window_controllers_.count(display.id()) == 1)
+    return root_window_controllers_[display.id()]->host();
+
+  // Fall back to an existing host.
+  return root_window_controllers_.begin()->second->host();
+}
+
+aura::Window::Windows ShellDesktopControllerAura::GetAllRootWindows() {
+  aura::Window::Windows windows;
+  for (auto& pair : root_window_controllers_)
+    windows.push_back(pair.second->host()->window());
+  return windows;
 }
 
 void ShellDesktopControllerAura::InitWindowManager() {
   root_window_event_filter_ = base::MakeUnique<wm::CompoundEventFilter>();
 
-  // Set up basic pieces of ui::wm.
-  screen_ = base::MakeUnique<ShellScreen>(this, GetStartingWindowSize());
-  display::Screen::SetScreenInstance(screen_.get());
+  // Screen may be initialized in tests.
+  if (!display::Screen::GetScreen()) {
+#if defined(OS_CHROMEOS)
+    screen_ = base::MakeUnique<ShellScreen>(this, GetStartingWindowSize());
+#else
+    // TODO(crbug.com/756680): Refactor DesktopScreen out of views.
+    screen_.reset(views::CreateDesktopScreen());
+#endif
+    display::Screen::SetScreenInstance(screen_.get());
+  }
 
   focus_controller_ =
       base::MakeUnique<wm::FocusController>(new AppsFocusRules());
-
   cursor_manager_ = base::MakeUnique<wm::CursorManager>(
       base::MakeUnique<ShellNativeCursorManager>(this));
+  cursor_manager_->SetDisplay(
+      display::Screen::GetScreen()->GetPrimaryDisplay());
+  cursor_manager_->SetCursor(ui::CursorType::kPointer);
 
-  user_activity_detector_ = base::MakeUnique<ui::UserActivityDetector>();
 #if defined(OS_CHROMEOS)
+  user_activity_detector_ = base::MakeUnique<ui::UserActivityDetector>();
   user_activity_notifier_ =
       base::MakeUnique<ui::UserActivityPowerManagerNotifier>(
           user_activity_detector_.get());
 #endif
-
-  // Create the root window, then set it up as our primary window.
-  CreateRootWindowController();
-  FinalizeWindowManager();
 }
 
-void ShellDesktopControllerAura::CreateRootWindowController() {
-  // TODO(michaelpg): Support creating a host for a secondary display.
-  root_window_controller_ = base::MakeUnique<RootWindowController>(
-      this, screen_.get(),
-      gfx::Rect(screen_->GetPrimaryDisplay().GetSizeInPixel()),
-      browser_context_);
+void ShellDesktopControllerAura::TearDownWindowManager() {
+  for (auto& pair : root_window_controllers_)
+    TearDownRootWindowController(pair.second.get());
+  root_window_controllers_.clear();
+
+#if defined(OS_CHROMEOS)
+  user_activity_notifier_.reset();
+  user_activity_detector_.reset();
+#endif
+  cursor_manager_.reset();
+  focus_controller_.reset();
+  if (screen_) {
+    display::Screen::SetScreenInstance(nullptr);
+    screen_.reset();
+  }
+  root_window_event_filter_.reset();
+}
+
+std::unique_ptr<RootWindowController>
+ShellDesktopControllerAura::CreateRootWindowControllerForDisplay(
+    const display::Display& display) {
+  // Convert display's bounds from DIP to physical pixels for WindowTreeHost.
+  gfx::Rect bounds(gfx::ScaleToFlooredPoint(display.bounds().origin(),
+                                            display.device_scale_factor()),
+                   display.GetSizeInPixel());
+  std::unique_ptr<RootWindowController> root_window_controller =
+      base::MakeUnique<RootWindowController>(this, bounds, browser_context_);
 
   // Initialize the root window with our clients.
-  aura::Window* root_window = root_window_controller_->host()->window();
+  aura::Window* root_window = root_window_controller->host()->window();
   root_window->AddPreTargetHandler(root_window_event_filter_.get());
   aura::client::SetFocusClient(root_window, focus_controller_.get());
   root_window->AddPreTargetHandler(focus_controller_.get());
   wm::SetActivationClient(root_window, focus_controller_.get());
   aura::client::SetCursorClient(root_window, cursor_manager_.get());
+
+  if (!input_method_) {
+    // Create an input method and become its delegate.
+    input_method_ = ui::CreateInputMethod(
+        this, root_window_controller->host()->GetAcceleratedWidget());
+    root_window_controller->host()->SetSharedInputMethod(input_method_.get());
+  }
+
+  return root_window_controller;
 }
 
-void ShellDesktopControllerAura::FinalizeWindowManager() {
-  // Create an input method and become its delegate.
-  input_method_ =
-      ui::CreateInputMethod(this, GetPrimaryHost()->GetAcceleratedWidget());
-
-  cursor_manager_->SetDisplay(screen_->GetPrimaryDisplay());
-  cursor_manager_->SetCursor(ui::CursorType::kPointer);
-
-  // TODO(michaelpg): Replace with a capture client supporting multiple
-  // WindowTreeHosts.
-  capture_client_ = base::MakeUnique<aura::client::DefaultCaptureClient>(
-      GetPrimaryHost()->window());
-}
-
-void ShellDesktopControllerAura::TearDownWindowManager() {
-  GetPrimaryHost()->window()->RemovePreTargetHandler(
+void ShellDesktopControllerAura::TearDownRootWindowController(
+    RootWindowController* root) {
+  root->host()->window()->RemovePreTargetHandler(
       root_window_event_filter_.get());
-  root_window_event_filter_.reset();
-
-  // The DefaultCaptureClient must be destroyed before the root window.
-  capture_client_.reset();
-
-  GetPrimaryHost()->window()->RemovePreTargetHandler(focus_controller_.get());
-  wm::SetActivationClient(GetPrimaryHost()->window(), nullptr);
-  root_window_controller_.reset();
-
-  focus_controller_.reset();
-  cursor_manager_.reset();
-#if defined(OS_CHROMEOS)
-  user_activity_notifier_.reset();
-#endif
-  user_activity_detector_.reset();
-  display::Screen::SetScreenInstance(nullptr);
-  screen_.reset();
+  root->host()->window()->RemovePreTargetHandler(focus_controller_.get());
 }
 
+#if defined(OS_CHROMEOS)
 gfx::Size ShellDesktopControllerAura::GetStartingWindowSize() {
   gfx::Size size;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -323,16 +354,14 @@ gfx::Size ShellDesktopControllerAura::GetStartingWindowSize() {
 }
 
 gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
-#if defined(OS_CHROMEOS)
   const display::DisplayConfigurator::DisplayStateList& displays =
       display_configurator_->cached_displays();
   if (displays.empty())
     return gfx::Size();
   const display::DisplayMode* mode = displays[0]->current_mode();
   return mode ? mode->size() : gfx::Size();
-#else
   return gfx::Size();
-#endif
 }
+#endif
 
 }  // namespace extensions

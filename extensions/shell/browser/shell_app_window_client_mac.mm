@@ -16,7 +16,7 @@ NativeAppWindow* ShellAppWindowClient::CreateNativeAppWindow(
   ShellNativeAppWindow* native_app_window =
       new ShellNativeAppWindowMac(window, *params);
   DesktopController::instance()->AddAppWindow(
-      native_app_window->GetNativeWindow());
+      window, native_app_window->GetNativeWindow());
   return native_app_window;
 }
 

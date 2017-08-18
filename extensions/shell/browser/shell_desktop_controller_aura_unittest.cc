@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/common/test_util.h"
@@ -25,6 +26,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_minimal.h"
+#include "ui/display/display.h"
+#include "ui/display/screen_base.h"
 #include "ui/events/event.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -56,11 +59,25 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
 #endif
 
     ShellTestBaseAura::SetUp();
-    controller_.reset(new ShellDesktopControllerAura(browser_context()));
+
+    // Set up a screen with 2 displays.
+    screen_ = base::MakeUnique<display::ScreenBase>();
+    display::Screen::SetScreenInstance(screen_.get());
+    screen_->display_list().AddDisplay(
+        display::Display(100, gfx::Rect(0, 0, 1920, 1080)),
+        display::DisplayList::Type::PRIMARY);
+    screen_->display_list().AddDisplay(
+        display::Display(200, gfx::Rect(1920, 1080, 800, 600)),
+        display::DisplayList::Type::NOT_PRIMARY);
+
+    controller_ =
+        base::MakeUnique<ShellDesktopControllerAura>(browser_context());
   }
 
   void TearDown() override {
     controller_.reset();
+    screen_.reset();
+    display::Screen::SetScreenInstance(nullptr);
     ShellTestBaseAura::TearDown();
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Shutdown();
@@ -68,6 +85,13 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
   }
 
  protected:
+  void CreateAppWindow(const Extension* extension, gfx::Rect bounds = {}) {
+    AppWindow* app_window =
+        AppWindowClient::Get()->CreateAppWindow(browser_context(), extension);
+    InitAppWindow(app_window, bounds);
+  }
+
+  std::unique_ptr<display::ScreenBase> screen_;
   std::unique_ptr<ShellDesktopControllerAura> controller_;
 
 #if defined(OS_CHROMEOS)
@@ -97,6 +121,9 @@ TEST_F(ShellDesktopControllerAuraTest, PowerButton) {
 // Tests that basic input events are handled and forwarded to the host.
 // TODO(michaelpg): Test other types of input.
 TEST_F(ShellDesktopControllerAuraTest, InputEvents) {
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+  CreateAppWindow(extension.get());
+
   ui::InputMethod* input_method =
       controller_->GetPrimaryHost()->GetInputMethod();
   ASSERT_TRUE(input_method);
@@ -125,10 +152,8 @@ TEST_F(ShellDesktopControllerAuraTest, CloseAppWindows) {
   const AppWindowRegistry* app_window_registry =
       AppWindowRegistry::Get(browser_context());
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  for (int i = 0; i < 3; i++) {
-    InitAppWindow(
-        controller_->CreateAppWindow(browser_context(), extension.get()));
-  }
+  for (int i = 0; i < 3; i++)
+    CreateAppWindow(extension.get());
   EXPECT_EQ(3u, app_window_registry->app_windows().size());
 
   controller_->CloseAppWindows();
@@ -140,15 +165,33 @@ TEST_F(ShellDesktopControllerAuraTest, OnAppWindowClose) {
   const AppWindowRegistry* app_window_registry =
       AppWindowRegistry::Get(browser_context());
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  for (int i = 0; i < 3; i++) {
-    InitAppWindow(
-        controller_->CreateAppWindow(browser_context(), extension.get()));
-  }
+  for (int i = 0; i < 3; i++)
+    CreateAppWindow(extension.get());
   EXPECT_EQ(3u, app_window_registry->app_windows().size());
 
   // Deleting the controller closes all app windows.
   controller_.reset();
   EXPECT_EQ(0u, app_window_registry->app_windows().size());
+}
+
+// Tests that multiple displays result in multiple root windows.
+TEST_F(ShellDesktopControllerAuraTest, MultipleDisplays) {
+  const AppWindowRegistry* app_window_registry =
+      AppWindowRegistry::Get(browser_context());
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+
+  // Create two app window on the primary display. Both should be hosted in the
+  // same RootWindowController.
+  CreateAppWindow(extension.get());
+  CreateAppWindow(extension.get());
+  EXPECT_EQ(2u, app_window_registry->app_windows().size());
+  EXPECT_EQ(1u, controller_->GetAllRootWindows().size());
+
+  // Create an app window near the secondary display, which should result in
+  // creating a RootWindowController for that display.
+  CreateAppWindow(extension.get(), gfx::Rect(1900, 1000, 600, 400));
+  EXPECT_EQ(3u, app_window_registry->app_windows().size());
+  EXPECT_EQ(2u, controller_->GetAllRootWindows().size());
 }
 
 }  // namespace extensions
