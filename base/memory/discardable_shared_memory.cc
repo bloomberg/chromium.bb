@@ -11,8 +11,11 @@
 #include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -433,6 +436,41 @@ bool DiscardableSharedMemory::IsMemoryLocked() const {
 
 void DiscardableSharedMemory::Close() {
   shared_memory_.Close();
+}
+
+void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
+    trace_event::MemoryAllocatorDump* local_segment_dump,
+    trace_event::ProcessMemoryDump* pmd,
+    bool is_owned) const {
+  auto* shared_memory_dump =
+      SharedMemoryTracker::GetOrCreateSharedMemoryDump(&shared_memory_, pmd);
+  // TODO(ssid): Clean this by a new api to inherit size of parent dump once the
+  // we send the full PMD and calculate sizes inside chrome, crbug.com/704203.
+  size_t resident_size = shared_memory_dump->GetSizeInternal();
+  local_segment_dump->AddScalar(trace_event::MemoryAllocatorDump::kNameSize,
+                                trace_event::MemoryAllocatorDump::kUnitsBytes,
+                                resident_size);
+
+  // By creating an edge with a higher |importance| (w.r.t non-owned dumps)
+  // the tracing UI will account the effective size of the segment to the
+  // client instead of manager.
+  // TODO(ssid): Define better constants in MemoryAllocatorDump for importance
+  // values, crbug.com/754793.
+  const int kImportance = is_owned ? 2 : 0;
+  auto shared_memory_guid = shared_memory_.mapped_id();
+  local_segment_dump->AddString("id", "hash", shared_memory_guid.ToString());
+
+  // Owned discardable segments which are allocated by client process, could
+  // have been cleared by the discardable manager. So, the segment need not
+  // exist in memory and weak dumps are created to indicate the UI that the dump
+  // should exist only if the manager also created the global dump edge.
+  if (is_owned) {
+    pmd->CreateWeakSharedMemoryOwnershipEdge(local_segment_dump->guid(),
+                                             shared_memory_guid, kImportance);
+  } else {
+    pmd->CreateSharedMemoryOwnershipEdge(local_segment_dump->guid(),
+                                         shared_memory_guid, kImportance);
+  }
 }
 
 Time DiscardableSharedMemory::Now() const {
