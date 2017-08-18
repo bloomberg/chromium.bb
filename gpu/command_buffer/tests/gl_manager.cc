@@ -248,11 +248,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 void GLManager::InitializeWithCommandLine(
     const GLManager::Options& options,
     const base::CommandLine& command_line) {
-  const int32_t kCommandBufferSize = 1024 * 1024;
-  const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
-  const size_t kMinTransferBufferSize = 1 * 256 * 1024;
-  const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-
+  const SharedMemoryLimits limits;
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
 
@@ -363,7 +359,7 @@ void GLManager::InitializeWithCommandLine(
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
-  ASSERT_TRUE(gles2_helper_->Initialize(kCommandBufferSize));
+  ASSERT_TRUE(gles2_helper_->Initialize(limits.command_buffer_size));
 
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
@@ -376,9 +372,7 @@ void GLManager::InitializeWithCommandLine(
       options.lose_context_when_out_of_memory, support_client_side_arrays,
       this));
 
-  ASSERT_TRUE(gles2_implementation_->Initialize(
-      kStartTransferBufferSize, kMinTransferBufferSize, kMaxTransferBufferSize,
-      SharedMemoryLimits::kNoLimit))
+  ASSERT_TRUE(gles2_implementation_->Initialize(limits))
       << "Could not init GLES2Implementation";
 
   MakeCurrent();

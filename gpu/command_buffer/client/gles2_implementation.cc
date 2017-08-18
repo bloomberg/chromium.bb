@@ -157,17 +157,7 @@ GLES2Implementation::GLES2Implementation(
       support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
       flush_id_(0),
-      max_extra_transfer_buffer_size_(
-#if defined(OS_NACL)
-          0),
-#else
-          // Do not use more than 5% of extra shared memory, and do not
-          // use any extra for memory contrained devices (<=1GB).
-          base::SysInfo::AmountOfPhysicalMemory() > 1024 * 1024 * 1024
-              ? base::saturated_cast<uint32_t>(
-                    base::SysInfo::AmountOfPhysicalMemory() / 20)
-              : 0),
-#endif
+      max_extra_transfer_buffer_size_(0),
       current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
@@ -197,38 +187,25 @@ GLES2Implementation::GLES2Implementation(
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 }
 
-bool GLES2Implementation::Initialize(
-    unsigned int starting_transfer_buffer_size,
-    unsigned int min_transfer_buffer_size,
-    unsigned int max_transfer_buffer_size,
-    unsigned int mapped_memory_limit) {
+bool GLES2Implementation::Initialize(const SharedMemoryLimits& limits) {
   TRACE_EVENT0("gpu", "GLES2Implementation::Initialize");
-  DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
-  DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
-  DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
+  DCHECK_GE(limits.start_transfer_buffer_size, limits.min_transfer_buffer_size);
+  DCHECK_LE(limits.start_transfer_buffer_size, limits.max_transfer_buffer_size);
+  DCHECK_GE(limits.min_transfer_buffer_size, kStartingOffset);
 
   gpu_control_->SetGpuControlClient(this);
 
   if (!transfer_buffer_->Initialize(
-      starting_transfer_buffer_size,
-      kStartingOffset,
-      min_transfer_buffer_size,
-      max_transfer_buffer_size,
-      kAlignment,
-      kSizeToFlush)) {
+          limits.start_transfer_buffer_size, kStartingOffset,
+          limits.min_transfer_buffer_size, limits.max_transfer_buffer_size,
+          kAlignment, kSizeToFlush)) {
     return false;
   }
 
-  mapped_memory_.reset(new MappedMemoryManager(helper_, mapped_memory_limit));
-
-  unsigned chunk_size = 2 * 1024 * 1024;
-  if (mapped_memory_limit != SharedMemoryLimits::kNoLimit) {
-    // Use smaller chunks if the client is very memory conscientious.
-    chunk_size = std::min(mapped_memory_limit / 4, chunk_size);
-    chunk_size = base::bits::Align(chunk_size,
-                                   FencedAllocator::kAllocAlignment);
-  }
-  mapped_memory_->set_chunk_size_multiple(chunk_size);
+  max_extra_transfer_buffer_size_ = limits.max_mapped_memory_for_texture_upload;
+  mapped_memory_.reset(
+      new MappedMemoryManager(helper_, limits.mapped_memory_reclaim_limit));
+  mapped_memory_->set_chunk_size_multiple(limits.mapped_memory_chunk_size);
 
   GLStaticState::ShaderPrecisionMap* shader_precisions =
       &static_state_.shader_precisions;

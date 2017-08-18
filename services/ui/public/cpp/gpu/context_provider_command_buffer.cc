@@ -284,10 +284,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
         attributes_.bind_generates_resource,
         attributes_.lose_context_when_out_of_memory, support_client_side_arrays,
         command_buffer_.get()));
-    if (!gles2_impl_->Initialize(memory_limits_.start_transfer_buffer_size,
-                                 memory_limits_.min_transfer_buffer_size,
-                                 memory_limits_.max_transfer_buffer_size,
-                                 memory_limits_.mapped_memory_reclaim_limit)) {
+    if (!gles2_impl_->Initialize(memory_limits_)) {
       DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
       return false;
     }
