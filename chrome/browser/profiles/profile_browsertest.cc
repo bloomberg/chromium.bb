@@ -160,7 +160,6 @@ void SpinThreads() {
   // Should not be necessary anymore once Profile deletion is fixed
   // (see crbug.com/88586).
   content::RunAllPendingInMessageLoop();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
 
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
