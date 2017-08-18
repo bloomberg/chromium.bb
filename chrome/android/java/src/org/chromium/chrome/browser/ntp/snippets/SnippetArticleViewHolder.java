@@ -16,10 +16,10 @@ import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
@@ -210,9 +210,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      */
     @LayoutRes
     private static int getLayout() {
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
-            return R.layout.content_suggestions_card_modern;
-        }
+        if (SuggestionsConfig.useModern()) return R.layout.content_suggestions_card_modern;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
             return R.layout.new_tab_page_snippets_card_large_thumbnail;
         }

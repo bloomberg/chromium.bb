@@ -12,11 +12,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -140,9 +140,8 @@ public class ActionItem extends OptionalLeaf {
 
         @LayoutRes
         private static int getLayout() {
-            return FeatureUtilities.isChromeHomeEnabled()
-                    ? R.layout.content_suggestions_action_card_modern
-                    : R.layout.new_tab_page_action_card;
+            return SuggestionsConfig.useModern() ? R.layout.content_suggestions_action_card_modern
+                                                 : R.layout.new_tab_page_action_card;
         }
     }
 }
