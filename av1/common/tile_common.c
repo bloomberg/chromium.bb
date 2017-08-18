@@ -13,16 +13,6 @@
 #include "av1/common/onyxc_int.h"
 #include "aom_dsp/aom_dsp_common.h"
 
-void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
-  tile->mi_row_start = row * cm->tile_height;
-  tile->mi_row_end = AOMMIN(tile->mi_row_start + cm->tile_height, cm->mi_rows);
-}
-
-void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
-  tile->mi_col_start = col * cm->tile_width;
-  tile->mi_col_end = AOMMIN(tile->mi_col_start + cm->tile_width, cm->mi_cols);
-}
-
 #if CONFIG_DEPENDENT_HORZTILES
 void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
                               int row, int col) {
@@ -44,6 +34,112 @@ void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
 #if CONFIG_DEPENDENT_HORZTILES
   av1_tile_set_tg_boundary(tile, cm, row, col);
 #endif
+}
+
+#if CONFIG_MAX_TILE
+
+// Find smallest k>=0 such that (blk_size << k) >= target
+static int tile_log2(int blk_size, int target) {
+  int k;
+  for (k = 0; (blk_size << k) < target; k++) {
+  }
+  return k;
+}
+
+void av1_get_tile_limits(AV1_COMMON *const cm) {
+  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+  int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
+  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+
+  cm->min_log2_tile_cols = tile_log2(MAX_TILE_WIDTH_SB, sb_cols);
+  cm->max_log2_tile_cols = tile_log2(1, sb_cols);
+  cm->max_log2_tile_rows = tile_log2(1, sb_rows);
+  cm->min_log2_tiles = tile_log2(MAX_TILE_AREA_SB, sb_cols * sb_rows);
+  cm->min_log2_tiles = AOMMAX(cm->min_log2_tiles, cm->min_log2_tile_cols);
+  // TODO(dominic.symes@arm.com):
+  // Add in levelMinLog2Tiles as a lower limit when levels are defined
+}
+
+void av1_calculate_tile_cols(AV1_COMMON *const cm) {
+  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+  int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
+  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+  int i;
+
+  if (cm->uniform_tile_spacing_flag) {
+    int start_sb;
+    int size_sb = ALIGN_POWER_OF_TWO(sb_cols, cm->log2_tile_cols);
+    size_sb >>= cm->log2_tile_cols;
+    assert(size_sb > 0);
+    for (i = 0, start_sb = 0; start_sb < sb_cols; i++) {
+      cm->tile_col_start_sb[i] = start_sb;
+      start_sb += size_sb;
+    }
+    cm->tile_cols = i;
+    cm->tile_col_start_sb[i] = start_sb;
+    cm->min_log2_tile_rows = AOMMAX(cm->min_log2_tiles - cm->log2_tile_cols, 0);
+  } else {
+    int max_tile_area_sb = (sb_rows * sb_cols);
+    int max_tile_width_sb = 0;
+    for (i = 0; i < cm->tile_cols; i++) {
+      int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
+      max_tile_width_sb = AOMMAX(max_tile_width_sb, size_sb);
+    }
+    if (cm->min_log2_tiles) {
+      max_tile_area_sb >>= (cm->min_log2_tiles + 1);
+    }
+    cm->max_tile_height_sb = AOMMAX(max_tile_area_sb / max_tile_width_sb, 1);
+  }
+}
+
+void av1_calculate_tile_rows(AV1_COMMON *const cm) {
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+  int start_sb, size_sb, i;
+
+  if (cm->uniform_tile_spacing_flag) {
+    size_sb = ALIGN_POWER_OF_TWO(sb_rows, cm->log2_tile_rows);
+    size_sb >>= cm->log2_tile_rows;
+    assert(size_sb > 0);
+    for (i = 0, start_sb = 0; start_sb < sb_rows; i++) {
+      cm->tile_row_start_sb[i] = start_sb;
+      start_sb += size_sb;
+    }
+    cm->tile_rows = i;
+    cm->tile_row_start_sb[i] = start_sb;
+  } else {
+    // No action
+  }
+}
+
+void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
+  assert(row < cm->tile_rows);
+  int mi_row_start = cm->tile_row_start_sb[row] << MAX_MIB_SIZE_LOG2;
+  int mi_row_end = cm->tile_row_start_sb[row + 1] << MAX_MIB_SIZE_LOG2;
+  tile->mi_row_start = mi_row_start;
+  tile->mi_row_end = AOMMIN(mi_row_end, cm->mi_rows);
+}
+
+void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
+  assert(col < cm->tile_cols);
+  int mi_col_start = cm->tile_col_start_sb[col] << MAX_MIB_SIZE_LOG2;
+  int mi_col_end = cm->tile_col_start_sb[col + 1] << MAX_MIB_SIZE_LOG2;
+  tile->mi_col_start = mi_col_start;
+  tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_cols);
+}
+
+#else
+
+void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
+  tile->mi_row_start = row * cm->tile_height;
+  tile->mi_row_end = AOMMIN(tile->mi_row_start + cm->tile_height, cm->mi_rows);
+}
+
+void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
+  tile->mi_col_start = col * cm->tile_width;
+  tile->mi_col_end = AOMMIN(tile->mi_col_start + cm->tile_width, cm->mi_cols);
 }
 
 #if CONFIG_EXT_PARTITION
@@ -74,6 +170,7 @@ void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
   *max_log2_tile_cols = get_max_log2_tile_cols(max_sb_cols);
   assert(*min_log2_tile_cols <= *max_log2_tile_cols);
 }
+#endif  // CONFIG_MAX_TILE
 
 void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
   MODE_INFO *mi = cm->mi;

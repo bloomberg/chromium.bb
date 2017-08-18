@@ -3601,6 +3601,72 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
   }
 }
 
+#if CONFIG_MAX_TILE
+
+// Same function as write_uniform but writing to uncompresses header wb
+static void wb_write_uniform(struct aom_write_bit_buffer *wb, int n, int v) {
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
+  if (l == 0) return;
+  if (v < m) {
+    aom_wb_write_literal(wb, v, l - 1);
+  } else {
+    aom_wb_write_literal(wb, m + ((v - m) >> 1), l - 1);
+    aom_wb_write_literal(wb, (v - m) & 1, 1);
+  }
+}
+
+static void write_tile_info_max_tile(const AV1_COMMON *const cm,
+                                     struct aom_write_bit_buffer *wb) {
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+  int width_sb = width_mi >> MAX_MIB_SIZE_LOG2;
+  int height_sb = height_mi >> MAX_MIB_SIZE_LOG2;
+  int size_sb, i;
+
+  aom_wb_write_bit(wb, cm->uniform_tile_spacing_flag);
+
+  if (cm->uniform_tile_spacing_flag) {
+    // Uniform spaced tiles with power-of-two number of rows and columns
+    // tile columns
+    int ones = cm->log2_tile_cols - cm->min_log2_tile_cols;
+    while (ones--) {
+      aom_wb_write_bit(wb, 1);
+    }
+    if (cm->log2_tile_cols < cm->max_log2_tile_cols) {
+      aom_wb_write_bit(wb, 0);
+    }
+
+    // rows
+    ones = cm->log2_tile_rows - cm->min_log2_tile_rows;
+    while (ones--) {
+      aom_wb_write_bit(wb, 1);
+    }
+    if (cm->log2_tile_rows < cm->max_log2_tile_rows) {
+      aom_wb_write_bit(wb, 0);
+    }
+  } else {
+    // Explicit tiles with configurable tile widths and heights
+    // columns
+    for (i = 0; i < cm->tile_cols; i++) {
+      size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
+      wb_write_uniform(wb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB), size_sb - 1);
+      width_sb -= size_sb;
+    }
+    assert(width_sb == 0);
+
+    // rows
+    for (i = 0; i < cm->tile_rows; i++) {
+      size_sb = cm->tile_row_start_sb[i + 1] - cm->tile_row_start_sb[i];
+      wb_write_uniform(wb, AOMMIN(height_sb, cm->max_tile_height_sb),
+                       size_sb - 1);
+      height_sb -= size_sb;
+    }
+    assert(height_sb == 0);
+  }
+}
+#endif
+
 static void write_tile_info(const AV1_COMMON *const cm,
                             struct aom_write_bit_buffer *wb) {
 #if CONFIG_EXT_TILE
@@ -3633,20 +3699,25 @@ static void write_tile_info(const AV1_COMMON *const cm,
 #endif  // CONFIG_EXT_PARTITION
   } else {
 #endif  // CONFIG_EXT_TILE
-    int min_log2_tile_cols, max_log2_tile_cols, ones;
-    av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
 
-    // columns
-    ones = cm->log2_tile_cols - min_log2_tile_cols;
-    while (ones--) aom_wb_write_bit(wb, 1);
+#if CONFIG_MAX_TILE
+    write_tile_info_max_tile(cm, wb);
+#else
+  int min_log2_tile_cols, max_log2_tile_cols, ones;
+  av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
 
-    if (cm->log2_tile_cols < max_log2_tile_cols) aom_wb_write_bit(wb, 0);
+  // columns
+  ones = cm->log2_tile_cols - min_log2_tile_cols;
+  while (ones--) aom_wb_write_bit(wb, 1);
 
-    // rows
-    aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
-    if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
+  if (cm->log2_tile_cols < max_log2_tile_cols) aom_wb_write_bit(wb, 0);
+
+  // rows
+  aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
+  if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
-    if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
+    if (cm->tile_rows > 1) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
 #endif
 #if CONFIG_EXT_TILE
   }

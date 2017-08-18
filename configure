@@ -342,6 +342,7 @@ EXPERIMENT_LIST="
     loopfilter_level
     no_frame_context_signaling
     txmg
+    max_tile
     hash_me
     colorspace_headers
     mfmv

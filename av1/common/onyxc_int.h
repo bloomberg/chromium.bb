@@ -415,10 +415,27 @@ typedef struct AV1Common {
 
   int error_resilient_mode;
 
-  int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_cols, tile_rows;
   int last_tile_cols, last_tile_rows;
-  int tile_width, tile_height;  // In MI units
+
+#if CONFIG_MAX_TILE
+  int min_log2_tile_cols;
+  int max_log2_tile_cols;
+  int max_log2_tile_rows;
+  int min_log2_tile_rows;
+  int min_log2_tiles;
+  int max_tile_width_sb;
+  int max_tile_height_sb;
+  int uniform_tile_spacing_flag;
+  int log2_tile_cols;                        // only valid for uniform tiles
+  int log2_tile_rows;                        // only valid for uniform tiles
+  int tile_col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
+  int tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
+#else
+  int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
+  int tile_width, tile_height;         // In MI units
+#endif  // CONFIG_MAX_TILE
+
 #if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;

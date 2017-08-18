@@ -305,8 +305,13 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #endif  // CONFIG_EXT_PARTITION
   } else {
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MAX_TILE
     RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
-    RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
+    RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
+#else   // CONFIG_MAX_TILE
+  RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
+  RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
+#endif  // CONFIG_MAX_TILE
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
