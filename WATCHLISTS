@@ -160,7 +160,7 @@
       'filepath': 'background_fetch',
     },
     'background_sync': {
-      'filepath': 'background_sync',
+      'filepath': '/background_sync/',
     },
     'banners': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/banners/|'\
@@ -625,7 +625,8 @@
                   'components/bubble/',
     },
     'cache_storage': {
-      'filepath': 'cache_storage',
+      'filepath': '/cache.storage/'
+                  '|/cachestorage/',
     },
     'cast': {
       'filepath': 'media/cast/'\
@@ -1163,7 +1164,7 @@
                   '|net/data/websocket/'
     },
     'netinfo': {
-      'filepath': 'netinfo',
+      'filepath': '/netinfo/',
     },
     'notifications': {
       'filepath': 'chrome/browser/extensions/api/notifications/|' \
@@ -1674,7 +1675,6 @@
                          'peter@chromium.org'],
     'background_sync': ['chasej+watch@chromium.org',
                         'iclelland+watch@chromium.org',
-                        'jkarlin+watch@chromium.org',
                         'peter@chromium.org'],
     'banners': ['dominickn+watch@chromium.org',
                 'hanxi+watch@chromium.org',
@@ -1897,8 +1897,7 @@
     'bubble': ['hcarmona+bubble@chromium.org',
                'groby+bubble@chromium.org',
                'rouslan+bubble@chromium.org'],
-    'cache_storage': ['jkarlin+watch@chromium.org',
-                      'nhiroki@chromium.org'],
+    'cache_storage': ['nhiroki@chromium.org'],
     'cast': ['amp+watch@chromium.org',
              'avayvod+watch@chromium.org',
              'imcheng+watch@chromium.org',
