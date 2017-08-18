@@ -32,12 +32,12 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   static scoped_refptr<SerialIoHandler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
 
-  typedef base::Callback<void(bool success)> OpenCompleteCallback;
+  typedef base::OnceCallback<void(bool success)> OpenCompleteCallback;
 
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
                     const mojom::SerialConnectionOptions& options,
-                    const OpenCompleteCallback& callback);
+                    OpenCompleteCallback callback);
 
 #if defined(OS_CHROMEOS)
   // Signals that the port has been opened.

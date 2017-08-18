@@ -97,8 +97,9 @@ void BattOrConnectionImpl::Open() {
   options.has_cts_flow_control = kBattOrHasCtsFlowControl;
 
   LogSerial("Opening serial connection.");
-  io_handler_->Open(path_, options,
-                    base::Bind(&BattOrConnectionImpl::OnOpened, AsWeakPtr()));
+  io_handler_->Open(
+      path_, options,
+      base::BindOnce(&BattOrConnectionImpl::OnOpened, AsWeakPtr()));
 }
 
 void BattOrConnectionImpl::OnOpened(bool success) {
@@ -146,7 +147,7 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
 
   pending_write_length_ = data.size();
   io_handler_->Write(base::MakeUnique<device::SendBuffer>(
-      data, base::Bind(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr())));
+      data, base::BindOnce(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr())));
 }
 
 void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
@@ -204,12 +205,9 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
   pending_read_buffer_ =
       make_scoped_refptr(new net::IOBuffer(max_bytes_to_read));
 
-  auto on_receive_buffer_filled =
-      base::Bind(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr());
-
   io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
-      on_receive_buffer_filled));
+      base::BindOnce(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr())));
 }
 
 void BattOrConnectionImpl::OnBytesRead(

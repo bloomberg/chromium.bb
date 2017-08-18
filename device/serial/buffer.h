@@ -43,9 +43,9 @@ class WritableBuffer {
 // initialized via a character vector.
 class SendBuffer : public device::ReadOnlyBuffer {
  public:
-  SendBuffer(const std::vector<char>& data,
-             const base::Callback<void(int, device::mojom::SerialSendError)>&
-                 callback);
+  using SendCompleteCallback =
+      base::OnceCallback<void(int, device::mojom::SerialSendError)>;
+  SendBuffer(const std::vector<char>& data, SendCompleteCallback callback);
   ~SendBuffer() override;
 
   const char* GetData() override;
@@ -55,18 +55,18 @@ class SendBuffer : public device::ReadOnlyBuffer {
 
  private:
   const std::vector<char> data_;
-  const base::Callback<void(int, device::mojom::SerialSendError)> callback_;
+  SendCompleteCallback callback_;
 };
 
 // A useful basic implementation of a WritableBuffer in which the data is
 // stored in a net::IOBuffer.
 class ReceiveBuffer : public device::WritableBuffer {
  public:
-  ReceiveBuffer(
-      scoped_refptr<net::IOBuffer> buffer,
-      uint32_t size,
-      const base::Callback<void(int, device::mojom::SerialReceiveError)>&
-          callback);
+  using ReceiveCompleteCallback =
+      base::OnceCallback<void(int, device::mojom::SerialReceiveError)>;
+  ReceiveBuffer(scoped_refptr<net::IOBuffer> buffer,
+                uint32_t size,
+                ReceiveCompleteCallback callback);
   ~ReceiveBuffer() override;
 
   char* GetData() override;
@@ -77,7 +77,7 @@ class ReceiveBuffer : public device::WritableBuffer {
  private:
   scoped_refptr<net::IOBuffer> buffer_;
   const uint32_t size_;
-  const base::Callback<void(int, device::mojom::SerialReceiveError)> callback_;
+  ReceiveCompleteCallback callback_;
 };
 
 }  // namespace device

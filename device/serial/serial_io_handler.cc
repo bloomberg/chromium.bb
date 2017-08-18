@@ -40,10 +40,10 @@ SerialIoHandler::~SerialIoHandler() {
 
 void SerialIoHandler::Open(const std::string& port,
                            const mojom::SerialConnectionOptions& options,
-                           const OpenCompleteCallback& callback) {
+                           OpenCompleteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(open_complete_.is_null());
-  open_complete_ = callback;
+  DCHECK(!open_complete_);
+  open_complete_ = std::move(callback);
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
   port_ = port;
@@ -57,7 +57,7 @@ void SerialIoHandler::Open(const std::string& port,
       base::ThreadTaskRunnerHandle::Get();
   ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &chromeos::PermissionBrokerClient::OpenPath, base::Unretained(client),
           port, base::Bind(&SerialIoHandler::OnPathOpened, this, task_runner),
           base::Bind(&SerialIoHandler::OnPathOpenError, this, task_runner)));
@@ -65,8 +65,8 @@ void SerialIoHandler::Open(const std::string& port,
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&SerialIoHandler::StartOpen, this, port,
-                 base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&SerialIoHandler::StartOpen, this, port,
+                     base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -78,7 +78,7 @@ void SerialIoHandler::OnPathOpened(
   base::File file(fd.release());
   io_thread_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&SerialIoHandler::FinishOpen, this, base::Passed(&file)));
+      base::BindOnce(&SerialIoHandler::FinishOpen, this, std::move(file)));
 }
 
 void SerialIoHandler::OnPathOpenError(
@@ -86,19 +86,17 @@ void SerialIoHandler::OnPathOpenError(
     const std::string& error_name,
     const std::string& error_message) {
   io_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&SerialIoHandler::ReportPathOpenError, this,
-                            error_name, error_message));
+      FROM_HERE, base::BindOnce(&SerialIoHandler::ReportPathOpenError, this,
+                                error_name, error_message));
 }
 
 void SerialIoHandler::ReportPathOpenError(const std::string& error_name,
                                           const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!open_complete_.is_null());
+  DCHECK(open_complete_);
   LOG(ERROR) << "Permission broker failed to open '" << port_
              << "': " << error_name << ": " << error_message;
-  OpenCompleteCallback callback = open_complete_;
-  open_complete_.Reset();
-  callback.Run(false);
+  std::move(open_complete_).Run(false);
 }
 
 #endif
@@ -126,7 +124,7 @@ void SerialIoHandler::MergeConnectionOptions(
 void SerialIoHandler::StartOpen(
     const std::string& port,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  DCHECK(!open_complete_.is_null());
+  DCHECK(open_complete_);
   DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialIoHandler to
   // validate the supplied path against the set of valid port names, and
@@ -138,20 +136,19 @@ void SerialIoHandler::StartOpen(
               base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
               base::File::FLAG_TERMINAL_DEVICE;
   base::File file(path, flags);
-  io_task_runner->PostTask(FROM_HERE, base::Bind(&SerialIoHandler::FinishOpen,
-                                                 this, base::Passed(&file)));
+  io_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SerialIoHandler::FinishOpen, this, std::move(file)));
 }
 
 void SerialIoHandler::FinishOpen(base::File file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!open_complete_.is_null());
-  OpenCompleteCallback callback = open_complete_;
-  open_complete_.Reset();
+  DCHECK(open_complete_);
 
   if (!file.IsValid()) {
     LOG(ERROR) << "Failed to open serial port: "
                << base::File::ErrorToString(file.error_details());
-    callback.Run(false);
+    std::move(open_complete_).Run(false);
     return;
   }
 
@@ -161,7 +158,7 @@ void SerialIoHandler::FinishOpen(base::File file) {
   if (!success)
     Close();
 
-  callback.Run(success);
+  std::move(open_complete_).Run(success);
 }
 
 bool SerialIoHandler::PostOpen() {
@@ -173,7 +170,7 @@ void SerialIoHandler::Close() {
     base::PostTaskWithTraits(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&SerialIoHandler::DoClose, Passed(std::move(file_))));
+        base::BindOnce(&SerialIoHandler::DoClose, std::move(file_)));
   }
 }
 
@@ -267,14 +264,14 @@ void SerialIoHandler::QueueReadCompleted(int bytes_read,
                                          mojom::SerialReceiveError error) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SerialIoHandler::ReadCompleted, this, bytes_read, error));
+      base::BindOnce(&SerialIoHandler::ReadCompleted, this, bytes_read, error));
 }
 
 void SerialIoHandler::QueueWriteCompleted(int bytes_written,
                                           mojom::SerialSendError error) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&SerialIoHandler::WriteCompleted, this, bytes_written, error));
+      FROM_HERE, base::BindOnce(&SerialIoHandler::WriteCompleted, this,
+                                bytes_written, error));
 }
 
 }  // namespace device
