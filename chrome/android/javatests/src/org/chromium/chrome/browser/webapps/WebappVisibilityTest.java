@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
@@ -49,88 +50,105 @@ public class WebappVisibilityTest {
         mUiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Type[] types = new Type[] {Type.WEBAPP, Type.WEBAPK};
-                for (Type type : types) {
-                    boolean isWebApk = (type == Type.WEBAPK);
-
-                    // Show browser controls for out-of-domain URLs.
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            "http://notoriginalwebsite.com", ConnectionSecurityLevel.NONE, type));
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            "http://otherwebsite.com", ConnectionSecurityLevel.NONE, type));
-
-                    // Do not show browser controls for subpaths.
-                    Assert.assertFalse(shouldShowBrowserControls(
-                            WEBAPP_URL, WEBAPP_URL, ConnectionSecurityLevel.NONE, type));
-                    Assert.assertFalse(shouldShowBrowserControls(WEBAPP_URL,
-                            WEBAPP_URL + "/things.html", ConnectionSecurityLevel.NONE, type));
-                    Assert.assertFalse(shouldShowBrowserControls(WEBAPP_URL,
-                            WEBAPP_URL + "/stuff.html", ConnectionSecurityLevel.NONE, type));
-
-                    // For WebAPKs but not Webapps show browser controls for subdomains and private
-                    // registries that are secure.
-                    Assert.assertEquals(isWebApk,
-                            shouldShowBrowserControls(WEBAPP_URL, "http://sub.originalwebsite.com",
-                                    ConnectionSecurityLevel.NONE, type));
-                    Assert.assertEquals(isWebApk,
-                            shouldShowBrowserControls(WEBAPP_URL,
-                                    "http://thing.originalwebsite.com",
-                                    ConnectionSecurityLevel.NONE, type));
-
-                    // Do not show browser controls when URL is not available yet.
-                    Assert.assertFalse(shouldShowBrowserControls(
-                            WEBAPP_URL, "", ConnectionSecurityLevel.NONE, type));
-
-                    // Show browser controls for non secure URLs.
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL,
-                            ConnectionSecurityLevel.SECURITY_WARNING, type));
-                    Assert.assertTrue(
-                            shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/things.html",
-                                    ConnectionSecurityLevel.SECURITY_WARNING, type));
-                    Assert.assertTrue(
-                            shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/stuff.html",
-                                    ConnectionSecurityLevel.SECURITY_WARNING, type));
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            WEBAPP_URL + "/stuff.html", ConnectionSecurityLevel.DANGEROUS, type));
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            WEBAPP_URL + "/things.html", ConnectionSecurityLevel.DANGEROUS, type));
-                    Assert.assertTrue(
-                            shouldShowBrowserControls(WEBAPP_URL, "http://sub.originalwebsite.com",
-                                    ConnectionSecurityLevel.SECURITY_WARNING, type));
-                    Assert.assertTrue(
-                            shouldShowBrowserControls(WEBAPP_URL, "http://notoriginalwebsite.com",
-                                    ConnectionSecurityLevel.DANGEROUS, type));
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            "http://otherwebsite.com", ConnectionSecurityLevel.DANGEROUS, type));
-                    Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL,
-                            "http://thing.originalwebsite.com", ConnectionSecurityLevel.DANGEROUS,
-                            type));
+                for (Type type : new Type[] {Type.WEBAPP, Type.WEBAPK}) {
+                    testCanAutoHideBrowserControls(type);
+                    for (int displayMode : new int[] {WebDisplayMode.STANDALONE,
+                            WebDisplayMode.FULLSCREEN, WebDisplayMode.MINIMAL_UI}) {
+                        testShouldShowBrowserControls(type, displayMode);
+                    }
                 }
             }
         });
     }
 
-    /**
-     * Calls either WebappBrowserControlsDelegate#shouldShowBrowserControls() or
-     * WebApkBrowserControlsDelegate#shouldShowBrowserControls() based on the type.
-     * @param webappStartUrlOrScopeUrl Web Manifest start URL when {@link type} == Type.WEBAPP and
-     *                                 the Web Manifest scope URL otherwise.
-     * @param url The current page URL
-     * @param type
-     */
-    private static boolean shouldShowBrowserControls(
-            String webappStartUrlOrScopeUrl, String url, int securityLevel, Type type) {
-        WebappBrowserControlsDelegate delegate;
-        WebappInfo info;
-        if (type == Type.WEBAPP) {
-            delegate = new WebappBrowserControlsDelegate(null, new Tab(0, false, null));
-            info = WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null, 0,
-                    0, 0, 0, 0, false /* isIconGenerated */, false /* forceNavigation */);
-        } else {
-            delegate = new WebApkBrowserControlsDelegate(null, new Tab(0, false, null));
-            info = WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null, 0, 0,
-                    0, 0, 0, "", 0, null, "", null, false /* forceNavigation */);
-        }
-        return delegate.shouldShowBrowserControls(info, url, securityLevel);
+    private static void testCanAutoHideBrowserControls(Type type) {
+        // Allow auto-hiding controls unless we're on a dangerous connection.
+        Assert.assertTrue(canAutoHideBrowserControls(type, ConnectionSecurityLevel.NONE));
+        Assert.assertTrue(canAutoHideBrowserControls(type, ConnectionSecurityLevel.SECURE));
+        Assert.assertTrue(canAutoHideBrowserControls(type, ConnectionSecurityLevel.EV_SECURE));
+        Assert.assertTrue(
+                canAutoHideBrowserControls(type, ConnectionSecurityLevel.HTTP_SHOW_WARNING));
+        Assert.assertFalse(canAutoHideBrowserControls(type, ConnectionSecurityLevel.DANGEROUS));
+        Assert.assertFalse(
+                canAutoHideBrowserControls(type, ConnectionSecurityLevel.SECURITY_WARNING));
+    }
+
+    private static void testShouldShowBrowserControls(Type type, int displayMode) {
+        // Show browser controls for out-of-domain URLs.
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://notoriginalwebsite.com",
+                ConnectionSecurityLevel.NONE, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://otherwebsite.com",
+                ConnectionSecurityLevel.NONE, type, displayMode));
+
+        // Do not show browser controls for subpaths, unless using Minimal-UI.
+        Assert.assertEquals(displayMode == WebDisplayMode.MINIMAL_UI,
+                shouldShowBrowserControls(
+                        WEBAPP_URL, WEBAPP_URL, ConnectionSecurityLevel.NONE, type, displayMode));
+        Assert.assertEquals(displayMode == WebDisplayMode.MINIMAL_UI,
+                shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/things.html",
+                        ConnectionSecurityLevel.NONE, type, displayMode));
+        Assert.assertEquals(displayMode == WebDisplayMode.MINIMAL_UI,
+                shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/stuff.html",
+                        ConnectionSecurityLevel.NONE, type, displayMode));
+
+        // For WebAPKs but not Webapps show browser controls for subdomains and private
+        // registries that are secure.
+        Assert.assertEquals(type == Type.WEBAPK || displayMode == WebDisplayMode.MINIMAL_UI,
+                shouldShowBrowserControls(WEBAPP_URL, "http://sub.originalwebsite.com",
+                        ConnectionSecurityLevel.NONE, type, displayMode));
+        Assert.assertEquals(type == Type.WEBAPK || displayMode == WebDisplayMode.MINIMAL_UI,
+                shouldShowBrowserControls(WEBAPP_URL, "http://thing.originalwebsite.com",
+                        ConnectionSecurityLevel.NONE, type, displayMode));
+
+        // Do not show browser controls when URL is not available yet.
+        Assert.assertFalse(shouldShowBrowserControls(
+                        WEBAPP_URL, "", ConnectionSecurityLevel.NONE, type, displayMode));
+
+        // Show browser controls for non secure URLs.
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL,
+                ConnectionSecurityLevel.SECURITY_WARNING, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/things.html",
+                ConnectionSecurityLevel.SECURITY_WARNING, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/stuff.html",
+                ConnectionSecurityLevel.SECURITY_WARNING, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/stuff.html",
+                ConnectionSecurityLevel.DANGEROUS, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, WEBAPP_URL + "/things.html",
+                ConnectionSecurityLevel.DANGEROUS, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://sub.originalwebsite.com",
+                ConnectionSecurityLevel.SECURITY_WARNING, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://notoriginalwebsite.com",
+                ConnectionSecurityLevel.DANGEROUS, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://otherwebsite.com",
+                ConnectionSecurityLevel.DANGEROUS, type, displayMode));
+        Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://thing.originalwebsite.com",
+                ConnectionSecurityLevel.DANGEROUS, type, displayMode));
+    }
+
+    private static boolean shouldShowBrowserControls(String webappStartUrlOrScopeUrl, String url,
+            int securityLevel, Type type, int displayMode) {
+        return createDelegate(type).shouldShowBrowserControls(
+                createWebappInfo(webappStartUrlOrScopeUrl, type, displayMode), url, securityLevel);
+    }
+
+    private static boolean canAutoHideBrowserControls(Type type, int securityLevel) {
+        return createDelegate(type).canAutoHideBrowserControls(securityLevel);
+    }
+
+    private static WebappBrowserControlsDelegate createDelegate(Type type) {
+        return type == Type.WEBAPP
+                ? new WebappBrowserControlsDelegate(null, new Tab(0, false, null))
+                : new WebApkBrowserControlsDelegate(null, new Tab(0, false, null));
+    }
+
+    private static WebappInfo createWebappInfo(
+            String webappStartUrlOrScopeUrl, Type type, int displayMode) {
+        return type == Type.WEBAPP
+                ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
+                          displayMode, 0, 0, 0, 0, false /* isIconGenerated */,
+                          false /* forceNavigation */)
+                : WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null,
+                          displayMode, 0, 0, 0, 0, "", 0, null, "", null,
+                          false /* forceNavigation */);
     }
 }

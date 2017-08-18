@@ -26,6 +26,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -35,10 +36,12 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -208,6 +211,29 @@ public class WebappNavigationTest {
         mActivityTestRule.waitUntilIdle(tabbedChrome);
         // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
         Assert.assertTrue(tabbedChrome.getActivityTab().getUrl().startsWith("https://www.google."));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    @RetryOnFailure
+    public void testOpenInChromeFromCustomMenuTabbedChrome() throws Exception {
+        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI));
+
+        WebappActivity activity = mActivityTestRule.getActivity();
+        WebContents webAppWebContents = activity.getActivityTab().getWebContents();
+
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), activity, R.id.open_in_browser_id);
+
+        ChromeTabbedActivity tabbedChrome = waitFor(ChromeTabbedActivity.class);
+        mActivityTestRule.waitUntilIdle(tabbedChrome);
+
+        Assert.assertEquals("Tab in tabbed activity should show the Web App page",
+                mTestServer.getURL(WEB_APP_PATH), tabbedChrome.getActivityTab().getUrl());
+        Assert.assertSame("WebContents should be reparented from Web App to tabbed Chrome",
+                webAppWebContents, tabbedChrome.getActivityTab().getWebContents());
     }
 
     @Test

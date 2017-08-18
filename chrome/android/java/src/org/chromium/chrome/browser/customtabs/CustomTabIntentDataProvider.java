@@ -53,7 +53,7 @@ public class CustomTabIntentDataProvider {
     @IntDef({
             CUSTOM_TABS_UI_TYPE_DEFAULT, CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER,
             CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST, CUSTOM_TABS_UI_TYPE_INFO_PAGE,
-            CUSTOM_TABS_UI_TYPE_READER_MODE,
+            CUSTOM_TABS_UI_TYPE_READER_MODE, CUSTOM_TABS_UI_TYPE_MINIMAL_UI_WEBAPP,
     })
     public @interface CustomTabsUiType {}
     public static final int CUSTOM_TABS_UI_TYPE_DEFAULT = 0;
@@ -61,6 +61,7 @@ public class CustomTabIntentDataProvider {
     public static final int CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST = 2;
     public static final int CUSTOM_TABS_UI_TYPE_INFO_PAGE = 3;
     public static final int CUSTOM_TABS_UI_TYPE_READER_MODE = 4;
+    public static final int CUSTOM_TABS_UI_TYPE_MINIMAL_UI_WEBAPP = 5;
 
     /**
      * Extra used to keep the caller alive. Its value is an Intent.
