@@ -4024,6 +4024,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_EXTENSION_NOTIFICATION_INSTALLED" desc="Notification message shown in the message center when an application is successfully install.">
           Successfully installed
         </message>
+        <message name="IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE" desc="Notification display source shown in the message center when an application is successfully installed.">
+          Extensions
+        </message>
       </if>
 
       <!-- Extension installed bubble -->
