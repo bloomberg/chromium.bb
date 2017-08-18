@@ -115,9 +115,6 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
 
   loader_->SetDefersLoading(Context().DefersLoading());
 
-  if (request.GetKeepalive())
-    keepalive_ = this;
-
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
     // reload with original request will be triggered in DidFail().
@@ -144,7 +141,6 @@ void ResourceLoader::Release(ResourceLoadScheduler::ReleaseOption option) {
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
-  keepalive_.Clear();
   loader_ = Context().CreateURLLoader(request);
   StartWith(request);
 }
@@ -601,7 +597,6 @@ void ResourceLoader::DidFinishLoading(double finish_time,
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
 
-  keepalive_.Clear();
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
   loader_.reset();
 
@@ -632,7 +627,6 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     return;
   }
 
-  keepalive_.Clear();
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
   loader_.reset();
 

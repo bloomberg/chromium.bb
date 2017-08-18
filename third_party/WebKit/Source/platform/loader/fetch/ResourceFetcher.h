@@ -30,6 +30,7 @@
 #include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/Timer.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -163,6 +164,10 @@ class PLATFORM_EXPORT ResourceFetcher
 
  private:
   friend class ResourceCacheValidationSuppressor;
+  enum class StopFetchingTarget {
+    kExcludingKeepaliveLoaders,
+    kIncludingKeepaliveLoaders,
+  };
 
   ResourceFetcher(FetchContext*, RefPtr<WebTaskRunner>);
 
@@ -200,6 +205,9 @@ class PLATFORM_EXPORT ResourceFetcher
                                   Resource::Type);
 
   bool IsImageResourceDisallowedToBeReused(const Resource&) const;
+
+  void StopFetchingInternal(StopFetchingTarget);
+  void StopFetchingIncludingKeepaliveLoaders(TimerBase*);
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
@@ -271,6 +279,10 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
+
+  // Timeout timer for keepalive requests.
+  TaskRunnerTimer<ResourceFetcher> keepalive_loaders_timer_;
+  SelfKeepAlive<ResourceFetcher> self_keep_alive_;
 
   // 28 bits left
   bool auto_load_images_ : 1;

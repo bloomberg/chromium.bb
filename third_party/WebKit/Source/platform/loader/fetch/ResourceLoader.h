@@ -33,7 +33,6 @@
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -160,10 +159,6 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
-
-  // Set when the request's "keepalive" is specified (e.g., for SendBeacon).
-  // https://fetch.spec.whatwg.org/#request-keepalive-flag
-  SelfKeepAlive<ResourceLoader> keepalive_;
 
   bool is_cache_aware_loading_activated_;
 };
