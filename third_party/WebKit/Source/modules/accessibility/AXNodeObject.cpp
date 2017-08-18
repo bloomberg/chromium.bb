@@ -2390,6 +2390,13 @@ bool AXNodeObject::CanHaveChildren() const {
   if (GetNode() && isHTMLMapElement(GetNode()))
     return false;
 
+  // Placeholder gets exposed as an attribute on the input accessibility node,
+  // so there's no need to add its text children.
+  if (GetElement() && GetElement()->ShadowPseudoId() ==
+                          AtomicString("-webkit-input-placeholder")) {
+    return false;
+  }
+
   AccessibilityRole role = RoleValue();
 
   // If an element has an ARIA role of presentation, we need to consider the

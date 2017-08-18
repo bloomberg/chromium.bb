@@ -4,5 +4,3 @@ rootWebArea name='Actions'
 ++++++sliderThumb
 ++++textField name='Test textfield' actions=setValue
 ++++++genericContainer
-++++++++staticText name='Test textfield'
-++++++++++inlineTextBox name='Test textfield'
