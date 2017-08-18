@@ -97,7 +97,7 @@ void AwDevToolsServer::Start() {
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      base::FilePath(), base::FilePath(), GetProduct(), GetUserAgent());
+      base::FilePath(), base::FilePath());
 }
 
 void AwDevToolsServer::Stop() {

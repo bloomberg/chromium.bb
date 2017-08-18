@@ -530,8 +530,8 @@ void DevToolsHttpHandler::OnJsonRequest(
     version.SetString("Protocol-Version",
                       DevToolsAgentHost::GetProtocolVersion());
     version.SetString("WebKit-Version", GetWebKitVersion());
-    version.SetString("Browser", product_name_);
-    version.SetString("User-Agent", user_agent_);
+    version.SetString("Browser", GetContentClient()->GetProduct());
+    version.SetString("User-Agent", GetContentClient()->GetUserAgent());
     version.SetString("V8-Version", V8_VERSION_STRING);
     std::string host = info.headers["host"];
     version.SetString(
@@ -750,14 +750,8 @@ DevToolsHttpHandler::DevToolsHttpHandler(
     std::unique_ptr<DevToolsSocketFactory> socket_factory,
     const std::string& frontend_url,
     const base::FilePath& output_directory,
-    const base::FilePath& debug_frontend_dir,
-    const std::string& product_name,
-    const std::string& user_agent)
-    : frontend_url_(frontend_url),
-      product_name_(product_name),
-      user_agent_(user_agent),
-      delegate_(delegate),
-      weak_factory_(this) {
+    const base::FilePath& debug_frontend_dir)
+    : frontend_url_(frontend_url), delegate_(delegate), weak_factory_(this) {
   browser_guid_ = delegate_->IsBrowserTargetDiscoverable()
                       ? kBrowserUrlPrefix
                       : base::StringPrintf("%s/%s", kBrowserUrlPrefix,

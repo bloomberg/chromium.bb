@@ -54,9 +54,7 @@ class DevToolsHttpHandler {
       std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       const base::FilePath& active_port_output_directory,
-      const base::FilePath& debug_frontend_dir,
-      const std::string& product_name,
-      const std::string& user_agent);
+      const base::FilePath& debug_frontend_dir);
   ~DevToolsHttpHandler();
 
  private:
@@ -111,8 +109,6 @@ class DevToolsHttpHandler {
   // The thread used by the devtools handler to run server socket.
   std::unique_ptr<base::Thread> thread_;
   std::string frontend_url_;
-  std::string product_name_;
-  std::string user_agent_;
   std::string browser_guid_;
   std::unique_ptr<ServerWrapper> server_wrapper_;
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
