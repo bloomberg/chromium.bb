@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninAndSyncView;
+import org.chromium.chrome.browser.signin.SigninPromoView;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -43,9 +45,7 @@ import java.util.List;
 public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private static final int MAX_NUM_FAVICONS_TO_CACHE = 256;
 
-    private enum ChildType {
-        NONE, DEFAULT_CONTENT, SYNC_PROMO
-    }
+    private enum ChildType { NONE, DEFAULT_CONTENT, NEW_PROMO, OLD_PROMO }
 
     private enum GroupType {
         CONTENT, VISIBLE_SEPARATOR, INVISIBLE_SEPARATOR
@@ -349,6 +349,80 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     }
 
     /**
+     * A base group for promos.
+     */
+    private abstract class PromoGroup extends Group {
+        @Override
+        GroupType getGroupType() {
+            return GroupType.CONTENT;
+        }
+
+        @Override
+        int getChildrenCount() {
+            return 1;
+        }
+
+        @Override
+        void configureGroupView(RecentTabsGroupView groupView, boolean isExpanded) {
+            groupView.configureForPromo(isExpanded);
+        }
+
+        @Override
+        void setCollapsed(boolean isCollapsed) {
+            mRecentTabsManager.setPromoCollapsed(isCollapsed);
+        }
+
+        @Override
+        boolean isCollapsed() {
+            return mRecentTabsManager.isPromoCollapsed();
+        }
+    }
+
+    /**
+     * A group containing the new signin promo.
+     */
+    class NewPromoGroup extends PromoGroup {
+        @Override
+        ChildType getChildType() {
+            return ChildType.NEW_PROMO;
+        }
+
+        @Override
+        View getChildView(
+                int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView =
+                        LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.signin_promo_view_recent_tabs, parent, false);
+            }
+            mRecentTabsManager.setupNewSigninPromo((SigninPromoView) convertView);
+            return convertView;
+        }
+    }
+
+    /**
+     * A group containing the old signin and sync promo.
+     */
+    class OldPromoGroup extends PromoGroup {
+        @Override
+        public ChildType getChildType() {
+            return ChildType.OLD_PROMO;
+        }
+
+        @Override
+        View getChildView(
+                int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = SigninAndSyncView.create(parent, null, SigninAccessPoint.RECENT_TABS);
+            }
+            if (!ChromeSigninController.get().isSignedIn()) {
+                RecordUserAction.record("Signin_Impression_FromRecentTabs");
+            }
+            return convertView;
+        }
+    }
+
+    /**
      * A group containing tabs that were recently closed on this device and a link to the history
      * page.
      */
@@ -509,62 +583,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         @Override
         public boolean isCollapsed() {
             return false;
-        }
-    }
-
-    /**
-     * A group containing the Sync Promo.
-     */
-    class SyncPromoGroup extends Group {
-        @Override
-        public GroupType getGroupType() {
-            return GroupType.CONTENT;
-        }
-
-        @Override
-        public ChildType getChildType() {
-            return ChildType.SYNC_PROMO;
-        }
-
-        @Override
-        public int getChildrenCount() {
-            return 1;
-        }
-
-        @Override
-        View getChildView(int childPosition, boolean isLastChild, View convertView,
-                ViewGroup parent) {
-            if (convertView == null) {
-                SigninAndSyncView.Listener listener = new SigninAndSyncView.Listener() {
-                    @Override
-                    public void onViewDismissed() {
-                        mRecentTabsManager.setSigninPromoDeclined();
-                        notifyDataSetChanged();
-                    }
-                };
-
-                convertView =
-                        SigninAndSyncView.create(parent, listener, SigninAccessPoint.RECENT_TABS);
-            }
-            if (!mRecentTabsManager.isSignedIn()) {
-                RecordUserAction.record("Signin_Impression_FromRecentTabs");
-            }
-            return convertView;
-        }
-
-        @Override
-        public void configureGroupView(RecentTabsGroupView groupView, boolean isExpanded) {
-            groupView.configureForSyncPromo(isExpanded);
-        }
-
-        @Override
-        public void setCollapsed(boolean isCollapsed) {
-            mRecentTabsManager.setSyncPromoCollapsed(isCollapsed);
-        }
-
-        @Override
-        public boolean isCollapsed() {
-            return mRecentTabsManager.isSyncPromoCollapsed();
         }
     }
 
@@ -761,8 +779,18 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             }
             addGroup(new ForeignSessionGroup(session));
         }
-        if (mRecentTabsManager.shouldDisplaySyncPromo()) {
-            addGroup(new SyncPromoGroup());
+
+        switch (mRecentTabsManager.getPromoType()) {
+            case RecentTabsManager.PromoState.PROMO_NONE:
+                break;
+            case RecentTabsManager.PromoState.PROMO_NEW:
+                addGroup(new NewPromoGroup());
+                break;
+            case RecentTabsManager.PromoState.PROMO_OLD:
+                addGroup(new OldPromoGroup());
+                break;
+            default:
+                assert false : "Unexpected value for promo type!";
         }
 
         // Add separator line after the recently closed tabs group.
