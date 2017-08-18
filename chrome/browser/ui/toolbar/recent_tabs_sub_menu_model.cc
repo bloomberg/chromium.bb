@@ -464,6 +464,10 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
           break;
         }
         case sessions::TabRestoreService::WINDOW: {
+          // TODO(chrisha): Make this menu entry better. When windows contain a
+          // single tab, display that tab directly in the menu. Otherwise, offer
+          // a hover over or alternative mechanism for seeing which tabs were in
+          // the window.
           BuildLocalWindowItem(
               entry->id,
               static_cast<const sessions::TabRestoreService::Window&>(*entry)

@@ -11,11 +11,16 @@
 #include "base/files/file_path.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
+#include "ui/base/ui_base_types.h"
 
 class GURL;
 
 namespace base {
 class CancelableTaskTracker;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace sessions {
@@ -39,7 +44,11 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Creates a LiveTabContext instance that is associated with |app_name|. May
   // return nullptr (e.g., if the embedder does not support LiveTabContext
   // functionality).
-  virtual LiveTabContext* CreateLiveTabContext(const std::string& app_name) = 0;
+  virtual LiveTabContext* CreateLiveTabContext(
+      const std::string& app_name,
+      const gfx::Rect& bounds,
+      ui::WindowShowState show_state,
+      const std::string& workspace) = 0;
 
   // Returns the LiveTabContext instance that is associated with
   // |tab|, or null if there is no such instance.

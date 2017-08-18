@@ -11,12 +11,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sessions/core/live_tab_context.h"
+#include "ui/base/ui_base_types.h"
 
 class Browser;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Rect;
 }
 
 // Implementation of LiveTabContext which uses an instance of
@@ -35,6 +40,10 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   sessions::LiveTab* GetLiveTabAt(int index) const override;
   sessions::LiveTab* GetActiveLiveTab() const override;
   bool IsTabPinned(int index) const override;
+  const gfx::Rect GetRestoredBounds() const override;
+  ui::WindowShowState GetRestoredState() const override;
+  std::string GetWorkspace() const override;
+
   sessions::LiveTab* AddRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
@@ -55,9 +64,11 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   void CloseTab() override;
 
   // see Browser::Create
-  static sessions::LiveTabContext* Create(
-      Profile* profile,
-      const std::string& app_name);
+  static sessions::LiveTabContext* Create(Profile* profile,
+                                          const std::string& app_name,
+                                          const gfx::Rect& bounds,
+                                          ui::WindowShowState show_state,
+                                          const std::string& workspace);
 
   // see browser::FindBrowserForWebContents
   static sessions::LiveTabContext* FindContextForWebContents(

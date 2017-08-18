@@ -10,6 +10,11 @@
 
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
+#include "ui/base/ui_base_types.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace sessions {
 
@@ -31,6 +36,9 @@ class SESSIONS_EXPORT LiveTabContext {
   virtual LiveTab* GetLiveTabAt(int index) const = 0;
   virtual LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
+  virtual const gfx::Rect GetRestoredBounds() const = 0;
+  virtual ui::WindowShowState GetRestoredState() const = 0;
+  virtual std::string GetWorkspace() const = 0;
 
   // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
   // true, as this data is not persisted, or if the platform does not provide

@@ -45,15 +45,16 @@ struct SelectedNavigationInTabPayload {
 // Payload used for the start of a window close. This is the old struct that is
 // used for backwards compat when it comes to reading the session files. This
 // struct must be POD, because we memset the contents.
-struct WindowPayload {
+struct WindowPayloadObsolete {
   SessionID::id_type window_id;
   int32_t selected_tab_index;
   int32_t num_tabs;
 };
 
-// Payload used for the start of a window close.  This struct must be POD,
-// because we memset the contents.
-struct WindowPayload2 : WindowPayload {
+// Payload used for the start of a window close. This struct must be POD,
+// because we memset the contents. This is an older version of the struct that
+// is used for backwards compat when it comes to reading the session files.
+struct WindowPayloadObsolete2 : WindowPayloadObsolete {
   int64_t timestamp;
 };
 
@@ -96,12 +97,13 @@ enum LoadState {
 //   is written.
 const SessionCommand::id_type kCommandUpdateTabNavigation = 1;
 const SessionCommand::id_type kCommandRestoredEntry = 2;
-const SessionCommand::id_type kCommandWindow = 3;
+const SessionCommand::id_type kCommandWindowDeprecated = 3;
 const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
 const SessionCommand::id_type kCommandPinnedState = 5;
 const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 const SessionCommand::id_type kCommandSetWindowAppName = 7;
 const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
+const SessionCommand::id_type kCommandWindow = 9;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -133,6 +135,202 @@ void RemoveEntryByID(
       }
     }
   }
+}
+
+// An enum that corresponds to ui::WindowShowStates. This needs to be kept in
+// sync with that enum. Moreover, the integer values corresponding to each show
+// state need to be stable in this enum (which is not necessarily true about the
+// ui::WindowShowStates enum).
+enum SerializedWindowShowState : int {
+  kSerializedShowStateInvalid = -1,
+  kSerializedShowStateDefault = 0,
+  kSerializedShowStateNormal = 1,
+  kSerializedShowStateMinimized = 2,
+  kSerializedShowStateMaximized = 3,
+  kSerializedShowStateInactive = 4,
+  kSerializedShowStateFullscreen = 5,
+};
+
+// Converts a window show state to an integer. This function needs to be kept
+// up to date with the SerializedWindowShowState enum.
+int SerializeWindowShowState(ui::WindowShowState show_state) {
+  switch (show_state) {
+    case ui::SHOW_STATE_DEFAULT:
+      return kSerializedShowStateDefault;
+    case ui::SHOW_STATE_NORMAL:
+      return kSerializedShowStateNormal;
+    case ui::SHOW_STATE_MINIMIZED:
+      return kSerializedShowStateMinimized;
+    case ui::SHOW_STATE_MAXIMIZED:
+      return kSerializedShowStateMaximized;
+    case ui::SHOW_STATE_INACTIVE:
+      return kSerializedShowStateInactive;
+    case ui::SHOW_STATE_FULLSCREEN:
+      return kSerializedShowStateFullscreen;
+    case ui::SHOW_STATE_END:
+      // This should never happen.
+      NOTREACHED();
+  }
+  return kSerializedShowStateInvalid;
+}
+
+// Converts an integer to a window show state. Returns true on success, false
+// otherwise. This function needs to be kept up to date with the
+// SerializedWindowShowState enum.
+bool DeserializeWindowShowState(int show_state_int,
+                                ui::WindowShowState* show_state) {
+  switch (static_cast<SerializedWindowShowState>(show_state_int)) {
+    case kSerializedShowStateDefault:
+      *show_state = ui::SHOW_STATE_DEFAULT;
+      return true;
+    case kSerializedShowStateNormal:
+      *show_state = ui::SHOW_STATE_NORMAL;
+      return true;
+    case kSerializedShowStateMinimized:
+      *show_state = ui::SHOW_STATE_MINIMIZED;
+      return true;
+    case kSerializedShowStateMaximized:
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+      return true;
+    case kSerializedShowStateInactive:
+      *show_state = ui::SHOW_STATE_INACTIVE;
+      return true;
+    case kSerializedShowStateFullscreen:
+      *show_state = ui::SHOW_STATE_FULLSCREEN;
+      return true;
+    case kSerializedShowStateInvalid:
+    default:
+      // Ignore unknown values. This could happen if the data is corrupt.
+      break;
+  }
+  return false;
+}
+
+// Superset of WindowPayloadObsolete/WindowPayloadObsolete2 and the other fields
+// that can appear in the Pickle version of a Window command. This is used as a
+// convenient destination for parsing the various fields in a WindowCommand.
+struct WindowCommandFields {
+  // Fields in WindowPayloadObsolete/WindowPayloadObsolete2/Pickle:
+  int window_id = 0;
+  int selected_tab_index = 0;
+  int num_tabs = 0;
+
+  // Fields in WindowPayloadObsolete2/Pickle:
+  int64_t timestamp = 0;
+
+  // Fields in Pickle:
+  // Completely zeroed position/dimensions indicates that defaults should be
+  // used.
+  int window_x = 0;
+  int window_y = 0;
+  int window_width = 0;
+  int window_height = 0;
+  int window_show_state = 0;
+  std::string workspace;
+};
+
+std::unique_ptr<sessions::TabRestoreService::Window>
+CreateWindowEntryFromCommand(const SessionCommand* command,
+                             SessionID::id_type* window_id,
+                             int32_t* num_tabs) {
+  WindowCommandFields fields;
+  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+
+  if (command->id() == kCommandWindow) {
+    std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
+    if (!pickle.get())
+      return nullptr;
+
+    base::PickleIterator it(*pickle);
+    WindowCommandFields parsed_fields;
+
+    // The first version of the pickle contains all of the following fields, so
+    // they should all successfully parse if the command is in fact a pickle.
+    if (!it.ReadInt(&parsed_fields.window_id) ||
+        !it.ReadInt(&parsed_fields.selected_tab_index) ||
+        !it.ReadInt(&parsed_fields.num_tabs) ||
+        !it.ReadInt64(&parsed_fields.timestamp) ||
+        !it.ReadInt(&parsed_fields.window_x) ||
+        !it.ReadInt(&parsed_fields.window_y) ||
+        !it.ReadInt(&parsed_fields.window_width) ||
+        !it.ReadInt(&parsed_fields.window_height) ||
+        !it.ReadInt(&parsed_fields.window_show_state) ||
+        !it.ReadString(&parsed_fields.workspace)) {
+      return nullptr;
+    }
+
+    // Validate the parameters. If the entire pickles parses but any of the
+    // validation fails assume corruption.
+    if (parsed_fields.window_width < 0 || parsed_fields.window_height < 0)
+      return nullptr;
+
+    // Deserialize the show state, validating it at the same time.
+    if (!DeserializeWindowShowState(parsed_fields.window_show_state,
+                                    &show_state)) {
+      return nullptr;
+    }
+
+    // New fields added to the pickle in later versions would be parsed and
+    // validated here.
+
+    // Copy the parsed data.
+    fields = parsed_fields;
+  } else if (command->id() == kCommandWindowDeprecated) {
+    // Old window commands can be in either of 2 formats. Try the newest first.
+    // These have distinct sizes so are easily distinguished.
+    bool parsed = false;
+
+    // Try to parse the command as a WindowPayloadObsolete2.
+    WindowPayloadObsolete2 payload2;
+    if (command->GetPayload(&payload2, sizeof(payload2))) {
+      fields.window_id = payload2.window_id;
+      fields.selected_tab_index = payload2.selected_tab_index;
+      fields.num_tabs = payload2.num_tabs;
+      fields.timestamp = payload2.timestamp;
+      parsed = true;
+    }
+
+    // Finally, try the oldest WindowPayloadObsolete type.
+    if (!parsed) {
+      WindowPayloadObsolete payload;
+      if (command->GetPayload(&payload, sizeof(payload))) {
+        fields.window_id = payload.window_id;
+        fields.selected_tab_index = payload.selected_tab_index;
+        fields.num_tabs = payload.num_tabs;
+        parsed = true;
+      }
+    }
+
+    // Fail if the old command wasn't able to be parsed in either of the
+    // deprecated formats.
+    if (!parsed)
+      return nullptr;
+  } else {
+    // This should never be called with anything other than a known window
+    // command ID.
+    NOTREACHED();
+  }
+
+  // Create the Window entry.
+  std::unique_ptr<sessions::TabRestoreService::Window> window =
+      base::MakeUnique<sessions::TabRestoreService::Window>();
+  window->selected_tab_index = fields.selected_tab_index;
+  window->timestamp = base::Time::FromInternalValue(fields.timestamp);
+  *window_id = static_cast<SessionID::id_type>(fields.window_id);
+  *num_tabs = fields.num_tabs;
+
+  // Set the bounds, show state and workspace if valid ones have been provided.
+  if (!(fields.window_x == 0 && fields.window_y == 0 &&
+        fields.window_width == 0 && fields.window_height == 0)) {
+    window->bounds.SetRect(fields.window_x, fields.window_y,
+                           fields.window_width, fields.window_height);
+    // |show_state| was converted from window->show_state earlier during
+    // validation.
+    window->show_state = show_state;
+    window->workspace = std::move(fields.workspace);
+  }
+
+  return window;
 }
 
 }  // namespace
@@ -186,9 +384,12 @@ class PersistentTabRestoreService::Delegate
 
   // Creates a window close command.
   static std::unique_ptr<SessionCommand> CreateWindowCommand(
-      SessionID::id_type id,
+      SessionID::id_type window_id,
       int selected_tab_index,
       int num_tabs,
+      const gfx::Rect& bounds,
+      ui::WindowShowState show_state,
+      const std::string& workspace,
       base::Time timestamp);
 
   // Creates a tab close command.
@@ -429,7 +630,8 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
 
   base_session_service_->ScheduleCommand(CreateWindowCommand(
       window.id, std::min(real_selected_tab, valid_tab_count - 1),
-      valid_tab_count, window.timestamp));
+      valid_tab_count, window.bounds, window.show_state, window.workspace,
+      window.timestamp));
 
   if (!window.app_name.empty()) {
     base_session_service_->ScheduleCommand(CreateSetWindowAppNameCommand(
@@ -498,22 +700,38 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 // static
 std::unique_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateWindowCommand(
-    SessionID::id_type id,
+    SessionID::id_type window_id,
     int selected_tab_index,
     int num_tabs,
+    const gfx::Rect& bounds,
+    ui::WindowShowState show_state,
+    const std::string& workspace,
     base::Time timestamp) {
-  WindowPayload2 payload;
-  // |timestamp| is aligned on a 16 byte boundary, leaving 4 bytes of
-  // uninitialized memory in the struct.
-  memset(&payload, 0, sizeof(payload));
-  payload.window_id = id;
-  payload.selected_tab_index = selected_tab_index;
-  payload.num_tabs = num_tabs;
-  payload.timestamp = timestamp.ToInternalValue();
+  static_assert(sizeof(SessionID::id_type) == sizeof(int),
+                "SessionID::id_type has changed size.");
+
+  // Use a pickle to handle marshaling as this command contains variable-length
+  // content.
+  base::Pickle pickle;
+  pickle.WriteInt(static_cast<int>(window_id));
+  pickle.WriteInt(selected_tab_index);
+  pickle.WriteInt(num_tabs);
+  pickle.WriteInt64(timestamp.ToInternalValue());
+  pickle.WriteInt(bounds.x());
+  pickle.WriteInt(bounds.y());
+  pickle.WriteInt(bounds.width());
+  pickle.WriteInt(bounds.height());
+  pickle.WriteInt(SerializeWindowShowState(show_state));
+
+  // Enforce a maximum length on workspace names. A common size is 32 bytes for
+  // GUIDs.
+  if (workspace.size() <= 128)
+    pickle.WriteString(workspace);
+  else
+    pickle.WriteString(std::string());
 
   std::unique_ptr<SessionCommand> command(
-      new SessionCommand(kCommandWindow, sizeof(payload)));
-  memcpy(command->contents(), &payload, sizeof(payload));
+      new SessionCommand(kCommandWindow, pickle));
   return command;
 }
 
@@ -618,43 +836,29 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
         break;
       }
 
+      case kCommandWindowDeprecated:
       case kCommandWindow: {
-        WindowPayload2 payload;
-        if (pending_window_tabs > 0) {
-          // Should never receive a window command while waiting for all the
-          // tabs in a window.
+        // Should never receive a window command while waiting for all the
+        // tabs in a window.
+        if (pending_window_tabs > 0)
           return;
-        }
 
-        // Try the new payload first
-        if (!command.GetPayload(&payload, sizeof(payload))) {
-          // then the old payload
-          WindowPayload old_payload;
-          if (!command.GetPayload(&old_payload, sizeof(old_payload)))
-            return;
-
-          // Copy the old payload data to the new payload.
-          payload.window_id = old_payload.window_id;
-          payload.selected_tab_index = old_payload.selected_tab_index;
-          payload.num_tabs = old_payload.num_tabs;
-          // Since we don't have a time use time 0 which is used to mark as an
-          // unknown timestamp.
-          payload.timestamp = 0;
-        }
-
-        pending_window_tabs = payload.num_tabs;
-        if (pending_window_tabs <= 0) {
-          // Should always have at least 1 tab. Likely indicates corruption.
+        // Try to parse the command, and silently skip if it fails.
+        int32_t num_tabs = 0;
+        SessionID::id_type window_id = 0;
+        std::unique_ptr<Window> window =
+            CreateWindowEntryFromCommand(&command, &window_id, &num_tabs);
+        if (!window)
           return;
-        }
 
-        RemoveEntryByID(payload.window_id, &entries);
+        // Should always have at least 1 tab. Likely indicates corruption.
+        pending_window_tabs = num_tabs;
+        if (pending_window_tabs <= 0)
+          return;
 
-        entries.push_back(base::MakeUnique<Window>());
-        current_window = static_cast<Window*>(entries.back().get());
-        current_window->selected_tab_index = payload.selected_tab_index;
-        current_window->timestamp =
-            base::Time::FromInternalValue(payload.timestamp);
+        RemoveEntryByID(window_id, &entries);
+        current_window = window.get();
+        entries.push_back(std::move(window));
         break;
       }
 
@@ -774,7 +978,6 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
 
   // If there was corruption some of the entries won't be valid.
   ValidateAndDeleteEmptyEntries(&entries);
-
   loaded_entries->swap(entries);
 }
 
@@ -827,6 +1030,9 @@ bool PersistentTabRestoreService::Delegate::ConvertSessionWindowToWindow(
       std::min(session_window->selected_tab_index,
                static_cast<int>(window->tabs.size() - 1));
   window->timestamp = base::Time();
+  window->bounds = session_window->bounds;
+  window->show_state = session_window->show_state;
+  window->workspace = session_window->workspace;
   return true;
 }
 
