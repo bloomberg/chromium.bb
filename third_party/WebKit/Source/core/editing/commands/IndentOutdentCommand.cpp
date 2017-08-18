@@ -367,12 +367,12 @@ void IndentOutdentCommand::OutdentRegion(
       SelectionInDOMTree::Builder builder;
       if (original_selection_end.IsNotNull())
         builder.Collapse(original_selection_end);
-      SetEndingSelection(builder.Build());
+      SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
     } else {
-      SetEndingSelection(
+      SetEndingSelection(SelectionForUndoStep::From(
           SelectionInDOMTree::Builder()
               .Collapse(end_of_current_paragraph.DeepEquivalent())
-              .Build());
+              .Build()));
     }
 
     OutdentParagraph(editing_state);
