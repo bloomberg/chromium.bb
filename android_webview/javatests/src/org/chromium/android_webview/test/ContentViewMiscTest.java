@@ -8,7 +8,15 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Proxy;
+import android.os.Looper;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
@@ -26,42 +34,48 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  *  Tests for ContentView methods that don't fall into any other category.
  */
-public class ContentViewMiscTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class ContentViewMiscTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private ContentViewCore mContentViewCore;
 
+    @Before
     @SuppressFBWarnings("URF_UNREAD_FIELD")
-    @Override
     public void setUp() throws Exception {
-        super.setUp();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
         mContentViewCore = testContainerView.getContentViewCore();
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testFindAddress() {
-        assertNull(AwContentsStatics.findAddress("This is some random text"));
+        Assert.assertNull(AwContentsStatics.findAddress("This is some random text"));
 
         String googleAddr = "1600 Amphitheatre Pkwy, Mountain View, CA 94043";
         String testString = "Address: " + googleAddr + "  in a string";
-        assertEquals(googleAddr, AwContentsStatics.findAddress(testString));
+        Assert.assertEquals(googleAddr, AwContentsStatics.findAddress(testString));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testEnableDisablePlatformNotifications() {
-
+        Looper.prepare();
         // Set up mock contexts to use with the listener
         final AtomicReference<BroadcastReceiver> receiverRef =
                 new AtomicReference<BroadcastReceiver>();
         final AdvancedMockContext appContext = new AdvancedMockContext(
-                getInstrumentation().getTargetContext().getApplicationContext()) {
+                InstrumentationRegistry.getInstrumentation()
+                        .getTargetContext()
+                        .getApplicationContext()) {
             @Override
             public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
                 receiverRef.set(receiver);
@@ -92,18 +106,18 @@ public class ContentViewMiscTest extends AwTestBase {
         // Make sure everything works by default
         proxyChanged.set(false);
         receiverRef.get().onReceive(appContext, intent);
-        assertEquals(true, proxyChanged.get());
+        Assert.assertEquals(true, proxyChanged.get());
 
         // Now disable platform notifications and make sure we don't notify
         // native code.
         proxyChanged.set(false);
         ContentViewStatics.disablePlatformNotifications();
         receiverRef.get().onReceive(appContext, intent);
-        assertEquals(false, proxyChanged.get());
+        Assert.assertEquals(false, proxyChanged.get());
 
         // Now re-enable notifications to make sure they work again.
         ContentViewStatics.enablePlatformNotifications();
         receiverRef.get().onReceive(appContext, intent);
-        assertEquals(true, proxyChanged.get());
+        Assert.assertEquals(true, proxyChanged.get());
     }
 }

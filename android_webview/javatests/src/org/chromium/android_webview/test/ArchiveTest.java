@@ -4,10 +4,16 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.support.test.filters.SmallTest;
 import android.webkit.ValueCallback;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
@@ -23,7 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Test suite for the WebView.saveWebArchive feature.
  */
-public class ArchiveTest extends AwTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class ArchiveTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private static final long TEST_TIMEOUT = scaleTimeout(20000L);
 
@@ -33,16 +42,15 @@ public class ArchiveTest extends AwTestBase {
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
     private AwTestContainerView mTestContainerView;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
+    @Before
+    public void setUp() throws Exception {
+        mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
     }
 
     private void deleteFile(String path) {
         File file = new File(path);
-        if (file.exists()) assertTrue(file.delete());
-        assertFalse(file.exists());
+        if (file.exists()) Assert.assertTrue(file.delete());
+        Assert.assertFalse(file.exists());
     }
 
     private void doArchiveTest(final AwContents contents, final String path,
@@ -69,40 +77,43 @@ public class ArchiveTest extends AwTestBase {
                 contents.saveWebArchive(path, autoName, callback);
             }
         });
-        assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
 
-        assertEquals(expectedPath, msgPath.get());
+        Assert.assertEquals(expectedPath, msgPath.get());
         if (expectedPath != null) {
             File file = new File(expectedPath);
-            assertTrue(file.exists());
-            assertTrue(file.length() > 0);
+            Assert.assertTrue(file.exists());
+            Assert.assertTrue(file.length() > 0);
         } else {
             // A path was provided, but the expected path was null. This means the save should have
             // failed, and so there shouldn't be a file path path.
             if (path != null) {
-                assertFalse(new File(path).exists());
+                Assert.assertFalse(new File(path).exists());
             }
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testExplicitGoodPath() throws Throwable {
-        final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
+        final String path = new File(mActivityTestRule.getActivity().getFilesDir(), "test.mht")
+                                    .getAbsolutePath();
         deleteFile(path);
 
-        loadUrlSync(mTestContainerView.getAwContents(),
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, path);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testAutoGoodPath() throws Throwable {
-        final String path = getActivity().getFilesDir().getAbsolutePath() + "/";
+        final String path = mActivityTestRule.getActivity().getFilesDir().getAbsolutePath() + "/";
 
-        loadUrlSync(mTestContainerView.getAwContents(),
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         // Create the first archive
@@ -118,6 +129,7 @@ public class ArchiveTest extends AwTestBase {
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -125,12 +137,13 @@ public class ArchiveTest extends AwTestBase {
         final String path = new File("/foo/bar/baz.mht").getAbsolutePath();
         deleteFile(path);
 
-        loadUrlSync(mTestContainerView.getAwContents(),
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, null);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -138,7 +151,7 @@ public class ArchiveTest extends AwTestBase {
         final String path = new File("/foo/bar/").getAbsolutePath();
         deleteFile(path);
 
-        loadUrlSync(mTestContainerView.getAwContents(),
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, true, null);
@@ -147,11 +160,12 @@ public class ArchiveTest extends AwTestBase {
     /**
      * Ensure passing a null callback to saveWebArchive doesn't cause a crash.
      */
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNullCallbackNullPath() throws Throwable {
-        loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                TEST_PAGE);
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         saveWebArchiveAndWaitForUiPost(null, false /* autoname */, null /* callback */);
     }
@@ -159,14 +173,16 @@ public class ArchiveTest extends AwTestBase {
     /**
      * Ensure passing a null callback to saveWebArchive doesn't cause a crash.
      */
+    @Test
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNullCallbackGoodPath() throws Throwable {
-        final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
+        final String path = new File(mActivityTestRule.getActivity().getFilesDir(), "test.mht")
+                .getAbsolutePath();
         deleteFile(path);
 
-        loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
-                TEST_PAGE);
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         saveWebArchiveAndWaitForUiPost(path, false /* autoname */, null /* callback */);
     }

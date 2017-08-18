@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview.test.util;
 
+import android.app.Instrumentation;
 import android.webkit.ValueCallback;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.android_webview.AwCookieManager;
-import org.chromium.android_webview.test.AwTestBase;
 import org.chromium.base.test.util.CallbackHelper;
 
 /**
@@ -64,15 +64,14 @@ public class CookieUtils {
     /**
      * Clear all cookies from the CookieManager synchronously then assert they are gone.
      * @param  cookieManager the CookieManager on which to remove cookies.
-     * @param  timeoutMs the timeout in milliseconds for waiting for the callback to complete.
      */
-    public static void clearCookies(AwTestBase awTestBase, final AwCookieManager cookieManager)
+    public static void clearCookies(Instrumentation instr, final AwCookieManager cookieManager)
             throws Throwable {
-
         final TestValueCallback<Boolean> callback = new TestValueCallback<Boolean>();
         int callCount = callback.getOnReceiveValueHelper().getCallCount();
 
-        awTestBase.runTestOnUiThread(() -> cookieManager.removeAllCookies(callback));
+        instr.runOnMainSync(
+                () -> cookieManager.removeAllCookies(callback));
         callback.getOnReceiveValueHelper().waitForCallback(callCount);
         Assert.assertFalse(cookieManager.hasCookies());
     }
