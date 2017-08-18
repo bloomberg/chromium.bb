@@ -92,6 +92,21 @@ source_set("cronet_sources") {
   }
 }
 
+source_set("cronet_sources_with_global_state") {
+  deps = [
+    "//base",
+    "//ios/web/public/global_state",
+  ]
+
+  public_deps = [
+    ":cronet_sources",
+  ]
+
+  sources = [
+    "ios_global_state_configuration.cc",
+  ]
+}
+
 # Tweak |info_plist| with current version and revision.
 tweak_info_plist("tweak_cronet_plist") {
   info_plist = "Info.plist"
@@ -102,7 +117,7 @@ ios_framework_bundle("cronet_framework") {
   info_plist_target = ":tweak_cronet_plist"
 
   deps = [
-    ":cronet_sources",
+    ":cronet_sources_with_global_state",
     "//base",
     "//net:net",
   ]
@@ -136,7 +151,7 @@ test("cronet_unittests") {
   ]
 
   deps = [
-    ":cronet_sources",
+    ":cronet_sources_with_global_state",
     "//base",
     "//base/test:test_support",
     "//components/cronet/ios/test:cronet_test",
@@ -161,6 +176,7 @@ action("generate_accept_languages") {
 static_library("cronet_static") {
   visibility = [ ":*" ]
   deps = _cronet_deps
+  deps += [ ":cronet_sources_with_global_state" ]
   sources = _cronet_sources
   public_configs = [ ":cronet_include_config" ]
   public_deps = [
