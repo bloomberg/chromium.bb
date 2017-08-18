@@ -72,19 +72,20 @@ void SensorProxy::Initialize() {
 void SensorProxy::AddConfiguration(SensorConfigurationPtr configuration,
                                    Function<void(bool)> callback) {
   DCHECK(IsInitialized());
-  auto wrapper = WTF::Bind(&SensorProxy::OnAddConfigurationCompleted,
-                           WrapWeakPersistent(this), configuration->frequency,
-                           WTF::Passed(std::move(callback)));
+  AddActiveFrequency(configuration->frequency);
   sensor_->AddConfiguration(std::move(configuration),
-                            ConvertToBaseCallback(std::move(wrapper)));
+                            ConvertToBaseCallback(std::move(callback)));
 }
 
 void SensorProxy::RemoveConfiguration(SensorConfigurationPtr configuration) {
   DCHECK(IsInitialized());
-  auto callback = WTF::Bind(&SensorProxy::OnRemoveConfigurationCompleted,
-                            WrapWeakPersistent(this), configuration->frequency);
-  sensor_->RemoveConfiguration(std::move(configuration),
-                               ConvertToBaseCallback(std::move(callback)));
+  RemoveActiveFrequency(configuration->frequency);
+  sensor_->RemoveConfiguration(
+      std::move(configuration),
+      ConvertToBaseCallback(WTF::Bind([](bool result) {
+        if (!result)
+          DVLOG(1) << "Failure at sensor configuration removal";
+      })));
 }
 
 void SensorProxy::Suspend() {
@@ -150,7 +151,7 @@ void SensorProxy::FocusedFrameChanged() {
 
 void SensorProxy::HandleSensorError() {
   state_ = kUninitialized;
-  frequencies_used_.clear();
+  active_frequencies_.clear();
   reading_ = device::SensorReading();
   UpdatePollingStatus();
 
@@ -225,41 +226,12 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
     observer->OnSensorInitialized();
 }
 
-void SensorProxy::OnAddConfigurationCompleted(double frequency,
-                                              Function<void(bool)> callback,
-                                              bool result) {
-  if (result) {
-    frequencies_used_.push_back(frequency);
-    std::sort(frequencies_used_.begin(), frequencies_used_.end());
-    UpdatePollingStatus();
-  }
-
-  callback(result);
-}
-
-void SensorProxy::OnRemoveConfigurationCompleted(double frequency,
-                                                 bool result) {
-  if (!result) {
-    DVLOG(1) << "Failure at sensor configuration removal";
-    return;
-  }
-
-  size_t index = frequencies_used_.Find(frequency);
-  if (index == kNotFound) {
-    // Could happen e.g. if 'handleSensorError' was called before.
-    return;
-  }
-
-  frequencies_used_.erase(index);
-  UpdatePollingStatus();
-}
-
 void SensorProxy::OnPollingTimer(TimerBase*) {
   UpdateSensorReading();
 }
 
 bool SensorProxy::ShouldProcessReadings() const {
-  return IsInitialized() && !suspended_ && !frequencies_used_.IsEmpty();
+  return IsInitialized() && !suspended_ && !active_frequencies_.IsEmpty();
 }
 
 void SensorProxy::UpdatePollingStatus() {
@@ -269,7 +241,7 @@ void SensorProxy::UpdatePollingStatus() {
   if (ShouldProcessReadings()) {
     // TODO(crbug/721297) : We need to find out an algorithm for resulting
     // polling frequency.
-    polling_timer_.StartRepeating(1 / frequencies_used_.back(),
+    polling_timer_.StartRepeating(1 / active_frequencies_.back(),
                                   BLINK_FROM_HERE);
   } else {
     polling_timer_.Stop();
@@ -291,6 +263,26 @@ void SensorProxy::UpdateSuspendedStatus() {
     Resume();
   else
     Suspend();
+}
+
+void SensorProxy::RemoveActiveFrequency(double frequency) {
+  // Can use binary search as active_frequencies_ is sorted.
+  auto it = std::lower_bound(active_frequencies_.begin(),
+                             active_frequencies_.end(), frequency);
+  if (it == active_frequencies_.end()) {
+    NOTREACHED() << "Attempted to remove active frequency which is not present "
+                    "in the list";
+    return;
+  }
+
+  active_frequencies_.erase(std::distance(active_frequencies_.begin(), it));
+  UpdatePollingStatus();
+}
+
+void SensorProxy::AddActiveFrequency(double frequency) {
+  active_frequencies_.push_back(frequency);
+  std::sort(active_frequencies_.begin(), active_frequencies_.end());
+  UpdatePollingStatus();
 }
 
 }  // namespace blink
