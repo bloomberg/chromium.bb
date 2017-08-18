@@ -232,6 +232,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   ContentSecurityPolicyCheckResult CheckContentSecurityPolicyFrameSrc(
       bool is_redirect);
 
+  // This enum describes the result of the credentialed subresource check for
+  // the request.
+  enum class CredentialedSubresourceCheckResult {
+    ALLOW_REQUEST,
+    BLOCK_REQUEST,
+  };
+
+  // Chrome blocks subresource requests whose URLs contain embedded credentials
+  // (e.g. `https://user:pass@example.com/page.html`). Check whether the
+  // request should be allowed to continue or should be blocked.
+  CredentialedSubresourceCheckResult CheckCredentialedSubresource() const;
+
   FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
