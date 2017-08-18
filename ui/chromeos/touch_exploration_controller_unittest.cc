@@ -738,6 +738,44 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
+// The press of the second tap in a double-tap must come within the double-tap
+// timeout, but the release of the second tap can come later.
+TEST_F(TouchExplorationTest, DoubleTapTiming) {
+  SwitchTouchExplorationMode(true);
+
+  // Tap at one location, and get a mouse move event.
+  gfx::Point tap_location(51, 52);
+  generator_->set_current_location(tap_location);
+  generator_->PressTouchId(1);
+  generator_->ReleaseTouchId(1);
+  AdvanceSimulatedTimePastTapDelay();
+  SetTouchAccessibilityAnchorPoint(tap_location);
+
+  std::vector<ui::LocatedEvent*> events =
+      GetCapturedLocatedEventsOfType(ui::ET_MOUSE_MOVED);
+  ASSERT_EQ(1U, events.size());
+
+  EXPECT_EQ(tap_location, events[0]->location());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_IS_SYNTHESIZED);
+  EXPECT_TRUE(events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ClearCapturedEvents();
+
+  // The press of the second tap happens in time, but the release does not.
+  gfx::Point double_tap_location(33, 34);
+  generator_->set_current_location(double_tap_location);
+  generator_->PressTouch();
+  generator_->ReleaseTouch();
+  simulated_clock_->Advance(gesture_detector_config_.double_tap_timeout -
+                            base::TimeDelta::FromMilliseconds(25));
+  generator_->PressTouch();
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(50));
+  generator_->ReleaseTouch();
+
+  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+  EXPECT_EQ(ui::AX_GESTURE_CLICK, delegate_.GetLastGesture());
+}
+
 // If an explicit anchor point is set during touch exploration, double-tapping
 // should send a 'click' gesture rather than a simulated touch press and
 // release.

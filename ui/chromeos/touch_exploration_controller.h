@@ -471,6 +471,11 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // A copy of the event from the initial touch press.
   std::unique_ptr<ui::TouchEvent> initial_press_;
 
+  // The timestamp of the most recent press event for the main touch id.
+  // The difference between this and |initial_press_->time_stamp| is that
+  // |most_recent_press_timestamp_| is reset in a double-tap.
+  base::TimeTicks most_recent_press_timestamp_;
+
   // Map of touch ids to where its initial press occurred relative to the
   // screen.
   std::map<int, gfx::Point> initial_presses_;

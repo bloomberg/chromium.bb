@@ -118,7 +118,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   // the timestamps of the events, and not dependent on the granularity of
   // the timer.
   if (tap_timer_.IsRunning() &&
-      touch_event.time_stamp() - initial_press_->time_stamp() >
+      touch_event.time_stamp() - most_recent_press_timestamp_ >
           gesture_detector_config_.double_tap_timeout) {
     tap_timer_.Stop();
     OnTapTimerFired();
@@ -127,7 +127,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   }
 
   if (passthrough_timer_.IsRunning() &&
-      event.time_stamp() - initial_press_->time_stamp() >
+      event.time_stamp() - most_recent_press_timestamp_ >
           gesture_detector_config_.longpress_timeout) {
     passthrough_timer_.Stop();
     OnPassthroughTimerFired();
@@ -289,6 +289,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
         &TouchExplorationController::OnPassthroughTimerFired);
   }
   initial_press_.reset(new TouchEvent(event));
+  most_recent_press_timestamp_ = initial_press_->time_stamp();
   initial_presses_[event.pointer_details().id] = event.location();
   last_unused_finger_event_.reset(new TouchEvent(event));
   StartTapTimer();
@@ -313,7 +314,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
       // Since the long press timer has been running, it is possible that the
       // tap timer has timed out before the long press timer has. If the tap
       // timer timeout has elapsed, then fire the tap timer.
-      if (event.time_stamp() - initial_press_->time_stamp() >
+      if (event.time_stamp() - most_recent_press_timestamp_ >
           gesture_detector_config_.double_tap_timeout) {
         OnTapTimerFired();
       }
@@ -344,7 +345,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
       return EVENT_REWRITE_DISCARD;
 
     float delta_time =
-        (event.time_stamp() - initial_press_->time_stamp()).InSecondsF();
+        (event.time_stamp() - most_recent_press_timestamp_).InSecondsF();
     float velocity = distance / delta_time;
     if (VLOG_on_) {
       VLOG(1) << "\n Delta time: " << delta_time << "\n Distance: " << distance
@@ -402,6 +403,7 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     // going, and the new one is set.
     tap_timer_.Stop();
     StartTapTimer();
+    most_recent_press_timestamp_ = event.time_stamp();
     // This will update as the finger moves before a possible passthrough, and
     // will determine the offset.
     last_unused_finger_event_.reset(new ui::TouchEvent(event));
@@ -480,6 +482,7 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     initial_press_.reset(new TouchEvent(event));
     StartTapTimer();
+    most_recent_press_timestamp_ = event.time_stamp();
     MaybeSendSimulatedTapInLiftActivationBounds(event);
     SET_STATE(TOUCH_EXPLORE_RELEASED);
   } else if (type != ui::ET_TOUCH_MOVED) {
