@@ -86,9 +86,9 @@ const AuthenticationViewConstants kCompactConstants = {
     14,  // SecondaryFontSize
     40,  // GradientHeight
     36,  // ButtonHeight
-    32,  // ButtonHorizontalPadding
+    16,  // ButtonHorizontalPadding
     16,  // ButtonTopPadding
-    32,  // ButtonBottomPadding
+    16,  // ButtonBottomPadding
 };
 
 const AuthenticationViewConstants kRegularConstants = {
@@ -96,8 +96,9 @@ const AuthenticationViewConstants kRegularConstants = {
     1.5 * kCompactConstants.SecondaryFontSize,
     kCompactConstants.GradientHeight,
     1.5 * kCompactConstants.ButtonHeight,
-    kCompactConstants.ButtonHorizontalPadding,
-    kCompactConstants.ButtonBottomPadding,
+    32,
+    32,
+    32,
 };
 
 enum AuthenticationState {
