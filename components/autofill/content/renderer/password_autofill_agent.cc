@@ -1807,14 +1807,14 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     ProvisionallySaveRestriction restriction) {
   if (!password_form)
     return;
-  bool has_no_password = password_form->password_value.empty() &&
-                         password_form->new_password_value.empty();
-  if (restriction == RESTRICTION_NON_EMPTY_PASSWORD && has_no_password)
+  bool has_password = !password_form->password_value.empty() ||
+                      !password_form->new_password_value.empty();
+  if (restriction == RESTRICTION_NON_EMPTY_PASSWORD && !has_password)
     return;
 
   DCHECK(password_form && (!form.IsNull() || !input.IsNull()));
   provisionally_saved_form_.Set(std::move(password_form), form, input);
-  if (!has_no_password) {
+  if (has_password) {
     GetPasswordManagerDriver()->ShowManualFallbackForSaving(
         provisionally_saved_form_.password_form());
   } else {
