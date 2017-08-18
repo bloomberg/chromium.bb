@@ -4,6 +4,9 @@
 
 #include "base/containers/span.h"
 
+#include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -11,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Pointwise;
 
 namespace base {
 
@@ -52,6 +57,69 @@ TEST(SpanTest, ConstructFromArray) {
   EXPECT_EQ(arraysize(array), span.size());
   for (size_t i = 0; i < span.size(); ++i)
     EXPECT_EQ(array[i], span[i]);
+}
+
+TEST(SpanTest, ConstructFromConstContainer) {
+  const std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+
+  Span<const int> const_span(vector);
+  EXPECT_EQ(vector.data(), const_span.data());
+  EXPECT_EQ(vector.size(), const_span.size());
+
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(vector[i], const_span[i]);
+}
+
+TEST(SpanTest, ConstructFromContainer) {
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+
+  Span<const int> const_span(vector);
+  EXPECT_EQ(vector.data(), const_span.data());
+  EXPECT_EQ(vector.size(), const_span.size());
+
+  for (size_t i = 0; i < const_span.size(); ++i)
+    EXPECT_EQ(vector[i], const_span[i]);
+
+  Span<int> span(vector);
+  EXPECT_EQ(vector.data(), span.data());
+  EXPECT_EQ(vector.size(), span.size());
+
+  for (size_t i = 0; i < span.size(); ++i)
+    EXPECT_EQ(vector[i], span[i]);
+}
+
+TEST(SpanTest, ConvertNonConstIntegralToConst) {
+  std::vector<int> vector = {1, 1, 2, 3, 5, 8};
+
+  Span<int> span(vector.data(), vector.size());
+  Span<const int> const_span(span);
+  EXPECT_THAT(const_span, Pointwise(Eq(), span));
+}
+
+TEST(SpanTest, ConvertNonConstPointerToConst) {
+  auto a = std::make_unique<int>(11);
+  auto b = std::make_unique<int>(22);
+  auto c = std::make_unique<int>(33);
+  std::vector<int*> vector = {a.get(), b.get(), c.get()};
+
+  Span<int*> non_const_pointer_span(vector);
+  EXPECT_THAT(non_const_pointer_span, Pointwise(Eq(), vector));
+  Span<int* const> const_pointer_span(non_const_pointer_span);
+  EXPECT_THAT(const_pointer_span, Pointwise(Eq(), non_const_pointer_span));
+  // Note: no test for conversion from Span<int> to Span<const int*>, since that
+  // would imply a conversion from int** to const int**, which is unsafe.
+  Span<const int* const> const_pointer_to_const_data_span(
+      non_const_pointer_span);
+  EXPECT_THAT(const_pointer_to_const_data_span,
+              Pointwise(Eq(), non_const_pointer_span));
+}
+
+TEST(SpanTest, ConvertBetweenEquivalentTypes) {
+  std::vector<int32_t> vector = {2, 4, 8, 16, 32};
+
+  Span<int32_t> span(vector);
+  Span<int> converted_span(span);
+  EXPECT_EQ(span, converted_span);
 }
 
 TEST(SpanTest, Subspan) {
@@ -171,6 +239,12 @@ TEST(SpanTest, MakeSpanFromConstexprArray) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
   constexpr Span<const int> span(kArray);
   EXPECT_EQ(span, MakeSpan(kArray));
+}
+
+TEST(SpanTest, MakeSpanFromContainer) {
+  std::vector<int> vector = {-1, -2, -3, -4, -5};
+  Span<int> span(vector);
+  EXPECT_EQ(span, MakeSpan(vector));
 }
 
 }  // namespace base
