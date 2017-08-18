@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.browseractions;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -18,9 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -28,19 +28,21 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
- * Unit tests for BrowserActionActivity.
+ * Unit tests for BrowserActionsIntent.
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class BrowserActionActivityTest {
+public class BrowserActionsIntentTest {
     private static final String HTTP_SCHEME_TEST_URL = "http://www.example.com";
     private static final String HTTPS_SCHEME_TEST_URL = "https://www.example.com";
     private static final String CHROME_SCHEME_TEST_URL = "chrome://example";
     private static final String CONTENT_SCHEME_TEST_URL = "content://example";
+    private static final String SENDER_PACKAGE_NAME = "some.other.app.package.sender_name";
+    private static final String RECEIVER_PACKAGE_NAME = "some.other.app.package.receiver_name";
 
-    private BrowserActionActivity mActivity = new BrowserActionActivity();
     private Context mContext;
-
+    @Mock
+    private BrowserActionActivity mActivity;
     @Mock
     private PendingIntent mPendingIntent;
 
@@ -48,13 +50,10 @@ public class BrowserActionActivityTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;
-        Answer<String> answer = new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) {
-                return "some.other.app.package.name";
-            }
-        };
-        doAnswer(answer).when(mPendingIntent).getCreatorPackage();
+        mActivity = Mockito.mock(BrowserActionActivity.class);
+        when(mActivity.getPackageName()).thenReturn(RECEIVER_PACKAGE_NAME);
+        when(mActivity.isStartedUpCorrectly(any(Intent.class))).thenCallRealMethod();
+        when(mPendingIntent.getCreatorPackage()).thenReturn(SENDER_PACKAGE_NAME);
     }
 
     @Test
