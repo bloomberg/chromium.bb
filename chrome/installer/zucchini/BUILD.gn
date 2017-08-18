@@ -94,6 +94,7 @@ fuzzer_test("zucchini_patch_fuzzer") {
     ":zucchini_lib",
     "//base",
   ]
+  seed_corpus = "testdata/patch_fuzzer"
 }
 
 test("zucchini_unittests") {
