@@ -148,6 +148,8 @@ struct macroblock {
 
   int *nmvjointcost;
   int nmv_vec_cost[NMV_CONTEXTS][MV_JOINTS];
+  int nmvcost_array[NMV_CONTEXTS][2][MV_VALS];
+  int nmvcost_hp_array[NMV_CONTEXTS][2][MV_VALS];
   int *nmvcost[NMV_CONTEXTS][2];
   int *nmvcost_hp[NMV_CONTEXTS][2];
   int **mv_cost_stack[NMV_CONTEXTS];
@@ -193,6 +195,7 @@ struct macroblock {
 
 #if CONFIG_EXT_INTER
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
+  int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES];
 #if CONFIG_COMPOUND_SINGLEREF
   int inter_singleref_comp_mode_cost[INTER_MODE_CONTEXTS]
                                     [INTER_SINGLEREF_COMP_MODES];

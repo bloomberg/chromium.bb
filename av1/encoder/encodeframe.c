@@ -477,6 +477,9 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
          has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
       ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
+      update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx],
+                 av1_switchable_interp_ind[mbmi->interp_filter[dir]],
+                 SWITCHABLE_FILTERS);
     }
   }
 }
@@ -1550,6 +1553,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+  FRAME_CONTEXT *fc = xd->tile_ctx;
 
 #if CONFIG_DELTA_Q
   // delta quant applies to both intra and inter
@@ -1594,6 +1598,10 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       if (!supertx_enabled)
 #endif
         counts->intra_inter[av1_get_intra_inter_context(xd)][inter_block]++;
+#if CONFIG_NEW_MULTISYMBOL
+      update_cdf(fc->intra_inter_cdf[av1_get_intra_inter_context(xd)],
+                 inter_block, 2);
+#endif
       // If the segment reference feature is enabled we have only a single
       // reference frame allowed for the segment so exclude it from
       // the reference frame counts used to work out probabilities.
@@ -1611,12 +1619,21 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             // This flag is also updated for 4x4 blocks
             rdc->single_ref_used_flag = 1;
 #if !SUB8X8_COMP_REF
-          if (mbmi->sb_type != BLOCK_4X4)
+          if (mbmi->sb_type != BLOCK_4X4) {
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
+#if CONFIG_NEW_MULTISYMBOL
+            update_cdf(av1_get_reference_mode_cdf(cm, xd), has_second_ref(mbmi),
+                       2);
+#endif
+          }
 #else
           counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                             [has_second_ref(mbmi)]++;
+#if CONFIG_NEW_MULTISYMBOL
+          update_cdf(av1_get_reference_mode_cdf(cm, xd), has_second_ref(mbmi),
+                     2);
+#endif
 #endif
         }
 
@@ -1725,11 +1742,24 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           const int bsize_group = size_group_lookup[bsize];
           if (mbmi->ref_frame[1] == INTRA_FRAME) {
             counts->interintra[bsize_group][1]++;
+#if CONFIG_NEW_MULTISYMBOL
+            update_cdf(fc->interintra_cdf[bsize_group], 1, 2);
+#endif
             counts->interintra_mode[bsize_group][mbmi->interintra_mode]++;
-            if (is_interintra_wedge_used(bsize))
+            update_cdf(fc->interintra_mode_cdf[bsize_group],
+                       mbmi->interintra_mode, INTERINTRA_MODES);
+            if (is_interintra_wedge_used(bsize)) {
               counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
+#if CONFIG_NEW_MULTISYMBOL
+              update_cdf(fc->wedge_interintra_cdf[bsize],
+                         mbmi->use_wedge_interintra, 2);
+#endif
+            }
           } else {
             counts->interintra[bsize_group][0]++;
+#if CONFIG_NEW_MULTISYMBOL
+            update_cdf(fc->interintra_cdf[bsize_group], 0, 2);
+#endif
           }
         }
 #endif  // CONFIG_INTERINTRA
@@ -1769,17 +1799,21 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           {
             if (motion_allowed == WARPED_CAUSAL) {
               counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-              update_cdf(xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
-                         mbmi->motion_mode, MOTION_MODES);
+              update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
+                         MOTION_MODES);
             } else if (motion_allowed == OBMC_CAUSAL) {
               counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
+#if CONFIG_NEW_MULTISYMBOL
+              update_cdf(fc->obmc_cdf[mbmi->sb_type],
+                         mbmi->motion_mode == OBMC_CAUSAL, 2);
+#endif
             }
           }
 #else
         if (motion_allowed > SIMPLE_TRANSLATION) {
           counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-          update_cdf(xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
-                     mbmi->motion_mode, MOTION_MODES);
+          update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
+                     MOTION_MODES);
         }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
@@ -1812,7 +1846,16 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
             ) {
-          counts->compound_interinter[bsize][mbmi->interinter_compound_type]++;
+#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
+          if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
+#endif
+            counts
+                ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
+            update_cdf(fc->compound_type_cdf[bsize],
+                       mbmi->interinter_compound_type, COMPOUND_TYPES);
+#if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
+          }
+#endif
         }
 #endif  // CONFIG_EXT_INTER
       }
@@ -1826,6 +1869,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       if (has_second_ref(mbmi)) {
         mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
         ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
+        update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
+                   INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
 #if CONFIG_COMPOUND_SINGLEREF
       } else if (is_inter_singleref_comp_mode(mode)) {
         mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
@@ -4461,7 +4506,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
-  av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
 #if CONFIG_DELTA_Q
   // Reset delta for every tile
@@ -4498,6 +4542,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_fill_token_costs_from_cdf(x->token_tail_costs,
                                   x->e_mbd.tile_ctx->coef_tail_cdfs);
 #endif
+    av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
     if (sf->adaptive_pred_interp_filter) {
       for (i = 0; i < leaf_nodes; ++i)
@@ -5661,21 +5706,18 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                             const MODE_INFO *mi, const MODE_INFO *above_mi,
                             const MODE_INFO *left_mi, const int intraonly,
                             const int mi_row, const int mi_col) {
+  FRAME_CONTEXT *fc = xd->tile_ctx;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-#if CONFIG_ENTROPY_STATS
   const PREDICTION_MODE y_mode = mbmi->mode;
   const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-#else   // CONFIG_ENTROPY_STATS
   (void)counts;
   (void)above_mi;
   (void)left_mi;
   (void)intraonly;
-#endif  // CONFIG_ENTROPY_STATS
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int unify_bsize = CONFIG_CB4X4;
 
   if (bsize < BLOCK_8X8 && !unify_bsize) {
-#if CONFIG_ENTROPY_STATS
     int idx, idy;
     const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
@@ -5684,24 +5726,36 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
         const int bidx = idy * 2 + idx;
         const PREDICTION_MODE bmode = mi->bmi[bidx].as_mode;
         if (intraonly) {
+#if CONFIG_ENTROPY_STATS
           const PREDICTION_MODE a = av1_above_block_mode(mi, above_mi, bidx);
           const PREDICTION_MODE l = av1_left_block_mode(mi, left_mi, bidx);
           ++counts->kf_y_mode[a][l][bmode];
+#endif  // CONFIG_ENTROPY_STATS
+          update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, bidx),
+                     av1_intra_mode_ind[bmode], INTRA_MODES);
         } else {
+#if CONFIG_ENTROPY_STATS
           ++counts->y_mode[0][bmode];
+#endif  // CONFIG_ENTROPY_STATS
+          update_cdf(fc->y_mode_cdf[0], av1_intra_mode_ind[bmode], INTRA_MODES);
         }
       }
-#endif  // CONFIG_ENTROPY_STATS
   } else {
-#if CONFIG_ENTROPY_STATS
     if (intraonly) {
+#if CONFIG_ENTROPY_STATS
       const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, 0);
       const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, 0);
       ++counts->kf_y_mode[above][left][y_mode];
-    } else {
-      ++counts->y_mode[size_group_lookup[bsize]][y_mode];
-    }
 #endif  // CONFIG_ENTROPY_STATS
+      update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, 0),
+                 av1_intra_mode_ind[y_mode], INTRA_MODES);
+    } else {
+#if CONFIG_ENTROPY_STATS
+      ++counts->y_mode[size_group_lookup[bsize]][y_mode];
+#endif  // CONFIG_ENTROPY_STATS
+      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]],
+                 av1_intra_mode_ind[y_mode], INTRA_MODES);
+    }
 #if CONFIG_FILTER_INTRA
     if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
       const int use_filter_intra_mode =
@@ -5743,6 +5797,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
+  update_cdf(fc->uv_mode_cdf[y_mode], av1_intra_mode_ind[uv_mode], INTRA_MODES);
 }
 
 #if CONFIG_VAR_TX
@@ -5889,6 +5944,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int is_inter = is_inter_block(mbmi);
+  FRAME_CONTEXT *fc = xd->tile_ctx;
 
 #if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
@@ -5909,9 +5965,14 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
     if (eset > 0) {
       if (is_inter) {
         ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
+        update_cdf(fc->inter_ext_tx_cdf[eset][txsize_sqr_map[tx_size]],
+                   av1_ext_tx_inter_ind[eset][tx_type], ext_tx_cnt_inter[eset]);
       } else {
         ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
                               [tx_type];
+        update_cdf(
+            fc->intra_ext_tx_cdf[eset][txsize_sqr_map[tx_size]][mbmi->mode],
+            av1_ext_tx_intra_ind[eset][tx_type], ext_tx_cnt_intra[eset]);
       }
     }
   }
@@ -5924,9 +5985,15 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     if (is_inter) {
       ++counts->inter_ext_tx[tx_size][tx_type];
+      update_cdf(fc->inter_ext_tx_cdf[tx_size], av1_ext_tx_ind[tx_type],
+                 TX_TYPES);
     } else {
       ++counts->intra_ext_tx[tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
                             [tx_type];
+      update_cdf(
+          fc->intra_ext_tx_cdf[tx_size]
+                              [intra_mode_to_tx_type_context[mbmi->mode]],
+          av1_ext_tx_ind[tx_type], TX_TYPES);
     }
   }
 #endif  // CONFIG_EXT_TX

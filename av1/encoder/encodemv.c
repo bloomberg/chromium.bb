@@ -97,22 +97,31 @@ static void build_nmv_component_cost_table(int *mvcost,
 
   sign_cost[0] = av1_cost_zero(mvcomp->sign);
   sign_cost[1] = av1_cost_one(mvcomp->sign);
-  av1_cost_tokens(class_cost, mvcomp->classes, av1_mv_class_tree);
+  av1_cost_tokens_from_cdf(class_cost, mvcomp->class_cdf, NULL);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_cost_tokens_from_cdf(class0_cost, mvcomp->class0_cdf, NULL);
+#else
   av1_cost_tokens(class0_cost, mvcomp->class0, av1_mv_class0_tree);
+#endif
   for (i = 0; i < MV_OFFSET_BITS; ++i) {
     bits_cost[i][0] = av1_cost_zero(mvcomp->bits[i]);
     bits_cost[i][1] = av1_cost_one(mvcomp->bits[i]);
   }
 
   for (i = 0; i < CLASS0_SIZE; ++i)
-    av1_cost_tokens(class0_fp_cost[i], mvcomp->class0_fp[i], av1_mv_fp_tree);
-  av1_cost_tokens(fp_cost, mvcomp->fp, av1_mv_fp_tree);
+    av1_cost_tokens_from_cdf(class0_fp_cost[i], mvcomp->class0_fp_cdf[i], NULL);
+  av1_cost_tokens_from_cdf(fp_cost, mvcomp->fp_cdf, NULL);
 
   if (precision > MV_SUBPEL_LOW_PRECISION) {
+#if CONFIG_NEW_MULTISYMBOL
+    av1_cost_tokens_from_cdf(class0_hp_cost, mvcomp->class0_hp_cdf, NULL);
+    av1_cost_tokens_from_cdf(hp_cost, mvcomp->hp_cdf, NULL);
+#else
     class0_hp_cost[0] = av1_cost_zero(mvcomp->class0_hp);
     class0_hp_cost[1] = av1_cost_one(mvcomp->class0_hp);
     hp_cost[0] = av1_cost_zero(mvcomp->hp);
     hp_cost[1] = av1_cost_one(mvcomp->hp);
+#endif
   }
   mvcost[0] = 0;
   for (v = 1; v <= MV_MAX; ++v) {
@@ -217,15 +226,64 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
                               const nmv_context *ctx,
                               MvSubpelPrecision precision) {
-  av1_cost_tokens(mvjoint, ctx->joints, av1_mv_joint_tree);
+  av1_cost_tokens_from_cdf(mvjoint, ctx->joint_cdf, NULL);
   build_nmv_component_cost_table(mvcost[0], &ctx->comps[0], precision);
   build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], precision);
+}
+
+static void inc_mv_component_cdf(int v, nmv_component *mvcomp,
+                                 MvSubpelPrecision precision) {
+  int s, z, c, o, d, f;
+  assert(v != 0);
+  s = v < 0;
+  z = (s ? -v : v) - 1; /* magnitude - 1 */
+
+  c = av1_get_mv_class(z, &o);
+  update_cdf(mvcomp->class_cdf, c, MV_CLASSES);
+  (void)precision;
+
+  d = (o >> 3);     /* int mv data */
+  f = (o >> 1) & 3; /* fractional pel mv data */
+#if CONFIG_NEW_MULTISYMBOL
+  int e = (o & 1); /* high precision mv data */
+#endif
+
+  if (c == MV_CLASS_0) {
+    update_cdf(mvcomp->class0_fp_cdf[d], f, MV_FP_SIZE);
+#if CONFIG_NEW_MULTISYMBOL
+    if (precision > MV_SUBPEL_LOW_PRECISION)
+      update_cdf(mvcomp->class0_hp_cdf, e, 2);
+#endif
+  } else {
+    update_cdf(mvcomp->fp_cdf, f, MV_FP_SIZE);
+#if CONFIG_NEW_MULTISYMBOL
+    if (precision > MV_SUBPEL_LOW_PRECISION) update_cdf(mvcomp->hp_cdf, e, 2);
+#endif
+  }
+}
+
+static void inc_mv_cdf(const MV *mv, nmv_context *const nmvc,
+                       MvSubpelPrecision precision) {
+  const MV_JOINT_TYPE j = av1_get_mv_joint(mv);
+  update_cdf(nmvc->joint_cdf, j, MV_JOINTS);
+
+  if (mv_joint_vertical(j)) {
+    int v = mv->row;
+    nmv_component *mvcomp = &nmvc->comps[0];
+    inc_mv_component_cdf(v, mvcomp, precision);
+  }
+
+  if (mv_joint_horizontal(j)) {
+    int v = mv->col;
+    nmv_component *mvcomp = &nmvc->comps[1];
+    inc_mv_component_cdf(v, mvcomp, precision);
+  }
 }
 
 #if CONFIG_EXT_INTER
 static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
                     const int_mv mvs[2], const int_mv pred_mvs[2],
-                    nmv_context_counts *nmv_counts) {
+                    nmv_context_counts *nmv_counts, FRAME_CONTEXT *fc) {
   int i;
   PREDICTION_MODE mode = mbmi->mode;
 
@@ -241,6 +299,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
       nmv_context_counts *counts = &nmv_counts[nmv_ctx];
       (void)pred_mvs;
       av1_inc_mv(&diff, counts, 1);
+      inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
     }
   } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
     const MV *ref = &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv;
@@ -252,6 +311,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
                     mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
     nmv_context_counts *counts = &nmv_counts[nmv_ctx];
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
   } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
     const MV *ref = &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
     const MV diff = { mvs[0].as_mv.row - ref->row,
@@ -262,6 +322,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
                     mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
     nmv_context_counts *counts = &nmv_counts[nmv_ctx];
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
 #if CONFIG_COMPOUND_SINGLEREF
   } else {
     assert(  // mode == SR_NEAREST_NEWMV ||
@@ -278,17 +339,19 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
       diff.row = mvs[0].as_mv.row - ref->row;
       diff.col = mvs[0].as_mv.col - ref->col;
       av1_inc_mv(&diff, counts, 1);
+      inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
     }
     diff.row = mvs[1].as_mv.row - ref->row;
     diff.col = mvs[1].as_mv.col - ref->col;
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   }
 }
 
 static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
                            const MB_MODE_INFO_EXT *mbmi_ext,
-                           nmv_context_counts *nmv_counts) {
+                           nmv_context_counts *nmv_counts, FRAME_CONTEXT *fc) {
   int i;
   PREDICTION_MODE mode = mi->bmi[block].as_mode;
   const MB_MODE_INFO *mbmi = &mi->mbmi;
@@ -304,6 +367,7 @@ static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
                       mbmi_ext->ref_mv_stack[rf_type], i, mbmi->ref_mv_idx);
       nmv_context_counts *counts = &nmv_counts[nmv_ctx];
       av1_inc_mv(&diff, counts, 1);
+      inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
     }
   } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
     const MV *ref = &mi->bmi[block].ref_mv[1].as_mv;
@@ -315,6 +379,7 @@ static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
                     mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
     nmv_context_counts *counts = &nmv_counts[nmv_ctx];
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
   } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
     const MV *ref = &mi->bmi[block].ref_mv[0].as_mv;
     const MV diff = { mvs[0].as_mv.row - ref->row,
@@ -325,12 +390,13 @@ static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
                     mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
     nmv_context_counts *counts = &nmv_counts[nmv_ctx];
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
   }
 }
 #else   // !CONFIG_EXT_INTER
 static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
                     const int_mv mvs[2], const int_mv pred_mvs[2],
-                    nmv_context_counts *nmv_counts) {
+                    nmv_context_counts *nmv_counts, FRAME_CONTEXT *fc) {
   int i;
 
   for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
@@ -343,6 +409,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
     const MV diff = { mvs[i].as_mv.row - ref->row,
                       mvs[i].as_mv.col - ref->col };
     av1_inc_mv(&diff, counts, 1);
+    inc_mv_cdf(&diff, fc->nmvc[nmv_ctx], 1);
   }
 }
 #endif  // CONFIG_EXT_INTER
@@ -369,11 +436,12 @@ void av1_update_mv_count(ThreadData *td) {
 
 #if CONFIG_EXT_INTER
         if (have_newmv_in_inter_mode(mi->bmi[i].as_mode))
-          inc_mvs_sub8x8(mi, i, mi->bmi[i].as_mv, mbmi_ext, td->counts->mv);
+          inc_mvs_sub8x8(mi, i, mi->bmi[i].as_mv, mbmi_ext, td->counts->mv,
+                         xd->tile_ctx);
 #else
         if (mi->bmi[i].as_mode == NEWMV)
           inc_mvs(mbmi, mbmi_ext, mi->bmi[i].as_mv, mi->bmi[i].pred_mv,
-                  td->counts->mv);
+                  td->counts->mv, xd->tile_ctx);
 #endif  // CONFIG_EXT_INTER
       }
     }
@@ -383,6 +451,7 @@ void av1_update_mv_count(ThreadData *td) {
 #else
     if (mbmi->mode == NEWMV)
 #endif  // CONFIG_EXT_INTER
-      inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv);
+      inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv,
+              xd->tile_ctx);
   }
 }
