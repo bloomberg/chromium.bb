@@ -91,7 +91,7 @@ void Headers::append(const String& name,
     exception_state.ThrowTypeError("Invalid value");
     return;
   }
-  // "3. If guard is |request|, throw a TypeError."
+  // "3. If guard is |immutable|, throw a TypeError."
   if (guard_ == kImmutableGuard) {
     exception_state.ThrowTypeError("Headers are immutable");
     return;
