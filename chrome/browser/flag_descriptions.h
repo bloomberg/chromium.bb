@@ -1182,11 +1182,37 @@ extern const char kXGEOVisibleNetworksDescription[];
 
 #else  // !defined(OS_ANDROID)
 
+extern const char kAccountConsistencyName[];
+extern const char kAccountConsistencyDescription[];
+extern const char kAccountConsistencyChoiceMirror[];
+extern const char kAccountConsistencyChoiceDice[];
+
 extern const char kEnableAudioFocusName[];
 extern const char kEnableAudioFocusDescription[];
 extern const char kEnableAudioFocusDisabled[];
 extern const char kEnableAudioFocusEnabled[];
 extern const char kEnableAudioFocusEnabledDuckFlash[];
+
+extern const char kEnableNewAppMenuIconName[];
+extern const char kEnableNewAppMenuIconDescription[];
+
+extern const char kOmniboxEntitySuggestionsName[];
+extern const char kOmniboxEntitySuggestionsDescription[];
+
+extern const char kOmniboxTailSuggestionsName[];
+extern const char kOmniboxTailSuggestionsDescription[];
+
+extern const char kOneGoogleBarOnLocalNtpName[];
+extern const char kOneGoogleBarOnLocalNtpDescription[];
+
+extern const char kPauseBackgroundTabsName[];
+extern const char kPauseBackgroundTabsDescription[];
+
+extern const char kUseGoogleLocalNtpName[];
+extern const char kUseGoogleLocalNtpDescription[];
+
+extern const char kVoiceSearchOnLocalNtpName[];
+extern const char kVoiceSearchOnLocalNtpDescription[];
 
 #if defined(GOOGLE_CHROME_BUILD)
 
@@ -1249,6 +1275,12 @@ extern const char kFullscreenToolbarRevealDescription[];
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
 
+extern const char kCreditCardAutofillTouchBarName[];
+extern const char kCreditCardAutofillTouchBarDescription[];
+
+extern const char kDialogTouchBarName[];
+extern const char kDialogTouchBarDescription[];
+
 extern const char kHostedAppsInWindowsName[];
 extern const char kHostedAppsInWindowsDescription[];
 
@@ -1257,12 +1289,6 @@ extern const char kMacRTLDescription[];
 
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
-
-extern const char kDialogTouchBarName[];
-extern const char kDialogTouchBarDescription[];
-
-extern const char kCreditCardAutofillTouchBarName[];
-extern const char kCreditCardAutofillTouchBarDescription[];
 
 extern const char kMacV2SandboxName[];
 extern const char kMacV2SandboxDescription[];
@@ -1358,9 +1384,6 @@ extern const char kEnableImeMenuDescription[];
 extern const char kEnableLockScreenAppsName[];
 extern const char kEnableLockScreenAppsDescription[];
 
-extern const char kFileManagerTouchModeName[];
-extern const char kFileManagerTouchModeDescription[];
-
 extern const char kEnableZipArchiverOnFileManagerName[];
 extern const char kEnableZipArchiverOnFileManagerDescription[];
 
@@ -1372,6 +1395,9 @@ extern const char kExperimentalAccessibilityFeaturesDescription[];
 
 extern const char kExperimentalInputViewFeaturesName[];
 extern const char kExperimentalInputViewFeaturesDescription[];
+
+extern const char kFileManagerTouchModeName[];
+extern const char kFileManagerTouchModeDescription[];
 
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
@@ -1432,17 +1458,18 @@ extern const char kQuickUnlockFingerprintDescription[];
 extern const char kOfficeEditingComponentAppName[];
 extern const char kOfficeEditingComponentAppDescription[];
 
-extern const char kSmartVirtualKeyboardName[];
-extern const char kSmartVirtualKeyboardDescription[];
-
 extern const char kSpuriousPowerButtonWindowName[];
 extern const char kSpuriousPowerButtonWindowDescription[];
+
 extern const char kSpuriousPowerButtonAccelCountName[];
 extern const char kSpuriousPowerButtonAccelCountDescription[];
+
 extern const char kSpuriousPowerButtonScreenAccelName[];
 extern const char kSpuriousPowerButtonScreenAccelDescription[];
+
 extern const char kSpuriousPowerButtonKeyboardAccelName[];
 extern const char kSpuriousPowerButtonKeyboardAccelDescription[];
+
 extern const char kSpuriousPowerButtonLidAngleChangeName[];
 extern const char kSpuriousPowerButtonLidAngleChangeDescription[];
 
@@ -1482,40 +1509,6 @@ extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
-
-// Desktop --------------------------------------------------------------------
-
-#if !defined(OS_ANDROID)
-
-extern const char kEnableNewAppMenuIconName[];
-extern const char kEnableNewAppMenuIconDescription[];
-
-extern const char kOmniboxEntitySuggestionsName[];
-extern const char kOmniboxEntitySuggestionsDescription[];
-
-extern const char kOmniboxTailSuggestionsName[];
-extern const char kOmniboxTailSuggestionsDescription[];
-
-extern const char kOneGoogleBarOnLocalNtpName[];
-extern const char kOneGoogleBarOnLocalNtpDescription[];
-
-extern const char kPauseBackgroundTabsName[];
-extern const char kPauseBackgroundTabsDescription[];
-
-extern const char kUseGoogleLocalNtpName[];
-extern const char kUseGoogleLocalNtpDescription[];
-
-extern const char kAccountConsistencyName[];
-extern const char kAccountConsistencyDescription[];
-
-// Choices for enable account consistency flag
-extern const char kAccountConsistencyChoiceMirror[];
-extern const char kAccountConsistencyChoiceDice[];
-
-extern const char kVoiceSearchOnLocalNtpName[];
-extern const char kVoiceSearchOnLocalNtpDescription[];
-
-#endif
 
 // Random platform combinations -----------------------------------------------
 
