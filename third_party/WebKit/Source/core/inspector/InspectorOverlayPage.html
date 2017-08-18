@@ -739,7 +739,7 @@ function _drawLayoutGridHighlight(highlight, context)
     var colWidths = highlight.columns.spans;
 
 
-    if (columnGap > 1) {
+    if (columnGap > 1 && highlight.isPrimaryGrid) {
         var height = _sumWithGap(rowHeights, rowGap) + 1;
         var x = left - columnGap; // Adjust for no gap before the first column
         for (var i = 0; i < colWidths.length - 1; i++) {
@@ -747,7 +747,7 @@ function _drawLayoutGridHighlight(highlight, context)
             context.clearRect(x, top - 1, columnGap - 1, height);
         }
     }
-    if (rowGap > 1) {
+    if (rowGap > 1 && highlight.isPrimaryGrid) {
         var width = _sumWithGap(colWidths, columnGap) + 1;
         var y = top - rowGap; // Adjust for not gap before the first row
         for (var i = 0; i < rowHeights.length - 1; i++) {
@@ -803,8 +803,10 @@ function drawHighlight(highlight, context)
         else if (highlight.elementInfo)
            _drawElementTitle(context, highlight.elementInfo, bounds);
     }
-    if (highlight.gridInfo)
-        _drawLayoutGridHighlight(highlight.gridInfo, context);
+    if (highlight.gridInfo) {
+        for (var grid of highlight.gridInfo)
+            _drawLayoutGridHighlight(grid, context);
+    }
     context.restore();
 
     return { bounds: bounds };

@@ -1,121 +1,14 @@
 c1
 c2
 c3
+Parent Cell 1
+Parent Cell 2
+Parent Cell 3
 c1
 c2
 c3
 This test verifies the position and size of the highlight rectangles overlayed on an inspected CSS grid div.
 
-inspectedGrid{
-  "paths": [
-    {
-      "path": [
-        "M",
-        0,
-        0,
-        "L",
-        1000,
-        0,
-        "L",
-        1000,
-        50,
-        "L",
-        0,
-        50,
-        "Z"
-      ],
-      "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)",
-      "name": "content"
-    },
-    {
-      "path": [
-        "M",
-        0,
-        0,
-        "L",
-        1000,
-        0,
-        "L",
-        1000,
-        50,
-        "L",
-        0,
-        50,
-        "Z"
-      ],
-      "fillColor": "rgba(0, 255, 0, 0)",
-      "name": "padding"
-    },
-    {
-      "path": [
-        "M",
-        0,
-        0,
-        "L",
-        1000,
-        0,
-        "L",
-        1000,
-        50,
-        "L",
-        0,
-        50,
-        "Z"
-      ],
-      "fillColor": "rgba(0, 0, 255, 0)",
-      "name": "border"
-    },
-    {
-      "path": [
-        "M",
-        0,
-        0,
-        "L",
-        1000,
-        0,
-        "L",
-        1000,
-        50,
-        "L",
-        0,
-        50,
-        "Z"
-      ],
-      "fillColor": "rgba(255, 255, 255, 0)",
-      "name": "margin"
-    }
-  ],
-  "showRulers": true,
-  "showExtensionLines": true,
-  "elementInfo": {
-    "tagName": "div",
-    "idValue": "inspectedGrid",
-    "className": ".grid",
-    "nodeWidth": "1000",
-    "nodeHeight": "50"
-  },
-  "displayAsMaterial": false,
-  "gridInfo": {
-    "rows": {
-      "origin": 0,
-      "gap": 0,
-      "spans": [
-        25,
-        25
-      ]
-    },
-    "columns": {
-      "origin": 0,
-      "gap": 0,
-      "spans": [
-        50,
-        200
-      ]
-    },
-    "color": "rgba(128, 128, 128, 0)"
-  }
-}
 paddedGrid{
   "paths": [
     {
@@ -201,29 +94,165 @@ paddedGrid{
   "elementInfo": {
     "tagName": "div",
     "idValue": "paddedGrid",
-    "className": ".grid.padded",
+    "className": ".grid.padded.fixed",
     "nodeWidth": "1120",
     "nodeHeight": "150"
   },
   "displayAsMaterial": false,
-  "gridInfo": {
-    "rows": {
-      "origin": 50,
-      "gap": 0,
-      "spans": [
-        25,
-        25
-      ]
+  "gridInfo": [
+    {
+      "rows": {
+        "origin": 50,
+        "gap": 0,
+        "spans": [
+          25,
+          25
+        ]
+      },
+      "columns": {
+        "origin": 60,
+        "gap": 0,
+        "spans": [
+          50,
+          200
+        ]
+      },
+      "color": "rgba(128, 128, 128, 0)",
+      "isPrimaryGrid": true
+    }
+  ]
+}
+nestedGrid{
+  "paths": [
+    {
+      "path": [
+        "M",
+        100,
+        120,
+        "L",
+        1100,
+        120,
+        "L",
+        1100,
+        220,
+        "L",
+        100,
+        220,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
-    "columns": {
-      "origin": 60,
-      "gap": 0,
-      "spans": [
-        50,
-        200
-      ]
+    {
+      "path": [
+        "M",
+        100,
+        120,
+        "L",
+        1100,
+        120,
+        "L",
+        1100,
+        220,
+        "L",
+        100,
+        220,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
-    "color": "rgba(128, 128, 128, 0)"
-  }
+    {
+      "path": [
+        "M",
+        100,
+        120,
+        "L",
+        1100,
+        120,
+        "L",
+        1100,
+        220,
+        "L",
+        100,
+        220,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
+    },
+    {
+      "path": [
+        "M",
+        100,
+        120,
+        "L",
+        1100,
+        120,
+        "L",
+        1100,
+        220,
+        "L",
+        100,
+        220,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true,
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "nestedGrid",
+    "className": ".grid",
+    "nodeWidth": "1000",
+    "nodeHeight": "100"
+  },
+  "displayAsMaterial": false,
+  "gridInfo": [
+    {
+      "rows": {
+        "origin": 120,
+        "gap": 0,
+        "spans": [
+          25,
+          25
+        ]
+      },
+      "columns": {
+        "origin": 100,
+        "gap": 0,
+        "spans": [
+          50,
+          200
+        ]
+      },
+      "color": "rgba(128, 128, 128, 0)",
+      "isPrimaryGrid": true
+    },
+    {
+      "rows": {
+        "origin": 0,
+        "gap": 20,
+        "spans": [
+          100,
+          100
+        ]
+      },
+      "columns": {
+        "origin": 0,
+        "gap": 50,
+        "spans": [
+          50,
+          1200
+        ]
+      },
+      "color": "rgba(128, 128, 128, 0)",
+      "isPrimaryGrid": false
+    }
+  ]
 }
 
