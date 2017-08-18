@@ -26,7 +26,7 @@ id1
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample1
+TestAnnotations
 36
 Partial
 id2
@@ -42,7 +42,7 @@ completing_id2
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample1
+TestAnnotations
 46
 Completing
 id3
@@ -62,7 +62,7 @@ id3
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample1
+TestAnnotations
 61
 BranchedCompleting
 id4
@@ -77,7 +77,7 @@ branch4
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample2
+TestURLFetcherCreate
 83
 Definition
 undefined
@@ -86,43 +86,78 @@ Nothing here yet.
 ==== ANNOTATION ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample2
+TestURLFetcherCreate
 73
 net::URLFetcher::Create
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample2
+TestURLFetcherCreate
 76
 net::URLFetcher::Create
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample2
+TestURLFetcherCreate
 79
 net::URLFetcher::Create
 1
 ==== CALL ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample2
+TestURLFetcherCreate
 82
 net::URLFetcher::Create
 1
 ==== CALL ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample3
+TestCreateRequest
 90
 net::URLRequestContext::CreateRequest
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
 /usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
-Sample3
+TestCreateRequest
 91
 net::URLRequestContext::CreateRequest
 1
 ==== CALL ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestInitList
+96
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestInitList
+97
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestInitList
+98
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestInitList
+99
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestInitList
+101
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestAssignment
+106
+==== ASSIGNMENT ENDS ====
+==== NEW ASSIGNMENT ====
+/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+TestAssignment
+109
+==== ASSIGNMENT ENDS ====

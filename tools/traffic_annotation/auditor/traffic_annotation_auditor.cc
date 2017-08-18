@@ -162,6 +162,22 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
                         base::SPLIT_WANT_ALL);
 
   for (unsigned int current = 0; current < lines.size(); current++) {
+    // TODO(rhalavati): Remove this after updating auditor to process
+    // assignments.
+    if (lines[current] == "==== NEW ASSIGNMENT ====") {
+      while (current < lines.size()) {
+        if (lines[current] == "==== ASSIGNMENT ENDS ====")
+          break;
+        else
+          current++;
+      }
+      if (current == lines.size()) {
+        LOG(ERROR) << "'ASSIGNMENT END' not found.";
+        return false;
+      }
+      continue;
+    }
+
     bool annotation_block;
     if (lines[current] == "==== NEW ANNOTATION ====")
       annotation_block = true;
