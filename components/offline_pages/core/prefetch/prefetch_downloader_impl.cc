@@ -15,6 +15,17 @@
 #include "url/gurl.h"
 
 namespace offline_pages {
+namespace {
+
+void NotifyDispatcher(PrefetchService* service, PrefetchDownloadResult result) {
+  if (service) {
+    PrefetchDispatcher* dispatcher = service->GetPrefetchDispatcher();
+    if (dispatcher)
+      dispatcher->DownloadCompleted(result);
+  }
+}
+
+}  // namespace
 
 PrefetchDownloaderImpl::PrefetchDownloaderImpl(
     download::DownloadService* download_service,
@@ -108,19 +119,15 @@ void PrefetchDownloaderImpl::OnDownloadSucceeded(
     return;
   }
 
-  if (prefetch_service_) {
-    prefetch_service_->GetPrefetchDispatcher()->DownloadCompleted(
-        PrefetchDownloadResult(download_id, file_path,
-                               static_cast<int64_t>(file_size)));
-  }
+  NotifyDispatcher(prefetch_service_,
+                   PrefetchDownloadResult(download_id, file_path,
+                                          static_cast<int64_t>(file_size)));
 }
 
 void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
-  if (prefetch_service_) {
-    PrefetchDownloadResult result;
-    result.download_id = download_id;
-    prefetch_service_->GetPrefetchDispatcher()->DownloadCompleted(result);
-  }
+  PrefetchDownloadResult result;
+  result.download_id = download_id;
+  NotifyDispatcher(prefetch_service_, result);
 }
 
 void PrefetchDownloaderImpl::OnStartDownload(
