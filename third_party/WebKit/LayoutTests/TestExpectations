@@ -89,16 +89,6 @@ crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/2d.fillText.gradient.html [ Fai
 crbug.com/726075 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 crbug.com/726075 [ Win Debug ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Failure ]
 
-# SwiftShader WebGL2 related crashes
-crbug.com/726075 [ Win ] external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.html [ Crash ]
-crbug.com/726075 [ Win ] fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] vr/requestPresent_resolve_webgl2.html [ Crash ]
-
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
@@ -2636,7 +2626,7 @@ crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.g
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.get.tiny.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.put.nonfinite.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.worker.html [ Failure Crash ]
+crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.em.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.empty.worker.html [ Failure ]
