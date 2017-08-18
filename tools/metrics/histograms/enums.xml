@@ -24358,42 +24358,6 @@ from previous Chrome versions.
   <int value="22" label="MacBookPro5,X"/>
 </enum>
 
-<enum name="MacOSBluetoothOperationsResult">
-  <int value="-2" label="Unknown error domain"/>
-  <int value="-1" label="No error"/>
-  <int value="0" label="CBATTErrorSuccess"/>
-  <int value="1" label="CBATTErrorInvalidHandle"/>
-  <int value="2" label="CBATTErrorReadNotPermitted"/>
-  <int value="3" label="CBATTErrorWriteNotPermitted"/>
-  <int value="4" label="CBATTErrorInvalidPdu"/>
-  <int value="5" label="CBATTErrorInsufficientAuthentication"/>
-  <int value="6" label="CBATTErrorRequestNotSupported"/>
-  <int value="7" label="CBATTErrorInvalidOffset"/>
-  <int value="8" label="CBATTErrorInsufficientAuthorization"/>
-  <int value="9" label="CBATTErrorPrepareQueueFull"/>
-  <int value="10" label="CBATTErrorAttributeNotFound"/>
-  <int value="11" label="CBATTErrorAttributeNotLong"/>
-  <int value="12" label="CBATTErrorInsufficientEncryptionKeySize"/>
-  <int value="13" label="CBATTErrorInvalidAttributeValueLength"/>
-  <int value="14" label="CBATTErrorUnlikelyError"/>
-  <int value="15" label="CBATTErrorInsufficientEncryption"/>
-  <int value="16" label="CBATTErrorUnsupportedGroupType"/>
-  <int value="17" label="CBATTErrorInsufficientResources"/>
-  <int value="999" label="Unknown CBATTError code"/>
-  <int value="1000" label="CBErrorUnknown"/>
-  <int value="1001" label="CBErrorInvalidParameters"/>
-  <int value="1002" label="CBErrorInvalidHandle"/>
-  <int value="1003" label="CBErrorNotConnected"/>
-  <int value="1004" label="CBErrorOutOfSpace"/>
-  <int value="1005" label="CBErrorOperationCancelled"/>
-  <int value="1006" label="CBErrorConnectionTimeout"/>
-  <int value="1007" label="CBErrorPeripheralDisconnected"/>
-  <int value="1008" label="CBErrorUUIDNotAllowed"/>
-  <int value="1009" label="CBErrorAlreadyAdvertising"/>
-  <int value="1010" label="CBErrorMaxConnection"/>
-  <int value="1999" label="Unknown CBError code"/>
-</enum>
-
 <enum name="MainFrameStorable">
   <int value="0" label="Storable"/>
   <int value="1" label="cache-control: no-store"/>

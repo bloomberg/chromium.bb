@@ -6562,19 +6562,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="Bluetooth.MacOS.Errors"
-    enum="MacOSBluetoothOperationsResult">
-<!-- Name completed by histogram_suffixes name="WebBluetoothMacOSAPIs" -->
-
-  <owner>scheib@chromium.org</owner>
-  <owner>device-dev@chromium.org</owner>
-  <summary>
-    Records how many times each macOS GATT error has occured. The results will
-    be used to determine how commun this errors are and if we need to provide
-    better error messages to the users.
-  </summary>
-</histogram>
-
 <histogram name="Bluetooth.PairingMethod" enum="BluetoothPairingMethod">
   <owner>keybuk@chromium.org</owner>
   <summary>
@@ -100960,24 +100947,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="BrowserApk" label="Installed by Chrome"/>
   <suffix name="UnboundApk" label="Not installed by Chrome"/>
   <affected-histogram name="WebApk.ShellApkVersion"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="WebBluetoothMacOSAPIs" separator=".">
-  <suffix name="DidFailToConnectToPeripheral"
-      label="Failed to connect to peripheral"/>
-  <suffix name="DidDisconnectPeripheral" label="Disconnected from peripheral"/>
-  <suffix name="DidDiscoverPrimaryServices"
-      label="Discovered primary services"/>
-  <suffix name="DidDiscoverCharacteristics" label="Discovered characteristics"/>
-  <suffix name="DidUpdateValue" label="Updated value for characteristic"/>
-  <suffix name="DidWriteValue" label="Wrote value for characteristic"/>
-  <suffix name="DidUpdateNotificationState" label="Updated notification state"/>
-  <suffix name="DidDiscoverDescriptors" label="Discovered descriptors"/>
-  <suffix name="DidUpdateValueForDescriptor"
-      label="Updated value for descriptor"/>
-  <suffix name="DidWriteValueForDescriptor"
-      label="Wrote value value for descriptor"/>
-  <affected-histogram name="Bluetooth.MacOS.Errors"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebFontFamily" separator="_">
