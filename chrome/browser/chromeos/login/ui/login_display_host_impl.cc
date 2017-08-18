@@ -1306,6 +1306,8 @@ void LoginDisplayHostImpl::StartVoiceInteractionOobe() {
   is_voice_interaction_oobe_ = true;
   finalize_animation_type_ = ANIMATION_NONE;
   StartWizard(chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
+  // We should emit this signal only at login screen (after reboot or sign out).
+  login_view_->set_should_emit_login_prompt_visible(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
