@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
@@ -123,7 +124,9 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
           MakeURLRequestContext(params.get(), network_service)),
       url_request_context_(owned_url_request_context_.get()),
       params_(std::move(params)),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      cookie_manager_(base::MakeUnique<CookieManagerImpl>(
+          url_request_context_->cookie_store())) {
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -144,11 +147,16 @@ NetworkContext::NetworkContext(
   ApplyContextParamsToBuilder(builder.get(), params_.get(), network_service);
   owned_url_request_context_ = builder->Build();
   url_request_context_ = owned_url_request_context_.get();
+  cookie_manager_ =
+      base::MakeUnique<CookieManagerImpl>(url_request_context_->cookie_store());
 }
 
 NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
                                net::URLRequestContext* url_request_context)
-    : network_service_(nullptr), binding_(this, std::move(request)) {
+    : network_service_(nullptr),
+      binding_(this, std::move(request)),
+      cookie_manager_(base::MakeUnique<CookieManagerImpl>(
+          url_request_context->cookie_store())) {
   url_request_context_ = url_request_context;
 }
 
@@ -190,6 +198,10 @@ void NetworkContext::CreateURLLoaderFactory(
 void NetworkContext::HandleViewCacheRequest(const GURL& url,
                                             mojom::URLLoaderClientPtr client) {
   StartCacheURLLoader(url, url_request_context_, std::move(client));
+}
+
+void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
+  cookie_manager_->AddRequest(std::move(request));
 }
 
 void NetworkContext::DisableQuic() {

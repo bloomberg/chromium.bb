@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/network/cookie_manager_impl.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -75,6 +76,7 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
                               uint32_t process_id) override;
   void HandleViewCacheRequest(const GURL& url,
                               mojom::URLLoaderClientPtr client) override;
+  void GetCookieManager(mojom::CookieManagerRequest request) override;
 
   // Called when the associated NetworkServiceImpl is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
@@ -110,6 +112,8 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   mojom::NetworkContextParamsPtr params_;
 
   mojo::Binding<mojom::NetworkContext> binding_;
+
+  std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

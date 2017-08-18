@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "cookie_manager.mojom";
 import "mojo/common/file_path.mojom";
 import "url_loader.mojom";
 import "url_loader_factory.mojom";
@@ -56,6 +57,9 @@ interface NetworkContext {
   // display different parts of the cache.
   HandleViewCacheRequest(url.mojom.Url url,
                          URLLoaderClient client);
+
+  // Get the CookieManager associated with this network context.
+  GetCookieManager(CookieManager& cookie_manager);
 };
 
 // Browser interface to the network service.

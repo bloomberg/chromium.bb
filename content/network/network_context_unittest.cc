@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_task_environment.h"
@@ -24,6 +25,9 @@
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -32,6 +36,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -368,6 +373,53 @@ TEST_F(NetworkContextTest, SimpleCache) {
   backend->GetStats(&stats);
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             GetBackendType(backend));
+}
+
+void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {
+  *result_out = result;
+  run_loop->Quit();
+}
+
+void GetCookieListCallback(base::RunLoop* run_loop,
+                           net::CookieList* result_out,
+                           const net::CookieList& result) {
+  *result_out = result;
+  run_loop->Quit();
+}
+
+TEST_F(NetworkContextTest, CookieManager) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  mojom::CookieManagerPtr cookie_manager_ptr;
+  mojom::CookieManagerRequest cookie_manager_request(
+      mojo::MakeRequest(&cookie_manager_ptr));
+  network_context->GetCookieManager(std::move(cookie_manager_request));
+
+  // Set a cookie through the cookie interface.
+  base::RunLoop run_loop1;
+  bool result = false;
+  cookie_manager_ptr->SetCanonicalCookie(
+      net::CanonicalCookie("TestCookie", "1", "www.test.com", "/", base::Time(),
+                           base::Time(), base::Time(), false, false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_LOW),
+      true, true, base::BindOnce(&SetCookieCallback, &run_loop1, &result));
+  run_loop1.Run();
+  EXPECT_TRUE(result);
+
+  // Confirm that cookie is visible directly through the store associated with
+  // the network context.
+  base::RunLoop run_loop2;
+  net::CookieList cookies;
+  network_context->url_request_context()
+      ->cookie_store()
+      ->GetCookieListWithOptionsAsync(
+          GURL("http://www.test.com/whatever"), net::CookieOptions(),
+          base::Bind(&GetCookieListCallback, &run_loop2, &cookies));
+  run_loop2.Run();
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ("TestCookie", cookies[0].Name());
 }
 
 }  // namespace
