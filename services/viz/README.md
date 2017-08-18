@@ -1,7 +1,9 @@
 # Viz Directory Structure
 
 The Viz (Visuals) service is a collection of subservices: compositing, gl, hit
-testing, and media.
+testing, and media. Viz bugs are tracked with the Internals>Viz component if
+no more specific component (e.g. Internals>Compositing, Internals>GPU) would
+serve.
 
 Viz has two types of clients: a single privileged client and one or more
 unprivileged clients.
