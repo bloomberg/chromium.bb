@@ -55,8 +55,6 @@ base::string16 BuildPathFromComponents(
 // Takes a prefix (Domain, or Domain+subdomain) and a collection of path
 // components and elides if possible. Returns a string containing the longest
 // possible elided path, or an empty string if elision is not possible.
-// Warning: This is O(url_path_elements.size() ^ 2), so it should not be called
-// on a very large path.
 base::string16 ElideComponentizedPath(
     const base::string16& url_path_prefix,
     const std::vector<base::string16>& url_path_elements,
@@ -261,13 +259,12 @@ base::string16 ElideUrl(const GURL& url,
   }
 
   const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
-  if (url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
-    // Too long of a path (ElideComponentizedPath is O(N^2) so this would result
-    // in degenerate behaviour). Just elide this as a text string.
-    // TODO(mgiuca): Fix ElideComponentizedPath to deal with degenerate cases
-    // itself, so we don't need this special case. We should not fall back on
-    // ElideText if we don't know the entire domain will fit, or else we might
-    // chop off the TLD. https://crbug.com/739975.
+  // TODO(mgiuca): If there is no path, this means the end of the domain gets
+  // elided, not the start (inconsistent). https://crbug.com/739636.
+  if (url_path_number_of_elements <= 1 ||
+      url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
+    // No path to elide, or too long of a path (could overflow in loop below)
+    // Just elide this as a text string.
     return gfx::ElideText(url_subdomain + url_domain + url_path_query_etc,
                           font_list, available_pixel_width, gfx::ELIDE_TAIL);
   }
@@ -279,13 +276,11 @@ base::string16 ElideUrl(const GURL& url,
       gfx::GetStringWidthF(kEllipsisAndSlash, font_list);
 
   // Check with both subdomain and domain.
-  if (url_path_number_of_elements > 0) {
-    base::string16 elided_path = ElideComponentizedPath(
-        url_subdomain + url_domain, url_path_elements, url_filename, url_query,
-        font_list, available_pixel_width);
-    if (!elided_path.empty())
-      return elided_path;
-  }
+  base::string16 elided_path = ElideComponentizedPath(
+      url_subdomain + url_domain, url_path_elements, url_filename, url_query,
+      font_list, available_pixel_width);
+  if (!elided_path.empty())
+    return elided_path;
 
   // Check with only domain.
   // If a subdomain is present, add an ellipsis before domain.
@@ -299,13 +294,12 @@ base::string16 ElideUrl(const GURL& url,
     else
       url_elided_domain = url_domain;
 
-    if (url_path_number_of_elements > 0) {
-      base::string16 elided_path = ElideComponentizedPath(
-          url_elided_domain, url_path_elements, url_filename, url_query,
-          font_list, available_pixel_width);
-      if (!elided_path.empty())
-        return elided_path;
-    }
+    elided_path = ElideComponentizedPath(url_elided_domain, url_path_elements,
+                                         url_filename, url_query, font_list,
+                                         available_pixel_width);
+
+    if (!elided_path.empty())
+      return elided_path;
   }
 
   // Return elided domain/.../filename anyway.
