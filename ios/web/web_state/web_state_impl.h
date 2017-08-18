@@ -266,6 +266,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void WillLoadCurrentItemWithParams(const NavigationManager::WebLoadParams&,
                                      bool is_initial_navigation) override;
   void LoadCurrentItem() override;
+  void LoadIfNecessary() override;
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemChanged() override;

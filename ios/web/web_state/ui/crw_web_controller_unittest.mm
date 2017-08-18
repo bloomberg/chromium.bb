@@ -10,12 +10,16 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
@@ -23,6 +27,7 @@
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -605,7 +610,7 @@ TEST_F(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   AddPendingItem(GURL("http://chromium.test"), ui::PAGE_TRANSITION_TYPED);
 
   [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
-  [[[mock_web_view_ stub] andReturn:@""] title];
+  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
 
   // Stub out the injection process.
   [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
@@ -937,6 +942,68 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
   EXPECT_FALSE([web_controller() isViewAlive]);
   EXPECT_TRUE([web_controller() isWebProcessCrashed]);
   EXPECT_TRUE(web_state()->IsCrashed());
+};
+
+// Test fixture for -[CRWWebController loadCurrentURLIfNecessary] method.
+class LoadIfNecessaryTest : public WebTest {
+ protected:
+  void SetUp() override {
+    WebTest::SetUp();
+    web_state_ = base::MakeUnique<WebStateImpl>(
+        WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
+    web_state_->SetWebUsageEnabled(true);
+  }
+
+  void TearDown() override {
+    WebTest::TearDown();
+    web_state_.reset();
+  }
+
+  std::unique_ptr<WebStateImpl> web_state_;
+
+ private:
+  // Returns file:// URL which point to a test html file with "pony" text.
+  GURL GetTestFileUrl() {
+    base::FilePath path;
+    base::PathService::Get(base::DIR_MODULE, &path);
+    path = path.Append(
+        FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
+    return GURL(base::StringPrintf("file://%s", path.value().c_str()));
+  }
+  // Returns session storage with a single committed entry with |GetTestFileUrl|
+  // url.
+  CRWSessionStorage* GetTestSessionStorage() {
+    CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
+    result.lastCommittedItemIndex = 0;
+    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+    [item setVirtualURL:GetTestFileUrl()];
+    [result setItemStorages:@[ item ]];
+    return result;
+  }
+};
+
+// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
+// re-enabling web usage.
+TEST_F(LoadIfNecessaryTest, RestoredFromHistory) {
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
+  [web_state_->GetWebController() loadCurrentURLIfNecessary];
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
+};
+
+// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
+// re-enabling web usage.
+TEST_F(LoadIfNecessaryTest, DisableAndReenableWebUsage) {
+  [web_state_->GetWebController() loadCurrentURLIfNecessary];
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
+
+  // Disable and re-enable web usage.
+  web_state_->SetWebUsageEnabled(false);
+  web_state_->SetWebUsageEnabled(true);
+
+  // |loadCurrentURLIfNecessary| should restore the page.
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
+  [web_state_->GetWebController() loadCurrentURLIfNecessary];
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
 };
 
 }  // namespace web

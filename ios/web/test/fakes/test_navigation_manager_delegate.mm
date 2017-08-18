@@ -19,6 +19,7 @@ void TestNavigationManagerDelegate::WillLoadCurrentItemWithParams(
     bool is_initial_navigation) {}
 void TestNavigationManagerDelegate::WillChangeUserAgentType() {}
 void TestNavigationManagerDelegate::LoadCurrentItem() {}
+void TestNavigationManagerDelegate::LoadIfNecessary() {}
 void TestNavigationManagerDelegate::Reload() {}
 void TestNavigationManagerDelegate::OnNavigationItemsPruned(
     size_t pruned_item_count) {}

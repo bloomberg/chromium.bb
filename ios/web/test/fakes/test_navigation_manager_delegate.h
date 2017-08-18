@@ -20,6 +20,7 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
                                      bool is_initial_navigation) override;
   void WillChangeUserAgentType() override;
   void LoadCurrentItem() override;
+  void LoadIfNecessary() override;
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemChanged() override;

@@ -67,6 +67,10 @@ void TestNavigationManager::LoadURLWithParams(
   load_url_with_params_was_called_ = true;
 }
 
+void TestNavigationManager::LoadIfNecessary() {
+  NOTREACHED();
+}
+
 void TestNavigationManager::AddTransientURLRewriter(
     BrowserURLRewriter::URLRewriter rewriter) {
   NOTREACHED();

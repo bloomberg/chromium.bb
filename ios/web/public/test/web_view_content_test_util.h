@@ -14,6 +14,11 @@ namespace test {
 // Otherwise, returns false.
 bool IsWebViewContainingText(web::WebState* web_state, const std::string& text);
 
+// Waits for the given web state to contain |text|. If the condition is not met
+// within a timeout false is returned.
+bool WaitForWebViewContainingText(web::WebState* web_state,
+                                  std::string text) WARN_UNUSED_RESULT;
+
 }  // namespace test
 }  // namespace web
 

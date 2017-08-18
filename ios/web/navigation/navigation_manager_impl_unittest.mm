@@ -76,6 +76,7 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
                void(const NavigationManager::WebLoadParams&, bool));
   MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD0(LoadCurrentItem, void());
+  MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
   MOCK_METHOD0(OnNavigationItemChanged, void());
@@ -2297,6 +2298,11 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentUserAgentType) {
 
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   navigation_manager()->GoToIndex(0);
+}
+
+TEST_P(NavigationManagerTest, LoadIfNecessary) {
+  EXPECT_CALL(navigation_manager_delegate(), LoadIfNecessary()).Times(1);
+  navigation_manager()->LoadIfNecessary();
 }
 
 INSTANTIATE_TEST_CASE_P(
