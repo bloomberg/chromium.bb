@@ -1864,7 +1864,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]
         initWithBaseViewController:self
-                      browserState:_browserState];
+                      browserState:_browserState
+                        dispatcher:self.dispatcher];
     [_paymentRequestManager setToolbarModel:_toolbarModelIOS.get()];
     [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
   }
