@@ -47,6 +47,10 @@ class NavigationManagerDelegate {
   // Instructs the delegate to load the current navigation item.
   virtual void LoadCurrentItem() = 0;
 
+  // Instructs the delegate to load the current navigation item if the current
+  // page has not loaded yet.
+  virtual void LoadIfNecessary() = 0;
+
   // Instructs the delegate to reload.
   virtual void Reload() = 0;
 

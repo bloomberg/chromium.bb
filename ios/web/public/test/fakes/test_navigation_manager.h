@@ -26,6 +26,7 @@ class TestNavigationManager : public NavigationManager {
   NavigationItem* GetTransientItem() const override;
   void DiscardNonCommittedItems() override;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
+  void LoadIfNecessary() override;
   void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) override;
   int GetItemCount() const override;

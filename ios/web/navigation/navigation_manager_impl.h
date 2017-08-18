@@ -143,6 +143,7 @@ class NavigationManagerImpl : public NavigationManager {
   void AddTransientURLRewriter(BrowserURLRewriter::URLRewriter rewriter) final;
   void GoToIndex(int index) final;
   void Reload(ReloadType reload_type, bool check_for_reposts) final;
+  void LoadIfNecessary() final;
 
  protected:
   // The SessionStorageBuilder functions require access to private variables of

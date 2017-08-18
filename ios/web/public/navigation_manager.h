@@ -115,6 +115,13 @@ class NavigationManager {
   virtual void LoadURLWithParams(
       const NavigationManager::WebLoadParams& params) = 0;
 
+  // Loads the current page in the following cases:
+  //  - NavigationManager was restored from history and the current page has not
+  //    loaded yet.
+  //  - Renderer process has crashed.
+  //  - Web usage was disabled and re-enabled.
+  virtual void LoadIfNecessary() = 0;
+
   // Adds |rewriter| to a transient list of URL rewriters.  Transient URL
   // rewriters will be executed before the rewriters already added to the
   // BrowserURLRewriter singleton, and the list will be cleared after the next

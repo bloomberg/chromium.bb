@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
 namespace {
@@ -13,6 +14,9 @@ namespace {
 char kGetDocumentBodyJavaScript[] =
     "document.body ? document.body.textContent : null";
 }
+
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForUIElementTimeout;
 
 namespace web {
 namespace test {
@@ -26,6 +30,12 @@ bool IsWebViewContainingText(web::WebState* web_state,
     return body.find(text) != std::string::npos;
   }
   return false;
+}
+
+bool WaitForWebViewContainingText(web::WebState* web_state, std::string text) {
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return IsWebViewContainingText(web_state, text);
+  });
 }
 
 }  // namespace test
