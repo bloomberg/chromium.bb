@@ -112,7 +112,8 @@ Layer::Layer()
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f) {
+      device_scale_factor_(1.0f),
+      cache_render_surface_requests_(0) {
   CreateCcLayer();
 }
 
@@ -139,7 +140,8 @@ Layer::Layer(LayerType type)
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f) {
+      device_scale_factor_(1.0f),
+      cache_render_surface_requests_(0) {
   CreateCcLayer();
 }
 
@@ -664,8 +666,22 @@ void Layer::SwitchCCLayerForTest() {
 // which could be a supprise. But we want to preserve it after switching to a
 // new cc::Layer. There could be a whole subtree and the root changed, but does
 // not mean we want to treat the cache all different.
-void Layer::SetCacheRenderSurface(bool cache_render_surface) {
-  cc_layer_->SetCacheRenderSurface(cache_render_surface);
+void Layer::AddCacheRenderSurfaceRequest() {
+  ++cache_render_surface_requests_;
+  TRACE_COUNTER_ID1("ui", "CacheRenderSurfaceRequests", this,
+                    cache_render_surface_requests_);
+  if (cache_render_surface_requests_ == 1)
+    cc_layer_->SetCacheRenderSurface(true);
+}
+
+void Layer::RemoveCacheRenderSurfaceRequest() {
+  DCHECK_GT(cache_render_surface_requests_, 0u);
+
+  --cache_render_surface_requests_;
+  TRACE_COUNTER_ID1("ui", "CacheRenderSurfaceRequests", this,
+                    cache_render_surface_requests_);
+  if (cache_render_surface_requests_ == 0)
+    cc_layer_->SetCacheRenderSurface(false);
 }
 
 void Layer::SetTextureMailbox(
@@ -1183,6 +1199,10 @@ int Layer::GetFrameNumber() const {
 float Layer::GetRefreshRate() const {
   const Compositor* compositor = GetCompositor();
   return compositor ? compositor->refresh_rate() : 60.0;
+}
+
+ui::Layer* Layer::GetLayer() {
+  return this;
 }
 
 cc::Layer* Layer::GetCcLayer() const {

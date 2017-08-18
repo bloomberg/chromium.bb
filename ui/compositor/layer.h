@@ -421,7 +421,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // occlusion culling in favor of efficient caching. This should
   // only be used when paying the cost of creating a render
   // surface even if layer is invisible is not a problem.
-  void SetCacheRenderSurface(bool cache_render_surface);
+  void AddCacheRenderSurfaceRequest();
+  void RemoveCacheRenderSurfaceRequest();
 
   // The back link from the mask layer to it's associated masked layer.
   // We keep this reference for the case that if the mask layer gets deleted
@@ -460,6 +461,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   SkColor GetColorForAnimation() const override;
   float GetTemperatureFromAnimation() const override;
   float GetDeviceScaleFactor() const override;
+  ui::Layer* GetLayer() override;
   cc::Layer* GetCcLayer() const override;
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
@@ -592,6 +594,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
   // or SetTextureMailbox was called.
   gfx::Size frame_size_in_dip_;
+
+  // The counter to maintain how many cache render surface requests we have. If
+  // the value > 0, means we need to cache the render surface. If the value
+  // == 0, means we should not cache the render surface.
+  unsigned cache_render_surface_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

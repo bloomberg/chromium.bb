@@ -31,6 +31,9 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
 
   void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
   void SetTransitionDuration(base::TimeDelta duration);
+  // This will request render surface caching on the animating layer. The cache
+  // request will be removed at the end of the animation.
+  void CacheRenderSurface();
   base::TimeDelta GetTransitionDuration() const;
 
   // Locks transition duration in |animator_|. When transition duration

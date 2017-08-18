@@ -735,7 +735,7 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   layer->SetLayerInverted(true);
   const float temperature = 0.8f;
   layer->SetLayerTemperature(temperature);
-  layer->SetCacheRenderSurface(true);
+  layer->AddCacheRenderSurfaceRequest();
 
   auto clone = layer->Clone();
 
@@ -2009,7 +2009,7 @@ TEST_F(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
   GetCompositor()->SetRootLayer(root.get());
   root->Add(l1.get());
 
-  l1->SetCacheRenderSurface(true);
+  l1->AddCacheRenderSurfaceRequest();
 
   // Change l1's cc::Layer.
   l1->SwitchCCLayerForTest();

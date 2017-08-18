@@ -114,7 +114,11 @@ float TestLayerAnimationDelegate::GetDeviceScaleFactor() const {
 
 LayerAnimatorCollection*
 TestLayerAnimationDelegate::GetLayerAnimatorCollection() {
-  return NULL;
+  return nullptr;
+}
+
+ui::Layer* TestLayerAnimationDelegate::GetLayer() {
+  return nullptr;
 }
 
 cc::Layer* TestLayerAnimationDelegate::GetCcLayer() const {
