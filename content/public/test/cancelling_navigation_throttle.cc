@@ -43,8 +43,8 @@ CancellingNavigationThrottle::ProcessState(bool should_cancel) {
   if (sync_ == ASYNCHRONOUS) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&CancellingNavigationThrottle::MaybeCancel,
-                   weak_ptr_factory_.GetWeakPtr(), should_cancel));
+        base::BindOnce(&CancellingNavigationThrottle::MaybeCancel,
+                       weak_ptr_factory_.GetWeakPtr(), should_cancel));
     return NavigationThrottle::DEFER;
   }
   if (should_cancel) {

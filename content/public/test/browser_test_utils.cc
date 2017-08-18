@@ -398,7 +398,7 @@ void GetCookiesOnIOThread(const GURL& url,
       context_getter->GetURLRequestContext()->cookie_store();
   cookie_store->GetCookiesWithOptionsAsync(
       url, net::CookieOptions(),
-      base::Bind(&GetCookiesCallback, cookies, event));
+      base::BindOnce(&GetCookiesCallback, cookies, event));
 }
 
 void SetCookieCallback(bool* result,
@@ -417,7 +417,7 @@ void SetCookieOnIOThread(const GURL& url,
       context_getter->GetURLRequestContext()->cookie_store();
   cookie_store->SetCookieWithOptionsAsync(
       url, value, net::CookieOptions(),
-      base::Bind(&SetCookieCallback, result, event));
+      base::BindOnce(&SetCookieCallback, result, event));
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
@@ -1149,8 +1149,8 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetCookiesOnIOThread, url, base::RetainedRef(context_getter),
-                 &event, &cookies));
+      base::BindOnce(&GetCookiesOnIOThread, url,
+                     base::RetainedRef(context_getter), &event, &cookies));
   event.Wait();
   return cookies;
 }
@@ -1167,8 +1167,8 @@ bool SetCookie(BrowserContext* browser_context,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetCookieOnIOThread, url, value,
-                 base::RetainedRef(context_getter), &event, &result));
+      base::BindOnce(&SetCookieOnIOThread, url, value,
+                     base::RetainedRef(context_getter), &event, &result));
   event.Wait();
   return result;
 }
@@ -1790,7 +1790,7 @@ bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
       msg.routing_id() == routing_id_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&MainThreadFrameObserver::Quit, base::Unretained(this)));
+        base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
   return true;
 }
@@ -1828,8 +1828,8 @@ bool InputMsgWatcher::OnMessageReceived(const IPC::Message& message) {
     InputEventAckSource ack_source = std::get<0>(params).source;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&InputMsgWatcher::ReceivedAck, this, ack_type, ack_state,
-                   static_cast<uint32_t>(ack_source)));
+        base::BindOnce(&InputMsgWatcher::ReceivedAck, this, ack_type, ack_state,
+                       static_cast<uint32_t>(ack_source)));
   }
   return false;
 }

@@ -55,8 +55,8 @@ void DeferredQuitRunLoop(const base::Closure& quit_task,
     quit_task.Run();
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
+        FROM_HERE, base::BindOnce(&DeferredQuitRunLoop, quit_task,
+                                  num_quit_deferrals - 1));
   }
 }
 
@@ -149,8 +149,8 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
       base::ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop.QuitClosure());
   BrowserThread::PostTask(
       thread_id, FROM_HERE,
-      base::Bind(&DeferredQuitRunLoop, post_quit_run_loop_to_ui_thread,
-                 kNumQuitDeferrals));
+      base::BindOnce(&DeferredQuitRunLoop, post_quit_run_loop_to_ui_thread,
+                     kNumQuitDeferrals));
   RunThisRunLoop(&run_loop);
 }
 

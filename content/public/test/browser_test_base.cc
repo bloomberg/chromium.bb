@@ -361,7 +361,7 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 
   renderer_loop->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&RunTaskOnRendererThread, task, runner->QuitClosure()));
+      base::BindOnce(&RunTaskOnRendererThread, task, runner->QuitClosure()));
   runner->Run();
 }
 

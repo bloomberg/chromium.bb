@@ -83,7 +83,7 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
     // Give the fake result in a short while.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &FakeSpeechRecognitionManager::SetFakeRecognitionResult,
             // This class does not need to be refcounted (typically done by
             // PostTask) since it will outlive the test and gets released only
@@ -94,9 +94,8 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
   }
   if (!recognition_started_closure_.is_null()) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&RunCallback, recognition_started_closure_));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&RunCallback, recognition_started_closure_));
   }
 }
 

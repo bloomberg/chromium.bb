@@ -118,7 +118,7 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   base::RunLoop run_loop;
   BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](MediaStreamManager* media_stream_manager,
              base::Closure quit_closure) {
             media_stream_manager->video_capture_manager()->EnumerateDevices(
