@@ -497,12 +497,6 @@ Element* RootEditableElementOf(const PositionInFlatTree& p) {
   return RootEditableElementOf(ToPositionInDOMTree(p));
 }
 
-// TODO(yosin) This does not handle [table, 0] correctly.
-Element* RootEditableElementOf(const VisiblePosition& visible_position) {
-  Node* anchor_node = visible_position.DeepEquivalent().AnchorNode();
-  return anchor_node ? RootEditableElement(*anchor_node) : nullptr;
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> NextCandidateAlgorithm(
     const PositionTemplate<Strategy>& position) {
