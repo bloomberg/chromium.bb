@@ -178,8 +178,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   self.provider->FireCategoryStatusChanged(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
   _scopedCommandLine.reset();
-  chrome_test_util::ClearBrowsingHistory();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [super tearDown];
 }
 
@@ -444,7 +442,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [self setupReadingListContextMenu];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
-  // Open in new incognito tab.
+  // Open in new tab.
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
@@ -490,115 +488,48 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
                   @"The number of unread entry has been changed.");
 }
 
-// Tests the "Open in New Tab" action of the Most Visited context menu.
-- (void)testMostVisitedNewTab {
-  [self setupMostVisitedTileLongPress];
+// Tests that when long pressing a Most Visited tile, a context menu is shown.
+- (void)testMostVisitedLongPress {
+  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
-  // Open in new tab.
+  // Clear history and verify that the tile does not exist.
+  chrome_test_util::ClearBrowsingHistory();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+
+  // After loading URL, need to do another action before opening a new tab
+  // with the icon present.
+  [ChromeEarlGrey goBack];
+
+  chrome_test_util::OpenNewTab();
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabel(
+                     base::SysUTF8ToNSString(kPageTitle))]
+      performAction:grey_longPress()];
+
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
-      performAction:grey_tap()];
-
-  // Check a new page in normal model is opened.
-  [ChromeEarlGrey waitForMainTabCount:2];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
-
-  // Check that the tab has been opened in background.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Check the page has been correctly opened.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          pageURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests the "Open in New Incognito Tab" action of the Most Visited context
-// menu.
-- (void)testMostVisitedNewIncognitoTab {
-  [self setupMostVisitedTileLongPress];
-  const GURL pageURL = self.testServer->GetURL(kPageURL);
-
-  // Open in new incognito tab.
+      assertWithMatcher:grey_interactable()];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::ButtonWithAccessibilityLabelId(
                      IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
-      performAction:grey_tap()];
-
-  [ChromeEarlGrey waitForMainTabCount:1];
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
-
-  // Check that the tab has been opened in foreground.
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          pageURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Test did not switch to incognito");
-}
-
-// Tests the "Remove" action of the Most Visited context menu, and the "Undo"
-// action.
-- (void)testMostVisitedRemoveUndo {
-  [self setupMostVisitedTileLongPress];
-  const GURL pageURL = self.testServer->GetURL(kPageURL);
-  NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
-
-  // Tap on remove.
+      assertWithMatcher:grey_interactable()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
-      performAction:grey_tap()];
-
-  // Check the tile is removed.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle),
-              grey_sufficientlyVisible(), nil)] assertWithMatcher:grey_nil()];
-
-  // Check the snack bar notifying the user that an element has been removed is
-  // displayed.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NEW_TAB_MOST_VISITED_ITEM_REMOVED)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap on undo.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE)]
-      performAction:grey_tap()];
-
-  // Check the tile is back.
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Tests that the context menu has the correct actions.
-- (void)testMostVisitedLongPress {
-  [self setupMostVisitedTileLongPress];
-
+      assertWithMatcher:grey_interactable()];
   if (!IsIPadIdiom()) {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(
                        IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];
   }
 
-  // No read later.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)]
-      assertWithMatcher:grey_nil()];
+  chrome_test_util::ClearBrowsingHistory();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 #pragma mark - Properties
@@ -633,31 +564,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGrey waitForIncognitoTabCount:0];
   GREYAssertEqual(1, readingListModel->unread_size(),
                   @"There should be only one unread entry.");
-}
-
-// Setup a most visited tile, and open the context menu by long pressing on it.
-- (void)setupMostVisitedTileLongPress {
-  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-  const GURL pageURL = self.testServer->GetURL(kPageURL);
-  NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
-
-  // Clear history and verify that the tile does not exist.
-  chrome_test_util::ClearBrowsingHistory();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
-
-  // After loading URL, need to do another action before opening a new tab
-  // with the icon present.
-  [ChromeEarlGrey goBack];
-
-  [[self class] closeAllTabs];
-
-  chrome_test_util::OpenNewTab();
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle)]
-      performAction:grey_longPress()];
 }
 
 @end
