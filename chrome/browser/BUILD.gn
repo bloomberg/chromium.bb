@@ -1521,6 +1521,7 @@ split_static_library("browser") {
     "//chrome/browser/devtools",
     "//chrome/browser/media:mojo_bindings",
     "//chrome/browser/media/router",
+    "//chrome/browser/metrics:expired_histograms_array",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/profiling_host",
