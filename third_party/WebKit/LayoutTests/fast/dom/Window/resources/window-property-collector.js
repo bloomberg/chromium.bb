@@ -18,6 +18,7 @@ function emitExpectedResult(path, expected)
     if (path[0] == 'internals'
         || path[0] == 'clientInformation' // Just an alias for navigator.
         || path[0] == 'testRunner' // Skip testRunner since they are only for testing.
+        || path[0] == 'layoutTestController' // Just an alias for testRunner.
         || path[0] == 'eventSender') { // Skip eventSender since they are only for testing.
         return;
     }
