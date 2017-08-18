@@ -16,6 +16,7 @@ class Layer;
 
 namespace ui {
 
+class Layer;
 class LayerAnimatorCollection;
 class LayerThreadedAnimationDelegate;
 
@@ -40,6 +41,7 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual SkColor GetColorForAnimation() const = 0;
   virtual float GetTemperatureFromAnimation() const = 0;
   virtual float GetDeviceScaleFactor() const = 0;
+  virtual ui::Layer* GetLayer() = 0;
   virtual cc::Layer* GetCcLayer() const = 0;
   virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
   virtual LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() = 0;

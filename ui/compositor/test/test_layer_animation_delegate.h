@@ -52,6 +52,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float GetTemperatureFromAnimation() const override;
   float GetDeviceScaleFactor() const override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
+  ui::Layer* GetLayer() override;
   cc::Layer* GetCcLayer() const override;
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
   int GetFrameNumber() const override;
