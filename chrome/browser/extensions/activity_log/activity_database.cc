@@ -53,13 +53,11 @@ ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
 ActivityDatabase::~ActivityDatabase() {}
 
 void ActivityDatabase::Init(const base::FilePath& db_name) {
-  LOG(WARNING) << "INITING";
   if (did_init_)
     return;
   did_init_ = true;
   DCHECK(GetActivityLogTaskRunner()->RunsTasksInCurrentSequence());
   db_.set_histogram_tag("Activity");
-  LOG(WARNING) << "Set callback";
   db_.set_error_callback(
       base::Bind(&ActivityDatabase::DatabaseErrorCallback,
                  base::Unretained(this)));
