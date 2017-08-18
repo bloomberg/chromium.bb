@@ -78,6 +78,9 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
     int single_tap_repeat_interval;
 
     VelocityTracker::Strategy velocity_tracker_strategy;
+
+    // Whether press gestures are generated for stylus.
+    bool press_enabled_for_stylus_;
   };
 
   GestureDetector(const Config& config,
@@ -98,6 +101,9 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
 
   void set_longpress_enabled(bool enabled) { longpress_enabled_ = enabled; }
   void set_showpress_enabled(bool enabled) { showpress_enabled_ = enabled; }
+  void set_press_enabled_for_stylus(bool enabled) {
+    press_enabled_for_stylus_ = enabled;
+  }
 
   // Returns the event storing the initial position of the pointer with given
   // pointer ID. This returns nullptr if the source event isn't
@@ -175,6 +181,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   bool showpress_enabled_;
   bool swipe_enabled_;
   bool two_finger_tap_enabled_;
+  bool press_enabled_for_stylus_;
 
   // Determines speed during touch scrolling.
   VelocityTrackerState velocity_tracker_;
