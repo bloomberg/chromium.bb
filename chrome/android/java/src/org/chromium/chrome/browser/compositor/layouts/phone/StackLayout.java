@@ -75,6 +75,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final float THRESHOLD_TIME_TO_SWITCH_STACK_INPUT_MODE = 200;
     private static final int NEW_TAB_ANIMATION_DURATION_MS = 300;
 
+    public static final int MODERN_TOP_MARGIN_DP = 16;
+
     /**
      * The delta time applied on the velocity from the fling. This is to compute the kick to help
      * switching the stack.
@@ -86,6 +88,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     /** Rectangles that defines the area where each stack need to be laid out. */
     private final RectF[] mStackRects;
+
+    private final RectF mCachedRect = new RectF();
 
     private int mStackAnimationCount;
 
@@ -1330,11 +1334,16 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                 resourceManager, fullscreenManager);
         // If the browser controls are at the bottom make sure to use theme colors for this layout
         // specifically.
+        mCachedRect.set(viewport);
         if (fullscreenManager.areBrowserControlsAtBottom() && mLayoutTabs != null) {
             for (LayoutTab t : mLayoutTabs) t.setForceDefaultThemeColor(false);
+            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+                mCachedRect.offset(0, MODERN_TOP_MARGIN_DP * mDpToPx);
+            }
         }
         assert mSceneLayer != null;
-        mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
+
+        mSceneLayer.pushLayers(getContext(), mCachedRect, contentViewport, this, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
     }
 }
