@@ -1051,10 +1051,11 @@ bool PasswordAutofillAgent::ShowSuggestions(
                                                                 frame_url);
       }
 #endif
-      if (ShouldShowStandaloneManuallFallback(element)) {
-        ShowManualFallbackSuggestion(element);
+      if (ShouldShowStandaloneManuallFallback(element) &&
+          ShowManualFallbackSuggestion(element)) {
         return true;
       }
+
       if (ShouldShowNotSecureWarning(element)) {
         autofill_agent_->ShowNotSecureWarning(element);
         return true;
@@ -1753,14 +1754,20 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
 }
 
-void PasswordAutofillAgent::ShowManualFallbackSuggestion(
+bool PasswordAutofillAgent::ShowManualFallbackSuggestion(
     const blink::WebInputElement& element) {
+  if (!element.Value().IsEmpty()) {
+    GetAutofillDriver()->HidePopup();
+    return false;
+  }
+
   FormData form;
   FormFieldData field;
   form_util::FindFormAndFieldForFormControlElement(element, &form, &field);
   GetPasswordManagerDriver()->ShowManualFallbackSuggestion(
       field.text_direction,
       render_frame()->GetRenderView()->ElementBoundsInWindow(element));
+  return true;
 }
 
 void PasswordAutofillAgent::FrameClosing() {
