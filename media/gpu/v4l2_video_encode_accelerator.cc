@@ -23,8 +23,8 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/filters/h264_parser.h"
 #include "media/gpu/shared_memory_region.h"
+#include "media/video/h264_parser.h"
 
 #define NOTIFY_ERROR(x)                        \
   do {                                         \

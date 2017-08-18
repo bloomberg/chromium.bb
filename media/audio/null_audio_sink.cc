@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_hash.h"
+#include "media/base/fake_audio_worker.h"
 
 namespace media {
 

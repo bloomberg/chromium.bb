@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_RENDERERS_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_
-#define MEDIA_RENDERERS_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_
+#ifndef MEDIA_VIDEO_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_
+#define MEDIA_VIDEO_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_
 
 #include "base/callback.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
@@ -25,4 +25,4 @@ class MockGpuMemoryBufferVideoFramePool : public GpuMemoryBufferVideoFramePool {
 
 }  // namespace media
 
-#endif  // MEDIA_RENDERERS_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_
+#endif  // MEDIA_VIDEO_MOCK_GPU_MEMORY_BUFFER_VIDEO_FRAME_POOL_H_

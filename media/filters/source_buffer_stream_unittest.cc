@@ -26,8 +26,8 @@
 #include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/webvtt_util.h"
 #include "media/filters/source_buffer_range.h"
-#include "media/filters/webvtt_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::HasSubstr;

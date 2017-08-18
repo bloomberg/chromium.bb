@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
-#include "media/filters/webvtt_util.h"
+#include "media/base/webvtt_util.h"
 
 namespace media {
 

@@ -17,32 +17,25 @@ if (is_android) {
 config("base_config") {
   configs = [
     "//build/config:precompiled_headers",
+
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//media:media_config",
+
     "//media:media_dependent_config",
-    "//media:media_implementation",
+    "//media:subcomponent_config",
   ]
 }
 
-if (is_component_build) {
-  link_target_type = "source_set"
-} else {
-  link_target_type = "static_library"
-}
+source_set("base") {
+  visibility = media_subcomponent_deps
+  visibility += [ "//media" ]
 
-target(link_target_type, "base") {
-  # This should only be depended on by "media" target. Other targets should
-  # depend on "media" target directly.
-  visibility = [
-    "//media/base/mac:*",
-    "//media/formats",
-    "//media/muxers",
-    "//media/renderers",
+  # TODO(dalecurtis): Replace this with empty targets on non-mac so
+  # we can just include //media/base/mac in media_subcomponent_deps.
+  if (is_ios || is_mac) {
+    visibility += [ "//media/base/mac" ]
+  }
 
-    # TODO(xhwang): Clean up the dependency graph within "media" target.
-    "//media/audio",
-    "//media/ffmpeg",
-  ]
   sources = [
     "android_overlay_config.cc",
     "android_overlay_config.h",
@@ -148,6 +141,8 @@ target(link_target_type, "base") {
     "eme_constants.h",
     "encryption_scheme.cc",
     "encryption_scheme.h",
+    "fake_audio_worker.cc",
+    "fake_audio_worker.h",
     "feedback_signal_accumulator.h",
     "hdr_metadata.cc",
     "hdr_metadata.h",
@@ -167,6 +162,7 @@ target(link_target_type, "base") {
     "media_client.h",
     "media_content_type.cc",
     "media_content_type.h",
+    "media_export.h",
     "media_log.cc",
     "media_log.h",
     "media_log_event.h",
@@ -219,6 +215,7 @@ target(link_target_type, "base") {
     "renderer_factory.h",
     "renderer_factory_selector.cc",
     "renderer_factory_selector.h",
+    "routing_token_callback.h",
     "sample_format.cc",
     "sample_format.h",
     "scoped_callback_runner.h",
@@ -276,24 +273,24 @@ target(link_target_type, "base") {
     "wall_clock_time_source.h",
     "watch_time_keys.cc",
     "watch_time_keys.h",
+    "webvtt_util.h",
   ]
 
-  allow_circular_includes_from = []
   defines = []
   public_deps = [
-    "//media/base:video_facing",
+    ":video_facing",
+    "//media:media_features",
+    "//media:shared_memory_support",
     "//ui/gfx:color_space",
   ]
   deps = [
-    # For BUILDFLAG(USE_ALLOCATOR_SHIM).
     "//base/allocator:features",
-    "//base/third_party/dynamic_annotations:dynamic_annotations",
-    "//gpu",
-    "//media:media_features",
-    "//media:shared_memory_support",
+    "//gpu/command_buffer/common",
     "//ppapi/features",
     "//skia",
     "//third_party/libyuv",
+    "//third_party/widevine/cdm:headers",
+    "//ui/display:display",
     "//ui/events:events_base",
     "//url:url",
   ]
@@ -301,30 +298,20 @@ target(link_target_type, "base") {
   configs += [ ":base_config" ]
 
   if (media_use_ffmpeg) {
-    deps += [ "//third_party/ffmpeg" ]
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
+    ]
   }
 
   if (media_use_libvpx) {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (is_android) {
-    public_deps += [
-      "//media/base/android",
-      "//media/base/android:media_jni_headers",
-    ]
-    allow_circular_includes_from += [ "//media/base/android" ]
-  }
-
   if (is_linux && use_x11) {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
-
-      # TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
-      #         "//build/config/linux:xdamage",
-      #         "//build/config/linux:xfixes",
-      #         "//build/config/linux:xtst",
     ]
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
@@ -350,17 +337,13 @@ target(link_target_type, "base") {
       "keyboard_event_counter.h",
     ]
   }
+
+  if (is_win) {
+    deps += [ "//media/base/win" ]
+  }
 }
 
 source_set("video_facing") {
-  visibility = [
-    "//chromeos",
-    "//chromeos:chromeos_unittests",
-    "//content/browser",
-    "//content/public/common:common_sources",
-    "//media/base",
-    "//media/capture",
-  ]
   sources = [
     "video_facing.h",
   ]
@@ -375,7 +358,15 @@ if (is_android) {
   }
 }
 
+# Note: Only specific internal targets that roll up into the //media component
+# should depend on this, external targets should use //media:test_support.
 static_library("test_support") {
+  visibility = [
+    "//media:test_support",
+    "//media/audio:test_support",
+    "//media/base/android:test_support",
+    "//media/video:test_support",
+  ]
   testonly = true
   sources = [
     "fake_audio_render_callback.cc",
@@ -404,15 +395,19 @@ static_library("test_support") {
     "test_helpers.cc",
     "test_helpers.h",
     "test_random.h",
-    "vector_math_testing.h",
   ]
   configs += [ "//media:media_config" ]
+
+  # Do not add any other //media deps except this; this ensures other
+  # test_support targets all use the same //media component to avoid duplicate
+  # and undefined symbol issues on Windows.
+  public_deps = [
+    "//media",
+  ]
+
   deps = [
     "//base",
     "//base/test:test_support",
-    "//media",
-    "//media:media_features",
-    "//media:shared_memory_support",
     "//testing/gmock",
     "//ui/gfx:test_support",
   ]
@@ -452,6 +447,7 @@ source_set("unit_tests") {
     "decoder_buffer_queue_unittest.cc",
     "decoder_buffer_unittest.cc",
     "djb2_unittest.cc",
+    "fake_audio_worker_unittest.cc",
     "fake_demuxer_stream_unittest.cc",
     "feedback_signal_accumulator_unittest.cc",
     "gmock_callback_support_unittest.cc",
@@ -483,45 +479,28 @@ source_set("unit_tests") {
     "wall_clock_time_source_unittest.cc",
   ]
   configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:media_config",
   ]
   deps = [
-    ":test_support",
     "//base/test:test_support",
     "//gpu/command_buffer/common",
-    "//media",
+    "//media:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libyuv",
+    "//third_party/widevine/cdm:headers",
+    "//ui/gfx",
   ]
 
-  if (is_android) {
-    deps += [
-      "//media/base/android:unit_tests",
-      "//ui/gl",
-    ]
+  if (is_mac || is_ios) {
+    deps += [ "//media/base/mac:unit_tests" ]
   }
 
   if (is_linux || is_win) {
     sources += [ "keyboard_event_counter_unittest.cc" ]
-  }
-}
-
-test("media_base_unittests") {
-  deps = [
-    ":unit_tests",
-    "//media/test:run_all_unittests",
-  ]
-
-  if (is_android) {
-    deps += [
-      # The test needs the java dependencies to add the java classes for their
-      # native counterparts to the test apk.
-      "//media/base/android:media_java",
-      "//ui/android:ui_java",
-    ]
   }
 }
 
@@ -534,20 +513,15 @@ source_set("perftests") {
     "sinc_resampler_perftest.cc",
     "vector_math_perftest.cc",
   ]
-  configs += [ "//media:media_config" ]
+  configs += [ ":base_config" ]
   deps = [
-    ":test_support",
     "//base",
     "//base/test:test_support",
-    "//media",
+    "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
   ]
-
-  if (media_use_ffmpeg) {
-    sources += [ "demuxer_perftest.cc" ]
-  }
 }
 
 fuzzer_test("media_bit_reader_fuzzer") {
@@ -555,9 +529,8 @@ fuzzer_test("media_bit_reader_fuzzer") {
     "bit_reader_fuzzertest.cc",
   ]
   deps = [
-    ":test_support",
     "//base",
-    "//media",
+    "//media:test_support",
   ]
 }
 
@@ -567,6 +540,6 @@ fuzzer_test("media_container_names_fuzzer") {
   ]
   deps = [
     "//base",
-    "//media",
+    "//media:test_support",
   ]
 }

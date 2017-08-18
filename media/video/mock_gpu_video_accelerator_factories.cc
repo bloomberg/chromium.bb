@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/renderers/mock_gpu_video_accelerator_factories.h"
+#include "media/video/mock_gpu_video_accelerator_factories.h"
 
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -28,9 +28,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
            gfx::BufferFormat::UYVY_422 == format_);
     DCHECK(num_planes_ <= kMaxPlanes);
     for (int i = 0; i < static_cast<int>(num_planes_); ++i) {
-      bytes_[i].resize(
-          gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
-          size_.height() / gfx::SubsamplingFactorForBufferFormat(format_, i));
+      bytes_[i].resize(gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
+                       size_.height() /
+                       gfx::SubsamplingFactorForBufferFormat(format_, i));
     }
   }
 
@@ -50,9 +50,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     mapped_ = false;
   }
   gfx::Size GetSize() const override { return size_; }
-  gfx::BufferFormat GetFormat() const override {
-    return format_;
-  }
+  gfx::BufferFormat GetFormat() const override { return format_; }
   int stride(size_t plane) const override {
     DCHECK_LT(plane, num_planes_);
     return static_cast<int>(gfx::RowSizeForBufferFormat(

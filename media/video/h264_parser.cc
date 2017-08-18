@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_parser.h"
 
 #include <limits>
 #include <memory>
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
-#include "media/base/decrypt_config.h"
+#include "media/base/subsample_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -204,12 +204,10 @@ H264SEIMessage::H264SEIMessage() {
 
 // ISO 14496 part 10
 // VUI parameters: Table E-1 "Meaning of sample aspect ratio indicator"
-static const int kTableSarWidth[] = {
-  0, 1, 12, 10, 16, 40, 24, 20, 32, 80, 18, 15, 64, 160, 4, 3, 2
-};
-static const int kTableSarHeight[] = {
-  0, 1, 11, 11, 11, 33, 11, 11, 11, 33, 11, 11, 33, 99, 3, 2, 1
-};
+static const int kTableSarWidth[] = {0,  1,  12, 10, 16,  40, 24, 20, 32,
+                                     80, 18, 15, 64, 160, 4,  3,  2};
+static const int kTableSarHeight[] = {0,  1,  11, 11, 11, 33, 11, 11, 11,
+                                      33, 11, 11, 33, 99, 3,  2,  1};
 static_assert(arraysize(kTableSarWidth) == arraysize(kTableSarHeight),
               "sar tables must have the same size");
 
@@ -217,8 +215,7 @@ H264Parser::H264Parser() {
   Reset();
 }
 
-H264Parser::~H264Parser() {
-}
+H264Parser::~H264Parser() {}
 
 void H264Parser::Reset() {
   stream_ = NULL;
@@ -334,8 +331,7 @@ bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   off_t nalu_start_off = 0;
   off_t annexb_start_code_size = 0;
 
-  if (!FindStartCodeInClearRanges(stream_, bytes_left_,
-                                  encrypted_ranges_,
+  if (!FindStartCodeInClearRanges(stream_, bytes_left_, encrypted_ranges_,
                                   &nalu_start_off, &annexb_start_code_size)) {
     DVLOG(4) << "Could not find start code, end of stream?";
     return false;
@@ -360,10 +356,9 @@ bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   // belong to the current NALU.
   off_t next_start_code_size = 0;
   off_t nalu_size_without_start_code = 0;
-  if (!FindStartCodeInClearRanges(nalu_data, max_nalu_data_size,
-                                  encrypted_ranges_,
-                                  &nalu_size_without_start_code,
-                                  &next_start_code_size)) {
+  if (!FindStartCodeInClearRanges(
+          nalu_data, max_nalu_data_size, encrypted_ranges_,
+          &nalu_size_without_start_code, &next_start_code_size)) {
     nalu_size_without_start_code = max_nalu_data_size;
   }
   *nalu_size = nalu_size_without_start_code + annexb_start_code_size;
@@ -532,22 +527,26 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
 
 // Default scaling lists (per spec).
 static const int kDefault4x4Intra[kH264ScalingList4x4Length] = {
-    6, 13, 13, 20, 20, 20, 28, 28, 28, 28, 32, 32, 32, 37, 37, 42, };
+    6, 13, 13, 20, 20, 20, 28, 28, 28, 28, 32, 32, 32, 37, 37, 42,
+};
 
 static const int kDefault4x4Inter[kH264ScalingList4x4Length] = {
-    10, 14, 14, 20, 20, 20, 24, 24, 24, 24, 27, 27, 27, 30, 30, 34, };
+    10, 14, 14, 20, 20, 20, 24, 24, 24, 24, 27, 27, 27, 30, 30, 34,
+};
 
 static const int kDefault8x8Intra[kH264ScalingList8x8Length] = {
     6,  10, 10, 13, 11, 13, 16, 16, 16, 16, 18, 18, 18, 18, 18, 23,
     23, 23, 23, 23, 23, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27,
     27, 27, 27, 27, 29, 29, 29, 29, 29, 29, 29, 31, 31, 31, 31, 31,
-    31, 33, 33, 33, 33, 33, 36, 36, 36, 36, 38, 38, 38, 40, 40, 42, };
+    31, 33, 33, 33, 33, 33, 36, 36, 36, 36, 38, 38, 38, 40, 40, 42,
+};
 
 static const int kDefault8x8Inter[kH264ScalingList8x8Length] = {
     9,  13, 13, 15, 13, 15, 17, 17, 17, 17, 19, 19, 19, 19, 19, 21,
     21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 24, 24, 24, 24,
     24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27, 27,
-    27, 28, 28, 28, 28, 28, 30, 30, 30, 30, 32, 32, 32, 33, 33, 35, };
+    27, 28, 28, 28, 28, 28, 30, 30, 30, 30, 32, 32, 32, 33, 33, 35,
+};
 
 static inline void DefaultScalingList4x4(
     int i,
@@ -694,8 +693,7 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(sps->scaling_list4x4[i]),
-                             sps->scaling_list4x4[i],
-                             &use_default);
+                             sps->scaling_list4x4[i], &use_default);
       if (res != kOk)
         return res;
 
@@ -703,8 +701,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
         DefaultScalingList4x4(i, sps->scaling_list4x4);
 
     } else {
-      FallbackScalingList4x4(
-          i, kDefault4x4Intra, kDefault4x4Inter, sps->scaling_list4x4);
+      FallbackScalingList4x4(i, kDefault4x4Intra, kDefault4x4Inter,
+                             sps->scaling_list4x4);
     }
   }
 
@@ -714,8 +712,7 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(sps->scaling_list8x8[i]),
-                             sps->scaling_list8x8[i],
-                             &use_default);
+                             sps->scaling_list8x8[i], &use_default);
       if (res != kOk)
         return res;
 
@@ -723,8 +720,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
         DefaultScalingList8x8(i, sps->scaling_list8x8);
 
     } else {
-      FallbackScalingList8x8(
-          i, kDefault8x8Intra, kDefault8x8Inter, sps->scaling_list8x8);
+      FallbackScalingList8x8(i, kDefault8x8Intra, kDefault8x8Inter,
+                             sps->scaling_list8x8);
     }
   }
 
@@ -743,8 +740,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
 
     if (pic_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(pps->scaling_list4x4[i]),
-                             pps->scaling_list4x4[i],
-                             &use_default);
+                             pps->scaling_list4x4[i], &use_default);
       if (res != kOk)
         return res;
 
@@ -754,14 +750,12 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
     } else {
       if (!sps.seq_scaling_matrix_present_flag) {
         // Table 7-2 fallback rule A in spec.
-        FallbackScalingList4x4(
-            i, kDefault4x4Intra, kDefault4x4Inter, pps->scaling_list4x4);
+        FallbackScalingList4x4(i, kDefault4x4Intra, kDefault4x4Inter,
+                               pps->scaling_list4x4);
       } else {
         // Table 7-2 fallback rule B in spec.
-        FallbackScalingList4x4(i,
-                               sps.scaling_list4x4[0],
-                               sps.scaling_list4x4[3],
-                               pps->scaling_list4x4);
+        FallbackScalingList4x4(i, sps.scaling_list4x4[0],
+                               sps.scaling_list4x4[3], pps->scaling_list4x4);
       }
     }
   }
@@ -772,8 +766,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
 
       if (pic_scaling_list_present_flag) {
         res = ParseScalingList(arraysize(pps->scaling_list8x8[i]),
-                               pps->scaling_list8x8[i],
-                               &use_default);
+                               pps->scaling_list8x8[i], &use_default);
         if (res != kOk)
           return res;
 
@@ -783,14 +776,12 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
       } else {
         if (!sps.seq_scaling_matrix_present_flag) {
           // Table 7-2 fallback rule A in spec.
-          FallbackScalingList8x8(
-              i, kDefault8x8Intra, kDefault8x8Inter, pps->scaling_list8x8);
+          FallbackScalingList8x8(i, kDefault8x8Intra, kDefault8x8Inter,
+                                 pps->scaling_list8x8);
         } else {
           // Table 7-2 fallback rule B in spec.
-          FallbackScalingList8x8(i,
-                                 sps.scaling_list8x8[0],
-                                 sps.scaling_list8x8[1],
-                                 pps->scaling_list8x8);
+          FallbackScalingList8x8(i, sps.scaling_list8x8[0],
+                                 sps.scaling_list8x8[1], pps->scaling_list8x8);
         }
       }
     }
@@ -812,8 +803,8 @@ H264Parser::Result H264Parser::ParseAndIgnoreHRDParameters(
   IN_RANGE_OR_RETURN(cpb_cnt_minus1, 0, 31);
   READ_BITS_OR_RETURN(8, &data);  // bit_rate_scale, cpb_size_scale
   for (int i = 0; i <= cpb_cnt_minus1; ++i) {
-    READ_UE_OR_RETURN(&data);  // bit_rate_value_minus1[i]
-    READ_UE_OR_RETURN(&data);  // cpb_size_value_minus1[i]
+    READ_UE_OR_RETURN(&data);    // bit_rate_value_minus1[i]
+    READ_UE_OR_RETURN(&data);    // cpb_size_value_minus1[i]
     READ_BOOL_OR_RETURN(&data);  // cbr_flag
   }
   READ_BITS_OR_RETURN(20, &data);  // cpb/dpb delays, etc.
@@ -870,7 +861,7 @@ H264Parser::Result H264Parser::ParseVUIParameters(H264SPS* sps) {
     READ_BITS_OR_RETURN(16, &data);  // num_units_in_tick
     READ_BITS_OR_RETURN(16, &data);  // time_scale
     READ_BITS_OR_RETURN(16, &data);  // time_scale
-    READ_BOOL_OR_RETURN(&data);  // fixed_frame_rate_flag
+    READ_BOOL_OR_RETURN(&data);      // fixed_frame_rate_flag
   }
 
   // Read and ignore NAL HRD parameters, if present.
@@ -884,22 +875,22 @@ H264Parser::Result H264Parser::ParseVUIParameters(H264SPS* sps) {
   if (res != kOk)
     return res;
 
-  if (hrd_parameters_present)  // One of NAL or VCL params present is enough.
+  if (hrd_parameters_present)    // One of NAL or VCL params present is enough.
     READ_BOOL_OR_RETURN(&data);  // low_delay_hrd_flag
 
   READ_BOOL_OR_RETURN(&data);  // pic_struct_present_flag
   READ_BOOL_OR_RETURN(&sps->bitstream_restriction_flag);
   if (sps->bitstream_restriction_flag) {
     READ_BOOL_OR_RETURN(&data);  // motion_vectors_over_pic_boundaries_flag
-    READ_UE_OR_RETURN(&data);  // max_bytes_per_pic_denom
-    READ_UE_OR_RETURN(&data);  // max_bits_per_mb_denom
-    READ_UE_OR_RETURN(&data);  // log2_max_mv_length_horizontal
-    READ_UE_OR_RETURN(&data);  // log2_max_mv_length_vertical
+    READ_UE_OR_RETURN(&data);    // max_bytes_per_pic_denom
+    READ_UE_OR_RETURN(&data);    // max_bits_per_mb_denom
+    READ_UE_OR_RETURN(&data);    // log2_max_mv_length_horizontal
+    READ_UE_OR_RETURN(&data);    // log2_max_mv_length_vertical
     READ_UE_OR_RETURN(&sps->max_num_reorder_frames);
     READ_UE_OR_RETURN(&sps->max_dec_frame_buffering);
     TRUE_OR_RETURN(sps->max_dec_frame_buffering >= sps->max_num_ref_frames);
-    IN_RANGE_OR_RETURN(
-        sps->max_num_reorder_frames, 0, sps->max_dec_frame_buffering);
+    IN_RANGE_OR_RETURN(sps->max_num_reorder_frames, 0,
+                       sps->max_dec_frame_buffering);
   }
 
   return kOk;
@@ -1187,7 +1178,6 @@ H264Parser::Result H264Parser::ParseWeightingFactors(
     int luma_log2_weight_denom,
     int chroma_log2_weight_denom,
     H264WeightingFactors* w_facts) {
-
   int def_luma_weight = 1 << luma_log2_weight_denom;
   int def_chroma_weight = 1 << chroma_log2_weight_denom;
 
@@ -1235,20 +1225,18 @@ H264Parser::Result H264Parser::ParsePredWeightTable(const H264SPS& sps,
     READ_UE_OR_RETURN(&shdr->chroma_log2_weight_denom);
   TRUE_OR_RETURN(shdr->chroma_log2_weight_denom < 8);
 
-  Result res = ParseWeightingFactors(shdr->num_ref_idx_l0_active_minus1,
-                                     sps.chroma_array_type,
-                                     shdr->luma_log2_weight_denom,
-                                     shdr->chroma_log2_weight_denom,
-                                     &shdr->pred_weight_table_l0);
+  Result res = ParseWeightingFactors(
+      shdr->num_ref_idx_l0_active_minus1, sps.chroma_array_type,
+      shdr->luma_log2_weight_denom, shdr->chroma_log2_weight_denom,
+      &shdr->pred_weight_table_l0);
   if (res != kOk)
     return res;
 
   if (shdr->IsBSlice()) {
-    res = ParseWeightingFactors(shdr->num_ref_idx_l1_active_minus1,
-                                sps.chroma_array_type,
-                                shdr->luma_log2_weight_denom,
-                                shdr->chroma_log2_weight_denom,
-                                &shdr->pred_weight_table_l1);
+    res = ParseWeightingFactors(
+        shdr->num_ref_idx_l1_active_minus1, sps.chroma_array_type,
+        shdr->luma_log2_weight_denom, shdr->chroma_log2_weight_denom,
+        &shdr->pred_weight_table_l1);
     if (res != kOk)
       return res;
   }

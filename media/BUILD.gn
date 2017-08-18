@@ -39,16 +39,12 @@ if (proprietary_codecs && media_use_ffmpeg) {
       "proprietary codecs and ffmpeg_branding set to Chromium are incompatible")
 }
 
-# Common configuration for targets in the media directory.
-# NOT for exporting.
+# Common configuration for targets in the media directory; these must not be
+# exported since things like USE_NEON and USE_CRAS have different meanings
+# elsewhere in the code base.
 config("media_config") {
+  configs = [ ":media_dependent_config" ]
   defines = []
-  if (!media_use_libvpx) {
-    defines += [ "MEDIA_DISABLE_LIBVPX" ]
-  }
-  if (!media_use_ffmpeg) {
-    defines += [ "MEDIA_DISABLE_FFMPEG" ]
-  }
   if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
     defines += [ "USE_NEON" ]
   }
@@ -63,10 +59,8 @@ config("media_config") {
   }
 }
 
-config("media_implementation") {
-  defines = [ "MEDIA_IMPLEMENTATION" ]
-}
-
+# Common defines which must be set in targets which depend on //media.
+# TODO(dalecurtis): These should be converted to BUILDFLAGs.
 config("media_dependent_config") {
   defines = []
   if (!media_use_libvpx) {
@@ -75,16 +69,30 @@ config("media_dependent_config") {
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
   }
-  if (is_win) {
-    ldflags = [
-      "/DELAYLOAD:mf.dll",
-      "/DELAYLOAD:mfplat.dll",
-      "/DELAYLOAD:mfreadwrite.dll",
-    ]
-  }
   if (disable_ffmpeg_video_decoders) {
     defines += [ "DISABLE_FFMPEG_VIDEO_DECODERS" ]
   }
+}
+
+# Internal grouping of the configs necessary to support sub-folders having their
+# own BUILD.gn files; only targets which roll up into the "media" target should
+# include this config. I.e., not "test_support" or "unit_tests" targets.
+#
+# Without these configs having individual sub-folders take a //media/base DEP
+# (or others) can yield incorrectly imported and exported symbols on Windows:
+#
+#    fatal error LNK1169: one or more multiply defined symbols found.
+#
+config("subcomponent_config") {
+  visibility = media_subcomponent_deps
+  if (is_mac) {
+    visibility += [ "//media/base/mac" ]
+  } else if (is_win) {
+    visibility += [ "//media/base/win" ]
+  }
+
+  defines = [ "MEDIA_IMPLEMENTATION" ]
+  configs = [ ":media_config" ]
 }
 
 component("media") {
@@ -106,33 +114,21 @@ component("media") {
     "//url",
   ]
 
+  all_dependent_configs = [ ":media_dependent_config" ]
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
-  public_deps = [
+  public_deps = media_subcomponent_deps
+  public_deps += [
     ":media_features",
     ":shared_memory_support",
-    "//media/device_monitors",
-    "//media/filters",
-    "//media/formats",
-    "//media/renderers",
 
     # media_switches.h needs ppapi/features/features.h.
     "//ppapi/features",
     "//ui/gfx:color_space",
   ]
 
-  if (is_mac) {
+  # This must be included here since it actually depends on //media/base.
+  if (is_mac || is_ios) {
     public_deps += [ "//media/base/mac" ]
-
-    # For device_monitor_mac.mm
-    libs += [ "Foundation.framework" ]
-  }
-
-  if (is_ios) {
-    deps += [ "//media/base/mac" ]
-  }
-
-  if (is_win) {
-    deps += [ "//media/base/win" ]
   }
 }
 
@@ -154,8 +150,6 @@ source_set("unit_tests") {
     "filters/fake_video_decoder_unittest.cc",
     "filters/file_data_source_unittest.cc",
     "filters/frame_processor_unittest.cc",
-    "filters/h264_bit_reader_unittest.cc",
-    "filters/h264_parser_unittest.cc",
     "filters/ivf_parser_unittest.cc",
     "filters/jpeg_parser_unittest.cc",
     "filters/memory_data_source_unittest.cc",
@@ -186,32 +180,25 @@ source_set("unit_tests") {
     "formats/webm/webm_tracks_parser_unittest.cc",
     "formats/webm/webm_webvtt_parser_unittest.cc",
     "muxers/webm_muxer_unittest.cc",
-    "renderers/audio_renderer_impl_unittest.cc",
-    "renderers/renderer_impl_unittest.cc",
-    "renderers/skcanvas_video_renderer_unittest.cc",
-    "renderers/video_renderer_impl_unittest.cc",
-    "video/gpu_memory_buffer_video_frame_pool_unittest.cc",
-    "video/h264_poc_unittest.cc",
-    "video/half_float_maker_unittest.cc",
   ]
 
   data = [
     "test/data/",
   ]
 
-  # TODO(wolenetz): Fix size_t to int truncation in win64.
-  # See http://crbug.com/171009
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    ":media_config",
+
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   deps = [
-    ":media",
     ":test_support",
     "//base/test:test_support",
     "//crypto",
     "//gpu:test_support",
     "//gpu/command_buffer/common",
-    "//media/audio:test_support",
-    "//media/base:test_support",
     "//media/cdm:cdm_paths",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
@@ -230,9 +217,8 @@ source_set("unit_tests") {
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
     ]
-  }
-  if (is_mac || is_ios) {
-    deps += [ "//media/base/mac:unit_tests" ]
+
+    deps += [ "//ui/gl" ]
   }
 
   if (media_use_ffmpeg) {
@@ -246,8 +232,6 @@ source_set("unit_tests") {
     ]
 
     deps += [
-      "//media/ffmpeg:ffmpeg_unittests",
-
       # Direct dependency needed for the config
       "//third_party/opus",
     ]
@@ -326,12 +310,22 @@ source_set("unit_tests") {
     ]
   }
 
-  configs += [ ":media_config" ]
-
   if (media_use_ffmpeg) {
     # Direct dependency required to inherit config.
     deps += [ "//third_party/ffmpeg" ]
   }
+}
+
+# Note: This can't be a static_library since it does not have any sources.
+source_set("test_support") {
+  testonly = true
+  public_deps = [
+    ":media",
+    "//media/audio:test_support",
+    "//media/base:test_support",
+    "//media/base/android:test_support",
+    "//media/video:test_support",
+  ]
 }
 
 # Contains tests for all targets in the "media" folder.
@@ -342,10 +336,13 @@ test("media_unittests") {
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
     "//media/cdm:unit_tests",
+    "//media/ffmpeg:unit_tests",
     "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
+    "//media/renderers:unit_tests",
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
+    "//media/video:unit_tests",
   ]
 
   if (is_android) {
@@ -353,6 +350,7 @@ test("media_unittests") {
       # The test needs the java dependencies to add the java classes for their
       # native counterparts to the test apk.
       "//media/base/android:media_java",
+      "//media/base/android:unit_tests",
       "//media/gpu:android_video_decode_accelerator_unittests",
       "//ui/android:ui_java",
     ]
@@ -370,13 +368,10 @@ test("media_unittests") {
 test("media_perftests") {
   configs += [ ":media_config" ]
   deps = [
-    ":media",
-    ":shared_memory_support",
     ":test_support",
     "//base/test:test_support",
-    "//media/audio:test_support",
     "//media/base:perftests",
-    "//media/base:test_support",
+    "//media/filters:perftests",
     "//media/test:pipeline_integration_perftests",
     "//testing/gmock",
     "//testing/gtest",
@@ -410,9 +405,7 @@ test("audio_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//media/audio:unit_tests",
-    "//media/base:test_support",
     "//media/test:run_all_unittests",
-    "//ui/gfx:test_support",
   ]
   if (is_android) {
     deps += [
@@ -424,34 +417,9 @@ test("audio_unittests") {
   }
 }
 
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "renderers/mock_gpu_memory_buffer_video_frame_pool.cc",
-    "renderers/mock_gpu_memory_buffer_video_frame_pool.h",
-    "renderers/mock_gpu_video_accelerator_factories.cc",
-    "renderers/mock_gpu_video_accelerator_factories.h",
-    "video/mock_video_decode_accelerator.cc",
-    "video/mock_video_decode_accelerator.h",
-    "video/mock_video_encode_accelerator.cc",
-    "video/mock_video_encode_accelerator.h",
-  ]
-  public_deps = [
-    ":media",
-    ":shared_memory_support",
-  ]
-  deps = [
-    "//base",
-    "//cc/paint",
-    "//gpu/command_buffer/common",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/gfx",
-  ]
-}
-
-# TODO(jrummell): This should be renamed and moved to media/base/BUILD.gn.
+# Note: Most external components should just depend on //media unless they
+# specifically need this pared own target (NaCl, PPAPI, etc). Internal targets
+# should just depend on //media/base which will propagate this target to them.
 component("shared_memory_support") {
   sources = [
     "base/audio_bus.cc",
@@ -466,7 +434,7 @@ component("shared_memory_support") {
     "base/channel_layout.cc",
     "base/channel_layout.h",
     "base/limits.h",
-    "base/media_export.h",
+    "base/media_shmem_export.h",
     "base/vector_math.cc",
     "base/vector_math.h",
     "base/vector_math_testing.h",
@@ -478,10 +446,12 @@ component("shared_memory_support") {
       "base/mac/audio_latency_mac.h",
     ]
   }
-  configs += [
-    ":media_config",
-    ":media_implementation",
-  ]
+
+  # Do not use "subcomponent_config" here since these files are in their own
+  # component target and thus can't share the standard export macros.
+  configs += [ ":media_config" ]
+  defines = [ "MEDIA_SHMEM_IMPLEMENTATION" ]
+
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
@@ -499,11 +469,8 @@ if (media_use_ffmpeg && !is_android) {
     configs += [ "//media:media_config" ]
 
     deps = [
+      ":test_support",
       "//base/test:test_support",
-      "//media",
-      "//media:test_support",
-      "//media/audio:test_support",
-      "//media/base:test_support",
       "//media/ffmpeg:ffmpeg_regression_tests",
       "//media/test:pipeline_integration_tests",
       "//media/test:run_all_unittests",
@@ -524,17 +491,6 @@ if (proprietary_codecs) {
       ":media",
     ]
   }
-}
-
-fuzzer_test("media_h264_parser_fuzzer") {
-  sources = [
-    "filters/h264_parser_fuzzertest.cc",
-  ]
-  deps = [
-    ":media",
-    "//base",
-    "//ui/gfx/geometry",
-  ]
 }
 
 fuzzer_test("media_vp8_parser_fuzzer") {

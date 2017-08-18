@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_FAKE_AUDIO_WORKER_H_
-#define MEDIA_AUDIO_FAKE_AUDIO_WORKER_H_
+#ifndef MEDIA_BASE_FAKE_AUDIO_WORKER_H_
+#define MEDIA_BASE_FAKE_AUDIO_WORKER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -51,4 +51,4 @@ class MEDIA_EXPORT FakeAudioWorker {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_FAKE_AUDIO_WORKER_H_
+#endif  // MEDIA_BASE_FAKE_AUDIO_WORKER_H_

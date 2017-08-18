@@ -14,8 +14,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/filters/h264_parser.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {

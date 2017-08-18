@@ -20,7 +20,6 @@ if (!link_pulseaudio) {
     ]
     stubs_filename_root = "pulse_stubs"
 
-    # TODO(ajwong): these need to be included in the pulse build.
     outputs = [
       "$target_gen_dir/pulse/$stubs_filename_root.cc",
       "$target_gen_dir/pulse/$stubs_filename_root.h",
@@ -51,7 +50,18 @@ config("platform_config") {
 }
 
 source_set("audio") {
-  visibility = [ "//media/*" ]
+  # Do not expand the visibility here without double-checking with OWNERS, this
+  # is a roll-up target which is part of the //media component. Most other DEPs
+  # should be using //media and not directly DEP this roll-up target.
+  visibility = [
+    "//media",
+
+    # TODO(dalecurtis): Move android audio pieces into //media/audio.
+    "//media/base/android",
+
+    # TODO(dalecurtis): Move sample_rates.{cc,h} into media/base.
+    "//media/filters",
+  ]
   sources = [
     "agc_audio_stream.h",
     "audio_debug_file_writer.cc",
@@ -117,8 +127,6 @@ source_set("audio") {
     "fake_audio_manager.h",
     "fake_audio_output_stream.cc",
     "fake_audio_output_stream.h",
-    "fake_audio_worker.cc",
-    "fake_audio_worker.h",
     "null_audio_sink.cc",
     "null_audio_sink.h",
     "sample_rates.cc",
@@ -142,15 +150,13 @@ source_set("audio") {
   ]
   deps = [
     "//base",
-    "//media:shared_memory_support",
     "//media/base",
     "//url",
   ]
   libs = []
   configs += [
     ":platform_config",
-    "//media:media_config",
-    "//media:media_implementation",
+    "//media:subcomponent_config",
   ]
 
   if (is_mac) {
@@ -218,6 +224,7 @@ source_set("audio") {
       "android/opensles_util.h",
       "android/opensles_wrapper.cc",
     ]
+
     deps += [ "//media/base/android:media_jni_headers" ]
   }
 
@@ -269,7 +276,6 @@ source_set("audio") {
     if (link_pulseaudio) {
       configs += [ ":libpulse" ]
     } else {
-      # TODO(ajwong): Technically, this dl should go in the action.
       libs += [ "dl" ]
       deps += [ ":pulse_generate_stubs" ]
       sources += get_target_outputs(":pulse_generate_stubs")
@@ -298,7 +304,10 @@ if (use_pulseaudio && link_pulseaudio) {
   }
 }
 
+# Note: This is a roll-up only target; do not expand the visibility. DEPS should
+# depend on the //media:test_support target instead.
 static_library("test_support") {
+  visibility = [ "//media:test_support" ]
   testonly = true
   sources = [
     "audio_device_info_accessor_for_tests.cc",
@@ -320,7 +329,11 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
-    "//media",
+
+    # Do not add any other //media deps except this; it will automatically pull
+    # a dep on //media which is required to ensure test_support targets all use
+    # the same //media component and not build a target's sources individually.
+    "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -341,17 +354,15 @@ source_set("unit_tests") {
     "audio_output_proxy_unittest.cc",
     "audio_power_monitor_unittest.cc",
     "audio_system_impl_unittest.cc",
-    "fake_audio_worker_unittest.cc",
     "simple_sources_unittest.cc",
     "virtual_audio_input_stream_unittest.cc",
     "virtual_audio_output_stream_unittest.cc",
   ]
+
   deps = [
-    ":test_support",
     "//base",
     "//base/test:test_support",
-    "//media",
-    "//media/base:test_support",
+    "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

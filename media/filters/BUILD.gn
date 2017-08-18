@@ -5,7 +5,11 @@
 import("//media/media_options.gni")
 
 source_set("filters") {
-  visibility = [ "//media/*" ]
+  visibility = [
+    "//media",
+    "//media/muxers",
+    "//media/renderers",
+  ]
 
   sources = [
     "audio_clock.cc",
@@ -35,10 +39,6 @@ source_set("filters") {
     "frame_processor.h",
     "gpu_video_decoder.cc",
     "gpu_video_decoder.h",
-    "h264_bit_reader.cc",
-    "h264_bit_reader.h",
-    "h264_parser.cc",
-    "h264_parser.h",
     "ivf_parser.cc",
     "ivf_parser.h",
     "jpeg_parser.cc",
@@ -76,35 +76,27 @@ source_set("filters") {
     "vp9_raw_bits_reader.h",
     "vp9_uncompressed_header_parser.cc",
     "vp9_uncompressed_header_parser.h",
-    "webvtt_util.h",
     "wsola_internals.cc",
     "wsola_internals.h",
   ]
 
-  # TODO(wolenetz): Fix size_t to int truncation in win64.
-  # See http://crbug.com/171009
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   configs += [
-    "//media:media_config",
-    "//media:media_implementation",
+    # TODO(wolenetz): Fix size_t to int truncation in win64.
+    # See http://crbug.com/171009
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:subcomponent_config",
   ]
-  all_dependent_configs = [ "//media:media_dependent_config" ]
 
   deps = [
+    "//media/audio",
+    "//media/base",
+    "//media/cdm",
+    "//media/video",
     "//skia",
     "//third_party/libyuv",
   ]
 
   libs = []
-
-  public_deps = [
-    "//media:media_features",
-    "//media/audio",
-    "//media/cdm",
-    "//media/muxers",
-    "//media/video",
-  ]
 
   if (proprietary_codecs) {
     sources += [
@@ -114,8 +106,8 @@ source_set("filters") {
   }
 
   if (media_use_ffmpeg) {
-    public_deps += [ "//media/ffmpeg" ]
     deps += [
+      "//media/ffmpeg",
       "//third_party/ffmpeg",
       "//third_party/opus",
     ]
@@ -213,4 +205,23 @@ source_set("filters") {
       "source_buffer_platform.h",
     ]
   }
+}
+
+source_set("perftests") {
+  testonly = true
+  sources = []
+
+  if (media_use_ffmpeg) {
+    sources += [ "demuxer_perftest.cc" ]
+  }
+
+  configs += [ "//media:media_config" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//testing/perf",
+  ]
 }

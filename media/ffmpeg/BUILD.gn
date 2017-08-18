@@ -7,9 +7,19 @@ import("//media/media_options.gni")
 assert(media_use_ffmpeg)
 
 source_set("ffmpeg") {
-  visibility = [ "//media/*" ]
-  allow_circular_includes_from = [ "//media/base" ]
-  configs += [ "//media/base:base_config" ]
+  # Do not expand the visibility here without double-checking with OWNERS, this
+  # is a roll-up target which is part of the //media component. Most other DEPs
+  # should be using //media and not directly DEP this roll-up target.
+  visibility = [
+    "//media",
+    "//media/filters",
+  ]
+  configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+
+    "//media:subcomponent_config",
+  ]
   sources = [
     "ffmpeg_common.cc",
     "ffmpeg_common.h",
@@ -17,23 +27,21 @@ source_set("ffmpeg") {
   ]
   deps = [
     "//base",
-    "//media:media_features",
-    "//media:shared_memory_support",
     "//media/base",
     "//third_party/ffmpeg",
     "//third_party/ffmpeg:ffmpeg_features",
   ]
 }
 
-source_set("ffmpeg_unittests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "ffmpeg_common_unittest.cc",
   ]
+  configs += [ "//media:media_config" ]
   deps = [
     "//base",
-    "//media",
-    "//media/base:test_support",
+    "//media:test_support",
     "//testing/gtest",
     "//third_party/ffmpeg",
   ]

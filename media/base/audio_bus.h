@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "media/base/media_export.h"
+#include "media/base/media_shmem_export.h"
 
 namespace media {
 class AudioParameters;
@@ -24,7 +24,7 @@ class AudioParameters;
 // methods. AudioBus guarantees that it allocates memory such that float array
 // for each channel is aligned by AudioBus::kChannelAlignment bytes and it
 // requires the same for memory passed to its Wrap...() factory methods.
-class MEDIA_EXPORT AudioBus {
+class MEDIA_SHMEM_EXPORT AudioBus {
  public:
   // Guaranteed alignment of each channel's data; use 16-byte alignment for easy
   // SSE optimizations.

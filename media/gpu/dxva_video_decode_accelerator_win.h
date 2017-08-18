@@ -32,9 +32,9 @@
 #include "base/win/scoped_comptr.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/video_color_space.h"
-#include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/video/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/color_space.h"
 

@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
+#include "media/base/media_export.h"
 
 // Low-level audio output support. To make sound there are 3 objects involved:
 // - AudioSource : produces audio samples on a pull model. Implements

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/fake_audio_worker.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "media/audio/fake_audio_worker.h"
-#include "media/audio/simple_sources.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,8 +19,11 @@ static const int kTestCallbacks = 5;
 class FakeAudioWorkerTest : public testing::Test {
  public:
   FakeAudioWorkerTest()
-      : params_(
-            AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 44100, 8, 128),
+      : params_(AudioParameters::AUDIO_FAKE,
+                CHANNEL_LAYOUT_STEREO,
+                44100,
+                8,
+                128),
         fake_worker_(message_loop_.task_runner(), params_),
         seen_callbacks_(0) {
     time_between_callbacks_ = base::TimeDelta::FromMicroseconds(
@@ -31,14 +33,12 @@ class FakeAudioWorkerTest : public testing::Test {
 
   ~FakeAudioWorkerTest() override {}
 
-  void CalledByFakeWorker() {
-    seen_callbacks_++;
-  }
+  void CalledByFakeWorker() { seen_callbacks_++; }
 
   void RunOnAudioThread() {
     ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
-    fake_worker_.Start(base::Bind(
-        &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
+    fake_worker_.Start(base::Bind(&FakeAudioWorkerTest::CalledByFakeWorker,
+                                  base::Unretained(this)));
   }
 
   void RunOnceOnAudioThread() {
@@ -82,12 +82,12 @@ class FakeAudioWorkerTest : public testing::Test {
     ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
     fake_worker_.Stop();
     EXPECT_LE(callbacks, seen_callbacks_);
-    message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    run_loop_.QuitWhenIdle();
   }
 
  protected:
   base::MessageLoop message_loop_;
+  base::RunLoop run_loop_;
   AudioParameters params_;
   FakeAudioWorker fake_worker_;
   base::TimeTicks start_time_;
@@ -104,7 +104,7 @@ TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&FakeAudioWorkerTest::RunOnceOnAudioThread,
                             base::Unretained(this)));
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 // Ensure the time between callbacks is sane.
@@ -112,7 +112,7 @@ TEST_F(FakeAudioWorkerTest, TimeBetweenCallbacks) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
                             base::Unretained(this), kTestCallbacks));
-  base::RunLoop().Run();
+  run_loop_.Run();
 
   // There are only (kTestCallbacks - 1) intervals between kTestCallbacks.
   base::TimeDelta actual_time_between_callbacks =
@@ -138,12 +138,13 @@ TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
   // Issue a Stop() / Start() in between expected callbacks to maximize the
   // chance of catching the worker doing the wrong thing.
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&FakeAudioWorkerTest::StopStartOnAudioThread,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::Bind(&FakeAudioWorkerTest::StopStartOnAudioThread,
+                 base::Unretained(this)),
       time_between_callbacks_ / 2);
 
   // EndTest() will ensure the proper number of callbacks have occurred.
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 }  // namespace media

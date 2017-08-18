@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/test_data_util.h"
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

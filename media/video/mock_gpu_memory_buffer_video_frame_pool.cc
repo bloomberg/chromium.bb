@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/renderers/mock_gpu_memory_buffer_video_frame_pool.h"
+#include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 
 #include "base/bind.h"
 

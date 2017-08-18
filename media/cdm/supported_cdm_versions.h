@@ -9,7 +9,7 @@
 // When building the adapter these functions need to be local.
 #define FUNCTION_EXPORT
 #else
-#include "media/base/media_export.h"
+#include "media/base/media_export.h"  // nogncheck
 #define FUNCTION_EXPORT MEDIA_EXPORT
 #endif
 

@@ -13,7 +13,7 @@
 
 #if !defined(USE_PPAPI_CDM_ADAPTER)
 #include "base/memory/ref_counted.h"
-#include "media/base/media_export.h"
+#include "media/base/media_export.h"  // nogncheck
 #include "ui/gfx/geometry/size.h"
 #define MEDIA_CDM_EXPORT MEDIA_EXPORT
 #else

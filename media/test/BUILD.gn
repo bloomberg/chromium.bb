@@ -10,12 +10,11 @@ source_set("run_all_unittests") {
   sources = [
     "run_all_unittests.cc",
   ]
-
+  configs += [ "//media:media_config" ]
   deps = [
     "//base",
     "//base/test:test_support",
-    "//media",
-    "//media/base:test_support",
+    "//media:test_support",
     "//mojo/edk/system",
   ]
 
@@ -37,18 +36,15 @@ source_set("pipeline_integration_test_base") {
       "pipeline_integration_test_base.h",
     ]
 
-    public_deps = [
-      "//media",
-    ]
+    configs += [ "//media:media_config" ]
 
     deps = [
       "//base",
       "//base/test:test_support",
       "//media:test_support",
-      "//media/audio:test_support",
-      "//media/base:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//url",
     ]
   }
 }
@@ -70,7 +66,6 @@ source_set("pipeline_integration_tests") {
       ":pipeline_integration_test_base",
       "//base",
       "//media:test_support",
-      "//media/base:test_support",
       "//media/mojo/clients",
       "//services/service_manager/public/cpp:service_test_support",
 
@@ -96,7 +91,7 @@ source_set("pipeline_integration_perftests") {
 
     deps = [
       ":pipeline_integration_test_base",
-      "//media/base:test_support",
+      "//media:test_support",
       "//testing/gtest",
       "//testing/perf",
 
@@ -125,8 +120,6 @@ source_set("mojo_pipeline_integration_tests") {
       "//base",
       "//base/test:test_support",
       "//media:test_support",
-      "//media/audio:test_support",
-      "//media/base:test_support",
       "//media/mojo/clients",
       "//media/mojo/interfaces",
       "//media/mojo/services",

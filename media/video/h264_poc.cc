@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_parser.h"
 #include "media/video/h264_poc.h"
 
 namespace media {

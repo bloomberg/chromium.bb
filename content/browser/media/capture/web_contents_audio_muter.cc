@@ -17,8 +17,8 @@
 #include "content/public/browser/web_contents.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/fake_audio_worker.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/fake_audio_worker.h"
 
 namespace content {
 

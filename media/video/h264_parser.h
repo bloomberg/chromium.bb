@@ -4,8 +4,8 @@
 //
 // This file contains an implementation of an H264 Annex-B video stream parser.
 
-#ifndef MEDIA_FILTERS_H264_PARSER_H_
-#define MEDIA_FILTERS_H264_PARSER_H_
+#ifndef MEDIA_VIDEO_H264_PARSER_H_
+#define MEDIA_VIDEO_H264_PARSER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,12 +21,12 @@
 #include "media/base/ranges.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
-#include "media/filters/h264_bit_reader.h"
+#include "media/video/h264_bit_reader.h"
 
 namespace gfx {
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace media {
 
@@ -148,8 +148,8 @@ struct MEDIA_EXPORT H264SPS {
   int frame_crop_bottom_offset;
 
   bool vui_parameters_present_flag;
-  int sar_width;    // Set to 0 when not specified.
-  int sar_height;   // Set to 0 when not specified.
+  int sar_width;   // Set to 0 when not specified.
+  int sar_height;  // Set to 0 when not specified.
   bool bitstream_restriction_flag;
   int max_num_reorder_frames;
   int max_dec_frame_buffering;
@@ -247,10 +247,7 @@ struct MEDIA_EXPORT H264DecRefPicMarking {
 struct MEDIA_EXPORT H264SliceHeader {
   H264SliceHeader();
 
-  enum {
-    kRefListSize = 32,
-    kRefListModSize = kRefListSize
-  };
+  enum { kRefListSize = 32, kRefListModSize = kRefListSize };
 
   enum Type {
     kPSlice = 0,
@@ -266,11 +263,11 @@ struct MEDIA_EXPORT H264SliceHeader {
   bool IsSPSlice() const;
   bool IsSISlice() const;
 
-  bool idr_pic_flag;       // from NAL header
-  int nal_ref_idc;         // from NAL header
+  bool idr_pic_flag;         // from NAL header
+  int nal_ref_idc;           // from NAL header
   const uint8_t* nalu_data;  // from NAL header
-  off_t nalu_size;         // from NAL header
-  off_t header_bit_size;   // calculated
+  off_t nalu_size;           // from NAL header
+  off_t header_bit_size;     // calculated
 
   int first_mb_in_slice;
   int slice_type;
@@ -509,4 +506,4 @@ class MEDIA_EXPORT H264Parser {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_H264_PARSER_H_
+#endif  // MEDIA_VIDEO_H264_PARSER_H_

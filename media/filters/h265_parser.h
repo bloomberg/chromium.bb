@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
-#include "media/filters/h264_bit_reader.h"
-#include "media/filters/h264_parser.h"
+#include "media/video/h264_bit_reader.h"
+#include "media/video/h264_parser.h"
 
 namespace media {
 
