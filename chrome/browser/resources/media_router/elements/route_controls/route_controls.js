@@ -281,7 +281,7 @@ Polymer({
       this.displayedCurrentTime_ = newRouteStatus.currentTime;
     }
     if (!this.isVolumeChanging_) {
-      this.displayedVolume_ = newRouteStatus.volume;
+      this.displayedVolume_ = Math.round(newRouteStatus.volume * 100) / 100;
     }
     if (newRouteStatus.description !== '') {
       this.displayedDescription_ = newRouteStatus.description;
