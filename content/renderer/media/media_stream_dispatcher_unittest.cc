@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/media/media_stream.mojom.h"
-#include "content/common/media/media_stream_messages.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "media/base/audio_parameters.h"

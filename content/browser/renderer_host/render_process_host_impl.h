@@ -33,6 +33,7 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -71,6 +72,7 @@ class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
 class NotificationMessageFilter;
 #if BUILDFLAG(ENABLE_WEBRTC)
+class MediaStreamDispatcherHost;
 class P2PSocketDispatcherHost;
 #endif
 class PermissionServiceContext;
@@ -498,6 +500,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GURL& site_url);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+  void CreateMediaStreamDispatcherHost(
+      const std::string& salt,
+      MediaStreamManager* media_stream_manager,
+      mojom::MediaStreamDispatcherHostRequest request);
   void OnRegisterAecDumpConsumer(int id);
   void OnUnregisterAecDumpConsumer(int id);
   void RegisterAecDumpConsumerOnUIThread(int id);
@@ -705,6 +711,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   scoped_refptr<base::SequencedTaskRunner>
       audio_debug_recordings_file_task_runner_;
+
+  std::unique_ptr<MediaStreamDispatcherHost, BrowserThread::DeleteOnIOThread>
+      media_stream_dispatcher_host_;
 #endif
 
   // Forwards messages between WebRTCInternals in the browser process

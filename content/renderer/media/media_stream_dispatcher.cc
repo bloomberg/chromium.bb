@@ -9,11 +9,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/media/media_stream_messages.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "ipc/ipc_sync_channel.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/origin.h"
 
 namespace content {
@@ -337,8 +336,8 @@ MediaStreamDispatcher::GetMediaStreamDispatcherHost() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!dispatcher_host_) {
-    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
-        &dispatcher_host_ptr_);
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, &dispatcher_host_ptr_);
     dispatcher_host_ = dispatcher_host_ptr_.get();
   }
   return dispatcher_host_;
