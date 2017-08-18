@@ -30,6 +30,11 @@ class Types(object):
   # AMD bot on a tryserver. It represents some of the tests on
   # win_angle_rel_ng and is not a real machine on the waterfall.
   WIN_ANGLE_AMD_TRYSERVER = 'win_angle_amd_tryserver'
+  # The dEQP tests use a different compiler configuration than the
+  # rest of the bots; they're the only target which use exceptions and
+  # RTTI. They're split off so that these specialized compiler options
+  # apply only to these targets.
+  DEQP = 'deqp'
 
 # The predicate functions receive a list of types as input and
 # determine whether the test should run on the given bot.
@@ -70,6 +75,23 @@ class Predicates(object):
   @staticmethod
   def DEFAULT_AND_OPTIONAL(x):
     return Predicates.DEFAULT(x) or Types.OPTIONAL in x
+
+  # TODO(kbr): we're only temporarily running the dEQP tests on both
+  # the new dEQP bots as well as the regular bots. As soon as separate
+  # tryservers for the dEQP tests have been set up, these type testers
+  # will be removed, and replaced with ones that are specific to the
+  # dEQP.
+  @staticmethod
+  def FYI_AND_OPTIONAL_AND_DEQP(x):
+    return Types.DEQP in x or Predicates.FYI_AND_OPTIONAL(x)
+
+  @staticmethod
+  def FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD_AND_DEQP(x):
+    return Types.DEQP in x or Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD(x)
+
+  @staticmethod
+  def FYI_ONLY_AND_DEQP(x):
+    return Types.DEQP in x or Predicates.FYI_ONLY(x)
 
 WATERFALL = {
   'name': 'chromium.gpu',
@@ -220,6 +242,18 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
+    'Win7 dEQP Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.DEQP,
+    },
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -263,6 +297,18 @@ FYI_WATERFALL = {
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
+    },
+    'Win7 dEQP Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6613',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.DEQP,
     },
     'Win10 Release (Intel HD 630)': {
       'swarming_dimensions': [
@@ -324,6 +370,18 @@ FYI_WATERFALL = {
       'build_config': 'Debug_x64',
       'swarming': True,
       'os_type': 'win',
+    },
+    'Win7 x64 dEQP Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
+      'build_config': 'Release_x64',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.DEQP,
     },
     'Mac Release (Intel)': {
       'swarming_dimensions': [
@@ -477,6 +535,24 @@ FYI_WATERFALL = {
       'os_type': 'mac',
       'is_asan': True,
     },
+    'Mac dEQP Release': {
+      # This bot spawns jobs on multiple GPU types.
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12.5'
+        },
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.DEQP,
+    },
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -511,6 +587,18 @@ FYI_WATERFALL = {
       'build_config': 'Debug',
       'swarming': True,
       'os_type': 'linux',
+    },
+    'Linux dEQP Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Ubuntu'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+      'type': Types.DEQP,
     },
     'Linux Release (Intel HD 630)': {
       'swarming_dimensions': [
@@ -871,7 +959,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
         # Run only on the Win7 Release NVIDIA 32- and 64-bit bots
         # (and trybots) for the time being, at least until more capacity is
         # added.
@@ -902,7 +990,7 @@ COMMON_GTESTS = {
       {
         # Run this on the FYI waterfall, optional tryservers, and Win
         # ANGLE AMD tryserver.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD_AND_DEQP,
         # Run only on the Win7 NVIDIA/AMD R7 240 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is
         # added.
@@ -942,7 +1030,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
         # Run only on the Linux Release NVIDIA 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is added.
         'build_configs': ['Release', 'Release_x64'],
@@ -976,7 +1064,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
         # Run on Nexus 5X swarmed bots.
         'build_configs': ['android-chromium'],
         'swarming_dimension_sets': [
@@ -1015,7 +1103,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
         # Run on Nexus 5X swarmed bots.
         'build_configs': ['android-chromium'],
         'swarming_dimension_sets': [
@@ -1057,7 +1145,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
-        'predicate': Predicates.FYI_ONLY,
+        'predicate': Predicates.FYI_ONLY_AND_DEQP,
         # Run only on the NVIDIA and AMD Win7 bots (and trybots) for the time
         # being, at least until more capacity is added.
         'build_configs': ['Release'],
@@ -1099,7 +1187,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
-        'predicate': Predicates.FYI_ONLY,
+        'predicate': Predicates.FYI_ONLY_AND_DEQP,
         # Run only on the Linux Release NVIDIA 32-bit bots (and trybots) for
         # the time being, at least until more capacity is added.
         'build_configs': ['Release'],
@@ -1132,7 +1220,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles31_d3d11_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_ONLY,
+        'predicate': Predicates.FYI_ONLY_AND_DEQP,
         # Run on the Win Release NVIDIA bots.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
@@ -1165,7 +1253,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles31_gl_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_ONLY,
+        'predicate': Predicates.FYI_ONLY_AND_DEQP,
         # Run on the Win Release NVIDIA bots.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
