@@ -11395,7 +11395,7 @@ crbug.com/591099 http/tests/inspector/console-show-all-messages.html [ Crash Fai
 crbug.com/591099 http/tests/inspector/console-xhr-logging-async.html [ Crash Failure ]
 crbug.com/591099 http/tests/inspector/console-xhr-logging.html [ Crash Failure ]
 crbug.com/591099 http/tests/inspector/console/console-links-on-messages-before-inspection.html [ Failure ]
-crbug.com/591099 http/tests/inspector/console/console-on-paint-worklet.html [ Failure Timeout ]
+crbug.com/591099 http/tests/devtools/console/console-on-paint-worklet.html [ Failure Timeout ]
 crbug.com/591099 http/tests/inspector/debugger/fetch-breakpoints.html [ Crash Failure Timeout ]
 crbug.com/591099 http/tests/inspector/elements/elements-linkify-attributes.html [ Crash Failure Timeout ]
 crbug.com/591099 http/tests/inspector/elements/event-listeners-framework-with-service-worker.html [ Crash Failure ]

@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -61,7 +62,10 @@ GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
 GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
                                                     bool* is_devtools_js_test) {
   std::string spec = test_url.spec();
-  *is_devtools_js_test = spec.find("/devtools/") != std::string::npos;
+  bool is_js_test =
+      base::EndsWith(spec, ".js", base::CompareCase::INSENSITIVE_ASCII);
+  *is_devtools_js_test =
+      spec.find("/devtools/") != std::string::npos && is_js_test;
   bool is_unit_test = spec.find("/inspector-unit/") != std::string::npos;
   if (!*is_devtools_js_test && !is_unit_test)
     return test_url;
