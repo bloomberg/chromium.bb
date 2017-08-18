@@ -1805,8 +1805,8 @@ class ComputedStyle : public ComputedStyleBase,
   FloatRoundedRect GetRoundedInnerBorderFor(
       const LayoutRect& border_rect,
       const LayoutRectOutsets& insets,
-      bool include_logical_left_edge,
-      bool include_logical_right_edge) const;
+      bool include_logical_left_edge = true,
+      bool include_logical_right_edge = true) const;
 
   bool CanRenderBorderImage() const;
 
