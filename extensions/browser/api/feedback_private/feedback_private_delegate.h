@@ -5,7 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_DELEGATE_H_
 
+#include "extensions/common/api/feedback_private.h"
+
 #include <memory>
+#include <string>
 
 namespace base {
 class DictionaryValue;
@@ -17,6 +20,7 @@ class BrowserContext;
 
 namespace system_logs {
 class SystemLogsFetcher;
+class SystemLogsSource;
 }  // namespace system_logs
 
 namespace extensions {
@@ -37,6 +41,20 @@ class FeedbackPrivateDelegate {
   // Returns a SystemLogsFetcher for responding to a request for system logs.
   virtual system_logs::SystemLogsFetcher* CreateSystemLogsFetcher(
       content::BrowserContext* context) const = 0;
+
+#if defined(OS_CHROMEOS)
+  // Creates a SystemLogsSource for the given type of log file.
+  virtual std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
+      api::feedback_private::LogSource source_type) const = 0;
+#endif
+
+  // Returns the normalized email address of the signed-in user associated with
+  // the browser context, if any.
+  virtual std::string GetSignedInUserEmail(
+      content::BrowserContext* context) const = 0;
+
+  // Called if sending the feedback report was delayed.
+  virtual void NotifyFeedbackDelayed() const = 0;
 };
 
 }  // namespace extensions

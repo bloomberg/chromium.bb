@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
+#include "extensions/browser/api/feedback_private/feedback_service.h"
 
 using feedback::FeedbackData;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,11 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/time/default_tick_clock.h"
-#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/extensions/api/feedback_private/chrome_feedback_private_delegate.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
+#include "extensions/browser/api/feedback_private/log_source_resource.h"
 
 namespace extensions {
 
@@ -154,15 +153,12 @@ int LogSourceAccessManager::CreateResource(const SourceAndExtension& key) {
   if (GetNumActiveResourcesForSource(key.source) >= kMaxReadersPerSource)
     return 0;
 
-  ChromeFeedbackPrivateDelegate* feedback_private_delegate =
-      static_cast<ChromeFeedbackPrivateDelegate*>(
-          ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate());
-  DCHECK(feedback_private_delegate);
-
   std::unique_ptr<LogSourceResource> new_resource =
       base::MakeUnique<LogSourceResource>(
           key.extension_id,
-          feedback_private_delegate->CreateSingleLogSource(key.source),
+          ExtensionsAPIClient::Get()
+              ->GetFeedbackPrivateDelegate()
+              ->CreateSingleLogSource(key.source),
           base::Bind(&LogSourceAccessManager::RemoveSource,
                      weak_factory_.GetWeakPtr(), key));
 

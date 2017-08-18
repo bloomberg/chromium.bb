@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_
+#ifndef EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_
+#define EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_
 
 #include <memory>
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 
 namespace extensions {
 
@@ -47,4 +47,4 @@ class LogSourceResource : public ApiResource {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_
+#endif  // EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_LOG_SOURCE_RESOURCE_H_

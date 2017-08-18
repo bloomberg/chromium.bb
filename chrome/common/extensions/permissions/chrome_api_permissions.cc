@@ -148,8 +148,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kEchoPrivate, "echoPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kFeedbackPrivate, "feedbackPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kImageWriterPrivate, "imageWriterPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kRtcPrivate, "rtcPrivate",

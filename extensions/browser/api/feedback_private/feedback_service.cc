@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
+#include "extensions/browser/api/feedback_private/feedback_service.h"
 
 #include <utility>
 
@@ -24,8 +24,7 @@ namespace extensions {
 FeedbackService::FeedbackService(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-FeedbackService::~FeedbackService() {
-}
+FeedbackService::~FeedbackService() = default;
 
 void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
                                    const SendFeedbackCallback& callback) {

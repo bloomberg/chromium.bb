@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 
 namespace extensions {
 
@@ -42,7 +42,7 @@ class FeedbackPrivateApiUnittest : public FeedbackPrivateApiUnittestBase {
   // FeedbackPrivateApiUnittestBase:
   void TearDown() override {
     FeedbackPrivateAPI::GetFactoryInstance()
-        ->Get(profile())
+        ->Get(browser_context())
         ->GetLogSourceAccessManager()
         ->SetTickClockForTesting(nullptr);
 
@@ -258,7 +258,7 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
 
   base::SimpleTestTickClock* test_clock = new base::SimpleTestTickClock;
   FeedbackPrivateAPI::GetFactoryInstance()
-      ->Get(profile())
+      ->Get(browser_context())
       ->GetLogSourceAccessManager()
       ->SetTickClockForTesting(std::unique_ptr<base::TickClock>(test_clock));
 

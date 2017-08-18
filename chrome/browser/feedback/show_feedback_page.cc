@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_dialog_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 namespace feedback_private = extensions::api::feedback_private;
 

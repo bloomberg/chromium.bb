@@ -9,6 +9,29 @@ assert(enable_extensions,
 
 source_set("feedback_private") {
   sources = [
+    "feedback_private_api.cc",
+    "feedback_private_api.h",
     "feedback_private_delegate.h",
+    "feedback_service.cc",
+    "feedback_service.h",
   ]
+
+  deps = [
+    "//base",
+    "//components/feedback",
+    "//content/public/browser",
+    "//extensions/browser:browser_sources",
+    "//extensions/common",
+    "//extensions/common/api",
+    "//net",
+  ]
+
+  if (is_chromeos) {
+    sources += [
+      "log_source_access_manager.cc",
+      "log_source_access_manager.h",
+      "log_source_resource.cc",
+      "log_source_resource.h",
+    ]
+  }
 }

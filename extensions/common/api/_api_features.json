@@ -173,6 +173,14 @@
     "contexts": "all",
     "matches": ["<all_urls>"]
   },
+  "feedbackPrivate": {
+    "dependencies": ["permission:feedbackPrivate"],
+    "contexts": ["blessed_extension"]
+  },
+  "feedbackPrivate.readLogSource": {
+    "platforms": ["chromeos"],
+    "session_types": ["kiosk"]
+  },
   "fileSystem": {
     "dependencies": ["permission:fileSystem"],
     "contexts": ["blessed_extension"]

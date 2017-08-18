@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #include <string>
 #include <utility>
@@ -19,31 +19,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/common/extensions/api/feedback_private.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
+#include "extensions/browser/api/feedback_private/feedback_service.h"
 #include "extensions/browser/event_router.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/url_util.h"
+#include "extensions/common/api/feedback_private.h"
+#include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN)
-#include "base/feature_list.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
-#endif
 
 using extensions::api::feedback_private::SystemInformation;
 using feedback::FeedbackData;
@@ -59,13 +46,6 @@ std::string StripFakepath(const std::string& path) {
     return path.substr(arraysize(kFakePathStr) - 1);
   return path;
 }
-
-#if defined(OS_WIN)
-// Allows enabling/disabling SRT Prompt as a Variations feature.
-constexpr base::Feature kSrtPromptOnFeedbackForm {
-  "SrtPromptOnFeedbackForm", base::FEATURE_DISABLED_BY_DEFAULT
-};
-#endif
 
 }  // namespace
 
@@ -111,27 +91,6 @@ LogSourceAccessManager* FeedbackPrivateAPI::GetLogSourceAccessManager() const {
   return log_source_access_manager_.get();
 }
 #endif
-
-void FeedbackPrivateAPI::RequestFeedback(
-    const std::string& description_template,
-    const std::string& category_tag,
-    const std::string& extra_diagnostics,
-    const GURL& page_url) {
-#if defined(OS_WIN)
-  // Show prompt for Software Removal Tool if the Reporter component has found
-  // unwanted software, and the user has never run the cleaner before.
-  if (base::FeatureList::IsEnabled(kSrtPromptOnFeedbackForm) &&
-      safe_browsing::ReporterFoundUws() &&
-      !safe_browsing::UserHasRunCleaner()) {
-    RequestFeedbackForFlow(description_template, category_tag,
-                           extra_diagnostics, page_url,
-                           FeedbackFlow::FEEDBACK_FLOW_SHOWSRTPROMPT);
-    return;
-  }
-#endif
-  RequestFeedbackForFlow(description_template, category_tag, extra_diagnostics,
-                         page_url, FeedbackFlow::FEEDBACK_FLOW_REGULAR);
-}
 
 void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const std::string& description_template,
@@ -203,22 +162,19 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
-  SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context()));
+  FeedbackPrivateDelegate* feedback_private_delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
   return RespondNow(OneArgument(base::MakeUnique<base::Value>(
-      signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
-                     : std::string())));
+      feedback_private_delegate->GetSignedInUserEmail(browser_context()))));
 }
 
 ExtensionFunction::ResponseAction
 FeedbackPrivateGetSystemInformationFunction::Run() {
-  FeedbackPrivateDelegate* feedback_private_delegate =
-      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
-  DCHECK(feedback_private_delegate);
-
   // Self-deleting object.
   system_logs::SystemLogsFetcher* fetcher =
-      feedback_private_delegate->CreateSystemLogsFetcher(browser_context());
+      ExtensionsAPIClient::Get()
+          ->GetFeedbackPrivateDelegate()
+          ->CreateSystemLogsFetcher(browser_context());
   fetcher->Fetch(base::Bind(
       &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
 
@@ -279,7 +235,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const FeedbackInfo &feedback_info = params->feedback;
+  const FeedbackInfo& feedback_info = params->feedback;
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
@@ -339,18 +295,14 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   return RespondLater();
 }
 
-void FeedbackPrivateSendFeedbackFunction::OnCompleted(
-    bool success) {
+void FeedbackPrivateSendFeedbackFunction::OnCompleted(bool success) {
   Respond(OneArgument(base::MakeUnique<base::Value>(
       feedback_private::ToString(success ? feedback_private::STATUS_SUCCESS
                                          : feedback_private::STATUS_DELAYED))));
-
   if (!success) {
-    // Sending the feedback has been delayed as the user is offline. Show a
-    // message box to indicate that.
-    chrome::ShowWarningMessageBox(
-        nullptr, l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TITLE),
-        l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TEXT));
+    ExtensionsAPIClient::Get()
+        ->GetFeedbackPrivateDelegate()
+        ->NotifyFeedbackDelayed();
   }
 }
 

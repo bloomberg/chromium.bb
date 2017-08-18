@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/extension_api_unittest.h"
+#include "extensions/browser/api_unittest.h"
 
 namespace extensions {
 
@@ -16,7 +16,7 @@ class ExtensionsAPIClient;
 
 // Creates a FeedbackPrivateDelegate that can generate a SystemLogsSource for
 // testing.
-class FeedbackPrivateApiUnittestBase : public ExtensionApiUnittest {
+class FeedbackPrivateApiUnittestBase : public ApiUnitTest {
  public:
   FeedbackPrivateApiUnittestBase();
   ~FeedbackPrivateApiUnittestBase() override;

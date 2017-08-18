@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
+#include "extensions/browser/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/extensions/api/feedback_private/chrome_feedback_private_delegate.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
-#include "chrome/browser/extensions/api/feedback_private/log_source_resource.h"
-#include "chrome/common/extensions/api/feedback_private.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/log_source_resource.h"
+#include "extensions/common/api/feedback_private.h"
+#include "extensions/shell/browser/api/feedback_private/shell_feedback_private_delegate.h"
+#include "extensions/shell/browser/shell_extensions_api_client.h"
 
 namespace extensions {
 
@@ -73,7 +73,7 @@ class TestSingleLogSource : public SystemLogsSource {
   DISALLOW_COPY_AND_ASSIGN(TestSingleLogSource);
 };
 
-class TestFeedbackPrivateDelegate : public ChromeFeedbackPrivateDelegate {
+class TestFeedbackPrivateDelegate : public ShellFeedbackPrivateDelegate {
  public:
   TestFeedbackPrivateDelegate() = default;
   ~TestFeedbackPrivateDelegate() override = default;
@@ -87,12 +87,12 @@ class TestFeedbackPrivateDelegate : public ChromeFeedbackPrivateDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestFeedbackPrivateDelegate);
 };
 
-class TestExtensionsAPIClient : public ChromeExtensionsAPIClient {
+class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
  public:
   TestExtensionsAPIClient() = default;
   ~TestExtensionsAPIClient() override = default;
 
-  // ChromeExtensionsApiClient implementation:
+  // ShellExtensionsApiClient implementation:
   FeedbackPrivateDelegate* GetFeedbackPrivateDelegate() override {
     if (!feedback_private_delegate_) {
       feedback_private_delegate_ =
@@ -115,7 +115,7 @@ FeedbackPrivateApiUnittestBase::~FeedbackPrivateApiUnittestBase() = default;
 void FeedbackPrivateApiUnittestBase::SetUp() {
   extensions_api_client_ = base::MakeUnique<TestExtensionsAPIClient>();
 
-  ExtensionApiUnittest::SetUp();
+  ApiUnitTest::SetUp();
 
   // The ApiResourceManager used for LogSourceResource is destroyed every time
   // a unit test finishes, during TearDown(). There is no way to re-create it
@@ -123,14 +123,15 @@ void FeedbackPrivateApiUnittestBase::SetUp() {
   // that there is always a valid ApiResourceManager<LogSourceResource> when
   // subsequent unit tests are running.
   ApiResourceManager<LogSourceResource>::GetFactoryInstance()
-      ->SetTestingFactoryAndUse(profile(), ApiResourceManagerTestFactory);
+      ->SetTestingFactoryAndUse(browser_context(),
+                                ApiResourceManagerTestFactory);
 }
 
 void FeedbackPrivateApiUnittestBase::TearDown() {
   // Clear the rate limit override that tests may have set.
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(nullptr);
 
-  ExtensionApiUnittest::TearDown();
+  ApiUnitTest::TearDown();
 }
 
 }  // namespace extensions
