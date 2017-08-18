@@ -71,6 +71,14 @@ using EnableIfSpanCompatibleContainer =
                      ContainerHasConvertibleData<Container, T>::value &&
                      ContainerHasIntegralSize<Container>::value>;
 
+template <typename Container, typename T>
+using EnableIfConstSpanCompatibleContainer =
+    std::enable_if_t<std::is_const<T>::value &&
+                     !internal::IsSpan<Container>::value &&
+                     !internal::IsStdArray<Container>::value &&
+                     ContainerHasConvertibleData<Container, T>::value &&
+                     ContainerHasIntegralSize<Container>::value>;
+
 }  // namespace internal
 
 // A Span is a value type that represents an array of elements of type T.  It
@@ -100,29 +108,49 @@ using EnableIfSpanCompatibleContainer =
 //   std::vector<uint8_t> data_buffer = GenerateData();
 //   std::string r = HexEncode(data_buffer);
 //
-// Span differs from the C++ working group proposal in a number of ways:
-// - Span does not define the |element_type| and |index_type| type aliases.
-// - Span does not explicitly default the copy/move constructor/assignment
-//   operators, since MSVC currently complains about constexpr functions that
-//   aren't marked const.
-// - Span does not define operator().
-// - Span does not define bytes(), size_bytes(), as_bytes(), as_mutable_bytes()
-//   for working with spans as a sequence of bytes.
-// - Span has no extent template parameter.
-// - Span has no conversion constructors from std::unique_ptr or
-//   std::shared_ptr.
-// - Span has no reverse iterators.
-// - Span does not define relation operators other than == and !=.
+// ======= Differences from the working group proposal =======
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0122r5.pdf is the
+// latest working group proposal. The biggest difference is Span does not
+// support a static extent template parameter. Other differences are documented
+// in subsections below.
 //
-// [1] std::array<T, N> has its own constructor overload which is not
-//     implemented.
+// Differences in constants and types:
+// - no element_type type alias
+// - no index_type type alias
+// - no different_type type alias
 //
-// TODO(https://crbug.com/754077): Document differences from the working group
-// proposal: http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0122r1.pdf.
+// Differences from [span.cons]:
+// - no constructor from a pointer range
+// - no constructor from std::array
+// - no constructor from std::unique_ptr
+// - no constructor from std::shared_ptr
+// - no explicitly defaulted the copy/move constructor/assignment operators,
+//   since MSVC complains about constexpr functions that aren't marked const.
+//
+// Differences from [span.sub]:
+// - no first()
+// - no last()
+// - no templated subspan()
+//
+// Differences from [span.elem]:
+// - no operator ()()
+//
+// Differences from [span.iter]:
+// - no reverse iterators
+//
+// Differences from [span.comparison]:
+// - no operator <()
+// - no operator <=()
+// - no operator >()
+// - no operator >=()
+//
+// Differences from [span.objectrep]:
+// - no as_bytes()
+// - no as_writeable_bytes()
 template <typename T>
 class Span {
  public:
-  using value_type = T;
+  using value_type = std::remove_cv_t<T>;
   using pointer = T*;
   using reference = T&;
   using iterator = T*;
@@ -138,21 +166,14 @@ class Span {
   // TODO(dcheng): Implement construction from std::array.
   // Conversion from a container that provides |T* data()| and |integral_type
   // size()|.
-  // TODO(dcheng): Should this be explicit for mutable spans?
   template <typename Container,
             typename = internal::EnableIfSpanCompatibleContainer<Container, T>>
   constexpr Span(Container& container)
       : Span(container.data(), container.size()) {}
-  // Disallow conversion from a container going out of scope, since the
-  // resulting span will just point to dangling memory. Note that this won't
-  // catch everything. For example, the following will still compile:
-  //   Span<int> ReturnsDanglingSpan() {
-  //     std::vector<int> v = GetVector();
-  //     return v;
-  //   }
-  template <typename Container,
-            typename = internal::EnableIfSpanCompatibleContainer<Container, T>>
-  Span(const Container&&) = delete;
+  template <
+      typename Container,
+      typename = internal::EnableIfConstSpanCompatibleContainer<Container, T>>
+  Span(const Container& container) : Span(container.data(), container.size()) {}
   ~Span() noexcept = default;
   // Conversions from spans of compatible types: this allows a Span<T> to be
   // seamlessly used as a Span<const T>, but not the other way around.
@@ -218,8 +239,13 @@ constexpr Span<T> MakeSpan(Container& container) {
   return Span<T>(container);
 }
 
-// TODO(dcheng): Should there be a const Container&& overload to try to prevent
-// MakeSpan from binding to rvalue containers?
+template <
+    typename Container,
+    typename T = std::add_const_t<typename Container::value_type>,
+    typename = internal::EnableIfConstSpanCompatibleContainer<Container, T>>
+constexpr Span<T> MakeSpan(const Container& container) {
+  return Span<T>(container);
+}
 
 }  // namespace base
 
