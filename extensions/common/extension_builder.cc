@@ -6,43 +6,122 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 
+struct ExtensionBuilder::ManifestData {
+  Type type;
+  std::string name;
+  std::vector<std::string> permissions;
+  base::Optional<ActionType> action;
+  std::unique_ptr<base::DictionaryValue> extra;
+
+  std::unique_ptr<base::DictionaryValue> GetValue() const {
+    DictionaryBuilder manifest;
+    manifest.Set("name", name)
+        .Set("manifest_version", 2)
+        .Set("version", "0.1")
+        .Set("description", "some description");
+
+    switch (type) {
+      case Type::EXTENSION:
+        break;  // Sufficient already.
+      case Type::PLATFORM_APP: {
+        DictionaryBuilder background;
+        background.Set("scripts", ListBuilder().Append("test.js").Build());
+        manifest.Set(
+            "app",
+            DictionaryBuilder().Set("background", background.Build()).Build());
+        break;
+      }
+    }
+
+    if (!permissions.empty()) {
+      ListBuilder permissions_builder;
+      for (const std::string& permission : permissions)
+        permissions_builder.Append(permission);
+      manifest.Set("permissions", permissions_builder.Build());
+    }
+
+    if (action) {
+      const char* action_key = nullptr;
+      switch (*action) {
+        case ActionType::PAGE_ACTION:
+          action_key = manifest_keys::kPageAction;
+          break;
+        case ActionType::BROWSER_ACTION:
+          action_key = manifest_keys::kBrowserAction;
+          break;
+      }
+      manifest.Set(action_key, base::MakeUnique<base::DictionaryValue>());
+    }
+
+    std::unique_ptr<base::DictionaryValue> result = manifest.Build();
+    if (extra)
+      result->MergeDictionary(extra.get());
+
+    return result;
+  }
+};
+
 ExtensionBuilder::ExtensionBuilder()
-    : location_(Manifest::UNPACKED),
-      flags_(Extension::NO_FLAGS) {
+    : location_(Manifest::UNPACKED), flags_(Extension::NO_FLAGS) {}
+
+ExtensionBuilder::ExtensionBuilder(const std::string& name, Type type)
+    : ExtensionBuilder() {
+  manifest_data_ = base::MakeUnique<ManifestData>();
+  manifest_data_->name = name;
+  manifest_data_->type = type;
 }
+
 ExtensionBuilder::~ExtensionBuilder() {}
 
-ExtensionBuilder::ExtensionBuilder(ExtensionBuilder&& other)
-    : path_(std::move(other.path_)),
-      location_(other.location_),
-      manifest_(std::move(other.manifest_)),
-      flags_(other.flags_),
-      id_(std::move(other.id_)) {}
+ExtensionBuilder::ExtensionBuilder(ExtensionBuilder&& other) = default;
+ExtensionBuilder& ExtensionBuilder::operator=(ExtensionBuilder&& other) =
+    default;
 
-ExtensionBuilder& ExtensionBuilder::operator=(ExtensionBuilder&& other) {
-  path_ = std::move(other.path_);
-  location_ = other.location_;
-  manifest_ = std::move(other.manifest_);
-  flags_ = other.flags_;
-  id_ = std::move(other.id_);
+scoped_refptr<Extension> ExtensionBuilder::Build() {
+  CHECK(manifest_data_ || manifest_value_);
+
+  if (id_.empty() && manifest_data_)
+    id_ = crx_file::id_util::GenerateId(manifest_data_->name);
+
+  std::string error;
+  scoped_refptr<Extension> extension = Extension::Create(
+      path_, location_,
+      manifest_data_ ? *manifest_data_->GetValue() : *manifest_value_, flags_,
+      id_, &error);
+
+  CHECK(error.empty()) << error;
+  CHECK(extension);
+
+  return extension;
+}
+
+ExtensionBuilder& ExtensionBuilder::AddPermission(
+    const std::string& permission) {
+  CHECK(manifest_data_);
+  manifest_data_->permissions.push_back(permission);
   return *this;
 }
 
-scoped_refptr<Extension> ExtensionBuilder::Build() {
-  std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      path_,
-      location_,
-      *manifest_,
-      flags_,
-      id_,
-      &error);
-  CHECK_EQ("", error);
-  return extension;
+ExtensionBuilder& ExtensionBuilder::AddPermissions(
+    const std::vector<std::string>& permissions) {
+  CHECK(manifest_data_);
+  manifest_data_->permissions.insert(manifest_data_->permissions.end(),
+                                     permissions.begin(), permissions.end());
+  return *this;
+}
+
+ExtensionBuilder& ExtensionBuilder::SetAction(ActionType action) {
+  CHECK(manifest_data_);
+  manifest_data_->action = action;
+  return *this;
 }
 
 ExtensionBuilder& ExtensionBuilder::SetPath(const base::FilePath& path) {
@@ -57,13 +136,20 @@ ExtensionBuilder& ExtensionBuilder::SetLocation(Manifest::Location location) {
 
 ExtensionBuilder& ExtensionBuilder::SetManifest(
     std::unique_ptr<base::DictionaryValue> manifest) {
-  manifest_ = std::move(manifest);
+  CHECK(!manifest_data_);
+  manifest_value_ = std::move(manifest);
   return *this;
 }
 
 ExtensionBuilder& ExtensionBuilder::MergeManifest(
     std::unique_ptr<base::DictionaryValue> manifest) {
-  manifest_->MergeDictionary(manifest.get());
+  if (manifest_data_) {
+    if (!manifest_data_->extra)
+      manifest_data_->extra = base::MakeUnique<base::DictionaryValue>();
+    manifest_data_->extra->MergeDictionary(manifest.get());
+  } else {
+    manifest_value_->MergeDictionary(manifest.get());
+  }
   return *this;
 }
 
