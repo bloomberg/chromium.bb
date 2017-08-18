@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/android/java_handler_thread.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -26,7 +26,7 @@ namespace vr_shell {
 class VrShell;
 class VrShellGl;
 
-class VrGLThread : public base::Thread,
+class VrGLThread : public base::android::JavaHandlerThread,
                    public GlBrowserInterface,
                    public vr::UiBrowserInterface,
                    public vr::UiInterface {

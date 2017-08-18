@@ -191,6 +191,41 @@ class TaskList {
   std::vector<TaskItem> task_list_;
 };
 
+class DummyTaskObserver : public MessageLoop::TaskObserver {
+ public:
+  explicit DummyTaskObserver(int num_tasks)
+      : num_tasks_started_(0), num_tasks_processed_(0), num_tasks_(num_tasks) {}
+
+  DummyTaskObserver(int num_tasks, int num_tasks_started)
+      : num_tasks_started_(num_tasks_started),
+        num_tasks_processed_(0),
+        num_tasks_(num_tasks) {}
+
+  ~DummyTaskObserver() override {}
+
+  void WillProcessTask(const PendingTask& pending_task) override {
+    num_tasks_started_++;
+    EXPECT_LE(num_tasks_started_, num_tasks_);
+    EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
+  }
+
+  void DidProcessTask(const PendingTask& pending_task) override {
+    num_tasks_processed_++;
+    EXPECT_LE(num_tasks_started_, num_tasks_);
+    EXPECT_EQ(num_tasks_started_, num_tasks_processed_);
+  }
+
+  int num_tasks_started() const { return num_tasks_started_; }
+  int num_tasks_processed() const { return num_tasks_processed_; }
+
+ private:
+  int num_tasks_started_;
+  int num_tasks_processed_;
+  const int num_tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyTaskObserver);
+};
+
 void RecursiveFunc(TaskList* order, int cookie, int depth,
                    bool is_reentrant) {
   order->RecordStart(RECURSIVE, cookie);
@@ -208,6 +243,13 @@ void QuitFunc(TaskList* order, int cookie) {
   order->RecordStart(QUITMESSAGELOOP, cookie);
   RunLoop::QuitCurrentWhenIdleDeprecated();
   order->RecordEnd(QUITMESSAGELOOP, cookie);
+}
+
+void PostNTasks(int posts_remaining) {
+  if (posts_remaining > 1) {
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, BindOnce(&PostNTasks, posts_remaining - 1));
+  }
 }
 
 #if defined(OS_ANDROID)
@@ -267,6 +309,36 @@ TEST(MessageLoopTest, JavaExceptionAbortInitJavaFirst) {
   constexpr bool delayed = false;
   constexpr bool init_java_first = true;
   RunTest_AbortDontRunMoreTasks(delayed, init_java_first);
+}
+
+TEST(MessageLoopTest, RunTasksWhileShuttingDownJavaThread) {
+  const int kNumPosts = 6;
+  DummyTaskObserver observer(kNumPosts, 1);
+
+  auto java_thread = MakeUnique<android::JavaHandlerThread>("test");
+  java_thread->Start();
+  MessageLoop* loop = java_thread->message_loop();
+
+  loop->task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](android::JavaHandlerThread* java_thread, MessageLoop* loop,
+             DummyTaskObserver* observer, int num_posts) {
+            loop->AddTaskObserver(observer);
+            ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+                FROM_HERE, BindOnce([]() { ADD_FAILURE(); }),
+                TimeDelta::FromDays(1));
+            java_thread->StopMessageLoopForTesting();
+            PostNTasks(num_posts);
+          },
+          Unretained(java_thread.get()), Unretained(loop),
+          Unretained(&observer), kNumPosts));
+
+  java_thread->JoinForTesting();
+  java_thread.reset();
+
+  EXPECT_EQ(kNumPosts, observer.num_tasks_started());
+  EXPECT_EQ(kNumPosts, observer.num_tasks_processed());
 }
 #endif  // defined(OS_ANDROID)
 
@@ -1483,38 +1555,6 @@ TEST(MessageLoopTest, RecursiveSupport2) {
   RunTest_RecursiveSupport2(MessageLoop::TYPE_UI);
 }
 #endif  // defined(OS_WIN)
-
-class DummyTaskObserver : public MessageLoop::TaskObserver {
- public:
-  explicit DummyTaskObserver(int num_tasks)
-      : num_tasks_started_(0),
-        num_tasks_processed_(0),
-        num_tasks_(num_tasks) {}
-
-  ~DummyTaskObserver() override {}
-
-  void WillProcessTask(const PendingTask& pending_task) override {
-    num_tasks_started_++;
-    EXPECT_LE(num_tasks_started_, num_tasks_);
-    EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
-  }
-
-  void DidProcessTask(const PendingTask& pending_task) override {
-    num_tasks_processed_++;
-    EXPECT_LE(num_tasks_started_, num_tasks_);
-    EXPECT_EQ(num_tasks_started_, num_tasks_processed_);
-  }
-
-  int num_tasks_started() const { return num_tasks_started_; }
-  int num_tasks_processed() const { return num_tasks_processed_; }
-
- private:
-  int num_tasks_started_;
-  int num_tasks_processed_;
-  const int num_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyTaskObserver);
-};
 
 TEST(MessageLoopTest, TaskObserver) {
   const int kNumPosts = 6;

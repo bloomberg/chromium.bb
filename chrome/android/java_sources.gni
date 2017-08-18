@@ -1322,6 +1322,7 @@ chrome_java_sources = [
 
 chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/AndroidUiGestureTarget.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/AndroidVSyncHelper.java",
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContextImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapperImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",

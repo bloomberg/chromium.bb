@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
@@ -26,7 +27,7 @@ VrGLThread::VrGLThread(
     bool in_cct,
     bool reprojected_rendering,
     bool daydream_support)
-    : base::Thread("VrShellGL"),
+    : base::android::JavaHandlerThread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr_api),
@@ -52,6 +53,12 @@ void VrGLThread::Init() {
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   weak_scene_manager_ = scene_manager_->GetWeakPtr();
   vr_shell_gl_->Initialize();
+}
+
+void VrGLThread::CleanUp() {
+  scene_manager_.reset();
+  vr_shell_gl_.reset();
+  scene_.reset();
 }
 
 void VrGLThread::ContentSurfaceChanged(jobject surface) {
@@ -160,14 +167,12 @@ void VrGLThread::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
 }
 
 void VrGLThread::SetFullscreen(bool enabled) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetFullscreen,
                                      weak_scene_manager_, enabled));
 }
 
 void VrGLThread::SetIncognito(bool incognito) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetIncognito,
                                      weak_scene_manager_, incognito));
@@ -175,41 +180,35 @@ void VrGLThread::SetIncognito(bool incognito) {
 
 void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
                                           bool can_go_forward) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&vr::UiSceneManager::SetHistoryButtonsEnabled,
                             weak_scene_manager_, can_go_back, can_go_forward));
 }
 
 void VrGLThread::SetLoadProgress(float progress) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetLoadProgress,
                                      weak_scene_manager_, progress));
 }
 
 void VrGLThread::SetLoading(bool loading) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&vr::UiSceneManager::SetLoading,
                                                 weak_scene_manager_, loading));
 }
 
 void VrGLThread::SetToolbarState(const vr::ToolbarState& state) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetToolbarState,
                                      weak_scene_manager_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetWebVrMode,
                                      weak_scene_manager_, enabled, show_toast));
 }
 
 void VrGLThread::SetWebVrSecureOrigin(bool secure) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetWebVrSecureOrigin,
                                      weak_scene_manager_, secure));
@@ -246,14 +245,12 @@ void VrGLThread::SetBluetoothConnectedIndicator(bool enabled) {
 }
 
 void VrGLThread::SetIsExiting() {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&vr::UiSceneManager::SetIsExiting, weak_scene_manager_));
 }
 
 void VrGLThread::SetSplashScreenIcon(const SkBitmap& bitmap) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&vr::UiSceneManager::SetSplashScreenIcon,
                                      weak_scene_manager_, bitmap));
@@ -271,16 +268,9 @@ void VrGLThread::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
 
 void VrGLThread::SetExitVrPromptEnabled(bool enabled,
                                         vr::UiUnsupportedMode reason) {
-  WaitUntilThreadStarted();
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&vr::UiSceneManager::SetExitVrPromptEnabled,
                             weak_scene_manager_, enabled, reason));
-}
-
-void VrGLThread::CleanUp() {
-  scene_manager_.reset();
-  vr_shell_gl_.reset();
-  scene_.reset();
 }
 
 }  // namespace vr_shell
