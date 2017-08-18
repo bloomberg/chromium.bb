@@ -29,6 +29,8 @@ struct GeometryBindingQuad {
                       const GeometryBindingVertex& vert3);
   GeometryBindingVertex v0, v1, v2, v3;
 };
+static_assert(sizeof(GeometryBindingQuad) == 24 * sizeof(float),
+              "struct Quad should be densely packed");
 
 struct GeometryBindingQuadIndex {
   GeometryBindingQuadIndex();
@@ -41,6 +43,8 @@ struct GeometryBindingQuadIndex {
 
   uint16_t data[6];
 };
+static_assert(sizeof(GeometryBindingQuadIndex) == 6 * sizeof(uint16_t),
+              "struct QuadIndex should be densely packed");
 
 struct GeometryBinding {
   // All layer shaders share the same attribute locations for the vertex

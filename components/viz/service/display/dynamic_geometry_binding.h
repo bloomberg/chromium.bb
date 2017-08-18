@@ -18,6 +18,8 @@ namespace viz {
 class VIZ_SERVICE_EXPORT DynamicGeometryBinding {
  public:
   explicit DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl);
+  ~DynamicGeometryBinding();
+
   void PrepareForDraw();
   void InitializeCustomQuad(const gfx::QuadF& quad);
   void InitializeCustomQuadWithUVs(const gfx::QuadF& quad, const float uv[8]);
