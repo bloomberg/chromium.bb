@@ -45,6 +45,16 @@ class SubscriptionJsonRequest : public net::URLFetcherDelegate {
         const scoped_refptr<net::URLRequestContextGetter>& context_getter);
     Builder& SetAuthenticationHeader(const std::string& auth_header);
 
+    // The application language represented as an IETF language tag, defined in
+    // BCP 47, e.g. "de", "de-AT".
+    Builder& SetLocale(const std::string& locale);
+
+    // The device country represented as lowercase ISO 3166-1 alpha-2, e.g.
+    // "us", "in".
+    // TODO(vitaliii): Use CLDR. Currently this is not possible, because the
+    // variations permanent country is not provided in CLDR.
+    Builder& SetCountryCode(const std::string& country_code);
+
    private:
     std::string BuildHeaders() const;
     std::string BuildBody() const;
@@ -55,7 +65,9 @@ class SubscriptionJsonRequest : public net::URLFetcherDelegate {
 
     // GCM subscription token obtained from GCM driver (instanceID::getToken()).
     std::string token_;
-    // TODO(mamir): Additional fields to be added: country, language.
+
+    std::string locale_;
+    std::string country_code_;
 
     GURL url_;
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

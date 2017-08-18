@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
 
 namespace ntp_snippets {
@@ -60,19 +61,23 @@ class SubscriptionManagerImpl::SigninObserver
 SubscriptionManagerImpl::SubscriptionManagerImpl(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
+    variations::VariationsService* variations_service,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* access_token_service,
+    const std::string& locale,
     const std::string& api_key,
     const GURL& subscribe_url,
     const GURL& unsubscribe_url)
     : url_request_context_getter_(std::move(url_request_context_getter)),
       pref_service_(pref_service),
+      variations_service_(variations_service),
       signin_manager_(signin_manager),
       signin_observer_(base::MakeUnique<SigninObserver>(
           signin_manager,
           base::Bind(&SubscriptionManagerImpl::SigninStatusChanged,
                      base::Unretained(this)))),
       access_token_service_(access_token_service),
+      locale_(locale),
       api_key_(api_key),
       subscribe_url_(subscribe_url),
       unsubscribe_url_(unsubscribe_url) {}
@@ -107,6 +112,11 @@ void SubscriptionManagerImpl::SubscribeInternal(
     builder.SetUrl(
         net::AppendQueryParameter(subscribe_url_, kApiKeyParamName, api_key_));
   }
+
+  builder.SetLocale(locale_);
+  builder.SetCountryCode(variations_service_
+                             ? variations_service_->GetStoredPermanentCountry()
+                             : "");
 
   request_ = builder.Build();
   request_->Start(base::BindOnce(&SubscriptionManagerImpl::DidSubscribe,
