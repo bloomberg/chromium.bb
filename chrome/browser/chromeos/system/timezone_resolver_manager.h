@@ -36,14 +36,11 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // system timezone (preferences might have changed since request was started).
   bool ShouldApplyResolvedTimezone();
 
-  // Returns the result of the provate call for tests.
-  bool TimeZoneResolverShouldBeRunningForTests();
-
- private:
   // Returns true if TimeZoneResolver should be running and taking in account
   // all configuration data.
   bool TimeZoneResolverShouldBeRunning();
 
+ private:
   int GetTimezoneManagementSetting();
 
   // Local State initialization observer.
