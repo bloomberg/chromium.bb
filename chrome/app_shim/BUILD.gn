@@ -16,7 +16,10 @@ source_set("app_shim") {
 
   deps = [
     "//chrome:strings",
-    "//chrome/common:app_mode_app_support",
+    "//chrome/common",
+    "//ipc",
+    "//mojo/edk/embedder:headers",
+    "//ui/base",
   ]
 }
 
@@ -40,7 +43,10 @@ mac_app_bundle("app_mode_loader") {
   ]
 
   deps = [
+    "//base",
     "//chrome/common:app_mode_app_support",
+    "//chrome/common:constants",
+    "//chrome/common:non_code_constants",
   ]
 
   libs = [

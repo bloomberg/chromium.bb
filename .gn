@@ -70,6 +70,7 @@ check_targets = [
 
   #"//chrome/*",  # Epic number of errors.
   "//chrome/app/*",
+  "//chrome/app_shim/*",
   "//chrome/browser/chromeos/*",
   "//chrome/browser/extensions/*",
   "//chrome/browser/ui/*",
