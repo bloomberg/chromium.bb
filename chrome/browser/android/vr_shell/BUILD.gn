@@ -15,6 +15,8 @@ static_library("vr_android") {
   sources = [
     "android_ui_gesture_target.cc",
     "android_ui_gesture_target.h",
+    "android_vsync_helper.cc",
+    "android_vsync_helper.h",
     "elbow_model.cc",
     "elbow_model.h",
     "gl_browser_interface.h",
@@ -78,6 +80,7 @@ static_library("vr_android") {
 generate_jni("vr_shell_jni_headers") {
   sources = [
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/AndroidUiGestureTarget.java",
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/AndroidVSyncHelper.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",

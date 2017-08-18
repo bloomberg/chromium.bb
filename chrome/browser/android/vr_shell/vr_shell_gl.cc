@@ -190,7 +190,6 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
 }
 
 VrShellGl::~VrShellGl() {
-  vsync_task_.Cancel();
   closePresentationBindings();
 }
 
@@ -268,11 +267,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   CreateOrResizeWebVRSurface(webvr_size);
 
-  vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
-  OnVSync();
-
-  ready_to_draw_ = true;
-
   if (daydream_support_) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND},
@@ -283,6 +277,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_);
   ui_renderer_ =
       base::MakeUnique<vr::UiRenderer>(scene_, vr_shell_renderer_.get());
+
+  ready_to_draw_ = true;
+  OnVSync(base::TimeTicks::Now());
 }
 
 void VrShellGl::CreateContentSurface() {
@@ -1018,7 +1015,7 @@ void VrShellGl::OnTriggerEvent() {
 }
 
 void VrShellGl::OnPause() {
-  vsync_task_.Cancel();
+  vsync_helper_.CancelVSyncRequest();
   controller_->OnPause();
   gvr_api_->PauseTracking();
 }
@@ -1028,8 +1025,8 @@ void VrShellGl::OnResume() {
   gvr_api_->ResumeTracking();
   controller_->OnResume();
   if (ready_to_draw_) {
-    vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
-    OnVSync();
+    vsync_helper_.CancelVSyncRequest();
+    OnVSync(base::TimeTicks::Now());
   }
 }
 
@@ -1067,32 +1064,20 @@ void VrShellGl::SetControllerModel(
   vr_shell_renderer_->GetControllerRenderer()->SetUp(std::move(model));
 }
 
-void VrShellGl::OnVSync() {
+void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   while (premature_received_frames_ > 0) {
     TRACE_EVENT0("gpu", "VrShellGl::OnWebVRFrameAvailableRetry");
     --premature_received_frames_;
     OnWebVRFrameAvailable();
   }
+  vsync_helper_.RequestVSync(
+      base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
 
-  // Don't send VSyncs until we have a timebase/interval.
-  if (vsync_interval_.is_zero())
-    return;
-
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks target = now + vsync_interval_;
-  double intervalsF =
-      (target - vsync_timebase_).InSecondsF() / vsync_interval_.InSecondsF();
-  uint64_t intervals = std::llround(intervalsF);
-  target = vsync_timebase_ + intervals * vsync_interval_;
-  task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
-                                target - now);
-
-  base::TimeDelta current_time = target - vsync_interval_ - base::TimeTicks();
   if (!callback_.is_null()) {
-    SendVSync(current_time, base::ResetAndReturn(&callback_));
+    SendVSync(frame_time, base::ResetAndReturn(&callback_));
   } else {
     pending_vsync_ = true;
-    pending_time_ = current_time;
+    pending_time_ = frame_time;
   }
   if (!ShouldDrawWebVr()) {
     DrawFrame(-1);
@@ -1115,17 +1100,6 @@ void VrShellGl::GetVSync(GetVSyncCallback callback) {
   }
   pending_vsync_ = false;
   SendVSync(pending_time_, std::move(callback));
-}
-
-void VrShellGl::UpdateVSyncInterval(base::TimeTicks vsync_timebase,
-                                    base::TimeDelta vsync_interval) {
-  bool needs_init = vsync_timebase_ == base::TimeTicks();
-  vsync_timebase_ = vsync_timebase;
-  vsync_interval_ = vsync_interval;
-  if (needs_init) {
-    vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
-    OnVSync();
-  }
 }
 
 void VrShellGl::ForceExitVr() {
@@ -1178,7 +1152,8 @@ void VrShellGl::UpdateLayerBounds(int16_t frame_index,
 }
 
 int64_t VrShellGl::GetPredictedFrameTimeNanos() {
-  int64_t frame_time_micros = vsync_interval_.InMicroseconds();
+  int64_t frame_time_micros =
+      vsync_helper_.LastVSyncInterval().InMicroseconds();
   // If we aim to submit at vsync, that frame will start scanning out
   // one vsync later. Add a half frame to split the difference between
   // left and right eye.
@@ -1194,7 +1169,7 @@ int64_t VrShellGl::GetPredictedFrameTimeNanos() {
   return expected_frame_micros * 1000;
 }
 
-void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
+void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
   uint8_t frame_index = frame_index_++;
 
   TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
@@ -1211,7 +1186,7 @@ void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
 
   std::move(callback).Run(
-      std::move(pose), time, frame_index,
+      std::move(pose), time - base::TimeTicks(), frame_index,
       device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
 }
 

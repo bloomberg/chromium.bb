@@ -23,9 +23,6 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
-import android.view.Choreographer;
-import android.view.Choreographer.FrameCallback;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -172,8 +169,6 @@ public class VrShellDelegate
     // Set to true if performed VR browsing at least once. That is, this was not simply a WebVr
     // presentation experience.
     private boolean mVrBrowserUsed;
-
-    private final VSyncEstimator mVSyncEstimator;
 
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
         private final WeakReference<ChromeActivity> mTargetActivity;
@@ -506,85 +501,6 @@ public class VrShellDelegate
         return getVrClassesWrapper() != null;
     }
 
-    private class VSyncEstimator {
-        private static final long NANOS_PER_SECOND = 1000000000;
-
-        private static final long VSYNC_TIMEBASE_UPDATE_DELTA = 1 * NANOS_PER_SECOND;
-        private static final double MIN_VSYNC_INTERVAL_THRESHOLD = 1.2;
-
-        // Estimates based on too few frames are unstable, probably anything above 2 is reasonable.
-        // Higher numbers will reduce how frequently we update the native vsync base/interval.
-        private static final int MIN_FRAME_COUNT = 5;
-
-        private final long mReportedVSyncNanos;
-        private final long mMinVSyncIntervalNanos;
-
-        private long mVSyncTimebaseNanos;
-        private long mVSyncIntervalNanos;
-        private long mVSyncIntervalMicros;
-
-        private int mVSyncCount;
-
-        private final FrameCallback mCallback = new FrameCallback() {
-            @Override
-            public void doFrame(long frameTimeNanos) {
-                if (mNativeVrShellDelegate == 0) return;
-                Choreographer.getInstance().postFrameCallback(this);
-                if (mVSyncTimebaseNanos == 0) {
-                    updateVSyncInterval(frameTimeNanos, mVSyncIntervalNanos);
-                    return;
-                }
-                ++mVSyncCount;
-                long elapsed = frameTimeNanos - mVSyncTimebaseNanos;
-                // If you're hitting the assert below, you probably added the callback twice.
-                assert elapsed != 0;
-                if (mVSyncCount < MIN_FRAME_COUNT) return;
-                long vSyncIntervalNanos = elapsed / mVSyncCount;
-                if (vSyncIntervalNanos < mMinVSyncIntervalNanos) {
-                    // We may run slow, but we should never run fast. If the VSync interval is too
-                    // low, something is very wrong.
-                    Log.v(TAG, "Error computing VSync interval. Resetting.");
-                    assert false;
-                    vSyncIntervalNanos = mReportedVSyncNanos;
-                }
-                updateVSyncInterval(frameTimeNanos, vSyncIntervalNanos);
-            }
-        };
-
-        public VSyncEstimator() {
-            Display display = ((WindowManager) mActivity.getSystemService(Context.WINDOW_SERVICE))
-                                      .getDefaultDisplay();
-            mReportedVSyncNanos = (long) ((1.0d / display.getRefreshRate()) * NANOS_PER_SECOND);
-            mVSyncIntervalNanos = mReportedVSyncNanos;
-            mMinVSyncIntervalNanos = (long) (mReportedVSyncNanos / MIN_VSYNC_INTERVAL_THRESHOLD);
-        }
-
-        void updateVSyncInterval(long frameTimeNanos, long vSyncIntervalNanos) {
-            mVSyncIntervalNanos = vSyncIntervalNanos;
-            long vSyncIntervalMicros = mVSyncIntervalNanos / 1000;
-            if (vSyncIntervalMicros == mVSyncIntervalMicros
-                    && frameTimeNanos - mVSyncTimebaseNanos < VSYNC_TIMEBASE_UPDATE_DELTA) {
-                return;
-            }
-            mVSyncIntervalMicros = vSyncIntervalMicros;
-            mVSyncTimebaseNanos = frameTimeNanos;
-            mVSyncCount = 0;
-
-            nativeUpdateVSyncInterval(
-                    mNativeVrShellDelegate, mVSyncTimebaseNanos, mVSyncIntervalMicros);
-        }
-
-        public void pause() {
-            Choreographer.getInstance().removeFrameCallback(mCallback);
-        }
-
-        public void resume() {
-            mVSyncTimebaseNanos = 0;
-            mVSyncCount = 0;
-            Choreographer.getInstance().postFrameCallback(mCallback);
-        }
-    }
-
     private VrShellDelegate(ChromeActivity activity, VrClassesWrapper wrapper) {
         mActivity = activity;
         mVrClassesWrapper = wrapper;
@@ -596,7 +512,6 @@ public class VrShellDelegate
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         mEnterVrHandler = new Handler();
         mExpectPauseOrDonSucceeded = new Handler();
-        mVSyncEstimator = new VSyncEstimator();
         ApplicationStatus.registerStateListenerForAllActivities(this);
         if (!mPaused) onResume();
     }
@@ -802,10 +717,7 @@ public class VrShellDelegate
 
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow works
         // properly.
-        if (!mPaused) {
-            mVrShell.resume();
-            mVSyncEstimator.resume();
-        }
+        if (!mPaused) mVrShell.resume();
 
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
         removeBlackOverlayView(mActivity);
@@ -1109,10 +1021,7 @@ public class VrShellDelegate
             });
         }
 
-        if (mInVr) {
-            mVrShell.resume();
-            mVSyncEstimator.resume();
-        }
+        if (mInVr) mVrShell.resume();
 
         if (mDonSucceeded) {
             mCancellingEntryAnimation = false;
@@ -1146,8 +1055,6 @@ public class VrShellDelegate
         mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         unregisterDaydreamIntent(mVrDaydreamApi);
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
-
-        if (mInVr) mVSyncEstimator.pause();
 
         // TODO(ymalik): We should be able to remove this if we handle it for multi-window in
         // {@link onMultiWindowModeChanged} since we're calling it in onStop.
@@ -1314,7 +1221,6 @@ public class VrShellDelegate
 
         restoreWindowMode();
         mVrShell.pause();
-        mVSyncEstimator.pause();
         removeVrViews();
         destroyVrShell();
         if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
@@ -1614,8 +1520,6 @@ public class VrShellDelegate
     private static native void nativeOnLibraryAvailable();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
     private native void nativeDisplayActivate(long nativeVrShellDelegate);
-    private native void nativeUpdateVSyncInterval(
-            long nativeVrShellDelegate, long timebaseNanos, long intervalMicros);
     private native void nativeOnPause(long nativeVrShellDelegate);
     private native void nativeOnResume(long nativeVrShellDelegate);
     private native void nativeUpdateNonPresentingContext(long nativeVrShellDelegate, long context);

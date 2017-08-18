@@ -188,8 +188,6 @@ class VrShell : device::GvrGamepadDataProvider,
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
   void SetWebVRSecureOrigin(bool secure_origin);
-  void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
-                           base::TimeDelta vsync_interval);
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id);
@@ -211,7 +209,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
  private:
   ~VrShell() override;
-  void WaitForGlThread();
   void PostToGlThread(const tracked_objects::Location& from_here,
                       const base::Closure& task);
   void SetUiState();
@@ -247,7 +244,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
-  bool thread_started_ = false;
   bool reprojected_rendering_;
 
   vr::UiInterface* ui_;

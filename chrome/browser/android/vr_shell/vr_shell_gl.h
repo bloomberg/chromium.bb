@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/vr_shell/android_vsync_helper.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -105,9 +106,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void SetControllerModel(std::unique_ptr<vr::VrControllerModel> model);
 
-  void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
-                           base::TimeDelta vsync_interval);
-
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id);
@@ -164,7 +162,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void OnWebVRFrameAvailable();
   int64_t GetPredictedFrameTimeNanos();
 
-  void OnVSync();
+  void OnVSync(base::TimeTicks frame_time);
 
   void UpdateEyeInfos(const gfx::Transform& head_pose,
                       int viewport_offset,
@@ -182,7 +180,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void ForceExitVr();
 
-  void SendVSync(base::TimeDelta time, GetVSyncCallback callback);
+  void SendVSync(base::TimeTicks time, GetVSyncCallback callback);
 
   void closePresentationBindings();
 
@@ -247,11 +245,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::unique_ptr<VrController> controller_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::CancelableClosure vsync_task_;
-  base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
 
-  base::TimeDelta pending_time_;
+  base::TimeTicks pending_time_;
   bool pending_vsync_ = false;
   GetVSyncCallback callback_;
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
@@ -281,6 +276,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   vr::ControllerInfo controller_info_;
   vr::RenderInfo render_info_primary_;
   vr::RenderInfo render_info_headlocked_;
+
+  AndroidVSyncHelper vsync_helper_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
