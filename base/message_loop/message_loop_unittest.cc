@@ -317,22 +317,20 @@ TEST(MessageLoopTest, RunTasksWhileShuttingDownJavaThread) {
 
   auto java_thread = MakeUnique<android::JavaHandlerThread>("test");
   java_thread->Start();
-  MessageLoop* loop = java_thread->message_loop();
 
-  loop->task_runner()->PostTask(
+  java_thread->message_loop()->task_runner()->PostTask(
       FROM_HERE,
       BindOnce(
-          [](android::JavaHandlerThread* java_thread, MessageLoop* loop,
+          [](android::JavaHandlerThread* java_thread,
              DummyTaskObserver* observer, int num_posts) {
-            loop->AddTaskObserver(observer);
+            java_thread->message_loop()->AddTaskObserver(observer);
             ThreadTaskRunnerHandle::Get()->PostDelayedTask(
                 FROM_HERE, BindOnce([]() { ADD_FAILURE(); }),
                 TimeDelta::FromDays(1));
             java_thread->StopMessageLoopForTesting();
             PostNTasks(num_posts);
           },
-          Unretained(java_thread.get()), Unretained(loop),
-          Unretained(&observer), kNumPosts));
+          Unretained(java_thread.get()), Unretained(&observer), kNumPosts));
 
   java_thread->JoinForTesting();
   java_thread.reset();
