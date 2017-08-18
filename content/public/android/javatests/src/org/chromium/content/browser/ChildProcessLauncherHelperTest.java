@@ -29,6 +29,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
@@ -88,8 +89,10 @@ public class ChildProcessLauncherHelperTest {
      * ChildProcessLauncher retries on a new connection.
      */
     @Test
-    @MediumTest
-    @Feature({"ProcessManagement"})
+    //@MediumTest
+    //@Feature({"ProcessManagement"})
+    // Test is flaky: crbug.com/752691
+    @DisabledTest
     @ChildProcessAllocatorSettings(
             sandboxedServiceCount = 2, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testBindServiceFromMultipleProcesses() throws RemoteException {
