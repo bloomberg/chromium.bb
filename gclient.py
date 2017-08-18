@@ -1764,11 +1764,20 @@ class Flattener(object):
 
       for os_deps in self._deps_os.itervalues():
         for dep in os_deps.itervalues():
-          # OS-specific deps need to have their full URL resolved manually.
-          assert not dep.parsed_url, (dep, dep.parsed_url)
-          dep._parsed_url = dep.LateOverride(dep.url)
-
           self._pin_dep(dep)
+
+    deps_files = set()
+    def add_deps_file(dep):
+      deps_path = os.path.join(self._client.root_dir, dep.name, dep.deps_file)
+      if not os.path.exists(deps_path):
+        return
+      assert dep.parsed_url
+      deps_files.add((dep.parsed_url, dep.deps_file))
+    for dep in self._deps.itervalues():
+      add_deps_file(dep)
+    for os_deps in self._deps_os.itervalues():
+      for dep in os_deps.itervalues():
+        add_deps_file(dep)
 
     self._deps_string = '\n'.join(
         _GNSettingsToLines(
@@ -1781,6 +1790,8 @@ class Flattener(object):
         _HooksToLines('pre_deps_hooks', self._pre_deps_hooks) +
         _HooksOsToLines(self._hooks_os) +
         _VarsToLines(self._vars) +
+        ['# %s, %s' % (url, deps_file)
+         for url, deps_file in sorted(deps_files)] +
         [''])  # Ensure newline at end of file.
 
   def _add_dep(self, dep):
@@ -1806,6 +1817,10 @@ class Flattener(object):
         self._deps_os.get(dep_os, {}).get(os_dep.name) == os_dep), (
             os_dep.name, self._deps_os.get(dep_os, {}).get(os_dep.name))
     if os_dep.url:
+      # OS-specific deps need to have their full URL resolved manually.
+      assert not os_dep.parsed_url, (os_dep, os_dep.parsed_url)
+      os_dep._parsed_url = os_dep.LateOverride(os_dep.url)
+
       self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
 
   def _flatten_dep(self, dep, dep_os=None):

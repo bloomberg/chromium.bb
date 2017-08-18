@@ -717,6 +717,11 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
+        '# git://127.0.0.1:20000/git/repo_2@%s, DEPS' % (
+                 self.githash('repo_2', 1)[:7]),
+        '# git://127.0.0.1:20000/git/repo_5, DEPS',
+        '# git://127.0.0.1:20000/git/repo_6, DEPS',
+        '# git://127.0.0.1:20000/git/repo_8, DEPS'
     ], deps_contents.splitlines())
 
   def testFlattenPinAllDeps(self):
@@ -869,6 +874,14 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
+        '# git://127.0.0.1:20000/git/repo_2@%s, DEPS' % (
+            self.githash('repo_2', 1)),
+        '# git://127.0.0.1:20000/git/repo_5@%s, DEPS' % (
+            self.githash('repo_5', 3)),
+        '# git://127.0.0.1:20000/git/repo_6@%s, DEPS' % (
+            self.githash('repo_6', 1)),
+        '# git://127.0.0.1:20000/git/repo_8@%s, DEPS' % (
+            self.githash('repo_8', 1)),
     ], deps_contents.splitlines())
 
   def testFlattenRecursedeps(self):
@@ -964,6 +977,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
+        '# git://127.0.0.1:20000/git/repo_10, DEPS',
+        '# git://127.0.0.1:20000/git/repo_11, DEPS',
+        '# git://127.0.0.1:20000/git/repo_5, DEPS',
+        '# git://127.0.0.1:20000/git/repo_6, DEPS',
+        '# git://127.0.0.1:20000/git/repo_7, DEPS',
+        '# git://127.0.0.1:20000/git/repo_8, DEPS',
+        '# git://127.0.0.1:20000/git/repo_9, DEPS',
     ], deps_contents.splitlines())
 
 
