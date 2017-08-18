@@ -31,17 +31,12 @@ public final class SuggestionsConfig {
     private SuggestionsConfig() {}
 
     /**
-     * @return Whether to use the modern layout for suggestions in Chrome Home.
-     */
-    public static boolean useModern() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
-    }
-
-    /**
      * @return Whether scrolling to the bottom of suggestions triggers a load.
      */
     public static boolean scrollToLoad() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
+        return FeatureUtilities.isChromeHomeModernEnabled()
+                && ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
     }
 
     /**
@@ -56,7 +51,7 @@ public final class SuggestionsConfig {
      * @return The background color for the suggestions sheet content.
      */
     public static int getBackgroundColor(Resources resources) {
-        return useModern()
+        return FeatureUtilities.isChromeHomeModernEnabled()
                 ? ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg)
                 : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
     }
@@ -67,7 +62,7 @@ public final class SuggestionsConfig {
     @TileView.Style
     public static int getTileStyle(UiConfig uiConfig) {
         boolean small = uiConfig.getCurrentDisplayStyle().isSmall();
-        if (SuggestionsConfig.useModern()) {
+        if (FeatureUtilities.isChromeHomeModernEnabled()) {
             return small ? TileView.Style.MODERN_CONDENSED : TileView.Style.MODERN;
         }
         if (FeatureUtilities.isChromeHomeEnabled()) return TileView.Style.CLASSIC;

@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -263,7 +264,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private void initializeShadow() {
         final FadingShadowView shadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
 
-        if (SuggestionsConfig.useModern()) {
+        if (FeatureUtilities.isChromeHomeModernEnabled()) {
             ((ViewGroup) mView).removeView(shadowView);
             return;
         }
@@ -331,8 +332,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     private void updateLogoTransition() {
-        boolean showLogo = mSearchProviderHasLogo && mNewTabShown && SuggestionsConfig.useModern()
-                && mBottomSheetObserver.isVisible();
+        boolean showLogo = mSearchProviderHasLogo && mNewTabShown
+                && FeatureUtilities.isChromeHomeModernEnabled() && mBottomSheetObserver.isVisible();
 
         if (!showLogo) {
             mLogoView.setVisibility(View.GONE);
