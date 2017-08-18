@@ -624,7 +624,7 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   ++p;
   --num;
   for (int i = 0; i < num; ++i) {
-    aom_write_symbol(w, p->token, p->palette_cdf, n);
+    aom_write_symbol(w, p->token, p->color_map_cdf, n);
     ++p;
   }
   *tp = p;

@@ -37,7 +37,7 @@ typedef struct {
 typedef struct {
   aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
-  aom_cdf_prob *palette_cdf;
+  aom_cdf_prob *color_map_cdf;
   int eob_val;
   int first_val;
   const aom_prob *context_tree;
@@ -75,10 +75,12 @@ void av1_tokenize_sb_vartx(const struct AV1_COMP *cpi, struct ThreadData *td,
                            int mi_col, BLOCK_SIZE bsize, int *rate);
 #endif
 
-int av1_cost_palette_sb(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize);
+int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
+                       COLOR_MAP_TYPE type);
 
-void av1_tokenize_palette_sb(const MACROBLOCK *const x, int plane,
-                             TOKENEXTRA **t, BLOCK_SIZE bsize);
+void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
+                            TOKENEXTRA **t, BLOCK_SIZE bsize,
+                            COLOR_MAP_TYPE type);
 
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,

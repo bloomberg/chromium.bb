@@ -3156,7 +3156,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                                     color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                                     cpi->common.bit_depth);
-      palette_mode_cost += av1_cost_palette_sb(x, 0, bsize);
+      palette_mode_cost += av1_cost_color_map(x, 0, bsize, PALETTE_MAP);
       this_model_rd = intra_model_yrd(cpi, x, bsize, palette_mode_cost);
       if (*best_model_rd != INT64_MAX &&
           this_model_rd > *best_model_rd + (*best_model_rd >> 1))
@@ -5591,7 +5591,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                              color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                              cpi->common.bit_depth);
-      this_rate += av1_cost_palette_sb(x, 1, bsize);
+      this_rate += av1_cost_color_map(x, 1, bsize, PALETTE_MAP);
       this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
       if (this_rd < *best_rd) {
         *best_rd = this_rd;

@@ -5976,9 +5976,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           if (!dry_run)
-            av1_tokenize_palette_sb(x, plane, t, bsize);
+            av1_tokenize_color_map(x, plane, t, bsize, PALETTE_MAP);
           else if (dry_run == DRY_RUN_COSTCOEFFS)
-            rate += av1_cost_palette_sb(x, plane, bsize);
+            rate += av1_cost_color_map(x, plane, bsize, PALETTE_MAP);
         }
       }
     }

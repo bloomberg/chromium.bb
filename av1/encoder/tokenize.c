@@ -264,6 +264,18 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
 };
 #endif
 
+typedef struct {
+  int rows;
+  int cols;
+  int n_colors;
+  int plane_width;
+  uint8_t *color_map;
+  aom_cdf_prob (
+      *map_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)];
+  const int (
+      *color_cost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS];
+} ColorMapParam;
+
 #if !CONFIG_PVQ || CONFIG_VAR_TX
 static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
@@ -329,25 +341,18 @@ static INLINE void add_token(TOKENEXTRA **t,
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
-static int cost_and_tokenize_map_sb(const MACROBLOCK *const x, int plane,
-                                    TOKENEXTRA **t, int calc_rate,
-                                    BLOCK_SIZE bsize) {
-  assert(plane == 0 || plane == 1);
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const uint8_t *const color_map = xd->plane[plane].color_index_map;
-  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+static int cost_and_tokenize_map(ColorMapParam *param, TOKENEXTRA **t,
+                                 int calc_rate) {
+  const uint8_t *const color_map = param->color_map;
   aom_cdf_prob(
-      *palette_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
-      plane ? xd->tile_ctx->palette_uv_color_index_cdf
-            : xd->tile_ctx->palette_y_color_index_cdf;
+      *map_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
+      param->map_cdf;
   const int(*color_cost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
-                        [PALETTE_COLORS] = plane ? &x->palette_uv_color_cost
-                                                 : &x->palette_y_color_cost;
-  int plane_block_width, rows, cols;
-  const int n = pmi->palette_size[plane];
-  av1_get_block_dimensions(bsize, plane, xd, &plane_block_width, NULL, &rows,
-                           &cols);
+                        [PALETTE_COLORS] = param->color_cost;
+  const int plane_block_width = param->plane_width;
+  const int rows = param->rows;
+  const int cols = param->cols;
+  const int n = param->n_colors;
 
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
@@ -368,7 +373,7 @@ static int cost_and_tokenize_map_sb(const MACROBLOCK *const x, int plane,
             (*color_cost)[n - PALETTE_MIN_SIZE][color_ctx][color_new_idx];
       } else {
         (*t)->token = color_new_idx;
-        (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
+        (*t)->color_map_cdf = map_cdf[n - PALETTE_MIN_SIZE][color_ctx];
         ++(*t);
       }
     }
@@ -377,21 +382,64 @@ static int cost_and_tokenize_map_sb(const MACROBLOCK *const x, int plane,
   return 0;
 }
 
-int av1_cost_palette_sb(const MACROBLOCK *const x, int plane,
-                        BLOCK_SIZE bsize) {
-  return cost_and_tokenize_map_sb(x, plane, NULL, 1, bsize);
+static void get_palette_params(const MACROBLOCK *const x, int plane,
+                               BLOCK_SIZE bsize, ColorMapParam *params) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  params->color_map = xd->plane[plane].color_index_map;
+  params->map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
+                          : xd->tile_ctx->palette_y_color_index_cdf;
+  params->color_cost =
+      plane ? &x->palette_uv_color_cost : &x->palette_y_color_cost;
+  params->n_colors = pmi->palette_size[plane];
+  av1_get_block_dimensions(bsize, plane, xd, &params->plane_width, NULL,
+                           &params->rows, &params->cols);
 }
 
-void av1_tokenize_palette_sb(const MACROBLOCK *const x, int plane,
-                             TOKENEXTRA **t, BLOCK_SIZE bsize) {
+#if CONFIG_MRC_TX
+static void get_mrc_params(const MACROBLOCK *const x, int plane,
+                           BLOCK_SIZE bsize, ColorMapParam *params) {
+  // TODO(sarahparker)
+  (void)x;
+  (void)plane;
+  (void)bsize;
+  memset(params, 0, sizeof(*params));
+}
+#endif  // CONFIG_MRC_TX
+
+static void get_color_map_params(const MACROBLOCK *const x, int plane,
+                                 BLOCK_SIZE bsize, COLOR_MAP_TYPE type,
+                                 ColorMapParam *params) {
+  memset(params, 0, sizeof(*params));
+  switch (type) {
+    case PALETTE_MAP: get_palette_params(x, plane, bsize, params); break;
+#if CONFIG_MRC_TX
+    case MRC_MAP: get_mrc_params(x, plane, bsize, params); break;
+#endif  // CONFIG_MRC_TX
+    default: assert(0 && "Invalid color map type"); return;
+  }
+}
+
+int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
+                       COLOR_MAP_TYPE type) {
   assert(plane == 0 || plane == 1);
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const uint8_t *const color_map = xd->plane[plane].color_index_map;
+  ColorMapParam color_map_params;
+  get_color_map_params(x, plane, bsize, type, &color_map_params);
+  return cost_and_tokenize_map(&color_map_params, NULL, 1);
+}
+
+void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
+                            TOKENEXTRA **t, BLOCK_SIZE bsize,
+                            COLOR_MAP_TYPE type) {
+  assert(plane == 0 || plane == 1);
+  ColorMapParam color_map_params;
+  get_color_map_params(x, plane, bsize, type, &color_map_params);
   // The first color index does not use context or entropy.
-  (*t)->token = color_map[0];
-  (*t)->palette_cdf = NULL;
+  (*t)->token = color_map_params.color_map[0];
+  (*t)->color_map_cdf = NULL;
   ++(*t);
-  cost_and_tokenize_map_sb(x, plane, t, 0, bsize);
+  cost_and_tokenize_map(&color_map_params, t, 0);
 }
 
 #if CONFIG_PVQ
