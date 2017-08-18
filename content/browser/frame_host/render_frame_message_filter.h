@@ -13,6 +13,7 @@
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ppapi/features/features.h"
@@ -84,6 +85,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   class OpenChannelToPpapiBrokerCallback;
 
   ~RenderFrameMessageFilter() override;
+
+  void InitializeOnIO(mojom::CookieManagerPtrInfo cookie_manager);
 
   void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
                           int* new_render_frame_id);
@@ -171,6 +174,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;
+
+  mojom::CookieManagerPtr cookie_manager_;
 
   // Needed for issuing routing ids and surface ids.
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
