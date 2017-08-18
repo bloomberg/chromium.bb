@@ -440,7 +440,7 @@ TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
   // ... but not those of the watchdog app.
   EXPECT_FALSE(activity_log->ShouldLog(activity_log_extension->id()));
   extension_service_->DisableExtension(activity_log_extension->id(),
-                                       Extension::DISABLE_USER_ACTION);
+                                       disable_reason::DISABLE_USER_ACTION);
   // Disabling the watchdog app means that we're back to never logging anything.
   EXPECT_FALSE(activity_log->ShouldLog(empty_extension->id()));
 }

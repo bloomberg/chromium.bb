@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_scoped_prefs.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
@@ -286,12 +287,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // extension is not enabled.
   int GetDisableReasons(const std::string& extension_id) const;
   bool HasDisableReason(const std::string& extension_id,
-                        Extension::DisableReason disable_reason) const;
+                        disable_reason::DisableReason disable_reason) const;
   void AddDisableReason(const std::string& extension_id,
-                        Extension::DisableReason disable_reason);
+                        disable_reason::DisableReason disable_reason);
   void AddDisableReasons(const std::string& extension_id, int disable_reasons);
   void RemoveDisableReason(const std::string& extension_id,
-                           Extension::DisableReason disable_reason);
+                           disable_reason::DisableReason disable_reason);
   void ReplaceDisableReasons(const std::string& extension_id,
                              int disable_reasons);
   void ClearDisableReasons(const std::string& extension_id);

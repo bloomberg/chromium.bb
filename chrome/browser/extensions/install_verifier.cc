@@ -384,7 +384,7 @@ void MustRemainDisabledHistogram(MustRemainDisabledOutcome outcome) {
 }  // namespace
 
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
-                                         Extension::DisableReason* reason,
+                                         disable_reason::DisableReason* reason,
                                          base::string16* error) const {
   CHECK(extension);
   if (!CanUseExtensionApis(*extension)) {
@@ -437,7 +437,7 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
 
   if (!verified) {
     if (reason)
-      *reason = Extension::DISABLE_NOT_VERIFIED;
+      *reason = disable_reason::DISABLE_NOT_VERIFIED;
     if (error)
       *error = l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
@@ -506,10 +506,10 @@ void InstallVerifier::OnVerificationComplete(bool success, OperationType type) {
              iter != disabled_extensions.end();
              ++iter) {
           int disable_reasons = prefs_->GetDisableReasons((*iter)->id());
-          if (disable_reasons & Extension::DISABLE_NOT_VERIFIED &&
+          if (disable_reasons & disable_reason::DISABLE_NOT_VERIFIED &&
               !MustRemainDisabled(iter->get(), NULL, NULL)) {
             prefs_->RemoveDisableReason((*iter)->id(),
-                                        Extension::DISABLE_NOT_VERIFIED);
+                                        disable_reason::DISABLE_NOT_VERIFIED);
           }
         }
       }

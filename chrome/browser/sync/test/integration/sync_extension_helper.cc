@@ -134,7 +134,7 @@ void SyncExtensionHelper::DisableExtension(Profile* profile,
   extensions::ExtensionSystem::Get(profile)
       ->extension_service()
       ->DisableExtension(crx_file::id_util::GenerateId(name),
-                         Extension::DISABLE_USER_ACTION);
+                         extensions::disable_reason::DISABLE_USER_ACTION);
 }
 
 bool SyncExtensionHelper::IsExtensionEnabled(

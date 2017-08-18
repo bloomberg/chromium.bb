@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, MAYBE_TestSetExtensionsState) {
   util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
   ExtensionService* service = extension_service();
   service->DisableExtension(last_loaded_extension_id(),
-                            Extension::DISABLE_USER_ACTION);
+                            disable_reason::DISABLE_USER_ACTION);
   EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id()));
 
   // Enable the extension and verify.

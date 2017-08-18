@@ -128,8 +128,8 @@ void EasyUnlockAppManagerImpl::DisableAppIfLoaded() {
   if (!extension_service->component_loader()->Exists(app_id_))
     return;
 
-  extension_service->DisableExtension(app_id_,
-                                      extensions::Extension::DISABLE_RELOAD);
+  extension_service->DisableExtension(
+      app_id_, extensions::disable_reason::DISABLE_RELOAD);
 }
 
 void EasyUnlockAppManagerImpl::ReloadApp() {

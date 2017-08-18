@@ -376,7 +376,7 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
       // themes because externally installed themes are initially disabled.
       int disable_reason = prefs->GetDisableReasons(extension->id());
       if (!prefs->IsExtensionDisabled(extension->id()) ||
-          disable_reason == Extension::DISABLE_USER_ACTION) {
+          disable_reason == extensions::disable_reason::DISABLE_USER_ACTION) {
         remove_list.push_back((*it)->id());
       }
     }
@@ -912,7 +912,7 @@ void ThemeService::OnThemeBuiltFromExtension(
 
     // Disable the old theme.
     service->DisableExtension(previous_theme_id,
-                              extensions::Extension::DISABLE_USER_ACTION);
+                              extensions::disable_reason::DISABLE_USER_ACTION);
 
     can_revert_theme = true;
   }

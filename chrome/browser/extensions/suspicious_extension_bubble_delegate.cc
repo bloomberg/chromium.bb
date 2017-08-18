@@ -46,7 +46,7 @@ bool SuspiciousExtensionBubbleDelegate::ShouldIncludeExtension(
     return false;
 
   int disable_reasons = prefs->GetDisableReasons(extension->id());
-  if (disable_reasons & extensions::Extension::DISABLE_NOT_VERIFIED)
+  if (disable_reasons & extensions::disable_reason::DISABLE_NOT_VERIFIED)
     return !HasBubbleInfoBeenAcknowledged(extension->id());
 
   return false;

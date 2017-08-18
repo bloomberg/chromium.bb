@@ -108,16 +108,17 @@ syncer::SyncDataList ToSyncerSyncDataList(
   return result;
 }
 
-static_assert(Extension::DISABLE_REASON_LAST == (1 << 16),
+static_assert(extensions::disable_reason::DISABLE_REASON_LAST == (1 << 16),
               "Please consider whether your new disable reason should be"
               " syncable, and if so update this bitmask accordingly!");
 const int kKnownSyncableDisableReasons =
-    Extension::DISABLE_USER_ACTION |
-    Extension::DISABLE_PERMISSIONS_INCREASE |
-    Extension::DISABLE_SIDELOAD_WIPEOUT |
-    Extension::DISABLE_GREYLIST |
-    Extension::DISABLE_REMOTE_INSTALL;
-const int kAllKnownDisableReasons = Extension::DISABLE_REASON_LAST - 1;
+    extensions::disable_reason::DISABLE_USER_ACTION |
+    extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE |
+    extensions::disable_reason::DISABLE_SIDELOAD_WIPEOUT |
+    extensions::disable_reason::DISABLE_GREYLIST |
+    extensions::disable_reason::DISABLE_REMOTE_INSTALL;
+const int kAllKnownDisableReasons =
+    extensions::disable_reason::DISABLE_REASON_LAST - 1;
 // We also include any future bits for newer clients that added another disable
 // reason.
 const int kSyncableDisableReasons =
@@ -274,13 +275,13 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   // Note that we're ignoring the enabled state during ApplySyncData (we check
   // for the existence of disable reasons instead), we're just setting it here
   // for older Chrome versions (<M48).
-  bool enabled = (disable_reasons == Extension::DISABLE_NONE);
+  bool enabled = (disable_reasons == extensions::disable_reason::DISABLE_NONE);
   enabled = enabled &&
       extension_prefs->GetExtensionBlacklistState(extension.id()) ==
           extensions::NOT_BLACKLISTED;
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
-  bool remote_install =
-      extension_prefs->HasDisableReason(id, Extension::DISABLE_REMOTE_INSTALL);
+  bool remote_install = extension_prefs->HasDisableReason(
+      id, extensions::disable_reason::DISABLE_REMOTE_INSTALL);
   ExtensionSyncData::OptionalBoolean allowed_on_all_url =
       GetAllowedOnAllUrlsOptionalBoolean(extension, profile_);
   bool installed_by_custodian =
@@ -404,7 +405,7 @@ void ExtensionSyncService::ApplySyncData(
   // old sync data may still be around, and it doesn't hurt to add the reason.
   // TODO(treib,devlin): Deprecate and eventually remove |remote_install|?
   if (extension_sync_data.remote_install())
-    disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
+    disable_reasons |= extensions::disable_reason::DISABLE_REMOTE_INSTALL;
 
   // Add/remove disable reasons based on the incoming sync data.
   int incoming_disable_reasons = extension_sync_data.disable_reasons();
@@ -417,7 +418,7 @@ void ExtensionSyncService::ApplySyncData(
     if (extension_sync_data.enabled())
       disable_reasons &= ~kKnownSyncableDisableReasons;
     else  // Assume the extension was likely disabled by the user.
-      disable_reasons |= Extension::DISABLE_USER_ACTION;
+      disable_reasons |= extensions::disable_reason::DISABLE_USER_ACTION;
   } else {
     // Replace the syncable disable reasons:
     // 1. Remove any syncable disable reasons we might have.
@@ -429,13 +430,15 @@ void ExtensionSyncService::ApplySyncData(
   }
 
   // Enable/disable the extension.
-  bool should_be_enabled = (disable_reasons == Extension::DISABLE_NONE);
+  bool should_be_enabled =
+      (disable_reasons == extensions::disable_reason::DISABLE_NONE);
   bool reenable_after_update = false;
   if (should_be_enabled && !extension_service()->IsExtensionEnabled(id)) {
     if (extension) {
       // Only grant permissions if the sync data explicitly sets the disable
-      // reasons to Extension::DISABLE_NONE (as opposed to the legacy (<M45)
-      // case where they're not set at all), and if the version from sync
+      // reasons to extensions::disable_reason::DISABLE_NONE (as opposed to the
+      // legacy
+      // (<M45) case where they're not set at all), and if the version from sync
       // matches our local one.
       bool grant_permissions = extension_sync_data.supports_disable_reasons() &&
                                (state == INSTALLED_MATCHING);

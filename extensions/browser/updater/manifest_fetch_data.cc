@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/disable_reason.h"
 #include "net/base/escape.h"
 
 namespace extensions {
@@ -27,7 +27,7 @@ void AddEnabledStateToPing(std::string* ping_value,
   *ping_value += "&e=" + std::string(ping_data->is_enabled ? "1" : "0");
   if (!ping_data->is_enabled) {
     // Add a dr=<number> param for each bit set in disable reasons.
-    for (int enum_value = 1; enum_value < Extension::DISABLE_REASON_LAST;
+    for (int enum_value = 1; enum_value < disable_reason::DISABLE_REASON_LAST;
          enum_value <<= 1) {
       if (ping_data->disable_reasons & enum_value)
         *ping_value += "&dr=" + base::IntToString(enum_value);

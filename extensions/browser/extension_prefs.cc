@@ -711,8 +711,8 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
     const std::string& extension_id) const {
   return HasDisableReason(extension_id,
-                          Extension::DISABLE_PERMISSIONS_INCREASE) ||
-         HasDisableReason(extension_id, Extension::DISABLE_REMOTE_INSTALL);
+                          disable_reason::DISABLE_PERMISSIONS_INCREASE) ||
+         HasDisableReason(extension_id, disable_reason::DISABLE_REMOTE_INSTALL);
 }
 
 int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
@@ -721,17 +721,18 @@ int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
       value >= 0) {
     return value;
   }
-  return Extension::DISABLE_NONE;
+  return disable_reason::DISABLE_NONE;
 }
 
 bool ExtensionPrefs::HasDisableReason(
     const std::string& extension_id,
-    Extension::DisableReason disable_reason) const {
+    disable_reason::DisableReason disable_reason) const {
   return (GetDisableReasons(extension_id) & disable_reason) != 0;
 }
 
-void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
-                                      Extension::DisableReason disable_reason) {
+void ExtensionPrefs::AddDisableReason(
+    const std::string& extension_id,
+    disable_reason::DisableReason disable_reason) {
   DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED));
   ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_ADD);
 }
@@ -744,7 +745,7 @@ void ExtensionPrefs::AddDisableReasons(const std::string& extension_id,
 
 void ExtensionPrefs::RemoveDisableReason(
     const std::string& extension_id,
-    Extension::DisableReason disable_reason) {
+    disable_reason::DisableReason disable_reason) {
   ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_REMOVE);
 }
 
@@ -754,7 +755,7 @@ void ExtensionPrefs::ReplaceDisableReasons(const std::string& extension_id,
 }
 
 void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
-  ModifyDisableReasons(extension_id, Extension::DISABLE_NONE,
+  ModifyDisableReasons(extension_id, disable_reason::DISABLE_NONE,
                        DISABLE_REASON_CLEAR);
 }
 
@@ -774,14 +775,14 @@ void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
       new_value = reasons;
       break;
     case DISABLE_REASON_CLEAR:
-      new_value = Extension::DISABLE_NONE;
+      new_value = disable_reason::DISABLE_NONE;
       break;
   }
 
   if (old_value == new_value)  // no change, return.
     return;
 
-  if (new_value == Extension::DISABLE_NONE) {
+  if (new_value == disable_reason::DISABLE_NONE) {
     UpdateExtensionPref(extension_id, kPrefDisableReasons, nullptr);
   } else {
     UpdateExtensionPref(extension_id, kPrefDisableReasons,

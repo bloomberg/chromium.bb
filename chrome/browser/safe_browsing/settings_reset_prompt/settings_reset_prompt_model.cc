@@ -136,7 +136,7 @@ void SettingsResetPromptModel::PerformReset(
   for (const auto& item : extensions_to_disable()) {
     const extensions::ExtensionId& extension_id = item.first;
     extension_service->DisableExtension(
-        extension_id, extensions::Extension::DISABLE_USER_ACTION);
+        extension_id, extensions::disable_reason::DISABLE_USER_ACTION);
   }
   UMA_HISTOGRAM_COUNTS_100("SettingsResetPrompt.NumberOfExtensionsDisabled",
                            extensions_to_disable().size());

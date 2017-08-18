@@ -64,8 +64,8 @@ class ManifestFetchData {
     // Whether the extension is enabled or not.
     bool is_enabled;
 
-    // A bitmask of Extension::DisableReason's, which may contain one or more
-    // reasons why an extension is disabled.
+    // A bitmask of disable_reason::DisableReason's, which may contain one or
+    // more reasons why an extension is disabled.
     int disable_reasons;
 
     PingData()

@@ -149,7 +149,7 @@ bool AppLoadService::WasUnloadedForReload(
   if (reason == extensions::UnloadedExtensionReason::DISABLE) {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(context_);
     return (prefs->GetDisableReasons(extension_id) &
-            Extension::DISABLE_RELOAD) != 0;
+            extensions::disable_reason::DISABLE_RELOAD) != 0;
   }
   return false;
 }

@@ -18,7 +18,7 @@
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/manifest_url_handlers.h"
 
 using std::string;
@@ -223,7 +223,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
       int disabled_reasons =
           extensions::ExtensionPrefs::Get(profile_)->GetDisableReasons(id);
       if (!extensions_service->IsExtensionEnabled(id) &&
-          disabled_reasons != extensions::Extension::DISABLE_USER_ACTION) {
+          disabled_reasons != extensions::disable_reason::DISABLE_USER_ACTION) {
         DVLOG(1) << "Theme " << id << " is disabled with reason "
                  << disabled_reasons << "; aborting";
         return;

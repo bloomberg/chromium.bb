@@ -499,7 +499,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EXPECT_TRUE(unload_observer.WaitForUnload(id));
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     int reasons = prefs->GetDisableReasons(id);
-    EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
+    EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
   }
 
   void TestContentScriptExtension(const std::string& crx_relpath,
@@ -660,13 +660,13 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   EXPECT_TRUE(registry_observer.WaitForUnload(id));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(id);
-  EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
+  EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
 
   // Make sure the extension then got re-installed, and that after reinstall it
   // is no longer disabled due to corruption.
   EXPECT_TRUE(registry_observer.WaitForInstall(id));
   reasons = prefs->GetDisableReasons(id);
-  EXPECT_FALSE(reasons & Extension::DISABLE_CORRUPTED);
+  EXPECT_FALSE(reasons & disable_reason::DISABLE_CORRUPTED);
 
   // Make sure that the update check request properly included a parameter
   // indicating that this was a corrupt policy reinstall.
@@ -745,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
   EXPECT_TRUE(registry_observer.WaitForUnload(id_));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(id_);
-  EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
+  EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
 }
 
 // Now actually test what happens on the next startup after the PRE test above.
@@ -758,12 +758,12 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   int disable_reasons = prefs->GetDisableReasons(id_);
-  if (disable_reasons & Extension::DISABLE_CORRUPTED) {
+  if (disable_reasons & disable_reason::DISABLE_CORRUPTED) {
     RegistryObserver registry_observer(registry);
     EXPECT_TRUE(registry_observer.WaitForInstall(id_));
     disable_reasons = prefs->GetDisableReasons(id_);
   }
-  EXPECT_FALSE(disable_reasons & Extension::DISABLE_CORRUPTED);
+  EXPECT_FALSE(disable_reasons & disable_reason::DISABLE_CORRUPTED);
   EXPECT_TRUE(registry->enabled_extensions().Contains(id_));
 }
 

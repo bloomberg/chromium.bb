@@ -38,7 +38,7 @@ void DevModeBubbleDelegate::AcknowledgeExtension(
 
 void DevModeBubbleDelegate::PerformAction(const ExtensionIdList& list) {
   for (size_t i = 0; i < list.size(); ++i)
-    service()->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
+    service()->DisableExtension(list[i], disable_reason::DISABLE_USER_ACTION);
 }
 
 base::string16 DevModeBubbleDelegate::GetTitle() const {

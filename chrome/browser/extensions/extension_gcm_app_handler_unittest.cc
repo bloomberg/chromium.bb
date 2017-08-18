@@ -335,8 +335,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   void DisableExtension(const Extension* extension) {
-    extension_service_->DisableExtension(
-        extension->id(), Extension::DISABLE_USER_ACTION);
+    extension_service_->DisableExtension(extension->id(),
+                                         disable_reason::DISABLE_USER_ACTION);
   }
 
   void EnableExtension(const Extension* extension) {

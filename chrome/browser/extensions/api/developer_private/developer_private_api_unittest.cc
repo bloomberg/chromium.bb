@@ -911,7 +911,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RepairPolicyExtension) {
 
   // Corrupt the extension , still expect repair failure because this is a
   // policy extension.
-  service()->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+  service()->DisableExtension(extension_id, disable_reason::DISABLE_CORRUPTED);
   args = ListBuilder().Append(extension_id).Build();
   function = new api::DeveloperPrivateRepairExtensionFunction();
   EXPECT_FALSE(RunFunction(function, *args));
