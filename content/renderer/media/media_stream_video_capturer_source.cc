@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -22,6 +23,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capturer_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -232,8 +234,8 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
 mojom::MediaStreamDispatcherHost*
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
-    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
-        &dispatcher_host_ptr_);
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, &dispatcher_host_ptr_);
     dispatcher_host_ = dispatcher_host_ptr_.get();
   }
   return dispatcher_host_;

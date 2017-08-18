@@ -65,7 +65,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
 
   mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
 
-  mojom::MediaStreamDispatcherHostAssociatedPtr dispatcher_host_ptr_;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host_ptr_;
   mojom::MediaStreamDispatcherHost* dispatcher_host_;
 
   // The source that provides video frames.

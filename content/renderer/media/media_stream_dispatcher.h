@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
   mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
 
-  mojom::MediaStreamDispatcherHostAssociatedPtr dispatcher_host_ptr_;
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host_ptr_;
   mojom::MediaStreamDispatcherHost* dispatcher_host_;
   mojo::Binding<mojom::MediaStreamDispatcher> binding_;
 

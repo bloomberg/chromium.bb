@@ -249,7 +249,6 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/aec_dump_messages.h"
-#include "content/common/media/media_stream_messages.h"
 #endif
 
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
@@ -1729,8 +1728,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(
       GetID(), webrtc_eventlog_host_.GetWeakPtr());
   AddFilter(peer_connection_tracker_host_.get());
-  AddFilter(new MediaStreamDispatcherHost(
-      GetID(), browser_context->GetMediaDeviceIDSalt(), media_stream_manager));
   AddFilter(new MediaStreamTrackMetricsHost());
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1913,9 +1910,18 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&RenderProcessHostImpl::CreateMusGpuRequest,
                                     base::Unretained(this)));
 
+  MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+
   registry->AddInterface(
-      base::Bind(&VideoCaptureHost::Create, GetID(),
-                 BrowserMainLoop::GetInstance()->media_stream_manager()));
+      base::Bind(&VideoCaptureHost::Create, GetID(), media_stream_manager));
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  registry->AddInterface(base::Bind(
+      &RenderProcessHostImpl::CreateMediaStreamDispatcherHost,
+      base::Unretained(this), GetBrowserContext()->GetMediaDeviceIDSalt(),
+      media_stream_manager));
+#endif
 
   registry->AddInterface(
       base::Bind(&metrics::CreateSingleSampleMetricsProvider));
@@ -4014,6 +4020,18 @@ RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+void RenderProcessHostImpl::CreateMediaStreamDispatcherHost(
+    const std::string& salt,
+    MediaStreamManager* media_stream_manager,
+    mojom::MediaStreamDispatcherHostRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!media_stream_dispatcher_host_) {
+    media_stream_dispatcher_host_.reset(
+        new MediaStreamDispatcherHost(GetID(), salt, media_stream_manager));
+  }
+  media_stream_dispatcher_host_->BindRequest(std::move(request));
+}
+
 void RenderProcessHostImpl::OnRegisterAecDumpConsumer(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

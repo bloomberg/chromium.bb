@@ -25,7 +25,6 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
@@ -97,6 +96,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId, salt, manager),
         task_runner_(task_runner) {}
+  ~MockMediaStreamDispatcherHost() override {}
 
   // A list of mock methods.
   MOCK_METHOD3(OnStreamGenerationSuccess,
@@ -176,8 +176,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   StreamDeviceInfo opened_device_;
 
  private:
-  ~MockMediaStreamDispatcherHost() override {}
-
   // These handler methods do minimal things and delegate to the mock methods.
   void OnStreamGeneratedInternal(
       int request_id,
@@ -267,7 +265,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
         audio_system_.get(), std::move(mock_video_capture_provider));
 
-    host_ = new MockMediaStreamDispatcherHost(
+    host_ = base::MakeUnique<MockMediaStreamDispatcherHost>(
         browser_context_.GetMediaDeviceIDSalt(),
         base::ThreadTaskRunnerHandle::Get(), media_stream_manager_.get());
     mojom::MediaStreamDispatcherPtr dispatcher =
@@ -330,7 +328,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     ASSERT_GT(audio_device_descriptions_.size(), 0u);
   }
 
-  void TearDown() override { host_->OnChannelClosing(); }
+  void TearDown() override { host_.reset(); }
 
  protected:
   virtual void SetupFakeUI(bool expect_started) {
@@ -453,7 +451,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     return true;
   }
 
-  scoped_refptr<MockMediaStreamDispatcherHost> host_;
+  std::unique_ptr<MockMediaStreamDispatcherHost> host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<media::AudioManager> audio_manager_;
@@ -804,7 +802,7 @@ TEST_F(MediaStreamDispatcherHostTest,
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 }
 
-TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
+TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreams) {
   StreamControls controls(false, true);
 
   base::RunLoop run_loop;
@@ -816,12 +814,11 @@ TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
                             run_loop.QuitClosure());
   }
 
-  // Calling OnChannelClosing() to cancel all the pending requests.
-  host_->OnChannelClosing();
+  media_stream_manager_->CancelAllRequests(kProcessId);
   run_loop.RunUntilIdle();
 }
 
-TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
+TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreams) {
   StreamControls controls(false, true);
 
   // Create first group of streams.
@@ -831,8 +828,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
     GenerateStreamAndWaitForResult(kRenderId, kPageRequestId + i, controls);
   }
 
-  // Calling OnChannelClosing() to cancel all the pending/generated streams.
-  host_->OnChannelClosing();
+  media_stream_manager_->CancelAllRequests(kProcessId);
   base::RunLoop().RunUntilIdle();
 }
 
