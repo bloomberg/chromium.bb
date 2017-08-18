@@ -72,15 +72,17 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // RESULT_COMPLETE_MATCH will also be returned to indicate non-HTML forms
   // completely matching.
   // The ordering of these flags is important. Larger matches are more
-  // preferred than lower matches. That is, since RESULT_HTML_ATTRIBUTES_MATCH
-  // is greater than RESULT_ACTION_MATCH, a match of only attributes and not
-  // actions will be preferred to one of actions and not attributes.
+  // preferred than lower matches. That is, since RESULT_FORM_NAME_MATCH
+  // is greater than RESULT_ACTION_MATCH, a match of only names and not
+  // actions will be preferred to one of actions and not names.
   enum MatchResultFlags {
     RESULT_NO_MATCH = 0,
     RESULT_ACTION_MATCH = 1 << 0,
-    RESULT_HTML_ATTRIBUTES_MATCH = 1 << 1,
-    RESULT_ORIGINS_OR_FRAMES_MATCH = 1 << 2,
-    RESULT_COMPLETE_MATCH = RESULT_ACTION_MATCH | RESULT_HTML_ATTRIBUTES_MATCH |
+    RESULT_FORM_NAME_MATCH = 1 << 1,
+    RESULT_SIGNATURE_MATCH = 1 << 2,
+    RESULT_ORIGINS_OR_FRAMES_MATCH = 1 << 3,
+    RESULT_COMPLETE_MATCH = RESULT_ACTION_MATCH | RESULT_FORM_NAME_MATCH |
+                            RESULT_SIGNATURE_MATCH |
                             RESULT_ORIGINS_OR_FRAMES_MATCH
   };
   // Use MatchResultMask to contain combinations of MatchResultFlags values.

@@ -337,14 +337,12 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
 
   result |= RESULT_ORIGINS_OR_FRAMES_MATCH;
 
-  // Autofill predictions can overwrite our default username selection so
-  // if this form was parsed with autofill predictions then allow the username
-  // element to be different.
-  if ((form.was_parsed_using_autofill_predictions ||
-       form.username_element == observed_form_.username_element) &&
-      form.password_element == observed_form_.password_element) {
-    result |= RESULT_HTML_ATTRIBUTES_MATCH;
-  }
+  if (CalculateFormSignature(form.form_data) ==
+      CalculateFormSignature(observed_form_.form_data))
+    result |= RESULT_SIGNATURE_MATCH;
+
+  if (form.form_data.name == observed_form_.form_data.name)
+    result |= RESULT_FORM_NAME_MATCH;
 
   // Note: although saved password forms might actually have an empty action
   // URL if they were imported (see bug 1107719), the |form| we see here comes
