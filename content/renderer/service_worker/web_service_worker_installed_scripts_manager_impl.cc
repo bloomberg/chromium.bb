@@ -107,6 +107,9 @@ class Receiver {
   uint64_t remaining_bytes_;
 };
 
+using RawScriptData =
+    blink::WebServiceWorkerInstalledScriptsManager::RawScriptData;
+
 // BundledReceivers is a helper class to wait for the end of reading body and
 // meta data. Lives on the IO thread.
 class BundledReceivers {
@@ -180,8 +183,6 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
 
   // Called on the IO thread.
   void OnScriptReceived(mojom::ServiceWorkerScriptInfoPtr script_info) {
-    using RawScriptData =
-        blink::WebServiceWorkerInstalledScriptsManager::RawScriptData;
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     const GURL& script_url = script_info->script_url;
     auto iter = running_receivers_.find(script_url);
@@ -250,20 +251,28 @@ bool WebServiceWorkerInstalledScriptsManagerImpl::IsScriptInstalled(
   return base::ContainsKey(installed_urls_, script_url);
 }
 
-std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager::RawScriptData>
+std::unique_ptr<RawScriptData>
 WebServiceWorkerInstalledScriptsManagerImpl::GetRawScriptData(
     const blink::WebURL& script_url) {
   if (!IsScriptInstalled(script_url))
     return nullptr;
 
-  if (!script_container_->ExistsOnWorkerThread(script_url)) {
+  ThreadSafeScriptContainer::ScriptStatus status =
+      script_container_->GetStatusOnWorkerThread(script_url);
+  if (status == ThreadSafeScriptContainer::ScriptStatus::kPending) {
     // Wait for arrival of the script.
-    const bool success = script_container_->WaitOnIOThread(script_url);
+    const bool success = script_container_->WaitOnWorkerThread(script_url);
     // It can fail due to an error on Mojo pipes.
     if (!success)
-      return nullptr;
-    DCHECK(script_container_->ExistsOnWorkerThread(script_url));
+      return RawScriptData::CreateInvalidInstance();
+    status = script_container_->GetStatusOnWorkerThread(script_url);
+    DCHECK_NE(ThreadSafeScriptContainer::ScriptStatus::kPending, status);
   }
+
+  if (status == ThreadSafeScriptContainer::ScriptStatus::kFailed)
+    return RawScriptData::CreateInvalidInstance();
+  DCHECK_EQ(ThreadSafeScriptContainer::ScriptStatus::kSuccess, status);
+
   std::unique_ptr<RawScriptData> data =
       script_container_->TakeOnWorkerThread(script_url);
   // |data| is possible to be null when the script data has already been taken.
