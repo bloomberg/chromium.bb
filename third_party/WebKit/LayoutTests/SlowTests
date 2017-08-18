@@ -414,6 +414,7 @@ crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.
 crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Slow ]
 crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-strokePath-alpha-shadow.html [ Slow ]
 
+crbug.com/726075 [ Win Debug ] compositing/culling/filter-occlusion-blur.html [ Slow ]
 crbug.com/726075 [ Win Debug ] css3/blending/mix-blend-mode-with-filters.html [ Slow ]
 crbug.com/726075 [ Win Debug ] paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Slow ]
 crbug.com/726075 [ Win Debug ] paint/invalidation/filter-repaint-on-accelerated-layer.html [ Slow ]
