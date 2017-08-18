@@ -95,11 +95,15 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 }
 
 - (void)stop {
+  [self stopWithCallback:nil];
+}
+
+- (void)stopWithCallback:(ProceduralBlock)callback {
   [_updatePaymentSummaryItemTimer invalidate];
 
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
-                         completion:nil];
+                         completion:callback];
   [_addressEditCoordinator stop];
   _addressEditCoordinator = nil;
   [_creditCardEditCoordinator stop];
