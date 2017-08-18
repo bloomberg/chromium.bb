@@ -91,13 +91,15 @@ class TestCacheStorageObserver : public CacheStorageContextImpl::Observer {
     ++notify_list_changed_count;
   }
 
+  // TODO(kristipark): Once CacheManager is modified to emit these
+  // notifications, add test expectations.
   void OnCacheContentChanged(const url::Origin& origin,
                              const std::string& cache_name) override {
-    ++notify_content_changed_count;
+    ++notify_context_changed_count;
   }
 
   int notify_list_changed_count = 0;
-  int notify_content_changed_count = 0;
+  int notify_context_changed_count = 0;
 };
 
 }  // anonymous namespace
@@ -177,11 +179,6 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
   void CachePutCallback(base::RunLoop* run_loop, CacheStorageError error) {
-    callback_error_ = error;
-    run_loop->Quit();
-  }
-
-  void CacheDeleteCallback(base::RunLoop* run_loop, CacheStorageError error) {
     callback_error_ = error;
     run_loop->Quit();
   }
@@ -431,26 +428,6 @@ class CacheStorageManagerTest : public testing::Test {
     cache->BatchOperation(
         std::vector<CacheStorageBatchOperation>(1, operation),
         base::BindOnce(&CacheStorageManagerTest::CachePutCallback,
-                       base::Unretained(this), base::Unretained(&loop)));
-    loop.Run();
-
-    return callback_error_ == CACHE_STORAGE_OK;
-  }
-
-  bool CacheDelete(CacheStorageCache* cache, const GURL& url) {
-    ServiceWorkerFetchRequest request;
-    request.url = url;
-    ServiceWorkerResponse response;
-
-    CacheStorageBatchOperation operation;
-    operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE;
-    operation.request = request;
-    operation.response = response;
-
-    base::RunLoop loop;
-    cache->BatchOperation(
-        std::vector<CacheStorageBatchOperation>(1, operation),
-        base::BindOnce(&CacheStorageManagerTest::CacheDeleteCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
 
@@ -1435,64 +1412,6 @@ TEST_P(CacheStorageManagerTestP, NotifyCacheListChanged_DeletedThenCreated) {
   EXPECT_EQ(2, observer.notify_list_changed_count);
   EXPECT_TRUE(Open(origin2_, "foo2"));
   EXPECT_EQ(3, observer.notify_list_changed_count);
-}
-
-TEST_P(CacheStorageManagerTestP, NotifyCacheContentChanged_PutEntry) {
-  TestCacheStorageObserver observer;
-  cache_manager_->AddObserver(&observer);
-
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo")));
-  EXPECT_EQ(1, observer.notify_content_changed_count);
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo1")));
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo2")));
-  EXPECT_EQ(3, observer.notify_content_changed_count);
-}
-
-TEST_P(CacheStorageManagerTestP, NotifyCacheContentChanged_DeleteEntry) {
-  TestCacheStorageObserver observer;
-  cache_manager_->AddObserver(&observer);
-
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_FALSE(Delete(origin1_, "foo"));
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo")));
-  EXPECT_EQ(1, observer.notify_content_changed_count);
-  EXPECT_TRUE(CacheDelete(callback_cache_handle_->value(),
-                          GURL("http://example.com/foo")));
-  EXPECT_EQ(2, observer.notify_content_changed_count);
-  EXPECT_FALSE(CacheDelete(callback_cache_handle_->value(),
-                           GURL("http://example.com/foo")));
-  EXPECT_EQ(2, observer.notify_content_changed_count);
-}
-
-TEST_P(CacheStorageManagerTestP, NotifyCacheContentChanged_DeleteThenPutEntry) {
-  TestCacheStorageObserver observer;
-  cache_manager_->AddObserver(&observer);
-
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_EQ(0, observer.notify_content_changed_count);
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo")));
-  EXPECT_EQ(1, observer.notify_content_changed_count);
-  EXPECT_TRUE(CacheDelete(callback_cache_handle_->value(),
-                          GURL("http://example.com/foo")));
-  EXPECT_EQ(2, observer.notify_content_changed_count);
-  EXPECT_TRUE(CachePut(callback_cache_handle_->value(),
-                       GURL("http://example.com/foo")));
-  EXPECT_EQ(3, observer.notify_content_changed_count);
-  EXPECT_TRUE(CacheDelete(callback_cache_handle_->value(),
-                          GURL("http://example.com/foo")));
-  EXPECT_EQ(4, observer.notify_content_changed_count);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatch_IgnoreSearch) {
