@@ -25,7 +25,7 @@ constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, SurfaceLifetime) {
   FrameSinkManagerImpl frame_sink_manager(
-      nullptr /* display_provider */, SurfaceManager::LifetimeType::SEQUENCES);
+      SurfaceManager::LifetimeType::SEQUENCES);
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = CompositorFrameSinkSupport::Create(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,

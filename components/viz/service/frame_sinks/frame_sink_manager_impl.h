@@ -43,9 +43,9 @@ class FrameSinkManagerClient;
 class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
                                                 public mojom::FrameSinkManager {
  public:
-  FrameSinkManagerImpl(DisplayProvider* display_provider = nullptr,
-                       SurfaceManager::LifetimeType lifetime_type =
-                           SurfaceManager::LifetimeType::SEQUENCES);
+  FrameSinkManagerImpl(SurfaceManager::LifetimeType lifetime_type =
+                           SurfaceManager::LifetimeType::REFERENCES,
+                       DisplayProvider* display_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 
   // Binds |this| as a FrameSinkManagerImpl for |request| on |task_runner|. On

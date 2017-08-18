@@ -34,8 +34,7 @@ constexpr bool kNeedsSyncPoints = true;
 class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
  public:
   SurfaceAggregatorPixelTest()
-      : manager_(nullptr, SurfaceManager::LifetimeType::REFERENCES),
-        support_(CompositorFrameSinkSupport::Create(nullptr,
+      : support_(CompositorFrameSinkSupport::Create(nullptr,
                                                     &manager_,
                                                     kArbitraryRootFrameSinkId,
                                                     kIsRoot,
