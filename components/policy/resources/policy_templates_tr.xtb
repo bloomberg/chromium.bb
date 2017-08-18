@@ -32,6 +32,7 @@
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa uzaktan yardım ana makinesi, kullanıcının içeriğinde çalışır ve uzak kullanıcılar, masaüstündeki yükseltilmiş pencerelerle etkileşimde bulunamaz.</translation>
 <translation id="1096105751829466145">Varsayılan arama sağlayıcı</translation>
 <translation id="1117535567637097036">Bu politika aracılığıyla ayarlanan protokol işleyicileri, Android amaçları işlenirken kullanılmaz.</translation>
+<translation id="1122282995569868661"><ph name="PRODUCT_NAME" /> araç çubuğu simgesini gösterir</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" /> uygulamasının önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
 
       Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" bayrağını belirtmiş olup olmamasına bakmaksızın sağlanan dizini kullanır. Veri kaybını veya diğer beklenmeyen hataları önlemek için bu politika, bir birimin kök dizinine veya başka amaçlar için kullanılan bir dizine ayarlanmamalıdır; çünkü <ph name="PRODUCT_NAME" />, dizinin içeriğini yönetir.
@@ -54,6 +55,7 @@
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
 <translation id="1221359380862872747">Demo girişinde belirtilen URL'leri yükle</translation>
+<translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
 <translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
 
@@ -272,6 +274,7 @@
       Politika ayarlanmazsa varsayılan değer 0 derece olur ve kullanıcı
       istediğinde bunu değiştirebilir. Bu durumda, yeniden başlatmada
       varsayılan değer tekrar uygulanmaz.</translation>
+<translation id="2156132677421487971">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan <ph name="PRODUCT_NAME" /> özelliğine ilişkin politikaları yapılandırın.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
 <translation id="2176565653304920879">Bu politika ayarlandığında, otomatik saat dilimi algılama akışı, ayarın değerine bağlı olarak aşağıdaki yöntemlerden birini kullanır: 
@@ -582,6 +585,7 @@
       Bu politikanın ayarlansa da ayarlanmasa da, WPAD optimizasyonu ayarı kullanıcılar tarafından değiştirilemez.</translation>
 <translation id="3072045631333522102">Perakende modunda oturum açma ekranında kullanılacak ekran koruyucu</translation>
 <translation id="3072847235228302527">Bir cihaz yerel hesabı için Hizmet Şartları'nı ayarlama</translation>
+<translation id="3086995894968271156">Cast Receiver'ı <ph name="PRODUCT_NAME" /> ürününde yapılandırın.</translation>
 <translation id="3096595567015595053">Etkin eklentilerin listesi</translation>
 <translation id="3101501961102569744">Proxy sunucu ayarlarının nasıl belirtileceğini seç</translation>
 <translation id="3117676313396757089">Uyarı: DHE, sürüm 57'den sonra (yaklaşık olarak Mart 2017'de) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
@@ -965,6 +969,9 @@ politikayı geçersiz kılamaz.
       Bu politikanın değeri 0 olursa varsayılan önbellek boyutu kullanılır, ancak kullanıcı bu değeri değiştiremez.
 
       Bu politika ayarlanmazsa varsayılan boyut kullanılır ve kullanıcı --media-cache-size bayrağıyla bu değeri geçersiz kılabilir.</translation>
+<translation id="4508686775017063528">Bu politika true (doğru) değerine ayarlanırsa veya hiç ayarlanmazsa <ph name="PRODUCT_NAME" /> etkinleştirilir ve kullanıcılar uygulama menüsünden, sayfa içerik menülerinden, Cast uyumlu web sitelerindeki medya denetimlerinden ve (gösteriliyorsa) Cast araç çubuğu simgesinden bu özelliği başlatabilir.
+
+          Bu politika false (yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> devre dışı bırakılır.</translation>
 <translation id="4518251772179446575">Bir site, kullanıcının fiziksel konumunu izlemek istediğinde sor</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" /> Çok Amaçlı Adres Çubuğu'nda arama önerilerini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
@@ -1071,6 +1078,7 @@ politikayı geçersiz kılamaz.
 <translation id="489803897780524242">Varsayılan arama sağlayıcısı için arama terimi yerleştirmeyi kontrol eden parametre</translation>
 <translation id="4899708173828500852">Güvenli Taramayı etkinleştir</translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
+<translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
 
       Bu politika yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin yeni profiller oluşturmasına izin vermez.</translation>
@@ -1388,6 +1396,7 @@ politikayı geçersiz kılamaz.
 <translation id="6155936611791017817">Giriş ekranında büyük imleç modunun varsayılan durumunu ayarla</translation>
 <translation id="6157537876488211233">Proxy atlama kurallarının noktalı virgül ile ayrılmış listesi</translation>
 <translation id="6158324314836466367">Kurumsal web mağazası adı (kullanımdan kaldırıldı)</translation>
+<translation id="6161405879872578475"><ph name="PRODUCT_NAME" /> ürününü etkinleştirir</translation>
 <translation id="6167074305866468481">Uyarı: SSLv3 desteği, <ph name="PRODUCT_NAME" /> ürününün 43'ten sonraki sürümlerinde tümüyle kaldırılmıştır (Temmuz 2015 civarında). Aynı zamanda bu politika da kaldırılmıştır.
 
       Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan bir minimum sürüm kullanır. Bu, <ph name="PRODUCT_NAME" /> 39'da SSLv3, daha sonraki sürümlerde ise TLS 1.0'dır.
@@ -1886,6 +1895,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu ayar etkinleştirilirse, bu makine, bir güvenlik duvarıyla ayrılmış olsalar bile uzak ana makineleri keşfedebilir ve bunlara bağlanabilir.
 
           Bu ayar devre dışı bırakılırsa ve giden UDP bağlantılarına güvenlik duvarı tarafından filtre uygulanıyorsa, bu makine yalnızca yerel ağ içindeki ana makinelere bağlanabilir.</translation>
+<translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> hedefinin adı</translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>

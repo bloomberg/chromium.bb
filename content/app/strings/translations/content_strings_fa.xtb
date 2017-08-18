@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">منطقه</translation>
 <translation id="1591562245178063882">این ماه</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
-<translation id="167575180612809735">نشانگر مشغول</translation>
 <translation id="1729654308190250600">لطفاً یک آدرس رایانامه غیرخالی وارد کنید.</translation>
 <translation id="1758486001363313524">موارد دیگر...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">ق.ظ/ب.ظ</translation>
 <translation id="1832974991323546415">پخش در دستگاه راه دور</translation>
 <translation id="1854180393107901205">توقف فرستادن</translation>
-<translation id="1880518467580572141">طرح کلی</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">بی‌صدا کردن</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="588258955323874662">تمام صفحه</translation>
+<translation id="5888666972993069672">درحال ارسال محتوا به <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5966707198760109579">هفته</translation>
 <translation id="5987525920412732405">دکمه چرخش</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="668171684555832681">دیگر...</translation>
 <translation id="6692633176391053278">گام به گام</translation>
-<translation id="6739588121953935928">خط‌کش</translation>
 <translation id="6755330956360078551">نکته ابزار</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>

@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">拡張機能を無効にしてみてください。</translation>
 <translation id="457875822857220463">配送</translation>
+<translation id="4582800630050655161">Google アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。Chromium で今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="4690462567478992370">無効な証明書の使用をやめる</translation>
+<translation id="4690954380545377795">Google アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。Chrome で今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">接続が中断されました</translation>
 <translation id="471880041731876836">このサイトへのアクセスが許可されていません</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">お支払い</translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">試験運用機能</translation>
 <translation id="5205222826937269299">名前は必須です</translation>
 <translation id="5222812217790122047">メールアドレスは必須です</translation>
+<translation id="522700295135997067">このサイトでパスワードを盗まれた可能性があります</translation>
+<translation id="5230733896359313003">配送先住所</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5277279256032773186">会社で Chrome を使用する場合は、従業員用に Chrome の設定を管理できます。詳細</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />このソフトウェアを一時的に無効にしてインターネットに接続できるようにするには、次の手順を行います。なお、この作業には管理者権限が必要です。<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
+<translation id="5332219387342487447">配送方法</translation>
 <translation id="5355557959165512791"><ph name="SITE" /> は証明書が失効しているため、現在アクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
 <translation id="5386426401304769735">このサイトの証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">このサイトを利用すると、悪意のあるユーザーによって、閲覧時のエクスペリエンスを損なうプログラム（ホームページを改ざんする、アクセス先のサイトに追加の広告を表示するなどのプログラム）をインストールするよう誘導される可能性があります。</translation>
 <translation id="7674629440242451245">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/dev から Dev チャンネルをお試しください。</translation>
 <translation id="7682287625158474539">発送先</translation>
+<translation id="7699293099605015246">記事は現在利用できません</translation>
 <translation id="7701040980221191251">なし</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">証明書</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">追加</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="7800304661137206267">この接続は <ph name="CIPHER" /> で暗号化されており、メッセージ認証には <ph name="MAC" />、鍵交換メカニズムには <ph name="KX" /> が使用されています。</translation>
+<translation id="7802523362929240268">正規のサイトです</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7805768142964895445">ステータス</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">デビットカードとプリペイド カードをご利用いただけます。</translation>
+<translation id="7878562273885520351">パスワードが不正使用される可能性があります</translation>
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
 <translation id="79338296614623784">有効な電話番号を入力してください</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">拡張機能によってブロック</translation>
 <translation id="9076283476770535406">成人向けコンテンツが含まれている可能性があります</translation>
 <translation id="9078964945751709336">その他の情報が必要です</translation>
+<translation id="9080712759204168376">ご注文の概要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
+<translation id="910908805481542201">問題を修正するには</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{なし}=1{1 件のアイテム}other{# 件のアイテム}}</translation>
 <translation id="981121421437150478">オフライン</translation>
 <translation id="988159990683914416">Developer Build</translation>
+<translation id="989988560359834682">住所の編集</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

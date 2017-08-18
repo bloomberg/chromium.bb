@@ -476,6 +476,7 @@
 <translation id="4708268264240856090">Your connection was interrupted</translation>
 <translation id="471880041731876836">You don't have permission to visit this site</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Running Windows Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Your payment</translation>
 <translation id="4726672564094551039">Reload policies</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Restart Chromium</translation>
@@ -538,6 +539,7 @@
 <translation id="5205222826937269299">Name required</translation>
 <translation id="5222812217790122047">Email (required)</translation>
 <translation id="522700295135997067">This site may have just stolen your password</translation>
+<translation id="5230733896359313003">Delivery Address</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Using Chrome at work? Businesses can manage Chrome settings for their employees. Find out more</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Follow these steps to temporarily disable the software so that you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH" />
@@ -556,6 +558,7 @@
 <translation id="5308689395849655368">Crash reporting is disabled.</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5332219387342487447">Delivery Method</translation>
 <translation id="5355557959165512791">You cannot visit <ph name="SITE" /> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5386426401304769735">The certificate chain for this site contains a certificate signed using SHA-1.</translation>
@@ -982,6 +985,7 @@
 <translation id="9069693763241529744">Blocked by an extension</translation>
 <translation id="9076283476770535406">It may have mature content</translation>
 <translation id="9078964945751709336">More information required</translation>
+<translation id="9080712759204168376">Order Summary</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
 <translation id="910908805481542201">Help me fix this</translation>
 <translation id="9128870381267983090">Connect to network</translation>
@@ -1005,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{None}=1{1 item}other{# items}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Developer Build</translation>
+<translation id="989988560359834682">Edit Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

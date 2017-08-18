@@ -6,6 +6,7 @@
 <translation id="10614374240317010">कभी नहीं सहेजा गया</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> भाषा के पेज का कभी भी अनुवाद न करें</translation>
 <translation id="1080790410959514870">आप <ph name="DOMAIN_NAME" /> द्वारा प्रबंधित खाते से प्रस्थान कर रहे हैं. इससे इस डिवाइस पर संग्रहित Chrome डेटा हट जाएगा, लेकिन डेटा आपके Google खाते में बना रहेगा.</translation>
+<translation id="1105960400813249514">स्‍क्रीन कैप्‍चर</translation>
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
 <translation id="1121094540300013208">उपयोग और क्रैश रिपोर्ट</translation>
 <translation id="1137305377394488060">पिछला घंटा</translation>
@@ -123,6 +124,7 @@
 <translation id="2146738493024040262">झटपट ऐप्लिकेशन खोलें</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2154484045852737596">कार्ड संपादित करें</translation>
+<translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">खतरनाक साइटों से आपकी और आपके डिवाइस की सुरक्षा करता है</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>

@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Farerska tipkovnica</translation>
 <translation id="1646136617204068573">Mađarska tipkovnica</translation>
 <translation id="164729547906544836">tamilska tipkovnica (itrans)</translation>
+<translation id="164969095109328410">Chrome uređaj</translation>
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="184633654410729720">tajska tipkovnica (kedmanee)</translation>
 <translation id="1921986354447415460">Turska F tipkovnica</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Kazaška tipkovnica</translation>
 <translation id="2384596874640104496">singaleska tipkovnica</translation>
 <translation id="2464079411014186876">Sladoled</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="247772113373397749">Kanadska višejezična tipkovnica</translation>
 <translation id="2494837236724268445">gudžaratska tipkovnica (fonetska)</translation>
 <translation id="2529133382850673012">SAD tipkovnica</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Žaba</translation>
 <translation id="2649120831653069427">Dugina riba</translation>
 <translation id="2735698359135166290">Rumunjska standardna tipkovnica</translation>
-<translation id="2744450304594201174">Tamagochi</translation>
 <translation id="2771816809568414714">Sir</translation>
 <translation id="2781645665747935084">belgijska</translation>
 <translation id="2790805296069989825">Ruska tipkovnica</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">kanadska (višejezična)</translation>
 <translation id="3241720467332021590">Irski</translation>
 <translation id="3252266817569339921">Francuski</translation>
+<translation id="3280987981688031357">Gramofonska ploča</translation>
 <translation id="3296763833017966289">Gruzijski</translation>
 <translation id="3338239663705455570">Slovenska tipkovnica</translation>
 <translation id="3399597614303179694">Makedonska tipkovnica</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">Litavski</translation>
 <translation id="3603385196401704894">francuska (kanadska)</translation>
 <translation id="3606220979431771195">Turska F</translation>
+<translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3801082500826908679">Farerska</translation>
 <translation id="3809272675881623365">Zec</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Američki nogomet</translation>
 <translation id="497244430928947428">malayalamska tipkovnica (fonetska)</translation>
 <translation id="498902553138568924">Crveni leptir</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5098629044894065541">Hebrejski</translation>
 <translation id="5123433949759960244">Košarka</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">transliteracija (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">američka (SAD: Dvorak)</translation>
 <translation id="5640179856859982418">Švicarska tipkovnica</translation>
-<translation id="5656201261327432370">Cappocino</translation>
 <translation id="5756666464756035725">Mađarska QWERTY</translation>
 <translation id="5771585441665576801">transliteracija (geia → γεια)</translation>
 <translation id="5790193330357274855">kazaški</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5892290200158927959">Francuska BÉPO tipkovnica</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latinoamerička tipkovnica</translation>
 <translation id="60357267506638014">češka (QWERTY)</translation>
 <translation id="6054173164583630569">Francuska tipkovnica</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Voziti bicikl</translation>
 <translation id="6878261347041253038">tipkovnica za devanagari (fonetska)</translation>
 <translation id="6885780034956018177">Puž</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Američka Workman</translation>
 <translation id="6935521024859866267">Naopako</translation>
 <translation id="6937152069980083337">Google japanski unos (za američke tipkovnice)</translation>
 <translation id="6939777852457331078">Američka Workman tipkovnica</translation>
 <translation id="6970230597523682626">Bugarski</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">transliteracija (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estonska tipkovnica</translation>
 <translation id="719009910964971313">Američka programerska tipkovnica Dvorak</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">hangul 3 set (bez tipke Shift)</translation>
 <translation id="8299269255470343364">Japanski</translation>
 <translation id="8336579025507394412">Islandska tipkovnica</translation>
-<translation id="8391218455464584335">Vinil</translation>
 <translation id="8391950649760071442">transliteracija (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">brzi način unosa</translation>
 <translation id="8418113698656761985">Rumunjska tipkovnica</translation>

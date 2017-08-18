@@ -458,6 +458,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Skúste deaktivovať rozšírenia.</translation>
 <translation id="457875822857220463">Doručenie</translation>
+<translation id="4582800630050655161">Môžete stratiť prístup do účtu Google alebo vám môže ukradnúť identitu. Chromium odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="4587425331216688090">Chcete adresu odstrániť z prehliadača Chrome?</translation>
 <translation id="4592951414987517459">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou modernej šifrovacej súpravy.</translation>
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
@@ -466,10 +467,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát obsahuje chyby. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="4690462567478992370">Nepoužívať neplatné certifikáty</translation>
+<translation id="4690954380545377795">Môžete stratiť prístup do účtu Google alebo vám môže ukradnúť identitu. Chrome odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Pripojenie bolo prerušené</translation>
 <translation id="471880041731876836">Nemáte povolenie na návštevu tohto webu</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Spustiť nástroj Diagnostika siete systému Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Vaša platba</translation>
 <translation id="4726672564094551039">Znova načítať pravidlá</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Reštartujte Chromium</translation>
@@ -531,6 +534,8 @@
 <translation id="5199729219167945352">Experimenty</translation>
 <translation id="5205222826937269299">Meno je povinný údaj</translation>
 <translation id="5222812217790122047">E-mailová adresa je povinný údaj</translation>
+<translation id="522700295135997067">Tento web možno práve ukradol vaše heslo</translation>
+<translation id="5230733896359313003">Dodacia adresa</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Používate Chrome v práci? Firmy môžu spravovať nastavenia prehliadača Chrome pre svojich zamestnancov. Ďalšie informácie</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Postupujte podľa týchto krokov a softvér dočasne zakážte, aby ste mohli prejsť na daný web. Budete potrebovať oprávnenia správcu.<ph name="END_PARAGRAPH" />
@@ -549,6 +554,7 @@
 <translation id="5308689395849655368">Hlásenie zlyhaní je zakázané.</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>
+<translation id="5332219387342487447">Spôsob dodania</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože tento certifikát bol odvolaný. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="5386426401304769735">Reťazec certifikátu pre tento web obsahuje certifikát podpísaný pomocou funkcie SHA-1.</translation>
@@ -819,6 +825,7 @@
 <translation id="7669271284792375604">Útočníci na tomto webe sa vás môžu pokúsiť podvodom presvedčiť, aby ste si nainštalovali programy poškodzujúce vaše prostredie prehliadania (napríklad zmenou domovskej stránky alebo zobrazovaním ďalších reklám na weboch, ktoré navštevujete).</translation>
 <translation id="7674629440242451245">Máte záujem o skvelé nové funkcie prehliadača Chrome? Vyskúšajte verziu pre vývojárov na stránke chrome.com/dev.</translation>
 <translation id="7682287625158474539">Dodacia</translation>
+<translation id="7699293099605015246">Články nie sú momentálne k dispozícii</translation>
 <translation id="7701040980221191251">Žiadne</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Prejsť na stránky <ph name="SITE" /> (nebezpečné)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikát</translation>
@@ -836,6 +843,7 @@
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="7793809570500803535">Webové stránky na adrese <ph name="SITE" /> môžu byť dočasne nedostupné alebo sa mohli natrvalo premiestniť na novú webovú adresu.</translation>
 <translation id="7800304661137206267">Pripojenie je šifrované pomocou štandardu <ph name="CIPHER" /> s algoritmom <ph name="MAC" /> pre overovanie správ a mechanizmom výmeny kľúčov <ph name="KX" />.</translation>
+<translation id="7802523362929240268">Web je legitímny</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -845,6 +853,7 @@
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Debetné a predplatené karty sú akceptované.</translation>
+<translation id="7878562273885520351">Vaše heslo mohlo byť napadnuté</translation>
 <translation id="7887683347370398519">Skontrolujte svoj kód CVC a skúste to znova</translation>
 <translation id="79338296614623784">Zadajte platné telefónne číslo</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -972,7 +981,9 @@
 <translation id="9069693763241529744">Blokované rozšírením</translation>
 <translation id="9076283476770535406">Môže zahŕňať obsah pre dospelých</translation>
 <translation id="9078964945751709336">Treba zadať ďalšie informácie</translation>
+<translation id="9080712759204168376">Súhrn objednávky</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> zvyčajne chráni vaše informácie pomocou šifrovania. Keď sa prehliadač Chromium tentokrát pokúsil pripojiť k webu <ph name="SITE" />, odoslal späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za web <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi-Fi. Vaše informácie sú stále zabezpečené, pretože prehliadač Chromium zastavil pripojenie ešte pred výmenou dát.</translation>
+<translation id="910908805481542201">Pomôžte mi to vyriešiť</translation>
 <translation id="9128870381267983090">Pripojiť k sieti</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9137248913990643158">Začnite a prihláste sa do Chromu ešte predtým, ako použijete túto aplikáciu.</translation>
@@ -994,5 +1005,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Žiadne}=1{1 položka}few{# položky}many{# položky}other{# položiek}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Zostavenie pre vývojárov</translation>
+<translation id="989988560359834682">Úprava adresy</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

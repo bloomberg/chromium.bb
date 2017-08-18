@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Teclat feroès</translation>
 <translation id="1646136617204068573">Teclat hongarès</translation>
 <translation id="164729547906544836">Teclat tàmil (itrans)</translation>
+<translation id="164969095109328410">Dispositiu Chrome</translation>
 <translation id="1829129547161959350">Pingüí</translation>
 <translation id="184633654410729720">Teclat tailandès (Kedmanee)</translation>
 <translation id="1921986354447415460">Teclat turc-F</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Teclat kazakh</translation>
 <translation id="2384596874640104496">Teclat de singalès</translation>
 <translation id="2464079411014186876">Gelat</translation>
+<translation id="2468402215065996499">Tamagotxi</translation>
 <translation id="247772113373397749">Teclat multilingüe canadenc</translation>
 <translation id="2494837236724268445">Teclat gujarati (fonètic)</translation>
 <translation id="2529133382850673012">Teclat nord-americà</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Granota</translation>
 <translation id="2649120831653069427">Peix arc iris</translation>
 <translation id="2735698359135166290">Teclat estàndard romanès</translation>
-<translation id="2744450304594201174">Tamagotxi</translation>
 <translation id="2771816809568414714">Formatge</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2790805296069989825">Teclat rus</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">Multilingüe canadenc</translation>
 <translation id="3241720467332021590">Irlandès</translation>
 <translation id="3252266817569339921">Francès</translation>
+<translation id="3280987981688031357">Disc de vinil</translation>
 <translation id="3296763833017966289">Georgià</translation>
 <translation id="3338239663705455570">Teclat eslovè</translation>
 <translation id="3399597614303179694">Teclat macedoni</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">Lituà</translation>
 <translation id="3603385196401704894">Francès canadenc</translation>
 <translation id="3606220979431771195">Turc-F</translation>
+<translation id="3619115746895587757">Caputxino</translation>
 <translation id="3678559383040232393">Teclat maltès</translation>
 <translation id="3801082500826908679">Feroès</translation>
 <translation id="3809272675881623365">Conill</translation>
@@ -120,9 +123,10 @@
 <translation id="485316830061041779">Alemany</translation>
 <translation id="4886021172213954916">Teclat tàmil (màquina d'escriure)</translation>
 <translation id="4935975195727477204">Flor de gazània</translation>
-<translation id="4943368462779413526">Pilota de futbol</translation>
+<translation id="4943368462779413526">Pilota de futbol americà</translation>
 <translation id="497244430928947428">Teclat malaialam (fonètic)</translation>
 <translation id="498902553138568924">Papallona vermella</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5098629044894065541">Hebreu</translation>
 <translation id="5123433949759960244">Pilota de bàsquet</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Transliteració (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Dvorak nord-americà</translation>
 <translation id="5640179856859982418">Teclat suís</translation>
-<translation id="5656201261327432370">Caputxino</translation>
 <translation id="5756666464756035725">QWERTY hongarès</translation>
 <translation id="5771585441665576801">Transliteració (geia → γεια)</translation>
 <translation id="5790193330357274855">Kazakh</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5892290200158927959">Teclat BÉPO francès</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Teclat llatinoamericà</translation>
 <translation id="60357267506638014">QWERTY txec</translation>
 <translation id="6054173164583630569">Teclat francès</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6878261347041253038">Teclat devanagari (fonètic)</translation>
 <translation id="6885780034956018177">Caragol</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Workman nord-americà</translation>
 <translation id="6935521024859866267">Cap per avall</translation>
 <translation id="6937152069980083337">Introducció de japonès de Google (per a teclat nord-americà)</translation>
 <translation id="6939777852457331078">Teclat Workman nord-americà</translation>
 <translation id="6970230597523682626">Búlgar</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteració (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclat estonià</translation>
 <translation id="719009910964971313">Teclat Dvorak nord-americà per a programadors</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Configuració 3 de hangul (sense majúscules)</translation>
 <translation id="8299269255470343364">Japonès</translation>
 <translation id="8336579025507394412">Teclat islandès</translation>
-<translation id="8391218455464584335">Vinil</translation>
 <translation id="8391950649760071442">Transliteració (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Mètode d'introducció ràpida</translation>
 <translation id="8418113698656761985">Teclat romanès</translation>

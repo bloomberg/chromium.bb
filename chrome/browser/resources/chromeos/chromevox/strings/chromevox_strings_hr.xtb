@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">ćl</translation>
 <translation id="3149472044574196936">Sljedeći redak</translation>
 <translation id="3153024374267644603">Govor je uključen</translation>
+<translation id="3153928844647607688">Tablica <ph name="TABLENAME" />, <ph name="TABLEROWS" /> i <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Nema prethodnog gumba.</translation>
 <translation id="3163593631834463955">Prazno zaglavlje stupca</translation>
 <translation id="316542773973815724">Navigacija</translation>
@@ -405,6 +406,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4597532268155981612">obrazac</translation>
 <translation id="4597896406374528575">travanj</translation>
 <translation id="460018603901637538">Promijeni stil prikaza na usporedan.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Zanemarivanje pritiska na sljedeću tipku</translation>
 <translation id="461613135510474570">Rečenica</translation>
 <translation id="4647836961514597010">Odabir boja</translation>
@@ -782,6 +784,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="820417203470636242">Prazna ćelija.</translation>
 <translation id="8215202828671303819">Višestruki odabir</translation>
 <translation id="8224171046658870249">Prebačeno na ChromeVox Next</translation>
+<translation id="826991282343985864">r$1s$2</translation>
 <translation id="8276439074553447000">Skok na prethodnu stavku s mogućnošću fokusiranja</translation>
 <translation id="8278417001922463147">Nema prethodnog članka.</translation>
 <translation id="8283603667300770666">Sljedeće polje obrasca</translation>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">bölge</translation>
 <translation id="1591562245178063882">Bu ay</translation>
 <translation id="1637811476055996098">Dosyaları Seç</translation>
-<translation id="167575180612809735">meşgul göstergesi</translation>
 <translation id="1729654308190250600">Lütfen e-posta adresini boş bırakmayın.</translation>
 <translation id="1758486001363313524">Diğer...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">uzaktan cihazda oynat</translation>
 <translation id="1854180393107901205">Yayını durdur</translation>
-<translation id="1880518467580572141">özet</translation>
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">durum</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Sesi kapat</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="588258955323874662">Tam ekran</translation>
+<translation id="5888666972993069672">Şimdi <ph name="DEVICE_FRIENDLY_NAME" /> adlı cihaza yayınlanıyor</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5966707198760109579">Hafta</translation>
 <translation id="5987525920412732405">dönme düğmesi</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="668171684555832681">Diğer...</translation>
 <translation id="6692633176391053278">stepper (adımlayıcı)</translation>
-<translation id="6739588121953935928">cetvel</translation>
 <translation id="6755330956360078551">ipucu</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>

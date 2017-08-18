@@ -21,7 +21,6 @@
 <translation id="15373452373711364">పెద్ద మౌస్ కర్సర్</translation>
 <translation id="1550523713251050646">మరిన్ని ఎంపికల కోసం క్లిక్ చేయండి</translation>
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome పరికరం</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1698760176351776263">IPv6 చిరునామా: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ఈ పరికరం సంస్థ ద్వారా నిర్వహించబడుతోంది</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">అధిక కాంట్రాస్ట్ మోడ్‌ను టోగుల్ చేయడానికి ఉన్న సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" /> ఉపయోగించండి.</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
 <translation id="5207949376430453814">వచన కర్సర్ గుర్తును హైలైట్ చేయి</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
 <translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
 <translation id="595202126637698455">పనితీరుని గుర్తించడం ప్రారంభించబడింది</translation>
 <translation id="5958529069007801266">పర్యవేక్షించబడే వినియోగదారు</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేస్తున్నాము</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="7067196344162293536">స్వయంచాలకంగా తిప్పు</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
 <translation id="7246339268451149667">వేలిముద్ర అన్‌లాక్‌ని ప్రారంభించాలా?</translation>

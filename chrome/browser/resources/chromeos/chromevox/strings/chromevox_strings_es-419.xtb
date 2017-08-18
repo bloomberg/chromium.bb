@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Línea siguiente</translation>
 <translation id="3153024374267644603">Activar comentarios de texto a voz</translation>
+<translation id="3153928844647607688">Tabla <ph name="TABLENAME" />, <ph name="TABLEROWS" /> por <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">No hay ningún botón anterior.</translation>
 <translation id="3163593631834463955">Encabezado de columna vacío</translation>
 <translation id="316542773973815724">Navegación</translation>
@@ -405,6 +406,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4597532268155981612">formulario</translation>
 <translation id="4597896406374528575">Abril</translation>
 <translation id="460018603901637538">Cambia el estilo de la pantalla a lado a lado.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />×<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Se ignorará la siguiente pulsación de tecla.</translation>
 <translation id="461613135510474570">Frase</translation>
 <translation id="4647836961514597010">Selector de color</translation>
@@ -782,6 +784,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="820417203470636242">Celda vacía</translation>
 <translation id="8215202828671303819">Selección múltiple</translation>
 <translation id="8224171046658870249">Cambió a ChromeVox Next</translation>
+<translation id="826991282343985864">f$1c$2</translation>
 <translation id="8276439074553447000">Saltar al elemento enfocable anterior</translation>
 <translation id="8278417001922463147">No hay artículos anteriores.</translation>
 <translation id="8283603667300770666">Siguiente campo de formulario</translation>

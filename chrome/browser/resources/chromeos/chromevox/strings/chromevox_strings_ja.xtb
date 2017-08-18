@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">セル</translation>
 <translation id="3149472044574196936">次の行</translation>
 <translation id="3153024374267644603">読み上げを有効にします</translation>
+<translation id="3153928844647607688">表「<ph name="TABLENAME" />」（<ph name="TABLEROWS" />x<ph name="TABLECOLS" />）</translation>
 <translation id="3155083529632865074">前のボタンはありません。</translation>
 <translation id="3163593631834463955">列見出しが空です</translation>
 <translation id="316542773973815724">ナビゲーション</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">フォーム</translation>
 <translation id="4597896406374528575">4 月</translation>
 <translation id="460018603901637538">表示スタイルを横並びに変更する。</translation>
+<translation id="4601367666219428522">表「<ph name="TABLENAME" />」（<ph name="TABLEROWS" />x<ph name="TABLECOLS" />）</translation>
 <translation id="4615592953348396470">次に押すキーを無視します</translation>
 <translation id="461613135510474570">文</translation>
 <translation id="4647836961514597010">色の選択</translation>
@@ -782,6 +784,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="820417203470636242">セルは空欄です。</translation>
 <translation id="8215202828671303819">複数選択可</translation>
 <translation id="8224171046658870249">ChromeVox Next に切り替えました</translation>
+<translation id="826991282343985864">行$1列$2</translation>
 <translation id="8276439074553447000">前のフォーカス可能項目にジャンプ</translation>
 <translation id="8278417001922463147">前の記事はありません。</translation>
 <translation id="8283603667300770666">次のフォーム フィールド</translation>

@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Línia següent</translation>
 <translation id="3153024374267644603">Activa la veu</translation>
+<translation id="3153928844647607688">Taula <ph name="TABLENAME" />, <ph name="TABLEROWS" /> per <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">No hi ha cap botó anterior.</translation>
 <translation id="3163593631834463955">La capçalera de la columna és buida.</translation>
 <translation id="316542773973815724">Navegació</translation>
@@ -404,6 +405,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4597532268155981612">formulari</translation>
 <translation id="4597896406374528575">Abril</translation>
 <translation id="460018603901637538">Canvia l'estil de pantalla a paral·lel.</translation>
+<translation id="4601367666219428522">taula <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">S'ignorarà la propera tecla que premeu.</translation>
 <translation id="461613135510474570">Frase</translation>
 <translation id="4647836961514597010">Selector de color</translation>
@@ -781,6 +783,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="820417203470636242">Cel·la buida</translation>
 <translation id="8215202828671303819">Selecció múltiple</translation>
 <translation id="8224171046658870249">S'ha passat a ChromeVox Next</translation>
+<translation id="826991282343985864">f$1c$2</translation>
 <translation id="8276439074553447000">Ves a l'element enfocable anterior</translation>
 <translation id="8278417001922463147">No hi ha cap article anterior.</translation>
 <translation id="8283603667300770666">Camp de formulari següent</translation>

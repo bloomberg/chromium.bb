@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
+<translation id="1105960400813249514">Skärmavbildning</translation>
 <translation id="1111673857033749125">Här visas bokmärken som du har sparat på andra enheter.</translation>
 <translation id="1121094540300013208">Användning och felrapporter</translation>
 <translation id="1137305377394488060">den senaste timmen</translation>
@@ -123,6 +124,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2154484045852737596">Redigera kortet</translation>
+<translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>

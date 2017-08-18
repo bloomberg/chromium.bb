@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">خط بعدی</translation>
 <translation id="3153024374267644603">روشن کردن گفتار</translation>
+<translation id="3153928844647607688">جدول <ph name="TABLENAME" />، <ph name="TABLEROWS" /> در <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">دکمه قبلی موجود نیست.</translation>
 <translation id="3163593631834463955">عنوان ستون خالی</translation>
 <translation id="316542773973815724">پیمایش</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">فرم</translation>
 <translation id="4597896406374528575">آوریل</translation>
 <translation id="460018603901637538">سبک نمایش را به پهلو به پهلو تغییر دهید.</translation>
+<translation id="4601367666219428522">‏جدول <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">نادیده گرفتن فشار دکمه بعدی</translation>
 <translation id="461613135510474570">جمله</translation>
 <translation id="4647836961514597010">انتخابگر رنگ</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">سلول خالی است.</translation>
 <translation id="8215202828671303819">چند انتخاب</translation>
 <translation id="8224171046658870249">‏به ChromeVox Next تغییر وضعیت داد</translation>
+<translation id="826991282343985864">ر$1س$2</translation>
 <translation id="8276439074553447000">پرش به مورد قابل فوکوس قبلی</translation>
 <translation id="8278417001922463147">مقاله قبلی وجود ندارد.</translation>
 <translation id="8283603667300770666">فیلد بعدی فرم</translation>

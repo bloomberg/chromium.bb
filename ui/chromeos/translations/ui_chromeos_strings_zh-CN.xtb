@@ -22,6 +22,7 @@
 <translation id="158809615184981282">法罗语键盘</translation>
 <translation id="1646136617204068573">匈牙利语键盘</translation>
 <translation id="164729547906544836">泰米尔语键盘(itrans)</translation>
+<translation id="164969095109328410">Chrome设备</translation>
 <translation id="1829129547161959350">企鹅</translation>
 <translation id="184633654410729720">泰语键盘(Kedmanee)</translation>
 <translation id="1921986354447415460">土耳其语 F 键盘</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">哈萨克语键盘</translation>
 <translation id="2384596874640104496">僧伽罗语键盘</translation>
 <translation id="2464079411014186876">冰淇淋</translation>
+<translation id="2468402215065996499">拓麻歌子</translation>
 <translation id="247772113373397749">加拿大多语言键盘</translation>
 <translation id="2494837236724268445">古吉拉特语键盘（注音）</translation>
 <translation id="2529133382850673012">英语（美国）键盘</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">青蛙</translation>
 <translation id="2649120831653069427">彩虹鱼</translation>
 <translation id="2735698359135166290">罗马尼亚语标准键盘</translation>
-<translation id="2744450304594201174">拓麻歌子</translation>
 <translation id="2771816809568414714">奶酪</translation>
 <translation id="2781645665747935084">比利时语</translation>
 <translation id="2790805296069989825">俄语键盘</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">加拿大多语言</translation>
 <translation id="3241720467332021590">爱尔兰语</translation>
 <translation id="3252266817569339921">法语</translation>
+<translation id="3280987981688031357">黑胶唱片</translation>
 <translation id="3296763833017966289">格鲁吉亚语</translation>
 <translation id="3338239663705455570">斯洛文尼亚语键盘</translation>
 <translation id="3399597614303179694">马其顿语键盘</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">立陶宛语</translation>
 <translation id="3603385196401704894">加拿大法语</translation>
 <translation id="3606220979431771195">土耳其语 F</translation>
+<translation id="3619115746895587757">卡布奇诺</translation>
 <translation id="3678559383040232393">马耳他语键盘</translation>
 <translation id="3801082500826908679">法罗语</translation>
 <translation id="3809272675881623365">兔子</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">美式足球</translation>
 <translation id="497244430928947428">马拉雅拉姆语键盘（注音）</translation>
 <translation id="498902553138568924">红蝴蝶</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">披萨</translation>
 <translation id="5098629044894065541">希伯来语</translation>
 <translation id="5123433949759960244">篮球</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">音译(namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">美国英语(Dvorak)</translation>
 <translation id="5640179856859982418">瑞士键盘</translation>
-<translation id="5656201261327432370">卡布奇诺</translation>
 <translation id="5756666464756035725">匈牙利语 QWERTY</translation>
 <translation id="5771585441665576801">音译(geia → γεια)</translation>
 <translation id="5790193330357274855">哈萨克语</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">韩语（3 Set，终极版）</translation>
 <translation id="5838825566232597749">美式 Workman 国际</translation>
 <translation id="5892290200158927959">法语 BÉPO 键盘</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">拉丁美洲文键盘</translation>
 <translation id="60357267506638014">捷克语(QWERTY)</translation>
 <translation id="6054173164583630569">法语键盘</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">自行车</translation>
 <translation id="6878261347041253038">梵语键盘（注音）</translation>
 <translation id="6885780034956018177">蜗牛</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">美式 Workman</translation>
 <translation id="6935521024859866267">倒栽葱蝴蝶</translation>
 <translation id="6937152069980083337">Google 日语输入法（美式键盘）</translation>
 <translation id="6939777852457331078">美式 Workman 键盘</translation>
 <translation id="6970230597523682626">保加利亚语</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">音译(salam → ሰላም)</translation>
 <translation id="7172053773111046550">爱沙尼亚语键盘</translation>
 <translation id="719009910964971313">美式 Programmer Dvorak 键盘</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">韩语（3 Set，无Shift按键版）</translation>
 <translation id="8299269255470343364">日语</translation>
 <translation id="8336579025507394412">冰岛语键盘</translation>
-<translation id="8391218455464584335">黑胶唱片</translation>
 <translation id="8391950649760071442">音译(emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">速成输入法</translation>
 <translation id="8418113698656761985">罗马尼亚语键盘</translation>

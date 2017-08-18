@@ -27,7 +27,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1643640058022401035">Leaving this page will end your Chromoting session.</translation>
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
 <translation id="170207782578677537">Failed to register this computer.</translation>
-<translation id="1704090719919187045">Chromoting Host Preferences</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Connecting…</translation>
 <translation id="1770394049404108959">I can't open the application.</translation>
@@ -117,8 +116,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3695446226812920698">Find out how</translation>
 <translation id="3718805989288361841">There is an error with the policy settings for Chrome Remote Desktop. Contact your system administrator for assistance.</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
-<translation id="3785447812627779171">Chromoting
-Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Please confirm your account and PIN below to allow access by Chrome Remote Desktop.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Host</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START" />at least six digits<ph name="BOLD_END" />. This PIN will be required when connecting from another location.</translation>
-<translation id="4156741816461781891">Signed in as <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
@@ -152,8 +148,6 @@ Host</translation>
 <translation id="4517233780764084060">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.</translation>
 <translation id="4563926062592110512">Client disconnected: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Access</translation>
-<translation id="4573676252416618192">Chrome Remote
-Desktop Host</translation>
 <translation id="4592037108270173918">Data charges may apply when connecting to a device over a mobile network. Do you want to continue?</translation>
 <translation id="4619978527973181021">Accept and install</translation>
 <translation id="4635770493235256822">Remote devices</translation>
@@ -212,7 +206,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="5843054235973879827">Why is this safe?</translation>
 <translation id="5859141382851488196">New window…</translation>
 <translation id="5885438903806970186">Online</translation>
-<translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="6011539954251327702">Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Keyboard options</translation>
 <translation id="6040143037577758943">Close</translation>

@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1068672505746868501">Nu traduce niciodată paginile în <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">În prezent, te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME" />. Astfel, vor fi șterse datele Chrome stocate pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
+<translation id="1105960400813249514">Captură de ecran</translation>
 <translation id="1111673857033749125">Marcajele salvate pe alte dispozitive vor apărea aici.</translation>
 <translation id="1121094540300013208">Statistici de utilizare și rapoarte de blocare</translation>
 <translation id="1137305377394488060">din ultima oră</translation>
@@ -123,6 +124,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2146738493024040262">Deschide aplicația instantanee</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2154484045852737596">Editează cardul</translation>
+<translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protecție împotriva site-urilor periculoase</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicație web. <ph name="APP_URL" /></translation>

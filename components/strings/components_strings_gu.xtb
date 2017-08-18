@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">ફ્લેશ</translation>
 <translation id="4558551763791394412">તમારા એક્સ્ટેન્શન્સને અક્ષમ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="457875822857220463">વિતરણ</translation>
+<translation id="4582800630050655161">તમે તમારા Google એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="4587425331216688090">Chrome માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="4592951414987517459">આધુનિક સાઇફર સ્યૂટનો ઉપયોગ કરીને <ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટ કરાયું છે.</translation>
 <translation id="4594403342090139922">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4690462567478992370">અમાન્ય પ્રમાણપત્રનો ઉપયોગ કરવાનું બંધ કરો</translation>
+<translation id="4690954380545377795">તમે તમારા Google એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chrome તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">તમારું કનેક્શન અવરોધાયું હતું</translation>
 <translation id="471880041731876836">તમારી પાસે આ સાઇટની મુલાકાત લેવાની પરવાનગી નથી</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">તમારી ચુકવણી</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4736825316280949806">Chromium ને પુનઃપ્રારંભ કરો</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">પ્રયોગો</translation>
 <translation id="5205222826937269299">નામ આવશ્યક છે</translation>
 <translation id="5222812217790122047">ઇમેઇલ આવશ્યક છે</translation>
+<translation id="522700295135997067">આ સાઇટે હમણાં જ તમારો પાસવર્ડ ચોર્યો હોઈ શકે છે</translation>
+<translation id="5230733896359313003">વિતરણ માટેનું સરનામું</translation>
 <translation id="5251803541071282808">મેઘ</translation>
 <translation id="5277279256032773186">કાર્ય પર Chrome નો ઉપયોગ કરી રહ્યાં છો? વ્યવસાયો તેમના કર્મચારીઓ માટે Chrome સેટિંગ્સને સંચાલિત કરી શકે છે. વધુ જાણો</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />સૉફ્ટવેરને અસ્થાયીરૂપે અક્ષમ કરવા માટે આ પગલાં અનુસરો જેથી તમે વેબ પર જઈ શકો. તમને વ્યવસ્થાપકના વિશેષાધિકારની જરૂર પડશે.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">ક્રેશની જાણ કરવાનું અક્ષમ કર્યું છે.</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5327248766486351172">નામ</translation>
+<translation id="5332219387342487447">શિપિંગ પદ્ધતિ</translation>
 <translation id="5355557959165512791">તમે અત્યારે <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે તેનું પ્રમાણપત્ર રદબાતલ કરવામાં આવ્યું છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="5386426401304769735">આ સાઇટ માટેની પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">આ સાઇટ પરના હુમલાખોરો તમને તમારા બ્રાઉઝિંગ અનુભવને નુકસાન પહોંચાડે એવા પ્રોગ્રામ્સ ઇન્સ્ટૉલ કરવા માટે છેતરવાનો પ્રયાસ કરી શકે છે (ઉદાહરણ તરીકે, તમારું હોમપેજ બદલીને અથવા તમે મુલાકાત લો છો તે સાઇટ્સ પર વધુ પડતી જાહેરાતો બતાવીને).</translation>
 <translation id="7674629440242451245">શું કૂલ નવી Chrome સુવિધાઓમાં રુચિ ધરાવો છો? chrome.com/dev પર અમારી dev ચૅનલ અજમાવી જુઓ.</translation>
 <translation id="7682287625158474539">શિપિંગ</translation>
+<translation id="7699293099605015246">લેખો અત્યારે ઉપલબ્ધ નથી</translation>
 <translation id="7701040980221191251">કોઈ નહીં</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> પર આગળ વધો (અસલામત)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">પ્રમાણપત્ર</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> પરનાં વેબ પૃષ્ઠ અસ્થાયી ધોરણે બંધ હોઈ શકે છે અથવા તે કાયમ માટે નવા વેબ સરનામાં પર ખસેડવામાં આવ્યા હોઈ શકે છે.</translation>
 <translation id="7800304661137206267">કનેક્શન <ph name="CIPHER" /> નો ઉપયોગ કરીને, સંદેશ ઑથેંટિકેશન માટે <ph name="MAC" /> સાથે અને કી એક્સ્ચેંજ તંત્ર તરીકે <ph name="KX" /> એન્ક્રિપ્ટ કરેલું છે, </translation>
+<translation id="7802523362929240268">સાઇટ કાયદેસર છે</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">જો કે, તમે અદૃશ્ય નથી. છુપામાં જવું તમારા નિયોક્તા, તમારા ઇન્ટરનેટ સેવા પ્રદાતા અથવા તમે મુલાકાત લો છો તે વેબસાઇટ્સથી તમારા બ્રાઉઝિંગને છુપાવતું નથી.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">ડેબિટ અને પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
+<translation id="7878562273885520351">તમારા પાસવર્ડ સાથે ચેડાં થઈ શકે છે</translation>
 <translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="79338296614623784">એક માન્ય ફોન નંબર દાખલ કરો</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">એક્સ્ટેન્શન દ્વારા અવરોધિત કરેલ છે</translation>
 <translation id="9076283476770535406">તેમાં વયસ્ક સામગ્રી હોઈ શકે છે</translation>
 <translation id="9078964945751709336">વધુ માહિતી આવશ્યક</translation>
+<translation id="9080712759204168376">ઑર્ડરનો સારાંશ</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> સામાન્ય રીતે તમારી માહિતીને સુરક્ષિત રાખવા માટે એન્ક્રિપ્શનનો ઉપયોગ કરે છે. જ્યારે આ સમયે Chromium દ્વારા <ph name="SITE" /> થી કનેક્ટ કરવાનો પ્રયાસ થયો, ત્યારે વેબસાઇટે અસામાન્ય અને ખોટા ઓળખાણપત્રોને પાછા મોકલ્યાં. આવું ત્યારે થઇ શકે જ્યારે કોઈ હુમલાખોર <ph name="SITE" /> હોવાનો ડોળ કરવાનો પ્રયાસ કરી રહ્યો હોય અથવા કોઈ Wi-Fi સાઇન-ઇન સ્ક્રીને કનેક્શનમાં વિક્ષેપ પાડ્યો હોય. તમારી માહિતી હજી પણ સુરક્ષિત છે કારણ કે Chromium એ કોઈપણ ડેટા વિનિમય થાય તે પહેલાં જ કનેક્શન રોકી દીધું.</translation>
+<translation id="910908805481542201">આને સુધારવામાં મારી સહાય કરો</translation>
 <translation id="9128870381267983090">નેટવર્કથી કનેક્ટ કરો</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9137248913990643158">આ ઍપ્લિકેશનનો ઉપયોગ કરતાં પહેલાં કૃપા કરીને Chrome ને પ્રારંભ કરો અને સાઇન ઇન કરો.</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{કોઈ નહીં}=1{1 આઇટમ}one{# આઇટમ}other{# આઇટમ}}</translation>
 <translation id="981121421437150478">ઑફલાઇન</translation>
 <translation id="988159990683914416">વિકાસકર્તા બિલ્ડ</translation>
+<translation id="989988560359834682">સરનામું સંપાદિત કરો</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

@@ -31,6 +31,7 @@
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, läuft der Host für Remote-Unterstützung nur im Nutzerbereich. Remote-Nutzer können nicht mit geöffneten Fenstern auf dem Desktop arbeiten.</translation>
 <translation id="1096105751829466145">Standardsuchmaschine</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
+<translation id="1122282995569868661">Zeigt das Toolbar-Symbol für <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Konfiguriert das Verzeichnis, in dem die Cachedateien von <ph name="PRODUCT_NAME" /> auf dem Datenträger gespeichert werden.
 
 Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das bereitgestellte Verzeichnis, unabhängig davon, ob der Nutzer die Markierung "--disk-cache-dir" angegeben hat. Um Datenverluste oder andere unerwartete Fehler zu vermeiden, darf diese Richtlinie nicht für das Stammverzeichnis eines Datenträgers oder ein Verzeichnis, das für andere Zwecke verwendet wird, festgelegt werden, da <ph name="PRODUCT_NAME" /> die entsprechenden Inhalte verwaltet.
@@ -53,6 +54,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
       Die geringste zulässige Häufigkeit beträgt 60 Sekunden.</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
+<translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
 <translation id="1291880496936992484">Achtung: RC4 wird nach Version 52, etwa im September 2016, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
 
@@ -256,6 +258,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn diese Richtlinie nicht festgelegt wird, beträgt der Standardwert 0 Grad
       und der Nutzer kann diesen ändern. In diesem Fall wird der Standardwert
       beim Neustart nicht angewendet.</translation>
+<translation id="2156132677421487971">Konfigurieren von Richtlinien für <ph name="PRODUCT_NAME" />, ein Tool, mit dem Nutzer Inhalte von Tabs, Websites oder dem Desktop von einem Browser auf andere Bildschirme und Soundsysteme übertragen können.</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
 <translation id="2176565653304920879">Wenn diese Richtlinie aktiviert wird, hängt die automatische Erkennung der Zeitzone folgendermaßen vom Wert der Einstellung ab:
@@ -548,6 +551,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Unabhängig davon, ob und wie die Richtlinie festgelegt ist, kann die WPAD-Optimierung nicht von Nutzern verändert werden.</translation>
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
 <translation id="3072847235228302527">Nutzungsbedingungen für ein lokales Gerätekonto festlegen</translation>
+<translation id="3086995894968271156">Konfigurieren von Cast Receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Liste der aktivierten Plug-ins</translation>
 <translation id="3101501961102569744">Auswählen, wie Proxyserver-Einstellungen angegeben werden</translation>
 <translation id="3117676313396757089">Achtung: DHE wird nach Version 57, etwa im März 2017, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
@@ -911,6 +915,9 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn der Wert dieser Richtlinie 0 beträgt, wird die Standard-Cache-Größe verwendet. Der Nutzer kann diese jedoch nicht ändern.
 
       Wird diese Richtlinie nicht festgelegt, wird die Standardgröße verwendet und der Nutzer kann diese mit dem Parameter "--media-cache-size" überschreiben.</translation>
+<translation id="4508686775017063528">Wird diese Richtlinie auf "true" gesetzt oder nicht definiert, dann wird <ph name="PRODUCT_NAME" /> aktiviert und Nutzer können die Funktion über das App-Menü, Kontextmenüs von Seiten, Mediensteuerelemente auf Cast-fähigen Websites und das Toolbar-Symbol von Cast (falls angezeigt) starten.
+
+          Wird diese Richtlinie auf "false" gesetzt, dann wird <ph name="PRODUCT_NAME" /> deaktiviert.</translation>
 <translation id="4518251772179446575">Nachfragen, wenn eine Website den physischen Standort der Nutzer verfolgen möchte</translation>
 <translation id="4519046672992331730">Aktiviert Suchvorschläge in der Omnibox von <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
 
@@ -1016,6 +1023,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
+<translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Wurde für diese Richtlinie "true" festgelegt oder nichts konfiguriert, ist in <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager zulässig.
 
       Ist für die Richtlinie "false" festgelegt, können in <ph name="PRODUCT_NAME" /> keine neuen Profile im Nutzermanager erstellt werden.</translation>
@@ -1304,6 +1312,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
+<translation id="6161405879872578475">Aktiviert <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Achtung: Die SSLv3-Unterstützung wurde im Juli 2015 nach Version 43 zusammen mit dieser Richtlinie vollständig aus <ph name="PRODUCT_NAME" /> entfernt.
 
       Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> standardmäßig eine Mindestversion: die SSLv3-Version in <ph name="PRODUCT_NAME" /> 39 und TLS 1.0 in höheren Versionen.
@@ -1762,6 +1771,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
+<translation id="7976157349247117979">Name des <ph name="PRODUCT_NAME" />-Ziels</translation>
 <translation id="7980227303582973781">Keine besonderen Einschränkungen</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>

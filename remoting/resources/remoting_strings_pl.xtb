@@ -27,7 +27,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
-<translation id="1704090719919187045">Ustawienia hosta funkcji Chromoting</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Łączę…</translation>
 <translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
@@ -117,8 +116,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3695446226812920698">Instrukcje</translation>
 <translation id="3718805989288361841">Wystąpił błąd związany z ustawieniami zasad dla Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
-<translation id="3785447812627779171">Host funkcji
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
 <translation id="4155497795971509630">Brak niektórych wymaganych komponentów. Upewnij się, że masz zainstalowaną najnowszą wersję oprogramowania, i spróbuj ponownie.</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START" />co najmniej sześciu cyfr<ph name="BOLD_END" />. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
-<translation id="4156741816461781891">Zalogowano jako <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
 <translation id="4207623512727273241">Najpierw uruchom instalatora.</translation>
 <translation id="4227991223508142681">Narzędzie konfiguracji hosta</translation>
@@ -152,8 +148,6 @@ Chromoting</translation>
 <translation id="4517233780764084060">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Chromoting na „Otwórz jako okno”.</translation>
 <translation id="4563926062592110512">Rozłączył się klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Połącz</translation>
-<translation id="4573676252416618192">Host Pulpitu
-zdalnego Chrome</translation>
 <translation id="4592037108270173918">W przypadku łączenia się z urządzeniem przez sieć komórkową może być pobierana opłata za przesyłanie danych. Czy chcesz kontynuować?</translation>
 <translation id="4619978527973181021">Zaakceptuj i zainstaluj</translation>
 <translation id="4635770493235256822">Urządzenia zdalne</translation>
@@ -212,7 +206,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5843054235973879827">Dlaczego to bezpieczne?</translation>
 <translation id="5859141382851488196">Nowe okno...</translation>
 <translation id="5885438903806970186">Online.</translation>
-<translation id="6001953797859482435">Ustawienia hosta Pulpitu zdalnego Chrome</translation>
 <translation id="6011539954251327702">Chromoting pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Chromoting, którą można znaleźć na <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opcje klawiatury</translation>
 <translation id="6040143037577758943">Zamknij</translation>

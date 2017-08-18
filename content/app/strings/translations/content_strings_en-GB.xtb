@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">region</translation>
 <translation id="1591562245178063882">This month</translation>
 <translation id="1637811476055996098">Choose Files</translation>
-<translation id="167575180612809735">busy indicator</translation>
 <translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="1758486001363313524">Other...</translation>
 <translation id="1806710327868736751">alert_dialogue</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">play on remote device</translation>
 <translation id="1854180393107901205">Stop casting</translation>
-<translation id="1880518467580572141">outline</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Value must be <ph name="MAXIMUM_DATE_OR_TIME" /> or earlier.</translation>
@@ -128,7 +126,6 @@
 <translation id="6643016212128521049">Clear</translation>
 <translation id="668171684555832681">Other...</translation>
 <translation id="6692633176391053278">stepper</translation>
-<translation id="6739588121953935928">ruler</translation>
 <translation id="6755330956360078551">tooltip</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6820355525329141109">Couldn't load plug-in.</translation>

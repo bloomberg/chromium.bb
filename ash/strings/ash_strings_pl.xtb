@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Urządzenie z Chrome</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5170568018924773124">Pokaż w folderze</translation>
 <translation id="5207949376430453814">Podświetlaj kursor tekstu</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5927132638760172455">Przesyłam do nieznanego odbiornika</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Przywróć</translation>
 <translation id="595202126637698455">Śledzenie wydajności jest włączone</translation>
 <translation id="5958529069007801266">Użytkownik nadzorowany</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Szukaj+L</translation>
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Włączyć odblokowanie odciskiem palca?</translation>

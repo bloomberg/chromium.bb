@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">ಮುಂದಿನ ಸಾಲು</translation>
 <translation id="3153024374267644603">ಧ್ವನಿ ಆನ್ ಮಾಡಿ</translation>
+<translation id="3153928844647607688"><ph name="TABLENAME" /> ಕೋಷ್ಠಕ, <ph name="TABLECOLS" /> ನಿಂದ <ph name="TABLEROWS" /></translation>
 <translation id="3155083529632865074">ಹಿಂದಿನ ಬಟನ್‌ ಇಲ್ಲ.</translation>
 <translation id="3163593631834463955">ಕಾಲಮ್  ಶಿರೋನಾಮೆ ಖಾಲಿಯಿದೆ</translation>
 <translation id="316542773973815724">ನ್ಯಾವಿಗೇಷನ್</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">ಫಾರ್ಮ್</translation>
 <translation id="4597896406374528575">ಏಪ್ರಿಲ್</translation>
 <translation id="460018603901637538">ಪ್ರದರ್ಶನ ಶೈಲಿಯನ್ನು ಅಕ್ಕ ಪಕ್ಕಕ್ಕೆ ಬದಲಾಯಿಸಿ.</translation>
+<translation id="4601367666219428522">ಕೋಷ್ಠಕ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ಮುಂದಿನ ಕೀ ಒತ್ತುವಿಕೆಯನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="461613135510474570">ವಾಕ್ಯ</translation>
 <translation id="4647836961514597010">ಬಣ್ಣ ಆಯ್ಕೆಮಾಡುವಿಕೆ</translation>
@@ -782,6 +784,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="820417203470636242">ಕೋಶವನ್ನು ಖಾಲಿಗೊಳಿಸಿ.</translation>
 <translation id="8215202828671303819">ಬಹು ಆಯ್ಕೆ</translation>
 <translation id="8224171046658870249">ChromeVox Next ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ಹಿಂದೆ ಗಮನಹರಿಸಿದಂತಹ ಐಟಂಗೆ ಹೋಗಿ</translation>
 <translation id="8278417001922463147">ಯಾವುದೇ ಹಿಂದಿನ ಲೇಖನವಿಲ್ಲ.</translation>
 <translation id="8283603667300770666">ಮುಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರ</translation>

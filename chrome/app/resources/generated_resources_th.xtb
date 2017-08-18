@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">คำเตือน</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> จาก <ph name="COUNT" /></translation>
-<translation id="106001083577824516">ไม่สามารถนำซอฟต์แวร์อันตรายออก</translation>
 <translation id="1062407476771304334">แทนที่</translation>
 <translation id="1062866675591297858">จัดการผู้ใช้ภายใต้การดูแลของคุณผ่าน<ph name="BEGIN_LINK" />หน้าแดชบอร์ดผู้ใช้ภายใต้การดูแล<ph name="END_LINK" /></translation>
 <translation id="1064662184364304002">ตัวตรวจสอบไฟล์ห้องสมุดสื่อ</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> ต้องการคืนค่าการตั้งค่า Chrome ของคุณกลับไปเป็นค่าเริ่มต้นดั้งเดิม การดำเนินการนี้จะรีเซ็ตหน้าหลักของคุณ หน้าแท็บใหม่ และเครื่องมือค้นหา ปิดใช้ส่วนขยาย และเลิกตรึงแท็บทั้งหมด นอกจากนี้ยังล้างข้อมูลชั่วคราวอื่นๆ และข้อมูลที่แคชไว้ เช่น คุกกี้ เนื้อหา และข้อมูลเว็บไซต์อีกด้วย</translation>
 <translation id="1082725763867769612">ไฟล์ออฟไลน์</translation>
 <translation id="1084824384139382525">คัดลอก&amp;ที่อยู่ลิงก์</translation>
+<translation id="1089439967362294234">เปลี่ยนรหัสผ่าน</translation>
 <translation id="1090126737595388931">ไม่มีแอปพลิเคชันทำงานในพื้นหลัง</translation>
 <translation id="1091767800771861448">กด ESCAPE เพื่อยกเลิก (รุ่นที่ไม่เป็นทางการเท่านั้น)</translation>
 <translation id="1093457606523402488">เครือข่ายที่แสดงตัว:</translation>
@@ -449,7 +449,6 @@
     <ph name="BEGIN_BOLD" />อนุญาตหรือห้าม<ph name="END_BOLD" />บางเว็บไซต์
     <ph name="BEGIN_BOLD" />ตรวจสอบ<ph name="END_BOLD" />เว็บไซต์ที่ผู้ใช้ภายใต้การดูแลได้เข้าเยี่ยมชม และ
     <ph name="BEGIN_BOLD" />จัดการ<ph name="END_BOLD" />การตั้งค่าอื่นๆ</translation>
-<translation id="1648797160541174252">พร็อกซีเครือข่ายสำหรับ <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">รายละเอียดการลงชื่อเข้าใช้ล้าสมัยแล้ว</translation>
 <translation id="164969095109328410">อุปกรณ์ Chrome</translation>
 <translation id="1650371550981945235">แสดงตัวเลือกการป้อนข้อมูล</translation>
@@ -1017,6 +1016,7 @@
 <translation id="2498436043474441766">เพิ่มเครื่องพิมพ์</translation>
 <translation id="2498539833203011245">ย่อ</translation>
 <translation id="2498765460639677199">ขนาดใหญ่มาก</translation>
+<translation id="2500471369733289700">ถูกบล็อกเพื่อปกป้องความเป็นส่วนตัวของคุณ</translation>
 <translation id="2501173422421700905">ใบรับรองถูกระงับไว้</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2501797496290880632">พิมพ์แป้นพิมพ์ลัด</translation>
@@ -1357,6 +1357,7 @@
 <translation id="2951247061394563839">กลางหน้าต่าง</translation>
 <translation id="2951721188322348056">ข้อมูลวิดีโอ</translation>
 <translation id="2956763290572484660">คุกกี้ <ph name="COOKIES" /> รายการ</translation>
+<translation id="2958721676848865875">คำเตือนเกี่ยวกับส่วนขยายของแพ็ก</translation>
 <translation id="2959614062380389916">ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (มีส่วนขยายให้มาด้วย)</translation>
 <translation id="2961695502793809356">คลิกเพื่อไปข้างหน้า กดค้างเพื่อดูประวัติการเข้าชม</translation>
@@ -1370,6 +1371,7 @@
 <translation id="2971213274238188218">มืดลง</translation>
 <translation id="2972557485845626008">เฟิร์มแวร์</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
+<translation id="2972642118232180842">เรียกใช้เฉพาะเนื้อหาที่สำคัญ (แนะนำ)</translation>
 <translation id="297870353673992530">เซิร์ฟเวอร์ DNS:</translation>
 <translation id="2979639724566107830">เปิดในหน้าต่างใหม่</translation>
 <translation id="2981113813906970160">แสดงเคอร์เซอร์เมาส์ขนาดใหญ่</translation>
@@ -1386,6 +1388,7 @@
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> จะสร้างการเชื่อมต่อ Wi-Fi ส่วนตัว</translation>
 <translation id="3004391367407090544">โปรดกลับมาอีกในภายหลัง</translation>
 <translation id="300544934591011246">รหัสผ่านก่อนหน้า</translation>
+<translation id="3006881078666935414">ไม่มีข้อมูลการใช้งาน</translation>
 <translation id="3007214526293698309">คงอัตราส่วนเดิม</translation>
 <translation id="3007771295016901659">ทำซ้ำแท็บ</translation>
 <translation id="3009300415590184725">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกขั้นตอนการตั้งค่าบริการข้อมูลโทรศัพท์มือถือ</translation>
@@ -1449,6 +1452,7 @@
 <translation id="3082520371031013475">การตั้งค่าทัชแพดและเมาส์</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">แท็บนี้กำลังใช้กล้องถ่ายรูปหรือไมโครโฟนของคุณ</translation>
+<translation id="3083193146044397360">ถูกบล็อกชั่วคราวเพื่อรักษาความปลอดภัยให้คุณ</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">วางเพื่อติดตั้ง</translation>
 <translation id="3084771660770137092">ไม่ว่า Chrome จะมีหน่วยความจำไม่เพียงพอหรือกระบวนการของหน้าเว็บถูกยกเลิกด้วยเหตุใดก็ตาม หากต้องการดำเนินการต่อ ให้โหลดซ้ำหรือไปที่หน้าเว็บอื่น</translation>
@@ -1677,6 +1681,7 @@
 <translation id="3423858849633684918">โปรดเปิดใช้งาน <ph name="PRODUCT_NAME" /> ใหม่</translation>
 <translation id="3424969259347320884">อธิบายว่าคุณกำลังทำอะไรเมื่อแท็บขัดข้อง</translation>
 <translation id="3427092606871434483">อนุญาต (ค่าเริ่มต้น)</translation>
+<translation id="3429275422858276529">บุ๊กมาร์กหน้านี้เพื่อให้หาเจอง่ายในภายหลัง</translation>
 <translation id="3429599832623003132">$1 รายการ</translation>
 <translation id="3432227430032737297">นำรายการที่แสดงทั้งหมดออก</translation>
 <translation id="3432757130254800023">ส่งภาพและเสียงไปยังจอแสดงผลบนเครือข่ายเฉพาะที่</translation>
@@ -1800,6 +1805,7 @@
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
 <translation id="3596235046596950091">เปิดใช้บริการระบบคลาวด์</translation>
 <translation id="3600456501114769456">การเข้าถึงไฟล์ในตัวเครื่องอุปกรณ์ของคุณถูกปิดใช้งานโดยผู้ดูแลระบบ</translation>
+<translation id="3603533104205588786">คุณสามารถคลิกดาวเพื่อบุ๊กมาร์กหน้า</translation>
 <translation id="3603622770190368340">รับใบรับรองเครือข่าย</translation>
 <translation id="3604048165392640554">ไม่พบการเชื่อมต่อมือถือ เปิดการเชื่อมต่ออินเทอร์เน็ตผ่านมือถือแบบด่วนในอุปกรณ์เครื่องอื่นๆ แล้วลองอีกครั้ง &lt;a target="_blank" href="<ph name="URL" />"&gt;เรียนรู้เพิ่มเติม&lt;/a&gt;</translation>
 <translation id="3605780360466892872">บัตเทิ่นดาวน์</translation>
@@ -2575,6 +2581,7 @@
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4820334425169212497">ไม่เห็น</translation>
 <translation id="4821086771593057290">คุณได้เปลี่ยนรหัสผ่านของคุณแล้ว โปรดลองอีกครั้งโดยใช้รหัสผ่านใหม่ของคุณ</translation>
+<translation id="4821725298388681253">นี่เป็นรุ่นเผยแพร่ก่อนกำหนด บางฟีเจอร์อย่างเช่นการค้นหาและการป้อนข้อความยังไม่พร้อมใช้งาน</translation>
 <translation id="4821935166599369261">&amp;เปิดใช้งานการทำแฟ้มประวัติ</translation>
 <translation id="4823484602432206655">อ่านและเปลี่ยนการตั้งค่าผู้ใช้และอุปกรณ์</translation>
 <translation id="4823651846660089135">อุปกรณ์เป็นแบบอ่านอย่างเดียว</translation>
@@ -3526,6 +3533,7 @@
 <translation id="6232017090690406397">แบตเตอรี่</translation>
 <translation id="6232116551750539448">ขาดการเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="6237816943013845465">ให้คุณปรับเปลี่ยนความละเอียดของหน้าจอ</translation>
+<translation id="6238923052227198598">เก็บโน้ตล่าสุดไว้ในหน้าจอล็อก</translation>
 <translation id="6239558157302047471">โหลดเ&amp;ฟรมซ้ำ</translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
 <translation id="6243774244933267674">เซิร์ฟเวอร์ไม่พร้อมใช้งาน</translation>
@@ -3779,6 +3787,7 @@
 
 โปรดใช้ฟีเจอร์นี้กับบัญชีที่คุณเชื่อถือเท่านั้น</translation>
 <translation id="6581162200855843583">ลิงก์ Google ไดรฟ์</translation>
+<translation id="6582421931165117398">เปลี่ยนรหัสผ่านตอนนี้เลยเพื่อปกป้องข้อมูลส่วนบุคคล ระบบจะขอให้คุณลงชื่อเข้าใช้ก่อนเปลี่ยนรหัสผ่าน</translation>
 <translation id="6583851739559471707">บล็อกในไซต์ที่มักแสดงโฆษณาที่แทรก (แนะนำ)</translation>
 <translation id="6584878029876017575">การรับรองตลอดชีพของ Microsoft</translation>
 <translation id="6585234750898046415">เลือกรูปภาพสำหรับบัญชีของคุณเพื่อแสดงในหน้าลงชื่อเข้าใช้</translation>
@@ -3802,6 +3811,7 @@
 <translation id="6610183966322615106">เกิดข้อผิดพลาดในการเพิ่มเครื่องพิมพ์</translation>
 <translation id="6610610633807698299">ป้อน URL...</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
+<translation id="6613452264606394692">บุ๊กมาร์กหน้านี้ไว้เพื่อให้กลับมาได้อย่างรวดเร็ว</translation>
 <translation id="6615455863669487791">แสดงให้ฉันเห็น</translation>
 <translation id="6615807189585243369">คัดลอกแล้ว <ph name="BURNT_AMOUNT" /> จากทั้งหมด <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">รหัสผ่านที่คุณบันทึกจะแสดงที่นี่</translation>
@@ -4606,6 +4616,7 @@
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7877451762676714207">ข้อผิดพลาดของเซิร์ฟเวอร์ที่ไม่รู้จัก โปรดลองอีกครั้งหรือติดต่อผู้ดูแลระบบเซิร์ฟเวอร์</translation>
 <translation id="7877680364634660272">ทัวร์ชม</translation>
+<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยแล้ว</translation>
 <translation id="7881483672146086348">ดูบัญชี</translation>
 <translation id="7881969471599061635">ปิดคำบรรยาย</translation>
 <translation id="7882358943899516840">ประเภทผู้ให้บริการ</translation>
@@ -4694,6 +4705,7 @@
 รักษาไฟล์กุญแจของคุณไว้ในที่ปลอดภัย คุณจะต้องใช้ไฟล์นี้ในการสร้างส่วนขยายรุ่นใหม่</translation>
 <translation id="799923393800005025">สามารถดูได้</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
+<translation id="8001504501378762252">บางไซต์อาจขโมยรหัสผ่านของคุณแล้ว</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8007030362289124303">แบตเตอรี่ต่ำ</translation>
 <translation id="8008356846765065031">อินเทอร์เน็ตถูกตัด โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -4929,6 +4941,7 @@
 <translation id="8366396658833131068">กู้คืนการเชื่อมต่อเครือข่ายของคุณแล้ว โปรดเลือกเครือข่ายอื่นหรือกดปุ่ม "ดำเนินการต่อ" ที่ด้านล่างเพื่อเปิดแอปคีออสก์</translation>
 <translation id="8366947248864804596">เมื่อโทรศัพท์ปลดล็อกและอยู่ใกล้ๆ ให้เลือกโทรศัพท์เพื่อปลดล็อก มิฉะนั้นให้ป้อนรหัสผ่านหรือ PIN</translation>
 <translation id="8368859634510605990">&amp;เปิดบุ๊กมาร์กทั้งหมด</translation>
+<translation id="8371695176452482769">เชิญพูดเลย</translation>
 <translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
 <translation id="8373360586245335572">อนุญาตให้ไซต์ทั้งหมดแสดงการแจ้งเตือน</translation>
 <translation id="8373553483208508744">ปิดเสียงแท็บ</translation>
@@ -5100,6 +5113,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> หรือ <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">ต้องโหลดหน้านี้ใหม่</translation>
 <translation id="8652139471850419555">เครือข่ายที่ต้องการ</translation>
+<translation id="8652400352452647993">ข้อผิดพลาดเกี่ยวกับส่วนขยายของแพ็ก</translation>
 <translation id="8652487083013326477">ปุ่มตัวเลือกช่วงหน้า</translation>
 <translation id="8654151524613148204">ไฟล์มีขนาดใหญ่เกินกว่าที่คอมพิวเตอร์ของคุณจะจัดการได้ ขออภัย</translation>
 <translation id="8655295600908251630">ช่องทาง</translation>

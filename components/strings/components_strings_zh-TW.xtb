@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">試試看停用擴充功能。</translation>
 <translation id="457875822857220463">快遞</translation>
+<translation id="4582800630050655161">你可能失去了 Google 帳戶存取權，或身分遭到冒用。Chromium 建議你立即變更密碼。</translation>
 <translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
 <translation id="4592951414987517459">您的 <ph name="DOMAIN" /> 連線使用新型加密套件進行加密。</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">，</translation>
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="4690462567478992370">停止使用無效的憑證</translation>
+<translation id="4690954380545377795">你可能失去了 Google 帳戶存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的連線已中斷</translation>
 <translation id="471880041731876836">你沒有這個網站的瀏覽權限</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />執行 Windows 網路診斷<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">你的付款</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4736825316280949806">重新啟動 Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">實驗性功能</translation>
 <translation id="5205222826937269299">請輸入名稱</translation>
 <translation id="5222812217790122047">請輸入電子郵件地址</translation>
+<translation id="522700295135997067">這個網站剛剛可能竊取了你的密碼</translation>
+<translation id="5230733896359313003">運送地址</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5277279256032773186">在工作環境使用 Chrome 嗎？企業可以管理員工的 Chrome 設定。瞭解詳情</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />請按照以下步驟暫時停用該軟體，以便順利連上網路。你需要管理員權限。<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
+<translation id="5332219387342487447">運送方式</translation>
 <translation id="5355557959165512791">目前無法造訪 <ph name="SITE" />，因為這個網站的憑證已遭撤銷。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="5386426401304769735">這個網站的憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>
 <translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
 <translation id="7682287625158474539">寄送地址</translation>
+<translation id="7699293099605015246">目前無法顯示文章</translation>
 <translation id="7701040980221191251">無</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />繼續前往 <ph name="SITE" /> 網站 (不安全)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">憑證</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">新增</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> 的網頁可能暫時無法使用或已永久移至新網址。</translation>
 <translation id="7800304661137206267">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="MAC" /> 訊息驗證及 <ph name="KX" /> 金鑰交換機制。</translation>
+<translation id="7802523362929240268">網站合法</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">接受金融卡和預付卡。</translation>
+<translation id="7878562273885520351">你的密碼可能已經外洩</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="79338296614623784">請輸入有效的電話號碼</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">依據擴充功能設定封鎖</translation>
 <translation id="9076283476770535406">這個網站可能含有成人內容</translation>
 <translation id="9078964945751709336">請提供詳細資訊</translation>
+<translation id="9080712759204168376">訂單摘要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
+<translation id="910908805481542201">請協助我解決這個問題</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9137248913990643158">使用這個應用程式前，請先啟動 Chrome 並登入帳戶。</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{無}=1{1 個項目}other{# 個項目}}</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="988159990683914416">開發人員版本</translation>
+<translation id="989988560359834682">編輯地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

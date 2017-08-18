@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="1080790410959514870">Kijelentkezik egy <ph name="DOMAIN_NAME" /> által felügyelt fiókból. Ezzel törli a Chrome-nak az eszközön tárolt adatait, Google-fiókjában azonban továbbra is megmaradnak.</translation>
+<translation id="1105960400813249514">Képernyőrögzítés</translation>
 <translation id="1111673857033749125">A más eszközökön mentett könyvjelzők itt jelennek meg.</translation>
 <translation id="1121094540300013208">Használati és hibajelentések</translation>
 <translation id="1137305377394488060">elmúlt óra</translation>
@@ -123,6 +124,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2146738493024040262">Azonnali alkalmazás megnyitása</translation>
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2154484045852737596">Kártya szerkesztése</translation>
+<translation id="2154710561487035718">URL másolása</translation>
 <translation id="2156074688469523661">A többi webhely (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Védje meg magát és eszközét a veszélyes webhelyektől</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, internetes alkalmazás. <ph name="APP_URL" /></translation>

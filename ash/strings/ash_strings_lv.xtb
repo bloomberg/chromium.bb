@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Liels peles kursors</translation>
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
-<translation id="164969095109328410">Chrome ierīce</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adrese: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Šo ierīci pārvalda uzņēmums</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Īsinājumtaustiņi, ar kuriem pārslēgt augsta kontrasta režīmu, ir mainījušies. Lūdzu, izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
 <translation id="5170568018924773124">Rādīt mapē</translation>
 <translation id="5207949376430453814">Izcelt teksta ievietošanas punktu</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5927132638760172455">Apraide uz nezināmu saņēmēju</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Atjaunot</translation>
 <translation id="595202126637698455">Veiktspējas izsekošana ir iespējota</translation>
 <translation id="5958529069007801266">Uzraudzīts lietotājs</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Aktivizēt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pievienoties citam...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
 <translation id="7034339000180558234">Notiek cilnes <ph name="TAB_NAME" /> apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Vai iespējot atbloķēšanu, izmantojot pirksta nospiedumu?</translation>

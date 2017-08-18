@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">অঞ্চল</translation>
 <translation id="1591562245178063882">এই মাস</translation>
 <translation id="1637811476055996098">ফাইল বেছে নিন</translation>
-<translation id="167575180612809735">ব্যস্ততার সূচক</translation>
 <translation id="1729654308190250600">দয়া করে একটি খালি না থাকা ইমেল ঠিকানা লিখুন৷</translation>
 <translation id="1758486001363313524">অন্যান্য...</translation>
 <translation id="1806710327868736751">সতর্কতার_ডায়ালগ</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">রিমোট ডিভাইসে প্লে করুন</translation>
 <translation id="1854180393107901205">কাস্ট করা বন্ধ করুন</translation>
-<translation id="1880518467580572141">রূপরেখা</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">স্থিতি</translation>
 <translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME" /> বা আগের হতে হবে৷</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">নিঃশব্দ করুন</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="588258955323874662">সম্পূর্নস্ক্রীণ</translation>
+<translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5966707198760109579">সপ্তাহ</translation>
 <translation id="5987525920412732405">ঘোড়ানোর বোতাম</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="668171684555832681">অন্যান্য...</translation>
 <translation id="6692633176391053278">পদক্ষেপকারী</translation>
-<translation id="6739588121953935928">রুলার</translation>
 <translation id="6755330956360078551">সরঞ্জামটিপ</translation>
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6820355525329141109">প্লাগ ইন লোড করা যায়নি।</translation>

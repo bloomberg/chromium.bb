@@ -31,6 +31,7 @@
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="1117535567637097036">Protokollhanterarna som ställs in via den här principen används inte för intent i Android.</translation>
+<translation id="1122282995569868661">Visar ikonen för <ph name="PRODUCT_NAME" /> i verktygsfältet</translation>
 <translation id="1128903365609589950">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> ska använda för att lagra cachade filer på hårddisken.
 
       Om du ställer in den här policyn använder <ph name="PRODUCT_NAME" /> den angivna katalogen oavsett om användaren har angett flaggan --disk-cache-dir eller inte. Undvik dataförlust och andra oväntade fel genom att inte ställa in den här policyn på en volyms rotkatalog eller på en katalog som används i andra syften eftersom <ph name="PRODUCT_NAME" /> hanterar dess innehåll.
@@ -53,6 +54,7 @@
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
       tillåtna frekvensen är 60 sekunder.</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
+<translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
 <translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
 
@@ -270,6 +272,7 @@
       Om principen inte har ställts in används standardvärdet 0 grader.
       Användarna kan ändra det när som helst och standardvärdet tillämpas
       i så fall inte på nytt vid omstart.</translation>
+<translation id="2156132677421487971">Konfigurera principer för <ph name="PRODUCT_NAME" />, en funktion med vars hjälp användare kan skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="2176565653304920879">När den här principen har ställts in fungerar den automatiska identifieringen av tidszon på något av följande sätt beroende på vilken inställning som har valts:
@@ -582,6 +585,7 @@
       Oavsett om eller hur principen har konfigurerats kan inte WPAD-optimeringen ändras av användare.</translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
+<translation id="3086995894968271156">Konfigurera cast-mottagaren i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
 <translation id="3117676313396757089">Varning: DHE kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 57 (runt mars 2017) och den här principen upphör då att fungera.
@@ -975,6 +979,9 @@
       Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
 
       Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --media-cache-size.</translation>
+<translation id="4508686775017063528">När den här principen har ställts in på sant eller lämnats utan inställning är <ph name="PRODUCT_NAME" /> aktiverat. Användarna kan då starta det via appmenyn, snabbmenyer på sidan, mediekontroller på Cast-kompatibla webbplatser eller Cast-ikonen i verktygsfältet (om den visas).
+
+          Om principen har ställts in på falskt är <ph name="PRODUCT_NAME" /> inaktiverat.</translation>
 <translation id="4518251772179446575">Fråga när en webbplats vill spåra användarens fysiska plats</translation>
 <translation id="4519046672992331730">Policyn aktiverar sökförslag i adressfältet i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
@@ -1081,6 +1088,7 @@
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
 <translation id="4906194810004762807">Uppdateringsfrekvens för enhetspolicy</translation>
+<translation id="494613465159630803">Cast-mottagare</translation>
 <translation id="4962262530309732070">Om den här principen är inställd på sant eller inte har konfigurerats tillåts Lägg till person i användarhanteraren av <ph name="PRODUCT_NAME" />.
 
       Om principen är inställd på falskt tillåter <ph name="PRODUCT_NAME" /> inte att nya profiler skapas i profilhanteraren.</translation>
@@ -1404,6 +1412,7 @@
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
+<translation id="6161405879872578475">Aktiverar <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Varning! Stöd för SSLv3 kommer helt att tas bort från <ph name="PRODUCT_NAME" /> efter version 43 (kring juli 2015) och denna princip tas bort samtidigt med detta.
 
       Om principen inte konfigureras använder <ph name="PRODUCT_NAME" /> en standardminimiversion som är SSLv3 i <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 i senare versioner.
@@ -1903,6 +1912,7 @@
           Om inställningen är aktiverad kan datorn identifiera och ansluta till fjärrvärdenheter även om det finns en brandvägg mellan dem.
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
+<translation id="7976157349247117979">Namn på <ph name="PRODUCT_NAME" />-mål</translation>
 <translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>

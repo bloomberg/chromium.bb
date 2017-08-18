@@ -22,6 +22,7 @@
 <translation id="158809615184981282">フェロー語キーボード</translation>
 <translation id="1646136617204068573">ハンガリー語のキーボード</translation>
 <translation id="164729547906544836">タミル語キーボード（itrans）</translation>
+<translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1829129547161959350">ペンギン</translation>
 <translation id="184633654410729720">タイ語キーボード（Kedmanee）</translation>
 <translation id="1921986354447415460">トルコ語-F キーボード</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">カザフ語キーボード</translation>
 <translation id="2384596874640104496">シンハラ語キーボード</translation>
 <translation id="2464079411014186876">アイスクリーム</translation>
+<translation id="2468402215065996499">たまごっち</translation>
 <translation id="247772113373397749">カナダ多言語キーボード</translation>
 <translation id="2494837236724268445">グジャラト語キーボード（表音）</translation>
 <translation id="2529133382850673012">英語（米国）のキーボード</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">カエル</translation>
 <translation id="2649120831653069427">熱帯魚</translation>
 <translation id="2735698359135166290">ルーマニア語標準キーボード</translation>
-<translation id="2744450304594201174">たまごっち</translation>
 <translation id="2771816809568414714">チーズ</translation>
 <translation id="2781645665747935084">ベルギー語</translation>
 <translation id="2790805296069989825">ロシア語のキーボード</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">カナダ多言語</translation>
 <translation id="3241720467332021590">アイルランド語</translation>
 <translation id="3252266817569339921">フランス語</translation>
+<translation id="3280987981688031357">レコード</translation>
 <translation id="3296763833017966289">グルジア語</translation>
 <translation id="3338239663705455570">スロベニア語のキーボード</translation>
 <translation id="3399597614303179694">マケドニア語キーボード</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">リトアニア語</translation>
 <translation id="3603385196401704894">フランス語（カナダ）</translation>
 <translation id="3606220979431771195">トルコ語-F</translation>
+<translation id="3619115746895587757">カプチーノ</translation>
 <translation id="3678559383040232393">マルタ語キーボード</translation>
 <translation id="3801082500826908679">フェロー語</translation>
 <translation id="3809272675881623365">ウサギ</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">フットボール</translation>
 <translation id="497244430928947428">マラヤーラム語キーボード（表音）</translation>
 <translation id="498902553138568924">赤い蝶</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">ピザ</translation>
 <translation id="5098629044894065541">ヘブライ語</translation>
 <translation id="5123433949759960244">バスケットボール</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">文字変換（namaste → नमस्ते）</translation>
 <translation id="5605830556594064952">US Dvorak 配列</translation>
 <translation id="5640179856859982418">スイスのキーボード</translation>
-<translation id="5656201261327432370">カプチーノ</translation>
 <translation id="5756666464756035725">ハンガリー語 QWERTY</translation>
 <translation id="5771585441665576801">文字変換（geia → γεια）</translation>
 <translation id="5790193330357274855">カザフ語</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">ハングル（3 ボル式、最終版）</translation>
 <translation id="5838825566232597749">US Workman インターナショナル</translation>
 <translation id="5892290200158927959">フランス語 BÉPO キーボード</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">ラテン アメリカのキーボード</translation>
 <translation id="60357267506638014">チェコ語 QWERTY 配列</translation>
 <translation id="6054173164583630569">フランス語のキーボード</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">自転車</translation>
 <translation id="6878261347041253038">デバナーガリ語キーボード（表音）</translation>
 <translation id="6885780034956018177">カタツムリ</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6935521024859866267">逆さま</translation>
 <translation id="6937152069980083337">Google 日本語入力（US キーボード用）</translation>
 <translation id="6939777852457331078">US Workman キーボード</translation>
 <translation id="6970230597523682626">ブルガリア語</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">文字変換（salam → ሰላም）</translation>
 <translation id="7172053773111046550">エストニア語のキーボード</translation>
 <translation id="719009910964971313">US Programmer Dvorak キーボード</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">ハングル（3 ボル式、Shift なし）</translation>
 <translation id="8299269255470343364">日本語</translation>
 <translation id="8336579025507394412">アイスランド語キーボード</translation>
-<translation id="8391218455464584335">レコード</translation>
 <translation id="8391950649760071442">文字変換（emandi → ఏమండీ）</translation>
 <translation id="8412586565681117057">入力方法（Quick）</translation>
 <translation id="8418113698656761985">ルーマニア語のキーボード</translation>

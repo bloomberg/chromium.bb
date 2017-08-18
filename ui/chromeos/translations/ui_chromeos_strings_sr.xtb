@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Фарска тастатура</translation>
 <translation id="1646136617204068573">Језик тастатуре: мађарски</translation>
 <translation id="164729547906544836">Тамилска тастатура (itrans)</translation>
+<translation id="164969095109328410">Chrome уређај</translation>
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="184633654410729720">Тајска тастатура (Kedmanee)</translation>
 <translation id="1921986354447415460">турска F тастатура</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Казашка тастатура</translation>
 <translation id="2384596874640104496">Синхалска тастатура</translation>
 <translation id="2464079411014186876">Сладолед</translation>
+<translation id="2468402215065996499">Тамагочи</translation>
 <translation id="247772113373397749">Канадска вишејезичка тастатура</translation>
 <translation id="2494837236724268445">Гуџарати тастатура (фонетска)</translation>
 <translation id="2529133382850673012">Језик тастатуре: енглески (САД)</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2649120831653069427">Риба</translation>
 <translation id="2735698359135166290">Стандардна тастатура за румунски</translation>
-<translation id="2744450304594201174">Тамагочи</translation>
 <translation id="2771816809568414714">Сир</translation>
 <translation id="2781645665747935084">белгијска</translation>
 <translation id="2790805296069989825">Језик тастатуре: руски</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">канадска вишејезична</translation>
 <translation id="3241720467332021590">ирски</translation>
 <translation id="3252266817569339921">француски</translation>
+<translation id="3280987981688031357">Грамофонска плоча</translation>
 <translation id="3296763833017966289">грузијски</translation>
 <translation id="3338239663705455570">Језик тастатуре: словеначки</translation>
 <translation id="3399597614303179694">Македонска тастатура</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">литвански</translation>
 <translation id="3603385196401704894">канадска француска</translation>
 <translation id="3606220979431771195">турска F</translation>
+<translation id="3619115746895587757">Капучино</translation>
 <translation id="3678559383040232393">Малтешка тастатура</translation>
 <translation id="3801082500826908679">Фарска</translation>
 <translation id="3809272675881623365">Зец</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Фудбалска лопта</translation>
 <translation id="497244430928947428">Малајалам тастатура (фонетска)</translation>
 <translation id="498902553138568924">Црвени лептир</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Пица</translation>
 <translation id="5098629044894065541">хебрејски</translation>
 <translation id="5123433949759960244">Кошаркашка лопта</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Транслитерација (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">америчка Дворак</translation>
 <translation id="5640179856859982418">Језик тастатуре: швајцарски</translation>
-<translation id="5656201261327432370">Капучино</translation>
 <translation id="5756666464756035725">Мађарска QWERTY</translation>
 <translation id="5771585441665576801">Транслитерација (geia → γεια)</translation>
 <translation id="5790193330357274855">казашка</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Хангул, 3 реда (Final)</translation>
 <translation id="5838825566232597749">Америчка Workman интернационална</translation>
 <translation id="5892290200158927959">Француска BÉPO тастатура</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Латиноамеричка тастатура</translation>
 <translation id="60357267506638014">чешка QWERTY</translation>
 <translation id="6054173164583630569">Језик тастатуре: француски</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Бицикл</translation>
 <translation id="6878261347041253038">Деванагари тастатура (фонетска)</translation>
 <translation id="6885780034956018177">Пуж</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Америчка Workman</translation>
 <translation id="6935521024859866267">Наопачке</translation>
 <translation id="6937152069980083337">Google јапански метод уноса (за америчку тастатуру)</translation>
 <translation id="6939777852457331078">Америчка Workman тастатура</translation>
 <translation id="6970230597523682626">бугарски</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Транслитерација (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Језик тастатуре: естонски</translation>
 <translation id="719009910964971313">Америчка Дворак тастатура за програмере</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Хангул, 3 реда (No Shift)</translation>
 <translation id="8299269255470343364">јапански</translation>
 <translation id="8336579025507394412">Исландска тастатура</translation>
-<translation id="8391218455464584335">Грамофонска плоча</translation>
 <translation id="8391950649760071442">Транслитерација (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Брзи метод уноса</translation>
 <translation id="8418113698656761985">Језик тастатуре: румунски</translation>

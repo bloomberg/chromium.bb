@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
+<translation id="1105960400813249514">Skjermdump</translation>
 <translation id="1111673857033749125">Bokmerker som er lagret på de andre enhetene dine, vises her.</translation>
 <translation id="1121094540300013208">Bruks- og programstopprapporter</translation>
 <translation id="1137305377394488060">den siste timen</translation>
@@ -123,6 +124,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2146738493024040262">Åpne instant-appen</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2154484045852737596">Endre kortet</translation>
+<translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>

@@ -31,6 +31,7 @@
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
+<translation id="1122282995569868661">Hiermee geef je het werkbalkicoon van <ph name="PRODUCT_NAME" /> weer</translation>
 <translation id="1128903365609589950">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven directory, ongeacht of de gebruiker de optie '--disk-cache-dir' heeft ingesteld. Als je gegevensverlies of andere onverwachte fouten wilt voorkomen, moet dit beleid niet worden ingesteld op de hoofddirectory van een volume of op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
@@ -52,6 +53,7 @@
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
+<translation id="123081309365616809">Casten van content naar het apparaat inschakelen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
 
@@ -267,6 +269,7 @@
       Als het beleid niet is ingesteld, is de standaardwaarde 0 graden
       en kan de gebruiker dit naar wens wijzigen. In dit geval wordt
       de standaardwaarde niet opnieuw toegepast na opnieuw opstarten.</translation>
+<translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
 <translation id="2176565653304920879">Als dit beleid is ingesteld, wordt het proces voor automatische tijdzonedetectie op een van de volgende manieren uitgevoerd, afhankelijk van de waarde van de instelling:
@@ -579,6 +582,7 @@
       Onafhankelijk van of en hoe dit beleid is ingesteld, kan de instelling voor WPAD-optimalisatie niet worden gewijzigd door gebruikers.</translation>
 <translation id="3072045631333522102">Screensaver voor gebruik in het inlogvenster in de winkelmodus</translation>
 <translation id="3072847235228302527">De Servicevoorwaarden instellen voor een apparaat-lokaal account</translation>
+<translation id="3086995894968271156">De Cast-receiver instellen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="3101501961102569744">Kies hoe je proxyserverinstellingen wilt specificeren</translation>
 <translation id="3117676313396757089">Waarschuwing: DHE wordt na versie 57 (rond maart 2017) volledig van <ph name="PRODUCT_NAME" /> verwijderd en dit beleid werkt vanaf dat moment niet meer.
@@ -971,6 +975,9 @@
       Als de waarde van dit beleid 0 is, wordt de standaardcachegrootte gebruikt, maar kan de gebruiker deze niet wijzigen.
 
       Als dit beleid niet is ingesteld, wordt de standaardgrootte gebruikt en kan de gebruiker deze overschrijven met de markering --media-cache-size.</translation>
+<translation id="4508686775017063528">Als dit beleid is ingesteld op 'waar' (true) of niet is ingesteld, is <ph name="PRODUCT_NAME" /> ingeschakeld en kunnen gebruikers deze functie starten vanuit het app-menu, contextmenu's op pagina's, mediabedieningsopties op websites die werken met Cast en via het Cast-icoon in de werkbalk (als dit wordt weergegeven).
+
+          Als dit beleid is ingesteld op 'onwaar' (false), is <ph name="PRODUCT_NAME" /> uitgeschakeld.</translation>
 <translation id="4518251772179446575">Goedkeuring vragen wanneer een site de fysieke locatie van gebruikers wil bijhouden</translation>
 <translation id="4519046672992331730">Hiermee worden zoeksuggesties in de omnibox van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -1073,6 +1080,7 @@
 <translation id="489803897780524242">Parameter die plaatsing van zoektermen beheert voor de standaardzoekprovider</translation>
 <translation id="4899708173828500852">Safe Browsing inschakelen</translation>
 <translation id="4906194810004762807">Vernieuwingsfrequentie voor apparaatbeleid</translation>
+<translation id="494613465159630803">Cast-receiver</translation>
 <translation id="4962262530309732070">Als dit beleid is ingesteld op 'true' (waar) of niet wordt geconfigureerd, staat <ph name="PRODUCT_NAME" /> 'Persoon toevoegen' toe vanuit gebruikersbeheer.
 
       Als dit beleid is ingesteld op 'false' (onwaar), staat <ph name="PRODUCT_NAME" /> het maken van nieuwe profielen niet toe vanuit gebruikersbeheer.</translation>
@@ -1395,6 +1403,7 @@
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>
+<translation id="6161405879872578475">Hiermee schakel je <ph name="PRODUCT_NAME" /> in</translation>
 <translation id="6167074305866468481">Waarschuwing: De ondersteuning voor SSLv3 wordt volledig uit <ph name="PRODUCT_NAME" /> verwijderd na versie 43 (rond juli 2015) en dit beleid wordt op hetzelfde moment verwijderd.
 
       Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimumversie. In <ph name="PRODUCT_NAME" /> 39 is dit SSLv3. In latere versies is dit TLS 1.0.
@@ -1893,6 +1902,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als deze instelling is ingeschakeld, kan dit apparaat externe hosts zien en hier verbinding mee maken, zelfs als ze worden gescheiden door een firewall.
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
+<translation id="7976157349247117979">Naam van de bestemming van <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Geen speciale beperkingen</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>

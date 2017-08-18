@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="1068672505746868501">Nikdy neprekladať stránky v jazyku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Odhlasujete sa z účtu spravovaného doménou <ph name="DOMAIN_NAME" />. Vymažú sa údaje prehliadača Chrome uložené na tomto zariadení, ale údaje uložené v účte Google zostanú zachované.</translation>
+<translation id="1105960400813249514">Snímanie obrazovky</translation>
 <translation id="1111673857033749125">Tu sa zobrazia záložky, ktoré ste uložili na iných zariadeniach.</translation>
 <translation id="1121094540300013208">Správy o použití a o zlyhaní</translation>
 <translation id="1137305377394488060">poslednej hodiny</translation>
@@ -123,6 +124,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2146738493024040262">Otvoriť okamžitú aplikáciu</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2154484045852737596">Úprava karty</translation>
+<translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Ochráňte seba aj svoje zariadenie pred nebezpečnými stránkami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>

@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">下一行</translation>
 <translation id="3153024374267644603">开启语音</translation>
+<translation id="3153928844647607688">表格“<ph name="TABLENAME" />”，<ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">不存在上一个按钮。</translation>
 <translation id="3163593631834463955">列标题为空</translation>
 <translation id="316542773973815724">导航</translation>
@@ -404,6 +405,7 @@
 <translation id="4597532268155981612">表单</translation>
 <translation id="4597896406374528575">4月</translation>
 <translation id="460018603901637538">将显示样式更改为并排。</translation>
+<translation id="4601367666219428522">表格“<ph name="TABLENAME" />”<ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">将忽略下一次按键</translation>
 <translation id="461613135510474570">逐句</translation>
 <translation id="4647836961514597010">颜色选择器</translation>
@@ -781,6 +783,7 @@
 <translation id="820417203470636242">空白单元格。</translation>
 <translation id="8215202828671303819">多选</translation>
 <translation id="8224171046658870249">已切换到 ChromeVox Next</translation>
+<translation id="826991282343985864">行 $1 列 $2</translation>
 <translation id="8276439074553447000">跳转到上一个可设置为焦点的项</translation>
 <translation id="8278417001922463147">不存在上一篇文章。</translation>
 <translation id="8283603667300770666">下一个表单字段</translation>

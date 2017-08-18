@@ -22,6 +22,7 @@
 <translation id="158809615184981282">फारोसे कीबोर्ड</translation>
 <translation id="1646136617204068573">हंगेरियन कीबोर्ड</translation>
 <translation id="164729547906544836">तामिळ कीबोर्ड (itrans)</translation>
+<translation id="164969095109328410">Chrome डीव्हाइस</translation>
 <translation id="1829129547161959350">पेंग्विन</translation>
 <translation id="184633654410729720">थाई कीबोर्ड (Kedmanee)</translation>
 <translation id="1921986354447415460">तुर्की-F कीबोर्ड</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">कझाक कीबोर्ड</translation>
 <translation id="2384596874640104496">सिंहला कीबोर्ड</translation>
 <translation id="2464079411014186876">आईस्क्रीम</translation>
+<translation id="2468402215065996499">तामागोची</translation>
 <translation id="247772113373397749">कॅनडियन बहुभाषिक कीबोर्ड</translation>
 <translation id="2494837236724268445">गुजराती कीबोर्ड (Phonetic)</translation>
 <translation id="2529133382850673012">यूएस कीबोर्ड</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">बेडूक</translation>
 <translation id="2649120831653069427">रेनबोफिश</translation>
 <translation id="2735698359135166290">रोमेनियन मानक कीबोर्ड</translation>
-<translation id="2744450304594201174">तामागोची</translation>
 <translation id="2771816809568414714">चीज</translation>
 <translation id="2781645665747935084">बेल्जियन</translation>
 <translation id="2790805296069989825">रशियन कीबोर्ड</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">कॅनडियन बहुभाषी</translation>
 <translation id="3241720467332021590">आयरिश</translation>
 <translation id="3252266817569339921">फ्रेंच</translation>
+<translation id="3280987981688031357">व्हिनाइल रेकॉर्ड</translation>
 <translation id="3296763833017966289">जॉर्जियन</translation>
 <translation id="3338239663705455570">स्लॉव्हेनियन कीबोर्ड</translation>
 <translation id="3399597614303179694">मॅसेडोनियन कीबोर्ड</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">लिथुआनियन</translation>
 <translation id="3603385196401704894">कॅनेडियन फ्रेंच</translation>
 <translation id="3606220979431771195">तुर्की-F</translation>
+<translation id="3619115746895587757">कॅपिचिनो</translation>
 <translation id="3678559383040232393">माल्टीज कीबोर्ड</translation>
 <translation id="3801082500826908679">फारोसे</translation>
 <translation id="3809272675881623365">ससा</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">फूटबॉल</translation>
 <translation id="497244430928947428">मल्याळम कीबोर्ड (Phonetic)</translation>
 <translation id="498902553138568924">लाल फुलपाखरू</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">पिझ्झा</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">लिप्यंतरण (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">येएस द्वोराक</translation>
 <translation id="5640179856859982418">स्विस कीबोर्ड</translation>
-<translation id="5656201261327432370">कॅपुचिनो</translation>
 <translation id="5756666464756035725">हंगेरियन क्वर्टी कीबोर्ड</translation>
 <translation id="5771585441665576801">लिप्यंतरण (geia → γεια)</translation>
 <translation id="5790193330357274855">कझाक</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">हँगल 3 संच (अंतिम)</translation>
 <translation id="5838825566232597749">यूएस कामगार आंतरराष्ट्रीय</translation>
 <translation id="5892290200158927959">फ्रेंच बेपो कीबोर्ड</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">लॅटिन अमेरिकन कीबोर्ड</translation>
 <translation id="60357267506638014">झेक QWERTY</translation>
 <translation id="6054173164583630569">फ्रेंच कीबोर्ड</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">सायकल</translation>
 <translation id="6878261347041253038">देवनागरी कीबोर्ड (Phonetic)</translation>
 <translation id="6885780034956018177">गोगलगाय</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">यूएस कामगार</translation>
 <translation id="6935521024859866267">उलट सुलट</translation>
 <translation id="6937152069980083337">Google जपानी इनपुट (यूएस कीबोर्डसाठी)</translation>
 <translation id="6939777852457331078">यूएस कामगार कीबोर्ड</translation>
 <translation id="6970230597523682626">बल्गेरियन</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">लिप्यंतरण (salam → ሰላም)</translation>
 <translation id="7172053773111046550">एस्टोनियन कीबोर्ड</translation>
 <translation id="719009910964971313">यूएस प्रोग्रामर द्वोराक कीबोर्ड</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">हँगल 3 संच (Shift नाही)</translation>
 <translation id="8299269255470343364">जपानी</translation>
 <translation id="8336579025507394412">आइसलँडिक कीबोर्ड</translation>
-<translation id="8391218455464584335">व्हिनेल</translation>
 <translation id="8391950649760071442">लिप्यंतरण (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">द्रुत इनपुट पद्धत</translation>
 <translation id="8418113698656761985">रोमानियन कीबोर्ड</translation>

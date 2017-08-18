@@ -461,6 +461,7 @@
 <translation id="4552089082226364758">Bljeskalica</translation>
 <translation id="4558551763791394412">Pokušajte onemogućiti proširenja.</translation>
 <translation id="457875822857220463">Dostava</translation>
+<translation id="4582800630050655161">Mogli biste izgubiti pristup svojem Google računu ili bi netko mogao ukrasti vaš identitet. Chromium preporučuje da odmah promijenite zaporku.</translation>
 <translation id="4587425331216688090">Želite li s Chromea ukloniti adresu?</translation>
 <translation id="4592951414987517459">Vaša veza s domenom <ph name="DOMAIN" /> kriptirana je modernim kriptografskim paketom.</translation>
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
@@ -469,10 +470,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat sadrži pogreške. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="4690462567478992370">Prestani upotrebljavati nevažeći certifikat</translation>
+<translation id="4690954380545377795">Mogli biste izgubiti pristup svojem Google računu ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Veza je prekinuta</translation>
 <translation id="471880041731876836">Nemaš dopuštenje za posjet toj web-lokaciji</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />pokrenuti Mrežnu dijagnostiku sustava Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Vaše plaćanje</translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Ponovo pokrenite Chromium</translation>
@@ -534,6 +537,8 @@
 <translation id="5199729219167945352">Eksperimenti</translation>
 <translation id="5205222826937269299">Ime je obavezno</translation>
 <translation id="5222812217790122047">E-pošta (obavezno)</translation>
+<translation id="522700295135997067">Ova web-lokacija možda vam je upravo ukrala zaporku</translation>
+<translation id="5230733896359313003">Adresa za dostavu</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5277279256032773186">Upotrebljavate li Chrome na poslu? Tvrtke mogu upravljati Chromeovim postavkama za svoje zaposlenike. Saznajte više</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Privremeno onemogućite softver prema ovim uputama da biste se povezali s webom. Potrebne su vam administratorske povlastice.<ph name="END_PARAGRAPH" />
@@ -552,6 +557,7 @@
 <translation id="5308689395849655368">Onemogućeno je izvješćivanje o padu.</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
+<translation id="5332219387342487447">Način otpreme</translation>
 <translation id="5355557959165512791">Trenutačno ne možete otvoriti web-lokaciju <ph name="SITE" /> jer je njezin certifikat opozvan. Mrežne pogreške i napadi uglavnom su privremeni i ta bi stranica kasnije trebala funkcionirati.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="5386426401304769735">Lanac certifikata za ovu web-lokaciju sadrži certifikat s SHA-1 potpisom.</translation>
@@ -823,6 +829,7 @@
 <translation id="7669271284792375604">Napadači na ovoj web-lokaciji mogu vas pokušati navesti na instaliranje programa koji smanjuju kvalitetu pregledavanja interneta (npr. promjenom početne stranice ili prikazivanjem dodatnih oglasa na web-lokacijama koje posjetite).</translation>
 <translation id="7674629440242451245">Zanimaju li vas nove, kul značajke preglednika Chrome? Isprobajte naš razvojni kanal na stranici chrome.com/dev.</translation>
 <translation id="7682287625158474539">Dostava</translation>
+<translation id="7699293099605015246">Članci trenutačno nisu dostupni</translation>
 <translation id="7701040980221191251">Nema</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Idi na web-lokaciju <ph name="SITE" /> (nije sigurno)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
@@ -840,6 +847,7 @@
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7793809570500803535">Web-stranica na web-lokaciji <ph name="SITE" /> možda privremeno nije dostupna ili je trajno preseljena na novu web-adresu.</translation>
 <translation id="7800304661137206267">Veza je šifrirana pomoću <ph name="CIPHER" />, za provjeru autentičnosti poruke koristi se <ph name="MAC" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>
+<translation id="7802523362929240268">Web-lokacija je legitimna</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -849,6 +857,7 @@
 <translation id="785549533363645510">Niste nevidljivi. Anonimni način ne sakriva vaše pregledavanje od poslodavca, davatelja internetskih usluga ili posjećenih web-lokacija.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Prihvaćaju se debitne i pretplatne kartice.</translation>
+<translation id="7878562273885520351">Vaša je zaporka možda ugrožena</translation>
 <translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
 <translation id="79338296614623784">Unesite važeći telefonski broj</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,8 +985,10 @@
 <translation id="9069693763241529744">Blokiralo proširenje</translation>
 <translation id="9076283476770535406">Možda ima sadržaj za odrasle</translation>
 <translation id="9078964945751709336">Potrebno je više podataka</translation>
+<translation id="9080712759204168376">Sažetak narudžbe</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Chromiuma s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene
 i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chromium zaustavio povezivanje prije razmjene podataka.</translation>
+<translation id="910908805481542201">Pomozi mi da to riješim</translation>
 <translation id="9128870381267983090">Povezivanje s mrežom</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9137248913990643158">Pokrenite Chrome i prijavite se na njega da biste mogli upotrebljavati tu aplikaciju.</translation>
@@ -999,5 +1010,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="975560348586398090">{COUNT,plural, =0{Nijedna}=1{1 stavka}one{# stavka}few{# stavke}other{# stavki}}</translation>
 <translation id="981121421437150478">Izvanmrežno</translation>
 <translation id="988159990683914416">Sastavak razvojnog programera</translation>
+<translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

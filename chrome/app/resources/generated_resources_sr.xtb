@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Упозорење</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> од <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Уклањање штетног софтвера није успело</translation>
 <translation id="1062407476771304334">Замени</translation>
 <translation id="1062866675591297858">Управљајте корисницима под надзором преко <ph name="BEGIN_LINK" />Контролне табле за кориснике под надзором<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Провера библиотеке медијских датотека</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481">Алатка <ph name="THIRD_PARTY_TOOL_NAME" /> жели да врати подешавања Chrome-а на првобитне подразумеване вредности. То ће ресетовати почетну страницу, страницу нове картице и претраживач, онемогућиће додатке и откачити све картице. Такође ће обрисати друге привремене и кеширане податке, попут колачића, садржаја и података о сајтовима.</translation>
 <translation id="1082725763867769612">Офлајн датотеке</translation>
 <translation id="1084824384139382525">Копирај адр&amp;есу везе</translation>
+<translation id="1089439967362294234">Промена лозинке</translation>
 <translation id="1090126737595388931">Није покренута ниједна позадинска апликација</translation>
 <translation id="1091767800771861448">Притисните ESCAPE да бисте прескочили (само у незваничним верзијама).</translation>
 <translation id="1093457606523402488">Видљиве мреже:</translation>
@@ -447,7 +447,6 @@
     <ph name="BEGIN_BOLD" />да дозвољавате или забрањујете<ph name="END_BOLD" /> одређене веб-сајтове,
     <ph name="BEGIN_BOLD" />да прегледате<ph name="END_BOLD" /> веб-сајтове које је корисник под надзором посетио и
     <ph name="BEGIN_BOLD" />да управљате<ph name="END_BOLD" /> другим подешавањима.</translation>
-<translation id="1648797160541174252">Прокси мреже за <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Детаљи за пријављивање су застарели</translation>
 <translation id="164969095109328410">Chrome уређај</translation>
 <translation id="1650371550981945235">Приказуј опције уноса</translation>
@@ -1016,6 +1015,7 @@
 <translation id="2498436043474441766">Додајте штампаче</translation>
 <translation id="2498539833203011245">Умањи</translation>
 <translation id="2498765460639677199">Огромна</translation>
+<translation id="2500471369733289700">Блокирано ради заштите ваше приватности</translation>
 <translation id="2501173422421700905">Сертификат на чекању</translation>
 <translation id="2501278716633472235">Иди назад</translation>
 <translation id="2501797496290880632">Унесите пречицу</translation>
@@ -1355,6 +1355,7 @@
 <translation id="2951247061394563839">Центрирање прозора</translation>
 <translation id="2951721188322348056">Информације о видеу</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> колачића</translation>
+<translation id="2958721676848865875">Упозорење о паковању додатка</translation>
 <translation id="2959614062380389916">Администратор је онемогућио</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (продужено је)</translation>
 <translation id="2961695502793809356">Кликните да бисте отишли напред, задржите да бисте видели историју</translation>
@@ -1368,6 +1369,7 @@
 <translation id="2971213274238188218">смањивање осветљености</translation>
 <translation id="2972557485845626008">Фирмвер</translation>
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
+<translation id="2972642118232180842">Покрећи само важан садржај (препоручено)</translation>
 <translation id="297870353673992530">DNS сервер:</translation>
 <translation id="2979639724566107830">Отворите у новом прозору</translation>
 <translation id="2981113813906970160">Прикажи велики курсор</translation>
@@ -1384,6 +1386,7 @@
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> ће направити приватну Wi-Fi везу.</translation>
 <translation id="3004391367407090544">Вратите се касније</translation>
 <translation id="300544934591011246">Претходна лозинка</translation>
+<translation id="3006881078666935414">Нема података о коришћењу</translation>
 <translation id="3007214526293698309">Поправи сразмеру</translation>
 <translation id="3007771295016901659">Направи дупликат картице</translation>
 <translation id="3009300415590184725">Да ли сте сигурни да желите да откажете процес подешавања услуге мобилног преноса података?</translation>
@@ -1447,6 +1450,7 @@
 <translation id="3082520371031013475">Подешавања тачпеда и миша</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Ова картица користи камеру или микрофон.</translation>
+<translation id="3083193146044397360">Привремено блокирано ради заштите приватности</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Отпустите за инсталацију</translation>
 <translation id="3084771660770137092">Chrome прегледачу је понестало меморије или је процес за веб-страницу прекинут из неког другог разлога. Да бисте наставили, поново учитајте страницу или идите на неку другу страницу.</translation>
@@ -1675,6 +1679,7 @@
 <translation id="3423858849633684918">Рестартујте <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Опишите шта сте радили када је картица отказала</translation>
 <translation id="3427092606871434483">Дозволи (подразумевано)</translation>
+<translation id="3429275422858276529">Обележите ову страницу да бисте је касније лакше пронашли</translation>
 <translation id="3429599832623003132">Ставки: $1</translation>
 <translation id="3432227430032737297">Уклони све приказано</translation>
 <translation id="3432757130254800023">Шаљи аудио и видео садржај екранима на локалној мрежи</translation>
@@ -1798,6 +1803,7 @@
 <translation id="3595596368722241419">Батерија је пуна</translation>
 <translation id="3596235046596950091">Омогући клауд услуге</translation>
 <translation id="3600456501114769456">Администратор је онемогућио приступ локалним датотекама на уређају.</translation>
+<translation id="3603533104205588786">Можете да обележите страницу кликом на звездицу</translation>
 <translation id="3603622770190368340">Добијање сертификата мреже</translation>
 <translation id="3604048165392640554">Нисмо пронашли ниједну мобилну везу. Укључите тренутно привезивање на другом уређају, па пробајте поново. &lt;a target="_blank" href="<ph name="URL" />"&gt;Сазнајте више&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Јапи</translation>
@@ -2573,6 +2579,7 @@
 <translation id="4816492930507672669">Уклопи у страницу</translation>
 <translation id="4820334425169212497">Не, не видим га</translation>
 <translation id="4821086771593057290">Лозинка је промењена. Пробајте поново са новом лозинком.</translation>
+<translation id="4821725298388681253">Ово је прелиминарна верзија. Неке функције, попут претраге и уноса текста, још нису доступне.</translation>
 <translation id="4821935166599369261">&amp;Профилисање је омогућено</translation>
 <translation id="4823484602432206655">Читање и мењање подешавања корисника и уређаја</translation>
 <translation id="4823651846660089135">Уређај је само за читање</translation>
@@ -3526,6 +3533,7 @@
 <translation id="6232017090690406397">Батерија</translation>
 <translation id="6232116551750539448">Веза са мрежом <ph name="NAME" /> је прекинута</translation>
 <translation id="6237816943013845465">Омогућавају вам да прилагодите резолуцију екрана</translation>
+<translation id="6238923052227198598">Задржи најновију белешку на закључаном екрану</translation>
 <translation id="6239558157302047471">Поново учитај &amp;оквир</translation>
 <translation id="6241530762627360640">Приступање информацијама о Bluetooth уређајима упареним са вашим системом и откривање оближњих Bluetooth уређаја.</translation>
 <translation id="6243774244933267674">Сервер је недоступан</translation>
@@ -3778,6 +3786,7 @@
 
 Користите ову функцију само са налозима у које имате поверења.</translation>
 <translation id="6581162200855843583">Веза Google диска</translation>
+<translation id="6582421931165117398">Промените лозинку да бисте заштитили личне податке. Мораћете да се пријавите да бисте могли да промените лозинку.</translation>
 <translation id="6583851739559471707">Блокирано на сајтовима који приказују огласе који ометају (препоручено)</translation>
 <translation id="6584878029876017575">Microsoft доживотно потписивање</translation>
 <translation id="6585234750898046415">Изаберите слику која ће се приказивати за ваш налог на екрану за пријављивање.</translation>
@@ -3801,6 +3810,7 @@
 <translation id="6610183966322615106">Грешка при додавању штампача</translation>
 <translation id="6610610633807698299">Унесите URL адресу...</translation>
 <translation id="6612358246767739896">Заштићени садржај</translation>
+<translation id="6613452264606394692">Можете брзо да се вратите овде ако обележите ову страницу</translation>
 <translation id="6615455863669487791">Покажи ми</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> од <ph name="TOTAL_SIZE" /> је копирано</translation>
 <translation id="661719348160586794">Сачуване лозинке ће се приказивати овде.</translation>
@@ -4600,6 +4610,7 @@
 <translation id="7876243839304621966">Уклони све</translation>
 <translation id="7877451762676714207">Непозната грешка сервера. Пробајте поново или контактирајте администратора сервера.</translation>
 <translation id="7877680364634660272">Обилазак</translation>
+<translation id="7878562273885520351">Лозинка је можда компромитована</translation>
 <translation id="7881483672146086348">Прикажи налог</translation>
 <translation id="7881969471599061635">Онемогући титлове</translation>
 <translation id="7882358943899516840">Тип добављача</translation>
@@ -4688,6 +4699,7 @@
 Чувајте датотеку кључа на сигурном месту. Биће вам потребна да направите нове верзије додатка.</translation>
 <translation id="799923393800005025">Може да прегледа</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
+<translation id="8001504501378762252">Неки сајт вам је можда украо лозинку</translation>
 <translation id="8004582292198964060">Прегледач</translation>
 <translation id="8007030362289124303">Батерија је скоро празна</translation>
 <translation id="8008356846765065031">Веза са интернетом је прекинута. Проверите интернет везу.</translation>
@@ -4925,6 +4937,7 @@
 <translation id="8366396658833131068">Веза са мрежом је поново успостављена. Изаберите другу мрежу или притисните дугме „Настави“ у наставку да бисте покренули киоск апликацију.</translation>
 <translation id="8366947248864804596">Када је телефон откључан и у близини, само га изаберите да бисте откључали. У супротном, унесите лозинку или PIN.</translation>
 <translation id="8368859634510605990">&amp;Отвори све обележиваче</translation>
+<translation id="8371695176452482769">Почните да говорите</translation>
 <translation id="8372369524088641025">Неисправна WEP шифра</translation>
 <translation id="8373360586245335572">Дозволи свим сајтовима да приказују обавештења</translation>
 <translation id="8373553483208508744">Искључи звук картица</translation>
@@ -5096,6 +5109,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> или <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Принудно поново учитај ову страницу</translation>
 <translation id="8652139471850419555">Жељене мреже</translation>
+<translation id="8652400352452647993">Грешка у вези са паковањем додатка</translation>
 <translation id="8652487083013326477">дугме за избор опсега страница</translation>
 <translation id="8654151524613148204">Датотека је превелика да би је рачунар обрадио. Жао нам је.</translation>
 <translation id="8655295600908251630">Канал</translation>

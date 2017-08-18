@@ -477,6 +477,7 @@
 <translation id="4708268264240856090">Yhteys keskeytyi</translation>
 <translation id="471880041731876836">Sinulla ei ole lupaa siirtyä tälle sivustolle.</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windowsin verkon diagnostiikkaa<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Maksu</translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4736825316280949806">Käynnistä Chromium uudelleen.</translation>
@@ -539,6 +540,7 @@
 <translation id="5205222826937269299">Nimi vaaditaan</translation>
 <translation id="5222812217790122047">Sähköposti vaaditaan</translation>
 <translation id="522700295135997067">Tämä sivusto saattoi juuri varastaa salasanasi.</translation>
+<translation id="5230733896359313003">Toimitusosoite</translation>
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5277279256032773186">Käytätkö Chromea töissä? Yritykset voivat hallita Chromen asetuksia työntekijöidensä puolesta. Lisätietoja</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Voit poistaa ohjelmiston väliaikaisesti käytöstä ja päästä verkkoon noudattamalla näitä ohjeita. Nämä vaiheet edellyttävät järjestelmänvalvojan käyttöoikeuksia.<ph name="END_PARAGRAPH" />
@@ -557,6 +559,7 @@
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="5332219387342487447">Toimitustapa</translation>
 <translation id="5355557959165512791"><ph name="SITE" /> ei juuri nyt ole käytettävissä, koska sen varmenne ei ole voimassa. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu luultavasti toimii myöhemmin.</translation>
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="5386426401304769735">Tämän sivuston varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
@@ -984,6 +987,7 @@
 <translation id="9069693763241529744">Laajennuksen estämä</translation>
 <translation id="9076283476770535406">Se saattaa sisältää vain aikuisille tarkoitettua sisältöä.</translation>
 <translation id="9078964945751709336">Lisätietoja tarvitaan</translation>
+<translation id="9080712759204168376">Tilauksen yhteenveto</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="910908805481542201">Auta minua korjaamaan asia</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
@@ -1007,5 +1011,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Ei mitään}=1{1 kohde}other{# kohdetta}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
+<translation id="989988560359834682">Osoitteen muokkaus</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

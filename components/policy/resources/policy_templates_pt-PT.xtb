@@ -31,6 +31,7 @@
           Se esta definição estiver desativada ou não estiver configurada, o anfitrião de assistência remota é executado no contexto do utilizador e os utilizadores remotos não conseguem interagir com janelas de prioridade elevada no ambiente de trabalho.</translation>
 <translation id="1096105751829466145">Motor de pesquisa predefinido</translation>
 <translation id="1117535567637097036">Os controladores de protocolos definidos através desta política não são utilizados no processamento de intenções do Android.</translation>
+<translation id="1122282995569868661">Mostra o ícone da barra de ferramentas <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado o sinalizador "--disk-cache-dir" ou não. Para evitar perda de dados ou outros erros inesperados, esta política não deve ser definida para o diretório raiz de um volume nem para um diretório utilizado para outros fins porque o <ph name="PRODUCT_NAME" /> gere os respetivos conteúdos.
@@ -53,6 +54,7 @@
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
       permitida é de 60 segundos.</translation>
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
+<translation id="123081309365616809">Permite a transmissão de conteúdo para o dispositivo</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
@@ -261,6 +263,7 @@
       Se a política não estiver definida, o valor predefinido é 0 graus e o utilizador
       pode alterá-lo. Neste caso, o valor predefinido não é aplicado novamente no
       reinício.</translation>
+<translation id="2156132677421487971">Configura políticas para o <ph name="PRODUCT_NAME" />, uma funcionalidade que permite aos utilizadores enviar o conteúdo de separadores, de sites ou do ambiente de trabalho a partir do navegador para sistemas de som e ecrãs remotos.</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
 <translation id="2176565653304920879">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
@@ -553,6 +556,7 @@
       Independentemente de a política estar definida ou de como está definida, a definição da otimização WPAD não pode ser alterada pelos utilizadores.</translation>
 <translation id="3072045631333522102">Proteção de ecrã a utilizar no ecrã de início de sessão no modo de retalho</translation>
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
+<translation id="3086995894968271156">Configura o Recetor do Cast no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
 <translation id="3117676313396757089">Aviso: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017) e esta política deixa de funcionar nessa altura.
@@ -921,6 +925,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se o valor desta política for igual a 0, será utilizado o tamanho da cache predefinido, mas o utilizador não poderá alterá-lo.
 
       Se esta política não for definida, será utilizado o tamanho predefinido e o utilizador poderá substituí-lo com a sinalização "--media-cache-size".</translation>
+<translation id="4508686775017063528">Se esta política estiver definida como verdadeira ou não estiver definida, o <ph name="PRODUCT_NAME" /> está ativado e os utilizadores podem iniciá-lo a partir do menu da aplicação, dos menus de contexto da página, dos controlos multimédia nos Websites compatíveis com o Cast e (se apresentado) do ícone da barra de ferramentas do Cast.
+
+          Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> está desativado.</translation>
 <translation id="4518251772179446575">Perguntar sempre que um site pretender registar a localização física dos utilizadores</translation>
 <translation id="4519046672992331730">Ativa as sugestões de pesquisa na caixa geral do <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
@@ -1025,6 +1032,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="489803897780524242">Colocação do termo de pesquisa de controlo de parâmetros para o fornecedor de pesquisa predefinido</translation>
 <translation id="4899708173828500852">Ativar Navegação Segura</translation>
 <translation id="4906194810004762807">Taxa de atualização para a Política do Dispositivo</translation>
+<translation id="494613465159630803">Recetor do Cast</translation>
 <translation id="4962262530309732070">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_NAME" /> permite a opção Adicionar pessoa a partir do gestor de utilizadores.
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gestor de utilizadores.</translation>
@@ -1313,6 +1321,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras para ignorar o proxy</translation>
 <translation id="6158324314836466367">Nome da Web store da empresa (descontinuado)</translation>
+<translation id="6161405879872578475">Ativa o <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Aviso: o suporte de SSLv3 vai ser completamente removido do <ph name="PRODUCT_NAME" /> após a versão 43 (em meados de julho de 2015) e esta política vai ser removida na mesma altura.
 
       Se esta política não for configurada, o <ph name="PRODUCT_NAME" /> utiliza uma versão mínima predefinida que é a SSLv3 no <ph name="PRODUCT_NAME" /> 39 e a TLS 1.0 nas versões posteriores.
@@ -1772,6 +1781,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>
+<translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rodar o ecrã 0 graus</translation>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">ప్రాంతం</translation>
 <translation id="1591562245178063882">ఈ నెల</translation>
 <translation id="1637811476055996098">ఫైల్‌లను ఎంచుకోండి</translation>
-<translation id="167575180612809735">బిజీ సూచిక</translation>
 <translation id="1729654308190250600">దయచేసి ఖాళీ-కాని ఇమెయిల్ చిరునామాని నమోదు చేయండి.</translation>
 <translation id="1758486001363313524">ఇతర...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">రిమోట్ పరికరంలో ప్లే చేస్తుంది</translation>
 <translation id="1854180393107901205">ప్రసారాన్ని ఆపివేయి</translation>
-<translation id="1880518467580572141">చుట్టుగీత</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
 <translation id="588258955323874662">పూర్తితెర</translation>
+<translation id="5888666972993069672">ఇప్పుడు <ph name="DEVICE_FRIENDLY_NAME" />కి ప్రసారం చేస్తోంది</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="5966707198760109579">వారం</translation>
 <translation id="5987525920412732405">స్పిన్ బటన్</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="668171684555832681">ఇతర...</translation>
 <translation id="6692633176391053278">స్టెప్పర్</translation>
-<translation id="6739588121953935928">రూలర్</translation>
 <translation id="6755330956360078551">సాధన చిట్కా</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6820355525329141109">ప్లగిన్‌ను లోడ్ చేయడం సాధ్యపడలేదు.</translation>

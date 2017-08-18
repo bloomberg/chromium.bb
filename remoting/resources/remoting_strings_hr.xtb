@@ -27,7 +27,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
-<translation id="1704090719919187045">Postavke hosta usluge Chromoting</translation>
 <translation id="174018511426417793">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte Udaljenu radnu površinu Chrome pa kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Povezivanje…</translation>
 <translation id="1770394049404108959">Ne mogu otvoriti aplikaciju.</translation>
@@ -117,8 +116,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3695446226812920698">Saznajte kako</translation>
 <translation id="3718805989288361841">Došlo je do pogreške s postavkama pravila za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="3776024066357219166">Završila je vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
-<translation id="3785447812627779171">Host usluge
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potvrdite svoj račun i PIN u nastavku da biste usluzi Udaljena radna površina Chrome dozvolili pristup.</translation>
 <translation id="3897092660631435901">Izbornik</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>
 <translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
 <translation id="4156740505453712750">Da biste zaštitili pristup ovom računalu, odaberite PIN s <ph name="BOLD_START" />najmanje šest brojeva<ph name="BOLD_END" />. Taj će PIN biti potreban pri povezivanju s druge lokacije.</translation>
-<translation id="4156741816461781891">Prijavljeni ste kao <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Pristupni kôd</translation>
 <translation id="4207623512727273241">Ponovo pokrenite instalacijski program prije nastavka.</translation>
 <translation id="4227991223508142681">Uslužni program za pružanje usluge hosta</translation>
@@ -152,8 +148,7 @@ Chromoting</translation>
 <translation id="4517233780764084060">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati Chromoting da se otvara kao prozor.</translation>
 <translation id="4563926062592110512">Prekinuta veza s klijentom: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Pristup</translation>
-<translation id="4573676252416618192">Host Udaljene radne
-površine Chrome</translation>
+<translation id="4592037108270173918">Pri povezivanju s uređajem putem mobilne mreže može se naplatiti podatkovni promet. Želite li nastaviti?</translation>
 <translation id="4619978527973181021">Prihvati i instaliraj</translation>
 <translation id="4635770493235256822">Udaljeni uređaji</translation>
 <translation id="4660011489602794167">Prikaži tipkovnicu</translation>
@@ -180,6 +175,12 @@ površine Chrome</translation>
 <translation id="5156271271724754543">Unesite isti PIN u oba polja.</translation>
 <translation id="5170982930780719864">Nevažeći ID hosta.</translation>
 <translation id="518094545883702183">Informacije se upotrebljavaju samo za dijagnosticiranje problema koji prijavljujete, dostupne su samo osobi koja istražuje vaše izvješće i ne zadržavaju se dulje od 30 dana.</translation>
+<translation id="5196958630269420102">Sigurno pristupajte svojim računalima s iOS uređaja.
+
+• Na svim svojim računalima postavite daljinski pristup pomoću aplikacije Udaljena radna površina Chrome iz Chrome web-trgovine: https://chrome.google.com/remotedesktop.
+• Otvorite tu aplikaciju na iOS uređaju i dodirnite računalo koje je online da biste se povezali.
+
+Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http://goo.gl/SyrVzj) i Chromeovim pravilima o privatnosti (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">FAQ</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
@@ -205,7 +206,6 @@ površine Chrome</translation>
 <translation id="5843054235973879827">Zašto je ovo sigurno?</translation>
 <translation id="5859141382851488196">Novi prozor…</translation>
 <translation id="5885438903806970186">Online.</translation>
-<translation id="6001953797859482435">Postavke hosta Udaljene radne površine Chrome</translation>
 <translation id="6011539954251327702">Chromoting omogućuje sigurno dijeljenje računala putem weba. Aplikacija Chromoting, koja se nalazi na web-lokaciji <ph name="URL" />, mora biti pokrenuta na oba računala.</translation>
 <translation id="6033507038939587647">Opcije tipkovnice</translation>
 <translation id="6040143037577758943">Zatvori</translation>
@@ -235,6 +235,11 @@ površine Chrome</translation>
 <translation id="6570205395680337606">Vratite aplikaciju na zadano. Izgubit ćete sav rad koji niste spremili.</translation>
 <translation id="6572345186230665992">Za Mac (OS X Mavericks 10.9 i novije verzije)</translation>
 <translation id="6583902294974160967">Podrška</translation>
+<translation id="6598484667010442494">Udaljena radna površina Chrome
+Udaljena radna površina
+Udaljeni PC
+Udaljeno računalo
+Daljinski pristup</translation>
 <translation id="6612717000975622067">Pošalji Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">Ažuriran je PIN.</translation>
 <translation id="6681800064886881394">Autorska prava 2013. Google Inc. Sva prava pridržana.</translation>
@@ -271,6 +276,7 @@ površine Chrome</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="7672203038394118626">Na ovom su računalu onemogućene daljinske veze.</translation>
+<translation id="7678209621226490279">Usidri ulijevo</translation>
 <translation id="7693372326588366043">Osvježi popis hostova</translation>
 <translation id="7782471917492991422">Provjerite postavke upravljanja potrošnjom energije svojeg računala i provjerite da nije konfigurirano tako da prelazi u stanje mirovanja kad je neaktivno.</translation>
 <translation id="7810127880729796595">Prikaži statistiku (veza: <ph name="QUALITY" />)</translation>
@@ -278,6 +284,7 @@ površine Chrome</translation>
 <translation id="7868137160098754906">Unesite PIN za udaljeno računalo.</translation>
 <translation id="7869445566579231750">Nemate dopuštenje za pokretanje te aplikacije.</translation>
 <translation id="7895403300744144251">Sigurnosna pravila na udaljenom računalu ne dopuštaju povezivanje s vašeg računa.</translation>
+<translation id="7936528439960309876">Usidri udesno</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
 <translation id="7981525049612125370">Daljinska je sesija istekla.</translation>

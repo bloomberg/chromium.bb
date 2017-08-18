@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Cảnh báo</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> trong tổng số <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Không thể xóa phần mềm độc hại</translation>
 <translation id="1062407476771304334">Thay thế</translation>
 <translation id="1062866675591297858">Quản lý người dùng được giám sát của bạn qua <ph name="BEGIN_LINK" />Bảng điều khiển người dùng được giám sát<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Trình kiểm tra tệp thư viện phương tiện</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> muốn khôi phục cài đặt Chrome của bạn về mặc định ban đầu. Thao tác này sẽ đặt lại trang chủ, trang tab mới và công cụ tìm kiếm, vô hiệu hóa các tiện ích của bạn và bỏ ghim tất cả các tab. Hành động này cũng xóa dữ liệu tạm thời và được lưu trong bộ nhớ cache khác, chẳng hạn như cookie, nội dung và dữ liệu trang web.</translation>
 <translation id="1082725763867769612">Tệp ngoại tuyến</translation>
 <translation id="1084824384139382525">S&amp;ao chép địa chỉ liên kết</translation>
+<translation id="1089439967362294234">Thay đổi mật khẩu</translation>
 <translation id="1090126737595388931">Không có ứng dụng nền nào đang chạy</translation>
 <translation id="1091767800771861448">Nhấn ESCAPE để bỏ qua (Chỉ phiên bản không chính thức).</translation>
 <translation id="1093457606523402488">Mạng hiển thị:</translation>
@@ -357,7 +357,7 @@
 <translation id="1519759545815312682">Hoạt động bằng giọng nói và âm thanh được bật cho <ph name="USER_EMAIL" />.</translation>
 <translation id="1520635877184409083">Điều chỉnh...</translation>
 <translation id="1521442365706402292">Quản lý chứng chỉ</translation>
-<translation id="152234381334907219">Không bao giờ được lưu</translation>
+<translation id="152234381334907219">Không bao giờ lưu</translation>
 <translation id="1524152555482653726">Phim</translation>
 <translation id="1524430321211440688">Bàn phím</translation>
 <translation id="1525835343380843286">Lỗi kết nối với máy chủ</translation>
@@ -450,7 +450,6 @@
     <ph name="BEGIN_BOLD" />cho phép hoặc cấm<ph name="END_BOLD" /> các trang web nhất định,
     <ph name="BEGIN_BOLD" />xem lại<ph name="END_BOLD" /> các trang web mà người dùng được giám sát đã truy cập và
     <ph name="BEGIN_BOLD" />quản lý<ph name="END_BOLD" /> các cài đặt khác.</translation>
-<translation id="1648797160541174252">Proxy mạng cho <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Chi tiết đăng nhập đã lỗi thời</translation>
 <translation id="164969095109328410">Thiết bị Chrome</translation>
 <translation id="1650371550981945235">Hiển thị tùy chọn nhập</translation>
@@ -1019,6 +1018,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2498436043474441766">Thêm máy in</translation>
 <translation id="2498539833203011245">Thu nhỏ</translation>
 <translation id="2498765460639677199">Rất lớn</translation>
+<translation id="2500471369733289700">Bị chặn để bảo vệ quyền riêng tư của bạn</translation>
 <translation id="2501173422421700905">Chứng chỉ bị Thu hồi</translation>
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2501797496290880632">Nhập phím tắt</translation>
@@ -1359,6 +1359,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2951247061394563839">Căn giữa cửa sổ</translation>
 <translation id="2951721188322348056">Thông tin về tệp video</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookie</translation>
+<translation id="2958721676848865875">Cảnh báo đóng gói tiện ích</translation>
 <translation id="2959614062380389916">Do quản trị viên tắt</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (đã cung cấp tiện ích)</translation>
 <translation id="2961695502793809356">Nhấp vào để tiến, giữ để xem lịch sử</translation>
@@ -1372,6 +1373,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2971213274238188218">giảm sáng</translation>
 <translation id="2972557485845626008">Chương trình cơ sở</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
+<translation id="2972642118232180842">Chỉ chạy nội dung quan trọng (được đề xuất)</translation>
 <translation id="297870353673992530">Máy chủ DNS:</translation>
 <translation id="2979639724566107830">Mở bằng cửa sổ mới</translation>
 <translation id="2981113813906970160">Hiển thị con trỏ chuột lớn</translation>
@@ -1388,6 +1390,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> của bạn sẽ tạo kết nối Wi-Fi riêng tư.</translation>
 <translation id="3004391367407090544">Vui lòng quay lại sau</translation>
 <translation id="300544934591011246">Mật khẩu trước</translation>
+<translation id="3006881078666935414">Không có dữ liệu sử dụng</translation>
 <translation id="3007214526293698309">Cố định tỷ lệ</translation>
 <translation id="3007771295016901659">Sao chép tab</translation>
 <translation id="3009300415590184725">Bạn có chắc chắn muốn hủy quá trình thiết lập dịch vụ dữ liệu di động không?</translation>
@@ -1451,6 +1454,7 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3082520371031013475">Cài đặt bàn di chuột và chuột</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Tab này đang sử dụng máy ảnh hoặc micrô của bạn.</translation>
+<translation id="3083193146044397360">Tạm thời bị chặn để bảo vệ an toàn của bạn</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Thả để cài đặt</translation>
 <translation id="3084771660770137092">Hoặc Chrome đã hết bộ nhớ hoặc việc xử lý trang web đã bị chấm dứt vì lý do nào đó khác. Để tiếp tục, hãy tải lại hoặc truy cập vào trang khác.</translation>
@@ -1679,6 +1683,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3423858849633684918">Vui lòng chạy lại <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Mô tả những việc bạn đang làm khi tab gặp lỗi</translation>
 <translation id="3427092606871434483">Cho phép (mặc định)</translation>
+<translation id="3429275422858276529">Đánh dấu trang này để dễ dàng tìm kiếm về sau</translation>
 <translation id="3429599832623003132">$1 mục</translation>
 <translation id="3432227430032737297">Xóa tất cả cookie hiển thị</translation>
 <translation id="3432757130254800023">Gửi âm thanh và video tới màn hình trên mạng cục bộ</translation>
@@ -1802,6 +1807,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3596235046596950091">Bật dịch vụ đám mây</translation>
 <translation id="3600456501114769456">Truy cập vào tệp cục bộ trên thiết bị của bạn bị quản trị viên vô hiệu hóa.</translation>
+<translation id="3603533104205588786">Bạn có thể nhấp vào dấu sao để đánh dấu một trang</translation>
 <translation id="3603622770190368340">Nhận chứng chỉ mạng</translation>
 <translation id="3604048165392640554">Không tìm thấy kết nối di động nào. Hãy bật Chia sẻ kết nối tức thì trên thiết bị khác của bạn và thử lại. &lt;a target="_blank" href="<ph name="URL" />"&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Doanh nhân</translation>
@@ -2577,6 +2583,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4820334425169212497">Không, tôi không thấy mã</translation>
 <translation id="4821086771593057290">Mật khẩu của bạn đã thay đổi. Vui lòng thử lại bằng mật khẩu mới của bạn.</translation>
+<translation id="4821725298388681253">Đây là bản phát hành sớm. Một số tính năng, như tìm kiếm và mục nhập văn bản, vẫn chưa sử dụng được.</translation>
 <translation id="4821935166599369261">&amp;Bật cấu hình</translation>
 <translation id="4823484602432206655">Đọc và thay đổi cài đặt người dùng và thiết bị</translation>
 <translation id="4823651846660089135">Thiết bị chỉ đọc</translation>
@@ -3528,6 +3535,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="6232017090690406397">Pin</translation>
 <translation id="6232116551750539448">Đã mất kết nối với <ph name="NAME" /></translation>
 <translation id="6237816943013845465">Cho phép bạn điều chỉnh độ phân giải màn hình</translation>
+<translation id="6238923052227198598">Giữ ghi chú mới nhất trên màn hình khóa</translation>
 <translation id="6239558157302047471">Tải lại &amp;khung</translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
 <translation id="6243774244933267674">Máy chủ không khả dụng</translation>
@@ -3781,6 +3789,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 
 Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởng.</translation>
 <translation id="6581162200855843583">Liên kết Google Drive</translation>
+<translation id="6582421931165117398">Để bảo vệ thông tin cá nhân, hãy thay đổi mật khẩu của bạn ngay bây giờ. Bạn sẽ được yêu cầu đăng nhập trước khi có thể thay đổi mật khẩu của mình.</translation>
 <translation id="6583851739559471707">Đã chặn trên những trang web thường hiển thị quảng cáo xâm nhập (được đề xuất)</translation>
 <translation id="6584878029876017575">Ký Trọn đời của Microsoft</translation>
 <translation id="6585234750898046415">Chọn hình ảnh để hiển thị cho tài khoản của bạn trên màn hình đăng nhập.</translation>
@@ -3804,6 +3813,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="6610183966322615106">Lỗi khi thêm máy in</translation>
 <translation id="6610610633807698299">Nhập URL...</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
+<translation id="6613452264606394692">Quay lại đây nhanh chóng bằng cách đánh dấu trang này</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
 <translation id="6615807189585243369">Đã sao chép <ph name="BURNT_AMOUNT" /> trong tổng số <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
@@ -4610,6 +4620,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7877451762676714207">Lỗi máy chủ không xác định. Vui lòng thử lại hoặc liên hệ với quản trị viên máy chủ.</translation>
 <translation id="7877680364634660272">Tham quan</translation>
+<translation id="7878562273885520351">Mật khẩu của bạn có thể bị xâm phạm</translation>
 <translation id="7881483672146086348">Xem tài khoản</translation>
 <translation id="7881969471599061635">Tắt phụ đề</translation>
 <translation id="7882358943899516840">Loại nhà mạng</translation>
@@ -4698,6 +4709,7 @@ Tệp Khoá: <ph name="KEY_FILE" />
 Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa để tạo phiên bản tiện ích mới của mình.</translation>
 <translation id="799923393800005025">Có thể xem</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
+<translation id="8001504501378762252">Một trang web có thể đã đánh cắp mật khẩu của bạn</translation>
 <translation id="8004582292198964060">Trình duyệt</translation>
 <translation id="8007030362289124303">Pin Yếu</translation>
 <translation id="8008356846765065031">Internet đã bị ngắt kết nối. Vui lòng kiểm tra kết nối Internet của bạn.</translation>
@@ -4933,6 +4945,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8366396658833131068">Kết nối mạng của bạn đã được khôi phục. Hãy chọn mạng khác hoặc nhấn nút 'Tiếp tục' bên dưới để khởi chạy ứng dụng kiosk của bạn.</translation>
 <translation id="8366947248864804596">Khi điện thoại của bạn được mở khóa và ở gần, chỉ cần chọn để mở khóa. Nếu không, hãy nhập mật khẩu hoặc mã PIN.</translation>
 <translation id="8368859634510605990">&amp;Mở tất cả dấu trang</translation>
+<translation id="8371695176452482769">Nói ngay bây giờ</translation>
 <translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="8373360586245335572">Cho phép tất cả các trang web hiển thị thông báo</translation>
 <translation id="8373553483208508744">Tắt tiếng tab</translation>
@@ -5104,6 +5117,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> hoặc <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Bắt buộc Tải lại Trang Này</translation>
 <translation id="8652139471850419555">Mạng ưa thích</translation>
+<translation id="8652400352452647993">Lỗi đóng gói tiện ích</translation>
 <translation id="8652487083013326477">nút radio phạm vi trang</translation>
 <translation id="8654151524613148204">Rất tiếc, tệp quá lớn để máy tính của bạn có thể xử lý.</translation>
 <translation id="8655295600908251630">Kênh</translation>

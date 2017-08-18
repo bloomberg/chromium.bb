@@ -21,7 +21,6 @@
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="1621499497873603021">ബാറ്ററി ശൂന്യമാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome ഉപകരണം</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1698760176351776263">IPv6 വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ഈ ഉപകരണം മാനേജുചെയ്യുന്നത് എന്റർപ്രൈസാണ്</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് ടോഗിൾ ചെയ്യാനുള്ള ‌കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിനുപകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
 <translation id="5207949376430453814">ടെക്‌സ്‌റ്റ് കാരറ്റ് ഹൈലൈറ്റുചെയ്യുക</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="5927132638760172455">ഒരു അജ്ഞാത റിസീവറിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
 <translation id="595202126637698455">പ്രകടനം പിന്തുടരൽ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="5958529069007801266">സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താവ്</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">തിരയൽ+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് <ph name="TAB_NAME" /> കാസ്‌റ്റുചെയ്യുന്നു</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="7067196344162293536">സ്വയമേവ തിരിക്കുക</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
 <translation id="7246339268451149667">വിരലടയാളം ഉപയോഗിച്ചുള്ള അൺലോക്കുചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കണോ?</translation>

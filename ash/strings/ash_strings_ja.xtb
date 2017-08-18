@@ -21,7 +21,6 @@
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 アドレス: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">このデバイスは会社が管理しています</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">ハイ コントラスト モードを切り替えるショートカットが変わりました。これまでの <ph name="OLD_SHORTCUT" /> キーではなく <ph name="NEW_SHORTCUT" /> キーを使用してください。</translation>
 <translation id="4918086044614829423">承諾</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5207949376430453814">テキスト カーソルをハイライト表示する</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5927132638760172455">不明な受信デバイスにキャストしています</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">元に戻す</translation>
 <translation id="595202126637698455">パフォーマンス追跡機能が有効です</translation>
 <translation id="5958529069007801266">監視対象ユーザー</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
 <translation id="7246339268451149667">指紋によるロック解除を有効にしますか？</translation>

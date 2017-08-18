@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">افزونه‌ها را غیرفعال کنید.</translation>
 <translation id="457875822857220463">ارسال</translation>
+<translation id="4582800630050655161">‏ممکن است دسترسی به حساب Google را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
 <translation id="4592951414987517459">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز مدرن، رمزگذاری شده است.</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="4690462567478992370">توقف استفاده از گواهینامه نامعتبر</translation>
+<translation id="4690954380545377795">‏ممکن است دسترسی به حساب Google را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
 <translation id="471880041731876836">برای بازدید کردن از این سایت، مجوز لازم ندارید</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />در حال اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">پرداخت شما</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4736825316280949806">‏Chromium را راه‌اندازی مجدد کنید</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">آزمایشات</translation>
 <translation id="5205222826937269299">نام ضروری است</translation>
 <translation id="5222812217790122047">رایانامه ضروری است</translation>
+<translation id="522700295135997067">ممکن است این سایت اخیراً گذرواژه‌تان را سرقت کرده باشد</translation>
+<translation id="5230733896359313003">نشانی تحویل کالا</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">‏از Chrome در محل کار استفاده می‌کنید؟ کسب و کارها می‌توانند تنظیمات Chrome را برای کارمندانشان مدیریت کنند. بیشتر بدانید</translation>
 <translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />با دنبال کردن این مراحل، نرم‌افزار را موقتاً غیرفعال کنید تا بتوانید به وب دسترسی داشته باشید. انجام این مراحل به امتیازهای سرپرستی نیاز دارد.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="5332219387342487447">روش ارسال کالا</translation>
 <translation id="5355557959165512791">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا گواهینامه آن لغو شده است. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
 <translation id="5386426401304769735">‏زنجیره گواهی این سایت حاوی یک گواهی با امضای SHA-1 است.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">مهاجمان در این سایت ممکن است تلاش کنند شما را با نصب برنامه‌هایی که به تجربه مرور شما آسیب می‌رساند، فریب دهند (مثلاً با تغییر دادن صفحه اصلی شما یا با نشان دادن آگهی‌های بیش از حد در سایت‌هایی که بازدید می‌کنید).</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
 <translation id="7682287625158474539">ارسال</translation>
+<translation id="7699293099605015246">مقاله‌ها درحال‌حاضر دردسترس نیستند</translation>
 <translation id="7701040980221191251">هیچ کدام</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">گواهی</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7793809570500803535">ممکن است صفحهٔ وب در <ph name="SITE" /> موقتاً خراب باشد یا ممکن است برای همیشه به یک آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای راستی‌آزمایی پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>
+<translation id="7802523362929240268">سایت مجاز است</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">کارت‌های نقدی و پیش‌پرداخت پذیرفته می‌شوند.</translation>
+<translation id="7878562273885520351">ممکن است گذرواژه‌تان درمعرض خطر باشد</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="79338296614623784">شماره تلفن معتبری وارد کنید</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">توسط افزونه مسدود شده است</translation>
 <translation id="9076283476770535406">این سایت ممکن است شامل محتوای مخصوص بزرگسالان باشد</translation>
 <translation id="9078964945751709336">اطلاعات بیشتری نیاز است</translation>
+<translation id="9080712759204168376">خلاصه سفارش</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
+<translation id="910908805481542201">برای برطرف کردن آن به من کمک کنید</translation>
 <translation id="9128870381267983090">اتصال به شبکه</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9137248913990643158">‏لطفاً پیش از استفاده از این برنامه، Chrome را باز کنید و به سیستم آن وارد شوید.</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{هیچ‌کدام}=1{۱ مورد}one{# مورد}other{# مورد}}</translation>
 <translation id="981121421437150478">آفلاین</translation>
 <translation id="988159990683914416">ساخت برنامه‌نویس</translation>
+<translation id="989988560359834682">ویرایش آدرس</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

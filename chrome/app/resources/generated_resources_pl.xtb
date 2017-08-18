@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Ostrzeżenie</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> z <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Nie udało się usunąć szkodliwego oprogramowania</translation>
 <translation id="1062407476771304334">Zastąp</translation>
 <translation id="1062866675591297858">Zarządzaj użytkownikami nadzorowanymi, używając <ph name="BEGIN_LINK" />Panelu użytkowników nadzorowanych<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Kontroler plików w bibliotece multimediów</translation>
@@ -450,7 +449,6 @@
     <ph name="BEGIN_BOLD" />zezwalać na dostęp do określonych witryn lub blokować go<ph name="END_BOLD" />,
     <ph name="BEGIN_BOLD" />sprawdzać<ph name="END_BOLD" />, na jakie strony wszedł użytkownik nadzorowany, oraz
     <ph name="BEGIN_BOLD" />zarządzać<ph name="END_BOLD" /> innymi ustawieniami.</translation>
-<translation id="1648797160541174252">Serwer proxy dla sieci <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Dane logowania są nieaktualne</translation>
 <translation id="164969095109328410">Urządzenie z Chrome</translation>
 <translation id="1650371550981945235">Pokaż opcje wprowadzania tekstu</translation>
@@ -2580,6 +2578,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4816492930507672669">Dopasuj do strony</translation>
 <translation id="4820334425169212497">Nie, nie widzę</translation>
 <translation id="4821086771593057290">Twoje hasło zostało zmienione. Spróbuj ponownie, podając nowe hasło.</translation>
+<translation id="4821725298388681253">To jest wczesna wersja. Niektóre funkcje, takie jak wyszukiwanie i wpisywanie tekstu, nie są jeszcze dostępne.</translation>
 <translation id="4821935166599369261">&amp;Profilowanie włączone</translation>
 <translation id="4823484602432206655">Odczyt i zmiana ustawień użytkownika oraz urządzenia</translation>
 <translation id="4823651846660089135">Urządzenie tylko do odczytu</translation>
@@ -3532,6 +3531,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6232017090690406397">Bateria</translation>
 <translation id="6232116551750539448">Połączenie z <ph name="NAME" /> zostało utracone</translation>
 <translation id="6237816943013845465">Pozwala zmienić rozdzielczość ekranu</translation>
+<translation id="6238923052227198598">Wyświetlaj najnowszą notatkę na ekranie blokady</translation>
 <translation id="6239558157302047471">Załaduj ponownie &amp;ramkę</translation>
 <translation id="6241530762627360640">Uzyskiwać dostęp do informacji o urządzeniach Bluetooth sparowanych z systemem oraz wykrywać urządzenia Bluetooth w pobliżu.</translation>
 <translation id="6243774244933267674">Serwer niedostępny</translation>
@@ -4932,6 +4932,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8366396658833131068">Łączność z siecią została przywrócona. Wybierz inną sieć lub naciśnij przycisk „Dalej” poniżej, by uruchomić aplikację w trybie kiosku.</translation>
 <translation id="8366947248864804596">Gdy Twój telefon jest odblokowany i znajduje się w pobliżu, po prostu kliknij, by odblokować urządzenie. W przeciwnym razie wpisz hasło lub kod PIN.</translation>
 <translation id="8368859634510605990">&amp;Otwórz wszystkie zakładki</translation>
+<translation id="8371695176452482769">Mów teraz</translation>
 <translation id="8372369524088641025">Błędny klucz WEP</translation>
 <translation id="8373360586245335572">Zezwalaj wszystkim witrynom na pokazywanie powiadomień</translation>
 <translation id="8373553483208508744">Wycisz karty</translation>

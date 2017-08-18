@@ -27,7 +27,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
-<translation id="1704090719919187045">Chromoting ホスト設定</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
 <translation id="1770394049404108959">アプリケーションを開けない。</translation>
@@ -117,8 +116,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3695446226812920698">詳細</translation>
 <translation id="3718805989288361841">Chrome リモート デスクトップのポリシー設定にエラーがあります。不明点はシステム管理者にお問い合わせください。</translation>
 <translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
-<translation id="3785447812627779171">Chromoting
-ホスト</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome リモート デスクトップによるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="3897092660631435901">メニュー</translation>
@@ -134,7 +131,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
 <translation id="4155497795971509630">必要なコンポーネントが見つかりません。インストールしているソフトウェアのバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START" />6 桁以上<ph name="BOLD_END" />の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
-<translation id="4156741816461781891"><ph name="EMAIL_ADDRESS" /> としてログインしています。</translation>
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
 <translation id="4227991223508142681">ユーティリティ プロビジョニングをホストします</translation>
@@ -152,8 +148,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4517233780764084060">注: すべてのキーボード ショートカットを使用できるようにするには、Chromoting を [ウィンドウとして開く] に設定してください。</translation>
 <translation id="4563926062592110512">次のクライアントが切断しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="4572065712096155137">アクセス</translation>
-<translation id="4573676252416618192">Chrome リモート
-デスクトップ ホスト</translation>
+<translation id="4592037108270173918">モバイル ネットワーク経由でデバイスに接続すると、データ通信料が発生する可能性があります。続行しますか？</translation>
 <translation id="4619978527973181021">同意してインストール</translation>
 <translation id="4635770493235256822">リモートの端末</translation>
 <translation id="4660011489602794167">キーボードを表示</translation>
@@ -180,6 +175,12 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5156271271724754543">両方のボックスに同じ PIN を入力してください。</translation>
 <translation id="5170982930780719864">ホスト ID が無効です。</translation>
 <translation id="518094545883702183">この情報は、報告していただいた問題を診断する目的にのみ使用され、調査担当者のみに利用可能となります。この情報が 30 日間を過ぎて保持されることはありません。</translation>
+<translation id="5196958630269420102">iOS 端末からパソコンに安全にアクセスできます。
+
+• それぞれのパソコンで、Chrome リモート デスクトップ アプリを使ってリモート アクセスを設定します。このアプリは Chrome ウェブストア（https://chrome.google.com/remotedesktop）からインストールできます。
+• iOS 端末でアプリを開き、オンラインになっているパソコンをタップしてそのパソコンに接続します。
+
+詳しくは、Google プライバシー ポリシー（http://goo.gl/SyrVzj）と Chrome プライバシー ポリシー（http://goo.gl/0uXE5d）をご覧ください。</translation>
 <translation id="5204575267916639804">よくある質問</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
@@ -205,7 +206,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5843054235973879827">この操作が安全な理由</translation>
 <translation id="5859141382851488196">新しいウィンドウ...</translation>
 <translation id="5885438903806970186">オンラインです。</translation>
-<translation id="6001953797859482435">Chrome リモート デスクトップ ホストの設定</translation>
 <translation id="6011539954251327702">Chromoting を使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chromoting アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
 <translation id="6033507038939587647">キーボード オプション</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -235,6 +235,11 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6570205395680337606">アプリケーションをリセットします。保存されていない作業は失われます。</translation>
 <translation id="6572345186230665992">Mac 版（OS X Mavericks 10.9 以上）</translation>
 <translation id="6583902294974160967">サポート</translation>
+<translation id="6598484667010442494">Chrome リモート デスクトップ
+リモート デスクトップ
+リモート PC
+リモート パソコン
+リモート アクセス</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del を送信</translation>
 <translation id="6668065415969892472">PIN を更新しました。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
@@ -271,6 +276,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
+<translation id="7678209621226490279">左に固定</translation>
 <translation id="7693372326588366043">ホストのリストを更新します</translation>
 <translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
 <translation id="7810127880729796595">統計情報を表示（接続状態: <ph name="QUALITY" />）</translation>
@@ -278,6 +284,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7868137160098754906">リモート パソコンの PIN を入力してください。</translation>
 <translation id="7869445566579231750">このアプリケーションを実行する権限がありません。</translation>
 <translation id="7895403300744144251">リモート パソコンのセキュリティ ポリシーで、ご使用のアカウントからの接続が許可されていません。</translation>
+<translation id="7936528439960309876">右に固定</translation>
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
 <translation id="7981525049612125370">リモート セッションが時間切れとなりました。</translation>

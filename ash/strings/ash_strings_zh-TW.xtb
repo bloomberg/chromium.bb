@@ -21,7 +21,6 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome 裝置</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">切換高對比模式的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5170568018924773124">在資料夾中顯示</translation>
 <translation id="5207949376430453814">醒目顯示文字插入點</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5927132638760172455">正在投放至不明接收端</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">還原</translation>
 <translation id="595202126637698455">效能追蹤已啟用</translation>
 <translation id="5958529069007801266">受監管的使用者</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="7034339000180558234">正在將「<ph name="TAB_NAME" />」畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7246339268451149667">要啟用指紋解鎖功能嗎？</translation>

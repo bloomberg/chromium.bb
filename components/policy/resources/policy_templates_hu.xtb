@@ -31,6 +31,7 @@
           Ha a beállítás ki van kapcsolva vagy nincs beállítva, a távoli támogatás gazdagépe a felhasználó kontextusában fut, és a távoli felhasználók nem tudnak interakcióba lépni a kiemelt ablakokkal az asztali számítógépen.</translation>
 <translation id="1096105751829466145">Alapértelmezett keresési szolgáltató</translation>
 <translation id="1117535567637097036">Az ezen a házirenden keresztül megadott protokollkezelők az androidos „intent” elemek kezelésekor használaton kívül maradnak.</translation>
+<translation id="1122282995569868661">A(z) <ph name="PRODUCT_NAME" /> eszköztárának ikonját jeleníti meg</translation>
 <translation id="1128903365609589950">Konfigurálja azt a könyvtárat, amelyet a <ph name="PRODUCT_NAME" /> a gyorsítótárazott fájlok lemezen történő tárolására fog használni.
 
       Ha beállítja ezt a házirendet, a <ph name="PRODUCT_NAME" /> a megadott könyvtárat fogja használni, függetlenül attól, hogy a felhasználó megadta-e a „--disk-cache-dir” jelölőt. Az adatvesztés és más váratlan hibák elkerülése érdekében a házirendben ne állítsa be meghajtó gyökérkönyvtárát vagy más célokra használt könyvtárat, mert az itt lévő tartalmakat a <ph name="PRODUCT_NAME" /> kezeli.
@@ -53,6 +54,7 @@
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
       A legkisebb megengedett gyakoriság hatvan másodperc.</translation>
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
+<translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
 <translation id="1291880496936992484">Figyelem: az RC4 teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 52-es verziója után (2016 szeptembere körül), és ez a házirend onnantól kezdve nem lesz használható.
 
@@ -260,6 +262,7 @@
       Ha a házirend nincs beállítva, akkor az alapértelmezett érték 0 fok,
       amelyet a felhasználó szabadon módosíthat. Ebben az esetben
       a böngésző nem alkalmazza az alapértelmezett értéket újraindításkor.</translation>
+<translation id="2156132677421487971">Beállítja a(z) <ph name="PRODUCT_NAME" /> termékre vonatkozó házirendeket. Ez a funkció lehetővé teszi a felhasználók számára, hogy a böngészőből továbbítsák a lapok, a webhelyek vagy az asztal tartalmát a távoli kijelzők és hangrendszerek felé.</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
 <translation id="2176565653304920879">Ha be van állítva ez a házirend, akkor az automatikus időzóna-érzékelési folyamat az alábbi módok valamelyikén történik a beállítás értékétől függően:
@@ -552,6 +555,7 @@
       A házirend beállításától függetlenül a felhasználók nem tudják módosítani a WPAD-optimalizálás beállítását.</translation>
 <translation id="3072045631333522102">A használandó képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
 <translation id="3072847235228302527">Általános Szerződési Feltételek beállítása egy eszközszinten helyi fiók számára</translation>
+<translation id="3086995894968271156">A Cast-erősítő konfigurálása itt: <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Engedélyezett bővítmények listája</translation>
 <translation id="3101501961102569744">Válassza ki, hogyan adja meg a proxyszerver beállításait</translation>
 <translation id="3117676313396757089">Figyelem: A DHE teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 57-es verziója után (2017 márciusa körül), és ez a házirend onnantól kezdve nem lesz használható.
@@ -914,6 +918,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke 0, a rendszer az alapértelmezett méretet használja a gyorsítótárhoz, és ezt a felhasználó nem tudja megváltoztatni.
 
       Ha a házirend nincs beállítva, a rendszer az alapértelmezett méretet használja, és azt a felhasználó felülbírálhatja a „--media-cache-size” jelölővel.</translation>
+<translation id="4508686775017063528">Ha a házirend értéke igaz, vagy ha a házirend nincs beállítva, akkor a rendszer engedélyezi a(z) <ph name="PRODUCT_NAME" /> használatát, amelyet a felhasználók az alkalmazás menüjéből, az adott oldal helyi menüiből, a Cast-kompatibilis webhelyeken található médiavezérlőkből, vagy ha megjelenik, a Cast-eszköztár ikonjából indíthatnak majd el.
+
+          Ha a házirend értéke hamis, akkor a rendszer letiltja a(z) <ph name="PRODUCT_NAME" /> használatát.</translation>
 <translation id="4518251772179446575">Kérdezzen rá minden alkalommal, amikor egy webhely követni szeretné a felhasználók fizikai helyzetét</translation>
 <translation id="4519046672992331730">Engedélyezi a keresési javaslatokat a(z) <ph name="PRODUCT_NAME" /> cím- és keresősávjában, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
 
@@ -1018,6 +1025,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="489803897780524242">A keresési kifejezések elhelyezését szabályozó paraméter az alapértelmezett keresési szolgáltató esetében</translation>
 <translation id="4899708173828500852">Biztonságos böngészés engedélyezése</translation>
 <translation id="4906194810004762807">Frissítési arány az eszköz irányelveihez</translation>
+<translation id="494613465159630803">Cast-erősítő</translation>
 <translation id="4962262530309732070">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a(z) <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
 
       Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_NAME" /> nem teszi lehetővé új profilok létrehozását a felhasználókezelőből.</translation>
@@ -1307,6 +1315,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
 <translation id="6157537876488211233">Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája</translation>
 <translation id="6158324314836466367">Vállalati internetes áruház neve (megszűnt)</translation>
+<translation id="6161405879872578475">Engedélyezi a következőt: <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Figyelmeztetés: Az SSLv3 támogatása teljesen megszűnik a <ph name="PRODUCT_NAME" /> 43-as verziója után (2015 júliusa körül), és egyúttal ez a házirend is eltűnik a böngészőből.
 
       Ha nem állítja be ezt a házirendet, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti legkisebb verziót fogja használni, amely a <ph name="PRODUCT_NAME" /> 39-es verziója esetében az SSLv3, az újabb verziókban pedig a TLS 1.0.
@@ -1766,6 +1775,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
+<translation id="7976157349247117979">A(z) <ph name="PRODUCT_NAME" /> céljának neve</translation>
 <translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>

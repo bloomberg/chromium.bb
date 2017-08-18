@@ -6,6 +6,7 @@
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
+<translation id="1105960400813249514">屏幕截图</translation>
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1137305377394488060">过去 1 小时</translation>
@@ -123,6 +124,7 @@
 <translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
+<translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>

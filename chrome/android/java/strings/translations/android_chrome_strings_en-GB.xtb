@@ -124,6 +124,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2146738493024040262">Open Instant App</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2154484045852737596">Edit card</translation>
+<translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
@@ -628,7 +629,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7144878232160441200">Retry</translation>
-<translation id="7149146387429219109">Media playing in an incognito tab</translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>

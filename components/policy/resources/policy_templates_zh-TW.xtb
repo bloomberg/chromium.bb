@@ -31,6 +31,7 @@
           如果停用或未指定這項設定，遠端協助主機則會在使用者的作業環境中執行，遠端使用者將無法在桌面上操控權限較高的視窗。</translation>
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="1117535567637097036">處理 Android 調用請求時，系統不會使用透過這項政策設定的通訊協定處理常式。</translation>
+<translation id="1122282995569868661">顯示「<ph name="PRODUCT_NAME" />」工具列圖示</translation>
 <translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
 
       如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。請勿將這項政策設為磁碟區的根目錄或用於其他用途的目錄 (因為 <ph name="PRODUCT_NAME" /> 會管理相關內容)，以免遺失資料或發生其他未預期的錯誤。
@@ -53,6 +54,7 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
+<translation id="123081309365616809">允許將內容投放至裝置</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
@@ -261,6 +263,7 @@
       如果未設定這項政策，則預設值為 0 度 (使用者可予以變更)。
       在這種情況下，重新啟動時就不會重新套用
       預設值。</translation>
+<translation id="2156132677421487971">設定「<ph name="PRODUCT_NAME" />」的各項政策。這項功能可讓使用者透過瀏覽器將分頁、網站或桌面內容傳送至遠端的螢幕和音響設備。</translation>
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
 <translation id="2170233653554726857">啟用 WPAD 最佳化功能</translation>
 <translation id="2176565653304920879">設定這項政策後，系統會根據設定值採用下列其中一種方式執行自動偵測時區流程：
@@ -553,6 +556,7 @@
       無論系統是否設定這項政策或這項政策的設定方式為何，使用者一律無法變更 WPAD 最佳化設定。</translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
 <translation id="3072847235228302527">為裝置本機帳戶設定《服務條款》</translation>
+<translation id="3086995894968271156">設定「<ph name="PRODUCT_NAME" />」的 Cast 接收器</translation>
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
 <translation id="3101501961102569744">選擇如何指定 Proxy 伺服器設定</translation>
 <translation id="3117676313396757089">警告：自 <ph name="PRODUCT_NAME" /> 57 版 (將於 2017 年 3 月左右推出) 起，系統將全面移除 DHE，屆時這項政策將停止運作。
@@ -919,6 +923,9 @@
       如果這項政策的值為 0，系統會使用預設快取大小，但使用者無法變更。
 
       如果未設定這項政策，系統會使用預設大小，使用者則可使用 -media-cache-size 參數予以覆寫。</translation>
+<translation id="4508686775017063528">如果這項政策設為 True 或未設定，系統將啟用「<ph name="PRODUCT_NAME" />」，使用者則可從應用程式選單、頁面內容選單以及 Cast 工具列圖示 (假設不是隱藏狀態) 啟動這項功能，或是在支援投放功能的網站上使用媒體控制項啟動這項功能。
+
+          如果這項政策設為 False，「<ph name="PRODUCT_NAME" />」會遭到停用。</translation>
 <translation id="4518251772179446575">詢問網站何時要追蹤使用者的實際位置</translation>
 <translation id="4519046672992331730">啟用 <ph name="PRODUCT_NAME" /> 網址列的搜尋建議，並且禁止使用者變更這項設定。
 
@@ -1023,6 +1030,7 @@
 <translation id="489803897780524242">可使用這個參數來決定是否要為預設搜尋服務商提供替代搜尋字詞。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
+<translation id="494613465159630803">Cast 接收器</translation>
 <translation id="4962262530309732070">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法讓使用者從使用者管理工具建立新設定檔。</translation>
@@ -1311,6 +1319,7 @@
 <translation id="6155936611791017817">設定大型游標在登入畫面的預設狀態</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="6158324314836466367">企業線上應用程式商店名稱 (已不適用)</translation>
+<translation id="6161405879872578475">啟用「<ph name="PRODUCT_NAME" />」</translation>
 <translation id="6167074305866468481">警告：我們將自 <ph name="PRODUCT_NAME" /> 43 版 (2015 年 7 月左右推出) 起完全停止支援 SSLv3，而且同時移除這項政策。
 
       如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本；在 <ph name="PRODUCT_NAME" /> 39 中為 SSLv3，在之後的版本中則為 TLS 1.0)。
@@ -1768,6 +1777,7 @@
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
+<translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>

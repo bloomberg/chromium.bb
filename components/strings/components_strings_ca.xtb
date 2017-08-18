@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Desactiveu les extensions</translation>
 <translation id="457875822857220463">Entrega</translation>
+<translation id="4582800630050655161">Podries perdre l'accés al compte de Google o tenir problemes de suplantació d'identitat. Chromium et recomana que canviïs la contrasenya ara.</translation>
 <translation id="4587425331216688090">Voleu suprimir l'adreça de Chrome?</translation>
 <translation id="4592951414987517459">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge modern.</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
+<translation id="4690954380545377795">Podries perdre l'accés al compte de Google o o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">La connexió s'ha interromput</translation>
 <translation id="471880041731876836">No tens permís per visitar aquest lloc web</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar el Diagnòstic de xarxa de Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">El teu pagament</translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4736825316280949806">Reinicia Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
 <translation id="5222812217790122047">El correu electrònic és obligatori</translation>
+<translation id="522700295135997067">És possible que aquest lloc web t'acabi de robar la contrasenya</translation>
+<translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5251803541071282808">Núvol</translation>
 <translation id="5277279256032773186">Fas servir Chrome a la feina? Les empreses poden gestionar la configuració de Chrome dels empleats. Més informació</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Segueix aquests passos per desactivar temporalment el programari perquè puguis accedir al web. Per fer-ho, necessitaràs privilegis d'administrador.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="5332219387342487447">Mètode d'enviament</translation>
 <translation id="5355557959165512791">En aquest moment no pots visitar <ph name="SITE" /> perquè se li ha revocat el certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="536296301121032821">No s'ha pogut emmagatzemar la configuració de la política</translation>
 <translation id="5386426401304769735">La cadena de certificats d'aquest lloc conté un certificat que s'ha signat amb SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">És possible que els atacants d'aquest lloc intentin enganyar-te perquè instal·lis programes que perjudiquen la teva navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visites).</translation>
 <translation id="7674629440242451245">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal per a desenvolupadors a la pàgina chrome.com/dev.</translation>
 <translation id="7682287625158474539">Enviament</translation>
+<translation id="7699293099605015246">En aquests moments no hi ha articles disponibles</translation>
 <translation id="7701040980221191251">Cap</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continua per accedir a <ph name="SITE" /> (no segur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Afegeix</translation>
 <translation id="7793809570500803535">És possible que la pàgina web de <ph name="SITE" /> estigui temporalment inactiva o que s'hagi desplaçat permanentment a una adreça web nova.</translation>
 <translation id="7800304661137206267">La connexió està encriptada mitjançant <ph name="CIPHER" />, amb <ph name="MAC" /> per a l'autenticació de missatges i amb <ph name="KX" /> com a mecanisme d'intercanvi clau.</translation>
+<translation id="7802523362929240268">El lloc web és legítim</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">S'accepten targetes de dèbit i de prepagament.</translation>
+<translation id="7878562273885520351">La teva contrasenya pot estar en perill</translation>
 <translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
 <translation id="79338296614623784">Introdueix un número de telèfon vàlid</translation>
 <translation id="7935318582918952113">Destil·lador DOM</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">Bloquejat per una extensió</translation>
 <translation id="9076283476770535406">Pot incloure contingut per a adults</translation>
 <translation id="9078964945751709336">Necessitem més informació</translation>
+<translation id="9080712759204168376">Resum de la comanda</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
+<translation id="910908805481542201">Ajuda'm a solucionar-ho</translation>
 <translation id="9128870381267983090">Connecteu-vos a la xarxa</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9137248913990643158">Obre Chrome i inicia-hi la sessió abans d'utilitzar aquesta aplicació.</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Cap}=1{1 element}other{# elements}}</translation>
 <translation id="981121421437150478">Sense connexió</translation>
 <translation id="988159990683914416">Muntatge del desenvolupador</translation>
+<translation id="989988560359834682">Edita l'adreça</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

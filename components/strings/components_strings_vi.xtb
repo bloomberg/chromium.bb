@@ -8,7 +8,7 @@
 <translation id="1038842779957582377">tên không biết</translation>
 <translation id="1050038467049342496">Đóng các ứng dụng khác</translation>
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
-<translation id="10614374240317010">Không bao giờ được lưu</translation>
+<translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1066396345355680611">Bạn có thể mất quyền truy cập vào nội dung được bảo vệ của <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
 <translation id="1074497978438210769">Không bảo mật</translation>
@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Thử tắt tiện ích.</translation>
 <translation id="457875822857220463">Giao hàng</translation>
+<translation id="4582800630050655161">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
 <translation id="4592951414987517459">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 hiện đại.</translation>
 <translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có lỗi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="4690462567478992370">Dừng sử dụng chứng chỉ không hợp lệ</translation>
+<translation id="4690954380545377795">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kết nối của bạn bị gián đoạn</translation>
 <translation id="471880041731876836">Bạn không có quyền để truy cập trang web này</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng của Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Thanh toán của bạn</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4736825316280949806">Khởi động lại Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Thử nghiệm</translation>
 <translation id="5205222826937269299">Cần có tên</translation>
 <translation id="5222812217790122047">Cần có email</translation>
+<translation id="522700295135997067">Trang web này có thể vừa đánh cắp mật khẩu của bạn</translation>
+<translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5277279256032773186">Sử dụng Chrome ở cơ quan? Các doanh nghiệp có thể quản lý cài đặt Chrome cho nhân viên của họ. Tìm hiểu thêm</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Hãy làm theo các bước sau để tạm thời vô hiệu hóa phần mềm nhằm giúp bạn có thể truy cập vào web. Bạn cần phải có đặc quyền của quản trị viên.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
+<translation id="5332219387342487447">Phương thức giao hàng</translation>
 <translation id="5355557959165512791">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ vì chứng chỉ của trang này đã bị thu hồi. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">Những kẻ tấn công trên trang web này có thể đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ của bạn hoặc hiển thị thêm quảng cáo trên các trang web bạn truy cập).</translation>
 <translation id="7674629440242451245">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh nhà phát triển của chúng tôi tại chrome.com/dev.</translation>
 <translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
+<translation id="7699293099605015246">Không có bài viết nào ngay lúc này</translation>
 <translation id="7701040980221191251">Không</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tiếp tục truy cập <ph name="SITE" /> (không an toàn)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Chứng chỉ</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="7793809570500803535">Trang web tại <ph name="SITE" /> có thể tạm thời không hoạt động hay được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="7800304661137206267">Kết nối được mã hóa bằng <ph name="CIPHER" />, với <ph name="MAC" /> để xác thực thư và <ph name="KX" /> là cơ chế trao đổi chính.</translation>
+<translation id="7802523362929240268">Trang web hợp pháp</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ internet hoặc các trang web bạn truy cập.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Thẻ ghi nợ và thẻ trả trước được chấp nhận.</translation>
+<translation id="7878562273885520351">Mật khẩu của bạn có thể bị xâm phạm</translation>
 <translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
 <translation id="79338296614623784">Nhập số điện thoại hợp lệ</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">Bị một tiện ích chặn</translation>
 <translation id="9076283476770535406">Trang web có thể có nội dung người lớn</translation>
 <translation id="9078964945751709336">Yêu cầu thêm thông tin</translation>
+<translation id="9080712759204168376">Tóm tắt đơn hàng</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
+<translation id="910908805481542201">Giúp tôi khắc phục vấn đề này</translation>
 <translation id="9128870381267983090">Kết nối đến mạng</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9137248913990643158">Vui lòng khởi động và đăng nhập vào Chrome trước khi sử dụng ứng dụng này.</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Không có}=1{1 mục}other{# mục}}</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
+<translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">περιοχή</translation>
 <translation id="1591562245178063882">Αυτόν το μήνα</translation>
 <translation id="1637811476055996098">Επιλογή αρχείων</translation>
-<translation id="167575180612809735">ένδειξη "απασχολημένος"</translation>
 <translation id="1729654308190250600">Καταχωρίστε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="1758486001363313524">Άλλες…</translation>
 <translation id="1806710327868736751">παράθυρο διαλόγου ειδοποιήσεων</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">Π.Μ./Μ.Μ.</translation>
 <translation id="1832974991323546415">αναπαραγωγή σε απομακρυσμένη συσκευή</translation>
 <translation id="1854180393107901205">Διακοπή μετάδοσης</translation>
-<translation id="1880518467580572141">διάρθρωση</translation>
 <translation id="1921819250265091946">ηη</translation>
 <translation id="1930711995431081526">κατάσταση</translation>
 <translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME" /> ή προγενέστερη.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Σίγαση</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="588258955323874662">Πλήρης οθόνη</translation>
+<translation id="5888666972993069672">Μετάδοση τώρα στη συσκευή <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5966707198760109579">Εβδομάδα</translation>
 <translation id="5987525920412732405">κουμπί αυξομείωσης</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="668171684555832681">Άλλο...</translation>
 <translation id="6692633176391053278">stepper</translation>
-<translation id="6739588121953935928">χάρακας</translation>
 <translation id="6755330956360078551">επεξήγηση εργαλείου</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
 <translation id="6820355525329141109">Δεν είναι δυνατή η φόρτωση της προσθήκης.</translation>

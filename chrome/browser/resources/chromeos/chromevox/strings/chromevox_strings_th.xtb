@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">บรรทัดถัดไป</translation>
 <translation id="3153024374267644603">เปิดเสียงพูด</translation>
+<translation id="3153928844647607688">ตาราง <ph name="TABLENAME" /> ขนาด <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">ไม่มีปุ่มก่อนหน้า</translation>
 <translation id="3163593631834463955">ส่วนหัวของคอลัมน์ว่างเปล่า</translation>
 <translation id="316542773973815724">การนำทาง</translation>
@@ -403,6 +404,7 @@
 <translation id="4597532268155981612">ฟอร์ม</translation>
 <translation id="4597896406374528575">เมษายน</translation>
 <translation id="460018603901637538">เปลี่ยนรูปแบบการแสดงผลเป็นการแสดงคู่กัน</translation>
+<translation id="4601367666219428522">ตร.<ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">เพิกเฉยการกดแป้นครั้งถัดไป</translation>
 <translation id="461613135510474570">ประโยค</translation>
 <translation id="4647836961514597010">ตัวเลือกสี</translation>
@@ -780,6 +782,7 @@
 <translation id="820417203470636242">เซลล์ว่างเปล่า</translation>
 <translation id="8215202828671303819">เลือกหลายรายการ</translation>
 <translation id="8224171046658870249">สลับไปยัง ChromeVox Next แล้ว</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ข้ามไปยังรายการที่สามารถโฟกัสก่อนหน้า</translation>
 <translation id="8278417001922463147">ไม่มีบทความก่อนหน้า</translation>
 <translation id="8283603667300770666">ช่องฟอร์มถัดไป</translation>

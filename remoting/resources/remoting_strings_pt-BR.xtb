@@ -27,7 +27,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1643640058022401035">Abandonar esta página encerrará sua sessão de Chromoting.</translation>
 <translation id="1654128982815600832">Permitindo conexões remotas a este computador...</translation>
 <translation id="170207782578677537">Falha ao registrar este computador.</translation>
-<translation id="1704090719919187045">Preferências do host do Chromoting</translation>
 <translation id="174018511426417793">Você não tem computadores cadastrados. Para ativar conexões remotas a um computador, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="1770394049404108959">Não consigo abrir o aplicativo.</translation>
@@ -117,8 +116,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="3695446226812920698">Saiba como</translation>
 <translation id="3718805989288361841">Ocorreu um erro nas configurações de políticas da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para receber ajuda.</translation>
 <translation id="3776024066357219166">Sua sessão na Área de trabalho remota do Google Chrome foi encerrada.</translation>
-<translation id="3785447812627779171">Host do
-Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme sua conta e seu PIN abaixo para permitir acesso pela Área de trabalho remota do Google Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -134,7 +131,6 @@ Chromoting</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, selecione um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário para estabelecer conexão a partir de outro local.</translation>
-<translation id="4156741816461781891">Conectado como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de aprovisionamento de host</translation>
@@ -152,8 +148,7 @@ Chromoting</translation>
 <translation id="4517233780764084060">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar o Chromoting para "Abrir como janela".</translation>
 <translation id="4563926062592110512">Cliente desconectado: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Acessar</translation>
-<translation id="4573676252416618192">Host da Área de trabalho
-remota do Google Chrome</translation>
+<translation id="4592037108270173918">Cobranças de dados podem ser aplicadas durante a conexão a um dispositivo pela rede móvel. Deseja continuar?</translation>
 <translation id="4619978527973181021">Aceitar e instalar</translation>
 <translation id="4635770493235256822">Dispositivos remotos</translation>
 <translation id="4660011489602794167">Mostrar teclado</translation>
@@ -180,6 +175,12 @@ remota do Google Chrome</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>
+<translation id="5196958630269420102">Acesse com segurança seus computadores no seu dispositivo iOS.
+
+• Em cada um dos seus computadores, configure o acesso remoto usando o aplicativo Área de trabalho remota do Google Chrome da Chrome Web Store: https://chrome.google.com/remotedesktop
+• No seu dispositivo iOS, abra o aplicativo e toque em qualquer um dos seus computadores on-line para se conectar a ele.
+
+Para ver mais informações sobre privacidade, consulte a Política de Privacidade do Google (http://goo.gl/SyrVzj) e a Política de Privacidade do Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Perguntas frequentes</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
@@ -205,7 +206,6 @@ remota do Google Chrome</translation>
 <translation id="5843054235973879827">Por que isto é seguro?</translation>
 <translation id="5859141382851488196">Nova janela...</translation>
 <translation id="5885438903806970186">On-line.</translation>
-<translation id="6001953797859482435">Preferências do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="6011539954251327702">O Chromoting permite compartilhar seu computador pela Web de forma segura. Ambos os usuários devem estar executando o aplicativo Chromoting, disponível em <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opções do teclado</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -235,6 +235,11 @@ remota do Google Chrome</translation>
 <translation id="6570205395680337606">Reinicie o aplicativo. Você perderá qualquer trabalho que não tenha sido salvo.</translation>
 <translation id="6572345186230665992">Para Mac (OS X Mavericks 10.9 e versões superiores)</translation>
 <translation id="6583902294974160967">Suporte</translation>
+<translation id="6598484667010442494">Área de trabalho remota do Google Chrome
+Área de trabalho remota
+PC remoto
+Computador remoto
+Acesso remoto</translation>
 <translation id="6612717000975622067">Enviar Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">O PIN foi atualizado.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
@@ -271,6 +276,7 @@ remota do Google Chrome</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="7672203038394118626">As conexões remotas deste computador foram desativadas.</translation>
+<translation id="7678209621226490279">Encaixar à esquerda</translation>
 <translation id="7693372326588366043">Atualiza a lista de hosts</translation>
 <translation id="7782471917492991422">Verifique as configurações de gerenciamento de energia de seu computador para garantir que ele não esteja configurado para entrar em modo de espera quando estiver inativo.</translation>
 <translation id="7810127880729796595">Mostrar estatísticas (conexão: <ph name="QUALITY" />)</translation>
@@ -278,6 +284,7 @@ remota do Google Chrome</translation>
 <translation id="7868137160098754906">Digite seu PIN do computador remoto.</translation>
 <translation id="7869445566579231750">Você não tem permissão para executar este aplicativo.</translation>
 <translation id="7895403300744144251">As políticas de segurança no computador remoto não permitem conexões a partir da sua conta.</translation>
+<translation id="7936528439960309876">Encaixar à direita</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="7970576581263377361">Falha na autenticação. Faça login novamente no Chromium.</translation>
 <translation id="7981525049612125370">A sessão remota expirou.</translation>

@@ -124,6 +124,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2146738493024040262">Avaa Instant-sovellus</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2154484045852737596">Muokkaa korttia</translation>
+<translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2156074688469523661">Jäljellä olevat sivustot (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Suojaa itseäsi ja laitettasi vaarallisilta sivustoilta</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
@@ -628,7 +629,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7128222689758636196">Salli nykyiselle hakukoneelle</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7144878232160441200">Yritä uudelleen</translation>
-<translation id="7149146387429219109">Mediaa toistetaan incognito-välilehdellä.</translation>
 <translation id="7149893636342594995">Viimeiset 24 tuntia</translation>
 <translation id="7177466738963138057">Voit muuttaa tätä myöhemmin Asetuksista.</translation>
 <translation id="7180611975245234373">Päivitä</translation>

@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">ลองปิดใช้ส่วนขยาย</translation>
 <translation id="457875822857220463">การจัดส่ง</translation>
+<translation id="4582800630050655161">คุณอาจไม่สามารถเข้าถึงบัญชี Google หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="4587425331216688090">นำที่อยู่ออกจาก Chrome ไหม</translation>
 <translation id="4592951414987517459">มีการเข้ารหัสการเชื่อมต่อของคุณกับ <ph name="DOMAIN" /> ด้วยชุดการเข้ารหัสที่ทันสมัย</translation>
 <translation id="4594403342090139922">&amp;เลิกทำการนำออก</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมีข้อผิดพลาด โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="4690462567478992370">หยุดใช้ใบรับรองที่ไม่ถูกต้อง</translation>
+<translation id="4690954380545377795">คุณอาจไม่สามารถเข้าถึงบัญชี Google หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">การเชื่อมต่อของคุณขัดข้อง</translation>
 <translation id="471880041731876836">คุณไม่มีสิทธิ์เข้าชมไซต์นี้</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />เรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">การชำระเงินของคุณ</translation>
 <translation id="4726672564094551039">โหลดนโยบายซ้ำ</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
 <translation id="4736825316280949806">รีสตาร์ท Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">การทดลอง</translation>
 <translation id="5205222826937269299">ต้องระบุชื่อ</translation>
 <translation id="5222812217790122047">ต้องระบุอีเมล</translation>
+<translation id="522700295135997067">ไซต์นี้อาจขโมยรหัสผ่านของคุณแล้ว</translation>
+<translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5277279256032773186">หากใช้ Chrome ที่ทำงาน ธุรกิจสามารถจัดการการตั้งค่า Chrome ให้พนักงานของตนได้ เรียนรู้เพิ่มเติม</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />ทำตามขั้นตอนการปิดใช้ซอฟต์แวร์ชั่วคราวต่อไปนี้เพื่อให้เข้าสู่เว็บได้ คุณจะต้องมีสิทธิ์ของผู้ดูแลระบบ<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
+<translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5355557959165512791">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากใบรับรองถูกเพิกถอนแล้ว โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
 <translation id="5386426401304769735">กลุ่มใบรับรองสำหรับเว็บไซต์นี้มีใบรับรองที่ลงนามโดยใช้ SHA-1</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">ผู้โจมตีเว็บไซต์นี้อาจพยายามหลอกล่อให้คุณติดตั้งโปรแกรมที่เป็นอันตรายต่อประสบการณ์การท่องเว็บของคุณ (ตัวอย่างเช่น โดยการเปลี่ยนแปลงหน้าแรกหรือแสดงโฆษณาเพิ่มเติมในเว็บไซต์ที่คุณเข้าชม)</translation>
 <translation id="7674629440242451245">หากสนใจในฟีเจอร์ใหม่ๆ สุดเจ๋งของ Chrome ลองใช้เวอร์ชันที่กำลังพัฒนาของเราที่ chrome.com/dev</translation>
 <translation id="7682287625158474539">จัดส่ง</translation>
+<translation id="7699293099605015246">บทความไม่พร้อมใช้งานในขณะนี้</translation>
 <translation id="7701040980221191251">ไม่มี</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ไปยัง <ph name="SITE" /> (ไม่ปลอดภัย)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">ใบรับรอง</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="7793809570500803535">หน้าเว็บที่ <ph name="SITE" /> อาจหยุดให้บริการชั่วคราวหรืออาจถูกย้ายไปยังที่อยู่เว็บใหม่อย่างถาวร</translation>
 <translation id="7800304661137206267">การเชื่อมต่อถูกเข้ารหัสโดยใช้ <ph name="CIPHER" /> โดยใช้ <ph name="MAC" /> สำหรับตรวจสอบสิทธิ์ข้อความและ <ph name="KX" /> เป็นกลไลการแลกเปลี่ยนกุญแจ</translation>
+<translation id="7802523362929240268">ไซต์ถูกต้อง</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">รับบัตรเดบิตและบัตรเติมเงิน</translation>
+<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยแล้ว</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
 <translation id="79338296614623784">ป้อนหมายเลขโทรศัพท์ที่ถูกต้อง</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">ถูกบล็อกโดยส่วนขยาย</translation>
 <translation id="9076283476770535406">เว็บไซต์นี้อาจมีเนื้อหาสำหรับผู้ใหญ่</translation>
 <translation id="9078964945751709336">ต้องระบุข้อมูลเพิ่มเติม</translation>
+<translation id="9080712759204168376">สรุปการสั่งซื้อ</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
+<translation id="910908805481542201">ช่วยฉันแก้ไขปัญหานี้</translation>
 <translation id="9128870381267983090">เชื่อมต่อกับเครือข่าย</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9137248913990643158">โปรดเปิดและลงชื่อเข้าใช้ Chrome ก่อนใช้แอปนี้</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{ไม่มี}=1{1 รายการ}other{# รายการ}}</translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
 <translation id="988159990683914416">รุ่นนักพัฒนา</translation>
+<translation id="989988560359834682">แก้ไขที่อยู่</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

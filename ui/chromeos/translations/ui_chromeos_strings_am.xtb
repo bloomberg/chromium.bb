@@ -22,6 +22,7 @@
 <translation id="158809615184981282">ፋሮኛ ቁልፍ ሰሌዳ</translation>
 <translation id="1646136617204068573">የሃንጋሪኛ ሰሌዳ ቁልፍ</translation>
 <translation id="164729547906544836">የታሚል ቁልፍ ሰሌዳ (itrans)</translation>
+<translation id="164969095109328410">የChrome መሣሪያ</translation>
 <translation id="1829129547161959350">ፔንግዊን</translation>
 <translation id="184633654410729720">የታይ ቁልፍ ሰሌዳ (ከድማኒ)</translation>
 <translation id="1921986354447415460">የቱርክኛ-F የቁልፍ ሰሌዳ</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">የካዛክ ቁልፍሰሌዳ</translation>
 <translation id="2384596874640104496">የሲንሃላ ቁልፍ ሰሌዳ</translation>
 <translation id="2464079411014186876">አይስክሬም</translation>
+<translation id="2468402215065996499">ታማጎቺ</translation>
 <translation id="247772113373397749">የካናዳ ባለብዙ ቋንቋ ቁልፍ ሰሌዳ</translation>
 <translation id="2494837236724268445">የጉጃራቲ ቁልፍ ሰሌዳ (ፎነቲክ)</translation>
 <translation id="2529133382850673012">የአሜሪካ ቁልፍ ሰሌዳ</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">እንቁራሪት</translation>
 <translation id="2649120831653069427">የቀስተዳመና አሳ</translation>
 <translation id="2735698359135166290">የሮማኒያኛ መደበኛ የቁልፍ ሰሌዳ</translation>
-<translation id="2744450304594201174">ታማጎቺ</translation>
 <translation id="2771816809568414714">ቺዝ</translation>
 <translation id="2781645665747935084">የቤልጂየም</translation>
 <translation id="2790805296069989825">የራሽያኛ ቁልፍ ሰሌዳ</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">የካናዳ ባለብዙ ቋንቋ</translation>
 <translation id="3241720467332021590">አይሪሽ</translation>
 <translation id="3252266817569339921">ፈረንሳይኛ</translation>
+<translation id="3280987981688031357">ቪኒል መዝገብ</translation>
 <translation id="3296763833017966289">ጆርጂያኛ</translation>
 <translation id="3338239663705455570">የስሎቬኒያኛ ቁልፍ ሰሌዳ</translation>
 <translation id="3399597614303179694">የመቄዶኒያኛ ቁልፍ ሰሌዳ</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">ሊቱአኒያን</translation>
 <translation id="3603385196401704894">የካናዳ ፈረንሳይኛ</translation>
 <translation id="3606220979431771195">የቱርክኛ-F</translation>
+<translation id="3619115746895587757">ካፑቺኖ</translation>
 <translation id="3678559383040232393">Maltese የቁልፍ ሰሌዳ</translation>
 <translation id="3801082500826908679">ፋሮኛ</translation>
 <translation id="3809272675881623365">ጥንቸል</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">የአሜሪካ እግር ኳስ</translation>
 <translation id="497244430928947428">የማላያላም ቁልፍ ሰሌዳ (ፎነቲክ)</translation>
 <translation id="498902553138568924">ቀይ ቢራቢሮ</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">ፒዛ</translation>
 <translation id="5098629044894065541">ዕብራስጥ</translation>
 <translation id="5123433949759960244">ቅርጫት ኳስ</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">በቋንቋ ፊደል መጻፍ (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">የአሜሪካ ድቮራክ</translation>
 <translation id="5640179856859982418">የስዊስ ቁልፍ ሰሌዳ</translation>
-<translation id="5656201261327432370">ካፖቺኖ</translation>
 <translation id="5756666464756035725">የሃንጋሪኛ QWERTY</translation>
 <translation id="5771585441665576801">በቋንቋ ፊደል መጻፍ (geia → γεια)</translation>
 <translation id="5790193330357274855">ካዛክኛ</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">ሃንጉል 3 ስብስብ (የመጨረሻ)</translation>
 <translation id="5838825566232597749">አሜሪካ ዎርክማን አለምአቀፍ</translation>
 <translation id="5892290200158927959">የፈረንሳይኛ BÉPO ቁልፍ ሰሌዳ</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">የላቲን አሜሪካ ቁልፍ ሰሌዳ</translation>
 <translation id="60357267506638014">የቼክኛ QWERTY</translation>
 <translation id="6054173164583630569">የፈረንሳይኛ ቁልፍ ሰሌዳ</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">ቢስክሌት</translation>
 <translation id="6878261347041253038">የዴቫናጋሪ ቁልፍ ሰሌዳ (ፎነቲክ)</translation>
 <translation id="6885780034956018177">ቀንድ አውጣ</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">የአሜሪካ ዎርክማን</translation>
 <translation id="6935521024859866267">ወደ ታች የተገለበጠ</translation>
 <translation id="6937152069980083337">Google ጃፓንኛ ግቤት (ለአሜሪካ ቁልፍ ሰሌዳ)</translation>
 <translation id="6939777852457331078">የአሜሪካ ዎርክማን ቁልፍ ሰሌዳ</translation>
 <translation id="6970230597523682626">ቡልጋሪኛ</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">በቋንቋ ፊደል መጻፍ (salam → ሰላም)</translation>
 <translation id="7172053773111046550">የኤስቶኒያኛ ቁልፍ ሰሌዳ</translation>
 <translation id="719009910964971313">የአሜሪካ Dvorak ፕሮግራመር ቁልፍ ሰሌዳ</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">ሃንጉል 3 ስብስብ (Shift የለም)</translation>
 <translation id="8299269255470343364">ጃፓንኛ</translation>
 <translation id="8336579025507394412">የአይስላንድ ቁልፍ ሰሌዳ</translation>
-<translation id="8391218455464584335">ቪኒል</translation>
 <translation id="8391950649760071442">በቋንቋ ፊደል መጻፍ (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">ፈጣን የግቤት ስልት</translation>
 <translation id="8418113698656761985">የሮማኒያኛ ቁልፍ ሰሌዳ</translation>

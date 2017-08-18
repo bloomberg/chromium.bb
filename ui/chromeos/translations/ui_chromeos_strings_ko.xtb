@@ -22,6 +22,7 @@
 <translation id="158809615184981282">페로스어 키보드</translation>
 <translation id="1646136617204068573">헝가리어 키보드</translation>
 <translation id="164729547906544836">타밀어 키보드(itrans)</translation>
+<translation id="164969095109328410">Chrome 기기</translation>
 <translation id="1829129547161959350">펭귄</translation>
 <translation id="184633654410729720">태국어 키보드(Kedmanee)</translation>
 <translation id="1921986354447415460">터키어-F 키보드</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">카자흐어 키보드</translation>
 <translation id="2384596874640104496">신할라어 키보드</translation>
 <translation id="2464079411014186876">아이스크림</translation>
+<translation id="2468402215065996499">다마고치</translation>
 <translation id="247772113373397749">캐나다 다국어 키보드</translation>
 <translation id="2494837236724268445">구자라트어 키보드(음역)</translation>
 <translation id="2529133382850673012">영어(미국식) 키보드</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">개구리</translation>
 <translation id="2649120831653069427">구피</translation>
 <translation id="2735698359135166290">루마니아 표준 키보드</translation>
-<translation id="2744450304594201174">다마고치</translation>
 <translation id="2771816809568414714">치즈</translation>
 <translation id="2781645665747935084">벨기에어</translation>
 <translation id="2790805296069989825">러시아어 키보드</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">캐나다 다국어</translation>
 <translation id="3241720467332021590">아일랜드어</translation>
 <translation id="3252266817569339921">프랑스어</translation>
+<translation id="3280987981688031357">레코드판</translation>
 <translation id="3296763833017966289">그루지야어</translation>
 <translation id="3338239663705455570">슬로베니아어 키보드</translation>
 <translation id="3399597614303179694">마케도니아어 키보드</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">리투아니아어</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>
 <translation id="3606220979431771195">터키어-F</translation>
+<translation id="3619115746895587757">카푸치노</translation>
 <translation id="3678559383040232393">몰타어 키보드</translation>
 <translation id="3801082500826908679">페로스어</translation>
 <translation id="3809272675881623365">토끼</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">풋볼</translation>
 <translation id="497244430928947428">말라얄람어 키보드(음역)</translation>
 <translation id="498902553138568924">붉은 나비</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">피자</translation>
 <translation id="5098629044894065541">히브리어</translation>
 <translation id="5123433949759960244">농구공</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">음역(namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">영어(미국) 드보락</translation>
 <translation id="5640179856859982418">스위스어 키보드</translation>
-<translation id="5656201261327432370">카푸치노</translation>
 <translation id="5756666464756035725">헝가리어 QWERTY</translation>
 <translation id="5771585441665576801">음역(geia → γεια)</translation>
 <translation id="5790193330357274855">카자흐어</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">한글 세벌식(최종)</translation>
 <translation id="5838825566232597749">미국 워크맨(국제)</translation>
 <translation id="5892290200158927959">프랑스어 BÉPO 키보드</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">남미 언어 키보드</translation>
 <translation id="60357267506638014">체코어 QWERTY</translation>
 <translation id="6054173164583630569">프랑스어 키보드</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">자전거</translation>
 <translation id="6878261347041253038">데바나가리 키보드(음역)</translation>
 <translation id="6885780034956018177">달팽이</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">미국 워크맨</translation>
 <translation id="6935521024859866267">180도 회전</translation>
 <translation id="6937152069980083337">Google 일본어 입력기(미국 키보드용)</translation>
 <translation id="6939777852457331078">미국 워크맨 키보드</translation>
 <translation id="6970230597523682626">불가리아어</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">음역(salam → ሰላም)</translation>
 <translation id="7172053773111046550">에스토니아어 키보드</translation>
 <translation id="719009910964971313">US 프로그래머 드보락 키보드</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">한글 세벌식(Shift 없음)</translation>
 <translation id="8299269255470343364">일본어</translation>
 <translation id="8336579025507394412">아이슬란드어 키보드</translation>
-<translation id="8391218455464584335">레코드판</translation>
 <translation id="8391950649760071442">음역(emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">빠른 입력 방법</translation>
 <translation id="8418113698656761985">루마니아어 키보드</translation>

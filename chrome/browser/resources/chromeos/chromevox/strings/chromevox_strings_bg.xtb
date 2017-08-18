@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Следващият ред</translation>
 <translation id="3153024374267644603">Функцията за реч е включена</translation>
+<translation id="3153928844647607688">Таблица „<ph name="TABLENAME" />“, <ph name="TABLEROWS" /> на <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Няма предишен бутон.</translation>
 <translation id="3163593631834463955">Празна заглавка на графа</translation>
 <translation id="316542773973815724">Навигация</translation>
@@ -404,6 +405,7 @@
 <translation id="4597532268155981612">формуляр</translation>
 <translation id="4597896406374528575">април</translation>
 <translation id="460018603901637538">Преминаване към изгледа с успоредно показване.</translation>
+<translation id="4601367666219428522">табл. „<ph name="TABLENAME" />“, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Следващото натискане на клавиш се пренебрегва</translation>
 <translation id="461613135510474570">Изречение</translation>
 <translation id="4647836961514597010">Инструмент за избор на цветове</translation>
@@ -781,6 +783,7 @@
 <translation id="820417203470636242">Празна клетка.</translation>
 <translation id="8215202828671303819">Избор на няколко елемента</translation>
 <translation id="8224171046658870249">Превключихте към ChromeVox Next</translation>
+<translation id="826991282343985864">р$1к$2</translation>
 <translation id="8276439074553447000">Преминаване към предишния елемент, който може да получи фокус</translation>
 <translation id="8278417001922463147">Няма предишна статия.</translation>
 <translation id="8283603667300770666">Следващото поле във формуляра</translation>

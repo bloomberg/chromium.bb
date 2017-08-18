@@ -22,6 +22,7 @@
 <translation id="158809615184981282">Teclado feroés</translation>
 <translation id="1646136617204068573">Teclado húngaro</translation>
 <translation id="164729547906544836">Teclado tamil (itrans)</translation>
+<translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1829129547161959350">Pingüino</translation>
 <translation id="184633654410729720">Teclado tailandés (kedmanee)</translation>
 <translation id="1921986354447415460">Teclado turco-F</translation>
@@ -40,6 +41,7 @@
 <translation id="23434688402327542">Teclado de kazajo</translation>
 <translation id="2384596874640104496">Teclado cingalés</translation>
 <translation id="2464079411014186876">Helado</translation>
+<translation id="2468402215065996499">Tamagotchi</translation>
 <translation id="247772113373397749">Teclado multilingüe canadiense</translation>
 <translation id="2494837236724268445">Teclado gujarati (fonético)</translation>
 <translation id="2529133382850673012">Teclado de EE.UU.</translation>
@@ -47,7 +49,6 @@
 <translation id="2563185590376525700">Rana</translation>
 <translation id="2649120831653069427">Pez arcoíris</translation>
 <translation id="2735698359135166290">Teclado rumano estándar</translation>
-<translation id="2744450304594201174">Tamagochi</translation>
 <translation id="2771816809568414714">Queso</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2790805296069989825">Teclado ruso</translation>
@@ -71,6 +72,7 @@
 <translation id="3224239078034945833">Canadiense multilingüe</translation>
 <translation id="3241720467332021590">Irlandés</translation>
 <translation id="3252266817569339921">Francés</translation>
+<translation id="3280987981688031357">Disco de vinilo</translation>
 <translation id="3296763833017966289">Georgiano</translation>
 <translation id="3338239663705455570">Teclado esloveno</translation>
 <translation id="3399597614303179694">Teclado macedonio</translation>
@@ -80,6 +82,7 @@
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3603385196401704894">Francés canadiense</translation>
 <translation id="3606220979431771195">Turco-F</translation>
+<translation id="3619115746895587757">Capuchino</translation>
 <translation id="3678559383040232393">Teclado maltés</translation>
 <translation id="3801082500826908679">Feroés</translation>
 <translation id="3809272675881623365">Conejo</translation>
@@ -123,6 +126,7 @@
 <translation id="4943368462779413526">Balón de fútbol</translation>
 <translation id="497244430928947428">Teclado malayalam (fonético)</translation>
 <translation id="498902553138568924">Mariposa roja</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5098629044894065541">Hebreo</translation>
 <translation id="5123433949759960244">Balón de baloncesto</translation>
@@ -147,7 +151,6 @@
 <translation id="5533555070048896610">Transliteración (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Estados Unidos (Dvorak)</translation>
 <translation id="5640179856859982418">Teclado suizo</translation>
-<translation id="5656201261327432370">Capuchino</translation>
 <translation id="5756666464756035725">QWERTY húngaro</translation>
 <translation id="5771585441665576801">Transliteración (geia → γεια)</translation>
 <translation id="5790193330357274855">Kazajo</translation>
@@ -156,6 +159,7 @@
 <translation id="5819442873484330149">Hangul de triple alternancia (final)</translation>
 <translation id="5838825566232597749">Internacional estilo Workman (EE. UU.)</translation>
 <translation id="5892290200158927959">Teclado francés (BÉPO)</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Teclado latinoamericano</translation>
 <translation id="60357267506638014">Checo (QWERTY)</translation>
 <translation id="6054173164583630569">Teclado francés</translation>
@@ -182,11 +186,13 @@
 <translation id="6876155724392614295">Bici</translation>
 <translation id="6878261347041253038">Teclado devanagari (fonético)</translation>
 <translation id="6885780034956018177">Caracol</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Estilo Workman (EE. UU.)</translation>
 <translation id="6935521024859866267">Boca abajo</translation>
 <translation id="6937152069980083337">Entrada de japonés de Google (para teclado estadounidense)</translation>
 <translation id="6939777852457331078">Teclado estilo Workman (EE. UU.)</translation>
 <translation id="6970230597523682626">Búlgaro</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteración (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclado estonio</translation>
 <translation id="719009910964971313">Teclado Programmer Dvorak de EE. UU.</translation>
@@ -223,7 +229,6 @@
 <translation id="8297012244086013755">Hangul de triple alternancia (sin pulsar mayúsculas)</translation>
 <translation id="8299269255470343364">Japonés</translation>
 <translation id="8336579025507394412">Teclado islandés</translation>
-<translation id="8391218455464584335">Vinilo</translation>
 <translation id="8391950649760071442">Transliteración (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Método de entrada abreviado</translation>
 <translation id="8418113698656761985">Teclado rumano</translation>

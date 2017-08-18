@@ -16,7 +16,6 @@
 <translation id="1589122976691792535">regija</translation>
 <translation id="1591562245178063882">Ovaj mjesec</translation>
 <translation id="1637811476055996098">Odabir datoteka</translation>
-<translation id="167575180612809735">pokazivač zauzetosti</translation>
 <translation id="1729654308190250600">Unesite e-adresu koja nije prazna vrijednost.</translation>
 <translation id="1758486001363313524">Drugo...</translation>
 <translation id="1806710327868736751">dijaloški okvir upozorenja</translation>
@@ -24,7 +23,6 @@
 <translation id="1822429046913737220">prijepodne/poslijepodne</translation>
 <translation id="1832974991323546415">reproduciraj na udaljenom uređaju</translation>
 <translation id="1854180393107901205">Zaustavi emitiranje</translation>
-<translation id="1880518467580572141">obris</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Vrijednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ili prije toga.</translation>
@@ -111,6 +109,7 @@
 <translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="588258955323874662">Puni zaslon</translation>
+<translation id="5888666972993069672">Trenutačno se emitira na uređaju <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
 <translation id="5966707198760109579">Tjedan</translation>
 <translation id="5987525920412732405">okretni gumb</translation>
@@ -127,7 +126,6 @@
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="668171684555832681">Ostalo...</translation>
 <translation id="6692633176391053278">povećanje/smanjenje strelicama gore/dolje (stepper)</translation>
-<translation id="6739588121953935928">ravnalo</translation>
 <translation id="6755330956360078551">opis</translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6820355525329141109">Nije bilo moguće učitati dodatak.</translation>

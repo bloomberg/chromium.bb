@@ -21,7 +21,6 @@
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
 <translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
-<translation id="164969095109328410">Chrome சாதனம்</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
 <translation id="1698760176351776263">IPv6 முகவரி: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">இந்தச் சாதனத்தை நிர்வகிப்பது: நிறுவனம்</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">அதிக ஒளி மாறுபாட்டுப் பயன்முறையை மாற்றும் குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக, <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
 <translation id="5207949376430453814">உரைச் சுட்டியைத் தனிப்படுத்து</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">இயக்கு</translation>
 <translation id="5927132638760172455">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">மாற்றியமை</translation>
 <translation id="595202126637698455">செயல்திறனைத் தடமறிதல் இயக்கப்பட்டுள்ளது</translation>
 <translation id="5958529069007801266">கண்காணிக்கப்படும் பயனர்</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> ஐ செயல்படுத்து</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />ஐ <ph name="RECEIVER_NAME" />க்கு அனுப்புகிறது</translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">இந்த நெட்வொர்க் உங்கள் நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="7067196344162293536">தானியங்கு சுழற்றல்</translation>
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">ஆல்ட்+ஷிஃப்ட்+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="7246339268451149667">கைரேகை மூலம் திறப்பதை இயக்கவா?</translation>

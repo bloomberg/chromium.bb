@@ -461,6 +461,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Deaktivieren Sie Ihre Erweiterungen.</translation>
 <translation id="457875822857220463">Lieferung</translation>
+<translation id="4582800630050655161">Sie könnten den Zugriff auf Ihr Google-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chromium empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="4587425331216688090">Adresse aus Chrome entfernen?</translation>
 <translation id="4592951414987517459">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer modernen Codier-Suite verschlüsselt.</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
@@ -469,10 +470,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="4690462567478992370">Ungültiges Zertifikat nicht mehr verwenden</translation>
+<translation id="4690954380545377795">Sie könnten den Zugriff auf Ihr Google-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
 <translation id="471880041731876836">Sie sind nicht berechtigt, auf diese Website zuzugreifen</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Bezahlung</translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4736825316280949806">Chromium neu starten</translation>
@@ -534,6 +537,8 @@
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5222812217790122047">E-Mail-Adresse erforderlich</translation>
+<translation id="522700295135997067">Diese Website könnte gerade Ihr Passwort gestohlen haben</translation>
+<translation id="5230733896359313003">Versandadresse</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Nutzen Sie Chrome bei der Arbeit? Unternehmen können Chrome-Einstellungen für ihre Mitarbeiter verwalten. Weitere Informationen</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Führen Sie die folgenden Schritte aus, um die Software vorübergehend zu deaktivieren und dann auf das Internet zuzugreifen. Zum Deaktivieren der Software benötigen Sie Administratorrechte.<ph name="END_PARAGRAPH" />
@@ -552,6 +557,7 @@
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5332219387342487447">Versandart</translation>
 <translation id="5355557959165512791">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, da das Zertifikat widerrufen wurde. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
 <translation id="5386426401304769735">Die Zertifikatskette für diese Website enthält ein Zertifikat mit SHA-1-Signatur.</translation>
@@ -823,6 +829,7 @@
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 <translation id="7674629440242451245">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Dev-Version unter chrome.com/dev.</translation>
 <translation id="7682287625158474539">Versand</translation>
+<translation id="7699293099605015246">Momentan sind keine Artikel verfügbar</translation>
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Weiter zu <ph name="SITE" /> (unsicher)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Zertifikat</translation>
@@ -840,6 +847,7 @@
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="7793809570500803535">Die Webseite unter <ph name="SITE" /> ist möglicherweise vorübergehend nicht verfügbar oder dauerhaft unter einer neuen URL zu erreichen.</translation>
 <translation id="7800304661137206267">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt; für die Nachrichtenauthentifizierung wird <ph name="MAC" /> verwendet und als Mechanismus für den Schlüsselaustausch <ph name="KX" />.</translation>
+<translation id="7802523362929240268">Website ist vertrauenswürdig</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -849,6 +857,7 @@
 <translation id="785549533363645510">Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber, Ihrem Internetanbieter oder den von Ihnen besuchten Websites erfasst werden.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Debit- und Prepaidkarten werden akzeptiert.</translation>
+<translation id="7878562273885520351">Ihr Passwort könnte gefährdet sein</translation>
 <translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="79338296614623784">Geben Sie eine gültige Telefonnummer ein</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">Von einer Erweiterung blockiert</translation>
 <translation id="9076283476770535406">Eventuell enthält sie nicht jugendfreie Inhalte</translation>
 <translation id="9078964945751709336">Weitere Informationen erforderlich</translation>
+<translation id="9080712759204168376">Bestellübersicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
+<translation id="910908805481542201">Helfen Sie mir mit der Behebung dieses Fehlers</translation>
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9137248913990643158">Melden Sie sich in Chrome an, bevor Sie diese App nutzen.</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Keine}=1{1 Eintrag}other{# Einträge}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
+<translation id="989988560359834682">Adresse bearbeiten</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Avviso</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> di <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Impossibile rimuovere il software dannoso</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1062866675591297858">Gestisci i tuoi utenti supervisionati utilizzando la <ph name="BEGIN_LINK" />Dashboard degli utenti supervisionati<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Media Library File Checker</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> vuole ripristinare le impostazioni predefinite originali di Chrome. Questa operazione comporta la reimpostazione di pagina iniziale, pagina Nuova scheda e motore di ricerca, oltre alla disattivazione delle estensioni e allo sblocco di tutte le schede. Verranno inoltre cancellati altri dati temporanei e memorizzati nella cache, come cookie e dati relativi a contenuti e siti.</translation>
 <translation id="1082725763867769612">File offline</translation>
 <translation id="1084824384139382525">Copia indi&amp;rizzo link</translation>
+<translation id="1089439967362294234">Cambia password</translation>
 <translation id="1090126737595388931">Nessuna applicazione in esecuzione in background</translation>
 <translation id="1091767800771861448">Premi ESC per saltare (solo build non ufficiali).</translation>
 <translation id="1093457606523402488">Reti visibili:</translation>
@@ -449,7 +449,6 @@
     <ph name="BEGIN_BOLD" />consentire o vietare<ph name="END_BOLD" /> siti web specifici,
     <ph name="BEGIN_BOLD" />controllare<ph name="END_BOLD" /> i siti web visitati dall'utente supervisionato e
     <ph name="BEGIN_BOLD" />gestire<ph name="END_BOLD" /> altre impostazioni.</translation>
-<translation id="1648797160541174252">Proxy di rete per <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">I dati di accesso sono obsoleti</translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1650371550981945235">Mostra opzioni di immissione</translation>
@@ -1017,6 +1016,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2498436043474441766">Aggiungi stampanti</translation>
 <translation id="2498539833203011245">Riduci a icona</translation>
 <translation id="2498765460639677199">Enorme</translation>
+<translation id="2500471369733289700">Bloccata per proteggere la tua privacy</translation>
 <translation id="2501173422421700905">Certificato in attesa</translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2501797496290880632">Digita una scorciatoia</translation>
@@ -1356,6 +1356,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2951247061394563839">Centra la finestra</translation>
 <translation id="2951721188322348056">Info video</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookie</translation>
+<translation id="2958721676848865875">Avviso sul pacchetto estensione</translation>
 <translation id="2959614062380389916">Disattivata dall'amministratore</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (estensione approvata)</translation>
 <translation id="2961695502793809356">Fai clic per andare avanti, tieni premuto per vedere la cronologia</translation>
@@ -1369,6 +1370,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2971213274238188218">riduci luminosità</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
+<translation id="2972642118232180842">Esegui solo contenuti importanti (consigliata)</translation>
 <translation id="297870353673992530">Server DNS:</translation>
 <translation id="2979639724566107830">Apri in un'altra finestra</translation>
 <translation id="2981113813906970160">Mostra puntatore mouse grande</translation>
@@ -1385,6 +1387,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="3003967365858406397">Il dispositivo <ph name="PHONE_NAME" /> creerà una connessione Wi-Fi privata.</translation>
 <translation id="3004391367407090544">Torna più tardi</translation>
 <translation id="300544934591011246">Password precedente</translation>
+<translation id="3006881078666935414">Nessun dato sull'utilizzo</translation>
 <translation id="3007214526293698309">Correggi proporzioni</translation>
 <translation id="3007771295016901659">Duplica scheda</translation>
 <translation id="3009300415590184725">Annullare la procedura di configurazione del servizio dati mobile?</translation>
@@ -1448,6 +1451,7 @@ Per ulteriori informazioni, visita il nostro <ph name="BEGIN_LINK" />Centro assi
 <translation id="3082520371031013475">Impostazioni touchpad e mouse</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Questa scheda utilizza la fotocamera o il microfono.</translation>
+<translation id="3083193146044397360">Bloccata temporaneamente per tutelare la tua sicurezza</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Trascina per installare</translation>
 <translation id="3084771660770137092">Google Chrome ha esaurito la memoria o il processo relativo alla pagina web è stato chiuso per qualche altro motivo. Per continuare, ricarica la pagina o aprine un'altra.</translation>
@@ -1674,6 +1678,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3423858849633684918">Riavvia <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Descrivi cosa stavi facendo quando la scheda si è arrestata in modo anomalo</translation>
 <translation id="3427092606871434483">Consenti (predefinita)</translation>
+<translation id="3429275422858276529">Aggiungi questa pagina ai preferiti per trovarla facilmente in seguito</translation>
 <translation id="3429599832623003132">$1 elementi</translation>
 <translation id="3432227430032737297">Rimuovi tutti i cookie visualizzati</translation>
 <translation id="3432757130254800023">Invio di audio e video agli schermi sulla rete locale</translation>
@@ -1797,6 +1802,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="3596235046596950091">Attiva servizi cloud</translation>
 <translation id="3600456501114769456">L'accesso ai file locali sul tuo dispositivo è stato disattivato dal tuo amministratore.</translation>
+<translation id="3603533104205588786">Puoi fare clic sulla stella per aggiungere una pagina ai preferiti</translation>
 <translation id="3603622770190368340">Ottieni certificato di rete</translation>
 <translation id="3604048165392640554">Nessuna connessione mobile trovata. Attiva la funzione Tethering istantaneo sugli altri dispositivi e riprova. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ulteriori informazioni&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Ventiquattrore</translation>
@@ -2569,6 +2575,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4820334425169212497">No, non lo vedo</translation>
 <translation id="4821086771593057290">La tua password è stata modificata. Riprova con la nuova password.</translation>
+<translation id="4821725298388681253">Si tratta di una versione in anteprima. Alcune funzioni, ad esempio la ricerca e l'immissione di testo, non sono ancora disponibili.</translation>
 <translation id="4821935166599369261">&amp;Profiling attivato</translation>
 <translation id="4823484602432206655">Lettura e modifica delle impostazioni utente e dispositivo</translation>
 <translation id="4823651846660089135">Il dispositivo è in sola lettura</translation>
@@ -3519,6 +3526,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6232017090690406397">Batteria</translation>
 <translation id="6232116551750539448">Connection a <ph name="NAME" /> interrotta</translation>
 <translation id="6237816943013845465">Consente di regolare la risoluzione dello schermo</translation>
+<translation id="6238923052227198598">Tieni le note più recenti sulla schermata di blocco</translation>
 <translation id="6239558157302047471">Ricarica &amp;frame</translation>
 <translation id="6241530762627360640">Accedere a informazioni sui dispositivi Bluetooth accoppiati con il sistema e rilevare dispositivi Bluetooth nelle vicinanze.</translation>
 <translation id="6243774244933267674">Server non disponibile</translation>
@@ -3772,6 +3780,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 
 Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
 <translation id="6581162200855843583">Link Google Drive</translation>
+<translation id="6582421931165117398">Cambia subito la password per proteggere le tue informazioni personali. Per poter cambiare la password ti verrà chiesto di accedere.</translation>
 <translation id="6583851739559471707">Bloccati sui siti che tendono a mostrare annunci invasivi (opzione consigliata)</translation>
 <translation id="6584878029876017575">Firma definitiva Microsoft</translation>
 <translation id="6585234750898046415">Scegli un'immagine da visualizzare per il tuo account nella schermata di accesso.</translation>
@@ -3795,6 +3804,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6610183966322615106">Errore durante l'aggiunta della stampante</translation>
 <translation id="6610610633807698299">Inserisci URL...</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
+<translation id="6613452264606394692">Torna rapidamente in questa pagina aggiungendola ai preferiti</translation>
 <translation id="6615455863669487791">Mostrami</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> di <ph name="TOTAL_SIZE" /> copiati</translation>
 <translation id="661719348160586794">Le password salvate verranno visualizzate qui.</translation>
@@ -4591,6 +4601,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7876243839304621966">Rimuovi tutto</translation>
 <translation id="7877451762676714207">Errore del server sconosciuto. Riprova o contatta l'amministratore del server.</translation>
 <translation id="7877680364634660272">Tour</translation>
+<translation id="7878562273885520351">La tua password potrebbe essere stata compromessa</translation>
 <translation id="7881483672146086348">Visualizza account</translation>
 <translation id="7881969471599061635">Disattiva i sottotitoli</translation>
 <translation id="7882358943899516840">Tipo di provider</translation>
@@ -4679,6 +4690,7 @@ File di chiave: <ph name="KEY_FILE" />
 Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove versioni dell'estensione.</translation>
 <translation id="799923393800005025">Può visualizzare</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
+<translation id="8001504501378762252">Un sito potrebbe avere rubato la tua password</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007030362289124303">Batteria in esaurimento</translation>
 <translation id="8008356846765065031">Disconnesso da Internet. Controlla la tua connessione Internet.</translation>
@@ -4914,6 +4926,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8366396658833131068">La connettività di rete è stata ripristinata. Seleziona un'altra rete o premi il pulsante "Continua" sotto per avviare l'app kiosk.</translation>
 <translation id="8366947248864804596">Quando il telefono è sbloccato e nelle vicinanze, è sufficiente selezionare per sbloccare. In caso contrario, inserisci la password o il PIN.</translation>
 <translation id="8368859634510605990">&amp;Apri tutti i Preferiti</translation>
+<translation id="8371695176452482769">Parla adesso</translation>
 <translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="8373360586245335572">Consenti la visualizzazione di notifiche in tutti i siti</translation>
 <translation id="8373553483208508744">Disattiva audio schede</translation>
@@ -5085,6 +5098,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> o <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Forza aggiornamento di questa pagina</translation>
 <translation id="8652139471850419555">Reti preferite</translation>
+<translation id="8652400352452647993">Errore nel pacchetto estensione</translation>
 <translation id="8652487083013326477">pulsante di opzione dell'intervallo di pagine</translation>
 <translation id="8654151524613148204">Il file è troppo grande. Il computer non è in grado di gestirlo. Spiacenti.</translation>
 <translation id="8655295600908251630">Canale</translation>

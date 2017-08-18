@@ -23,6 +23,7 @@
 <translation id="158809615184981282">Πληκτρολόγιο Φερόε</translation>
 <translation id="1646136617204068573">Πληκτρολόγιο με ουγγρικούς χαρακτήρες</translation>
 <translation id="164729547906544836">Πληκτρολόγιο Ταμίλ (itrans)</translation>
+<translation id="164969095109328410">Συσκευή Chrome</translation>
 <translation id="1829129547161959350">Πιγκουίνος</translation>
 <translation id="184633654410729720">Πληκτρολόγιο Ταϊλανδικών (Kedmanee)</translation>
 <translation id="1921986354447415460">Πληκτρολόγιο Τουρκικών-F</translation>
@@ -42,6 +43,7 @@
 <translation id="23434688402327542">Πληκτρολόγιο Καζαχστανικών</translation>
 <translation id="2384596874640104496">Πληκτρολόγιο Σινχάλα</translation>
 <translation id="2464079411014186876">Παγωτό</translation>
+<translation id="2468402215065996499">Ταμαγκότσι</translation>
 <translation id="247772113373397749">Καναδικό πολύγλωσσο πληκτρολόγιο</translation>
 <translation id="2494837236724268445">Πληκτρολόγιο Γκουγιαράτι (Φωνητικό)</translation>
 <translation id="2529133382850673012">Πληκτρολόγιο με αγγλικούς χαρακτήρες (ΗΠΑ)</translation>
@@ -49,7 +51,6 @@
 <translation id="2563185590376525700">Βάτραχος</translation>
 <translation id="2649120831653069427">Πέστροφες</translation>
 <translation id="2735698359135166290">Τυπικό πληκτρολόγιο Ρουμανικών</translation>
-<translation id="2744450304594201174">Ταμαγκότσι</translation>
 <translation id="2771816809568414714">Τυρί</translation>
 <translation id="2781645665747935084">Βελγικά</translation>
 <translation id="2790805296069989825">Πληκτρολόγιο με ρωσικούς χαρακτήρες</translation>
@@ -76,6 +77,7 @@
 <translation id="3241720467332021590">Ιρλανδικά</translation>
 <translation id="3252266817569339921">Γαλλικά
 </translation>
+<translation id="3280987981688031357">Δίσκος βινυλίου</translation>
 <translation id="3296763833017966289">Γεωργιανά
 </translation>
 <translation id="3338239663705455570">Πληκτρολόγιο με σλοβενικούς χαρακτήρες</translation>
@@ -87,6 +89,7 @@
 </translation>
 <translation id="3603385196401704894">Γαλλικά Καναδά</translation>
 <translation id="3606220979431771195">Τουρκικά-F</translation>
+<translation id="3619115746895587757">Καπουτσίνο</translation>
 <translation id="3678559383040232393">Πληκτρολόγιο Μάλτας</translation>
 <translation id="3801082500826908679">Φερόε</translation>
 <translation id="3809272675881623365">Κουνέλι</translation>
@@ -133,6 +136,7 @@
 <translation id="4943368462779413526">Αμερικάνικο ποδόσφαιρο</translation>
 <translation id="497244430928947428">Πληκτρολόγιο Μαλαγιάλαμ (Φωνητικό)</translation>
 <translation id="498902553138568924">Κόκκινη πεταλούδα</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5068919226082848014">Πίτσα</translation>
 <translation id="5098629044894065541">Εβραϊκά
 </translation>
@@ -160,7 +164,6 @@
 <translation id="5533555070048896610">Μεταγραφή (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Dvorak ΗΠΑ</translation>
 <translation id="5640179856859982418">Πληκτρολόγιο με ελβετικούς χαρακτήρες</translation>
-<translation id="5656201261327432370">Καπουτσίνο</translation>
 <translation id="5756666464756035725">QWERTY Ουγγρικών</translation>
 <translation id="5771585441665576801">Μεταγραφή (geia → γεια)</translation>
 <translation id="5790193330357274855">Καζαχστανικά</translation>
@@ -169,6 +172,7 @@
 <translation id="5819442873484330149">Σύνολο Χανγκίλ 3 (Τελικό)</translation>
 <translation id="5838825566232597749">Διεθνές ΗΠΑ Workman</translation>
 <translation id="5892290200158927959">Πληκτρολόγιο BÉPO Γαλλικών</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Πληκτρολόγιο με χαρακτήρες Λατινικής Αμερικής</translation>
 <translation id="60357267506638014">Τσεχικό QWERTY</translation>
 <translation id="6054173164583630569">Πληκτρολόγιο με γαλλικούς χαρακτήρες</translation>
@@ -196,11 +200,13 @@
 <translation id="6876155724392614295">Ποδήλατο</translation>
 <translation id="6878261347041253038">Πληκτρολόγιο Ντεβαναγκάρι (Φωνητικό)</translation>
 <translation id="6885780034956018177">Σαλιγκάρι</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">ΗΠΑ Workman</translation>
 <translation id="6935521024859866267">Ανάποδα</translation>
 <translation id="6937152069980083337">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο ΗΠΑ)</translation>
 <translation id="6939777852457331078">Πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="6970230597523682626">Βουλγαρικά</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Μεταγραφή (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Πληκτρολόγιο με εσθονικούς χαρακτήρες</translation>
 <translation id="719009910964971313">Πληκτρολόγιο US Programmer Dvorak</translation>
@@ -242,7 +248,6 @@
 <translation id="8299269255470343364">Ιαπωνικά
 </translation>
 <translation id="8336579025507394412">Ισλανδικό πληκτρολόγιο</translation>
-<translation id="8391218455464584335">Βινύλιο</translation>
 <translation id="8391950649760071442">Μεταγραφή (emandi → ఏమండీ)</translation>
 <translation id="8412586565681117057">Μέθοδος εισαγωγής Quick</translation>
 <translation id="8418113698656761985">Πληκτρολόγιο με ρουμανικούς χαρακτήρες</translation>

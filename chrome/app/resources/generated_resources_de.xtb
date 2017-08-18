@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> von <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Schädliche Software kann nicht entfernt werden</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1062866675591297858">Ihre betreuten Nutzer mithilfe des <ph name="BEGIN_LINK" />Dashboards für betreute Nutzer<ph name="END_LINK" /> verwalten</translation>
 <translation id="1064662184364304002">Mediathek-Dateiprüfung</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> möchte Ihre Chrome-Einstellungen auf ihre ursprünglichen Standardwerte zurücksetzen. Hierdurch werden Ihre Startseite, die "Neuer Tab"-Seite und die Suchmaschine zurückgesetzt, Ihre Erweiterungen deaktiviert und sämtliche Tabs losgelöst. Außerdem werden sonstige temporäre und im Cache gespeicherte Daten wie Cookies, Inhalte und Websitedaten gelöscht.</translation>
 <translation id="1082725763867769612">Offlinedateien</translation>
 <translation id="1084824384139382525">Adr&amp;esse des Links kopieren</translation>
+<translation id="1089439967362294234">Passwort ändern</translation>
 <translation id="1090126737595388931">Es werden keine Apps im Hintergrund ausgeführt.</translation>
 <translation id="1091767800771861448">Drücken Sie die Esc-Taste, um die Aktualisierung zu überspringen (nur inoffizielle Builds).</translation>
 <translation id="1093457606523402488">Sichtbare Netzwerke:</translation>
@@ -446,7 +446,6 @@
     bestimmte Websites <ph name="BEGIN_BOLD" />freigeben oder sperren<ph name="END_BOLD" />,
     vom betreuten Nutzer besuchte Websites <ph name="BEGIN_BOLD" />prüfen<ph name="END_BOLD" /> und
     andere Einstellungen <ph name="BEGIN_BOLD" />verwalten<ph name="END_BOLD" />.</translation>
-<translation id="1648797160541174252">Netzwerk-Proxy für <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Die Anmeldeinformationen sind veraltet</translation>
 <translation id="164969095109328410">Chrome-Gerät</translation>
 <translation id="1650371550981945235">Eingabeoptionen anzeigen</translation>
@@ -1014,6 +1013,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2498436043474441766">Drucker hinzufügen</translation>
 <translation id="2498539833203011245">Minimieren</translation>
 <translation id="2498765460639677199">Riesig</translation>
+<translation id="2500471369733289700">Blockiert, um Ihre Privatsphäre zu schützen</translation>
 <translation id="2501173422421700905">Zertifikat vorübergehend ausgesetzt</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2501797496290880632">Tastenkombination eingeben</translation>
@@ -1353,6 +1353,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2951247061394563839">Fenster zentrieren</translation>
 <translation id="2951721188322348056">Videoinformationen</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> Cookies</translation>
+<translation id="2958721676848865875">Erweiterung packen: Warnung</translation>
 <translation id="2959614062380389916">Durch den Administrator deaktiviert</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (Verlängerung gewährt)</translation>
 <translation id="2961695502793809356">Klicken, um weiterzugehen. Gedrückt halten, um Verlauf aufzurufen</translation>
@@ -1366,6 +1367,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2971213274238188218">Dunkler</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
+<translation id="2972642118232180842">Nur wichtige Inhalte ausführen (empfohlen)</translation>
 <translation id="297870353673992530">DNS-Server:</translation>
 <translation id="2979639724566107830">In neuem Fenster öffnen</translation>
 <translation id="2981113813906970160">Großen Cursor verwenden</translation>
@@ -1382,6 +1384,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3003967365858406397">Ihr <ph name="PHONE_NAME" /> stellt eine private WLAN-Verbindung her.</translation>
 <translation id="3004391367407090544">Bitte versuchen Sie es später erneut.</translation>
 <translation id="300544934591011246">Vorheriges Passwort</translation>
+<translation id="3006881078666935414">Keine Nutzungsdaten</translation>
 <translation id="3007214526293698309">Verhältnis korrigieren</translation>
 <translation id="3007771295016901659">Tab duplizieren</translation>
 <translation id="3009300415590184725">Möchten Sie die Einrichtung des mobilen Datendiensts wirklich abbrechen?</translation>
@@ -1445,6 +1448,7 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3082520371031013475">Touchpad- und Mauseinstellungen</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Dieser Tab verwendet Ihre Kamera oder Ihr Mikrofon.</translation>
+<translation id="3083193146044397360">Vorübergehend blockiert, um Ihre Privatsphäre zu schützen</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Zum Installieren ablegen</translation>
 <translation id="3084771660770137092">Entweder verfügt Google Chrome nicht mehr über genügend Arbeitsspeicher oder der Prozess für die Webseite wurde aus einem anderen Grund beendet. Aktualisieren Sie die Seite oder rufen Sie eine andere Seite auf.</translation>
@@ -1673,6 +1677,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> neu starten</translation>
 <translation id="3424969259347320884">Beschreiben Sie, was Sie beim Absturz des Tabs getan haben</translation>
 <translation id="3427092606871434483">Zulassen (Standardeinstellung)</translation>
+<translation id="3429275422858276529">Seite als Lesezeichen speichern, um sie später schneller zu finden</translation>
 <translation id="3429599832623003132">$1 Elemente</translation>
 <translation id="3432227430032737297">Alle angezeigten Cookies entfernen</translation>
 <translation id="3432757130254800023">Audio und Video auf Bildschirme im lokalen Netzwerk senden</translation>
@@ -1796,6 +1801,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3596235046596950091">Clouddienste aktivieren</translation>
 <translation id="3600456501114769456">Der Zugriff auf lokale Dateien auf Ihrem Gerät wurde von Ihrem Administrator deaktiviert.</translation>
+<translation id="3603533104205588786">Sie können auf den Stern klicken, um eine Seite als Lesezeichen zu speichern</translation>
 <translation id="3603622770190368340">Netzwerkzertifikat anfordern</translation>
 <translation id="3604048165392640554">Keine Mobilfunkverbindung gefunden. Aktivieren Sie das Instant Tethering auf Ihren anderen Geräten und versuchen Sie es noch einmal. &lt;a target="_blank" href="<ph name="URL" />"&gt;Weitere Informationen&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Hemdträger</translation>
@@ -2568,6 +2574,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4820334425169212497">Nein, dieser Code wird nicht angezeigt.</translation>
 <translation id="4821086771593057290">Ihr Passwort wurde geändert. Wiederholen Sie den Vorgang mit Ihrem neuen Passwort.</translation>
+<translation id="4821725298388681253">Dies ist eine Vorabversion. Einige Funktionen, beispielsweise die Suche und die Texteingabe, sind noch nicht verfügbar.</translation>
 <translation id="4821935166599369261">&amp;Profilerstellung aktiviert</translation>
 <translation id="4823484602432206655">Nutzer- und Geräteeinstellungen lesen und ändern</translation>
 <translation id="4823651846660089135">Gerät ist schreibgeschützt</translation>
@@ -3517,6 +3524,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6232017090690406397">Akku</translation>
 <translation id="6232116551750539448">Verbindung mit <ph name="NAME" /> wurde unterbrochen.</translation>
 <translation id="6237816943013845465">Ermöglicht die Anpassung der Bildschirmauflösung</translation>
+<translation id="6238923052227198598">Neueste Notiz auf Sperrbildschirm anzeigen</translation>
 <translation id="6239558157302047471">&amp;Frame neu laden</translation>
 <translation id="6241530762627360640">Informationen zu mit ihrem System gekoppelten Bluetooth-Geräten abrufen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="6243774244933267674">Server nicht verfügbar</translation>
@@ -3770,6 +3778,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 
 Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="6581162200855843583">Google Drive-Link</translation>
+<translation id="6582421931165117398">Ändern Sie jetzt Ihr Passwort, um Ihre persönlichen Informationen zu schützen. Bevor Sie Ihr Passwort ändern können, werden Sie aufgefordert, sich anzumelden.</translation>
 <translation id="6583851739559471707">Auf Websites blockiert, die für gewöhnlich aufdringliche Werbung anzeigen (empfohlen)</translation>
 <translation id="6584878029876017575">Microsoft-Lebensdauersignatur</translation>
 <translation id="6585234750898046415">Wählen Sie ein Bild aus, das auf der Anmeldeseite für Ihr Konto zu sehen sein soll.</translation>
@@ -3793,6 +3802,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="6610183966322615106">Fehler beim Hinzufügen des Druckers</translation>
 <translation id="6610610633807698299">URL eingeben...</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
+<translation id="6613452264606394692">Speichern Sie diese Seite als Lesezeichen, um schnell wieder hierher zurückzukehren</translation>
 <translation id="6615455863669487791">Zeigen</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> von <ph name="TOTAL_SIZE" /> kopiert</translation>
 <translation id="661719348160586794">Ihre gespeicherten Passwörter erscheinen hier.</translation>
@@ -4600,6 +4610,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7877451762676714207">Unbekannter Serverfehler. Bitte versuchen Sie es erneut oder wenden Sie sich an den Serveradministrator.</translation>
 <translation id="7877680364634660272">Tour</translation>
+<translation id="7878562273885520351">Ihr Passwort könnte gefährdet sein</translation>
 <translation id="7881483672146086348">Konto anzeigen</translation>
 <translation id="7881969471599061635">Untertitel deaktivieren</translation>
 <translation id="7882358943899516840">Providertyp</translation>
@@ -4688,6 +4699,7 @@ Schlüsseldatei: <ph name="KEY_FILE" />
 Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Datei, um neue Versionen Ihrer Erweiterung zu erstellen.</translation>
 <translation id="799923393800005025">Darf ansehen</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
+<translation id="8001504501378762252">Eine Website könnte Ihr Passwort gestohlen haben</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007030362289124303">Schwacher Akku</translation>
 <translation id="8008356846765065031">Sie haben keine Verbindung mit dem Internet. Bitte überprüfen Sie Ihre Internetverbindung.</translation>
@@ -4923,6 +4935,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8366396658833131068">Ihre Netzwerkverbindung wurde wiederhergestellt. Wählen Sie ein anderes Netzwerk aus oder klicken Sie unten auf "Weiter", um Ihre Kiosk-App zu starten.</translation>
 <translation id="8366947248864804596">Wenn Ihr Smartphone entsperrt und in der Nähe ist, können Sie Ihr Gerät mit nur einem Klick entsperren. Andernfalls müssen Sie Ihr Passwort oder Ihre PIN eingeben.</translation>
 <translation id="8368859634510605990">&amp;Alle Lesezeichen öffnen</translation>
+<translation id="8371695176452482769">Jetzt sprechen</translation>
 <translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
 <translation id="8373360586245335572">Alle Websites dürfen Benachrichtigungen anzeigen</translation>
 <translation id="8373553483208508744">Tabs stummschalten</translation>
@@ -5094,6 +5107,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> oder <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Erneutes Laden dieser Seite erzwingen</translation>
 <translation id="8652139471850419555">Bevorzugte Netzwerke</translation>
+<translation id="8652400352452647993">Erweiterung packen: Fehler</translation>
 <translation id="8652487083013326477">Optionsfeld im Seitenbereich</translation>
 <translation id="8654151524613148204">Ihr Computer kann diese Datei leider nicht verarbeiten, da sie zu groß ist.</translation>
 <translation id="8655295600908251630">Version</translation>

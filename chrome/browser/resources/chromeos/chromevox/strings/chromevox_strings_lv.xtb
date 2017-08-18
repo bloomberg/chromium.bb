@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">šūna</translation>
 <translation id="3149472044574196936">Nākamā rindiņa</translation>
 <translation id="3153024374267644603">Runa ieslēgta</translation>
+<translation id="3153928844647607688">Tabula <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Iepriekš nav nevienas pogas.</translation>
 <translation id="3163593631834463955">Tukšs slejas virsraksts</translation>
 <translation id="316542773973815724">Navigācija</translation>
@@ -405,6 +406,7 @@ Ja esat pabeidzis pamācības skatīšanu, izmantojiet ChromeVox, lai pārietu u
 <translation id="4597532268155981612">veidlapa</translation>
 <translation id="4597896406374528575">Aprīlis</translation>
 <translation id="460018603901637538">Mainīt displeja veidu uz attēlojumu līdzās</translation>
+<translation id="4601367666219428522">tab. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Tiek ignorēta nākamā taustiņa nospiešana</translation>
 <translation id="461613135510474570">Teikums</translation>
 <translation id="4647836961514597010">Krāsu izvēle</translation>
@@ -782,6 +784,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="820417203470636242">Tukša šūna</translation>
 <translation id="8215202828671303819">Vairāku elementu atlase</translation>
 <translation id="8224171046658870249">Pārslēgts uz ChromeVox Next</translation>
+<translation id="826991282343985864">r$1k$2</translation>
 <translation id="8276439074553447000">Pāriet uz iepriekšējo fokusējamo vienumu</translation>
 <translation id="8278417001922463147">Iepriekš nav neviena raksta.</translation>
 <translation id="8283603667300770666">Nākamais veidlapas lauks</translation>

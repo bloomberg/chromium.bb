@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Dispozitiv Chrome</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresă IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Comanda rapidă pentru comutarea modului Contrast ridicat s-a modificat. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5927132638760172455">Se proiectează pe un receiver necunoscut</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reveniți</translation>
 <translation id="595202126637698455">Urmărirea performanței este activată</translation>
 <translation id="5958529069007801266">Utilizator monitorizat</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Tasta de căutare + L</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
 <translation id="7034339000180558234">Se proiectează <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7067196344162293536">Rotire automată</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Activezi Deblocarea prin amprentă?</translation>

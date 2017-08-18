@@ -31,6 +31,7 @@
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
 <translation id="1117535567637097036">通过此政策设置的协议处理程序不会被用于处理 Android intent。</translation>
+<translation id="1122282995569868661">显示 <ph name="PRODUCT_NAME" /> 工具栏图标</translation>
 <translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
 
       如果您设置了此政策，那么无论用户是否已指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME" /> 都将使用本政策提供的目录。请勿将此政策设置为某个卷的根目录或用于其他用途的目录（因为 <ph name="PRODUCT_NAME" /> 会管理相关内容），以免丢失数据或发生其他意外错误。
@@ -52,6 +53,7 @@
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
+<translation id="123081309365616809">允许向设备投射内容</translation>
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
 <translation id="1291880496936992484">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将彻底移除 RC4（2016 年 9 月左右）。届时，此政策将不再有效。
 
@@ -242,6 +244,7 @@
       此政策适用于主要显示屏和所有辅助显示屏。
 
       如果此政策未设置，那么默认值为 0 度，并且用户可以更改该值。如果用户更改了默认值，显示屏在重新启动后不会重新应用默认值。</translation>
+<translation id="2156132677421487971">为 <ph name="PRODUCT_NAME" /> 配置相关政策。借助这项功能，用户可从浏览器将标签页、网站或桌面中的内容发送到远程显示器和音响系统。</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
 <translation id="2176565653304920879">设置此政策后，系统会根据所设的值采用下列某种方式执行自动检测时区流程：
@@ -534,6 +537,7 @@
       无论是否设置此政策或如何设置此政策，用户都无法更改 WPAD 优化设置。</translation>
 <translation id="3072045631333522102">用于零售模式登录屏幕的屏幕保护程序</translation>
 <translation id="3072847235228302527">为设备本地帐号设置服务条款</translation>
+<translation id="3086995894968271156">在 <ph name="PRODUCT_NAME" />中配置 Cast 接收器。</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
 <translation id="3117676313396757089">警告：从 57 版开始（2017 年 3 月左右），<ph name="PRODUCT_NAME" /> 中将彻底移除 DHE。届时，此政策将不再发挥作用。
@@ -893,6 +897,9 @@
       如果此政策的值为0，系统将使用默认缓存大小，并且用户无法更改该默认值。
 
       如果未设置此政策，系统将使用默认缓存大小，并且用户可以使用“--media-cache-size”标记覆盖默认值。</translation>
+<translation id="4508686775017063528">如果此政策设为 true 或未设置，系统将会启用 <ph name="PRODUCT_NAME" />，且用户将能通过以下途径启动这项功能：应用菜单、页面上下文菜单、支持 Cast 的网站上的媒体控件，以及（如果显示的话）Cast 工具栏图标。
+
+          如果此政策设为 false，系统将会停用 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4518251772179446575">每次网站尝试跟踪用户的地理位置时都询问我</translation>
 <translation id="4519046672992331730">在 <ph name="PRODUCT_NAME" /> 的多功能框中启用搜索建议功能，并禁止用户更改此设置。
 
@@ -996,6 +1003,7 @@
 <translation id="489803897780524242">此参数可控制是否为默认搜索服务提供商替换搜索字词</translation>
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="4906194810004762807">设备策略的更新频率</translation>
+<translation id="494613465159630803">Cast 接收器</translation>
 <translation id="4962262530309732070">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 会允许通过用户管理器添加用户。
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 会禁止通过用户管理器创建新的个人资料。</translation>
@@ -1280,6 +1288,7 @@
 <translation id="6155936611791017817">设置登录屏幕上大号光标的默认状态</translation>
 <translation id="6157537876488211233">代理绕过规则的逗号分隔列表</translation>
 <translation id="6158324314836466367">企业网上应用店名称（已弃用）</translation>
+<translation id="6161405879872578475">启用 <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">警告：从 43 版开始，<ph name="PRODUCT_NAME" /> 将完全停止支持 SSLv3（2015 年 7 月左右），同时还将取消此政策。
 
       如果此政策未配置，<ph name="PRODUCT_NAME" /> 将使用默认最低版本（在 <ph name="PRODUCT_NAME" /> 39 中为 SSLv3，在更高版本中为 TLS 1.0）。
@@ -1737,6 +1746,7 @@
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
+<translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 目标名称</translation>
 <translation id="7980227303582973781">无特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>

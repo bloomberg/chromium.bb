@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">κελί</translation>
 <translation id="3149472044574196936">Επόμενη γραμμή</translation>
 <translation id="3153024374267644603">Ενεργοποίηση ομιλίας</translation>
+<translation id="3153928844647607688">Πίνακας <ph name="TABLENAME" />, <ph name="TABLEROWS" /> επί <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Δεν υπάρχει προηγούμενο κουμπί.</translation>
 <translation id="3163593631834463955">Κενή κεφαλίδα στήλης</translation>
 <translation id="316542773973815724">Πλοήγηση</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4597896406374528575">Απρίλιος</translation>
 <translation id="460018603901637538">Αλλάξτε το στυλ προβολής σε παράθεση.</translation>
+<translation id="4601367666219428522">πίνακας <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Παράβλεψη του επόμενου πατήματος πλήκτρου</translation>
 <translation id="461613135510474570">Πρόταση</translation>
 <translation id="4647836961514597010">Επιλογέας χρώματος</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">Κενό κελί.</translation>
 <translation id="8215202828671303819">Πολλαπλής επιλογής</translation>
 <translation id="8224171046658870249">Αλλαγή σε ChromeVox Next</translation>
+<translation id="826991282343985864">σ$1στ$2</translation>
 <translation id="8276439074553447000">Μετάβαση στο προηγούμενο αντικείμενο με δυνατότητα εστίασης</translation>
 <translation id="8278417001922463147">Δεν υπάρχει προηγούμενο αντικείμενο.</translation>
 <translation id="8283603667300770666">Επόμενο πεδίο φόρμας</translation>

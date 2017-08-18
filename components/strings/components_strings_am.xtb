@@ -475,6 +475,7 @@
 <translation id="4708268264240856090">የእርስዎ ግንኙነት ተቋርጧል</translation>
 <translation id="471880041731876836">ይህን ጣቢያ የመጎብኘት ፈቃድ የለዎትም</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />የWindows አውታረ መረብ መመርመሪያን በማሄድ ላይ<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">የእርስዎ ክፍያ</translation>
 <translation id="4726672564094551039">መምሪያዎችን ዳግም ጫን</translation>
 <translation id="4728558894243024398">የመሣሪያ ስርዓት</translation>
 <translation id="4736825316280949806">Chromiumን ዳግም ያስጀምሩት</translation>
@@ -537,6 +538,7 @@
 <translation id="5205222826937269299">ስም ያስፈልጋል</translation>
 <translation id="5222812217790122047">ኢሜይል ያስፈልጋል</translation>
 <translation id="522700295135997067">ይህ ጣቢያ አሁን የይለፍ ቃልዎን ሰርቆት ሊሆን ይችላል</translation>
+<translation id="5230733896359313003">የሚላክበት አድራሻ</translation>
 <translation id="5251803541071282808">ደመና</translation>
 <translation id="5277279256032773186">በሥራ ላይ Chrome እየተጠቀሙ ነዎት? ንግድ ሥራዎች ለሠራተኞቻቸው የChrome ቅንብሮችን ማስተዳደር ይችላሉ። የበለጠ ይረዱ</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />እርስዎ ድር ላይ መሆን እንዲችሉ ሶፍትዌሩን በጊዜያዊነት ለማሰናከል የሚከተሉትን ደረጃዎች ይከተሉ። የአስተዳዳሪ ልዩ መብቶች ሊኖርዎት ይገባል።<ph name="END_PARAGRAPH" />
@@ -555,6 +557,7 @@
 <translation id="5308689395849655368">የብልሽት ሪፖርት ማድረግ ተሰናክሏል።</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5327248766486351172">ስም</translation>
+<translation id="5332219387342487447">የመላኪያ መንገድ</translation>
 <translation id="5355557959165512791">የዕውቅና ማረጋገጫው ስለተሻረ <ph name="SITE" />ን መጎብኘት አይችሉም። የአውታረ መረብ ስህተቶች እና ጥቃቶች አብዛኛው ጊዜ ጊዜያዊ ብቻ ናቸው፣ ስለዚህ ይህ ገጽ በኋላ ላይ ሊሠራ ይችላል።</translation>
 <translation id="536296301121032821">የመምሪያ ቅንብሮችን ማከማቸት አልተሳካም</translation>
 <translation id="5386426401304769735">የዚህ ጣቢያ የዕውቅና ማረጋገጫ ሰንሰለቱ SHA-1 በመጠቀም የተፈረመ የዕውቅና ማረጋገጫን ያካትታል።</translation>
@@ -982,6 +985,7 @@
 <translation id="9069693763241529744">በቅጥያ ታግዷል</translation>
 <translation id="9076283476770535406">ለአዋቂ ብቻ የሚሆን ይዘት ሊኖረው ይችላል</translation>
 <translation id="9078964945751709336">ተጨማሪ መረጃ ያስፈልጋል</translation>
+<translation id="9080712759204168376">የትዕዛዝ ማጠቃለያ</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> የእርስዎን መረጃ ለመጠበቅ በመደበኝነት ምስጠራን ይጠቀማል። Chromium አሁን ከ<ph name="SITE" /> ጋር ለመገናኘት ሲሞክር ድር ጣቢያው ያልተለመዱ እና ትክክል ያልሆኑ ምስክርነቶችን መልሷል። ይህ አንድ አጥቂ <ph name="SITE" />ን አስመስሎ ለመቅረብ ሲሞክር ነው ወይም አንድ የWi-Fi መግቢያ ገጽ ግንኙነቱን ሲቋረጥ ሊከሰት ይችላል። Chromium ማንኛውም የውሂብ ልውውጥ ከመካሄዱ በፊት ግንኙነቱን ስላቋረጠው አሁንም የእርስዎ መረጃ ደህንነት የተጠበቀ ነው።</translation>
 <translation id="910908805481542201">ይህን እንዳስተካክለው አግዘኝ</translation>
 <translation id="9128870381267983090">ከአውታረ መረብ ጋር ይገናኙ</translation>
@@ -1005,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{ምንም}=1{1 ንጥል}one{# ንጥሎች}other{# ንጥሎች}}</translation>
 <translation id="981121421437150478">ከመስመር ውጪ</translation>
 <translation id="988159990683914416">የገንቢዎች ግንባታ</translation>
+<translation id="989988560359834682">አድራሻ ያርትዑ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

@@ -31,6 +31,7 @@
           Ja šis iestatījums ir atspējots vai nav konfigurēts, attālās palīdzības saimniekdators darbosies lietotāja kontekstā un attālie lietotāji nevarēs veikt darbības ar privileģētajiem logiem darbvirsmā.</translation>
 <translation id="1096105751829466145">Noklusējuma meklētājprogramma</translation>
 <translation id="1117535567637097036">Protokolu apdarinātāji, kas iestatīti, izmantojot šo politiku, netiek lietoti, kad tiek apstrādāti Android nolūki.</translation>
+<translation id="1122282995569868661">Parādīt <ph name="PRODUCT_NAME" /> rīkjoslas ikonu</translation>
 <translation id="1128903365609589950">Konfigurē direktoriju, kuru <ph name="PRODUCT_NAME" /> izmantos kešatmiņā ievietoto failu glabāšanai diskā.
 
       Ja iestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> izmantos nodrošināto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--disk-cache-dir”. Lai izvairītos no datu zuduma vai neparedzētām kļūdām, šai politikai nav jābūt iestatītai sējuma saknes direktorijā vai direktorijā, kas tiek izmantots citiem mērķiem, jo <ph name="PRODUCT_NAME" /> pārvalda tā saturu.
@@ -53,6 +54,7 @@
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1221359380862872747">Ielādēt norādītos vietrāžus URL demonstrācijas pieteikšanās brīdī</translation>
+<translation id="123081309365616809">Iespējot satura apraidi ierīcē</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
 <translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
 
@@ -270,6 +272,7 @@
       Ja politika nav iestatīta, noklusējuma vērtība ir 0 grādi un lietotājs
       var to mainīt. Tādā gadījumā noklusējuma vērtība vairs netiek lietota,
       restartējot ierīci.</translation>
+<translation id="2156132677421487971">Konfigurējiet <ph name="PRODUCT_NAME" /> politikas. Izmantojot šo funkciju, lietotāji pārlūka cilnēs, vietnēs vai darbvirsmā redzamo saturu var pārsūtīt uz attāliem displejiem un skaņas sistēmām.</translation>
 <translation id="2168397434410358693">Aizkave līdz dīkstāvei, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
 <translation id="2176565653304920879">Ja šī politika ir iestatīta, atkarībā no iestatījuma vērtības būs pieejama viena no tālāk norādītajām automātiskās laika joslas noteikšanas plūsmām.
@@ -582,6 +585,7 @@
       Neatkarīgi no tā, vai šī politika ir iespējota un kā tā ir iespējota, lietotāji nevar mainīt WPAD optimizācijas iestatījumu.</translation>
 <translation id="3072045631333522102">Ekrānsaudzētājs, kas jāizmanto mazumtirdzniecības režīma pieteikšanās ekrānā</translation>
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
+<translation id="3086995894968271156">Konfigurējiet Cast uztvērēju operētājsistēmā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Iespējoto spraudņu saraksts</translation>
 <translation id="3101501961102569744">Izvēlas, kā jānorāda starpniekservera iestatījumi</translation>
 <translation id="3117676313396757089">Brīdinājums: DHE tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 57. versijas (aptuveni 2017. gada martā), un šī politika vairs nebūs spēkā.
@@ -970,6 +974,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šīs politikas vērtība ir “0”, tiks izmantots noklusējuma kešatmiņas lielums, taču lietotājs to nevarēs mainīt.
 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas lielums, kuru lietotājs varēs ignorēt, izmantojot atzīmi “--media-cache-size”.</translation>
+<translation id="4508686775017063528">Ja šai politikai ir iestatīta vērtība “True” vai tā nav iestatīta, <ph name="PRODUCT_NAME" /> tiks iespējota, un lietotāji to varēs palaist, izmantojot lietotnes izvēlni, lapu kontekstizvēlnes, multivides vadīklas vietnēs, kurās ir iespējota tehnoloģija Cast, un Cast rīkjoslas ikonu, ja tā tiek parādīta.
+
+          Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> tiks atspējota.</translation>
 <translation id="4518251772179446575">Vaicāt ikreiz, kad vietne vēlas izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="4519046672992331730">Tiek iespējota meklēšanas ieteikumu rādīšana produkta <ph name="PRODUCT_NAME" /> universālajā lodziņā, un lietotāji nevar mainīt šo iestatījumu.
 
@@ -1076,6 +1083,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="489803897780524242">Parametrs, kas nosaka meklēšanas vienuma izvietojumu noklusējuma meklētājprogrammā</translation>
 <translation id="4899708173828500852">Iespējo drošu pārlūkošanu</translation>
 <translation id="4906194810004762807">Ierīces politikas atsvaidzes ātrums</translation>
+<translation id="494613465159630803">Cast uztvērējs</translation>
 <translation id="4962262530309732070">Ja šai politikai ir iestatīta vērtība “True” vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārvaldniekā ir iespējota funkcija Pievienot personu.
 
       Ja šai politikai ir iestatīta vērtība “False”, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārvaldniekā nevar izveidot jaunus profilus.</translation>
@@ -1400,6 +1408,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6155936611791017817">Lielā kursora noklusējuma stāvokļa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="6158324314836466367">Uzņēmuma interneta veikala nosaukums (darbība ir pārtraukta)</translation>
+<translation id="6161405879872578475">Iespējo <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Brīdinājums: pēc 43. versijas (apmēram 2015. gada jūlijā) pārlūkā <ph name="PRODUCT_NAME" /> tiks pilnībā noņemts SSLv3 atbalsts, kā arī tajā pašā laikā tiks noņemta šī politika.
 
       Ja šī politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek izmantota noklusējuma minimālā versija. Pārlūka <ph name="PRODUCT_NAME" /> 39. versijā tā ir versija SSLv3, bet vēlākās versijās — TLS 1.0.
@@ -1897,6 +1906,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           Ja šis iestatījums ir iespējots, dators var atklāt attālus saimniekdatorus un izveidot ar tiem savienojumu, kaut arī tie ir šķirti ar ugunsmūri.
 
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, dators var izveidot savienojumus tikai ar lokālā tīkla saimniekdatoriem.</translation>
+<translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> galamērķa nosaukums</translation>
 <translation id="7980227303582973781">Nav specifisku ierobežojumu</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>

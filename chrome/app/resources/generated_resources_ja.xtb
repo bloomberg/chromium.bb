@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="COUNT" /> 件のうち <ph name="INDEX" /> 番目</translation>
-<translation id="106001083577824516">有害なソフトウェアを削除することができません</translation>
 <translation id="1062407476771304334">置換</translation>
 <translation id="1062866675591297858">監視対象ユーザーを管理するには<ph name="BEGIN_LINK" />監視対象ユーザーのダッシュボード<ph name="END_LINK" />を使用します。</translation>
 <translation id="1064662184364304002">メディア ライブラリ ファイル チェッカー</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" /> が Chrome 設定を元のデフォルトに戻すことを求めています。これにより、ホームページ、新しいタブの画面、検索エンジンがリセットされ、拡張機能が無効となり、すべてのタブの固定が解除されます。また、その他の一時的なキャッシュ データ（Cookie、コンテンツ データ、サイトデータなど）も消去されます。</translation>
 <translation id="1082725763867769612">オフライン ファイル</translation>
 <translation id="1084824384139382525">リンクのアドレスをコピー(&amp;E)</translation>
+<translation id="1089439967362294234">パスワードを変更</translation>
 <translation id="1090126737595388931">実行中のバックグラウンド アプリはありません</translation>
 <translation id="1091767800771861448">Esc キーを押すとスキップできます（非公式のビルドのみ）。</translation>
 <translation id="1093457606523402488">検出されたネットワーク:</translation>
@@ -450,7 +450,6 @@
     特定のウェブサイトへのアクセスを<ph name="BEGIN_BOLD" />許可または禁止<ph name="END_BOLD" />する
     監視対象ユーザーがどのウェブサイトにアクセスしたかを<ph name="BEGIN_BOLD" />確認<ph name="END_BOLD" />する
     その他の設定を<ph name="BEGIN_BOLD" />管理<ph name="END_BOLD" />する</translation>
-<translation id="1648797160541174252"><ph name="NETWORK_NAME" /> のネットワーク プロキシ</translation>
 <translation id="1648943974594387137">ログイン情報が古くなっています</translation>
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1650371550981945235">入力オプションを表示</translation>
@@ -1018,6 +1017,7 @@
 <translation id="2498436043474441766">プリンタを追加</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2498765460639677199">極大</translation>
+<translation id="2500471369733289700">プライバシー保護のためにブロックされています</translation>
 <translation id="2501173422421700905">証明書が保留になった</translation>
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2501797496290880632">ショートカットを入力する</translation>
@@ -1358,6 +1358,7 @@
 <translation id="2951247061394563839">ウィンドウを中央に配置</translation>
 <translation id="2951721188322348056">動画情報</translation>
 <translation id="2956763290572484660">Cookie: <ph name="COOKIES" /></translation>
+<translation id="2958721676848865875">拡張機能のパッケージ化に関する警告</translation>
 <translation id="2959614062380389916">管理者によって無効になっています</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
@@ -1371,6 +1372,7 @@
 <translation id="2971213274238188218">暗くする</translation>
 <translation id="2972557485845626008">ファームウェア</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
+<translation id="2972642118232180842">重要なコンテンツのみを実行する（推奨）</translation>
 <translation id="297870353673992530">DNS サーバー:</translation>
 <translation id="2979639724566107830">新しいウィンドウで開く</translation>
 <translation id="2981113813906970160">大きいマウス カーソルを表示する</translation>
@@ -1387,6 +1389,7 @@
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> でプライベート Wi-Fi 接続を確立します。</translation>
 <translation id="3004391367407090544">後でもう一度お試しください</translation>
 <translation id="300544934591011246">以前のパスワード</translation>
+<translation id="3006881078666935414">使用状況データはありません</translation>
 <translation id="3007214526293698309">比率を固定</translation>
 <translation id="3007771295016901659">タブを複製</translation>
 <translation id="3009300415590184725">モバイル データ サービスの設定処理をキャンセルしてもよろしいですか？</translation>
@@ -1450,6 +1453,7 @@
 <translation id="3082520371031013475">トラックパッドとマウスの設定</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">このタブがカメラまたはマイクを使用しています。</translation>
+<translation id="3083193146044397360">セキュリティ保護のために一時的にブロックされています</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">ここにドロップすると、インストールされます</translation>
 <translation id="3084771660770137092">Chrome のメモリが不足しているか、ウェブページのプロセスが何らかの原因で終了しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
@@ -1678,6 +1682,7 @@
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> を再起動してください</translation>
 <translation id="3424969259347320884">タブのクラッシュ時に行っていた操作をご説明ください</translation>
 <translation id="3427092606871434483">許可（デフォルト）</translation>
+<translation id="3429275422858276529">後で見つけやすいようにこのページをブックマークできます</translation>
 <translation id="3429599832623003132">$1 アイテム</translation>
 <translation id="3432227430032737297">表示中のサイトをすべて削除</translation>
 <translation id="3432757130254800023">映像と音声をローカル ネットワーク経由でディスプレイに送信する</translation>
@@ -1801,6 +1806,7 @@
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
 <translation id="3596235046596950091">クラウド サービスを有効にする</translation>
 <translation id="3600456501114769456">端末のローカルファイルへのアクセスは管理者によって禁止されています。</translation>
+<translation id="3603533104205588786">ページをブックマークするにはスターアイコンをクリックします</translation>
 <translation id="3603622770190368340">ネットワーク証明書を取得</translation>
 <translation id="3604048165392640554">モバイル接続が見つかりませんでした。他の端末でインスタント テザリングをオンにしてもう一度お試しください。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>
 <translation id="3605780360466892872">ボタンダウン</translation>
@@ -2576,6 +2582,7 @@
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
 <translation id="4820334425169212497">いいえ、表示されていません</translation>
 <translation id="4821086771593057290">パスワードが変更されました。新しいパスワードでもう一度お試しください。</translation>
+<translation id="4821725298388681253">これは早期リリースです。検索、テキスト入力といった一部の機能はまだご利用いただけません。</translation>
 <translation id="4821935166599369261">プロファイル記録の開始(&amp;P)</translation>
 <translation id="4823484602432206655">ユーザー設定とデバイス設定の読み取りと変更</translation>
 <translation id="4823651846660089135">デバイスは読み取り専用です</translation>
@@ -3527,6 +3534,7 @@
 <translation id="6232017090690406397">バッテリー</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> への接続が切断されました</translation>
 <translation id="6237816943013845465">画面の解像度を調整できます</translation>
+<translation id="6238923052227198598">ロック画面に最新のメモを表示する</translation>
 <translation id="6239558157302047471">フレームを再読み込み(&amp;F)</translation>
 <translation id="6241530762627360640">システムでペア設定されている Bluetooth デバイスの情報へのアクセスと、近くにある Bluetooth デバイスの検出。</translation>
 <translation id="6243774244933267674">サーバーを使用できません</translation>
@@ -3780,6 +3788,7 @@
 
 この機能は信頼できるアカウントにのみ使用してください。</translation>
 <translation id="6581162200855843583">Google ドライブ リンク</translation>
+<translation id="6582421931165117398">個人情報を保護するために、今すぐパスワードを変更してください。パスワードを変更する際は、まずログインが求められます。</translation>
 <translation id="6583851739559471707">煩わしい広告がよく表示されるサイトでブロック（推奨）</translation>
 <translation id="6584878029876017575">Microsoft ライフタイム署名</translation>
 <translation id="6585234750898046415">ログイン画面のアカウントに表示する画像を選択します。</translation>
@@ -3803,6 +3812,7 @@
 <translation id="6610183966322615106">プリンタの追加中にエラーが発生しました</translation>
 <translation id="6610610633807698299">URL を入力...</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
+<translation id="6613452264606394692">このページをブックマークすると、すばやくこのページに戻ることができます</translation>
 <translation id="6615455863669487791">表示</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> / <ph name="TOTAL_SIZE" /> コピー済み</translation>
 <translation id="661719348160586794">保存したパスワードはこちらに表示されます。</translation>
@@ -4610,6 +4620,7 @@
 <translation id="7876243839304621966">すべて削除</translation>
 <translation id="7877451762676714207">不明なサーバー エラーが発生しました。もう一度お試しになるか、サーバー管理者にご連絡ください。</translation>
 <translation id="7877680364634660272">使い方ガイド</translation>
+<translation id="7878562273885520351">パスワードが不正使用される可能性があります</translation>
 <translation id="7881483672146086348">アカウントを表示</translation>
 <translation id="7881969471599061635">字幕を無効にする</translation>
 <translation id="7882358943899516840">プロバイダの種類</translation>
@@ -4698,6 +4709,7 @@
 鍵ファイルは安全な場所に保管してください。拡張機能の新しいバージョンの作成時に必要となります。</translation>
 <translation id="799923393800005025">閲覧者</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
+<translation id="8001504501378762252">サイトでパスワードを盗まれた可能性があります</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8007030362289124303">バッテリー残量が少なくなりました</translation>
 <translation id="8008356846765065031">インターネットが切断されました。インターネット接続を確認してください。</translation>
@@ -4933,6 +4945,7 @@
 <translation id="8366396658833131068">ネットワーク接続が復元されました。キオスク アプリを起動するには、別のネットワークを選択するか、下の [続行] ボタンを押してください。</translation>
 <translation id="8366947248864804596">スマートフォンがロック解除された状態で近くにある場合は、選択するとデバイスのロックを解除できます。そうでない場合は、パスワードまたは PIN を入力します。</translation>
 <translation id="8368859634510605990">すべてのブックマークを開く(&amp;O)</translation>
+<translation id="8371695176452482769">お話しください</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8373360586245335572">すべてのサイトに対して通知の表示を許可する</translation>
 <translation id="8373553483208508744">タブをミュート</translation>
@@ -5104,6 +5117,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />または<ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">ページを再読み込み</translation>
 <translation id="8652139471850419555">優先ネットワーク</translation>
+<translation id="8652400352452647993">拡張機能のパッケージ化のエラー</translation>
 <translation id="8652487083013326477">ページ範囲のラジオボタン</translation>
 <translation id="8654151524613148204">ファイル サイズが大きすぎるため、お使いのパソコンでは処理できません。</translation>
 <translation id="8655295600908251630">チャンネル</translation>

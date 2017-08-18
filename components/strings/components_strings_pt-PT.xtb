@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Experimente desativar as extensões.</translation>
 <translation id="457875822857220463">Entrega</translation>
+<translation id="4582800630050655161">Pode perder o acesso à sua Conta Google ou ser vítima de roubo de identidade. O Chromium recomenda a alteração da palavra-passe agora.</translation>
 <translation id="4587425331216688090">Pretende remover o endereço do Chrome?</translation>
 <translation id="4592951414987517459">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras moderno.</translation>
 <translation id="4594403342090139922">&amp;Anular eliminação</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4690462567478992370">Parar de utilizar um certificado inválido</translation>
+<translation id="4690954380545377795">Pode perder o acesso à sua Conta Google ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">A ligação foi interrompida</translation>
 <translation id="471880041731876836">Não tem autorização para aceder a este site</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar o Diagnóstico de rede do Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">O seu pagamento</translation>
 <translation id="4726672564094551039">Recarregar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4736825316280949806">Reiniciar o Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Experiências</translation>
 <translation id="5205222826937269299">Nome obrigatório</translation>
 <translation id="5222812217790122047">Email obrigatório</translation>
+<translation id="522700295135997067">Este site pode ter roubado a sua palavra-passe</translation>
+<translation id="5230733896359313003">Endereço de envio</translation>
 <translation id="5251803541071282808">Nuvem</translation>
 <translation id="5277279256032773186">Utiliza o Chrome no trabalho? As empresas podem gerir as definições do Chrome para os seus funcionários. Saiba mais</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Siga estes passos para desativar temporariamente o software para que possa aceder à Web. Precisa de privilégios de administrador.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">O relatório de falha está desativado.</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="5332219387342487447">Método de envio</translation>
 <translation id="5355557959165512791">Não pode visitar <ph name="SITE" /> neste momento, porque o certificado foi revogado. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="536296301121032821">Falha ao armazenar as definições da política</translation>
 <translation id="5386426401304769735">A cadeia de certificados inclui um certificado assinado através de SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">Os utilizadores mal intencionados neste site podem tentar enganá-lo para instalar programas que são prejudiciais para a sua experiência de navegação (por exemplo, ao alterar a sua página inicial ou ao mostrar anúncios adicionais em sites que visita).</translation>
 <translation id="7674629440242451245">Está interessado nas novas e fantásticas funcionalidades do Chrome? Experimente o nosso canal para programadores em chrome.com/dev.</translation>
 <translation id="7682287625158474539">Envio</translation>
+<translation id="7699293099605015246">De momento, não estão disponíveis artigos</translation>
 <translation id="7701040980221191251">Nenhum</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Prosseguir para <ph name="SITE" /> (não seguro)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7793809570500803535">A página Web de <ph name="SITE" /> poderá estar temporariamente inativa ou poderá ter sido movida permanentemente para um novo endereço Web.</translation>
 <translation id="7800304661137206267">A ligação é encriptada utilizando <ph name="CIPHER" />, com <ph name="MAC" /> para autenticação de mensagens e <ph name="KX" /> como mecanismo de troca de chaves.</translation>
+<translation id="7802523362929240268">O site é legítimo</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do fornecedor de serviços de Internet, nem dos Sites que visitar.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Os cartões de débito e pré-pagos são admitidos.</translation>
+<translation id="7878562273885520351">A palavra-passe pode estar comprometida</translation>
 <translation id="7887683347370398519">Verifique o Código de Segurança/CVC e tente novamente</translation>
 <translation id="79338296614623784">Introduza um número de telefone válido</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">Bloqueada por uma extensão</translation>
 <translation id="9076283476770535406">Pode ter conteúdo para adultos</translation>
 <translation id="9078964945751709336">São necessárias mais informações</translation>
+<translation id="9080712759204168376">Resumo da encomenda</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
+<translation id="910908805481542201">Ajudar-me a corrigir isto</translation>
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Comece e inicie sessão no Chrome antes de utilizar esta aplicação.</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Nenhum}=1{1 item}one{# itens}other{# itens}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Compilação de programador</translation>
+<translation id="989988560359834682">Editar endereço</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

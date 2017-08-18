@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Subukang i-disable ang iyong mga extension.</translation>
 <translation id="457875822857220463">Paghahatid</translation>
+<translation id="4582800630050655161">Maaari kang mawalan ng access sa iyong Google Account o manakawan ng pagkakakilanlan. Inirerekomenda ng Chromium na palitan na ang password mo.</translation>
 <translation id="4587425331216688090">Alisin ang address sa Chrome?</translation>
 <translation id="4592951414987517459">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang makabagong cipher suite.</translation>
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; naglalaman ng mga error ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4690462567478992370">Ihinto ang paggamit ng di-wastong certificate</translation>
+<translation id="4690954380545377795">Maaari kang mawalan ng access sa iyong Google Account o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan na ang password mo.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Naputol ang iyong koneksyon</translation>
 <translation id="471880041731876836">Wala kang pahintulot na bisitahin ang site na ito</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Magpatakbo ng Windows Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Iyong pagbabayad</translation>
 <translation id="4726672564094551039">I-reload ang mga patakaran</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">I-restart ang Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Mga Eksperimento</translation>
 <translation id="5205222826937269299">Kailangan ng pangalan</translation>
 <translation id="5222812217790122047">Kailangan ng email</translation>
+<translation id="522700295135997067">Maaaring ninakaw ng site na ito ang iyong password</translation>
+<translation id="5230733896359313003">Address na Padadalhan</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Ginagamit mo ba ang Chrome sa trabaho? Maaaring pamahalaan ng mga negosyo ang mga setting ng Chrome para sa kanilang mga empleyado. Matuto pa</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Sundin ang mga hakbang na ito upang pansamantalang i-disable ang software upang makapunta ka sa web. Kakailanganin mo ang mga pribilehiyong pang-administrator.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">Hindi pinagana ang pag-uulat ng pag-crash.</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
+<translation id="5332219387342487447">Pamamaraan ng Pagpapadala</translation>
 <translation id="5355557959165512791">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil binawi na ang certificate nito. Karaniwang pansamantala lang ang mga error at pag-atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
 <translation id="536296301121032821">Nabigo i-load ang mga setting ng patakaran sa store</translation>
 <translation id="5386426401304769735">Naglalaman ang chain ng certificate para sa site na ito ng certificate na naka-sign gamit ang SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">Maaaring subukan ng mga attacker sa site na ito na linlangin ka upang mag-install ng mga program na makakasama sa iyong karanasan sa pag-browse (halimbawa, sa pamamagitan ng pagbabago ng iyong homepage o pagpapakita ng mga karagdagang ad sa mga site na binibisita mo).</translation>
 <translation id="7674629440242451245">Interesado sa mga astig at bagong tampok sa Chrome? Subukan ang aming dev channel sa chrome.com/dev.</translation>
 <translation id="7682287625158474539">Pagpapadala</translation>
+<translation id="7699293099605015246">Hindi available sa ngayon ang mga artikulo</translation>
 <translation id="7701040980221191251">Wala</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Magpatuloy sa <ph name="SITE" /> (hindi ligtas)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificate</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Magdagdag</translation>
 <translation id="7793809570500803535">Maaaring pansamantalang sira ang webpage sa <ph name="SITE" /> o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="7800304661137206267">Na-encrypt ang koneksyon gamit ang <ph name="CIPHER" />, kasama ang <ph name="MAC" /> para sa pagpapatunay ng mensahe at <ph name="KX" /> bilang mekanismo ng pangunahing pagpapalit.</translation>
+<translation id="7802523362929240268">Lehitimo ang site</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7805768142964895445">Katayuan</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">Gayunpaman, hindi ka invisible. Kahit mag-incognito ka, hindi matatago ang iyong pagba-browse mula sa iyong employer, sa iyong internet service provider o sa mga website na binibisita mo.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">Tinatanggap ang mga debit at prepaid card.</translation>
+<translation id="7878562273885520351">Maaaring makompromismo ang iyong password</translation>
 <translation id="7887683347370398519">Tingnan ang iyong CVC at subukang muli</translation>
 <translation id="79338296614623784">Maglagay ng wastong numero ng telepono</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -976,7 +985,9 @@
 <translation id="9069693763241529744">Na-block ng isang extension</translation>
 <translation id="9076283476770535406">Maaaring mayroon itong mature content</translation>
 <translation id="9078964945751709336">Nangangailangan ng higit pang impormasyon</translation>
+<translation id="9080712759204168376">Buod ng Order</translation>
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
+<translation id="910908805481542201">Tulungan akong ayusin ito</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9137248913990643158">Magsimula at mag-sign in sa Chrome bago gamitin ang app na ito.</translation>
@@ -998,5 +1009,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Wala}=1{1 item}one{# item}other{# na item}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Bumuo ang Developer</translation>
+<translation id="989988560359834682">I-edit ang Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

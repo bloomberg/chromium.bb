@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">Застереження</translation>
 <translation id="1058262162121953039">PUK-код</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> з <ph name="COUNT" /></translation>
-<translation id="106001083577824516">Не вдається вилучити зловмисне програмне забезпечення</translation>
 <translation id="1062407476771304334">Замінити</translation>
 <translation id="1062866675591297858">Керуйте своїми контрольованими користувачами на <ph name="BEGIN_LINK" />Інформаційній панелі контрольованих користувачів<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">Засіб перевірки медіафайлів бібліотеки</translation>
@@ -450,7 +449,6 @@
     <ph name="BEGIN_BOLD" />дозволяти чи забороняти<ph name="END_BOLD" /> певні веб-сайти;
     <ph name="BEGIN_BOLD" />переглядати<ph name="END_BOLD" /> веб-сайти, які відвідував цей користувач;
     <ph name="BEGIN_BOLD" />керувати<ph name="END_BOLD" /> іншими налаштуваннями.</translation>
-<translation id="1648797160541174252">Проксі-сервер мережі для мережі <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">Дані для входу в обліковий запис застаріли</translation>
 <translation id="164969095109328410">Пристрій Chrome</translation>
 <translation id="1650371550981945235">Показати опції введення</translation>
@@ -2583,6 +2581,7 @@
 <translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4820334425169212497">Ні</translation>
 <translation id="4821086771593057290">Ваш пароль змінено. Повторіть спробу з новим паролем.</translation>
+<translation id="4821725298388681253">Це попередній випуск. Деякі функції, як-от пошук і введення тексту, ще не доступні.</translation>
 <translation id="4821935166599369261">&amp;Профілювання ввімкнено</translation>
 <translation id="4823484602432206655">Переглядати та змінювати налаштування користувача й пристрою</translation>
 <translation id="4823651846660089135">Пристрій лише для перегляду</translation>
@@ -3534,6 +3533,7 @@
 <translation id="6232017090690406397">Акумулятор</translation>
 <translation id="6232116551750539448">З’єднання з мережею "<ph name="NAME" />" утрачено</translation>
 <translation id="6237816943013845465">Дає змогу налаштувати роздільну здатність екрана</translation>
+<translation id="6238923052227198598">Показувати останню нотатку на заблокованому екрані</translation>
 <translation id="6239558157302047471">Перезавантажити фрейм</translation>
 <translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
 <translation id="6243774244933267674">Сервер недоступний</translation>
@@ -4942,6 +4942,7 @@
 <translation id="8366396658833131068">З’єднання з мережею відновлено. Виберіть іншу мережу або натисніть кнопку "Продовжити" нижче, щоб запустити додаток для терміналів.</translation>
 <translation id="8366947248864804596">Коли ваш телефон розблокований і розташований поблизу, просто виберіть "Розблокувати". В іншому випадку введіть пароль або PIN-код.</translation>
 <translation id="8368859634510605990">&amp;Відкрити всі закладки</translation>
+<translation id="8371695176452482769">Диктуйте</translation>
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
 <translation id="8373360586245335572">Дозволити всім сайтам показувати сповіщення</translation>
 <translation id="8373553483208508744">Вимкнути звук на вкладках</translation>

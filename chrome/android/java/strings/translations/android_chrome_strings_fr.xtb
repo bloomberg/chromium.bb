@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
+<translation id="1105960400813249514">Capture d'écran</translation>
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1137305377394488060">de la dernière heure</translation>
@@ -123,6 +124,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2154484045852737596">Modifier la carte</translation>
+<translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Assurer votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, application Web : <ph name="APP_URL" /></translation>

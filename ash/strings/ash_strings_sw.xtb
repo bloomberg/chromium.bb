@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
 <translation id="1550523713251050646">Bofya ili upate chaguo zaidi</translation>
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Kifaa cha Chrome</translation>
 <translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Anwani ya IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Kifaa hiki kinadhibitiwa kibiashara</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Njia ya mkato ya kugeuza Hali ya Utofautishaji wa Juu imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Kubali</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha midia vinapatikana</translation>
 <translation id="5170568018924773124">Onyesha katika folda</translation>
 <translation id="5207949376430453814">Angazia kareti ya maandishi</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
 <translation id="5927132638760172455">Inatuma kwa mpokeaji asiyejulikana</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rejesha</translation>
 <translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
 <translation id="5958529069007801266">Mtumiaji anayesimamiwa</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Upatikanaji</translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
 <translation id="7034339000180558234">Inatuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7067196344162293536">Zungusha kiotomatiki</translation>
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Je, ungependa kuwasha kipengele cha kufungua kwa kutumia Alama ya Kidole?</translation>

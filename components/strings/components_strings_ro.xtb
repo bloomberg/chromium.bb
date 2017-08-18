@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Dezactivează extensiile.</translation>
 <translation id="457875822857220463">Livrare</translation>
+<translation id="4582800630050655161">Este posibil să pierzi accesul la Contul Google sau să fii victima unui furt de identitate. Chromium îți recomandă să îți schimbi acum parola.</translation>
 <translation id="4587425331216688090">Elimini adresa din Chrome?</translation>
 <translation id="4592951414987517459">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare modernă.</translation>
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4690462567478992370">Nu mai folosi un certificat nevalid</translation>
+<translation id="4690954380545377795">Este posibil să pierzi accesul la Contul Google sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Conexiunea a fost întreruptă</translation>
 <translation id="471880041731876836">Nu ai permisiunea să accesezi acest site</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />să rulezi Diagnostice rețea Windows<ph name="END_LINK" />;</translation>
+<translation id="472349245089439925">Plata</translation>
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="4736825316280949806">repornește Chromium;</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5205222826937269299">Numele este obligatoriu</translation>
 <translation id="5222812217790122047">Adresa de e-mail este obligatorie</translation>
+<translation id="522700295135997067">Este posibil ca acest site să îți fi furat chiar acum parola</translation>
+<translation id="5230733896359313003">Adresă de expediere</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Folosești Chrome la serviciu? Companiile pot gestiona setările Chrome pentru angajații lor. Află mai multe</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Urmează acești pași ca să dezactivezi temporar software-ul, astfel încât să poți accesa internetul. Vei avea nevoie de privilegii de administrator.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">Raportarea blocărilor este dezactivată.</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5327248766486351172">Nume</translation>
+<translation id="5332219387342487447">Metoda de expediere</translation>
 <translation id="5355557959165512791">Nu poți accesa <ph name="SITE" /> acum, deoarece certificatul său a fost revocat. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">Atacatorii de pe acest site pot încerca să te înșele pentru a instala programe care dăunează experienței de navigare (de exemplu, schimbând pagina de pornire sau afișând anunțuri suplimentare pe site-urile pe care le accesezi).</translation>
 <translation id="7674629440242451245">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru pentru dezvoltatori, de la chrome.com/dev.</translation>
 <translation id="7682287625158474539">Expediere</translation>
+<translation id="7699293099605015246">Articolele nu sunt disponibile în acest moment</translation>
 <translation id="7701040980221191251">Niciuna</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Accesați <ph name="SITE" /> (nesigur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="7793809570500803535">Pagina web de la <ph name="SITE" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="7800304661137206267">Conexiunea este criptată utilizând <ph name="CIPHER" />, cu <ph name="MAC" /> pentru autentificarea mesajelor și <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
+<translation id="7802523362929240268">Site-ul este legitim</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Se acceptă carduri de debit și preplătite.</translation>
+<translation id="7878562273885520351">Este posibil ca parola să fie compromisă</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="79338296614623784">Introdu un număr de telefon valid</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">Blocată de o extensie</translation>
 <translation id="9076283476770535406">Poate include conținut destinat adulților</translation>
 <translation id="9078964945751709336">Sunt necesare mai multe informații</translation>
+<translation id="9080712759204168376">Rezumatul comenzii</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
+<translation id="910908805481542201">Ajută-mă să remediez această eroare</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9137248913990643158">Pornește și conectează-te la Chrome înainte de a folosi această aplicație.</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Niciunul}=1{1 element}few{# elemente}other{# de elemente}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Versiune de programare</translation>
+<translation id="989988560359834682">Editați adresa</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

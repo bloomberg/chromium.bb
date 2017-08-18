@@ -462,6 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Testa att inaktivera tilläggen.</translation>
 <translation id="457875822857220463">Leverans</translation>
+<translation id="4582800630050655161">Du kan förlora tillgången till Google-kontot eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="4587425331216688090">Vill du ta bort adressen från Chrome?</translation>
 <translation id="4592951414987517459">Anslutningen till <ph name="DOMAIN" /> är krypterad med en modern krypteringssvit.</translation>
 <translation id="4594403342090139922">&amp;Ångra Ta bort</translation>
@@ -470,10 +471,12 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat innehåller fel. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4690462567478992370">Sluta använda ett ogiltigt certifikat</translation>
+<translation id="4690954380545377795">Du kan förlora tillgången till Google-kontot eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Anslutningen avbröts</translation>
 <translation id="471880041731876836">Du har inte behörighet att besöka den här webbplatsen.</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" /> köra nätverksdiagnostik för Windows<ph name="END_LINK" /></translation>
+<translation id="472349245089439925">Din betalning</translation>
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4736825316280949806">Starta om Chromium</translation>
@@ -535,6 +538,8 @@
 <translation id="5199729219167945352">Experiment</translation>
 <translation id="5205222826937269299">Namn måste anges</translation>
 <translation id="5222812217790122047">E-postadress måste anges</translation>
+<translation id="522700295135997067">Webbplatsen kan ha stulit ditt lösenord</translation>
+<translation id="5230733896359313003">Leveransadress</translation>
 <translation id="5251803541071282808">Moln</translation>
 <translation id="5277279256032773186">Använder du Chrome på jobbet? Företag kan hantera de anställdas inställningar i Chrome. Läs mer</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Följ stegen nedan för att inaktivera programvaran tillfälligt så att du kan komma ut på internet. Du måste ha administratörsbehörighet.<ph name="END_PARAGRAPH" />
@@ -553,6 +558,7 @@
 <translation id="5308689395849655368">Krashrapportering har  inaktiverats.</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>
+<translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5355557959165512791">Det går inte att besöka <ph name="SITE" /> just nu eftersom dess certifikat har återkallats. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
 <translation id="5386426401304769735">Certifikatkedjan för den här webbplatsen innehåller ett certifikat som signerades med SHA-1.</translation>
@@ -824,6 +830,7 @@
 <translation id="7669271284792375604">Angripare på den här webbplatsen kan försöka lura dig att installera program som skadar din webbupplevelse (till exempel genom att byta ut din startsida eller visa extra annonser på webbplatser som du besöker).</translation>
 <translation id="7674629440242451245">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår utvecklarkanal på chrome.com/dev.</translation>
 <translation id="7682287625158474539">Frakt</translation>
+<translation id="7699293099605015246">Inga artiklar är tillgängliga just nu</translation>
 <translation id="7701040980221191251">Inget</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsätt till <ph name="SITE" /> (osäkert)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
@@ -841,6 +848,7 @@
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="7793809570500803535">Webbsidan på <ph name="SITE" /> kan ligga nere för tillfället eller så kan den ha flyttats permanent till en ny webbadress.</translation>
 <translation id="7800304661137206267">Anslutningen är krypterad med <ph name="CIPHER" />, med <ph name="MAC" /> för meddelandeautentisering och <ph name="KX" /> som mekanism för nyckelutbyte.</translation>
+<translation id="7802523362929240268">Legitim webbplats</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -850,6 +858,7 @@
 <translation id="785549533363645510">Men du är inte osynlig. Inkognitoläget döljer inte webbhistoriken för din arbetsgivare, internetleverantören eller webbplatserna du besöker.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7878176543348854470">Betalkort och förbetalda kort får användas.</translation>
+<translation id="7878562273885520351">Lösenordet kan vara utsatt för risk</translation>
 <translation id="7887683347370398519">Kontrollera CVC-koden och försök igen</translation>
 <translation id="79338296614623784">Ange ett giltigt telefonnummer</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -977,7 +986,9 @@
 <translation id="9069693763241529744">Blockerades av ett tillägg</translation>
 <translation id="9076283476770535406">Den kan innehålla barnförbjudet innehåll</translation>
 <translation id="9078964945751709336">Mer information krävs</translation>
+<translation id="9080712759204168376">Sammanfattning av beställningen</translation>
 <translation id="9103872766612412690">På <ph name="SITE" /> används normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
+<translation id="910908805481542201">Hjälp mig att åtgärda detta</translation>
 <translation id="9128870381267983090">Anslut till ett nätverk</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9137248913990643158">Logga in på Chrome innan du använder den här appen.</translation>
@@ -999,5 +1010,6 @@
 <translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 objekt}other{# objekt}}</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988159990683914416">Utvecklarversion</translation>
+<translation id="989988560359834682">Redigera adress</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

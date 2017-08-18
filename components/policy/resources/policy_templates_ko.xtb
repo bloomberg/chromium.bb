@@ -31,6 +31,7 @@
           이 설정을 사용 중지하거나 설정하지 않으면 원격 지원 호스트가 사용자의 컨텍스트에서 실행되며 원격 사용자는 데스크톱에서 관리자 창으로 상호 작용할 수 없습니다.</translation>
 <translation id="1096105751829466145">기본 검색 공급자</translation>
 <translation id="1117535567637097036">Android 인텐트를 처리할 때 이 정책을 통해 설정된 프로토콜 핸들러는 사용되지 않습니다.</translation>
+<translation id="1122282995569868661"><ph name="PRODUCT_NAME" /> 툴바 아이콘 표시</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉토리를 설정합니다.
 
       이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉토리나 다른 목적으로 사용되는 디렉토리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉토리의 콘텐츠를 관리하기 때문입니다.
@@ -53,6 +54,7 @@
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
+<translation id="123081309365616809">기기에 콘텐츠 전송 사용 설정</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
 
@@ -269,6 +271,7 @@
       이 정책이 설정되지 않은 경우, 기본값은 0도이며 사용자는
       이를 자유롭게 변경할 수 있습니다. 이 경우 재시작 시 기본값이
       다시 적용되지 않습니다.</translation>
+<translation id="2156132677421487971">사용자가 탭, 사이트 또는 데스크톱의 콘텐츠를 브라우저에서 원격 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 <ph name="PRODUCT_NAME" />의 정책을 설정합니다.</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
 <translation id="2176565653304920879">이 정책을 설정하면 설정 값에 따라 자동 시간대 감지 절차가 다음 방법 중 한 가지로 진행됩니다.
@@ -579,6 +582,7 @@
       이 정책 설정 여부 및 방법과 관계없이 WPAD 최적화 설정은 사용자에 의해 변경될 수 없습니다.</translation>
 <translation id="3072045631333522102">판매 모드의 로그인 화면에서 사용되는 화면 보호기</translation>
 <translation id="3072847235228302527">기기 로컬 계정에 대한 서비스 약관 설정</translation>
+<translation id="3086995894968271156"><ph name="PRODUCT_NAME" />의 Cast 수신기를 설정합니다.</translation>
 <translation id="3096595567015595053">사용 가능한 플러그인 목록</translation>
 <translation id="3101501961102569744">프록시 서버 설정을 지정하는 방법 선택</translation>
 <translation id="3117676313396757089">경고: 버전 57(2017년 3월경)부터 <ph name="PRODUCT_NAME" />에서 DHE가 완전히 제거되며 이후 이 정책은 적용되지 않습니다.
@@ -967,6 +971,9 @@
       이 정책 값이 0인 경우 기본 캐시 크기가 사용되지만 사용자가 변경할 수는 없습니다.
 
       이 정책이 설정되지 않으면 기본 크기가 사용되며 사용자는 --media-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
+<translation id="4508686775017063528">이 정책을 true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되어 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시된 경우)을 통해 실행할 수 있습니다.
+
+          이 정책을 false로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
 <translation id="4518251772179446575">사이트에서 사용자의 실제 위치를 추적할 때마다 확인</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" />의 검색주소창에서 추천 검색어를 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
@@ -1073,6 +1080,7 @@
 <translation id="489803897780524242">기본 검색 공급자의 검색어 위치를 조정하는 매개변수</translation>
 <translation id="4899708173828500852">세이프 브라우징 사용</translation>
 <translation id="4906194810004762807">기기 정책 새로고침 빈도</translation>
+<translation id="494613465159630803">Cast 수신기</translation>
 <translation id="4962262530309732070">이 정책을 true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />의 사용자 관리자에서 사용자를 추가할 수 있습니다.
 
       이 정책을 false로 설정하면 <ph name="PRODUCT_NAME" />의 사용자 관리자에서 새 프로필을 만들 수 없습니다.</translation>
@@ -1392,6 +1400,7 @@
 <translation id="6155936611791017817">로그인 화면에서 큰 커서의 기본 상태를 설정</translation>
 <translation id="6157537876488211233">쉼표로 구분된 프록시 우회 규칙 목록</translation>
 <translation id="6158324314836466367">엔터프라이즈 웹 스토어 이름(지원 중단됨)</translation>
+<translation id="6161405879872578475"><ph name="PRODUCT_NAME" /> 사용 설정</translation>
 <translation id="6167074305866468481">경고: SSLv3 지원은 버전 43 출시 이후부터(2015년 7월경) <ph name="PRODUCT_NAME" />에서 완전히 중단되며 이 정책도 함께 중단됩니다.
 
       이 정책이 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최소 버전을 사용하는데 <ph name="PRODUCT_NAME" /> 39에서는 SSLv3를, 이후 버전에서는 TLS 1.0을 사용합니다.
@@ -1892,6 +1901,7 @@
           이 설정을 사용하면 방화벽에 의해 차단된 경우에도 이 컴퓨터가 원격 호스트 컴퓨터를 검색하고 연결할 수 있습니다.
 
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되는 경우 이 컴퓨터는 로컬 네트워크 내에 있는 호스트 컴퓨터에만 연결할 수 있습니다.</translation>
+<translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 전송 대상의 이름</translation>
 <translation id="7980227303582973781">특별한 제한 없음</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>

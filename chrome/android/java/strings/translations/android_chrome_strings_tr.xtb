@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
+<translation id="1105960400813249514">Screen Capture</translation>
 <translation id="1111673857033749125">Diğer cihazlarınızda kaydedilmiş yer işaretleri burada görünür.</translation>
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
 <translation id="1137305377394488060">son 1 saat</translation>
@@ -123,6 +124,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2146738493024040262">Hazır Uygulamayı aç</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2154484045852737596">Kartı düzenle</translation>
+<translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2156074688469523661">Kalan site sayısı (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web uygulaması. <ph name="APP_URL" /></translation>

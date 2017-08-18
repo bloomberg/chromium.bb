@@ -31,6 +31,7 @@
           Si ce paramètre est désactivé ou non configuré, l'hôte d'assistance à distance est exécuté dans le contexte de l'utilisateur et les utilisateurs distants ne peuvent pas interagir avec des fenêtres élevées sur le Bureau.</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
+<translation id="1122282995569868661">Affiche l'icône de la barre d'outils <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers mis en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur "--disk-cache-dir". Pour éviter la perte de données ou d'autres erreurs inattendues, ne définissez pas cette règle sur le répertoire racine d'un volume ni sur un répertoire utilisé à d'autres fins, car <ph name="PRODUCT_NAME" /> pourra gérer son contenu.
@@ -53,6 +54,7 @@
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
 <translation id="1221359380862872747">Charger les URL spécifiées lors de la connexion à la démonstration</translation>
+<translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
 <translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
 
@@ -273,6 +275,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si la règle n'est pas définie, la valeur par défaut est 0 degré et
       l'utilisateur est libre de la modifier. Dans ce cas, la valeur par défaut n'est
       pas réappliquée au redémarrage.</translation>
+<translation id="2156132677421487971">Configurer les règles pour <ph name="PRODUCT_NAME" />, une fonctionnalité permettant aux utilisateurs de caster le contenu des onglets, des sites ou de leur bureau depuis leur navigateur sur des écrans ou systèmes audio distants.</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
 <translation id="2176565653304920879">Lorsque cette règle est configurée, le mode de détection automatique du fuseau horaire dépend de la valeur définie :
@@ -589,6 +592,7 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
       Quelle que soit la définition de cette règle, les utilisateurs n'ont pas la possibilité de modifier le paramètre d'optimisation WPAD.</translation>
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
 <translation id="3072847235228302527">Définir les conditions d'utilisation d'un compte local de l'appareil</translation>
+<translation id="3086995894968271156">Configurer le récepteur Cast dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Liste des plug-ins activés</translation>
 <translation id="3101501961102569744">Sélectionner le mode de spécification des paramètres de serveur proxy</translation>
 <translation id="3117676313396757089">Avertissement : DHE sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 57 (autour de mars 2017) et cette règle ne sera plus valable.
@@ -983,6 +987,9 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--media-cache-size".</translation>
+<translation id="4508686775017063528">Si cette règle est définie sur "true" ou n'est pas définie, <ph name="PRODUCT_NAME" /> est activé, et les utilisateurs peuvent le lancer depuis le menu de l'application, les menus contextuels des pages, les commandes multimédias sur les sites Web compatibles Cast et l'icône Cast de la barre d'outils (si elle est affichée).
+
+          Si cette règle est définie sur "false", <ph name="PRODUCT_NAME" /> est désactivé.</translation>
 <translation id="4518251772179446575">Demander chaque fois qu'un site veut suivre la position géographique des utilisateurs</translation>
 <translation id="4519046672992331730">Activer les suggestions de recherche dans l'Omnibox de <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de modifier ce paramètre
 
@@ -1089,6 +1096,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="489803897780524242">Paramètre contrôlant le positionnement des termes de recherche pour le moteur de recherche par défaut</translation>
 <translation id="4899708173828500852">Activer la navigation sécurisée</translation>
 <translation id="4906194810004762807">Fréquence d'actualisation des règles de l'appareil</translation>
+<translation id="494613465159630803">Récepteur Cast</translation>
 <translation id="4962262530309732070">Si cette règle est définie sur "True" ou n'est pas définie, <ph name="PRODUCT_NAME" /> permettra d'ajouter une personne à partir du gestionnaire d'utilisateurs.
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils à partir du gestionnaire d'utilisateurs.</translation>
@@ -1413,6 +1421,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="6155936611791017817">Définir l'état par défaut du grand curseur sur l'écran de connexion</translation>
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
 <translation id="6158324314836466367">Nom de boutique en ligne d'entreprise (abandonné)</translation>
+<translation id="6161405879872578475">Active <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Attention : La compatibilité SSLv3 sera supprimée de <ph name="PRODUCT_NAME" /> après la version 43 (vers juillet 2015). Cette règle sera alors supprimée.
 
       Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui correspond à SSLv3 dans <ph name="PRODUCT_NAME" /> 39 et à TLS 1.0 dans les versions ultérieures.
@@ -1914,6 +1923,7 @@ Permet l'utilisation de serveurs STUN et relais lors de la connexion à un clien
 Si ce paramètre est activé, cette machine peut découvrir et se connecter à des machines hôte distantes, même si elles sont séparées par un pare-feu. 
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
+<translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>

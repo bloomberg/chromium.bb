@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
+<translation id="1105960400813249514">Screen Capture</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
 <translation id="1137305377394488060">hace una hora</translation>
@@ -123,6 +124,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2146738493024040262">Abrir app instantánea</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2154484045852737596">Editar tarjeta</translation>
+<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Protegerte a ti y a tu dispositivo contra sitios peligrosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> (aplicación web), <ph name="APP_URL" /></translation>

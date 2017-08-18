@@ -31,6 +31,7 @@
           Ako je ta postavka onemogućena ili nije konfigurirana, host daljinske pomoći pokrenut će se u kontekstu korisnika i udaljeni korisnici neće moći pristupiti privilegiranim prozorima na računalu.</translation>
 <translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
 <translation id="1117535567637097036">Rukovatelji protokolom postavljeni putem ovog pravila ne upotrebljavaju se prilikom upotrebe Androidovih namjera.</translation>
+<translation id="1122282995569868661">Prikazivanje ikone <ph name="PRODUCT_NAME" /> alatne trake</translation>
 <translation id="1128903365609589950">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> koristiti za pohranu predmemoriranih datoteka na disku.
 
       Ako postavite to pravilo, taj će direktorij <ph name="PRODUCT_NAME" /> upotrebljavati bez obzira na to je li korisnik naveo oznaku "--disk-cache-dir". Kako bi se spriječio gubitak podataka ili druge neočekivane pogreške, pravilo se ne smije postaviti na korijenski direktorij ili direktorij jedinice koji se koristi u druge svrhe jer njegovim sadržajem upravlja <ph name="PRODUCT_NAME" />.
@@ -53,6 +54,7 @@
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
+<translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
 
@@ -261,6 +263,7 @@
       Ako se to pravilo ne postavi, zadana je vrijednost 0 stupnjeva i korisnik
       je može promijeniti. U tom slučaju zadana vrijednost neće se ponovo
       primjenjivati nakon ponovnog pokretanja.</translation>
+<translation id="2156132677421487971">Konfigurirajte pravila za <ph name="PRODUCT_NAME" />, značajku koja korisnicima omogućuje da sadržaj kartica, web-lokacija ili radne površine iz preglednika pošalju na udaljene zaslone i zvučne sustave.</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
 <translation id="2176565653304920879">Kada se to pravilo postavi, automatsko otkrivanje vremenske zone odvijat će se na jedan od sljedećih način ovisno o vrijednosti postavke:
@@ -553,6 +556,7 @@
       Neovisno o tome hoće li se to pravilo postaviti i na koji način, korisnici ne mogu mijenjati postavku optimizacije WPAD-a.</translation>
 <translation id="3072045631333522102">Čuvar zaslona koji će se upotrebljavati na zaslonu prijave u prodajnom načinu</translation>
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
+<translation id="3086995894968271156">Konfiguriranje pravila Cast prijemnika u proizvodu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Popis omogućenih dodataka</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
 <translation id="3117676313396757089">Upozorenje: DHE potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 57 (oko ožujka 2017.) i ovo će pravilo tada prestati funkcionirati.
@@ -917,6 +921,9 @@
       Ako je vrijednost ovog pravila 0, upotrijebit će se zadana veličina predmemorije, ali je korisnik neće moći promijeniti.
 
       Ako ovo pravilo nije postavljeno, upotrijebit će se zadana veličina i korisnik će je moći nadjačati oznakom --media-cache-size.</translation>
+<translation id="4508686775017063528">Ako se to pravilo postavi na "točno" ili se ne postavi, <ph name="PRODUCT_NAME" /> bit će omogućen i korisnici će ga moći pokrenuti putem izbornika aplikacije, kontekstnih izbornika na stranici, medijskih kontrola na web-lokacijama koje podržavaju Cast te ikone Casta na alatnoj traci (ako je prikazana).
+
+          Ako se pravilo postavi na "netočno", <ph name="PRODUCT_NAME" /> bit će onemogućen.</translation>
 <translation id="4518251772179446575">Pitaj kad web-lokacija želi pratiti fizičku lokaciju korisnika</translation>
 <translation id="4519046672992331730">Omogućuje prijedloge pretraživanja u višenamjenskom okviru usluge <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
 
@@ -1022,6 +1029,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="489803897780524242">Parametar koji kontrolira položaj pojma za pretraživanje za zadanog pružatelja usluge pretraživanja</translation>
 <translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
 <translation id="4906194810004762807">Brzina osvježavanja za pravilo uređaja</translation>
+<translation id="494613465159630803">Cast prijemnik</translation>
 <translation id="4962262530309732070">Ako se pravilo postavi na točno ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
 
       Ako se pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
@@ -1314,6 +1322,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>
 <translation id="6157537876488211233">Popis pravila zaobilaženja proxyja odvojenih zarezima</translation>
 <translation id="6158324314836466367">Naziv web-trgovine tvrtke (obustavljeno)</translation>
+<translation id="6161405879872578475">Omogući <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Upozorenje: podrška za SSLv3 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 43 (otprilike u srpnju 2015.) i istovremeno će se ukloniti i ovo pravilo.
 
       Ako se pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je SSLv3 za <ph name="PRODUCT_NAME" /> 39 i TLS 1.0 za novije verzije.
@@ -1771,6 +1780,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
+<translation id="7976157349247117979">Naziv odredišta za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>

@@ -30,6 +30,7 @@
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, hostiteľ vzdialenej pomoci bude spustený v kontexte daného používateľa a vzdialení používatelia nemôžu interagovať s privilegovanými oknami na pracovnej ploche.</translation>
 <translation id="1096105751829466145">Predvolený poskytovateľ vyhľadávania</translation>
 <translation id="1117535567637097036">Obslužné nástroje protokolov nastavené prostredníctvom tohto pravidla sa nepoužívajú pri spracovávaní intencií Androidu.</translation>
+<translation id="1122282995569868661">Zobrazuje sa ikona panela s nástrojmi funkcie <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
 
       Ak toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ uviedol príznak „--disk-cache-dir“. Ak chcete zabrániť strate dát alebo iným neočakávaných chybám, nemali by ste v rámci tohto pravidla nastaviť hlavný adresár zväzku alebo adresár používaný na iné účely, pretože <ph name="PRODUCT_NAME" /> spravuje jeho obsah.
@@ -52,6 +53,7 @@
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1221359380862872747">Po prihlásení v režime ukážky načítať zadané webové adresy</translation>
+<translation id="123081309365616809">Povolenie prenášania obsahu do zariadenia</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
 <translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
@@ -260,6 +262,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, predvolená hodnota bude 0 stupňov a
       používateľ ju môže zmeniť. V tomto prípade sa predvolená hodnota
       pri reštartovaní opakovane nepoužije.</translation>
+<translation id="2156132677421487971">Umožňuje nakonfigurovať pravidlá pre funkciu <ph name="PRODUCT_NAME" />, ktorá používateľom umožňuje odosielať obsah kariet, webov alebo plochy z prehliadača na vzdialené obrazovky a do vzdialených zvukových systémov.</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
 <translation id="2176565653304920879">Keď je toto pravidlo nastavené, postup automatického zisťovania časového pásma bude v závislosti od hodnoty daného nastavenia prebiehať jedným z nasledujúcich spôsobov:
@@ -573,6 +576,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Bez ohľadu na to, či je toto pravidlo nastavené, alebo na spôsob, akým bolo nastavené, nemôžu používatelia nastavenie optimalizácie WPAD zmeniť.</translation>
 <translation id="3072045631333522102">Šetrič obrazovky, ktorý sa má použiť na prihlasovacej obrazovke v režime určenom pre predaj</translation>
 <translation id="3072847235228302527">Nastaviť Zmluvné podmienky pre miestny účet v zariadení</translation>
+<translation id="3086995894968271156">Konfigurácia prijímača Cast v systéme <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Zoznam povolených doplnkov</translation>
 <translation id="3101501961102569744">Zvoľte spôsob konfigurácie nastavení servera proxy</translation>
 <translation id="3117676313396757089">Upozornenie: Po verzii 57 (približne v marci 2017) bude šifrovací algoritmus DHE z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
@@ -959,6 +963,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo bude mať hodnotu 0, použije sa predvolená veľkosť vyrovnávacej pamäte, ale používateľ ju nebude môcť zmeniť.
 
       Ak toto pravidlo nebude nastavené, použije sa predvolená veľkosť a používateľ ju bude môcť prepísať pomocou príznaku --media-cache-size.</translation>
+<translation id="4508686775017063528">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, funkcia <ph name="PRODUCT_NAME" /> bude povolená a používatelia ju budú môcť spustiť v ponuke aplikácií, kontextových ponukách na stránke, ovládacích prvkoch médií na weboch podporujúcich funkciu Cast a (ak sa zobrazuje) pomocou ikony panela s nástrojmi funkcie Cast.
+
+          Ak je toto pravidlo nastavené na hodnotu False, funkcia <ph name="PRODUCT_NAME" /> bude zakázaná.</translation>
 <translation id="4518251772179446575">Opýtať sa vždy, keď chcú stránky sledovať fyzickú polohu používateľa</translation>
 <translation id="4519046672992331730">Vo všeobecnom poli prehliadača <ph name="PRODUCT_NAME" /> povolí funkciu návrhov pre vyhľadávanie a bráni používateľom toto nastavenie zmeniť.
 
@@ -1067,6 +1074,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="489803897780524242">Parameter kontrolujúci umiestnenie vyhľadávacích výrazov pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="4899708173828500852">Povoliť Bezpečné prehliadanie</translation>
 <translation id="4906194810004762807">Frekvencia obnovenia pravidiel pre zariadenie</translation>
+<translation id="494613465159630803">Prijímač Cast</translation>
 <translation id="4962262530309732070">Ak je toto pravidlo nastavené na možnosť True alebo nie je nakonfigurované, <ph name="PRODUCT_NAME" /> povolí pridanie osoby prostredníctvom správcu používateľov.
 
       Ak je toto pravidlo nastavené na možnosť False, <ph name="PRODUCT_NAME" /> nepovolí vytvorenie nového profilu prostredníctvom správcu používateľov.</translation>
@@ -1384,6 +1392,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
+<translation id="6161405879872578475">Umožňuje povoliť funkciu <ph name="PRODUCT_NAME" /></translation>
 <translation id="6167074305866468481">Upozornenie: Podpora protokolu SSLv3 bude v prehliadači <ph name="PRODUCT_NAME" /> od verzie 43 kompletne ukončená (okolo júla 2015) a zároveň bude odstránené toto pravidlo.
 
       Ak toto pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> použije predvolenú minimálnu verziu, teda protokol SSLv3 v prehliadači <ph name="PRODUCT_NAME" /> verzie 39 a protokol TLS 1.0 v neskorších verziách.
@@ -1885,6 +1894,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak je toto nastavenie povolené, môžete tento počítač vyhľadať a pripojiť sa k počítačom vzdialeného hostiteľa aj v prípade, ak sú oddelené bránou firewall.
 
           Ak je toto nastavenie zakázané a brána firewall filtruje odchádzajúce pripojenia cez protokol UDP, môže sa tento počítač pripojiť len k počítačom hostiteľa v rámci miestnej siete.</translation>
+<translation id="7976157349247117979">Názov cieľového priečinka <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>

@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Odjavljujete se s računa kojim upravlja <ph name="DOMAIN_NAME" />. Time će se izbrisati podaci preglednika Chrome pohranjeni na ovom uređaju, ali ti će podaci ostati na vašem Google računu.</translation>
+<translation id="1105960400813249514">Snimka zaslona</translation>
 <translation id="1111673857033749125">Ovdje će se prikazivati oznake koje ste spremili na drugim uređajima.</translation>
 <translation id="1121094540300013208">Izvješća o upotrebi i rušenju programa</translation>
 <translation id="1137305377394488060">od proteklog sata</translation>
@@ -123,6 +124,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2146738493024040262">Otvori instant aplikaciju</translation>
 <translation id="2148716181193084225">Danas</translation>
 <translation id="2154484045852737596">Uredite karticu</translation>
+<translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Zaštitite sebe i svoj uređaj od opasnih web-lokacija</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web-aplikacija. <ph name="APP_URL" /></translation>

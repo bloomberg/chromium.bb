@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283">已选中第 <ph name="INDEX" /> 项，共 <ph name="COUNT" /> 项</translation>
-<translation id="106001083577824516">无法移除有害软件</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1062866675591297858">请通过<ph name="BEGIN_LINK" />受监管用户信息中心<ph name="END_LINK" />管理您的受监管用户。</translation>
 <translation id="1064662184364304002">媒体库文件检查工具</translation>
@@ -58,6 +57,7 @@
 <translation id="1082398631555931481"><ph name="THIRD_PARTY_TOOL_NAME" />要将您的 Chrome 设置恢复为原始默认设置。这不仅会重置您的主页、“打开新的标签页”页面和搜索引擎，而且还会禁用您的扩展程序并取消固定所有标签页。此外，其他临时数据和缓存的数据（例如 Cookie、内容和网站数据）也将被清除。</translation>
 <translation id="1082725763867769612">离线文件</translation>
 <translation id="1084824384139382525">复制链接地址(&amp;E)</translation>
+<translation id="1089439967362294234">更改密码</translation>
 <translation id="1090126737595388931">没有任何后台应用在运行</translation>
 <translation id="1091767800771861448">按 ESC 键可跳过更新（仅限非官方版本）。</translation>
 <translation id="1093457606523402488">可见网络：</translation>
@@ -446,7 +446,6 @@
     <ph name="BEGIN_BOLD" />允许或禁止<ph name="END_BOLD" />访问某些网站，
     <ph name="BEGIN_BOLD" />审核<ph name="END_BOLD" />受监管用户访问过的网站，以及
     <ph name="BEGIN_BOLD" />管理<ph name="END_BOLD" />其他设置。</translation>
-<translation id="1648797160541174252"><ph name="NETWORK_NAME" />的网络代理</translation>
 <translation id="1648943974594387137">登录详细信息已过期</translation>
 <translation id="164969095109328410">Chrome设备</translation>
 <translation id="1650371550981945235">显示输入法选项</translation>
@@ -1014,6 +1013,7 @@
 <translation id="2498436043474441766">添加打印机</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2498765460639677199">最大</translation>
+<translation id="2500471369733289700">已屏蔽相应权限以保护您的隐私</translation>
 <translation id="2501173422421700905">待批证书</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2501797496290880632">输入快捷键</translation>
@@ -1353,6 +1353,7 @@
 <translation id="2951247061394563839">使窗口居中</translation>
 <translation id="2951721188322348056">视频信息</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> 个 Cookie</translation>
+<translation id="2958721676848865875">打包扩展程序警告</translation>
 <translation id="2959614062380389916">已被管理员禁用</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（已提供扩展功能）</translation>
 <translation id="2961695502793809356">点击可前进，按住可查看历史记录</translation>
@@ -1366,6 +1367,7 @@
 <translation id="2971213274238188218">调低亮度</translation>
 <translation id="2972557485845626008">固件</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
+<translation id="2972642118232180842">只运行重要内容（推荐）</translation>
 <translation id="297870353673992530">DNS 服务器：</translation>
 <translation id="2979639724566107830">在新窗口中打开</translation>
 <translation id="2981113813906970160">显示大号鼠标光标</translation>
@@ -1382,6 +1384,7 @@
 <translation id="3003967365858406397">您的 <ph name="PHONE_NAME" /> 将创建一个私享的 Wi-Fi 网络连接。</translation>
 <translation id="3004391367407090544">请稍后再试</translation>
 <translation id="300544934591011246">旧密码</translation>
+<translation id="3006881078666935414">无使用情况数据</translation>
 <translation id="3007214526293698309">更正宽高比</translation>
 <translation id="3007771295016901659">复制标签</translation>
 <translation id="3009300415590184725">确定要取消移动数据服务安装过程吗？</translation>
@@ -1445,6 +1448,7 @@
 <translation id="3082520371031013475">触控板和鼠标设置</translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">此标签页正在使用您的摄像头或麦克风。</translation>
+<translation id="3083193146044397360">已暂时屏蔽相应权限以保护您的安全</translation>
 <translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">拖放以安装</translation>
 <translation id="3084771660770137092">Chrome 浏览器内存不足或因其他原因网页进程终止。要继续，请重新加载或转到其他网页。</translation>
@@ -1671,6 +1675,7 @@
 <translation id="3423858849633684918">请重新启动 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">请说明此标签页崩溃时您在做什么</translation>
 <translation id="3427092606871434483">允许（默认）</translation>
+<translation id="3429275422858276529">为此网页添加书签，以便日后查找</translation>
 <translation id="3429599832623003132">$1 项</translation>
 <translation id="3432227430032737297">移除显示的所有 Cookie</translation>
 <translation id="3432757130254800023">向本地网络上的显示屏发送音频和视频</translation>
@@ -1794,6 +1799,7 @@
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="3596235046596950091">启用云服务</translation>
 <translation id="3600456501114769456">您的管理员禁止他人访问您设备上的本地文件。</translation>
+<translation id="3603533104205588786">点击星形图标即可为网页添加书签</translation>
 <translation id="3603622770190368340">获取网络证书</translation>
 <translation id="3604048165392640554">未找到任何移动网络连接。请在您的其他设备上打开即时网络共享，然后重试。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="3605780360466892872">男性商务人士</translation>
@@ -2565,6 +2571,7 @@
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4820334425169212497">没看到</translation>
 <translation id="4821086771593057290">您的密码已更改。请使用新密码重试。</translation>
+<translation id="4821725298388681253">这是早期版本。某些功能（例如搜索和文本输入）尚在开发中。</translation>
 <translation id="4821935166599369261">分析已启用(&amp;P)</translation>
 <translation id="4823484602432206655">读取和更改用户设置与设备设置</translation>
 <translation id="4823651846660089135">设备目前处于只读模式</translation>
@@ -3508,6 +3515,7 @@
 <translation id="6232017090690406397">电池</translation>
 <translation id="6232116551750539448">与“<ph name="NAME" />”的连接已中断</translation>
 <translation id="6237816943013845465">可让您调整屏幕分辨率</translation>
+<translation id="6238923052227198598">始终将最新记事显示在锁定屏幕上</translation>
 <translation id="6239558157302047471">重新加载框架(&amp;F)</translation>
 <translation id="6241530762627360640">获取与您的系统配对的蓝牙设备的相关信息，以及发现附近的蓝牙设备。</translation>
 <translation id="6243774244933267674">服务器不可用</translation>
@@ -3760,6 +3768,7 @@
 
 请仅通过您信任的帐号使用此功能。</translation>
 <translation id="6581162200855843583">Google 云端硬盘链接</translation>
+<translation id="6582421931165117398">为了保护您的个人信息，请立即更改密码。不过，您必须先登录，然后才能更改密码。</translation>
 <translation id="6583851739559471707">已阻止常常会展示侵扰性广告的网站显示广告（推荐）</translation>
 <translation id="6584878029876017575">Microsoft 生存时间签名</translation>
 <translation id="6585234750898046415">选择您帐号在登录屏幕上显示的图片。</translation>
@@ -3783,6 +3792,7 @@
 <translation id="6610183966322615106">添加打印机时出错</translation>
 <translation id="6610610633807698299">输入网址...</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
+<translation id="6613452264606394692">只需为此网页添加书签，便可在需要时快速返回到此处</translation>
 <translation id="6615455863669487791">显示图标</translation>
 <translation id="6615807189585243369">已复制 <ph name="BURNT_AMOUNT" />（共 <ph name="TOTAL_SIZE" />）</translation>
 <translation id="661719348160586794">您保存过的密码将会显示在此处。</translation>
@@ -4579,6 +4589,7 @@
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7877451762676714207">未知服务器错误。请重试或与服务器管理员联系。</translation>
 <translation id="7877680364634660272">导览</translation>
+<translation id="7878562273885520351">您的密码可能会被盗用</translation>
 <translation id="7881483672146086348">查看帐号</translation>
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7882358943899516840">提供商类型</translation>
@@ -4667,6 +4678,7 @@
 请妥善保存您的密钥文件。您还需要使用该文件创建新版扩展程序。</translation>
 <translation id="799923393800005025">可以查看</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
+<translation id="8001504501378762252">某个网站可能盗取了您的密码</translation>
 <translation id="8004582292198964060">浏览器</translation>
 <translation id="8007030362289124303">电池电量低</translation>
 <translation id="8008356846765065031">网络已断开，请检查您的互联网连接是否正常。</translation>
@@ -4902,6 +4914,7 @@
 <translation id="8366396658833131068">您的网络连接已恢复。要启动自助服务终端应用，请选择其他网络或按下方的“继续”按钮。</translation>
 <translation id="8366947248864804596">如果您的手机就在附近且未被锁定，您只需选择它即可解锁此设备。否则，您将需要输入密码或 PIN 码才能为其解锁。</translation>
 <translation id="8368859634510605990">打开所有书签(&amp;O)</translation>
+<translation id="8371695176452482769">请开始说话</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8373360586245335572">允许所有网站显示通知</translation>
 <translation id="8373553483208508744">将所有标签页静音</translation>
@@ -5073,6 +5086,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />或<ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">强制重新加载此页</translation>
 <translation id="8652139471850419555">首选网络</translation>
+<translation id="8652400352452647993">打包扩展程序错误</translation>
 <translation id="8652487083013326477">页码范围单选按钮</translation>
 <translation id="8654151524613148204">很抱歉，文件过大，计算机无法处理。</translation>
 <translation id="8655295600908251630">渠道</translation>

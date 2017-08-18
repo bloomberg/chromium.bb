@@ -6,6 +6,7 @@
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1068672505746868501">Страниците на <ph name="SOURCE_LANGUAGE" /> да не се превеждат</translation>
 <translation id="1080790410959514870">Излизате от профил, управляван от <ph name="DOMAIN_NAME" />. Съхраняваните на това устройство данни в Chrome ще се изтрият, но ще останат в профила ви в Google.</translation>
+<translation id="1105960400813249514">Заснемане на екрана</translation>
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
 <translation id="1121094540300013208">Отчети за употребата и сигнали за сривове</translation>
 <translation id="1137305377394488060">последния час</translation>
@@ -123,6 +124,7 @@
 <translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2154484045852737596">Редактиране на картата</translation>
+<translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Защита от опасни сайтове за вас и устройството ви</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>

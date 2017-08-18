@@ -220,6 +220,7 @@
 <translation id="3143851963874289911">ћелија мреже</translation>
 <translation id="3149472044574196936">Следећи ред</translation>
 <translation id="3153024374267644603">Говор је укључен</translation>
+<translation id="3153928844647607688">Табела <ph name="TABLENAME" />, <ph name="TABLEROWS" /> х <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Нема претходног дугмета.</translation>
 <translation id="3163593631834463955">Празно заглавље колоне</translation>
 <translation id="316542773973815724">Навигација</translation>
@@ -405,6 +406,7 @@
 <translation id="4597532268155981612">образац</translation>
 <translation id="4597896406374528575">април</translation>
 <translation id="460018603901637538">Промени стил приказа у „упоредо“.</translation>
+<translation id="4601367666219428522">таб <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Занемарујемо следећи притисак на тастер</translation>
 <translation id="461613135510474570">Реченица</translation>
 <translation id="4647836961514597010">Бирач боја</translation>
@@ -782,6 +784,7 @@
 <translation id="820417203470636242">Празна ћелија.</translation>
 <translation id="8215202828671303819">Вишеструки избор</translation>
 <translation id="8224171046658870249">Прешли сте на ChromeVox Next</translation>
+<translation id="826991282343985864">р$1к$2</translation>
 <translation id="8276439074553447000">Прелазак на претходну ставку која може да се фокусира</translation>
 <translation id="8278417001922463147">Нема претходног чланка.</translation>
 <translation id="8283603667300770666">Следеће поље обрасца</translation>

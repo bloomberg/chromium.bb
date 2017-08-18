@@ -82,7 +82,7 @@
 <translation id="174268867904053074">पुढील ग्राफिक</translation>
 <translation id="1781173782405573156">की द्वारे पास करा</translation>
 <translation id="1787176709638001873">संकेतशब्द संपादन मजकूर</translation>
-<translation id="1802710350767629429">अद्यतन टिपा दर्शवा</translation>
+<translation id="1802710350767629429">अपडेट टिपा दर्शवा</translation>
 <translation id="1810107444790159527">सूची बॉक्स</translation>
 <translation id="1828385960365606039">मे</translation>
 <translation id="1834891354138622109">स्तंभ</translation>
@@ -219,6 +219,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">पुढील रेखा</translation>
 <translation id="3153024374267644603">भाषण चालू</translation>
+<translation id="3153928844647607688">सारणी <ph name="TABLENAME" />, <ph name="TABLEROWS" /> बाय <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">मागील बटण नाही.</translation>
 <translation id="3163593631834463955">रिक्त स्‍तंभ शीर्षलेख</translation>
 <translation id="316542773973815724">नेव्हिगेशन</translation>
@@ -403,6 +404,7 @@
 <translation id="4597532268155981612">फॉर्म</translation>
 <translation id="4597896406374528575">एप्रिल</translation>
 <translation id="460018603901637538">प्रदर्शन आकार शेजारी शेजारी वर बदला.</translation>
+<translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">पुढील की दाबणे दुर्लक्षित करत आहे</translation>
 <translation id="461613135510474570">वाक्य</translation>
 <translation id="4647836961514597010">रंग निवडक</translation>
@@ -569,7 +571,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="5937336320314038555">{COUNT,plural, =1{समान}one{# समान चिन्हे}other{# समान चिन्हे}}</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5948123859135882163">संरचना आणि सिमेंटिक मधील गणितीय पदावलीचे प्रस्तुतीकरण टॉगल करा</translation>
-<translation id="5948485979596965684">आपल्याला ChromeVox च्या एका मुख्य रिलीझवर अद्यतनित केले गेले आहे!</translation>
+<translation id="5948485979596965684">आपल्याला ChromeVox च्या एका मुख्य रिलीझवर अपडेट केले गेले आहे!</translation>
 <translation id="5955304353782037793">अ‍ॅप</translation>
 <translation id="5956928062748260866">संवाद</translation>
 <translation id="5963413905009737549">विभाग</translation>
@@ -687,7 +689,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7229749224609077523">8-बिंदू ब्रेल सारणी निवडा:</translation>
 <translation id="72393384879519786">मथळा</translation>
 <translation id="7241683698754534149">एका नवीन टॅबमध्ये मोठे वर्णन उघडा</translation>
-<translation id="7248671827512403053">अनुप्रयोग</translation>
+<translation id="7248671827512403053">अॅप्लिकेशन</translation>
 <translation id="725969808843520477">पुढील रेडिओ बटण</translation>
 <translation id="7269119382257320590">कोणतेही विरामचिन्‍ह नाही</translation>
 <translation id="7273174640290488576">रिक्त</translation>
@@ -781,6 +783,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="820417203470636242">रिक्त सेल.</translation>
 <translation id="8215202828671303819">एकाधिक निवड</translation>
 <translation id="8224171046658870249">ChromeVox Next वर स्विच केले</translation>
+<translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">मागील फोकस करण्यायोग्य आयटमवर जा</translation>
 <translation id="8278417001922463147">मागील लेख नाही.</translation>
 <translation id="8283603667300770666">पुढील फॉर्म फील्‍ड</translation>
@@ -874,7 +877,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="9178973770513562274">ब्राउझ करण्यासाठी वर आणि खाली बाण की वापरा किंवा शोधण्यासाठी टाइप करा.</translation>
 <translation id="9192904702577636854">विस्तीर्ण</translation>
 <translation id="9212322457209634662">पुढील निवड नाही.</translation>
-<translation id="923331726185079994">ChromeVox अद्यतनित केला</translation>
+<translation id="923331726185079994">ChromeVox अपडेट केला</translation>
 <translation id="930275611743429116">निवड प्रारंभ किंवा समाप्त करा.</translation>
 <translation id="948171205378458592">बोलण्याचा दर कमी करा</translation>
 <translation id="955917170449423694">क्लासिक ChromeVox वर स्विच केले</translation>

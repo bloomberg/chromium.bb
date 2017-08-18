@@ -39,7 +39,6 @@
 <translation id="1056898198331236512">تحذير</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> من <ph name="COUNT" /></translation>
-<translation id="106001083577824516">تتعذر إزالة البرامج الضارة</translation>
 <translation id="1062407476771304334">استبدال</translation>
 <translation id="1062866675591297858">يمكنك إدارة المستخدمين الخاضعين للإشراف عبر <ph name="BEGIN_LINK" />لوحة التحكم في المستخدمين الخاضعين للإشراف<ph name="END_LINK" />.</translation>
 <translation id="1064662184364304002">مدقق ملف مكتبة الوسائط</translation>
@@ -451,7 +450,6 @@
     <ph name="BEGIN_BOLD" />السماح لمواقع ويب معينة أو حظرها<ph name="END_BOLD" />،
     <ph name="BEGIN_BOLD" />ومراجعة<ph name="END_BOLD" /> مواقع الويب التي زارها المستخدم الذي يخضع للإدارة،
     <ph name="BEGIN_BOLD" />وإدارة<ph name="END_BOLD" /> الإعدادات الأخرى.</translation>
-<translation id="1648797160541174252">خادم وكيل الشبكة لـ <ph name="NETWORK_NAME" /></translation>
 <translation id="1648943974594387137">تفاصيل تسجيل الدخول قديمة</translation>
 <translation id="164969095109328410">‏جهاز Chrome</translation>
 <translation id="1650371550981945235">عرض خيارات الإدخال</translation>
@@ -2578,6 +2576,7 @@
 <translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
 <translation id="4820334425169212497">لا، أنا لا أراه.</translation>
 <translation id="4821086771593057290">تم تغيير كلمة المرور. يُرجى المحاولة مرة أخرى باستخدام كلمة مرورك الجديدة.</translation>
+<translation id="4821725298388681253">يُعد ذلك إصدارًا أوليًا. ستكون بعض الميزات، مثل إدخال النص والبحث غير متاحة بعد.</translation>
 <translation id="4821935166599369261">&amp;التوصيف مفعّل</translation>
 <translation id="4823484602432206655">قراءة إعدادات المستخدم والجهاز وتغييرها</translation>
 <translation id="4823651846660089135">الجهاز للقراءة فقط</translation>
@@ -3529,6 +3528,7 @@
 <translation id="6232017090690406397">البطارية</translation>
 <translation id="6232116551750539448">انقطع الاتصال بـ <ph name="NAME" /></translation>
 <translation id="6237816943013845465">تسمح لك بضبط دقة الشاشة</translation>
+<translation id="6238923052227198598">إبقاء آخر ملاحظة على شاشة التأمين</translation>
 <translation id="6239558157302047471">إعادة تحميل الإطار</translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="6243774244933267674">الخادم غير متاح</translation>
@@ -4938,6 +4938,7 @@
 <translation id="8366396658833131068">تمت استعادة اتصال الشبكة. يُرجى تحديد شبكة أخرى أو الضغط على الزر "متابعة" أدناه لتشغيل تطبيق الكشك.</translation>
 <translation id="8366947248864804596">عندما يكون هاتفك غير مقفل وقريب، ما عليك سوى تحديد إلغاء القفل. أو يمكنك إدخال كلمة المرور أو رقم التعريف الشخصي التابع لك.</translation>
 <translation id="8368859634510605990">&amp;فتح كل الإشارات المرجعية</translation>
+<translation id="8371695176452482769">تحدث الآن</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8373360586245335572">السماح لكل المواقع بعرض الإشعارات</translation>
 <translation id="8373553483208508744">تجاهل علامات التبويب</translation>

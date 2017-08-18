@@ -21,7 +21,6 @@
 <translation id="15373452373711364">Stor muspekare</translation>
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
-<translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1698760176351776263">IPv6-adress: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Enheten är företagshanterad</translation>
@@ -143,7 +142,6 @@
 <translation id="4905614135390995787">Kortkommandot för att aktivera och inaktivera högkontrastläget har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="5207949376430453814">Markera textmarkören</translation>
@@ -169,7 +167,6 @@
 <translation id="5901316534475909376">Skift+Escape</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5927132638760172455">Castar till en okänd mottagare</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Återgå</translation>
 <translation id="595202126637698455">Resultatspårning aktiverat</translation>
 <translation id="5958529069007801266">Övervakad användare</translation>
@@ -210,7 +207,6 @@
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
@@ -218,7 +214,6 @@
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7246339268451149667">Vill du aktivera upplåsning med fingeravtryck?</translation>
