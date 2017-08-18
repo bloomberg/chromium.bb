@@ -44,6 +44,10 @@ class FakeContentPasswordManagerDriver
     show_pw_suggestions_options_ = -1;
   }
 
+  void reset_called_manual_fallback_suggestion() {
+    called_manual_fallback_suggestion_ = false;
+  }
+
   bool called_show_not_secure_warning() const {
     return called_show_not_secure_warning_;
   }

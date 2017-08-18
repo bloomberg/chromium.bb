@@ -3169,4 +3169,16 @@ TEST_F(PasswordAutofillAgentTest,
   EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
 }
 
+TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
+  SetManualFallbacks();
+  LoadHTML(kFormHTML);
+  SetFocused(password_element_);
+  SimulateElementClick("password");
+  EXPECT_TRUE(GetCalledShowManualFallbackSuggestion());
+  fake_driver_.reset_called_manual_fallback_suggestion();
+  password_element_.SetValue("123");
+  password_element_.SetAutofilled(false);
+  ASSERT_FALSE(GetCalledShowManualFallbackSuggestion());
+}
+
 }  // namespace autofill
