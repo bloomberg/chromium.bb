@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_FALLBACK_TASK_PROVIDER_H_
 #define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_FALLBACK_TASK_PROVIDER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -42,6 +43,13 @@ class FallbackTaskProvider : public TaskProvider {
   // is appropriate to show that task.
   void ShowTask(Task* task);
 
+  // Called to add a task to the |pending_shown_tasks_| which delays showing the
+  // task for a duration controlled by kTimeDelayForPendingTask.
+  void ShowTaskLater(Task* task);
+
+  // This is called after the delay to show the task that has been delayed.
+  void ShowPendingTask(Task* task);
+
   // This is used to hide a task after |OnTaskAddedBySource| has decided that it
   // is appropriate to hide that task.
   void HideTask(Task* task);
@@ -63,9 +71,10 @@ class FallbackTaskProvider : public TaskProvider {
   // whatever is observing it.
   std::vector<Task*> shown_tasks_;
 
-  // Always keep this the last member of this class to make sure it's the
-  // first thing to be destructed.
-  base::WeakPtrFactory<FallbackTaskProvider> weak_ptr_factory_;
+  // This maps a Task to a WeakPtrFactory so when a task is removed we can
+  // cancel showing a task that has been removed before it has been shown.
+  std::map<Task*, base::WeakPtrFactory<FallbackTaskProvider>>
+      pending_shown_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackTaskProvider);
 };
