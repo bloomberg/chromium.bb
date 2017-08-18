@@ -636,8 +636,8 @@ void SavePackage::Stop(bool cancel_download_item) {
     save_item_ids.push_back(it.first);
 
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SaveFileManager::RemoveSavedFileFromFileMap,
-                            file_manager_, save_item_ids));
+      FROM_HERE, base::BindOnce(&SaveFileManager::RemoveSavedFileFromFileMap,
+                                file_manager_, save_item_ids));
 
   finished_ = true;
   wait_state_ = FAILED;
@@ -665,9 +665,10 @@ void SavePackage::CheckFinish() {
 
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&SaveFileManager::RenameAllFiles, file_manager_, final_names,
-                 dir, web_contents()->GetRenderProcessHost()->GetID(),
-                 web_contents()->GetMainFrame()->GetRoutingID(), id()));
+      base::BindOnce(&SaveFileManager::RenameAllFiles, file_manager_,
+                     final_names, dir,
+                     web_contents()->GetRenderProcessHost()->GetID(),
+                     web_contents()->GetMainFrame()->GetRoutingID(), id()));
 }
 
 // Successfully finished all items of this SavePackage.
@@ -700,8 +701,8 @@ void SavePackage::Finish() {
   }
 
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SaveFileManager::RemoveSavedFileFromFileMap,
-                            file_manager_, list_of_failed_save_item_ids));
+      FROM_HERE, base::BindOnce(&SaveFileManager::RemoveSavedFileFromFileMap,
+                                file_manager_, list_of_failed_save_item_ids));
 
   if (download_) {
     if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
@@ -766,8 +767,8 @@ void SavePackage::SaveCanceled(const SaveItem* save_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_manager_->RemoveSaveFile(save_item->id(), this);
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SaveFileManager::CancelSave, file_manager_, save_item->id()));
+      FROM_HERE, base::BindOnce(&SaveFileManager::CancelSave, file_manager_,
+                                save_item->id()));
 }
 
 void SavePackage::SaveNextFile(bool process_all_remaining_items) {
@@ -927,8 +928,9 @@ void SavePackage::GetSerializedHtmlWithLocalLinks() {
     } else {
       // Notify SaveFileManager about the failure to save this SaveItem.
       GetDownloadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&SaveFileManager::SaveFinished, file_manager_,
-                                save_item->id(), id(), false));
+          FROM_HERE,
+          base::BindOnce(&SaveFileManager::SaveFinished, file_manager_,
+                         save_item->id(), id(), false));
     }
   }
   if (number_of_frames_pending_response_ == 0) {
@@ -1041,9 +1043,9 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     // Call write file functionality in download sequence.
     GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&SaveFileManager::UpdateSaveProgress, file_manager_,
-                   save_item->id(), base::RetainedRef(new_data),
-                   static_cast<int>(data.size())));
+        base::BindOnce(&SaveFileManager::UpdateSaveProgress, file_manager_,
+                       save_item->id(), base::RetainedRef(new_data),
+                       static_cast<int>(data.size())));
   }
 
   // Current frame is completed saving, call finish in download sequence.
@@ -1051,8 +1053,8 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     DVLOG(20) << __func__ << "() save_item_id = " << save_item->id()
               << " url = \"" << save_item->url().spec() << "\"";
     GetDownloadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&SaveFileManager::SaveFinished, file_manager_,
-                              save_item->id(), id(), true));
+        FROM_HERE, base::BindOnce(&SaveFileManager::SaveFinished, file_manager_,
+                                  save_item->id(), id(), true));
     number_of_frames_pending_response_--;
     DCHECK_LE(0, number_of_frames_pending_response_);
   }

@@ -115,7 +115,7 @@ DownloadResourceHandler::DownloadResourceHandler(net::URLRequest* request)
   const ResourceRequestInfoImpl* request_info = GetRequestInfo();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &InitializeDownloadTabInfoOnUIThread,
           DownloadRequestHandle(AsWeakPtr(),
                                 request_info->GetWebContentsGetterForRequest()),
@@ -126,7 +126,7 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   if (tab_info_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DeleteOnUIThread, base::Passed(&tab_info_)));
+        base::BindOnce(&DeleteOnUIThread, base::Passed(&tab_info_)));
   }
 }
 
@@ -232,7 +232,7 @@ void DownloadResourceHandler::OnStart(
     if (!callback.is_null())
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(callback, nullptr, create_info->result));
+          base::BindOnce(callback, nullptr, create_info->result));
     return;
   }
 
@@ -249,10 +249,10 @@ void DownloadResourceHandler::OnStart(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&StartOnUIThread, base::Passed(&create_info),
-                 base::Passed(&tab_info_), base::Passed(&stream_reader),
-                 render_process_id, render_frame_id,
-                 request_info->frame_tree_node_id(), callback));
+      base::BindOnce(&StartOnUIThread, base::Passed(&create_info),
+                     base::Passed(&tab_info_), base::Passed(&stream_reader),
+                     render_process_id, render_frame_id,
+                     request_info->frame_tree_node_id(), callback));
 }
 
 void DownloadResourceHandler::OnReadyToRead() {

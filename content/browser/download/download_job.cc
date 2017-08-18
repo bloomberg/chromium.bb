@@ -51,14 +51,14 @@ void DownloadJob::Start(DownloadFile* download_file_,
                         const DownloadItem::ReceivedSlices& received_slices) {
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&DownloadFile::Initialize,
-                 // Safe because we control download file lifetime.
-                 base::Unretained(download_file_),
-                 base::Bind(&DownloadJob::OnDownloadFileInitialized,
-                            weak_ptr_factory_.GetWeakPtr(), callback),
-                 base::Bind(&DownloadJob::CancelRequestWithOffset,
-                            weak_ptr_factory_.GetWeakPtr()),
-                 received_slices, IsParallelizable()));
+      base::BindOnce(&DownloadFile::Initialize,
+                     // Safe because we control download file lifetime.
+                     base::Unretained(download_file_),
+                     base::Bind(&DownloadJob::OnDownloadFileInitialized,
+                                weak_ptr_factory_.GetWeakPtr(), callback),
+                     base::Bind(&DownloadJob::CancelRequestWithOffset,
+                                weak_ptr_factory_.GetWeakPtr()),
+                     received_slices, IsParallelizable()));
 }
 
 void DownloadJob::OnDownloadFileInitialized(
@@ -79,9 +79,9 @@ bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
   // deleted on the download task runner after download_file_ is nulled out.
   // So it's safe to use base::Unretained here.
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DownloadFile::AddByteStream, base::Unretained(download_file),
-                 base::Passed(&stream_reader), offset, length));
+      FROM_HERE, base::BindOnce(&DownloadFile::AddByteStream,
+                                base::Unretained(download_file),
+                                base::Passed(&stream_reader), offset, length));
   return true;
 }
 

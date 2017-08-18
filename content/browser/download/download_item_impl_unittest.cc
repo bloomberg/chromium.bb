@@ -206,7 +206,7 @@ class TestDownloadItemObserver : public DownloadItem::Observer {
 //           DOWNLOAD_INTERRUPT_REASON_NONE, new_path));
 ACTION_P2(ScheduleRenameAndUniquifyCallback, interrupt_reason, new_path) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(arg1, interrupt_reason, new_path));
+                          base::BindOnce(arg1, interrupt_reason, new_path));
 }
 
 // Schedules a task to invoke the RenameCompletionCallback with |new_path| on
@@ -216,9 +216,8 @@ ACTION_P2(ScheduleRenameAndUniquifyCallback, interrupt_reason, new_path) {
 //       .WillOnce(ScheduleRenameAndAnnotateCallback(
 //           DOWNLOAD_INTERRUPT_REASON_NONE, new_path));
 ACTION_P2(ScheduleRenameAndAnnotateCallback, interrupt_reason, new_path) {
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(arg4, interrupt_reason, new_path));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(arg4, interrupt_reason, new_path));
 }
 
 // Schedules a task to invoke a callback that's bound to the specified
@@ -231,7 +230,7 @@ ACTION_P2(ScheduleRenameAndAnnotateCallback, interrupt_reason, new_path) {
 //   .. will invoke the second argument to Bar with 0 as the parameter.
 ACTION_P(ScheduleCallbackWithParam, param) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(arg0, param));
+                          base::BindOnce(arg0, param));
 }
 
 // Schedules a task to invoke a closure.
@@ -2133,7 +2132,7 @@ class DownloadItemDestinationUpdateRaceTest
       base::WeakPtr<DownloadDestinationObserver> observer) {
     for (const auto action : observations)
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(action, observer));
+                              base::BindOnce(action, observer));
   }
 
   DownloadItemImpl* item_;

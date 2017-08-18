@@ -55,7 +55,8 @@ void SaveFileResourceHandler::OnResponseStarted(
       render_frame_routing_id_, GetRequestID(), content_disposition_,
       content_length_);
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SaveFileManager::StartSave, save_manager_, info));
+      FROM_HERE,
+      base::BindOnce(&SaveFileManager::StartSave, save_manager_, info));
   controller->Resume();
 }
 
@@ -93,8 +94,8 @@ void SaveFileResourceHandler::OnReadCompleted(
   read_buffer_.swap(buffer);
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&SaveFileManager::UpdateSaveProgress, save_manager_,
-                 save_item_id_, base::RetainedRef(buffer), bytes_read));
+      base::BindOnce(&SaveFileManager::UpdateSaveProgress, save_manager_,
+                     save_item_id_, base::RetainedRef(buffer), bytes_read));
   controller->Resume();
 }
 
@@ -105,9 +106,10 @@ void SaveFileResourceHandler::OnResponseCompleted(
     DCHECK(!status.is_success());
 
   GetDownloadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SaveFileManager::SaveFinished, save_manager_,
-                            save_item_id_, save_package_id_,
-                            status.is_success() && !status.is_io_pending()));
+      FROM_HERE,
+      base::BindOnce(&SaveFileManager::SaveFinished, save_manager_,
+                     save_item_id_, save_package_id_,
+                     status.is_success() && !status.is_io_pending()));
   read_buffer_ = nullptr;
   controller->Resume();
 }

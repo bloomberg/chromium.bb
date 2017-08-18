@@ -61,7 +61,7 @@ class DownloadicidalObserver : public DownloadManager::Observer {
   void OnDownloadCreated(DownloadManager* manager,
                          DownloadItem* item) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(
+        FROM_HERE, base::BindOnce(
                        [](bool remove_download, const base::Closure& closure,
                           DownloadItem* item) {
                          remove_download ? item->Remove() : item->Cancel(true);

@@ -75,7 +75,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
     base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
+        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
   }
 
   const base::FilePath& downloads_directory() const {
