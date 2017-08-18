@@ -304,6 +304,37 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   impl->setStringOrDoubleAttribute(cppValue);
 }
 
+static void uncapitalAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+  V8SetReturnValueFast(info, WTF::GetPtr(impl->CapitalImplementation()), impl);
+}
+
+static void uncapitalAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "uncapitalAttribute");
+
+  // Prepare the value to be set.
+  Implementation* cppValue = V8Implementation::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+  // Type check per: http://heycam.github.io/webidl/#es-interface
+  if (!cppValue) {
+    exceptionState.ThrowTypeError("The provided value is not of type 'Implementation'.");
+    return;
+  }
+
+  impl->setCapitalImplementation(cppValue);
+}
+
 static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -2294,6 +2325,20 @@ void V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback(const v8::F
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestInterface::uncapitalAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_uncapitalAttribute_Getter");
+
+  TestInterfaceImplementationV8Internal::uncapitalAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::uncapitalAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_uncapitalAttribute_Setter");
+
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestInterfaceImplementationV8Internal::uncapitalAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestInterface::conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_conditionalLongAttribute_Getter");
 
@@ -3291,6 +3336,8 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[
     { "testEnumAttribute", V8TestInterface::testEnumAttributeAttributeGetterCallback, V8TestInterface::testEnumAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "stringOrDoubleAttribute", V8TestInterface::stringOrDoubleAttributeAttributeGetterCallback, V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+
+    { "uncapitalAttribute", V8TestInterface::uncapitalAttributeAttributeGetterCallback, V8TestInterface::uncapitalAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "staticStringAttribute", V8TestInterface::staticStringAttributeAttributeGetterCallback, V8TestInterface::staticStringAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 

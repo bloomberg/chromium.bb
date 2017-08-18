@@ -56,6 +56,7 @@
     attribute unrestricted float unrestrictedFloatAttribute;
     attribute TestEnum testEnumAttribute;
     attribute DOMStringOrDouble stringOrDoubleAttribute;
+    [ImplementedAs=CapitalImplementation] attribute Implementation uncapitalAttribute;
     [RuntimeEnabled=FeatureName] attribute long conditionalLongAttribute;
     [RuntimeEnabled=FeatureName] readonly attribute long conditionalReadOnlyLongAttribute;
     static attribute DOMString staticStringAttribute;

@@ -366,7 +366,9 @@ def getter_base_name(interface, attribute, arguments):
     extended_attributes = attribute.extended_attributes
 
     if 'Reflect' not in extended_attributes:
-        return uncapitalize(cpp_name(attribute))
+        name = cpp_name(attribute)
+        return name if 'ImplementedAs' in extended_attributes \
+            else uncapitalize(name)
 
     content_attribute_name = extended_attributes['Reflect'] or attribute.name.lower()
     if content_attribute_name in ['class', 'id', 'name']:

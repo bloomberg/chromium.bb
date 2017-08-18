@@ -78,6 +78,8 @@ class V8TestInterface {
   CORE_EXPORT static void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void uncapitalAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void uncapitalAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
