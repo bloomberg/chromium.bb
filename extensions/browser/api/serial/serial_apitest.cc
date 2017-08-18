@@ -68,18 +68,14 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   void Open(const std::string& port,
             device::mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override {
-    test_io_handler_->Open(
-        port, *options,
-        base::Bind([](OpenCallback callback,
-                      bool success) { std::move(callback).Run(success); },
-                   base::Passed(&callback)));
+    test_io_handler_->Open(port, *options, std::move(callback));
   }
   void Read(uint32_t bytes, ReadCallback callback) override {
     auto buffer =
         base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
     test_io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
         buffer, bytes,
-        base::Bind(
+        base::BindOnce(
             [](ReadCallback callback, scoped_refptr<net::IOBuffer> buffer,
                int bytes_read, device::mojom::SerialReceiveError error) {
               std::move(callback).Run(
@@ -87,18 +83,18 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
                                        buffer->data() + bytes_read),
                   error);
             },
-            base::Passed(&callback), buffer)));
+            std::move(callback), buffer)));
   }
   void Write(const std::vector<uint8_t>& data,
              WriteCallback callback) override {
     test_io_handler_->Write(base::MakeUnique<device::SendBuffer>(
         std::vector<char>(data.data(), data.data() + data.size()),
-        base::Bind(
+        base::BindOnce(
             [](WriteCallback callback, int bytes_sent,
                device::mojom::SerialSendError error) {
               std::move(callback).Run(bytes_sent, error);
             },
-            base::Passed(&callback))));
+            std::move(callback))));
   }
   void CancelRead(device::mojom::SerialReceiveError reason) override {
     test_io_handler_->CancelRead(reason);

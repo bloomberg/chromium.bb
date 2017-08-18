@@ -23,7 +23,7 @@ class TestSerialIoHandler : public SerialIoHandler {
   // SerialIoHandler overrides.
   void Open(const std::string& port,
             const mojom::SerialConnectionOptions& options,
-            const OpenCompleteCallback& callback) override;
+            OpenCompleteCallback callback) override;
   void ReadImpl() override;
   void CancelReadImpl() override;
   void WriteImpl() override;
@@ -46,8 +46,8 @@ class TestSerialIoHandler : public SerialIoHandler {
   int flushes() { return flushes_; }
   // This callback will be called when this IoHandler processes its next write,
   // instead of the normal behavior of echoing the data to reads.
-  void set_send_callback(const base::Closure& callback) {
-    send_callback_ = callback;
+  void set_send_callback(base::OnceClosure callback) {
+    send_callback_ = std::move(callback);
   }
 
  protected:
@@ -61,7 +61,7 @@ class TestSerialIoHandler : public SerialIoHandler {
   bool rts_;
   mutable int flushes_;
   std::string buffer_;
-  base::Closure send_callback_;
+  base::OnceClosure send_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSerialIoHandler);
 };

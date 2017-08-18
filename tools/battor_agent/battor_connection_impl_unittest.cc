@@ -79,7 +79,7 @@ class BattOrConnectionImplTest : public testing::Test,
         new net::IOBuffer((size_t)bytes_to_read));
 
     connection_->GetIoHandler()->Read(base::MakeUnique<device::ReceiveBuffer>(
-        buffer, bytes_to_read, base::Bind(&NullReadCallback)));
+        buffer, bytes_to_read, base::BindOnce(&NullReadCallback)));
     task_runner_->RunUntilIdle();
 
     return buffer;
@@ -98,7 +98,7 @@ class BattOrConnectionImplTest : public testing::Test,
   void SendBytesRaw(const char* data, uint16_t bytes_to_send) {
     std::vector<char> data_vector(data, data + bytes_to_send);
     connection_->GetIoHandler()->Write(base::MakeUnique<device::SendBuffer>(
-        data_vector, base::Bind(&NullWriteCallback)));
+        data_vector, base::BindOnce(&NullWriteCallback)));
     task_runner_->RunUntilIdle();
   }
 

@@ -135,8 +135,8 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
   }
 
   // Queue up the next read operation.
-  BrowserThread::PostTask(
-      params.thread_id, FROM_HERE, base::Bind(&StartReceive, params));
+  BrowserThread::PostTask(params.thread_id, FROM_HERE,
+                          base::BindOnce(&StartReceive, params));
 }
 
 // static
@@ -147,8 +147,8 @@ void SerialEventDispatcher::PostEvent(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DispatchEvent, params.browser_context_id, params.extension_id,
-                 base::Passed(std::move(event))));
+      base::BindOnce(&DispatchEvent, params.browser_context_id,
+                     params.extension_id, std::move(event)));
 }
 
 // static

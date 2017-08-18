@@ -4,7 +4,6 @@
 
 #include "services/device/serial/serial_io_handler_impl.h"
 
-#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -30,17 +29,14 @@ SerialIoHandlerImpl::~SerialIoHandlerImpl() = default;
 void SerialIoHandlerImpl::Open(const std::string& port,
                                mojom::SerialConnectionOptionsPtr options,
                                OpenCallback callback) {
-  // TODO(leonhsl): Change device::SerialIoHandler to use OnceCallbak instead of
-  // repeating Callback, thus we do not need to wrap |callback| here.
-  io_handler_->Open(port, *options,
-                    base::AdaptCallbackForRepeating(std::move(callback)));
+  io_handler_->Open(port, *options, std::move(callback));
 }
 
 void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
   auto buffer = base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
   io_handler_->Read(base::MakeUnique<ReceiveBuffer>(
       buffer, bytes,
-      base::Bind(
+      base::BindOnce(
           [](ReadCallback callback, scoped_refptr<net::IOBuffer> buffer,
              int bytes_read, mojom::SerialReceiveError error) {
             std::move(callback).Run(
@@ -48,19 +44,19 @@ void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
                                      buffer->data() + bytes_read),
                 error);
           },
-          base::Passed(&callback), buffer)));
+          std::move(callback), buffer)));
 }
 
 void SerialIoHandlerImpl::Write(const std::vector<uint8_t>& data,
                                 WriteCallback callback) {
   io_handler_->Write(base::MakeUnique<SendBuffer>(
       std::vector<char>(data.data(), data.data() + data.size()),
-      base::Bind(
+      base::BindOnce(
           [](WriteCallback callback, int bytes_sent,
              mojom::SerialSendError error) {
             std::move(callback).Run(bytes_sent, error);
           },
-          base::Passed(&callback))));
+          std::move(callback))));
 }
 
 void SerialIoHandlerImpl::CancelRead(mojom::SerialReceiveError reason) {

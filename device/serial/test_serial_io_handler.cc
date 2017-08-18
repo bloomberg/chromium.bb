@@ -27,11 +27,11 @@ scoped_refptr<SerialIoHandler> TestSerialIoHandler::Create() {
 
 void TestSerialIoHandler::Open(const std::string& port,
                                const mojom::SerialConnectionOptions& options,
-                               const OpenCompleteCallback& callback) {
+                               OpenCompleteCallback callback) {
   DCHECK(!opened_);
   opened_ = true;
   ConfigurePort(options);
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void TestSerialIoHandler::ReadImpl() {
@@ -53,10 +53,8 @@ void TestSerialIoHandler::CancelReadImpl() {
 }
 
 void TestSerialIoHandler::WriteImpl() {
-  if (!send_callback_.is_null()) {
-    base::Closure callback = send_callback_;
-    send_callback_.Reset();
-    callback.Run();
+  if (send_callback_) {
+    std::move(send_callback_).Run();
     return;
   }
   buffer_ += std::string(pending_write_buffer(), pending_write_buffer_len());

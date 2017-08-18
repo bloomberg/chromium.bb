@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -153,13 +154,13 @@ class SerialConnection : public ApiResource,
   // destruction if it hasn't run yet.
   class TimeoutTask {
    public:
-    TimeoutTask(const base::Closure& closure, const base::TimeDelta& delay);
+    TimeoutTask(base::OnceClosure closure, const base::TimeDelta& delay);
     ~TimeoutTask();
 
    private:
-    void Run() const;
+    void Run();
 
-    base::Closure closure_;
+    base::OnceClosure closure_;
     base::TimeDelta delay_;
     base::WeakPtrFactory<TimeoutTask> weak_factory_;
   };
