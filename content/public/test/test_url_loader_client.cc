@@ -25,7 +25,7 @@ void TestURLLoaderClient::OnReceiveResponse(
   ssl_info_ = ssl_info;
   if (quit_closure_for_on_receive_response_)
     quit_closure_for_on_receive_response_.Run();
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
 }
 

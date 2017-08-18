@@ -53,10 +53,11 @@ void SetIgnoreNetworkChangeNotifier(bool ignore) {
 void SetOnline(WebContents* web_contents, bool online) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetOnlineOnIOThread,
-                 base::Unretained(GetStoragePartition(web_contents)
-                                      ->GetBackgroundSyncContext()),
-                 online));
+      base::BindOnce(
+          &SetOnlineOnIOThread,
+          base::Unretained(
+              GetStoragePartition(web_contents)->GetBackgroundSyncContext()),
+          online));
   base::RunLoop().RunUntilIdle();
 }
 

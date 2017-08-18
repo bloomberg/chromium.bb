@@ -60,8 +60,8 @@ void TestBackgroundSyncManager::GetDataFromBackend(
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
-                   SERVICE_WORKER_ERROR_FAILED));
+        base::BindOnce(callback, std::vector<std::pair<int64_t, std::string>>(),
+                       SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   continuation_ =

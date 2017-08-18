@@ -152,9 +152,8 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
         // real UI would.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&DownloadTestObserver::AcceptDangerousDownload,
-                       weak_factory_.GetWeakPtr(),
-                       download->GetId()));
+            base::BindOnce(&DownloadTestObserver::AcceptDangerousDownload,
+                           weak_factory_.GetWeakPtr(), download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_DENY:
@@ -162,9 +161,8 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
         // real UI would.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&DownloadTestObserver::DenyDangerousDownload,
-                       weak_factory_.GetWeakPtr(),
-                       download->GetId()));
+            base::BindOnce(&DownloadTestObserver::DenyDangerousDownload,
+                           weak_factory_.GetWeakPtr(), download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_FAIL:
@@ -390,7 +388,7 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
       // there's a self-task posting in the IO thread cancel path.
       DownloadManager::GetTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&DownloadTestFlushObserver::PingFileThread, this, 2));
+          base::BindOnce(&DownloadTestFlushObserver::PingFileThread, this, 2));
     }
   }
 }
@@ -398,14 +396,15 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
 void DownloadTestFlushObserver::PingFileThread(int cycle) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadTestFlushObserver::PingIOThread, this, cycle));
+      base::BindOnce(&DownloadTestFlushObserver::PingIOThread, this, cycle));
 }
 
 void DownloadTestFlushObserver::PingIOThread(int cycle) {
   if (--cycle) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadTestFlushObserver::PingFileThread, this, cycle));
+        base::BindOnce(&DownloadTestFlushObserver::PingFileThread, this,
+                       cycle));
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::MessageLoop::QuitWhenIdleClosure());

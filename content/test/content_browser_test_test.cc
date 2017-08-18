@@ -176,7 +176,7 @@ void CallbackChecker(bool* non_nested_task_ran) {
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, NonNestableTask) {
   bool non_nested_task_ran = false;
   base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-      FROM_HERE, base::Bind(&CallbackChecker, &non_nested_task_ran));
+      FROM_HERE, base::BindOnce(&CallbackChecker, &non_nested_task_ran));
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(non_nested_task_ran);
 }

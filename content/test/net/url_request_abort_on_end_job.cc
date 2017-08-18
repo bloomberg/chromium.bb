@@ -61,7 +61,7 @@ const char URLRequestAbortOnEndJob::k400AbortOnEndUrl[] =
 // static
 void URLRequestAbortOnEndJob::AddUrlHandler() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(AddUrlHandlerOnIOThread));
+                          base::BindOnce(AddUrlHandlerOnIOThread));
 }
 
 // Private const version.
@@ -109,8 +109,8 @@ void URLRequestAbortOnEndJob::StartAsync() {
 
 void URLRequestAbortOnEndJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestAbortOnEndJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestAbortOnEndJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 int URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf, int max_bytes) {

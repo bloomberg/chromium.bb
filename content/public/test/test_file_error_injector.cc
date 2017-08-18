@@ -150,8 +150,9 @@ void DownloadFileWithError::Initialize(
     if (DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, Initialize; just
       // return the error.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(initialize_callback, error_to_return));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(initialize_callback, error_to_return));
       return;
     }
 
@@ -187,8 +188,8 @@ void DownloadFileWithError::RenameAndUniquify(
       // Don't execute a, probably successful, RenameAndUniquify; just
       // return the error.
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, base::Bind(
-              callback, error_to_return, base::FilePath()));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(callback, error_to_return, base::FilePath()));
       return;
     }
 
@@ -217,8 +218,8 @@ void DownloadFileWithError::RenameAndAnnotate(
       // Don't execute a, probably successful, RenameAndAnnotate; just
       // return the error.
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, base::Bind(
-              callback, error_to_return, base::FilePath()));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(callback, error_to_return, base::FilePath()));
       return;
     }
 
@@ -377,13 +378,13 @@ void TestFileErrorInjector::DestroyingDownloadFile() {
 void TestFileErrorInjector::RecordDownloadFileConstruction() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DownloadFileCreated, this));
+      base::BindOnce(&TestFileErrorInjector::DownloadFileCreated, this));
 }
 
 void TestFileErrorInjector::RecordDownloadFileDestruction() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DestroyingDownloadFile, this));
+      base::BindOnce(&TestFileErrorInjector::DestroyingDownloadFile, this));
 }
 
 // static
