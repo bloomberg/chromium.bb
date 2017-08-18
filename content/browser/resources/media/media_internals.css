@@ -188,6 +188,7 @@ label.selectable-button {
   padding: 6px;
   margin: 4px 0;
   line-height: 1.4;
+  word-break: break-all;
 }
 
 input.selectable-button {
