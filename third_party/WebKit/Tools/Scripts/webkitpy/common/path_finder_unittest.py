@@ -49,13 +49,20 @@ class TestPathFinder(unittest.TestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt')
 
     def test_depot_tools_base_not_found(self):
-        finder = PathFinder(MockFileSystem(), sys_path=['/foo'], env_path=['/bar'])
+        filesystem = MockFileSystem()
+        filesystem.path_to_module = lambda _: (
+            '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/common/'
+            'path_finder.py')
+        finder = PathFinder(filesystem)
         self.assertIsNone(finder.depot_tools_base())
 
-    def test_depot_tools_base_in_sys_path(self):
-        finder = PathFinder(MockFileSystem(), sys_path=['/foo/bar/depot_tools'], env_path=['/bar'])
-        self.assertEqual(finder.depot_tools_base(), '/foo/bar/depot_tools')
-
-    def test_depot_tools_base_in_env_path(self):
-        finder = PathFinder(MockFileSystem(), sys_path=['/foo'], env_path=['/baz/bin/depot_tools'])
-        self.assertEqual(finder.depot_tools_base(), '/baz/bin/depot_tools')
+    def test_depot_tools_base_exists(self):
+        filesystem = MockFileSystem()
+        filesystem.path_to_module = lambda _: (
+            '/checkout/third_party/WebKit/Tools/Scripts/webkitpy/common/'
+            'path_finder.py')
+        filesystem.maybe_make_directory(
+            '/checkout/third_party/depot_tools')
+        finder = PathFinder(filesystem)
+        self.assertEqual(
+            finder.depot_tools_base(), '/checkout/third_party/depot_tools')
