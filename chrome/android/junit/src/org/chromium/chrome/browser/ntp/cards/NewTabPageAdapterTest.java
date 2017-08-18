@@ -963,7 +963,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     // TODO(https://crbug.com/754778) improve annotation processor, flags repeated to enable modern.
     @Features({@Features.Register(value = ChromeFeatureList.NTP_CONDENSED_LAYOUT, enabled = false),
-            @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
+            @Features.Register(value = ChromeFeatureList.CHROME_HOME),
             @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
             @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
                     enabled = false)})
