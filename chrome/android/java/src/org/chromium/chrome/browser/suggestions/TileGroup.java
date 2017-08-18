@@ -293,7 +293,7 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     /** @return the sites currently loaded in the group, grouped by vertical. */
-    public SparseArray<List<Tile>> getTiles() {
+    public SparseArray<List<Tile>> getTileSections() {
         return mTileSections;
     }
 
@@ -358,9 +358,10 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         // TODO(dgn): change these events, maybe introduce new ones or just change semantics? This
         // will depend on the UI to be implemented and the desired refresh behaviour.
-        boolean countChanged = isInitialLoad
-                || mTileSections.get(TileSectionType.PERSONALIZED).size()
-                        != oldPersonalisedTilesCount;
+        List<Tile> personalizedTiles = mTileSections.get(TileSectionType.PERSONALIZED);
+        int numberOfPersonalizedTiles = personalizedTiles == null ? 0 : personalizedTiles.size();
+        boolean countChanged =
+                isInitialLoad || numberOfPersonalizedTiles != oldPersonalisedTilesCount;
         dataChanged = dataChanged || countChanged;
 
         if (!dataChanged) return;
@@ -455,7 +456,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         // Have an empty list for now that can be rendered as-is without causing issues or too much
         // state checking. We will have to decide if we want empty lists or no section at all for
         // the others.
-        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<>());
+        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<Tile>());
 
         return newTileData;
     }
@@ -541,7 +542,9 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         @Override
         public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
-            return true;
+            // Personalized tiles are the only tiles that can be removed.
+            return !(menuItemId == ContextMenuManager.ID_REMOVE
+                    && mSuggestion.sectionType != TileSectionType.PERSONALIZED);
         }
 
         @Override

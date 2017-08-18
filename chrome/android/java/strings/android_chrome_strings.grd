@@ -529,6 +529,30 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
         Protect you and your device from dangerous sites
       </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_PERSONALIZED_TITLE" desc="In the Sites Explore UI, title of the Personalized category.">
+        Personalized
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_NEWS_TITLE" desc="In the Sites Explore UI, title of the News category.">
+        News
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_SOCIAL_TITLE" desc="In the Sites Explore UI, title of the Social category.">
+        Social
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_ENTERTAINMENT_TITLE" desc="In the Sites Explore UI, title of the Entertainment category.">
+        Entertainment
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_ECOMMERCE_TITLE" desc="In the Sites Explore UI, title of the Ecommerce category.">
+        E-commerce
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_TOOLS_TITLE" desc="In the Sites Explore UI, title of the Tools category.">
+        Tools
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_TRAVEL_TITLE" desc="In the Sites Explore UI, title of the Travel category.">
+        Travel
+      </message>
+      <message name="IDS_NTP_SITES_EXPLORATION_CATEGORY_OTHER_TITLE" desc="In the Sites Explore UI, title of the Unknown category.">
+        Other
+      </message>
       <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title for Prefetch page resources.">
         Use a prediction service to load pages more quickly
       </message>

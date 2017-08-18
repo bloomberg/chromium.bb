@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -148,10 +149,95 @@ public class MostVisitedSitesBridge
     private void onURLsAvailable(String[] titles, String[] urls, int[] sections,
             String[] whitelistIconPaths, int[] sources) {
         // Don't notify observer if we've already been destroyed.
-        if (mNativeMostVisitedSitesBridge != 0) {
-            mWrappedObserver.onSiteSuggestionsAvailable(
-                    buildSiteSuggestions(titles, urls, sections, whitelistIconPaths, sources));
+        if (mNativeMostVisitedSitesBridge == 0) return;
+
+        List<SiteSuggestion> suggestions = new ArrayList<>();
+
+        suggestions.addAll(
+                buildSiteSuggestions(titles, urls, sections, whitelistIconPaths, sources));
+
+        // TODO(galinap): Remove dummy data when backend is ready.
+        if (SuggestionsConfig.useSitesExplorationUi()
+                && allSuggestionsArePersonalized(suggestions)) {
+            String[] socialUrls = {"https://m.facebook.com/", "https://www.instagram.com",
+                    "https://twitter.com/", "https://www.pinterest.co.uk/"};
+            String[] socialTitles = {"Facebook", "Instagram", "Twitter", "Pinterest"};
+
+            int[] socialSections = new int[socialUrls.length];
+            Arrays.fill(socialSections, TileSectionType.SOCIAL);
+
+            int[] dummySources = new int[socialUrls.length];
+            String[] dummyWhitelistIconPaths = new String[socialSections.length];
+            Arrays.fill(dummySources, TileSource.POPULAR);
+            Arrays.fill(dummyWhitelistIconPaths, "");
+
+            suggestions.addAll(buildSiteSuggestions(socialTitles, socialUrls, socialSections,
+                    dummyWhitelistIconPaths, dummySources));
+
+            String[] entertainmentUrls = {"https://www.youtube.com/", "http://www.hotstar.com",
+                    "https://m.cricbuzz.com/", "https://www.wittyfeed.com/"};
+
+            String[] entertainmentTitles = {"YouTube", "HotStar", "Cricbuzz", "WhittyFeed"};
+
+            int[] entertainmentSections = new int[entertainmentUrls.length];
+            Arrays.fill(entertainmentSections, TileSectionType.ENTERTAINMENT);
+
+            suggestions.addAll(buildSiteSuggestions(entertainmentTitles, entertainmentUrls,
+                    entertainmentSections, dummyWhitelistIconPaths, dummySources));
+
+            String[] newsUrls = {"http://timesofindia.indiatimes.com/", "http://www.jagran.com/",
+                    "http://www.bbc.co.uk/news", "http://www.dailymail.co.uk/"};
+
+            String[] newsTitles = {"Times Of India", "Jagran", "BBC News", "Daily Mail"};
+
+            int[] newsSections = new int[newsUrls.length];
+            Arrays.fill(newsSections, TileSectionType.NEWS);
+
+            suggestions.addAll(buildSiteSuggestions(
+                    newsTitles, newsUrls, newsSections, dummyWhitelistIconPaths, dummySources));
+
+            String[] ecommerceUrls = {"https://www.amazon.co.uk", "https://www.flipkart.com/",
+                    "https://www.snapdeal.com/", "https://www.olx.com/"};
+
+            String[] ecommerceTitles = {"Amazon", "Flipkart", "Snapdeal", "OLX"};
+
+            int[] ecommerceSections = new int[ecommerceUrls.length];
+            Arrays.fill(ecommerceSections, TileSectionType.ECOMMERCE);
+
+            suggestions.addAll(buildSiteSuggestions(ecommerceTitles, ecommerceUrls,
+                    ecommerceSections, dummyWhitelistIconPaths, dummySources));
+
+            String[] toolsUrls = {"https://www.google.co.uk/maps/", "https://paytm.com/",
+                    "https://www.olacabs.com/", "https://in.bookmyshow.com/"};
+
+            String[] toolsTitles = {"Maps", "Paytm", "Ola Cabs", "BookMyShow"};
+
+            int[] toolsSections = new int[toolsUrls.length];
+            Arrays.fill(toolsSections, TileSectionType.TOOLS);
+
+            suggestions.addAll(buildSiteSuggestions(
+                    toolsTitles, toolsUrls, toolsSections, dummyWhitelistIconPaths, dummySources));
+
+            String[] travelUrls = {"https://www.makemytrip.com/", "https://in.via.com/",
+                    "https://housing.com/", "https://www.redbus.in/"};
+
+            String[] travelTitles = {"MakeMyTrip", "Via", "Housing", "RedBus"};
+
+            int[] travelSections = new int[travelUrls.length];
+            Arrays.fill(travelSections, TileSectionType.TRAVEL);
+
+            suggestions.addAll(buildSiteSuggestions(travelTitles, travelUrls, travelSections,
+                    dummyWhitelistIconPaths, dummySources));
         }
+
+        mWrappedObserver.onSiteSuggestionsAvailable(suggestions);
+    }
+
+    private boolean allSuggestionsArePersonalized(List<SiteSuggestion> suggestions) {
+        for (SiteSuggestion suggestion : suggestions) {
+            if (suggestion.sectionType != TileSectionType.PERSONALIZED) return false;
+        }
+        return true;
     }
 
     /**

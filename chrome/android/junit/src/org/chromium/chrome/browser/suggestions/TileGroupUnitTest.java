@@ -359,7 +359,7 @@ public class TileGroupUnitTest {
     @Test
     public void testIconLoadingForInit() {
         TileGroup tileGroup = initialiseTileGroup(URLS);
-        Tile tile = tileGroup.getTiles().get(TileSectionType.PERSONALIZED).get(0);
+        Tile tile = tileGroup.getTileSections().get(TileSectionType.PERSONALIZED).get(0);
 
         // Loading complete should be delayed until the icons are done loading.
         verify(mTileGroupDelegate, never()).onLoadingComplete(any());

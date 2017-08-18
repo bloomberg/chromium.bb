@@ -154,7 +154,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 return new NewTabPageViewHolder(mAboveTheFoldView);
 
             case ItemViewType.SITE_SECTION:
-                return SiteSection.createViewHolder(parent);
+                return SiteSection.createViewHolder(SiteSection.inflateSiteSection(parent));
 
             case ItemViewType.HEADER:
                 return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
