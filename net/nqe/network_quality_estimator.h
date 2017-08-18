@@ -288,7 +288,8 @@ class NET_EXPORT NetworkQualityEstimator
   // Notifies |this| of a new transport layer RTT. Called by socket watchers.
   // Protected for testing.
   void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
-                             const base::TimeDelta& rtt);
+                             const base::TimeDelta& rtt,
+                             const base::Optional<nqe::internal::IPHash>& host);
 
   // Returns an estimate of network quality at the specified |percentile|.
   // |disallowed_observation_sources| is the list of observation sources that
@@ -319,6 +320,10 @@ class NET_EXPORT NetworkQualityEstimator
   virtual void NotifyRTTAndThroughputEstimatesObserverIfPresent(
       RTTAndThroughputEstimatesObserver* observer) const;
 
+  base::Optional<int32_t> ComputeIncreaseInTransportRTTForTests() {
+    return ComputeIncreaseInTransportRTT();
+  }
+
   // Observer list for RTT or throughput estimates. Protected for testing.
   base::ObserverList<RTTAndThroughputEstimatesObserver>
       rtt_and_throughput_estimates_observer_list_;
@@ -347,6 +352,11 @@ class NET_EXPORT NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ForceEffectiveConnectionTypeThroughFieldTrial);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestBDPComputation);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           TestComputeIncreaseInTransportRTTFullHostsOverlap);
+  FRIEND_TEST_ALL_PREFIXES(
+      NetworkQualityEstimatorTest,
+      TestComputeIncreaseInTransportRTTPartialHostsOverlap);
 
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
@@ -486,6 +496,17 @@ class NET_EXPORT NetworkQualityEstimator
   // |GetBandwidthDelayProductKbits|.
   void ComputeBandwidthDelayProduct();
 
+  // Computes the current increase in transport RTT in milliseconds over the
+  // baseline transport RTT due to congestion. This value can be interpreted as
+  // the additional delay caused due to an increase in queue length in the last
+  // mile. The baseline is computed using the transport RTT observations in the
+  // past 60 seconds. The current RTT is computed using the observations in the
+  // past 5 seconds. Returns an empty optional when there was no recent data.
+  base::Optional<int32_t> ComputeIncreaseInTransportRTT() const;
+
+  // Periodically updates |increase_in_transport_rtt_| by posting delayed tasks.
+  void IncreaseInTransportRTTUpdater();
+
   // Forces computation of effective connection type, and notifies observers
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
@@ -597,6 +618,12 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Current estimate of the bandwidth delay product (BDP) in kilobits.
   base::Optional<int32_t> bandwidth_delay_product_kbits_;
+
+  // Current estimate of the increase in the transport RTT due to congestion.
+  base::Optional<int32_t> increase_in_transport_rtt_;
+
+  // This is true if there is a task posted for |IncreaseInTransportRTTUpdater|.
+  bool increase_in_transport_rtt_updater_posted_;
 
   // Current effective connection type. It is updated on connection change
   // events. It is also updated every time there is network traffic (provided

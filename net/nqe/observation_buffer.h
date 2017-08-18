@@ -8,12 +8,15 @@
 #include <stdint.h>
 
 #include <deque>
+#include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "net/base/net_export.h"
+#include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/network_quality_observation.h"
 #include "net/nqe/network_quality_observation_source.h"
 
@@ -104,6 +107,21 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }
+
+  // Computes percentiles separately for each host. Observations without
+  // a host tag are skipped. Only data from the hosts present in |host_filter|
+  // are considered. Observations before |begin_timestamp| are skipped. The
+  // percentile value for each host is returned in |host_keyed_percentiles|. The
+  // number of valid observations for each host used for the computation is
+  // returned in |host_keyed_counts|.
+  void GetPercentileForEachHostWithCounts(
+      base::TimeTicks begin_timestamp,
+      int percentile,
+      const std::vector<NetworkQualityObservationSource>&
+          disallowed_observation_sources,
+      const base::Optional<std::set<IPHash>>& host_filter,
+      std::map<IPHash, int32_t>* host_keyed_percentiles,
+      std::map<IPHash, size_t>* host_keyed_counts) const;
 
  private:
   // Computes the weighted observations and stores them in
