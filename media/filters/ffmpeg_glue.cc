@@ -165,6 +165,9 @@ bool FFmpegGlue::OpenContext() {
 
     container_ = container_names::DetermineContainer(buffer.data(), num_read);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
+
+    detected_hls_ =
+        container_ == container_names::MediaContainerName::CONTAINER_HLS;
     return false;
   } else if (ret < 0) {
     return false;

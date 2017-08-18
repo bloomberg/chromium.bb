@@ -80,8 +80,12 @@ class MEDIA_EXPORT FFmpegGlue {
     return container_;
   }
 
+  // Used on Android to switch to using the native MediaPlayer to play HLS.
+  bool detected_hls() { return detected_hls_; }
+
  private:
   bool open_called_ = false;
+  bool detected_hls_ = false;
   AVFormatContext* format_context_ = nullptr;
   std::unique_ptr<AVIOContext, ScopedPtrAVFree> avio_context_;
   container_names::MediaContainerName container_ =
