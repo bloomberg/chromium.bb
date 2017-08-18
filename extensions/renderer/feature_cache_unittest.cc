@@ -25,31 +25,6 @@ namespace extensions {
 
 namespace {
 
-// TODO(devlin): We should really just make ExtensionBuilder better to avoid
-// having so many of these methods lying around.
-scoped_refptr<Extension> CreateExtension(
-    const std::string& name,
-    const std::vector<std::string>& permissions) {
-  DictionaryBuilder manifest;
-  manifest.Set("name", name);
-  manifest.Set("manifest_version", 2);
-  manifest.Set("version", "0.1");
-  manifest.Set("description", "test extension");
-
-  {
-    ListBuilder permissions_builder;
-    for (const std::string& permission : permissions)
-      permissions_builder.Append(permission);
-    manifest.Set("permissions", permissions_builder.Build());
-  }
-
-  return ExtensionBuilder()
-      .SetManifest(manifest.Build())
-      .SetLocation(Manifest::INTERNAL)
-      .SetID(crx_file::id_util::GenerateId(name))
-      .Build();
-}
-
 struct FakeContext {
   Feature::Context context_type;
   const Extension* extension;
@@ -71,9 +46,9 @@ using FeatureCacheTest = testing::Test;
 
 TEST_F(FeatureCacheTest, Basic) {
   FeatureCache cache;
-  scoped_refptr<const Extension> extension_a = CreateExtension("a", {});
+  scoped_refptr<const Extension> extension_a = ExtensionBuilder("a").Build();
   scoped_refptr<const Extension> extension_b =
-      CreateExtension("b", {"storage"});
+      ExtensionBuilder("b").AddPermission("storage").Build();
 
   FakeContext context_a = {Feature::BLESSED_EXTENSION_CONTEXT,
                            extension_a.get(), extension_a->url()};
@@ -96,7 +71,7 @@ TEST_F(FeatureCacheTest, Basic) {
 
 TEST_F(FeatureCacheTest, WebUIContexts) {
   FeatureCache cache;
-  scoped_refptr<const Extension> extension = CreateExtension("a", {});
+  scoped_refptr<const Extension> extension_a = ExtensionBuilder("a").Build();
 
   // The chrome://extensions page is whitelisted for the management API.
   FakeContext webui_context = {Feature::WEBUI_CONTEXT, nullptr,

@@ -340,6 +340,7 @@ if (enable_extensions) {
       "api/sockets/sockets_manifest_permission_unittest.cc",
       "csp_validator_unittest.cc",
       "event_filter_unittest.cc",
+      "extension_builder_unittest.cc",
       "extension_icon_set_unittest.cc",
       "extension_l10n_util_unittest.cc",
       "extension_messages_unittest.cc",
