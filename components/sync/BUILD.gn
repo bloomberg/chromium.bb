@@ -62,8 +62,6 @@ static_library("sync") {
     "base/report_unrecoverable_error.cc",
     "base/report_unrecoverable_error.h",
     "base/stop_source.h",
-    "base/sync_features.cc",
-    "base/sync_features.h",
     "base/sync_prefs.cc",
     "base/sync_prefs.h",
     "base/syncer_error.cc",
