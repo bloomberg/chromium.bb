@@ -89,6 +89,11 @@ id<GREYMatcher> BookmarksDoneButton() {
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
 }
 
+// Matcher for the Delete button on the bookmarks UI.
+id<GREYMatcher> BookmarksDeleteSwipeButton() {
+  return ButtonWithAccessibilityLabel(@"Delete");
+}
+
 // Matcher for the More Menu.
 id<GREYMatcher> MoreMenuButton() {
   return ButtonWithAccessibilityLabelId(
@@ -338,6 +343,33 @@ id<GREYMatcher> ActionSheet(Action action) {
   };
   GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for bookmark to go away");
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testUndoDeleteBookmarkFromSwipe {
+  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
+  }
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Swipe action on the URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
