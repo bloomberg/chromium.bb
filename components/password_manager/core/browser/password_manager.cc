@@ -165,9 +165,6 @@ PasswordFormManager* FindMatchedManager(
     PasswordFormManager::MatchResultMask result =
         (*iter)->DoesManage(form, driver);
 
-    if (result == PasswordFormManager::RESULT_NO_MATCH)
-      continue;
-
     if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
       // If we find a manager that exactly matches the submitted form including
       // the action URL, exit the loop.
@@ -175,30 +172,19 @@ PasswordFormManager* FindMatchedManager(
         logger->LogMessage(Logger::STRING_EXACT_MATCH);
       matched_manager_it = iter;
       break;
-    } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
-                          ~PasswordFormManager::RESULT_ACTION_MATCH) &&
-               result > current_match_result) {
-      // If the current manager matches the submitted form excluding the action
-      // URL, remember it as a candidate and continue searching for an exact
-      // match. See http://crbug.com/27246 for an example where actions can
-      // change.
-      if (logger)
-        logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
-      matched_manager_it = iter;
+    }
+
+    if (result > current_match_result) {
       current_match_result = result;
-    } else if (IsSignupForm(form) && result > current_match_result) {
-      // Signup forms don't require HTML attributes to match because we don't
-      // need to fill these saved passwords on the same form in the future.
-      // Prefer the best possible match (e.g. action and origins match instead
-      // or just origin matching). Don't break in case there exists a better
-      // match.
-      // TODO(gcasto): Matching in this way is very imprecise. Having some
-      // better way to match the same form when the HTML elements change (e.g.
-      // text element changed to password element) would be useful.
-      if (logger)
-        logger->LogMessage(Logger::STRING_ORIGINS_MATCH);
       matched_manager_it = iter;
-      current_match_result = result;
+
+      if (logger) {
+        if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
+                       ~PasswordFormManager::RESULT_ACTION_MATCH))
+          logger->LogMessage(Logger::STRING_MATCH_WITHOUT_ACTION);
+        if (IsSignupForm(form))
+          logger->LogMessage(Logger::STRING_ORIGINS_MATCH);
+      }
     }
   }
 
