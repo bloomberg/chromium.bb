@@ -317,11 +317,24 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
   EXPECT_EQ(expected_pinned_apps, *value);
 
+  // Extension IDs are OK.
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
   auto entry1_dict = base::MakeUnique<base::DictionaryValue>();
   entry1_dict->Set(kPinnedAppsPrefAppIDPath, entry1.CreateDeepCopy());
   expected_pinned_apps.Append(std::move(entry1_dict));
   list.Append(entry1.CreateDeepCopy());
+
+  // Android appds are OK.
+  base::Value entry2("com.google.android.gm");
+  auto entry2_dict = base::MakeUnique<base::DictionaryValue>();
+  entry2_dict->Set(kPinnedAppsPrefAppIDPath, entry2.CreateDeepCopy());
+  expected_pinned_apps.Append(std::move(entry2_dict));
+  list.Append(entry2.CreateDeepCopy());
+
+  // Anything else is not OK.
+  base::Value entry3("invalid");
+  list.Append(entry3.CreateDeepCopy());
+
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),
                  nullptr);

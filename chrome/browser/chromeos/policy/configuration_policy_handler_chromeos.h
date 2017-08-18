@@ -77,16 +77,24 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationPolicyHandler);
 };
 
-// Maps the PinnedLauncherApps policy to the corresponding pref.
-class PinnedLauncherAppsPolicyHandler
-    : public extensions::ExtensionListPolicyHandler {
+// Maps the PinnedLauncherApps policy to the corresponding pref. List entries
+// may be Android app ids or extension ids.
+class PinnedLauncherAppsPolicyHandler : public ListPolicyHandler {
  public:
   PinnedLauncherAppsPolicyHandler();
   ~PinnedLauncherAppsPolicyHandler() override;
 
-  // ExtensionListPolicyHandler methods:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override;
+ protected:
+  // ListPolicyHandler methods:
+
+  // Returns true if |value| contains an Android app id (using a heuristic) or
+  // an extension id.
+  bool CheckListEntry(const base::Value& value) override;
+
+  // Converts the list of strings |filtered_list| to a list of dictionaries and
+  // sets the pref.
+  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
+                 PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);

@@ -52,7 +52,108 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
   }
 };
 
+// Simple implementation of ListPolicyHandler that assumes a string list and
+// sets the kTestPref pref to the filtered list.
+class StringListPolicyHandler : public ListPolicyHandler {
+ public:
+  StringListPolicyHandler(const char* policy_name, const char* pref_path)
+      : ListPolicyHandler(policy_name, base::Value::Type::STRING) {}
+
+ protected:
+  void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
+                 PrefValueMap* prefs) override {
+    prefs->SetValue(kTestPref, std::move(filtered_list));
+  }
+};
+
 }  // namespace
+
+TEST(ListPolicyHandlerTest, CheckPolicySettings) {
+  base::ListValue list;
+  base::DictionaryValue dict;
+  policy::PolicyMap policy_map;
+  policy::PolicyErrorMap errors;
+  StringListPolicyHandler handler(kTestPolicy, kTestPref);
+
+  // No policy set is OK.
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  errors.Clear();
+
+  // Not a list is not OK.
+  policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                 dict.CreateDeepCopy(), nullptr);
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  errors.Clear();
+
+  // Empty list is OK.
+  policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                 list.CreateDeepCopy(), nullptr);
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  errors.Clear();
+
+  // List with an int is OK, but error is added.
+  list.AppendInteger(175);  // hex af, 255's sake.
+  policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                 list.CreateDeepCopy(), nullptr);
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  list.Clear();
+  errors.Clear();
+
+  // List with a string is OK.
+  list.AppendString("any_string");
+  policy_map.Set(kTestPolicy, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                 list.CreateDeepCopy(), nullptr);
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+  errors.Clear();
+}
+
+TEST(StringListPolicyHandlerTest, ApplyPolicySettings) {
+  base::ListValue list;
+  base::ListValue expected;
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  base::Value* value;
+  StringListPolicyHandler handler(kTestPolicy, kTestPref);
+
+  // Empty list applies as empty list.
+  policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(expected, *value);
+
+  // List with any string applies that string.
+  list.AppendString("any_string");
+  expected.AppendString("any_string");
+  policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(expected, *value);
+  list.Clear();
+  expected.Clear();
+
+  // List with a string and an integer filters out the integer.
+  list.AppendString("any_string");
+  list.AppendInteger(42);
+  expected.AppendString("any_string");
+  policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
+  EXPECT_EQ(expected, *value);
+  list.Clear();
+  expected.Clear();
+}
 
 TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
