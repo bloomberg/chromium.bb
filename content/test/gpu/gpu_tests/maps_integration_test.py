@@ -14,42 +14,19 @@ from gpu_tests import color_profile_manager
 
 from py_utils import cloud_storage
 
+wpr_path = os.path.join(path_util.GetChromiumSrcDir(),
+                        'tools', 'perf', 'page_sets', 'data')
+
 data_path = os.path.join(path_util.GetChromiumSrcDir(),
-                         'content', 'test', 'gpu', 'page_sets', 'data')
+                         'content', 'test', 'gpu', 'gpu_tests')
 
 class MapsIntegrationTest(
     cloud_storage_integration_test_base.CloudStorageIntegrationTestBase):
   """Google Maps pixel tests.
 
-  Note: the WPR for this test was recorded from the smoothness.maps
-  benchmark's similar page. The Maps team gave us a build of their test.  The
-  only modification to the test was to config.js, where the width and height
-  query args were set to 800 by 600. The WPR was recorded with:
-
-  tools/perf/record_wpr smoothness_maps --browser=system
-
-  This produced maps_???.wpr and maps.json, which were copied from
-  tools/perf/page_sets/data into content/test/gpu/page_sets/data.
-
-  It's worth noting that telemetry no longer allows replaying a URL that
-  refers to localhost. If the recording was created for the locahost URL, one
-  can update the host name by running:
-
-    web-page-replay/httparchive.py remap-host maps_004.wpr \
-    localhost:10020 map-test
-
-  (web-page-replay/ can be found in third_party/catapult/telemetry/third_party/)
-
-  After updating the host name in the WPR archive, please remember to update
-  the host URL in content/test/gpu/gpu_tests/maps_integration_test.py as well.
-
-  To upload the maps_???.wpr to cloud storage, one would run:
-
-    depot_tools/upload_to_google_storage.py --bucket=chromium-telemetry \
-    maps_???.wpr
-
-  The same sha1 file and json file need to be copied into both of these
-  directories in any CL which updates the recording.
+  Note: this test uses the same WPR as the smoothness.maps benchmark
+  in tools/perf/benchmarks. See src/tools/perf/page_sets/maps.py for
+  documentation on updating the WPR archive.
   """
 
   @classmethod
@@ -68,7 +45,7 @@ class MapsIntegrationTest(
         '--force-color-profile=srgb',
         '--enable-features=ColorCorrectRendering']
     cls.CustomizeBrowserArgs(browser_args)
-    cls.StartWPRServer(os.path.join(data_path, 'maps_004.wpr.updated'),
+    cls.StartWPRServer(os.path.join(wpr_path, 'maps_005.wpr'),
                        cloud_storage.PUBLIC_BUCKET)
     cls.StartBrowser()
 
@@ -80,9 +57,9 @@ class MapsIntegrationTest(
   @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
-    yield('Maps_maps_004',
+    yield('Maps_maps',
           'http://map-test/performance.html',
-          ('maps_004_expectations.json'))
+          ('maps_pixel_expectations.json'))
 
   def _ReadPixelExpectations(self, expectations_file):
     expectations_path = os.path.join(data_path, expectations_file)

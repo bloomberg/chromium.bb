@@ -185,11 +185,11 @@ class SmoothnessMaps(perf_benchmark.PerfBenchmark):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
         self.DisableStory(
-            'http://localhost:8000/performance.html',
+            'http://map-test/performance.html',
             [story_module.expectations.ALL_WIN],
             'crbug.com/692663')
         self.DisableStory(
-            'http://localhost:8000/performance.html',
+            'http://map-test/performance.html',
             [story_module.expectations.ANDROID_WEBVIEW],
             'crbug.com/653993')
     return StoryExpectations()
