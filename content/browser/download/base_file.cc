@@ -73,7 +73,9 @@ DownloadInterruptReason BaseFile::Initialize(
   bytes_so_far_ = bytes_so_far;
   secure_hash_ = std::move(hash_state);
   is_sparse_file_ = is_sparse_file;
-  DCHECK(!is_sparse_file_ || !secure_hash_);
+  // Sparse file doesn't validate hash.
+  if (is_sparse_file_)
+    secure_hash_.reset();
   file_ = std::move(file);
 
   return Open(hash_so_far);
