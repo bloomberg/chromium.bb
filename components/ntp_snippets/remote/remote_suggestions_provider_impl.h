@@ -427,6 +427,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   std::unique_ptr<base::Clock> clock_;
 
   // Prefetched pages tracker to query which urls have been prefetched.
+  // |nullptr| is handled gracefully and just disables the functionality.
   std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker_;
 
   // Listens for BreakingNews updates (e.g. through GCM) and notifies the
