@@ -329,9 +329,9 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
       //   bouncing off of UI and download sequence does mean (Z) happens
       //   after (1).
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, base::Bind(
-              &GenerateMHTMLAndExitRendererMessageFilter::TaskX,
-              base::Unretained(this)));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskX,
+                         base::Unretained(this)));
     }
 
     return false;
@@ -339,15 +339,16 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
 
   void TaskX() {
     GetDownloadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&GenerateMHTMLAndExitRendererMessageFilter::TaskY,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskY,
+                       base::Unretained(this)));
   }
 
   void TaskY() {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(
-            &GenerateMHTMLAndExitRendererMessageFilter::TaskZ,
-            base::Unretained(this)));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskZ,
+                       base::Unretained(this)));
   }
 
   void TaskZ() {

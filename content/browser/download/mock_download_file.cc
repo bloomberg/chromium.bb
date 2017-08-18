@@ -24,7 +24,7 @@ void PostSuccessRun(
     const DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SuccessRun, initialize_callback));
+                          base::BindOnce(&SuccessRun, initialize_callback));
 }
 
 }  // namespace

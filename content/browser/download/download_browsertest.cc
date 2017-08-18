@@ -348,7 +348,7 @@ class CountingDownloadFile : public DownloadFileImpl {
     int result = -1;
     GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
+        base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     base::RunLoop().Run();
     DCHECK_NE(-1, result);
@@ -579,11 +579,11 @@ class DownloadContentTest : public ContentBrowserTest {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+        base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
     base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
+        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
     ASSERT_TRUE(embedded_test_server()->Start());
     const std::string real_host =
         embedded_test_server()->host_port_pair().host();
@@ -647,7 +647,7 @@ class DownloadContentTest : public ContentBrowserTest {
     bool result = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
+        base::BindOnce(&EnsureNoPendingDownloadJobsOnIO, &result));
     base::RunLoop().Run();
     return result &&
            (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
@@ -1028,13 +1028,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ShutdownInProgress) {
   // a chance to get the second stall onto the IO thread queue after the cancel
   // message created by Shutdown and before the notification callback
   // created by the IO thread in canceling the request.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&base::PlatformThread::Sleep,
-                                     base::TimeDelta::FromMilliseconds(25)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&base::PlatformThread::Sleep,
+                     base::TimeDelta::FromMilliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&base::PlatformThread::Sleep,
-                                     base::TimeDelta::FromMilliseconds(25)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&base::PlatformThread::Sleep,
+                     base::TimeDelta::FromMilliseconds(25)));
 }
 
 // Try to shutdown just after we release the download file, by delaying

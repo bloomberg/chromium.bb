@@ -281,7 +281,7 @@ void DownloadFileImpl::Initialize(
       IsSparseFile());
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(initialize_callback, result));
+                            base::BindOnce(initialize_callback, result));
     return;
   }
 
@@ -294,7 +294,7 @@ void DownloadFileImpl::Initialize(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(initialize_callback, DOWNLOAD_INTERRUPT_REASON_NONE));
+      base::BindOnce(initialize_callback, DOWNLOAD_INTERRUPT_REASON_NONE));
 
   // Initial pull from the straw from all source streams.
   for (auto& source_stream : source_streams_)
@@ -452,9 +452,9 @@ void DownloadFileImpl::RenameWithRetryInternal(
       parameters->time_of_first_failure = base::TimeTicks::Now();
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DownloadFileImpl::RenameWithRetryInternal,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(std::move(parameters))),
+        base::BindOnce(&DownloadFileImpl::RenameWithRetryInternal,
+                       weak_factory_.GetWeakPtr(),
+                       base::Passed(std::move(parameters))),
         GetRetryDelayForFailedRename(attempt_number));
     return;
   }
@@ -491,9 +491,8 @@ void DownloadFileImpl::RenameWithRetryInternal(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(parameters->completion_callback, reason, new_path));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(parameters->completion_callback, reason, new_path));
 }
 
 void DownloadFileImpl::Detach() {
@@ -605,9 +604,9 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   if (state == SourceStream::HAS_DATA && now - start > delta &&
       !should_terminate) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                   source_stream, MOJO_RESULT_OK));
+        FROM_HERE, base::BindOnce(&DownloadFileImpl::StreamActive,
+                                  weak_factory_.GetWeakPtr(), source_stream,
+                                  MOJO_RESULT_OK));
   }
 
   if (total_incoming_data_size)
@@ -681,9 +680,9 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
       update_timer_.reset();
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadDestinationObserver::DestinationCompleted,
-                     observer_, TotalBytesReceived(),
-                     base::Passed(&hash_state)));
+          base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
+                         observer_, TotalBytesReceived(),
+                         base::Passed(&hash_state)));
     }
   }
 }
@@ -712,9 +711,9 @@ void DownloadFileImpl::SendUpdate() {
   // far along with received_slices_.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadDestinationObserver::DestinationUpdate, observer_,
-                 TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
-                 received_slices_));
+      base::BindOnce(&DownloadDestinationObserver::DestinationUpdate, observer_,
+                     TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
+                     received_slices_));
 }
 
 void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
@@ -839,8 +838,9 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
     std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadDestinationObserver::DestinationError, observer_,
-                   reason, TotalBytesReceived(), base::Passed(&hash_state)));
+        base::BindOnce(&DownloadDestinationObserver::DestinationError,
+                       observer_, reason, TotalBytesReceived(),
+                       base::Passed(&hash_state)));
   }
 }
 
@@ -865,7 +865,7 @@ DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
 void DownloadFileImpl::CancelRequest(int64_t offset) {
   if (!cancel_request_callback_.is_null()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(cancel_request_callback_, offset));
+                            base::BindOnce(cancel_request_callback_, offset));
   }
 }
 

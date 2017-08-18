@@ -45,19 +45,19 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
 void DownloadRequestHandle::PauseRequest() const {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::PauseRequest, handler_));
+      base::BindOnce(&DownloadResourceHandler::PauseRequest, handler_));
 }
 
 void DownloadRequestHandle::ResumeRequest() const {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::ResumeRequest, handler_));
+      base::BindOnce(&DownloadResourceHandler::ResumeRequest, handler_));
 }
 
 void DownloadRequestHandle::CancelRequest(bool user_cancel) const {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::CancelRequest, handler_));
+      base::BindOnce(&DownloadResourceHandler::CancelRequest, handler_));
 }
 
 }  // namespace content

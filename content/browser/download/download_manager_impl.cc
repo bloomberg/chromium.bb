@@ -105,9 +105,9 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     std::unique_ptr<ByteStreamReader> empty_byte_stream;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::StartDownload, download_manager,
-                   base::Passed(&failed_created_info),
-                   base::Passed(&empty_byte_stream), params->callback()));
+        base::BindOnce(&DownloadManager::StartDownload, download_manager,
+                       base::Passed(&failed_created_info),
+                       base::Passed(&empty_byte_stream), params->callback()));
     return nullptr;
   }
 
@@ -430,8 +430,8 @@ void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
       delegate_) {
     delegate_->CheckForFileExistence(
         download_item,
-        base::Bind(&DownloadManagerImpl::OnFileExistenceChecked,
-                   weak_factory_.GetWeakPtr(), download_item->GetId()));
+        base::BindOnce(&DownloadManagerImpl::OnFileExistenceChecked,
+                       weak_factory_.GetWeakPtr(), download_item->GetId()));
   }
 }
 

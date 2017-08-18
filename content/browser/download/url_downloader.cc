@@ -44,15 +44,15 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
   DownloadManager* GetDownloadManager() const override { return nullptr; }
   void PauseRequest() const override {
     downloader_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UrlDownloader::PauseRequest, downloader_));
+        FROM_HERE, base::BindOnce(&UrlDownloader::PauseRequest, downloader_));
   }
   void ResumeRequest() const override {
     downloader_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UrlDownloader::ResumeRequest, downloader_));
+        FROM_HERE, base::BindOnce(&UrlDownloader::ResumeRequest, downloader_));
   }
   void CancelRequest(bool user_cancel) const override {
     downloader_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UrlDownloader::CancelRequest, downloader_));
+        FROM_HERE, base::BindOnce(&UrlDownloader::CancelRequest, downloader_));
   }
 
  private:
@@ -143,8 +143,8 @@ void UrlDownloader::StartReading(bool is_continuation) {
   if (!core_.OnWillRead(&buf, &buf_size)) {
     int result = request_->CancelWithError(net::ERR_ABORTED);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&UrlDownloader::ResponseCompleted,
-                              weak_ptr_factory_.GetWeakPtr(), result));
+        FROM_HERE, base::BindOnce(&UrlDownloader::ResponseCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(), result));
     return;
   }
 
@@ -163,9 +163,9 @@ void UrlDownloader::StartReading(bool is_continuation) {
     // Else, trigger OnReadCompleted asynchronously to avoid starving the IO
     // thread in case the URLRequest can provide data synchronously.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&UrlDownloader::OnReadCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), request_.get(), bytes_read));
+        FROM_HERE, base::BindOnce(&UrlDownloader::OnReadCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  request_.get(), bytes_read));
   }
 }
 
@@ -215,9 +215,9 @@ void UrlDownloader::OnStart(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&UrlDownloader::Delegate::OnUrlDownloaderStarted, delegate_,
-                 base::Passed(&create_info), base::Passed(&stream_reader),
-                 callback));
+      base::BindOnce(&UrlDownloader::Delegate::OnUrlDownloaderStarted,
+                     delegate_, base::Passed(&create_info),
+                     base::Passed(&stream_reader), callback));
 }
 
 void UrlDownloader::OnReadyToRead() {
@@ -239,8 +239,8 @@ void UrlDownloader::CancelRequest() {
 void UrlDownloader::Destroy() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&UrlDownloader::Delegate::OnUrlDownloaderStopped, delegate_,
-                 this));
+      base::BindOnce(&UrlDownloader::Delegate::OnUrlDownloaderStopped,
+                     delegate_, this));
 }
 
 }  // namespace content
