@@ -1,5 +1,5 @@
 {
-  "x-version": 29,
+  "x-version": 30,
   "google-talk": {
     "mime_types": [
     ],
@@ -296,6 +296,32 @@
     ],
     "name": "Chromium PDF Viewer",
     "group_name_matcher": "*Chromium PDF Viewer*"
+  },
+  "google-chrome-pdf-plugin": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "fully_trusted",
+        "comment": "Google Chrome PDF Plugin has no version information."
+      }
+    ],
+    "name": "Chrome PDF Plugin",
+    "group_name_matcher": "*Chrome PDF Plugin*"
+  },
+  "chromium-pdf-plugin": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "fully_trusted",
+        "comment": "Chromium PDF Plugin has no version information."
+      }
+    ],
+    "name": "Chromium PDF Plugin",
+    "group_name_matcher": "*Chromium PDF Plugin*"
   },
   "facebook-video-calling": {
     "mime_types": [
