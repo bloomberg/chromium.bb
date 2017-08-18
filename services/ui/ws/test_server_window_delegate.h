@@ -20,8 +20,10 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
  private:
   // ServerWindowDelegate:
-  viz::mojom::FrameSinkManager* GetFrameSinkManager() override;
+  viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info,
+                                ServerWindow* window) override;
 
   ServerWindow* root_window_ = nullptr;
 

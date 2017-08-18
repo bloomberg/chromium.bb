@@ -30,7 +30,6 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/frame_sink_manager_client_binding.h"
 #include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
@@ -275,11 +274,7 @@ void Service::OnStart() {
   window_server_ = base::MakeUnique<ws::WindowServer>(this);
   std::unique_ptr<ws::GpuHost> gpu_host =
       base::MakeUnique<ws::DefaultGpuHost>(window_server_.get());
-  std::unique_ptr<ws::FrameSinkManagerClientBinding> frame_sink_manager =
-      base::MakeUnique<ws::FrameSinkManagerClientBinding>(window_server_.get(),
-                                                          gpu_host.get());
   window_server_->SetGpuHost(std::move(gpu_host));
-  window_server_->SetFrameSinkManager(std::move(frame_sink_manager));
 
   ime_driver_.Init(context()->connector(), test_config_);
 

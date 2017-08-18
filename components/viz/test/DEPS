@@ -1,6 +1,8 @@
 include_rules = [
   "+cc",
   "+components/viz",
+  "+mojo/public/cpp/bindings",
+  "+services/viz/privileged/interfaces",
   "+ui/gfx/geometry",
 ]
 

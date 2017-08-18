@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/ws/accelerator.h"
@@ -829,7 +830,7 @@ viz::HitTestQuery* WindowManagerState::GetHitTestQueryForDisplay(
     return nullptr;
 
   const auto& display_hit_test_query_map =
-      window_server()->display_hit_test_query();
+      window_server()->GetHostFrameSinkManager()->display_hit_test_query();
   const auto iter =
       display_hit_test_query_map.find(display->root_window()->frame_sink_id());
   return (iter != display_hit_test_query_map.end()) ? iter->second.get()

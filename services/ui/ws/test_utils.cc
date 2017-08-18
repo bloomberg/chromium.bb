@@ -16,8 +16,6 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/frame_sink_manager_client_binding.h"
-#include "services/ui/ws/test_frame_sink_manager.h"
 #include "services/ui/ws/test_gpu_host.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
@@ -554,9 +552,6 @@ WindowServerTestHelper::WindowServerTestHelper()
   window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
   std::unique_ptr<GpuHost> gpu_host = base::MakeUnique<TestGpuHost>();
   window_server_->SetGpuHost(std::move(gpu_host));
-  std::unique_ptr<TestFrameSinkManagerImpl> frame_sink_manager =
-      base::MakeUnique<TestFrameSinkManagerImpl>();
-  window_server_->SetFrameSinkManager(std::move(frame_sink_manager));
   window_server_delegate_.set_window_server(window_server_.get());
 }
 
