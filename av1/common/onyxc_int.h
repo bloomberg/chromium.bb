@@ -1062,18 +1062,22 @@ static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
 }
 
 static INLINE TX_SIZE get_sqr_tx_size(int tx_dim) {
-  TX_SIZE tx_size;
   switch (tx_dim) {
 #if CONFIG_EXT_PARTITION
     case 128:
-#endif
+#endif  // CONFIG_EXT_PARTITION
     case 64:
-    case 32: tx_size = TX_32X32; break;
-    case 16: tx_size = TX_16X16; break;
-    case 8: tx_size = TX_8X8; break;
-    default: tx_size = TX_4X4;
+#if CONFIG_TX64X64
+      return TX_64X64;
+#else
+      return TX_32X32;
+#endif  // CONFIG_TX64X64
+      break;
+    case 32: return TX_32X32; break;
+    case 16: return TX_16X16; break;
+    case 8: return TX_8X8; break;
+    default: return TX_4X4;
   }
-  return tx_size;
 }
 
 static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
