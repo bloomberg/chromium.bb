@@ -7,17 +7,18 @@ module viz.mojom;
 import "services/viz/public/interfaces/compositing/resource_settings.mojom";
 
 struct RendererSettings {
-  ResourceSettings resource_settings;
   bool allow_antialiasing;
+  bool disallow_non_exact_resource_reuse;
+  bool enable_color_correct_rendering;
+  bool finish_rendering_on_resize;
   bool force_antialiasing;
   bool force_blending_with_shaders;
-  bool partial_swap_enabled;
-  bool finish_rendering_on_resize;
-  bool should_clear_root_render_pass;
-  bool release_overlay_resources_after_gpu_query;
   bool gl_composited_overlay_candidate_quad_border;
-  bool show_overdraw_feedback;
-  bool enable_color_correct_rendering;
   int32 highp_threshold_min;
-  bool disallow_non_exact_resource_reuse;
+  bool partial_swap_enabled;
+  bool release_overlay_resources_after_gpu_query;
+  ResourceSettings resource_settings;
+  bool should_clear_root_render_pass;
+  bool show_overdraw_feedback;
+  int32 slow_down_compositing_scale_factor;
 };

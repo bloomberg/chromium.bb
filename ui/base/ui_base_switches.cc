@@ -112,4 +112,10 @@ const char kUseSkiaRenderer[] = "use-skia-renderer";
 const char kDisallowNonExactResourceReuse[] =
     "disallow-non-exact-resource-reuse";
 
+// Re-draw everything multiple times to simulate a much slower machine.
+// Give a slow down factor to cause renderer to take that many times longer to
+// complete, such as --slow-down-compositing-scale-factor=2.
+const char kSlowDownCompositingScaleFactor[] =
+    "slow-down-compositing-scale-factor";
+
 }  // namespace switches

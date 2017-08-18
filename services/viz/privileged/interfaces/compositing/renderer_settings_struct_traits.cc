@@ -26,6 +26,8 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->highp_threshold_min = data.highp_threshold_min();
   out->disallow_non_exact_resource_reuse =
       data.disallow_non_exact_resource_reuse();
+  out->slow_down_compositing_scale_factor =
+      data.slow_down_compositing_scale_factor();
   return data.ReadResourceSettings(&out->resource_settings);
 }
 
