@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "components/download/public/download_metadata.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 
@@ -20,7 +21,11 @@ OfflinePrefetchDownloadClient::~OfflinePrefetchDownloadClient() = default;
 
 void OfflinePrefetchDownloadClient::OnServiceInitialized(
     bool state_lost,
-    const std::vector<std::string>& outstanding_download_guids) {
+    const std::vector<download::DownloadMetaData>& downloads) {
+  std::vector<std::string> outstanding_download_guids;
+  for (const auto& download : downloads)
+    outstanding_download_guids.emplace_back(download.guid);
+
   PrefetchDownloader* downloader = GetPrefetchDownloader();
   if (downloader)
     downloader->OnDownloadServiceReady(outstanding_download_guids);
@@ -53,11 +58,11 @@ void OfflinePrefetchDownloadClient::OnDownloadFailed(
 
 void OfflinePrefetchDownloadClient::OnDownloadSucceeded(
     const std::string& guid,
-    const base::FilePath& path,
-    uint64_t size) {
+    const download::CompletionInfo& completion_info) {
   PrefetchDownloader* downloader = GetPrefetchDownloader();
   if (downloader)
-    downloader->OnDownloadSucceeded(guid, path, size);
+    downloader->OnDownloadSucceeded(guid, completion_info.path,
+                                    completion_info.bytes_downloaded);
 }
 
 PrefetchDownloader* OfflinePrefetchDownloadClient::GetPrefetchDownloader()

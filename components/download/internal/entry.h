@@ -76,6 +76,10 @@ struct Entry {
   // not yet complete.
   base::Time completion_time;
 
+  // Size of the download file in bytes, 0 if download is not successfully
+  // completed.
+  uint64_t bytes_downloaded;
+
   // Stores the number of retries for this download.
   uint32_t attempt_count;
 

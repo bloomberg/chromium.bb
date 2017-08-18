@@ -11,6 +11,8 @@ source_set("public") {
   sources = [
     "client.h",
     "clients.h",
+    "download_metadata.cc",
+    "download_metadata.h",
     "download_params.cc",
     "download_params.h",
     "download_service.h",

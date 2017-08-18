@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/public/clients.h"
+#include "components/download/public/download_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace download {
@@ -35,14 +36,21 @@ TEST(DownloadServiceEntryUtilsTest, MapEntriesToClients) {
   Entry entry5 = test::BuildBasicEntry(Entry::State::AVAILABLE);
 
   std::vector<Entry*> entries = {&entry1, &entry2, &entry3, &entry4, &entry5};
-  std::vector<std::string> expected_list = {
-      entry1.guid, entry2.guid, entry3.guid, entry4.guid, entry5.guid};
-  std::vector<std::string> expected_pruned_list = {entry1.guid, entry2.guid,
-                                                   entry3.guid, entry5.guid};
+  std::vector<DownloadMetaData> expected_list = {
+      util::BuildDownloadMetaData(&entry1),
+      util::BuildDownloadMetaData(&entry2),
+      util::BuildDownloadMetaData(&entry3),
+      util::BuildDownloadMetaData(&entry4),
+      util::BuildDownloadMetaData(&entry5)};
+  std::vector<DownloadMetaData> expected_pruned_list = {
+      util::BuildDownloadMetaData(&entry1),
+      util::BuildDownloadMetaData(&entry2),
+      util::BuildDownloadMetaData(&entry3),
+      util::BuildDownloadMetaData(&entry5)};
   // If DownloadClient::TEST isn't a valid Client, all of the associated entries
   // should move to the DownloadClient::INVALID bucket.
-  auto mapped1 = util::MapEntriesToClients(std::set<DownloadClient>(), entries,
-                                           std::set<Entry::State>());
+  auto mapped1 =
+      util::MapEntriesToMetadataForClients(std::set<DownloadClient>(), entries);
   EXPECT_EQ(1U, mapped1.size());
   EXPECT_NE(mapped1.end(), mapped1.find(DownloadClient::INVALID));
   EXPECT_EQ(mapped1.end(), mapped1.find(DownloadClient::TEST));
@@ -55,8 +63,7 @@ TEST(DownloadServiceEntryUtilsTest, MapEntriesToClients) {
   // If DownloadClient::TEST is a valid Client, it should have the associated
   // entries.
   std::set<DownloadClient> clients = {DownloadClient::TEST};
-  auto mapped2 =
-      util::MapEntriesToClients(clients, entries, std::set<Entry::State>());
+  auto mapped2 = util::MapEntriesToMetadataForClients(clients, entries);
   EXPECT_EQ(1U, mapped2.size());
   EXPECT_NE(mapped2.end(), mapped2.find(DownloadClient::TEST));
   EXPECT_EQ(mapped2.end(), mapped2.find(DownloadClient::INVALID));
@@ -65,17 +72,6 @@ TEST(DownloadServiceEntryUtilsTest, MapEntriesToClients) {
   EXPECT_EQ(5U, list2.size());
   EXPECT_TRUE(
       std::equal(expected_list.begin(), expected_list.end(), list2.begin()));
-
-  // If we are pruning entries with certain states, make sure those entries
-  // don't show up in the results.
-  std::set<Entry::State> ignored_states = {Entry::State::ACTIVE,
-                                           Entry::State::COMPLETE};
-  auto mapped3 = util::MapEntriesToClients(clients, entries, ignored_states);
-  EXPECT_EQ(1U, mapped3.size());
-  auto list3 = mapped3.find(DownloadClient::TEST)->second;
-  EXPECT_EQ(4U, list3.size());
-  EXPECT_TRUE(std::equal(expected_pruned_list.begin(),
-                         expected_pruned_list.end(), list3.begin()));
 }
 
 TEST(DownloadServiceEntryUtilsTest, GetSchedulingCriteria) {
@@ -115,6 +111,27 @@ TEST(DownloadServiceEntryUtilsTest, GetSchedulingCriteria) {
   EXPECT_EQ(Criteria(false, true), util::GetSchedulingCriteria(list3));
   EXPECT_EQ(Criteria(false, false), util::GetSchedulingCriteria(list4));
   EXPECT_EQ(Criteria(false, false), util::GetSchedulingCriteria(list5));
+}
+
+// Test to verify download meta data is built correctly.
+TEST(DownloadServiceEntryUtilsTest, BuildDownloadMetaData) {
+  Entry entry = test::BuildBasicEntry(Entry::State::PAUSED);
+  entry.target_file_path = base::FilePath::FromUTF8Unsafe("123");
+  entry.bytes_downloaded = 200u;
+  auto meta_data = util::BuildDownloadMetaData(&entry);
+  EXPECT_EQ(entry.guid, meta_data.guid);
+  // Incomplete downloads don't copy the following data.
+  EXPECT_FALSE(meta_data.completion_info.has_value());
+
+  entry = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry.target_file_path = base::FilePath::FromUTF8Unsafe("123");
+  entry.bytes_downloaded = 100u;
+  meta_data = util::BuildDownloadMetaData(&entry);
+  EXPECT_EQ(entry.guid, meta_data.guid);
+  EXPECT_TRUE(meta_data.completion_info.has_value());
+  EXPECT_EQ(entry.target_file_path, meta_data.completion_info->path);
+  EXPECT_EQ(entry.bytes_downloaded,
+            meta_data.completion_info->bytes_downloaded);
 }
 
 }  // namespace download

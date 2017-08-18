@@ -14,6 +14,9 @@
 
 namespace download {
 
+struct CompletionInfo;
+struct DownloadMetaData;
+
 // The Client interface required by any feature that wants to start a download
 // through the DownloadService.  Should be registered immediately at startup
 // when the DownloadService is created (see the factory).
@@ -60,14 +63,15 @@ class Client {
   virtual ~Client() = default;
 
   // Called when the DownloadService is initialized and ready to be interacted
-  // with.  |outstanding_download_guids| is a list of all downloads the
-  // DownloadService is aware of that are associated with this Client.  If
-  // |state_lost| is |true|, the service ran into an error initializing and had
-  // to destroy all internal persisted state.  At this point any saved files
+  // with.  |downloads| is a list of all downloads the DownloadService is aware
+  // of that are associated with this Client, including in-progress downloads
+  // and recently completed downloads.
+  // If |state_lost| is |true|, the service ran into an error initializing and
+  // had to destroy all internal persisted state.  At this point any saved files
   // might not be available and any previously scheduled downloads are gone.
   virtual void OnServiceInitialized(
       bool state_lost,
-      const std::vector<std::string>& outstanding_download_guids) = 0;
+      const std::vector<DownloadMetaData>& downloads) = 0;
 
   // Called when the DownloadService fails to initialize and should not be used.
   virtual void OnServiceUnavailable() = 0;
@@ -95,16 +99,14 @@ class Client {
   virtual void OnDownloadFailed(const std::string& guid,
                                 FailureReason reason) = 0;
 
-  // Called when a download has been successfully completed.  After this call
-  // the download entry will be purged from the database.  The file will be
-  // automatically removed if it is not renamed or deleted after a window of
-  // time (12 hours, but finch configurable).  The timeout is meant to be a
-  // failsafe to ensure that we clean up properly.
-  // TODO(dtrainor): Investigate alternate output formats.
+  // Called when a download has been successfully completed.
+  // The file and the database record will be automatically removed if it is not
+  // renamed or deleted after a window of time (12 hours, but finch
+  // configurable).
+  // The timeout is meant to be a failsafe to ensure that we clean up properly.
   // TODO(dtrainor): Point to finch configurable timeout when it is added.
   virtual void OnDownloadSucceeded(const std::string& guid,
-                                   const base::FilePath& path,
-                                   uint64_t size) = 0;
+                                   const CompletionInfo& completion_info) = 0;
 };
 
 }  // namespace download

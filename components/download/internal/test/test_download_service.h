@@ -13,6 +13,9 @@
 #include "components/download/public/download_service.h"
 
 namespace download {
+
+struct CompletionInfo;
+
 namespace test {
 
 // Implementation of DownloadService used for testing.
@@ -50,8 +53,7 @@ class TestDownloadService : public DownloadService {
 
   // Notify the observer a download has succeeded.
   void OnDownloadSucceeded(const std::string& guid,
-                           const base::FilePath& file_path,
-                           uint64_t file_size);
+                           const CompletionInfo& completion_info);
 
   // Notify the observer a download has failed.
   void OnDownloadFailed(const std::string& guid,
