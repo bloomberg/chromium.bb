@@ -279,9 +279,10 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // This should not be blocked because the script won't arrive. nullptr will
-    // be returned when reading again.
-    EXPECT_EQ(nullptr, script_data.get());
+    // |script_data| should be invalid since the data wasn't received on the
+    // renderer process.
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 }
 
@@ -326,9 +327,10 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // This should not be blocked because the script won't arrive. nullptr will
-    // be returned when reading again.
-    EXPECT_EQ(nullptr, script_data.get());
+    // |script_data| should be invalid since the data wasn't received on the
+    // renderer process.
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 }
 
@@ -352,14 +354,18 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
     // |script_data| should be nullptr since no data will arrive.
-    EXPECT_FALSE(script_data);
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
     // This should not be blocked because data will not arrive anymore.
-    EXPECT_EQ(nullptr, script_data.get());
+    GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
+    // |script_data| should be invalid since the data wasn't received on the
+    // renderer process.
+    ASSERT_TRUE(script_data);
+    EXPECT_FALSE(script_data->IsValid());
   }
 }
 

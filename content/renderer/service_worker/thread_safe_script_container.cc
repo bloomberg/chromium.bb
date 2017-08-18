@@ -20,12 +20,19 @@ void ThreadSafeScriptContainer::AddOnIOThread(const GURL& url,
     waiting_cv_.Signal();
 }
 
-bool ThreadSafeScriptContainer::ExistsOnWorkerThread(const GURL& url) {
+ThreadSafeScriptContainer::ScriptStatus
+ThreadSafeScriptContainer::GetStatusOnWorkerThread(const GURL& url) {
   base::AutoLock lock(lock_);
-  return base::ContainsKey(script_data_, url);
+  auto it = script_data_.find(url);
+  if (it == script_data_.end())
+    return ScriptStatus::kPending;
+  // If the instance is invalid, return |kFailed|.
+  // TODO(shimazu): Keep the status for each entries instead of using IsValid().
+  return (it->second && !it->second->IsValid()) ? ScriptStatus::kFailed
+                                                : ScriptStatus::kSuccess;
 }
 
-bool ThreadSafeScriptContainer::WaitOnIOThread(const GURL& url) {
+bool ThreadSafeScriptContainer::WaitOnWorkerThread(const GURL& url) {
   base::AutoLock lock(lock_);
   DCHECK(waiting_url_.is_empty())
       << "The script container is unexpectedly shared among worker threads.";
@@ -42,7 +49,9 @@ bool ThreadSafeScriptContainer::WaitOnIOThread(const GURL& url) {
     waiting_cv_.Wait();
   }
   waiting_url_ = GURL();
-  return true;
+  // TODO(shimazu): Keep the status for each entries instead of using IsValid().
+  const auto& data = script_data_[url];
+  return !data || data->IsValid();
 }
 
 std::unique_ptr<ThreadSafeScriptContainer::Data>

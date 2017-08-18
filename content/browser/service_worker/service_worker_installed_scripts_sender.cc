@@ -107,8 +107,7 @@ class ServiceWorkerInstalledScriptsSender::Sender {
                           int result) {
     DCHECK(owner_);
     DCHECK(http_info);
-    DCHECK_GT(result, 0);
-    if (!http_info->http_info) {
+    if (result < 0 || !http_info->http_info) {
       CompleteSendIfNeeded(FinishedReason::kNoHttpInfoError);
       return;
     }
@@ -404,10 +403,32 @@ void ServiceWorkerInstalledScriptsSender::OnAbortSendingScript(
   state_ = State::kFinished;
   finished_reason_ = status;
 
-  // Notify the renderer that the error occurred by resetting the Mojo
-  // pipe. This triggers failure of script loading on the renderer, and if it's
-  // the main script, it ends up with worker shutdown.
-  manager_.reset();
+  switch (status) {
+    case FinishedReason::kNotFinished:
+    case FinishedReason::kSuccess:
+      NOTREACHED();
+      return;
+    case FinishedReason::kNoHttpInfoError:
+    case FinishedReason::kResponseReaderError:
+      owner_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_DISK_CACHE);
+      // Abort the worker by deleting from the registration since the data was
+      // corrupted.
+      if (context_) {
+        ServiceWorkerRegistration* registration =
+            context_->GetLiveRegistration(owner_->registration_id());
+        // This ends up with destructing |this|.
+        registration->DeleteVersion(owner_);
+      }
+      return;
+    case FinishedReason::kCreateDataPipeError:
+    case FinishedReason::kConnectionError:
+    case FinishedReason::kMetaDataSenderError:
+      // Notify the renderer that a connection failure happened. Usually the
+      // failure means the renderer gets killed, and the error handler of
+      // EmbeddedWorkerInstance is invoked soon.
+      manager_.reset();
+      break;
+  }
 }
 
 const GURL& ServiceWorkerInstalledScriptsSender::CurrentSendingURL() {

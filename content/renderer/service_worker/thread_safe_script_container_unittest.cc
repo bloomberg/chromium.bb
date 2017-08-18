@@ -11,6 +11,8 @@
 
 namespace content {
 
+using ScriptStatus = ThreadSafeScriptContainer::ScriptStatus;
+
 class ThreadSafeScriptContainerTest : public testing::Test {
  public:
   ThreadSafeScriptContainerTest()
@@ -68,16 +70,17 @@ class ThreadSafeScriptContainerTest : public testing::Test {
     return &writer_waiter_;
   }
 
-  base::WaitableEvent* ExistsOnReaderThread(const GURL& url, bool* out_exists) {
+  base::WaitableEvent* GetStatusOnReaderThread(const GURL& url,
+                                               ScriptStatus* out_status) {
     reader_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](scoped_refptr<ThreadSafeScriptContainer> container,
-               const GURL& url, bool* out_exists, base::WaitableEvent* waiter) {
-              *out_exists = container->ExistsOnWorkerThread(url);
-              waiter->Signal();
-            },
-            container_, url, out_exists, &reader_waiter_));
+        FROM_HERE, base::BindOnce(
+                       [](scoped_refptr<ThreadSafeScriptContainer> container,
+                          const GURL& url, ScriptStatus* out_status,
+                          base::WaitableEvent* waiter) {
+                         *out_status = container->GetStatusOnWorkerThread(url);
+                         waiter->Signal();
+                       },
+                       container_, url, out_status, &reader_waiter_));
     return &reader_waiter_;
   }
 
@@ -87,7 +90,7 @@ class ThreadSafeScriptContainerTest : public testing::Test {
         base::BindOnce(
             [](scoped_refptr<ThreadSafeScriptContainer> container,
                const GURL& url, bool* out_exists, base::WaitableEvent* waiter) {
-              *out_exists = container->WaitOnIOThread(url);
+              *out_exists = container->WaitOnWorkerThread(url);
               waiter->Signal();
             },
             container_, url, out_exists, &reader_waiter_));
@@ -127,9 +130,9 @@ class ThreadSafeScriptContainerTest : public testing::Test {
 TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   const GURL kKey("https://example.com/key");
   {
-    bool result = true;
-    ExistsOnReaderThread(kKey, &result)->Wait();
-    EXPECT_FALSE(result);
+    ScriptStatus result = ScriptStatus::kSuccess;
+    GetStatusOnReaderThread(kKey, &result)->Wait();
+    EXPECT_EQ(ScriptStatus::kPending, result);
   }
 
   ThreadSafeScriptContainer::Data* added_data;
@@ -145,9 +148,9 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   }
 
   {
-    bool result = false;
-    ExistsOnReaderThread(kKey, &result)->Wait();
-    EXPECT_TRUE(result);
+    ScriptStatus result = ScriptStatus::kFailed;
+    GetStatusOnReaderThread(kKey, &result)->Wait();
+    EXPECT_EQ(ScriptStatus::kSuccess, result);
   }
 
   {
@@ -157,10 +160,10 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   }
 
   {
-    bool result = false;
-    ExistsOnReaderThread(kKey, &result)->Wait();
+    ScriptStatus result = ScriptStatus::kFailed;
+    GetStatusOnReaderThread(kKey, &result)->Wait();
     // The record of |kKey| should be exist though it's already taken.
-    EXPECT_TRUE(result);
+    EXPECT_EQ(ScriptStatus::kSuccess, result);
   }
 
   {
@@ -194,9 +197,9 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
 TEST_F(ThreadSafeScriptContainerTest, WaitNonExistingKey) {
   const GURL kKey("https://example.com/key");
   {
-    bool result = true;
-    ExistsOnReaderThread(kKey, &result)->Wait();
-    EXPECT_FALSE(result);
+    ScriptStatus result = ScriptStatus::kSuccess;
+    GetStatusOnReaderThread(kKey, &result)->Wait();
+    EXPECT_EQ(ScriptStatus::kPending, result);
   }
 
   {

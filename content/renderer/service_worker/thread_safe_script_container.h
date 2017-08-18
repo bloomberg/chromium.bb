@@ -37,17 +37,23 @@ class CONTENT_EXPORT ThreadSafeScriptContainer
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
   ThreadSafeScriptContainer();
 
+  enum class ScriptStatus { kSuccess, kFailed, kPending };
+
   // Called on the IO thread.
   void AddOnIOThread(const GURL& url, std::unique_ptr<Data> data);
 
+  // Returns the following values.
+  // - |kSuccess| : the script data has been received.
+  // - |kFailed| : receiving the script has failed.
+  // - |kPending| : the script has not been received yet.
   // Called on the worker thread.
-  bool ExistsOnWorkerThread(const GURL& url);
+  ScriptStatus GetStatusOnWorkerThread(const GURL& url);
 
   // Waits until the script is added. The thread is blocked until the script is
-  // available.  Returns false if an error happens and the waiting script won't
-  // be available forever.
+  // available or receiving the script fails. Returns false if an error happens
+  // and the waiting script won't be available forever.
   // Called on the worker thread.
-  bool WaitOnIOThread(const GURL& url);
+  bool WaitOnWorkerThread(const GURL& url);
 
   // Returns nullptr if the script has already been taken.
   // Called on the worker thread.
