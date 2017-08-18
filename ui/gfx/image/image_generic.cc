@@ -5,6 +5,7 @@
 #include "ui/gfx/image/image_platform.h"
 
 #include <set>
+#include <utility>
 
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -102,7 +103,7 @@ ImageSkia* ImageSkiaFromPNG(const std::vector<ImagePNGRep>& image_png_reps) {
   DCHECK(!size.IsEmpty());
   if (size.IsEmpty())
     return GetErrorImageSkia();
-  return new ImageSkia(image_source.release(), size);
+  return new ImageSkia(std::move(image_source), size);
 }
 
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(

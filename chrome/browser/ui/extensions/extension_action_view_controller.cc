@@ -87,7 +87,7 @@ gfx::Image ExtensionActionViewController::GetIcon(
     return gfx::Image();
 
   return gfx::Image(
-      gfx::ImageSkia(GetIconImageSource(web_contents, size).release(), size));
+      gfx::ImageSkia(GetIconImageSource(web_contents, size), size));
 }
 
 base::string16 ExtensionActionViewController::GetActionName() const {

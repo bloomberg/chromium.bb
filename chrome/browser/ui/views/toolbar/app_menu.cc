@@ -12,6 +12,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -583,8 +584,8 @@ class AppMenu::ZoomView : public AppMenuView {
       SkColor fg_color = theme->GetSystemColor(
           ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
       gfx::ImageSkia hovered_fullscreen_image(
-          new HoveredImageSource(*full_screen_image, fg_color),
-      full_screen_image->size());
+          base::MakeUnique<HoveredImageSource>(*full_screen_image, fg_color),
+          full_screen_image->size());
       fullscreen_button_->SetImage(
           ImageButton::STATE_HOVERED, &hovered_fullscreen_image);
       fullscreen_button_->SetImage(

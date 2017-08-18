@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_icon_placeholder.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -81,8 +82,9 @@ ExtensionIconPlaceholder::~ExtensionIconPlaceholder() {
 gfx::Image ExtensionIconPlaceholder::CreateImage(
     extension_misc::ExtensionIcons size,
     const std::string& name) {
-  return gfx::Image(gfx::ImageSkia(new ExtensionIconPlaceholder(size, name),
-                                   gfx::Size(size, size)));
+  return gfx::Image(
+      gfx::ImageSkia(base::MakeUnique<ExtensionIconPlaceholder>(size, name),
+                     gfx::Size(size, size)));
 }
 
 void ExtensionIconPlaceholder::Draw(gfx::Canvas* canvas) {

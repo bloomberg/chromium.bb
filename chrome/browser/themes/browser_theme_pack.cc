@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -591,9 +592,8 @@ void BrowserThemePack::BuildFromExtension(
   for (ImageCache::iterator it = pack->images_.begin();
        it != pack->images_.end(); ++it) {
     const gfx::ImageSkia source_image_skia = it->second.AsImageSkia();
-    ThemeImageSource* source = new ThemeImageSource(source_image_skia);
-    // image_skia takes ownership of source.
-    gfx::ImageSkia image_skia(source, source_image_skia.size());
+    auto source = base::MakeUnique<ThemeImageSource>(source_image_skia);
+    gfx::ImageSkia image_skia(std::move(source), source_image_skia.size());
     it->second = gfx::Image(image_skia);
   }
 
@@ -1263,11 +1263,10 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
       if (overlay_it != images->end())
         overlay = overlay_it->second.AsImageSkia();
 
-      gfx::ImageSkiaSource* source = new TabBackgroundImageSource(
+      auto source = base::MakeUnique<TabBackgroundImageSource>(
           image_to_tint, overlay, hsl_shift, vertical_offset);
-      // ImageSkia takes ownership of |source|.
-      temp_output[prs_id] = gfx::Image(gfx::ImageSkia(source,
-          image_to_tint.size()));
+      temp_output[prs_id] =
+          gfx::Image(gfx::ImageSkia(std::move(source), image_to_tint.size()));
     }
   }
   MergeImageCaches(temp_output, images);

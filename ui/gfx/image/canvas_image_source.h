@@ -5,6 +5,8 @@
 #ifndef UI_GFX_IMAGE_CANVAS_IMAGE_SOURCE_H_
 #define UI_GFX_IMAGE_CANVAS_IMAGE_SOURCE_H_
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -30,7 +32,7 @@ class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
   static ImageSkia MakeImageSkia(Args&&... args) {
     auto source = base::MakeUnique<T>(std::forward<Args>(args)...);
     gfx::Size size = source->size();
-    return gfx::ImageSkia(source.release(), size);
+    return gfx::ImageSkia(std::move(source), size);
   }
 
   CanvasImageSource(const gfx::Size& size, bool is_opaque);

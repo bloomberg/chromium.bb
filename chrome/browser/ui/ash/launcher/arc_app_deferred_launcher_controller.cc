@@ -90,7 +90,7 @@ void ArcAppDeferredLauncherController::MaybeApplySpinningEffect(
 
   const color_utils::HSL shift = {-1, 0, 0.25};
   *image = gfx::ImageSkia(
-      new SpinningEffectSource(
+      base::MakeUnique<SpinningEffectSource>(
           weak_ptr_factory_.GetWeakPtr(), app_id,
           gfx::ImageSkiaOperations::CreateTransparentImage(
               gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image, shift),

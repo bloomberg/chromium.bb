@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
@@ -298,7 +299,7 @@ gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                             AvatarImageSource::POSITION_CENTER,
                             AvatarImageSource::BORDER_NONE, shape));
 
-  return gfx::Image(gfx::ImageSkia(source.release(), size));
+  return gfx::Image(gfx::ImageSkia(std::move(source), size));
 }
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
@@ -341,7 +342,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                             is_gaia_image ? AvatarImageSource::BORDER_ETCHED
                                           : AvatarImageSource::BORDER_NONE));
 
-  return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
+  return gfx::Image(gfx::ImageSkia(std::move(source), dst_size));
 }
 
 SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap,

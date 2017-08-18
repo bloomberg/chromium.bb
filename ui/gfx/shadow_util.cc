@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/canvas.h"
@@ -95,7 +96,7 @@ const ShadowDetails& ShadowDetails::Get(int elevation, int corner_radius) {
   ShadowDetails* shadow = &insertion.first->second;
   shadow->values = ShadowValue::MakeMdShadowValues(elevation);
   auto* source = new ShadowNineboxSource(shadow->values, corner_radius);
-  shadow->ninebox_image = ImageSkia(source, source->size());
+  shadow->ninebox_image = ImageSkia(base::WrapUnique(source), source->size());
   return *shadow;
 }
 

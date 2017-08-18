@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -56,11 +57,9 @@ WebstoreResult::WebstoreResult(Profile* profile,
 
   int icon_dimension = GetPreferredIconDimension();
   icon_ = gfx::ImageSkia(
-      new UrlIconSource(
+      base::MakeUnique<UrlIconSource>(
           base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),
-          profile_->GetRequestContext(),
-          icon_url_,
-          icon_dimension,
+          profile_->GetRequestContext(), icon_url_, icon_dimension,
           IDR_WEBSTORE_ICON_32),
       gfx::Size(icon_dimension, icon_dimension));
   SetIcon(icon_);

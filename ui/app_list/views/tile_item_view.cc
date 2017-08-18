@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -134,7 +135,7 @@ void TileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
   }
 
   const int size = kBadgeBackgroundRadius * 2;
-  gfx::ImageSkia background(new BadgeBackgroundImageSource(size),
+  gfx::ImageSkia background(base::MakeUnique<BadgeBackgroundImageSource>(size),
                             gfx::Size(size, size));
   gfx::ImageSkia icon_with_background =
       gfx::ImageSkiaOperations::CreateSuperimposedImage(background, badge_icon);

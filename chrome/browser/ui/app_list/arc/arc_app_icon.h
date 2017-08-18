@@ -102,7 +102,6 @@ class ArcAppIcon {
   const int resource_size_in_dip_;
   Observer* const observer_;
 
-  Source* source_ = nullptr;  // Owned by ImageSkia storage.
   gfx::ImageSkia image_skia_;
 
   // Contains pending image decode requests.

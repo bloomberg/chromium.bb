@@ -52,7 +52,8 @@ class LauncherSearchIconImageLoaderTestImpl
   const gfx::ImageSkia& LoadExtensionIcon() override {
     // Returns 32x32 black image.
     extension_icon_ = gfx::ImageSkia(
-        new FillColorImageSource(icon_size_, SK_ColorBLACK), icon_size_);
+        base::MakeUnique<FillColorImageSource>(icon_size_, SK_ColorBLACK),
+        icon_size_);
     return extension_icon_;
   }
 
@@ -151,7 +152,8 @@ TEST_F(LauncherSearchIconImageLoaderTest, WithoutCustomIconSuccessCase) {
   // is null.
   gfx::Size icon_size(32, 32);
   gfx::ImageSkia expected_image(
-      new FillColorImageSource(icon_size, SK_ColorBLACK), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorBLACK),
+      icon_size);
   ASSERT_TRUE(IsEqual(expected_image, impl.GetIconImage()));
 
   ASSERT_TRUE(impl.GetBadgeIconImage().isNull());
@@ -166,13 +168,15 @@ TEST_F(LauncherSearchIconImageLoaderTest, ExtensionIconAsyncLoadSuccessCase) {
   // Extension icon is loaded as async.
   gfx::Size icon_size(32, 32);
   gfx::ImageSkia extension_icon(
-      new FillColorImageSource(icon_size, SK_ColorGREEN), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorGREEN),
+      icon_size);
   impl.LoadExtensionIconAsync(extension_icon);
 
   // Assert that the asynchronously loaded image is set to icon image and badge
   // icon image is null.
   gfx::ImageSkia expected_image(
-      new FillColorImageSource(icon_size, SK_ColorGREEN), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorGREEN),
+      icon_size);
   ASSERT_TRUE(IsEqual(expected_image, impl.GetIconImage()));
 
   ASSERT_TRUE(impl.GetBadgeIconImage().isNull());
@@ -190,18 +194,21 @@ TEST_F(LauncherSearchIconImageLoaderTest, WithCustomIconSuccessCase) {
 
   // Load custom icon as async.
   gfx::Size icon_size(32, 32);
-  gfx::ImageSkia custom_icon(new FillColorImageSource(icon_size, SK_ColorGREEN),
-                             icon_size);
+  gfx::ImageSkia custom_icon(
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorGREEN),
+      icon_size);
   impl.CallOnCustomIconLoaded(custom_icon);
 
   // Assert that custom icon image is set to icon image and extension icon image
   // is set to badge icon image.
   gfx::ImageSkia expected_image(
-      new FillColorImageSource(icon_size, SK_ColorGREEN), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorGREEN),
+      icon_size);
   ASSERT_TRUE(IsEqual(expected_image, impl.GetIconImage()));
 
   gfx::ImageSkia expected_badge_icon_image(
-      new FillColorImageSource(icon_size, SK_ColorBLACK), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorBLACK),
+      icon_size);
   ASSERT_TRUE(IsEqual(expected_badge_icon_image, impl.GetBadgeIconImage()));
 }
 
@@ -258,7 +265,8 @@ TEST_F(LauncherSearchIconImageLoaderTest, FailedToLoadCustomIcon) {
   // is null.
   gfx::Size icon_size(32, 32);
   gfx::ImageSkia expected_image(
-      new FillColorImageSource(icon_size, SK_ColorBLACK), icon_size);
+      base::MakeUnique<FillColorImageSource>(icon_size, SK_ColorBLACK),
+      icon_size);
   ASSERT_TRUE(IsEqual(expected_image, impl.GetIconImage()));
 
   ASSERT_TRUE(impl.GetBadgeIconImage().isNull());

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -489,7 +490,8 @@ ImageSkia ImageSkiaOperations::CreateBlendedImage(const ImageSkia& first,
   if (first.isNull() || second.isNull())
     return ImageSkia();
 
-  return ImageSkia(new BlendingImageSource(first, second, alpha), first.size());
+  return ImageSkia(base::MakeUnique<BlendingImageSource>(first, second, alpha),
+                   first.size());
 }
 
 // static
@@ -499,7 +501,8 @@ ImageSkia ImageSkiaOperations::CreateSuperimposedImage(
   if (first.isNull() || second.isNull())
     return ImageSkia();
 
-  return ImageSkia(new SuperimposedImageSource(first, second), first.size());
+  return ImageSkia(base::MakeUnique<SuperimposedImageSource>(first, second),
+                   first.size());
 }
 
 // static
@@ -508,7 +511,8 @@ ImageSkia ImageSkiaOperations::CreateTransparentImage(const ImageSkia& image,
   if (image.isNull())
     return ImageSkia();
 
-  return ImageSkia(new TransparentImageSource(image, alpha), image.size());
+  return ImageSkia(base::MakeUnique<TransparentImageSource>(image, alpha),
+                   image.size());
 }
 
 // static
@@ -517,7 +521,7 @@ ImageSkia ImageSkiaOperations::CreateMaskedImage(const ImageSkia& rgb,
   if (rgb.isNull() || alpha.isNull())
     return ImageSkia();
 
-  return ImageSkia(new MaskedImageSource(rgb, alpha), rgb.size());
+  return ImageSkia(base::MakeUnique<MaskedImageSource>(rgb, alpha), rgb.size());
 }
 
 // static
@@ -527,8 +531,9 @@ ImageSkia ImageSkiaOperations::CreateTiledImage(const ImageSkia& source,
   if (source.isNull())
     return ImageSkia();
 
-  return ImageSkia(new TiledImageSource(source, src_x, src_y, dst_w, dst_h),
-                   gfx::Size(dst_w, dst_h));
+  return ImageSkia(
+      base::MakeUnique<TiledImageSource>(source, src_x, src_y, dst_w, dst_h),
+      gfx::Size(dst_w, dst_h));
 }
 
 // static
@@ -538,7 +543,8 @@ ImageSkia ImageSkiaOperations::CreateHSLShiftedImage(
   if (image.isNull())
     return ImageSkia();
 
-  return ImageSkia(new HSLImageSource(image, hsl_shift), image.size());
+  return ImageSkia(base::MakeUnique<HSLImageSource>(image, hsl_shift),
+                   image.size());
 }
 
 // static
@@ -548,7 +554,8 @@ ImageSkia ImageSkiaOperations::CreateButtonBackground(SkColor color,
   if (image.isNull() || mask.isNull())
     return ImageSkia();
 
-  return ImageSkia(new ButtonImageSource(color, image, mask), mask.size());
+  return ImageSkia(base::MakeUnique<ButtonImageSource>(color, image, mask),
+                   mask.size());
 }
 
 // static
@@ -560,8 +567,9 @@ ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
     return ImageSkia();
   }
 
-  return ImageSkia(new ExtractSubsetImageSource(image, clipped_bounds),
-                   clipped_bounds.size());
+  return ImageSkia(
+      base::MakeUnique<ExtractSubsetImageSource>(image, clipped_bounds),
+      clipped_bounds.size());
 }
 
 // static
@@ -572,8 +580,9 @@ ImageSkia ImageSkiaOperations::CreateResizedImage(
   if (source.isNull())
     return ImageSkia();
 
-  return ImageSkia(new ResizeSource(source, method, target_dip_size),
-                   target_dip_size);
+  return ImageSkia(
+      base::MakeUnique<ResizeSource>(source, method, target_dip_size),
+      target_dip_size);
 }
 
 // static
@@ -587,7 +596,8 @@ ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
   gfx::Size shadow_image_size = source.size();
   shadow_image_size.Enlarge(shadow_padding.width(),
                             shadow_padding.height());
-  return ImageSkia(new DropShadowSource(source, shadows), shadow_image_size);
+  return ImageSkia(base::MakeUnique<DropShadowSource>(source, shadows),
+                   shadow_image_size);
 }
 
 // static
@@ -595,7 +605,7 @@ ImageSkia ImageSkiaOperations::CreateHorizontalShadow(
     const std::vector<ShadowValue>& shadows,
     bool fades_down) {
   auto* source = new HorizontalShadowSource(shadows, fades_down);
-  return ImageSkia(source, source->size());
+  return ImageSkia(base::WrapUnique(source), source->size());
 }
 
 // static
@@ -605,11 +615,10 @@ ImageSkia ImageSkiaOperations::CreateRotatedImage(
   if (source.isNull())
     return ImageSkia();
 
-  return ImageSkia(new RotatedSource(source, rotation),
-      SkBitmapOperations::ROTATION_180_CW == rotation ?
-          source.size() :
-          gfx::Size(source.height(), source.width()));
-
+  return ImageSkia(base::MakeUnique<RotatedSource>(source, rotation),
+                   SkBitmapOperations::ROTATION_180_CW == rotation
+                       ? source.size()
+                       : gfx::Size(source.height(), source.width()));
 }
 
 // static
@@ -621,7 +630,8 @@ ImageSkia ImageSkiaOperations::CreateIconWithBadge(const ImageSkia& icon,
   if (badge.isNull())
     return icon;
 
-  return ImageSkia(new IconWithBadgeSource(icon, badge), icon.size());
+  return ImageSkia(base::MakeUnique<IconWithBadgeSource>(icon, badge),
+                   icon.size());
 }
 
 }  // namespace gfx

@@ -53,10 +53,6 @@ class GFX_EXPORT ImageSkia {
   // at |scale| and uses its dimensions to calculate the size in DIP.
   ImageSkia(std::unique_ptr<ImageSkiaSource> source, float scale);
 
-  // Deprecated versions of the above constructors. ImageSkia takes ownership of
-  // |source|.
-  ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
-
   explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
 
   // Copies a reference to |other|'s storage.
