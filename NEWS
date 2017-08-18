@@ -18,6 +18,7 @@ issues]].
   tables thanks to Simon Aittamaa.
 - Unified French 6 dots and 8 dots improvements for back-translation
   thanks to Michel Such.
+- Updates to the Chinese braille table thanks to Coscell Kao
 ** License changes
 ** Backwards incompatible changes
 ** New, renamed or removed tables

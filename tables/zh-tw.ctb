@@ -1,7 +1,7 @@
 # Chinese braille table
 #
 #  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
-#  Copyright (C) 2015,2016 Coscell Kao <coscell@gmail.com>
+#  Copyright (C) 2015-2017 Coscell Kao <coscell@gmail.com>
 #
 #  This file is part of liblouis.
 #
@@ -19,19 +19,19 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2016-12
+# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-7
 
 # U.S. English 8 dot Computer braille table
 include en-us-comp8.ctb
 
 # Unicode symbols
+sign \x000C 457-123
 sign \x00A0 0
 sign \x00A1 34-2346
-sign \x00A2 36-14-36
-sign \x00A3 3456
+sign \x00A2 4-14
+sign \x00A3 4-123
 sign \x00A4 456-1246
 sign \x00A5 36-134567-157-13457-36
-sign \x00A6 46-36
 sign \x00A7 1246-256
 sign \x00A8 456-36
 sign \x00A9 12356-147-23456
@@ -62,7 +62,7 @@ sign \x00C1 457-17
 sign \x00C2 346-17
 sign \x00C3 45-17
 sign \x00C4 36-17
-sign \x00C5 1357-17
+sign \x00C5 4-6-1
 sign \x00C6 17-157
 sign \x00D7 4-16
 sign \x00E0 17-256
@@ -92,7 +92,7 @@ sign \x02C7 34567-4
 sign \x02C9 34567-3
 sign \x02CA 34567-2
 sign \x02CB 34567-5
-sign \x02D9 34567-1
+sign \x02D9 34567-17
 sign \x0391 46-17
 sign \x0392 46-127
 sign \x0393 46-12457
@@ -164,6 +164,7 @@ sign \x2026 5-5-5
 sign \x2027 36
 sign \x2028 1256
 sign \x202F 0
+sign \x2030 4-356-356
 sign \x2032 3
 sign \x2033 4-3456
 sign \x2034 3-3-3
@@ -262,6 +263,7 @@ sign \x2191 1246-126-25-25-135
 sign \x2192 1246-25-25-135
 sign \x2193 1246-146-25-25-135
 sign \x2194 1246-246-25-25-135
+sign \x2195 1246-126-246-25-25-135
 sign \x2196 23467-348
 sign \x2197 23467-3568
 sign \x2198 23467-268
@@ -270,19 +272,19 @@ sign \x21B8 235678-2456
 sign \x21B9 235678-1346
 sign \x21E7 235678-1236
 sign \x21E8 1246-25-25-135
-sign \x2200 256-1-123-123
+sign \x2200 4-12346
 sign \x2201 14-135-134-1234-123
-sign \x2202 1234-14
-sign \x2203 4-26
+sign \x2202 4-145
+sign \x2203 4-123456
 sign \x2204 2345-1345-15
 sign \x2205 456-356
 sign \x2206 24-1345-13
 sign \x2207 46-1246
 sign \x2208 4-15
-sign \x2209 1345-15-123-134
+sign \x2209 34-4-15
 sign \x220A 234-15-123-134
-sign \x220B 134-15-134-12
-sign \x220C 1345-134-15-134-12
+sign \x220B 4-26
+sign \x220C 34-4-26
 sign \x220D 234-134-15-134
 sign \x220e 15-135-1234
 sign \x220F 46-12347
@@ -309,34 +311,59 @@ sign \x2228 4-346
 sign \x2229 46-146
 sign \x222A 46-346
 sign \x222B 23467-2368
-sign \x222E 23467-1468
+sign \x222E 2346-4-1246-14-12456
 sign \x2234 6-16
 sign \x2235 4-34
 sign \x2236 5-2
 sign \x2237 1234-1235-135-1234
+sign \x2238 46-36
 sign \x223C 1-156-1-156
-sign \x2245 5-123456-126-156-12456
+sign \x2242 156-4-156
+sign \x2243 4-156-156
+sign \x2244 34-4-156-156
+sign \x2245 4-156-46-13
+sign \x2248 4-156-4-156
+sign \x2249 34-4-156-4-156
 sign \x224C 4-156-123456
-sign \x2251 123456
-sign \x2252 5-123456-126-156-12456
+sign \x224D 1246-3-1246-1
+sign \x2250 5-46-13-126-16-12456
+sign \x2251 5-46-13-126-16-126-16-12456
+sign \x2252 5-46-13-126-16-126-16-12456
+sign \x2253 5-46-13-126-16-126-16-12456
+sign \x225C 5-46-13-126-1246-2345-12456
 sign \x2260 2346-123456
-sign \x2261 4-156-46-13
+sign \x2261 456-123
 sign \x2263 4-156-46-13
 sign \x2264 126-123456
 sign \x2265 345-123456
 sign \x2266 126-123456
 sign \x2267 345-123456
+sign \x226A 5-13-4-5-13-12456
+sign \x226B 46-2-4-46-2-12456
 sign \x226D 2346-123456
-sign \x2272 126-123456
-sign \x2273 345-123456
+sign \x226E 34-5-13
+sign \x226F 34-46-2
+sign \x2270 34-5-13-156
+sign \x2271 34-46-2-156
+sign \x2272 5-13-4-156
+sign \x2273 46-2-4-156
+sign \x2274 34-5-13-4-156
+sign \x2275 34-46-2-4-156
 sign \x2276 126-345
 sign \x2277 345-126
 sign \x2282 456-5-13
 sign \x2283 456-46-2
-sign \x2286 234-136-12-234-123456
-sign \x2287 234-136-1234-234-123456
+sign \x2284 34-456-5-13
+sign \x2285 34-456-46-2
+sign \x2286 456-5-13-156
+sign \x2287 456-46-2-156
+sign \x2288 34-456-5-13-156
+sign \x2289 34-456-46-2-156
 sign \x2295 1246-14-456-1246-346-12456
 sign \x2296 1246-14-456-1246-36-12456
+sign \x2297 1246-14-456-1246-4-16-12456
+sign \x2298 1246-14-456-1246-456-34-12456
+sign \x2299 1246-14-456-1246-16-12456
 sign \x22A5 1246-1234
 sign \x22BF 1246-2345
 sign \x22DC 123456-126
@@ -509,6 +536,7 @@ sign \x2713 12378-67
 sign \x2714 2467-1346-124567
 sign \x2748 16-0
 sign \x2794 36-36-345
+sign \x2E1F 5-4-156-146-16-12456
 sign \x2ED1 12-1346-2
 sign \x2F00 16-3
 sign \x2F24 145-345-5
@@ -528,7 +556,7 @@ include braille-patterns.cti
 sign \x3000 0
 sign \x3001 6-0
 sign \x3002 36-0
-sign \x3003 4-3456
+sign \x3003 6-3
 sign \x3008 126
 sign \x3009 345
 sign \x300A 126-126
@@ -7775,7 +7803,7 @@ sign \x5439 12-1246-3
 sign \x543A 145-12356-3
 sign \x543B 123456-4
 sign \x543C 1235-12356-4
-sign \x543D 12356-2
+sign \x543D 1235-12346-3
 sign \x543E 34-2
 sign \x543F 13-146-5
 sign \x5440 23456-1
@@ -13618,7 +13646,7 @@ sign \x6B0C 245-13462
 sign \x6B0D 13-234-4
 sign \x6B0E 1256-5
 sign \x6B0F 14-25-2
-sign \x6B10 14-16-4
+sign \x6B10 14-16-5
 sign \x6B11 245-12456-2
 sign \x6B12 14-12456-2
 sign \x6B13 145-1346-4
@@ -21828,7 +21856,7 @@ sign \x8B1E 1235-2346-5
 sign \x8B1F 124-146-3
 sign \x8B20 246-2
 sign \x8B21 246-2
-sign \x8B22 14-34-3
+sign \x8B22 1235-34-5
 sign \x8B23 1256-2
 sign \x8B24 135-246-3
 sign \x8B25 245-12346-5
@@ -22115,7 +22143,7 @@ sign \x8C3D 1235-1236-3
 sign \x8C3E 1235-12346-3
 sign \x8C3F 15-16-3
 sign \x8C40 15-16-3
-sign \x8C41 1235-25-3
+sign \x8C41 1235-25-5
 sign \x8C42 14-246-2
 sign \x8C43 1235-1236-4
 sign \x8C44 145-34-2
