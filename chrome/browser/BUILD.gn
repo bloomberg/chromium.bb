@@ -4302,9 +4302,6 @@ grit("resources") {
   if (enable_hangout_services_extension) {
     defines += [ "enable_hangout_services_extension" ]
   }
-  if (enable_oop_heap_profiling) {
-    defines += [ "enable_oop_heap_profiling" ]
-  }
 
   output_dir = "$root_gen_dir/chrome"
   outputs = [

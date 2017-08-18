@@ -71,6 +71,8 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiling_host/chrome_browser_main_extra_parts_profiling.h"
+#include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
@@ -117,6 +119,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -383,12 +386,6 @@
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "chrome/browser/media/cast_remoting_connector.h"
-#endif
-
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-#include "chrome/browser/profiling_host/chrome_browser_main_extra_parts_profiling.h"
-#include "chrome/browser/profiling_host/profiling_process_host.h"
-#include "chrome/common/profiling/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -913,9 +910,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
 #endif
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiling);
-#endif
 
   chrome::AddMetricsExtraParts(main_parts);
 
@@ -3015,10 +3010,8 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       content::SANDBOX_TYPE_UTILITY};
 #endif
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
   (*services)[profiling::mojom::kServiceName] = {
       base::ASCIIToUTF16("Profiling Service"), content::SANDBOX_TYPE_UTILITY};
-#endif
 }
 
 std::unique_ptr<base::Value>

@@ -39,7 +39,6 @@ buildflag_header("features") {
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_NATIVE_NOTIFICATIONS=$enable_native_notifications",
-    "ENABLE_OOP_HEAP_PROFILING=$enable_oop_heap_profiling",
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",

@@ -6,72 +6,60 @@ import("//chrome/common/features.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
-if (enable_oop_heap_profiling) {
-  static_library("profiling") {
-    sources = [
-      "address.h",
-      "allocation_event.cc",
-      "allocation_event.h",
-      "allocation_tracker.cc",
-      "allocation_tracker.h",
-      "backtrace.cc",
-      "backtrace.h",
-      "backtrace_storage.cc",
-      "backtrace_storage.h",
-      "json_exporter.cc",
-      "json_exporter.h",
-      "memlog_connection_manager.cc",
-      "memlog_connection_manager.h",
-      "memlog_impl.cc",
-      "memlog_impl.h",
-      "memlog_receiver.h",
-      "memlog_receiver_pipe.h",
-      "memlog_receiver_pipe_posix.cc",
-      "memlog_receiver_pipe_posix.h",
-      "memlog_receiver_pipe_win.cc",
-      "memlog_receiver_pipe_win.h",
-      "memlog_stream_parser.cc",
-      "memlog_stream_parser.h",
-      "memlog_stream_receiver.h",
-      "profiling_service.cc",
-      "profiling_service.h",
-    ]
+static_library("profiling") {
+  sources = [
+    "address.h",
+    "allocation_event.cc",
+    "allocation_event.h",
+    "allocation_tracker.cc",
+    "allocation_tracker.h",
+    "backtrace.cc",
+    "backtrace.h",
+    "backtrace_storage.cc",
+    "backtrace_storage.h",
+    "json_exporter.cc",
+    "json_exporter.h",
+    "memlog_connection_manager.cc",
+    "memlog_connection_manager.h",
+    "memlog_impl.cc",
+    "memlog_impl.h",
+    "memlog_receiver.h",
+    "memlog_receiver_pipe.h",
+    "memlog_receiver_pipe_posix.cc",
+    "memlog_receiver_pipe_posix.h",
+    "memlog_receiver_pipe_win.cc",
+    "memlog_receiver_pipe_win.h",
+    "memlog_stream_parser.cc",
+    "memlog_stream_parser.h",
+    "memlog_stream_receiver.h",
+    "profiling_service.cc",
+    "profiling_service.h",
+  ]
 
-    deps = [
-      "//base",
-      "//chrome/common",
-      "//content/public/child",
-      "//mojo/edk/system",
-      "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-      "//third_party/zlib",
-    ]
-  }
+  deps = [
+    "//base",
+    "//chrome/common",
+    "//content/public/child",
+    "//mojo/edk/system",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//third_party/zlib",
+  ]
+}
 
-  source_set("unit_tests") {
-    testonly = true
-    sources = [
-      "backtrace_storage_unittest.cc",
-      "json_exporter_unittest.cc",
-    ]
-    deps = [
-      ":profiling",
-      "//base",
-      "//testing/gtest",
-    ]
-  }
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "backtrace_storage_unittest.cc",
+    "json_exporter_unittest.cc",
+  ]
+  deps = [
+    ":profiling",
+    "//base",
+    "//testing/gtest",
+  ]
+}
 
-  service_manifest("manifest") {
-    name = "profiling"
-    source = "profiling_manifest.json"
-  }
-} else {
-  # Dummy target so this can be unconditionally depended on and header checking
-  # will work.
-  source_set("profiling") {
-    sources = [
-      "profiling_main.h",
-    ]
-  }
-  group("unit_tests") {
-  }
+service_manifest("manifest") {
+  name = "profiling"
+  source = "profiling_manifest.json"
 }

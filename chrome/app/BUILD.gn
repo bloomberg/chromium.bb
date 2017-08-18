@@ -385,16 +385,13 @@ static_library("test_support") {
 
 chrome_packaged_services = [
   ":chrome_manifest",
+  "//chrome/profiling:manifest",
   "//services/preferences:local_state_manifest",
 ]
 
 if (enable_basic_printing || enable_print_preview) {
   chrome_packaged_services +=
       [ "//components/printing/service:pdf_compositor_manifest" ]
-}
-
-if (enable_oop_heap_profiling) {
-  chrome_packaged_services += [ "//chrome/profiling:manifest" ]
 }
 
 if (is_chromeos) {

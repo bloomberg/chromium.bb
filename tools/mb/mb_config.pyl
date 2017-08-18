@@ -206,10 +206,10 @@
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
       'Ozone Linux': 'ozone_linux_release_bot',
-      'Out of Process Profiling Android': 'android_release_bot_out_of_process_profiling',
-      'Out of Process Profiling Linux': 'release_bot_out_of_process_profiling',
-      'Out of Process Profiling Mac': 'release_bot_out_of_process_profiling',
-      'Out of Process Profiling Windows': 'release_bot_out_of_process_profiling',
+      'Out of Process Profiling Android': 'android_release_bot_minimal_symbols',
+      'Out of Process Profiling Linux': 'release_bot',
+      'Out of Process Profiling Mac': 'release_bot',
+      'Out of Process Profiling Windows': 'release_bot',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
@@ -890,10 +890,6 @@
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
 
-    'android_release_bot_out_of_process_profiling': [
-      'android', 'release_bot', 'out_of_process_profiling',
-    ],
-
     'android_release_trybot': [
       'android', 'release_trybot',
     ],
@@ -1455,10 +1451,6 @@
       'release_bot', 'mac_strip',
     ],
 
-    'release_bot_out_of_process_profiling': [
-      'release_bot', 'out_of_process_profiling',
-    ],
-
     'release_bot_x86': [
       'release_bot', 'x86',
     ],
@@ -1884,10 +1876,6 @@
 
     'optimize_for_fuzzing': {
       'gn_args': 'optimize_for_fuzzing=true',
-    },
-
-    'out_of_process_profiling': {
-      'gn_args': 'enable_oop_heap_profiling=true',
     },
 
     'ozone_linux': {

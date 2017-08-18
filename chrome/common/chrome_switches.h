@@ -154,6 +154,9 @@ extern const char kKioskModePrinting[];
 extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kMediaCacheSize[];
+extern const char kMemlog[];
+extern const char kMemlogModeAll[];
+extern const char kMemlogModeBrowser[];
 extern const char kMonitoringDestinationID[];
 extern const char kNetLogCaptureMode[];
 extern const char kNoDefaultBrowserCheck[];
@@ -336,12 +339,6 @@ extern const char kEnableNewAppMenuIcon[];
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 extern const char kUseSystemDefaultPrinter[];
-#endif
-
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-extern const char kMemlog[];
-extern const char kMemlogModeAll[];
-extern const char kMemlogModeBrowser[];
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line);
