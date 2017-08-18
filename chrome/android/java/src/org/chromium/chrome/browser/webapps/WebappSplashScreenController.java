@@ -104,7 +104,8 @@ class WebappSplashScreenController extends EmptyTabObserver {
     @Override
     public void onPageLoadFinished(Tab tab) {
         if (canHideSplashScreen()) {
-            animateHidingSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
+            hideSplashScreenOnDrawingFinished(
+                    tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
         }
     }
 
@@ -200,11 +201,8 @@ class WebappSplashScreenController extends EmptyTabObserver {
             return;
         }
 
-        mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(null, new Runnable() {
-            @Override
-            public void run() {
-                animateHidingSplashScreen(tab, reason);
-            }
+        mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(null, () -> {
+            animateHidingSplashScreen(tab, reason);
         });
     }
 
