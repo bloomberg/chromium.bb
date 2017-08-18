@@ -54,7 +54,8 @@ class ChromePluginPlaceholder final
 
   // content::LoadablePluginPlaceholder overrides.
   blink::WebPlugin* CreatePlugin() override;
-  void OnBlockedTinyContent() override;
+  void OnBlockedContent(content::RenderFrame::PeripheralContentStatus status,
+                        bool is_same_origin) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -94,8 +95,6 @@ class ChromePluginPlaceholder final
 
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
-
-  bool did_send_blocked_content_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };
