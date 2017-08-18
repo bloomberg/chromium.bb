@@ -67,6 +67,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -955,6 +956,11 @@ void WizardController::StartOOBEUpdate() {
 }
 
 void WizardController::StartTimezoneResolve() {
+  if (!g_browser_process->platform_part()
+           ->GetTimezoneResolverManager()
+           ->TimeZoneResolverShouldBeRunning())
+    return;
+
   geolocation_provider_.reset(new SimpleGeolocationProvider(
       g_browser_process->system_request_context(),
       SimpleGeolocationProvider::DefaultGeolocationProviderURL()));
@@ -1530,6 +1536,12 @@ void WizardController::OnLocationResolved(const Geoposition& position,
   if (elapsed >= timeout) {
     LOG(WARNING) << "Resolve TimeZone: got location after timeout ("
                  << elapsed.InSecondsF() << " seconds elapsed). Ignored.";
+    return;
+  }
+
+  if (!g_browser_process->platform_part()
+           ->GetTimezoneResolverManager()
+           ->TimeZoneResolverShouldBeRunning()) {
     return;
   }
 

@@ -190,10 +190,6 @@ bool TimeZoneResolverManager::ShouldApplyResolvedTimezone() {
   return TimeZoneResolverShouldBeRunning();
 }
 
-bool TimeZoneResolverManager::TimeZoneResolverShouldBeRunningForTests() {
-  return TimeZoneResolverShouldBeRunning();
-}
-
 bool TimeZoneResolverManager::TimeZoneResolverShouldBeRunning() {
   ServiceConfiguration result = GetServiceConfigurationFromPolicy();
 
