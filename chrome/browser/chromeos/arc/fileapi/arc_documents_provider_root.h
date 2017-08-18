@@ -121,38 +121,17 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   void ResolveToContentUrl(const base::FilePath& path,
                            const ResolveToContentUrlCallback& callback);
 
+  // Instructs to make directory caches expire "soon" after callbacks are
+  // called, that is, when the message loop gets idle.
+  void SetDirectoryCacheExpireSoonForTesting();
+
   // ArcFileSystemOperationRunner::Observer overrides:
   void OnWatchersCleared() override;
 
  private:
-  // Thin representation of a document in documents provider.
-  struct ThinDocument {
-    std::string document_id;
-    bool is_directory;
-  };
-
-  // Represents the status of a document watcher.
-  struct WatcherData {
-    // ID of a watcher in the remote file system service.
-    //
-    // Valid IDs are represented by positive integers. An invalid watcher is
-    // represented by |kInvalidWatcherId|, which occurs in several cases:
-    //
-    // - AddWatcher request is still in-flight. In this case, a valid ID is set
-    //   to |inflight_request_id|.
-    //
-    // - The remote file system service notified us that it stopped and all
-    //   watchers were forgotten. Such watchers are still tracked here, but they
-    //   are not known by the remote service.
-    int64_t id;
-
-    // A unique ID of AddWatcher() request.
-    //
-    // While AddWatcher() is in-flight, a positive integer is set to this
-    // variable, and |id| is |kInvalidWatcherId|. Otherwise it is set to
-    // |kInvalidWatcherRequestId|.
-    uint64_t inflight_request_id;
-  };
+  struct ThinDocument;
+  struct WatcherData;
+  struct DirectoryCache;
 
   static const int64_t kInvalidWatcherId;
   static const uint64_t kInvalidWatcherRequestId;
@@ -166,7 +145,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       base::Callback<void(const std::string& document_id)>;
   using ReadDirectoryInternalCallback =
       base::Callback<void(base::File::Error error,
-                          NameToThinDocumentMap mapping)>;
+                          const NameToThinDocumentMap& mapping)>;
 
   void GetFileInfoWithDocumentId(const GetFileInfoCallback& callback,
                                  const std::string& document_id);
@@ -175,9 +154,10 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   void ReadDirectoryWithDocumentId(ReadDirectoryCallback callback,
                                    const std::string& document_id);
-  void ReadDirectoryWithNameToThinDocumentMap(ReadDirectoryCallback callback,
-                                              base::File::Error error,
-                                              NameToThinDocumentMap mapping);
+  void ReadDirectoryWithNameToThinDocumentMap(
+      ReadDirectoryCallback callback,
+      base::File::Error error,
+      const NameToThinDocumentMap& mapping);
 
   void AddWatcherWithDocumentId(const base::FilePath& path,
                                 uint64_t watcher_request_id,
@@ -211,15 +191,24 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       const std::vector<base::FilePath::StringType>& components,
       const ResolveToDocumentIdCallback& callback,
       base::File::Error error,
-      NameToThinDocumentMap mapping);
+      const NameToThinDocumentMap& mapping);
 
   // Enumerates child documents of a directory specified by |document_id|.
-  // The result is returned as a NameToThinDocumentMap.
+  // If |force_refresh| is true, the backend is queried even if there is a
+  // directory cache.
+  // The result is returned as a NameToThinDocumentMap. It is valid only
+  // within the callback and might get deleted immediately after the callback
+  // returns.
   void ReadDirectoryInternal(const std::string& document_id,
+                             bool force_refresh,
                              const ReadDirectoryInternalCallback& callback);
   void ReadDirectoryInternalWithChildDocuments(
+      const std::string& document_id,
       const ReadDirectoryInternalCallback& callback,
       base::Optional<std::vector<mojom::DocumentPtr>> maybe_children);
+
+  // Clears a directory cache.
+  void ClearDirectoryCache(const std::string& document_id);
 
   // |runner_| outlives this object. ArcDocumentsProviderRootMap, the owner of
   // this object, depends on ArcFileSystemOperationRunner in the
@@ -228,6 +217,11 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   const std::string authority_;
   const std::string root_document_id_;
+
+  bool directory_cache_expire_soon_ = false;
+
+  // Cache of directory contents. Keys are document IDs of directories.
+  std::map<std::string, DirectoryCache> directory_cache_;
 
   // Map from a file path to a watcher data.
   //

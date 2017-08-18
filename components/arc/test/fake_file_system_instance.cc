@@ -238,6 +238,7 @@ void FakeFileSystemInstance::GetChildDocuments(
     const std::string& parent_document_id,
     const GetChildDocumentsCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ++get_child_documents_count_;
   auto child_iter =
       child_documents_.find(DocumentKey(authority, parent_document_id));
   if (child_iter == child_documents_.end()) {

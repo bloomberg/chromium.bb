@@ -131,6 +131,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
                        const std::string& document_id,
                        storage::WatcherManager::ChangeType type);
 
+  // Returns how many times GetChildDocuments() was called.
+  int get_child_documents_count() const { return get_child_documents_count_; }
+
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
@@ -189,6 +192,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   std::map<int64_t, DocumentKey> watcher_to_document_;
 
   int64_t next_watcher_id_ = 1;
+  int get_child_documents_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFileSystemInstance);
 };

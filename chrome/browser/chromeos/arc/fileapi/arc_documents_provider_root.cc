@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -22,6 +23,51 @@ using content::BrowserThread;
 using EntryList = storage::AsyncFileUtil::EntryList;
 
 namespace arc {
+
+namespace {
+
+// Directory cache will be cleared this duration after it is built.
+constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(60);
+
+}  // namespace
+
+// Thin representation of a document in documents provider.
+struct ArcDocumentsProviderRoot::ThinDocument {
+  std::string document_id;
+  bool is_directory;
+};
+
+// Represents the status of a document watcher.
+struct ArcDocumentsProviderRoot::WatcherData {
+  // ID of a watcher in the remote file system service.
+  //
+  // Valid IDs are represented by positive integers. An invalid watcher is
+  // represented by |kInvalidWatcherId|, which occurs in several cases:
+  //
+  // - AddWatcher request is still in-flight. In this case, a valid ID is set
+  //   to |inflight_request_id|.
+  //
+  // - The remote file system service notified us that it stopped and all
+  //   watchers were forgotten. Such watchers are still tracked here, but they
+  //   are not known by the remote service.
+  int64_t id;
+
+  // A unique ID of AddWatcher() request.
+  //
+  // While AddWatcher() is in-flight, a positive integer is set to this
+  // variable, and |id| is |kInvalidWatcherId|. Otherwise it is set to
+  // |kInvalidWatcherRequestId|.
+  uint64_t inflight_request_id;
+};
+
+// Cache of directory contents.
+struct ArcDocumentsProviderRoot::DirectoryCache {
+  // Files under the directory.
+  NameToThinDocumentMap mapping;
+
+  // Timer to delete this cache.
+  base::OneShotTimer clear_timer;
+};
 
 // static
 const int64_t ArcDocumentsProviderRoot::kInvalidWatcherId = -1;
@@ -123,6 +169,11 @@ void ArcDocumentsProviderRoot::ResolveToContentUrl(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ArcDocumentsProviderRoot::SetDirectoryCacheExpireSoonForTesting() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  directory_cache_expire_soon_ = true;
+}
+
 void ArcDocumentsProviderRoot::OnWatchersCleared() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Mark all watchers invalid.
@@ -183,7 +234,7 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(
     return;
   }
   ReadDirectoryInternal(
-      document_id,
+      document_id, true /* force_refresh */,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap,
           weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
@@ -192,7 +243,7 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(
 void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
     ReadDirectoryCallback callback,
     base::File::Error error,
-    NameToThinDocumentMap mapping) {
+    const NameToThinDocumentMap& mapping) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     std::move(callback).Run(error, {});
@@ -262,6 +313,7 @@ void ArcDocumentsProviderRoot::OnWatcherRemoved(const StatusCallback& callback,
 bool ArcDocumentsProviderRoot::IsWatcherInflightRequestCanceled(
     const base::FilePath& path,
     uint64_t watcher_request_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto iter = path_to_watcher_data_.find(path);
   return (iter == path_to_watcher_data_.end() ||
           iter->second.inflight_request_id != watcher_request_id);
@@ -297,7 +349,7 @@ void ArcDocumentsProviderRoot::ResolveToDocumentIdRecursively(
     return;
   }
   ReadDirectoryInternal(
-      document_id,
+      document_id, false /* force_refresh */,
       base::Bind(&ArcDocumentsProviderRoot::
                      ResolveToDocumentIdRecursivelyWithNameToThinDocumentMap,
                  weak_ptr_factory_.GetWeakPtr(), components, callback));
@@ -308,7 +360,7 @@ void ArcDocumentsProviderRoot::
         const std::vector<base::FilePath::StringType>& components,
         const ResolveToDocumentIdCallback& callback,
         base::File::Error error,
-        NameToThinDocumentMap mapping) {
+        const NameToThinDocumentMap& mapping) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!components.empty());
   if (error != base::File::FILE_OK) {
@@ -328,17 +380,33 @@ void ArcDocumentsProviderRoot::
 
 void ArcDocumentsProviderRoot::ReadDirectoryInternal(
     const std::string& document_id,
+    bool force_refresh,
     const ReadDirectoryInternalCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Use cache if possible. Note that we do not invalidate it immediately
+  // even if we decide not to use it for now.
+  if (!force_refresh) {
+    auto iter = directory_cache_.find(document_id);
+    if (iter != directory_cache_.end()) {
+      callback.Run(base::File::FILE_OK, iter->second.mapping);
+      return;
+    }
+  }
+
   runner_->GetChildDocuments(
       authority_, document_id,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments,
-          weak_ptr_factory_.GetWeakPtr(), callback));
+          weak_ptr_factory_.GetWeakPtr(), document_id, callback));
 }
 
 void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
+    const std::string& document_id,
     const ReadDirectoryInternalCallback& callback,
     base::Optional<std::vector<mojom::DocumentPtr>> maybe_children) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!maybe_children) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND, NameToThinDocumentMap());
     return;
@@ -379,7 +447,23 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
                      document->mime_type == kAndroidDirectoryMimeType};
   }
 
-  callback.Run(base::File::FILE_OK, std::move(mapping));
+  // This may create a new cache, or just update an existing cache.
+  DirectoryCache& cache = directory_cache_[document_id];
+  cache.mapping = std::move(mapping);
+  cache.clear_timer.Start(
+      FROM_HERE,
+      directory_cache_expire_soon_ ? base::TimeDelta() : kCacheExpiration,
+      base::Bind(&ArcDocumentsProviderRoot::ClearDirectoryCache,
+                 weak_ptr_factory_.GetWeakPtr(), document_id));
+
+  callback.Run(base::File::FILE_OK, cache.mapping);
+}
+
+void ArcDocumentsProviderRoot::ClearDirectoryCache(
+    const std::string& document_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  directory_cache_.erase(document_id);
 }
 
 }  // namespace arc

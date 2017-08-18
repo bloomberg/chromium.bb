@@ -234,6 +234,67 @@ TEST_F(ArcDocumentsProviderRootTest, GetFileInfoDups) {
   run_loop.Run();
 }
 
+TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCache) {
+  {
+    base::RunLoop run_loop;
+    root_->GetFileInfo(
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::Bind([](base::RunLoop* run_loop, base::File::Error error,
+                      const base::File::Info& info) { run_loop->Quit(); },
+                   &run_loop));
+    run_loop.Run();
+  }
+
+  int last_count = fake_file_system_.get_child_documents_count();
+
+  {
+    base::RunLoop run_loop;
+    root_->GetFileInfo(
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::Bind([](base::RunLoop* run_loop, base::File::Error error,
+                      const base::File::Info& info) { run_loop->Quit(); },
+                   &run_loop));
+    run_loop.Run();
+  }
+
+  // GetFileInfo() against the same file shall not issue a new
+  // GetChildDocuments() call.
+  EXPECT_EQ(last_count, fake_file_system_.get_child_documents_count());
+}
+
+TEST_F(ArcDocumentsProviderRootTest, GetFileInfoWithCacheExpired) {
+  root_->SetDirectoryCacheExpireSoonForTesting();
+
+  {
+    base::RunLoop run_loop;
+    root_->GetFileInfo(
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::Bind([](base::RunLoop* run_loop, base::File::Error error,
+                      const base::File::Info& info) { run_loop->Quit(); },
+                   &run_loop));
+    run_loop.Run();
+  }
+
+  int last_count = fake_file_system_.get_child_documents_count();
+
+  // Make sure directory caches expire.
+  base::RunLoop().RunUntilIdle();
+
+  {
+    base::RunLoop run_loop;
+    root_->GetFileInfo(
+        base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+        base::Bind([](base::RunLoop* run_loop, base::File::Error error,
+                      const base::File::Info& info) { run_loop->Quit(); },
+                   &run_loop));
+    run_loop.Run();
+  }
+
+  // If cache expires, two GetChildDocuments() calls will be issued for
+  // "/" and "/dir".
+  EXPECT_EQ(last_count + 2, fake_file_system_.get_child_documents_count());
+}
+
 TEST_F(ArcDocumentsProviderRootTest, ReadDirectory) {
   base::RunLoop run_loop;
   root_->ReadDirectory(
@@ -317,6 +378,79 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryDups) {
           },
           &run_loop));
   run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryWithCache) {
+  {
+    base::RunLoop run_loop;
+    root_->ReadDirectory(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error,
+               std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
+
+  int last_count = fake_file_system_.get_child_documents_count();
+
+  {
+    base::RunLoop run_loop;
+    root_->ReadDirectory(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error,
+               std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
+
+  // ReadDirectory() against the same directory shall issue one new
+  // GetChildDocuments() call.
+  EXPECT_EQ(last_count + 1, fake_file_system_.get_child_documents_count());
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryWithCacheExpired) {
+  root_->SetDirectoryCacheExpireSoonForTesting();
+
+  {
+    base::RunLoop run_loop;
+    root_->ReadDirectory(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error,
+               std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
+
+  int last_count = fake_file_system_.get_child_documents_count();
+
+  // Make sure directory caches expire.
+  base::RunLoop().RunUntilIdle();
+
+  {
+    base::RunLoop run_loop;
+    root_->ReadDirectory(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](base::RunLoop* run_loop, base::File::Error error,
+               std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+              run_loop->Quit();
+            },
+            &run_loop));
+    run_loop.Run();
+  }
+
+  // If cache expires, two GetChildDocuments() calls will be issued for
+  // "/" and "/dir".
+  EXPECT_EQ(last_count + 2, fake_file_system_.get_child_documents_count());
 }
 
 TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
