@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 
+namespace media_router {
 namespace {
 
 struct GuidOperatorLess {
@@ -314,3 +315,5 @@ std::vector<DiscoveryNetworkInfo> GetDiscoveryNetworkInfoList() {
 
   return network_ids;
 }
+
+}  // namespace media_router

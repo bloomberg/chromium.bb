@@ -15,6 +15,8 @@
 #include "base/logging.h"
 #include "net/base/network_interfaces_linux.h"
 
+namespace media_router {
+
 bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
   DCHECK(ssid_out);
 
@@ -36,3 +38,5 @@ bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
   }
   return false;
 }
+
+}  // namespace media_router

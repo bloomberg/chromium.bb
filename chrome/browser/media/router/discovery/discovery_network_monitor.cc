@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"
 #include "net/base/network_interfaces.h"
 
+namespace media_router {
 namespace {
 
 std::string ComputeNetworkId(
@@ -132,3 +133,5 @@ std::string DiscoveryNetworkMonitor::UpdateNetworkInfo() {
 
   return network_id_;
 }
+
+}  // namespace media_router

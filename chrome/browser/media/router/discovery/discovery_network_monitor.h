@@ -18,6 +18,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 
+namespace media_router {
+
 // Tracks the set of active network interfaces that can be used for local
 // discovery.  If the list of interfaces changes, then
 // DiscoveryNetworkMonitor::Observer is called with the instance of the monitor.
@@ -105,5 +107,7 @@ class DiscoveryNetworkMonitor
 
   DISALLOW_COPY_AND_ASSIGN(DiscoveryNetworkMonitor);
 };
+
+}  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DISCOVERY_NETWORK_MONITOR_H_

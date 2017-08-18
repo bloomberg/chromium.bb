@@ -10,6 +10,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace media_router {
+
 TEST(DiscoveryNetworkListTest, GetDiscoveryNetworkInfoList) {
   auto network_ids = GetDiscoveryNetworkInfoList();
   for (const auto& network_id : network_ids) {
@@ -55,3 +57,5 @@ TEST(DiscoveryNetworkListTest, StableSortDiscoveryNetworkInfoDuplicates) {
 
   EXPECT_EQ(sorted_network_info, network_info);
 }
+
+}  // namespace media_router
