@@ -3,15 +3,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A tool for working with state associated with the M60 Chrome on Windows 10
+"""A tool for working with state associated with the M62 Chrome on Windows 10
 retention experiment.
 
 For example:
 experiment_tool_win.py --channel beta --system-level --operation prep
+
+An operation must be specified on the command line. The supported operations
+are:
+
+  clean:     Deletes all Windows registry state relating to the experiment.
+  prep:      Prepares the install and user context to participate in the study.
+             Specifically, this operation:
+             - Makes it appear as if the user last ran Chrome 30 days ago.
+             - Adds test switches to Chrome's Active Setup registration so that
+               the next run of Chrome's installer via Active Setup runs the
+               experiment.
+             - Clears the user's Active Setup state so that the next user logon
+               for a system-level install results in running the experiment via
+               Active Setup.
+             - Puts the install into retention study group 1.
+  prelaunch: Writes experiment state to the registry in preparation for manual
+             testing of the UX.
 """
 
 import argparse
+import datetime
 import math
+import struct
 import sys
 from datetime import datetime, timedelta
 import win32api
@@ -56,6 +75,7 @@ class ChromeState:
   _GOOGLE_UPDATE_PATH = 'Software\\Google\\Update'
   _ACTIVE_SETUP_PATH = 'Software\\Microsoft\\Active Setup\\Installed ' + \
       'Components\\'
+  _REG_QWORD = 11  # From winnt.h
 
   def __init__(self, channel_name, system_level):
     self._config = ChromeState._CHANNEL_CONFIGS[channel_name]
@@ -65,8 +85,8 @@ class ChromeState:
 
   def SetRetentionStudyValue(self, study):
     """Sets the RetentionStudy value for the install."""
-    path = ChromeState._GOOGLE_UPDATE_PATH + '\\ClientState\\' + \
-        self._config['guid']
+    path = r'%s\ClientState\%s' % (ChromeState._GOOGLE_UPDATE_PATH,
+                                   self._config['guid'])
     with _winreg.OpenKey(self._registry_root, path, 0,
                          _winreg.KEY_WOW64_32KEY |
                          _winreg.KEY_SET_VALUE) as key:
@@ -74,8 +94,8 @@ class ChromeState:
 
   def DeleteRetentionStudyValue(self):
     """Deletes the RetentionStudy value for the install."""
-    path = ChromeState._GOOGLE_UPDATE_PATH + '\\ClientState\\' + \
-        self._config['guid']
+    path = r'%s\ClientState\%s' % (ChromeState._GOOGLE_UPDATE_PATH,
+                                   self._config['guid'])
     try:
       with _winreg.OpenKey(self._registry_root, path, 0,
                            _winreg.KEY_WOW64_32KEY |
@@ -85,11 +105,22 @@ class ChromeState:
       if error.winerror != 2:
         raise
 
+  def SetExperimentLabelsValue(self, experiment_labels):
+    """Sets the experiment_labels value for the install."""
+    medium = 'Medium' if self._system_level else ''
+    path = r'%s\ClientState%s\%s' % (ChromeState._GOOGLE_UPDATE_PATH, medium,
+                                     self._config['guid'])
+    with _winreg.OpenKey(self._registry_root, path, 0,
+                         _winreg.KEY_WOW64_32KEY |
+                         _winreg.KEY_SET_VALUE) as key:
+      _winreg.SetValueEx(key, 'experiment_labels', 0, _winreg.REG_SZ,
+                         experiment_labels)
+
   def DeleteExperimentLabelsValue(self):
     """Deletes the experiment_labels for the install."""
     medium = 'Medium' if self._system_level else ''
-    path = ChromeState._GOOGLE_UPDATE_PATH + '\\ClientState' + medium + '\\' + \
-        self._config['guid']
+    path = r'%s\ClientState%s\%s' % (ChromeState._GOOGLE_UPDATE_PATH, medium,
+                                     self._config['guid'])
     try:
       with _winreg.OpenKey(self._registry_root, path, 0,
                            _winreg.KEY_WOW64_32KEY |
@@ -99,11 +130,37 @@ class ChromeState:
       if error.winerror != 2:
         raise
 
+  def SetRetentionExperimentState(self, state):
+    """Creates experiment state in the Retention key for |state|."""
+    medium = 'Medium' if self._system_level else ''
+    path = r'%s\ClientState%s\%s\Retention' % (ChromeState._GOOGLE_UPDATE_PATH,
+                                               medium, self._config['guid'])
+    if self._system_level:
+      path += '\\' + GetUserSidString()
+    # _winreg doesn't have support for REG_QWORD, so do it manually.
+    qword_zero = struct.pack('<q', 0)
+    with _winreg.CreateKeyEx(self._registry_root, path, 0,
+                             _winreg.KEY_WOW64_32KEY |
+                             _winreg.KEY_SET_VALUE) as key:
+      _winreg.SetValueEx(key, 'State', 0, _winreg.REG_DWORD, state)
+      _winreg.SetValueEx(key, 'Group', 0, _winreg.REG_DWORD, 0)
+      _winreg.SetValueEx(key, 'ToastLocation', 0, _winreg.REG_DWORD, 0)
+      _winreg.SetValueEx(key, 'InactiveDays', 0, _winreg.REG_DWORD, 0)
+      _winreg.SetValueEx(key, 'ToastCount', 0, _winreg.REG_DWORD, 0)
+      _winreg.SetValueEx(key, 'FirstDisplayTime', 0, ChromeState._REG_QWORD,
+                         qword_zero)
+      _winreg.SetValueEx(key, 'LatestDisplayTime', 0, ChromeState._REG_QWORD,
+                         qword_zero)
+      _winreg.SetValueEx(key, 'UserSessionUptime', 0, ChromeState._REG_QWORD,
+                         qword_zero)
+      _winreg.SetValueEx(key, 'ActionDelay', 0, ChromeState._REG_QWORD,
+                         qword_zero)
+
   def DeleteRentionKey(self):
     """Deletes the Retention key for the current user."""
     medium = 'Medium' if self._system_level else ''
-    path = ChromeState._GOOGLE_UPDATE_PATH + '\\ClientState' + medium + '\\' + \
-        self._config['guid'] + '\\Retention'
+    path = r'%s\ClientState%s\%s\Retention' % (ChromeState._GOOGLE_UPDATE_PATH,
+                                               medium, self._config['guid'])
     try:
       if self._system_level:
         _winreg.DeleteKeyEx(self._registry_root,
@@ -116,8 +173,8 @@ class ChromeState:
 
   def SetLastRunTime(self, delta):
     """Sets Chrome's lastrun time for the current user."""
-    path = ChromeState._GOOGLE_UPDATE_PATH + '\\ClientState\\' + \
-        self._config['guid']
+    path = r'%s\ClientState\%s' % (ChromeState._GOOGLE_UPDATE_PATH,
+                                   self._config['guid'])
     lastrun = InternalTimeFromPyTime(datetime.utcnow() - delta)
     with _winreg.CreateKeyEx(_winreg.HKEY_CURRENT_USER, path, 0,
                              _winreg.KEY_WOW64_32KEY |
@@ -188,19 +245,43 @@ def DoPrep(chrome_state):
   return 0
 
 
+def DoPrelaunch(chrome_state):
+  """Writes experiment state to the registry in preparation for manual testing
+  of the UX.
+  """
+  DoPrep(chrome_state)
+  # Write study data for group 0 in state 10 (kLaunchingChrome). The magic
+  # values here correspond to those used by Chrome:
+  # - State 10 is installer::ExperimentMetrics::kLaunchingChrome.
+  # - 'CrExp60' is the name of the experiment label used to report metrics.
+  # - 'AAAAAEAB' is the encoding of an installer::ExperimentMetrics instance
+  #   for state 10.
+  # - 182 sets the experiment label to expire six months from now.
+  # - The format string matches that required by Omaha.
+  # See chrome/installer/util/experiment_storage.cc for reference.
+  chrome_state.SetExperimentLabelsValue('CrExp60=AAAAAEAB|' +
+                                        (datetime.utcnow() +
+                                         timedelta(182)).strftime(
+                                           '%a, %d %b %Y %H:%M:%S GMT'))
+  chrome_state.SetRetentionExperimentState(10)
+
+
 def main(options):
   chrome_state = ChromeState(options.channel, options.system_level)
   if options.operation == 'clean':
     return DoClean(chrome_state)
   if options.operation == 'prep':
     return DoPrep(chrome_state)
+  if options.operation == 'prelaunch':
+    return DoPrelaunch(chrome_state)
   return 1
 
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
     description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument('--operation', required=True, choices=['clean', 'prep'],
+  parser.add_argument('--operation', required=True,
+                      choices=['clean', 'prep', 'prelaunch'],
                       help='The operation to be performed.')
   parser.add_argument('--channel', default='stable',
                       choices=['stable', 'beta', 'dev', 'canary'],
