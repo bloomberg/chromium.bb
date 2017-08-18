@@ -26,10 +26,8 @@
 namespace ash {
 
 PowerButtonController::PowerButtonController(LockStateController* controller)
-    : has_legacy_power_button_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAuraLegacyPowerButton)),
-      lock_state_controller_(controller) {
+    : lock_state_controller_(controller) {
+  ProcessCommandLine();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
@@ -43,7 +41,6 @@ PowerButtonController::~PowerButtonController() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-  tablet_controller_.reset();
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
@@ -192,7 +189,7 @@ void PowerButtonController::PowerButtonEventReceived(
 
 void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
-  if (tablet_controller_)
+  if (force_clamshell_power_button_ || tablet_controller_)
     return;
   tablet_controller_.reset(
       new TabletPowerButtonController(lock_state_controller_));
@@ -200,6 +197,14 @@ void PowerButtonController::OnAccelerometerUpdated(
 
 void PowerButtonController::ResetTabletPowerButtonControllerForTest() {
   tablet_controller_.reset();
+  ProcessCommandLine();
+}
+
+void PowerButtonController::ProcessCommandLine() {
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  has_legacy_power_button_ = cl->HasSwitch(switches::kAuraLegacyPowerButton);
+  force_clamshell_power_button_ =
+      cl->HasSwitch(switches::kForceClamshellPowerButton);
 }
 
 }  // namespace ash

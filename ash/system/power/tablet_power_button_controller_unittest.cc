@@ -598,6 +598,17 @@ TEST_F(TabletPowerButtonControllerTest, EnableOnAccelerometerUpdate) {
   EXPECT_TRUE(Shell::Get()
                   ->power_button_controller()
                   ->tablet_power_button_controller_for_test());
+
+  // If clamshell-like power button behavior is requested via a flag, the
+  // TabletPowerButtonController shouldn't be initialized in response to
+  // accelerometer events.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kForceClamshellPowerButton);
+  ResetTabletPowerButtonController();
+  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  EXPECT_FALSE(Shell::Get()
+                   ->power_button_controller()
+                   ->tablet_power_button_controller_for_test());
 }
 
 TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForAcceleration) {
