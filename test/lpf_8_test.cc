@@ -499,7 +499,7 @@ TEST_P(Loop8Test9Param, DISABLED_Speed) {
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2 && (!CONFIG_PARALLEL_DEBLOCKING)
+#if HAVE_SSE2
 #if CONFIG_HIGHBITDEPTH
 
 const loop8_param_t kHbdLoop8Test6[] = {
@@ -550,6 +550,7 @@ const loop8_param_t kHbdLoop8Test6[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
                         ::testing::ValuesIn(kHbdLoop8Test6));
 #else
+#if !CONFIG_PARALLEL_DEBLOCKING
 const loop8_param_t kLoop8Test6[] = {
   make_tuple(&aom_lpf_horizontal_4_sse2, &aom_lpf_horizontal_4_c, 8),
   make_tuple(&aom_lpf_horizontal_8_sse2, &aom_lpf_horizontal_8_c, 8),
@@ -564,10 +565,11 @@ const loop8_param_t kLoop8Test6[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
                         ::testing::ValuesIn(kLoop8Test6));
-#endif  // CONFIG_HIGHBITDEPTH
 #endif
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2
 
-#if HAVE_AVX2 && (!CONFIG_PARALLEL_DEBLOCKING)
+#if HAVE_AVX2
 #if CONFIG_HIGHBITDEPTH
 
 const loop8_param_t kHbdLoop8Test6Avx2[] = {
@@ -600,7 +602,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_lpf_horizontal_edge_16_c, 8)));
 #endif
 
-#if HAVE_SSE2 && (!CONFIG_PARALLEL_DEBLOCKING)
+#if HAVE_SSE2
 #if CONFIG_HIGHBITDEPTH
 const dualloop8_param_t kHbdLoop8Test9[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_sse2,
@@ -632,6 +634,7 @@ const dualloop8_param_t kHbdLoop8Test9[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param,
                         ::testing::ValuesIn(kHbdLoop8Test9));
 #else
+#if !CONFIG_PARALLEL_DEBLOCKING
 const dualloop8_param_t kLoop8Test9[] = {
   make_tuple(&aom_lpf_horizontal_4_dual_sse2, &aom_lpf_horizontal_4_dual_c, 8),
   make_tuple(&aom_lpf_horizontal_8_dual_sse2, &aom_lpf_horizontal_8_dual_c, 8),
@@ -641,10 +644,11 @@ const dualloop8_param_t kLoop8Test9[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param,
                         ::testing::ValuesIn(kLoop8Test9));
-#endif  // CONFIG_HIGHBITDEPTH
 #endif
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2
 
-#if HAVE_AVX2 && (!CONFIG_PARALLEL_DEBLOCKING)
+#if HAVE_AVX2
 #if CONFIG_HIGHBITDEPTH
 const dualloop8_param_t kHbdLoop8Test9Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_avx2,
