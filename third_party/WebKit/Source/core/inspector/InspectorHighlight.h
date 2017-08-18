@@ -76,7 +76,7 @@ class CORE_EXPORT InspectorHighlight {
 
   std::unique_ptr<protocol::DictionaryValue> element_info_;
   std::unique_ptr<protocol::ListValue> highlight_paths_;
-  std::unique_ptr<protocol::DictionaryValue> grid_info_;
+  std::unique_ptr<protocol::ListValue> grid_info_;
   bool show_rulers_;
   bool show_extension_lines_;
   bool display_as_material_;
