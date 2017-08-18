@@ -47,16 +47,20 @@ namespace message_center {
 namespace {
 
 // Dimensions.
-constexpr gfx::Insets kContentRowPadding(4, 12, 12, 12);
+constexpr gfx::Insets kContentRowPadding(2, 12, 12, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
 constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
 constexpr gfx::Size kActionButtonMinSize(88, 32);
-constexpr gfx::Size kIconViewSize(30, 30);
+// TODO(tetsui): Move |kIconViewSize| to message_center_style.h and merge with
+// contradicting |kNotificationIconSize|.
+constexpr gfx::Size kIconViewSize(36, 36);
 constexpr gfx::Insets kLargeImageContainerPadding(0, 12, 12, 12);
 constexpr gfx::Size kLargeImageMinSize(328, 0);
 constexpr gfx::Size kLargeImageMaxSize(328, 218);
+constexpr gfx::Insets kLeftContentPadding(0, 4, 0, 4);
+constexpr gfx::Insets kLeftContentPaddingWithIcon(0, 4, 0, 12);
 
 // Background of inline actions area.
 const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
@@ -83,6 +87,12 @@ constexpr int kMessageViewWidth =
     message_center::kNotificationWidth - kIconViewSize.width() -
     kContentRowPadding.left() - kContentRowPadding.right();
 
+// Default FontList that all labels' FontList will be derived from.
+const gfx::FontList& GetDefaultFontList() {
+  return views::style::GetFont(views::style::CONTEXT_LABEL,
+                               views::style::STYLE_PRIMARY);
+}
+
 // ItemView ////////////////////////////////////////////////////////////////////
 
 // ItemViews are responsible for drawing each list notification item's title and
@@ -102,7 +112,11 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 0));
 
+  const gfx::FontList& font_list = GetDefaultFontList().Derive(
+      1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+
   views::Label* title = new views::Label(item.title);
+  title->SetFontList(font_list);
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(message_center::kRegularTextColor);
@@ -111,6 +125,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
 
   views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
       IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER, item.message));
+  message->SetFontList(font_list);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(message_center::kDimTextColor);
@@ -159,7 +174,7 @@ const char* CompactTitleMessageView::GetClassName() const {
 CompactTitleMessageView::CompactTitleMessageView() {
   SetLayoutManager(new views::FillLayout());
 
-  const gfx::FontList& font_list = views::Label().font_list().Derive(
+  const gfx::FontList& font_list = GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
   title_view_ = new views::Label();
@@ -179,7 +194,7 @@ void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
   base::string16 title = title_;
   base::string16 message = message_;
 
-  const gfx::FontList& font_list = views::Label().font_list().Derive(
+  const gfx::FontList& font_list = GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
   // Elides title and message. The behavior is based on Android's one.
@@ -431,8 +446,8 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
 
   // |left_content_| contains most contents like title, message, etc...
   left_content_ = new views::View();
-  left_content_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  left_content_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, kLeftContentPadding, 0));
   content_row_->AddChildView(left_content_);
   content_row_layout->SetFlexForView(left_content_, 1);
 
@@ -588,8 +603,6 @@ void NotificationViewMD::CreateOrUpdateTitleView(
     title_view_ = nullptr;
     return;
   }
-  const gfx::FontList& font_list = views::Label().font_list().Derive(
-      1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
   int title_character_limit =
       kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
@@ -597,6 +610,9 @@ void NotificationViewMD::CreateOrUpdateTitleView(
   base::string16 title = gfx::TruncateString(
       notification.title(), title_character_limit, gfx::WORD_BREAK);
   if (!title_view_) {
+    const gfx::FontList& font_list = GetDefaultFontList().Derive(
+        1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+
     title_view_ = new views::Label(title);
     title_view_->SetFontList(font_list);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -620,7 +636,7 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   base::string16 text = gfx::TruncateString(
       notification.message(), kMessageCharacterLimit, gfx::WORD_BREAK);
 
-  const gfx::FontList& font_list = views::Label().font_list().Derive(
+  const gfx::FontList& font_list = GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
   if (!message_view_) {
@@ -703,7 +719,7 @@ void NotificationViewMD::CreateOrUpdateProgressStatusView(
   }
 
   if (!status_view_) {
-    const gfx::FontList& font_list = views::Label().font_list().Derive(
+    const gfx::FontList& font_list = GetDefaultFontList().Derive(
         1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
     status_view_ = new views::Label();
     status_view_->SetFontList(font_list);
@@ -893,6 +909,13 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
 
   if (icon_view_)
     icon_view_->SetVisible(!hide_icon_on_expanded_ || !expanded);
+
+  if (icon_view_ && icon_view_->visible()) {
+    left_content_->SetBorder(
+        views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
+  } else {
+    left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
+  }
 }
 
 // TODO(yoshiki): Move this to the parent class (MessageView) and share the code
