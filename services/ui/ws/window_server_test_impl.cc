@@ -8,7 +8,6 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 
@@ -27,7 +26,7 @@ void WindowServerTestImpl::OnWindowPaint(
   WindowTree* tree = window_server_->GetTreeWithClientName(name);
   if (!tree)
     return;
-  if (tree->HasRoot(window) && window->compositor_frame_sink_manager()) {
+  if (tree->HasRoot(window) && window->has_created_compositor_frame_sink()) {
     cb.Run(true);
     window_server_->SetPaintCallback(base::Callback<void(ServerWindow*)>());
   }
@@ -39,7 +38,7 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
   WindowTree* tree = window_server_->GetTreeWithClientName(client_name);
   if (tree) {
     for (const ServerWindow* window : tree->roots()) {
-      if (window->compositor_frame_sink_manager()) {
+      if (window->has_created_compositor_frame_sink()) {
         callback.Run(true);
         return;
       }

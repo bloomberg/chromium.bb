@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/viz/host/hit_test/hit_test_query.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -28,7 +28,6 @@
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 
 namespace ui {
 namespace ws {
@@ -53,8 +52,7 @@ class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
                      public GpuHostDelegate,
                      public UserDisplayManagerDelegate,
-                     public UserIdTrackerObserver,
-                     public viz::mojom::FrameSinkManagerClient {
+                     public UserIdTrackerObserver {
  public:
   explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
@@ -69,24 +67,12 @@ class WindowServer : public ServerWindowDelegate,
     return display_manager_.get();
   }
 
-  using DisplayHitTestQueryMap =
-      std::map<viz::FrameSinkId, std::unique_ptr<viz::HitTestQuery>>;
-  const DisplayHitTestQueryMap& display_hit_test_query() const {
-    return display_hit_test_query_;
-  }
-
   GpuHost* gpu_host() { return gpu_host_.get(); }
 
   void SetDisplayCreationConfig(DisplayCreationConfig config);
   DisplayCreationConfig display_creation_config() const {
     return display_creation_config_;
   }
-
-  // Pass the FrameSinkManager to WindowServer. This is needed because
-  // FrameSinkManagerClientBinding (the FrameSinkManager implementation being
-  // used) requires WindowServer's GpuHost to create.
-  void SetFrameSinkManager(
-      std::unique_ptr<viz::mojom::FrameSinkManager> frame_sink_manager);
 
   void SetGpuHost(std::unique_ptr<GpuHost> gpu_host);
 
@@ -259,7 +245,9 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // ServerWindowDelegate:
-  viz::mojom::FrameSinkManager* GetFrameSinkManager() override;
+  viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info,
+                                ServerWindow* window) override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -322,6 +310,8 @@ class WindowServer : public ServerWindowDelegate,
   void HandleTemporaryReferenceForNewSurface(const viz::SurfaceId& surface_id,
                                              ServerWindow* window);
 
+  void CreateFrameSinkManager();
+
   // Overridden from ServerWindowDelegate:
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
@@ -371,19 +361,6 @@ class WindowServer : public ServerWindowDelegate,
   // GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
-  // viz::mojom::FrameSinkManagerClient:
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
-  void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
-  void OnAggregatedHitTestRegionListUpdated(
-      const viz::FrameSinkId& frame_sink_id,
-      mojo::ScopedSharedBufferHandle active_handle,
-      uint32_t active_handle_size,
-      mojo::ScopedSharedBufferHandle idle_handle,
-      uint32_t idle_handle_size) override;
-  void SwitchActiveAggregatedHitTestRegionList(
-      const viz::FrameSinkId& frame_sink_id,
-      uint8_t active_handle_index) override;
-
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
                              const UserId& active_id) override;
@@ -398,8 +375,6 @@ class WindowServer : public ServerWindowDelegate,
   ClientSpecificId next_client_id_;
 
   std::unique_ptr<DisplayManager> display_manager_;
-
-  DisplayHitTestQueryMap display_hit_test_query_;
 
   std::unique_ptr<CurrentDragLoopState> current_drag_loop_;
   std::unique_ptr<CurrentMoveLoopState> current_move_loop_;
@@ -431,7 +406,7 @@ class WindowServer : public ServerWindowDelegate,
   viz::SurfaceId root_surface_id_;
 
   // Provides interfaces to create and manage FrameSinks.
-  std::unique_ptr<viz::mojom::FrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
 
   // System modal windows not attached to a display are added here. Once
   // attached to a display they are removed.

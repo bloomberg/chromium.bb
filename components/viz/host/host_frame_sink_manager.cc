@@ -68,6 +68,8 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   // There may be frame sink hierarchy information left in FrameSinkData.
   if (data.IsEmpty())
     frame_sink_data_map_.erase(frame_sink_id);
+
+  display_hit_test_query_.erase(frame_sink_id);
 }
 
 void HostFrameSinkManager::CreateRootCompositorFrameSink(
@@ -87,6 +89,7 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   frame_sink_manager_->CreateRootCompositorFrameSink(
       frame_sink_id, surface_handle, renderer_settings, std::move(request),
       std::move(client), std::move(display_private_request));
+  display_hit_test_query_[frame_sink_id] = base::MakeUnique<HitTestQuery>();
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
@@ -139,6 +142,16 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     frame_sink_data_map_.erase(child_frame_sink_id);
   if (parent_data.IsEmpty())
     frame_sink_data_map_.erase(parent_frame_sink_id);
+}
+
+void HostFrameSinkManager::AssignTemporaryReference(
+    const SurfaceId& surface_id,
+    const FrameSinkId& frame_sink_id) {
+  frame_sink_manager_->AssignTemporaryReference(surface_id, frame_sink_id);
+}
+
+void HostFrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
+  frame_sink_manager_->DropTemporaryReference(surface_id);
 }
 
 std::unique_ptr<CompositorFrameSinkSupport>
@@ -246,15 +259,32 @@ void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
     uint32_t active_handle_size,
     mojo::ScopedSharedBufferHandle idle_handle,
     uint32_t idle_handle_size) {
-  // TODO(riajiang): Refactor content to use the hit test component.
-  // http://crbug.com/750755.
+  auto iter = display_hit_test_query_.find(frame_sink_id);
+  if (iter == display_hit_test_query_.end()) {
+    // TODO(riajiang): Report security fault. http://crbug.com/746470
+    // Or verify if it is the case that display got destroyed, but viz doesn't
+    // know it yet.
+    NOTREACHED();
+    return;
+  }
+  iter->second->OnAggregatedHitTestRegionListUpdated(
+      std::move(active_handle), active_handle_size, std::move(idle_handle),
+      idle_handle_size);
 }
 
 void HostFrameSinkManager::SwitchActiveAggregatedHitTestRegionList(
     const FrameSinkId& frame_sink_id,
     uint8_t active_handle_index) {
-  // TODO(riajiang): Refactor content to use the hit test component.
-  // http://crbug.com/750755.
+  auto iter = display_hit_test_query_.find(frame_sink_id);
+  if (iter == display_hit_test_query_.end() ||
+      (active_handle_index != 0u && active_handle_index != 1u)) {
+    // TODO(riajiang): Report security fault. http://crbug.com/746470
+    // Or verify if it is the case that display got destroyed, but viz doesn't
+    // know it yet.
+    NOTREACHED();
+    return;
+  }
+  iter->second->SwitchActiveAggregatedHitTestRegionList(active_handle_index);
 }
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;

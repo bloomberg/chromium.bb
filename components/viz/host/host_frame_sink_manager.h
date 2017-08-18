@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
@@ -47,12 +48,19 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   HostFrameSinkManager();
   ~HostFrameSinkManager() override;
 
+  using DisplayHitTestQueryMap =
+      base::flat_map<FrameSinkId, std::unique_ptr<HitTestQuery>>;
+  const DisplayHitTestQueryMap& display_hit_test_query() const {
+    return display_hit_test_query_;
+  }
+
   // Sets a local FrameSinkManagerImpl instance and connects directly to it.
   void SetLocalManager(FrameSinkManagerImpl* frame_sink_manager_impl);
 
   // Binds |this| as a FrameSinkManagerClient for |request| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
-  // once.
+  // once. If |task_runner| is null, it uses the default mojo task runner for
+  // the thread this call is made on.
   void BindAndSetManager(
       mojom::FrameSinkManagerClientRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -96,6 +104,13 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // hierarchy before unregistering.
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
+
+  // These two functions should only be used by WindowServer.
+  // TODO(riajiang): Find a better way for HostFrameSinkManager to do the assign
+  // and drop instead.
+  void AssignTemporaryReference(const SurfaceId& surface_id,
+                                const FrameSinkId& owner);
+  void DropTemporaryReference(const SurfaceId& surface_id);
 
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
@@ -186,6 +201,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // Per CompositorFrameSink data.
   base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
+
+  DisplayHitTestQueryMap display_hit_test_query_;
 
   base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_;
 

@@ -9,9 +9,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/host/renderer_settings_creation.h"
 #include "services/ui/common/transient_window_utils.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "services/ui/ws/server_window_tracker.h"
@@ -47,6 +48,11 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       observers_(
           base::ObserverList<ServerWindowObserver>::NOTIFY_EXISTING_ONLY) {
   DCHECK(delegate);  // Must provide a delegate.
+  // TODO(kylechar): Add method to reregister |frame_sink_id_| when viz service
+  // has crashed.
+  auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
+  if (host_frame_sink_manager)
+    host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
 }
 
 ServerWindow::~ServerWindow() {
@@ -72,6 +78,10 @@ ServerWindow::~ServerWindow() {
 
   for (auto& observer : observers_)
     observer.OnWindowDestroyed(this);
+
+  auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
+  if (host_frame_sink_manager)
+    host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void ServerWindow::AddObserver(ServerWindowObserver* observer) {
@@ -92,16 +102,22 @@ void ServerWindow::CreateRootCompositorFrameSink(
     viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
     viz::mojom::CompositorFrameSinkClientPtr client,
     viz::mojom::DisplayPrivateAssociatedRequest display_request) {
-  GetOrCreateCompositorFrameSinkManager()->CreateRootCompositorFrameSink(
-      widget, std::move(sink_request), std::move(client),
-      std::move(display_request));
+  has_created_compositor_frame_sink_ = true;
+  // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
+  // or Android. We should instead use GpuSurfaceTracker here on those
+  // platforms.
+  delegate_->GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
+      frame_sink_id_, widget,
+      viz::CreateRendererSettings(viz::BufferToTextureTargetMap()),
+      std::move(sink_request), std::move(client), std::move(display_request));
 }
 
 void ServerWindow::CreateCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest request,
     viz::mojom::CompositorFrameSinkClientPtr client) {
-  GetOrCreateCompositorFrameSinkManager()->CreateCompositorFrameSink(
-      std::move(request), std::move(client));
+  has_created_compositor_frame_sink_ = true;
+  delegate_->GetHostFrameSinkManager()->CreateCompositorFrameSink(
+      frame_sink_id_, std::move(request), std::move(client));
 }
 
 void ServerWindow::Add(ServerWindow* child) {
@@ -415,15 +431,6 @@ mojom::ShowState ServerWindow::GetShowState() const {
   return static_cast<mojom::ShowState>(iter->second[0]);
 }
 
-ServerWindowCompositorFrameSinkManager*
-ServerWindow::GetOrCreateCompositorFrameSinkManager() {
-  if (!compositor_frame_sink_manager_.get())
-    compositor_frame_sink_manager_ =
-        base::MakeUnique<ServerWindowCompositorFrameSinkManager>(
-            frame_sink_id_, delegate_->GetFrameSinkManager());
-  return compositor_frame_sink_manager_.get();
-}
-
 void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
   if (offset == underlay_offset_)
     return;
@@ -449,7 +456,7 @@ std::string ServerWindow::GetDebugWindowInfo() const {
     name = "(no name)";
 
   std::string frame_sink;
-  if (compositor_frame_sink_manager_)
+  if (has_created_compositor_frame_sink_)
     frame_sink = " [" + frame_sink_id_.ToString() + "]";
 
   return base::StringPrintf("id=%s visible=%s bounds=%s name=%s%s",
@@ -466,6 +473,11 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
     child->BuildDebugInfo(depth + "  ", result);
 }
 #endif  // DCHECK_IS_ON()
+
+void ServerWindow::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {
+  delegate_->OnFirstSurfaceActivation(surface_info, this);
+}
 
 void ServerWindow::RemoveImpl(ServerWindow* window) {
   window->parent_ = nullptr;

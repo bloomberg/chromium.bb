@@ -28,6 +28,8 @@ viz_static_library("test_support") {
     "paths.h",
     "surface_hittest_test_helpers.cc",
     "surface_hittest_test_helpers.h",
+    "test_frame_sink_manager.cc",
+    "test_frame_sink_manager.h",
     "test_layer_tree_frame_sink.cc",
     "test_layer_tree_frame_sink.h",
   ]
@@ -36,6 +38,7 @@ viz_static_library("test_support") {
     "//base/test:test_support",
     "//cc",
     "//components/viz/service",
+    "//services/viz/privileged/interfaces/compositing",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx/geometry",

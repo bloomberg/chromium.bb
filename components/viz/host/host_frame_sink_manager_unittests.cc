@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -71,6 +72,17 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
   }
   MOCK_METHOD1(MockCreateCompositorFrameSink,
                void(const FrameSinkId& frame_sink_id));
+  void CreateRootCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings,
+      mojom::CompositorFrameSinkAssociatedRequest request,
+      mojom::CompositorFrameSinkClientPtr client,
+      mojom::DisplayPrivateAssociatedRequest display_private_request) override {
+    MockCreateRootCompositorFrameSink(frame_sink_id);
+  }
+  MOCK_METHOD1(MockCreateRootCompositorFrameSink,
+               void(const FrameSinkId& frame_sink_id));
   MOCK_METHOD2(RegisterFrameSinkHierarchy,
                void(const FrameSinkId& parent, const FrameSinkId& child));
   MOCK_METHOD2(UnregisterFrameSinkHierarchy,
@@ -108,6 +120,10 @@ class HostFrameSinkManagerTest : public testing::Test {
 
   bool FrameSinkDataExists(const FrameSinkId& frame_sink_id) {
     return host_manager_->frame_sink_data_map_.count(frame_sink_id) > 0;
+  }
+
+  bool DisplayHitTestQueryExists(const FrameSinkId& frame_sink_id) {
+    return host_manager_->display_hit_test_query_.count(frame_sink_id) > 0;
   }
 
   // testing::Test:
@@ -396,6 +412,26 @@ TEST_F(HostFrameSinkManagerTest, DisplayRootTemporaryReference) {
   EXPECT_CALL(impl(), AssignTemporaryReference(surface_id, _)).Times(0);
   GetFrameSinkManagerClient()->OnFirstSurfaceActivation(
       MakeSurfaceInfo(surface_id));
+}
+
+// Test the creation and desctruction of HitTestQuery, which is stored in
+// HostFrameSinkManager::display_hit_test_query_.
+TEST_F(HostFrameSinkManagerTest, DisplayHitTestQueryMap) {
+  FakeHostFrameSinkClient client;
+  EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
+  host().RegisterFrameSinkId(kFrameSinkChild1, &client);
+  EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
+
+  EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
+  host().CreateRootCompositorFrameSink(
+      kFrameSinkChild1, 0 /* surface_handle */,
+      RendererSettings() /* renderer_settings */, nullptr /* request */,
+      nullptr /* client */, nullptr /* display_private_request */);
+  EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
+
+  host().InvalidateFrameSinkId(kFrameSinkChild1);
+  EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
+  EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
 }
 
 }  // namespace test
