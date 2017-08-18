@@ -175,12 +175,11 @@ void ApplyStyleCommand::UpdateStartEnd(const Position& new_start,
   if (!use_ending_selection_ && (new_start != start_ || new_end != end_))
     use_ending_selection_ = true;
 
-  SetEndingSelection(SelectionForUndoStep::From(
-      SelectionInDOMTree::Builder()
-          .Collapse(new_start)
-          .Extend(new_end)
-          .SetIsDirectional(EndingSelection().IsDirectional())
-          .Build()));
+  SetEndingSelection(SelectionInDOMTree::Builder()
+                         .Collapse(new_start)
+                         .Extend(new_end)
+                         .SetIsDirectional(EndingSelection().IsDirectional())
+                         .Build());
   start_ = new_start;
   end_ = new_end;
 }
