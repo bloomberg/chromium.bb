@@ -18,5 +18,11 @@ FAIL WebVTT cue data parser test entities - b1fff1ac42688d16e00f6c758d84e5152e39
 FAIL WebVTT cue data parser test entities - bd68f6beda2c2264e61dff7359c1ad48bc0a9934 assert_unreached: got error event Reached unreachable code
 FAIL WebVTT cue data parser test entities - 5b77a0be23453dfe6eea59d43bb0708f89e1df82 assert_unreached: got error event Reached unreachable code
 FAIL WebVTT cue data parser test entities - 87986551b0e6180cb279f2aa4cdddf77daa90c11 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - e3ac2060b915f0f499b2863f999dcdb38a5db79b assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - 31c8a5ecfa5c54d8c0ec5b4ee8f0bbea0d6d40af assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - 9ed59950764468c4ef2948d71cf75c3f2b60c74d assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - 71a6efcfab81264fb95bb3234c59687c11c72baf assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - 86d7c20ca3c060f9e699c7da43927c4a07a5d569 assert_unreached: got error event Reached unreachable code
+FAIL WebVTT cue data parser test entities - 314cd94292df37044e90ce27b5606bf8ec636b94 assert_unreached: got error event Reached unreachable code
 Harness: the test ran to completion.
 
