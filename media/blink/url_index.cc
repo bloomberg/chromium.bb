@@ -41,9 +41,7 @@ void ResourceMultiBuffer::OnEmpty() {
   url_data_->OnEmpty();
 }
 
-UrlData::UrlData(const GURL& url,
-                 CORSMode cors_mode,
-                 const base::WeakPtr<UrlIndex>& url_index)
+UrlData::UrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index)
     : url_(url),
       have_data_origin_(false),
       cors_mode_(cors_mode),
@@ -150,9 +148,7 @@ bool UrlData::ValidateDataOrigin(const GURL& origin) {
 
 void UrlData::OnEmpty() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&UrlIndex::RemoveUrlDataIfEmpty, url_index_,
-                            scoped_refptr<UrlData>(this)));
+  url_index_->RemoveUrlData(this);
 }
 
 bool UrlData::FullyCached() {
@@ -209,32 +205,45 @@ UrlIndex::UrlIndex(blink::WebLocalFrame* frame)
 UrlIndex::UrlIndex(blink::WebLocalFrame* frame, int block_shift)
     : frame_(frame),
       lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
-      block_shift_(block_shift),
-      weak_factory_(this) {}
+      block_shift_(block_shift) {}
 
-UrlIndex::~UrlIndex() {}
+UrlIndex::~UrlIndex() {
+#if DCHECK_IS_ON()
+  // Verify that only |this| holds reference to UrlData instances.
+  auto dcheck_has_one_ref = [](const UrlDataMap::value_type& entry) {
+    DCHECK(entry.second->HasOneRef());
+  };
+  std::for_each(indexed_data_.begin(), indexed_data_.end(), dcheck_has_one_ref);
+  std::for_each(unindexed_data_.begin(), unindexed_data_.end(),
+                dcheck_has_one_ref);
+#endif
+}
 
-void UrlIndex::RemoveUrlDataIfEmpty(const scoped_refptr<UrlData>& url_data) {
-  if (!url_data->multibuffer()->map().empty())
-    return;
+void UrlIndex::RemoveUrlData(const scoped_refptr<UrlData>& url_data) {
+  DCHECK(url_data->multibuffer()->map().empty());
 
-  auto i = by_url_.find(url_data->key());
-  if (i != by_url_.end() && i->second == url_data)
-    by_url_.erase(i);
+  auto i = indexed_data_.find(url_data->key());
+  if (i != indexed_data_.end() && i->second == url_data)
+    indexed_data_.erase(i);
+
+  unindexed_data_.erase(url_data->key());
 }
 
 scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
                                           UrlData::CORSMode cors_mode) {
-  auto i = by_url_.find(std::make_pair(gurl, cors_mode));
-  if (i != by_url_.end() && i->second->Valid()) {
+  auto i = indexed_data_.find(std::make_pair(gurl, cors_mode));
+  if (i != indexed_data_.end() && i->second->Valid()) {
     return i->second;
   }
-  return NewUrlData(gurl, cors_mode);
+
+  scoped_refptr<UrlData> new_data = NewUrlData(gurl, cors_mode);
+  unindexed_data_[new_data->key()] = new_data;
+  return new_data;
 }
 
 scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
                                             UrlData::CORSMode cors_mode) {
-  return new UrlData(url, cors_mode, weak_factory_.GetWeakPtr());
+  return new UrlData(url, cors_mode, this);
 }
 
 namespace {
@@ -254,41 +263,47 @@ bool IsNewDataForSameResource(const scoped_refptr<UrlData>& new_entry,
   }
   return false;
 }
-};
+}  // namespace
 
 scoped_refptr<UrlData> UrlIndex::TryInsert(
     const scoped_refptr<UrlData>& url_data) {
-  scoped_refptr<UrlData>* by_url_slot;
-  bool urldata_valid = url_data->Valid();
-  if (urldata_valid) {
-    by_url_slot = &by_url_.insert(std::make_pair(url_data->key(), url_data))
-                       .first->second;
-  } else {
-    std::map<UrlData::KeyType, scoped_refptr<UrlData>>::iterator iter;
-    iter = by_url_.find(url_data->key());
-    if (iter == by_url_.end())
-      return url_data;
-    by_url_slot = &iter->second;
-  }
-  if (*by_url_slot == url_data)
-    return url_data;
-
-  if (IsNewDataForSameResource(url_data, *by_url_slot)) {
-    if (urldata_valid)
-      *by_url_slot = url_data;
+  auto iter = indexed_data_.find(url_data->key());
+  if (iter == indexed_data_.end()) {
+    // If valid and not already indexed, index it.
+    if (url_data->Valid()) {
+      indexed_data_.insert(iter, std::make_pair(url_data->key(), url_data));
+      unindexed_data_.erase(url_data->key());
+    }
     return url_data;
   }
 
-  // Check if we should replace the in-cache url data with our url data.
-  if (urldata_valid) {
-    if ((!(*by_url_slot)->Valid() ||
-         url_data->CachedSize() > (*by_url_slot)->CachedSize())) {
-      *by_url_slot = url_data;
+  // A UrlData instance for the same key is already indexed.
+
+  // If the indexed instance is the same as |url_data|,
+  // nothing needs to be done.
+  if (iter->second == url_data)
+    return url_data;
+
+  // The indexed instance is different.
+  // Check if it should be replaced with |url_data|.
+  if (IsNewDataForSameResource(url_data, iter->second)) {
+    if (url_data->Valid()) {
+      iter->second = url_data;
+      unindexed_data_.erase(url_data->key());
+    }
+    return url_data;
+  }
+
+  if (url_data->Valid()) {
+    if ((!iter->second->Valid() ||
+         url_data->CachedSize() > iter->second->CachedSize())) {
+      iter->second = url_data;
+      unindexed_data_.erase(url_data->key());
     } else {
-      (*by_url_slot)->MergeFrom(url_data);
+      iter->second->MergeFrom(url_data);
     }
   }
-  return *by_url_slot;
+  return iter->second;
 }
 
 }  // namespace media

@@ -235,16 +235,9 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
 
   scoped_refptr<UrlData> destination_url_data(url_data_);
 
-  UrlIndex* url_index = url_data_->url_index();
-
   if (!redirects_to_.is_empty()) {
-    if (!url_index) {
-      // We've been disconnected from the url index.
-      // That means the url_index_ has been destroyed, which means we do not
-      // need to do anything clever.
-      return;
-    }
-    destination_url_data = url_index->GetByUrl(redirects_to_, cors_mode_);
+    destination_url_data =
+        url_data_->url_index()->GetByUrl(redirects_to_, cors_mode_);
     redirects_to_ = GURL();
   }
 
@@ -332,8 +325,9 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
     }
   }
 
-  if (url_index && !do_fail) {
-    destination_url_data = url_index->TryInsert(destination_url_data);
+  if (!do_fail) {
+    destination_url_data =
+        url_data_->url_index()->TryInsert(destination_url_data);
   }
 
   if (destination_url_data != url_data_) {
