@@ -29,6 +29,7 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/test/cert_test_util.h"
@@ -493,8 +494,8 @@ TEST_P(CertVerifyProcInternalTest, InvalidTarget) {
 TEST_P(CertVerifyProcInternalTest, InvalidIntermediate) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
-  scoped_refptr<X509Certificate> bad_cert =
-      ImportCertFromFile(certs_dir, "signature_algorithm_null.pem");
+  bssl::UniquePtr<CRYPTO_BUFFER> bad_cert =
+      x509_util::CreateCryptoBuffer(base::StringPiece("invalid"));
   ASSERT_TRUE(bad_cert);
 
   scoped_refptr<X509Certificate> ok_cert(
@@ -503,7 +504,7 @@ TEST_P(CertVerifyProcInternalTest, InvalidIntermediate) {
 
   scoped_refptr<X509Certificate> cert_with_bad_intermediate(
       X509Certificate::CreateFromHandle(ok_cert->os_cert_handle(),
-                                        {bad_cert->os_cert_handle()}));
+                                        {bad_cert.get()}));
   ASSERT_TRUE(cert_with_bad_intermediate);
   EXPECT_EQ(1U,
             cert_with_bad_intermediate->GetIntermediateCertificates().size());

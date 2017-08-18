@@ -113,6 +113,29 @@ TEST(X509UtilNSSTest, CreateCERTCertificateFromX509Certificate) {
                nss_cert->subjectName);
 }
 
+TEST(X509UtilNSSTest, CreateCERTCertificateListFromX509Certificate) {
+  scoped_refptr<X509Certificate> x509_cert = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "multi-root-chain1.pem",
+      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  ASSERT_TRUE(x509_cert);
+  EXPECT_EQ(3U, x509_cert->GetIntermediateCertificates().size());
+
+  ScopedCERTCertificateList nss_certs =
+      x509_util::CreateCERTCertificateListFromX509Certificate(x509_cert.get());
+  ASSERT_EQ(4U, nss_certs.size());
+  for (int i = 0; i < 4; ++i)
+    ASSERT_TRUE(nss_certs[i]);
+
+  EXPECT_EQ(BytesForX509Cert(x509_cert.get()),
+            BytesForNSSCert(nss_certs[0].get()));
+  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[0]),
+            BytesForNSSCert(nss_certs[1].get()));
+  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[1]),
+            BytesForNSSCert(nss_certs[2].get()));
+  EXPECT_EQ(BytesForX509CertHandle(x509_cert->GetIntermediateCertificates()[2]),
+            BytesForNSSCert(nss_certs[3].get()));
+}
+
 TEST(X509UtilNSSTest, DupCERTCertificate) {
   ScopedCERTCertificate cert(x509_util::CreateCERTCertificateFromBytes(
       google_der, arraysize(google_der)));

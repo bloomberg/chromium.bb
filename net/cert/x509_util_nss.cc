@@ -182,6 +182,34 @@ ScopedCERTCertificate CreateCERTCertificateFromX509Certificate(
 #endif
 }
 
+ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
+    const X509Certificate* cert) {
+  ScopedCERTCertificateList nss_chain;
+  nss_chain.reserve(1 + cert->GetIntermediateCertificates().size());
+#if BUILDFLAG(USE_BYTE_CERTS)
+  ScopedCERTCertificate nss_cert =
+      CreateCERTCertificateFromX509Certificate(cert);
+  if (!nss_cert)
+    return {};
+  nss_chain.push_back(std::move(nss_cert));
+  for (net::X509Certificate::OSCertHandle intermediate :
+       cert->GetIntermediateCertificates()) {
+    ScopedCERTCertificate nss_intermediate = CreateCERTCertificateFromBytes(
+        CRYPTO_BUFFER_data(intermediate), CRYPTO_BUFFER_len(intermediate));
+    if (!nss_intermediate)
+      return {};
+    nss_chain.push_back(std::move(nss_intermediate));
+  }
+#else
+  nss_chain.push_back(DupCERTCertificate(cert->os_cert_handle()));
+  for (net::X509Certificate::OSCertHandle intermediate :
+       cert->GetIntermediateCertificates()) {
+    nss_chain.push_back(DupCERTCertificate(intermediate));
+  }
+#endif
+  return nss_chain;
+}
+
 ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert) {
   return ScopedCERTCertificate(CERT_DupCertificate(cert));
 }
