@@ -66,13 +66,6 @@ class CallbackHolder {
 template <typename>
 struct RelayToTaskRunnerHelper;
 
-template <>
-struct RelayToTaskRunnerHelper<void()> {
-  static void Run(CallbackHolder<void()>* holder) {
-    holder->task_runner()->PostTask(holder->from_here(), holder->callback());
-  }
-};
-
 template <typename... Args>
 struct RelayToTaskRunnerHelper<void(Args...)> {
   static void Run(CallbackHolder<void(Args...)>* holder, Args... args) {

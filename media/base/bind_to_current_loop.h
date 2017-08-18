@@ -30,14 +30,6 @@
 namespace media {
 namespace internal {
 
-inline base::OnceClosure MakeClosure(base::RepeatingClosure* callback) {
-  return *callback;
-}
-
-inline base::OnceClosure MakeClosure(base::OnceClosure* callback) {
-  return std::move(*callback);
-}
-
 template <typename Signature, typename... Args>
 base::OnceClosure MakeClosure(base::RepeatingCallback<Signature>* callback,
                               Args&&... args) {
