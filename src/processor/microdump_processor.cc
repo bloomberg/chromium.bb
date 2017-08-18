@@ -94,6 +94,8 @@ ProcessResult MicrodumpProcessor::Process(const string &microdump_contents,
   process_state->crashed_ = true;
   process_state->requesting_thread_ = 0;
   process_state->system_info_ = *microdump.GetSystemInfo();
+  process_state->crash_reason_ = microdump.GetCrashReason();
+  process_state->crash_address_ = microdump.GetCrashAddress();
 
   return PROCESS_OK;
 }

@@ -123,6 +123,22 @@ TEST_F(MicrodumpProcessorTest, TestProcess_Invalid) {
   ASSERT_EQ(google_breakpad::PROCESS_ERROR_NO_THREAD_LIST, result);
 }
 
+TEST_F(MicrodumpProcessorTest, TestProcess_WithoutCrashReason) {
+  ProcessState state;
+  AnalyzeDump("microdump-arm64.dmp", true /* omit_symbols */,
+              2 /* expected_cpu_count */, &state);
+  ASSERT_EQ(state.crash_reason(), "");
+  ASSERT_EQ(state.crash_address(), 0x0u);
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcess_WithCrashReason) {
+  ProcessState state;
+  AnalyzeDump("microdump-withcrashreason.dmp", true /* omit_symbols */,
+              8 /* expected_cpu_count */, &state);
+  ASSERT_EQ(state.crash_reason(), "SIGTRAP");
+  ASSERT_EQ(state.crash_address(), 0x4A7CB000u);
+}
+
 TEST_F(MicrodumpProcessorTest, TestProcess_MissingSymbols) {
   ProcessState state;
   AnalyzeDump("microdump-arm64.dmp", true /* omit_symbols */,
