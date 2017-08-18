@@ -168,17 +168,17 @@ void CookieManagerImpl::RequestNotification(
                  base::Unretained(notification_registration.get())));
 
   notification_registration->notification_pointer.set_connection_error_handler(
-      base::Bind(&CookieManagerImpl::NotificationPipeBroken,
-                 // base::Unretained is safe as destruction of the
-                 // CookieManagerImpl will also destroy the
-                 // notifications_registered list (which this object will be
-                 // inserted into, below), which will destroy the
-                 // notification_pointer, rendering this callback moot.
-                 base::Unretained(this),
-                 // base::Unretained is safe as destruction of the
-                 // NotificationRegistration will also destroy the
-                 // CookieChangedSubscription, unregistering the callback.
-                 base::Unretained(notification_registration.get())));
+      base::BindOnce(&CookieManagerImpl::NotificationPipeBroken,
+                     // base::Unretained is safe as destruction of the
+                     // CookieManagerImpl will also destroy the
+                     // notifications_registered list (which this object will be
+                     // inserted into, below), which will destroy the
+                     // notification_pointer, rendering this callback moot.
+                     base::Unretained(this),
+                     // base::Unretained is safe as destruction of the
+                     // NotificationRegistration will also destroy the
+                     // CookieChangedSubscription, unregistering the callback.
+                     base::Unretained(notification_registration.get())));
 
   notifications_registered_.push_back(std::move(notification_registration));
 }

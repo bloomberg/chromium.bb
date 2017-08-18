@@ -70,10 +70,11 @@ void WebIDBFactoryImpl::GetDatabaseNames(WebIDBCallbacks* callbacks,
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr, io_runner_);
-  io_runner_->PostTask(FROM_HERE, base::Bind(&IOThreadHelper::GetDatabaseNames,
-                                             base::Unretained(io_helper_),
-                                             base::Passed(&callbacks_impl),
-                                             url::Origin(origin)));
+  io_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IOThreadHelper::GetDatabaseNames,
+                     base::Unretained(io_helper_),
+                     base::Passed(&callbacks_impl), url::Origin(origin)));
 }
 
 void WebIDBFactoryImpl::Open(const WebString& name,
@@ -89,10 +90,10 @@ void WebIDBFactoryImpl::Open(const WebString& name,
           base::WrapUnique(database_callbacks));
   io_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IOThreadHelper::Open, base::Unretained(io_helper_),
-                 name.Utf16(), version, transaction_id,
-                 base::Passed(&callbacks_impl),
-                 base::Passed(&database_callbacks_impl), url::Origin(origin)));
+      base::BindOnce(
+          &IOThreadHelper::Open, base::Unretained(io_helper_), name.Utf16(),
+          version, transaction_id, base::Passed(&callbacks_impl),
+          base::Passed(&database_callbacks_impl), url::Origin(origin)));
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(const WebString& name,
@@ -103,10 +104,10 @@ void WebIDBFactoryImpl::DeleteDatabase(const WebString& name,
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
       nullptr, io_runner_);
   io_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IOThreadHelper::DeleteDatabase, base::Unretained(io_helper_),
-                 name.Utf16(), base::Passed(&callbacks_impl),
-                 url::Origin(origin), force_close));
+      FROM_HERE, base::BindOnce(&IOThreadHelper::DeleteDatabase,
+                                base::Unretained(io_helper_), name.Utf16(),
+                                base::Passed(&callbacks_impl),
+                                url::Origin(origin), force_close));
 }
 
 WebIDBFactoryImpl::IOThreadHelper::IOThreadHelper(

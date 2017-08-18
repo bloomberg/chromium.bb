@@ -64,8 +64,8 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
       if (runner.get()) {
         runner->PostTask(
             FROM_HERE,
-            base::Bind(
-                base::IgnoreResult(&Internal::DispatchMessage), this, message));
+            base::BindOnce(base::IgnoreResult(&Internal::DispatchMessage), this,
+                           message));
         return true;
       }
       return DispatchMessage(message);
@@ -73,8 +73,8 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
 
     BrowserThread::PostTask(
         thread, FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&Internal::DispatchMessage), this, message));
+        base::BindOnce(base::IgnoreResult(&Internal::DispatchMessage), this,
+                       message));
     return true;
   }
 
@@ -143,10 +143,9 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&BrowserMessageFilter::Send), this,
-                   message));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&BrowserMessageFilter::Send), this,
+                       message));
     return true;
   }
 

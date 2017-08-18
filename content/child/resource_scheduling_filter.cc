@@ -45,9 +45,9 @@ bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
   } else {
     task_runner = main_thread_task_runner_;
   }
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&ResourceSchedulingFilter::DispatchMessage,
-                                   weak_ptr_factory_.GetWeakPtr(), message));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&ResourceSchedulingFilter::DispatchMessage,
+                                weak_ptr_factory_.GetWeakPtr(), message));
   return true;
 }
 

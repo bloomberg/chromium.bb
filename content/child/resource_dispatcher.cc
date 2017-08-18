@@ -472,8 +472,8 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
     FollowPendingRedirect(request_info);
 
     thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ResourceDispatcher::FlushDeferredMessages,
-                              weak_factory_.GetWeakPtr(), request_id));
+        FROM_HERE, base::BindOnce(&ResourceDispatcher::FlushDeferredMessages,
+                                  weak_factory_.GetWeakPtr(), request_id));
   }
 }
 
@@ -642,10 +642,10 @@ int ResourceDispatcher::StartAsync(
     pending_requests_[request_id]->url_loader_client =
         base::MakeUnique<URLLoaderClientImpl>(request_id, this, task_runner);
 
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&ResourceDispatcher::ContinueForNavigation,
-                                     weak_factory_.GetWeakPtr(), request_id,
-                                     base::Passed(std::move(consumer_handle))));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                                  weak_factory_.GetWeakPtr(), request_id,
+                                  base::Passed(std::move(consumer_handle))));
 
     return request_id;
   }

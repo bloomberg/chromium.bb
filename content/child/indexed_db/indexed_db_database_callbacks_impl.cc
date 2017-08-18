@@ -78,22 +78,22 @@ IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
 }
 
 IndexedDBDatabaseCallbacksImpl::~IndexedDBDatabaseCallbacksImpl() {
-  callback_runner_->PostTask(FROM_HERE,
-                             base::Bind(&DeleteDatabaseCallbacks, callbacks_));
+  callback_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DeleteDatabaseCallbacks, callbacks_));
 }
 
 void IndexedDBDatabaseCallbacksImpl::ForcedClose() {
-  callback_runner_->PostTask(FROM_HERE,
-                             base::Bind(&WebIDBDatabaseCallbacks::OnForcedClose,
-                                        base::Unretained(callbacks_)));
+  callback_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebIDBDatabaseCallbacks::OnForcedClose,
+                                base::Unretained(callbacks_)));
 }
 
 void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
                                                    int64_t new_version) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebIDBDatabaseCallbacks::OnVersionChange,
-                 base::Unretained(callbacks_), old_version, new_version));
+      base::BindOnce(&WebIDBDatabaseCallbacks::OnVersionChange,
+                     base::Unretained(callbacks_), old_version, new_version));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
@@ -102,21 +102,23 @@ void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
   // Indirect through BuildErrorAndAbort because it isn't safe to pass a
   // WebIDBDatabaseError between threads.
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&BuildErrorAndAbort, base::Unretained(callbacks_),
-                            transaction_id, code, message));
+      FROM_HERE,
+      base::BindOnce(&BuildErrorAndAbort, base::Unretained(callbacks_),
+                     transaction_id, code, message));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebIDBDatabaseCallbacks::OnComplete,
-                            base::Unretained(callbacks_), transaction_id));
+      FROM_HERE, base::BindOnce(&WebIDBDatabaseCallbacks::OnComplete,
+                                base::Unretained(callbacks_), transaction_id));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Changes(
     indexed_db::mojom::ObserverChangesPtr changes) {
-  callback_runner_->PostTask(FROM_HERE, base::Bind(&BuildObservationsAndNotify,
-                                                   base::Unretained(callbacks_),
-                                                   base::Passed(&changes)));
+  callback_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BuildObservationsAndNotify, base::Unretained(callbacks_),
+                     base::Passed(&changes)));
 }
 
 }  // namespace content

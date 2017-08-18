@@ -584,8 +584,9 @@ void ChildThreadImpl::Init(const Options& options) {
 #endif
 
   message_loop_->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ChildThreadImpl::EnsureConnected,
-                            channel_connected_factory_->GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&ChildThreadImpl::EnsureConnected,
+                     channel_connected_factory_->GetWeakPtr()),
       base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)

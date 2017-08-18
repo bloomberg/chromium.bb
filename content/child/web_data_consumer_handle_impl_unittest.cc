@@ -51,8 +51,8 @@ class ClientImpl final : public WebDataConsumerHandle::Client {
 
   void DidGetReadable() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ReadDataOperationBase::ReadMore,
-                              base::Unretained(operation_)));
+        FROM_HERE, base::BindOnce(&ReadDataOperationBase::ReadMore,
+                                  base::Unretained(operation_)));
   }
 
  private:
@@ -247,8 +247,8 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   ASSERT_TRUE(t.Start());
 
   t.task_runner()->PostTask(FROM_HERE,
-                            base::Bind(&ReadDataOperation::ReadData,
-                                       base::Unretained(operation.get())));
+                            base::BindOnce(&ReadDataOperation::ReadData,
+                                           base::Unretained(operation.get())));
 
   std::string expected = ProduceData(24 * 1024);
   producer_.reset();
@@ -268,8 +268,8 @@ TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   ASSERT_TRUE(t.Start());
 
   t.task_runner()->PostTask(FROM_HERE,
-                            base::Bind(&TwoPhaseReadDataOperation::ReadData,
-                                       base::Unretained(operation.get())));
+                            base::BindOnce(&TwoPhaseReadDataOperation::ReadData,
+                                           base::Unretained(operation.get())));
 
   std::string expected = ProduceData(24 * 1024);
   producer_.reset();

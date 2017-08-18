@@ -165,7 +165,7 @@ void BlobTransportController::InitiateBlobTransfer(
   if (main_runner->BelongsToCurrentThread()) {
     IncChildProcessRefCount();
   } else {
-    main_runner->PostTask(FROM_HERE, base::Bind(&IncChildProcessRefCount));
+    main_runner->PostTask(FROM_HERE, base::BindOnce(&IncChildProcessRefCount));
   }
 
   storage::BlobStorageLimits quotas;
@@ -176,10 +176,10 @@ void BlobTransportController::InitiateBlobTransfer(
   // we get a request back from the browser.
   io_runner->PostTask(
       FROM_HERE,
-      base::Bind(&BlobTransportController::StoreBlobDataForRequests,
-                 base::Unretained(BlobTransportController::GetInstance()), uuid,
-                 base::Passed(std::move(consolidation)),
-                 base::Passed(std::move(main_runner))));
+      base::BindOnce(&BlobTransportController::StoreBlobDataForRequests,
+                     base::Unretained(BlobTransportController::GetInstance()),
+                     uuid, base::Passed(std::move(consolidation)),
+                     base::Passed(std::move(main_runner))));
 
   // Measure how much jank the following synchronous IPC introduces.
   SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterBlobTime");
@@ -317,7 +317,7 @@ void BlobTransportController::CancelAllBlobTransfers() {
   if (!blob_storage_.empty() && main_thread_runner_) {
     main_thread_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DecChildProcessRefCountTimes, blob_storage_.size()));
+        base::BindOnce(&DecChildProcessRefCountTimes, blob_storage_.size()));
   }
   main_thread_runner_ = nullptr;
   blob_storage_.clear();
@@ -410,7 +410,7 @@ void BlobTransportController::ReleaseBlobConsolidation(
     const std::string& uuid) {
   if (blob_storage_.erase(uuid)) {
     main_thread_runner_->PostTask(FROM_HERE,
-                                  base::Bind(&DecChildProcessRefCount));
+                                  base::BindOnce(&DecChildProcessRefCount));
   }
 }
 

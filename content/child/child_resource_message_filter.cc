@@ -24,10 +24,10 @@ bool ChildResourceMessageFilter::OnMessageReceived(
   if (message.type() == ResourceMsg_RequestComplete::ID ||
       message.type() == ResourceMsg_ReceivedResponse::ID ||
       message.type() == ResourceMsg_ReceivedRedirect::ID) {
-    main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &ResourceDispatcher::set_io_timestamp,
-        base::Unretained(resource_dispatcher_),
-        base::TimeTicks::Now()));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceDispatcher::set_io_timestamp,
+                                  base::Unretained(resource_dispatcher_),
+                                  base::TimeTicks::Now()));
   }
   return false;
 }

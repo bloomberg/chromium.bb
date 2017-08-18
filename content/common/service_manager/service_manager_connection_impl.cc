@@ -70,7 +70,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
     callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     stop_callback_ = stop_callback;
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&IOThreadContext::StartOnIOThread, this));
+        FROM_HERE, base::BindOnce(&IOThreadContext::StartOnIOThread, this));
   }
 
   // Safe to call from whichever thread called Start() (or may have called
@@ -80,7 +80,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
       return;
 
     bool posted = io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&IOThreadContext::ShutDownOnIOThread, this));
+        FROM_HERE, base::BindOnce(&IOThreadContext::ShutDownOnIOThread, this));
     DCHECK(posted);
   }
 
@@ -101,24 +101,26 @@ class ServiceManagerConnectionImpl::IOThreadContext
   void RemoveConnectionFilter(int filter_id) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&IOThreadContext::RemoveConnectionFilterOnIOThread, this,
-                   filter_id));
+        base::BindOnce(&IOThreadContext::RemoveConnectionFilterOnIOThread, this,
+                       filter_id));
   }
 
   void AddEmbeddedService(const std::string& name,
                           const service_manager::EmbeddedServiceInfo& info) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ServiceManagerConnectionImpl::IOThreadContext::
-                                  AddEmbeddedServiceRequestHandlerOnIoThread,
-                              this, name, info));
+        FROM_HERE,
+        base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
+                           AddEmbeddedServiceRequestHandlerOnIoThread,
+                       this, name, info));
   }
 
   void AddServiceRequestHandler(const std::string& name,
                                 const ServiceRequestHandler& handler) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ServiceManagerConnectionImpl::IOThreadContext::
-                                  AddServiceRequestHandlerOnIoThread,
-                              this, name, handler));
+        FROM_HERE,
+        base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
+                           AddServiceRequestHandlerOnIoThread,
+                       this, name, handler));
   }
 
  private:

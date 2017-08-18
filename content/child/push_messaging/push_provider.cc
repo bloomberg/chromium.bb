@@ -141,7 +141,7 @@ PushProvider::PushProvider(const scoped_refptr<base::SingleThreadTaskRunner>&
   if (!main_thread_task_runner->BelongsToCurrentThread()) {
     main_thread_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&PushProvider::GetInterface, base::Passed(&request)));
+        base::BindOnce(&PushProvider::GetInterface, base::Passed(&request)));
   } else {
     GetInterface(std::move(request));
   }
@@ -198,8 +198,8 @@ void PushProvider::Subscribe(
       content_options, user_gesture,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::DidSubscribe, base::Unretained(this),
-                 base::Passed(&callbacks)));
+      base::BindOnce(&PushProvider::DidSubscribe, base::Unretained(this),
+                     base::Passed(&callbacks)));
 }
 
 void PushProvider::DidSubscribe(
@@ -240,8 +240,8 @@ void PushProvider::Unsubscribe(
       service_worker_registration_id,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::DidUnsubscribe, base::Unretained(this),
-                 base::Passed(&callbacks)));
+      base::BindOnce(&PushProvider::DidUnsubscribe, base::Unretained(this),
+                     base::Passed(&callbacks)));
 }
 
 void PushProvider::DidUnsubscribe(
@@ -273,8 +273,8 @@ void PushProvider::GetSubscription(
       service_worker_registration_id,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::DidGetSubscription, base::Unretained(this),
-                 base::Passed(&callbacks)));
+      base::BindOnce(&PushProvider::DidGetSubscription, base::Unretained(this),
+                     base::Passed(&callbacks)));
 }
 
 void PushProvider::DidGetSubscription(
@@ -316,8 +316,8 @@ void PushProvider::GetPermissionStatus(
       service_worker_registration_id, options.user_visible_only,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
-      base::Bind(&PushProvider::DidGetPermissionStatus, base::Unretained(this),
-                 base::Passed(&callbacks)));
+      base::BindOnce(&PushProvider::DidGetPermissionStatus,
+                     base::Unretained(this), base::Passed(&callbacks)));
 }
 
 void PushProvider::DidGetPermissionStatus(

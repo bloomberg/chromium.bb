@@ -64,9 +64,9 @@ WebIDBCursorImpl::WebIDBCursorImpl(
       prefetch_amount_(kMinPrefetchAmount),
       weak_factory_(this) {
   IndexedDBDispatcher::ThreadSpecificInstance()->RegisterCursor(this);
-  io_runner_->PostTask(
-      FROM_HERE, base::Bind(&IOThreadHelper::Bind, base::Unretained(helper_),
-                            base::Passed(&cursor_info)));
+  io_runner_->PostTask(FROM_HERE, base::BindOnce(&IOThreadHelper::Bind,
+                                                 base::Unretained(helper_),
+                                                 base::Passed(&cursor_info)));
 }
 
 WebIDBCursorImpl::~WebIDBCursorImpl() {
@@ -95,8 +95,9 @@ void WebIDBCursorImpl::Advance(unsigned long count,
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr(),
       io_runner_);
   io_runner_->PostTask(
-      FROM_HERE, base::Bind(&IOThreadHelper::Advance, base::Unretained(helper_),
-                            count, base::Passed(&callbacks_impl)));
+      FROM_HERE,
+      base::BindOnce(&IOThreadHelper::Advance, base::Unretained(helper_), count,
+                     base::Passed(&callbacks_impl)));
 }
 
 void WebIDBCursorImpl::Continue(const WebIDBKey& key,
@@ -124,8 +125,8 @@ void WebIDBCursorImpl::Continue(const WebIDBKey& key,
           io_runner_);
       io_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&IOThreadHelper::Prefetch, base::Unretained(helper_),
-                     prefetch_amount_, base::Passed(&callbacks_impl)));
+          base::BindOnce(&IOThreadHelper::Prefetch, base::Unretained(helper_),
+                         prefetch_amount_, base::Passed(&callbacks_impl)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -148,10 +149,10 @@ void WebIDBCursorImpl::Continue(const WebIDBKey& key,
       io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IOThreadHelper::Continue, base::Unretained(helper_),
-                 IndexedDBKeyBuilder::Build(key),
-                 IndexedDBKeyBuilder::Build(primary_key),
-                 base::Passed(&callbacks_impl)));
+      base::BindOnce(&IOThreadHelper::Continue, base::Unretained(helper_),
+                     IndexedDBKeyBuilder::Build(key),
+                     IndexedDBKeyBuilder::Build(primary_key),
+                     base::Passed(&callbacks_impl)));
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {
@@ -243,8 +244,8 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   // Reset the back-end cursor.
   io_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IOThreadHelper::PrefetchReset, base::Unretained(helper_),
-                 used_prefetches_, prefetch_keys_.size(), uuids));
+      base::BindOnce(&IOThreadHelper::PrefetchReset, base::Unretained(helper_),
+                     used_prefetches_, prefetch_keys_.size(), uuids));
 
   // Reset the prefetch cache.
   prefetch_keys_.clear();

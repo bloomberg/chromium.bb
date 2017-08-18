@@ -106,8 +106,8 @@ class UtilityProcessMojoClient {
                mojo::ScopedMessagePipeHandle interface_pipe) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&Helper::StartOnIOThread, base::Unretained(this),
-                     mojo_interface_name, base::Passed(&interface_pipe)));
+          base::BindOnce(&Helper::StartOnIOThread, base::Unretained(this),
+                         mojo_interface_name, base::Passed(&interface_pipe)));
     }
 
     void set_exposed_directory(const base::FilePath& directory) {

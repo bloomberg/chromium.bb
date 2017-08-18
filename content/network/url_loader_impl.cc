@@ -173,8 +173,8 @@ URLLoaderImpl::URLLoaderImpl(
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       weak_ptr_factory_(this) {
   context_->RegisterURLLoader(this);
-  binding_.set_connection_error_handler(
-      base::Bind(&URLLoaderImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &URLLoaderImpl::OnConnectionError, base::Unretained(this)));
 
   url_request_ = context_->url_request_context()->CreateRequest(
       GURL(request.url), net::DEFAULT_PRIORITY, this, traffic_annotation);
@@ -364,8 +364,8 @@ void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
   }
   if (completed_synchronously) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&URLLoaderImpl::ReadMore, weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&URLLoaderImpl::ReadMore,
+                                  weak_ptr_factory_.GetWeakPtr()));
   } else {
     ReadMore();
   }
