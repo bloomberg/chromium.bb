@@ -21,7 +21,6 @@ class GL_EXPORT GLSurfaceWGL : public GLSurface {
   void* GetDisplay() override;
 
   static bool InitializeOneOff();
-  static bool InitializeExtensionSettingsOneOff();
   static void InitializeOneOffForTesting();
   static HDC GetDisplayDC();
 
@@ -30,7 +29,6 @@ class GL_EXPORT GLSurfaceWGL : public GLSurface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceWGL);
-  static bool initialized_;
 };
 
 // A surface used to render to a view.

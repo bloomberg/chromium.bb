@@ -37,13 +37,13 @@ class WGLApiTest : public testing::Test {
     fake_arb_extension_string_ = "";
   }
 
-  void InitializeAPI(const char* disabled_extensions) {
+  void InitializeAPI(base::CommandLine* command_line) {
     api_.reset(new RealWGLApi());
     g_current_wgl_context = api_.get();
-    api_->Initialize(&g_driver_wgl);
-    if (disabled_extensions) {
-      SetDisabledExtensionsWGL(disabled_extensions);
-    }
+    if (command_line)
+      api_->InitializeWithCommandLine(&g_driver_wgl, command_line);
+    else
+      api_->Initialize(&g_driver_wgl);
     g_driver_wgl.InitializeExtensionBindings();
   }
 
@@ -94,14 +94,18 @@ TEST_F(WGLApiTest, DisabledExtensionBitTest) {
 
   EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kDisableGLExtensions,
+                                 kFakeDisabledExtensions);
+
   // NULL simulates not being able to resolve wglGetExtensionsStringARB
-  SetFakeARBExtensionString(nullptr);
+  SetFakeARBExtensionString(NULL);
   SetFakeEXTExtensionString(kFakeExtensions);
 
   InitializeAPI(nullptr);
   EXPECT_TRUE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
-  InitializeAPI(kFakeExtensions);
+  InitializeAPI(&command_line);
   EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
   SetFakeARBExtensionString("");
@@ -119,7 +123,7 @@ TEST_F(WGLApiTest, DisabledExtensionBitTest) {
   InitializeAPI(nullptr);
   EXPECT_TRUE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 
-  InitializeAPI(kFakeDisabledExtensions);
+  InitializeAPI(&command_line);
   EXPECT_FALSE(g_driver_wgl.ext.b_WGL_ARB_extensions_string);
 }
 
@@ -130,6 +134,10 @@ TEST_F(WGLApiTest, DisabledExtensionStringTest) {
       "EGL_EXT_1,EGL_EXT_2,EGL_FAKE";
   static const char* kFilteredExtensions = "EGL_EXT_3 EGL_EXT_4";
 
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kDisableGLExtensions,
+                                 kFakeDisabledExtensions);
+
   SetFakeARBExtensionString(kFakeExtensions);
   SetFakeEXTExtensionString(kFakeExtensions);
 
@@ -137,7 +145,7 @@ TEST_F(WGLApiTest, DisabledExtensionStringTest) {
   EXPECT_EQ(stringpair(kFakeExtensions, kFakeExtensions),
             GetExtensions());
 
-  InitializeAPI(kFakeDisabledExtensions);
+  InitializeAPI(&command_line);
   EXPECT_EQ(stringpair(kFilteredExtensions, kFilteredExtensions),
             GetExtensions());
 }

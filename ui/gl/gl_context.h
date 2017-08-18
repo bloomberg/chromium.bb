@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -74,8 +73,6 @@ struct GLContextAttribs {
 class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
  public:
   explicit GLContext(GLShareGroup* share_group);
-
-  static int32_t TotalGLContexts();
 
   // Initializes the GL context to be compatible with the given surface. The GL
   // context can be made with other surface's of the same type. The compatible
@@ -230,8 +227,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   friend class gpu::GLContextVirtual;
 
   std::unique_ptr<GLVersionInfo> GenerateGLVersionInfo();
-
-  static base::subtle::Atomic32 total_gl_contexts_;
 
   GLWorkarounds gl_workarounds_;
   std::string disabled_gl_extensions_;

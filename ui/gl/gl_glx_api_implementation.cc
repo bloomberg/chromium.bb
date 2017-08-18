@@ -7,9 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_glx.h"
 
 namespace gl {
 
@@ -23,6 +21,7 @@ void InitializeStaticGLBindingsGLX() {
   }
   g_real_glx->Initialize(&g_driver_glx);
   g_current_glx_context = g_real_glx;
+  g_driver_glx.InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsGLX() {
@@ -69,10 +68,16 @@ RealGLXApi::~RealGLXApi() {
 }
 
 void RealGLXApi::Initialize(DriverGLX* driver) {
-  InitializeBase(driver);
+  InitializeWithCommandLine(driver, base::CommandLine::ForCurrentProcess());
 }
 
-void RealGLXApi::SetDisabledExtensions(const std::string& disabled_extensions) {
+void RealGLXApi::InitializeWithCommandLine(DriverGLX* driver,
+                                           base::CommandLine* command_line) {
+  DCHECK(command_line);
+  InitializeBase(driver);
+
+  const std::string disabled_extensions = command_line->GetSwitchValueASCII(
+      switches::kDisableGLExtensions);
   disabled_exts_.clear();
   filtered_exts_ = "";
   if (!disabled_extensions.empty()) {
@@ -100,24 +105,9 @@ const char* RealGLXApi::glXQueryExtensionsStringFn(Display* dpy,
 }
 
 DebugGLXApi::DebugGLXApi(GLXApi* glx_api) : glx_api_(glx_api) {}
-
 DebugGLXApi::~DebugGLXApi() {}
 
-void DebugGLXApi::SetDisabledExtensions(
-    const std::string& disabled_extensions) {
-  if (glx_api_) {
-    glx_api_->SetDisabledExtensions(disabled_extensions);
-  }
-}
-
 TraceGLXApi::~TraceGLXApi() {
-}
-
-void TraceGLXApi::SetDisabledExtensions(
-    const std::string& disabled_extensions) {
-  if (glx_api_) {
-    glx_api_->SetDisabledExtensions(disabled_extensions);
-  }
 }
 
 bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info) {
@@ -138,16 +128,6 @@ bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info) {
     info->extensions = extensions;
   info->direct_rendering = !!glXIsDirect(display, glXGetCurrentContext());
   return true;
-}
-
-void SetDisabledExtensionsGLX(const std::string& disabled_extensions) {
-  DCHECK(g_current_glx_context);
-  DCHECK(GLContext::TotalGLContexts() == 0);
-  g_current_glx_context->SetDisabledExtensions(disabled_extensions);
-}
-
-bool InitializeExtensionSettingsOneOffGLX() {
-  return GLSurfaceGLX::InitializeExtensionSettingsOneOff();
 }
 
 }  // namespace gl

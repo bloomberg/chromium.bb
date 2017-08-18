@@ -5,13 +5,15 @@
 #ifndef UI_GL_GL_WGL_API_IMPLEMENTATION_H_
 #define UI_GL_GL_WGL_API_IMPLEMENTATION_H_
 
-#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+class CommandLine;
+}
 namespace gl {
 
 struct GLWindowSystemBindingInfo;
@@ -20,8 +22,6 @@ GL_EXPORT void InitializeStaticGLBindingsWGL();
 GL_EXPORT void InitializeDebugGLBindingsWGL();
 GL_EXPORT void ClearBindingsWGL();
 GL_EXPORT bool GetGLWindowSystemBindingInfoWGL(GLWindowSystemBindingInfo* info);
-GL_EXPORT void SetDisabledExtensionsWGL(const std::string& disabled_extensions);
-GL_EXPORT bool InitializeExtensionSettingsOneOffWGL();
 
 class GL_EXPORT WGLApiBase : public WGLApi {
  public:
@@ -43,7 +43,8 @@ class GL_EXPORT RealWGLApi : public WGLApiBase {
   RealWGLApi();
   ~RealWGLApi() override;
   void Initialize(DriverWGL* driver);
-  void SetDisabledExtensions(const std::string& disabled_extensions) override;
+  void InitializeWithCommandLine(DriverWGL* driver,
+                                 base::CommandLine* command_line);
 
   const char* wglGetExtensionsStringARBFn(HDC hDC) override;
   const char* wglGetExtensionsStringEXTFn() override;
@@ -59,7 +60,6 @@ class GL_EXPORT DebugWGLApi : public WGLApi {
  public:
   DebugWGLApi(WGLApi* wgl_api);
   ~DebugWGLApi() override;
-  void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -75,7 +75,6 @@ class GL_EXPORT TraceWGLApi : public WGLApi {
  public:
   TraceWGLApi(WGLApi* wgl_api) : wgl_api_(wgl_api) { }
   ~TraceWGLApi() override;
-  void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -89,3 +88,6 @@ class GL_EXPORT TraceWGLApi : public WGLApi {
 }  // namespace gl
 
 #endif  // UI_GL_GL_WGL_API_IMPLEMENTATION_H_
+
+
+

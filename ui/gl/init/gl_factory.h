@@ -6,7 +6,6 @@
 #define UI_GL_INIT_GL_FACTORY_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -36,13 +35,6 @@ GL_INIT_EXPORT std::vector<GLImplementation> GetAllowedGLImplementations();
 
 // Initializes GL bindings.
 GL_INIT_EXPORT bool InitializeGLOneOff();
-
-// Initializes GL bindings without initializing extension settings.
-GL_INIT_EXPORT bool InitializeGLNoExtensionsOneOff();
-
-// Initialize plaiform dependent extension settings, including bindings,
-// capabilities, etc.
-GL_INIT_EXPORT bool InitializeExtensionSettingsOneOffPlatform();
 
 // Initializes GL bindings using the provided parameters. This might be required
 // for use in tests, otherwise use InitializeGLOneOff() instead.
@@ -94,11 +86,6 @@ GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurface(
 
 GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
     const gfx::Size& size, GLSurfaceFormat format);
-
-// Set platform dependent disabled extensions and re-initialize extension
-// bindings.
-GL_INIT_EXPORT void SetDisabledExtensionsPlatform(
-    const std::string& disabled_extensions);
 
 }  // namespace init
 }  // namespace gl

@@ -27,7 +27,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   GLSurfaceGLX();
 
   static bool InitializeOneOff();
-  static bool InitializeExtensionSettingsOneOff();
 
   // These aren't particularly tied to surfaces, but since we already
   // have the static InitializeOneOff here, it's easiest to reuse its
@@ -56,7 +55,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLX);
-  static bool initialized_;
 };
 
 // A surface used to render to a view.
