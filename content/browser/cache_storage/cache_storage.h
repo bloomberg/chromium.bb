@@ -224,8 +224,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       int64_t* accumulator,
       int64_t size);
 
-  void NotifyCacheContentChanged(const std::string& cache_name);
-
   void ScheduleWriteIndex();
   void WriteIndex(base::OnceCallback<void(bool)> callback);
   void WriteIndexImpl(base::OnceCallback<void(bool)> callback);

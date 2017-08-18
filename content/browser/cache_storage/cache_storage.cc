@@ -728,11 +728,6 @@ void CacheStorage::ResetManager() {
   cache_storage_manager_ = nullptr;
 }
 
-void CacheStorage::NotifyCacheContentChanged(const std::string& cache_name) {
-  if (cache_storage_manager_)
-    cache_storage_manager_->NotifyCacheContentChanged(origin_, cache_name);
-}
-
 void CacheStorage::ScheduleWriteIndex() {
   static const int64_t kWriteIndexDelaySecs = 5;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
