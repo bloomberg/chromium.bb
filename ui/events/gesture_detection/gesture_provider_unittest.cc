@@ -255,6 +255,12 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void DisablePressForStylus() {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.press_enabled_for_stylus_ = false;
+    SetUpWithConfig(config);
+  }
+
   void SetMinPinchUpdateSpanDelta(float min_pinch_update_span_delta) {
     GestureProvider::Config config = GetDefaultConfig();
     config.scale_gesture_detector_config.min_pinch_update_span_delta =
@@ -2869,6 +2875,23 @@ TEST_F(GestureProviderTest, SingleTapRepeatLengthOfOne) {
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+}
+
+TEST_F(GestureProviderTest, NoGestureShowOrLongPressOnStylus) {
+  DisablePressForStylus();
+  const base::TimeTicks event_time = TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  RunTasksAndWait(GetLongPressTimeout() + GetShowPressTimeout() +
+                  kOneMicrosecond);
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SHOW_PRESS));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_LONG_PRESS));
 }
 
 }  // namespace ui
