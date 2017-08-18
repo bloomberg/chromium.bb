@@ -167,12 +167,6 @@ component("message_center") {
         "//ui/views",
       ]
     }
-    if (use_ash) {
-      sources += [
-        "views/message_center_bubble.cc",
-        "views/message_center_bubble.h",
-      ]
-    }
   } else {
     # Notification service disabled.
     sources = [

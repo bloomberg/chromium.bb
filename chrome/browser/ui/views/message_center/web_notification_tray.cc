@@ -5,21 +5,20 @@
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 #include "ui/message_center/views/message_popup_collection.h"
 
-namespace message_center {
-
-MessageCenterTrayDelegate* CreateMessageCenterTray() {
+message_center::MessageCenterTrayDelegate* CreateMessageCenterTrayDelegate() {
   return new WebNotificationTray();
 }
 
 WebNotificationTray::WebNotificationTray() {
-  message_center_tray_.reset(
-      new MessageCenterTray(this, g_browser_process->message_center()));
+  message_center_tray_.reset(new message_center::MessageCenterTray(
+      this, g_browser_process->message_center()));
   alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
   popup_collection_.reset(new message_center::MessagePopupCollection(
       message_center(), message_center_tray_.get(), alignment_delegate_.get()));
@@ -69,8 +68,6 @@ bool WebNotificationTray::IsContextMenuEnabled() const {
 void WebNotificationTray::OnMessageCenterTrayChanged() {
 }
 
-MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
+message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
   return message_center_tray_.get();
 }
-
-}  // namespace message_center

@@ -8,19 +8,16 @@
 #include "base/i18n/number_formatting.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #import "ui/message_center/cocoa/popup_collection.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
 
-namespace message_center {
-
-MessageCenterTrayDelegate* CreateMessageCenterTray() {
+message_center::MessageCenterTrayDelegate* CreateMessageCenterTrayDelegate() {
   return new MessageCenterTrayBridge(g_browser_process->message_center());
 }
-
-}  // namespace message_center
 
 MessageCenterTrayBridge::MessageCenterTrayBridge(
     message_center::MessageCenter* message_center)
