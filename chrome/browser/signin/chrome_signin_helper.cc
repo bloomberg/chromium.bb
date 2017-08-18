@@ -263,7 +263,7 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   std::string account_id = io_data->google_services_account_id()->GetValue();
 
   // If new url is eligible to have the header, add it, otherwise remove it.
-  AppendOrRemoveAccountConsistentyRequestHeader(
+  AppendOrRemoveAccountConsistencyRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
       io_data->SyncHasAuthError(), io_data->GetCookieSettings(),
       profile_mode_mask);
