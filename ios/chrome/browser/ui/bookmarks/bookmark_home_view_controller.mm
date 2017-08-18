@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
@@ -35,6 +36,7 @@
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,7 +56,8 @@ const CGFloat kMenuWidth = 264;
     BookmarkFolderViewControllerDelegate,
     BookmarkModelBridgeObserver,
     BookmarkPromoControllerDelegate,
-    BookmarkTableViewDelegate>
+    BookmarkTableViewDelegate,
+    ContextBarDelegate>
 
 @end
 
@@ -81,6 +84,7 @@ const CGFloat kMenuWidth = 264;
 @synthesize waitForModelView = _waitForModelView;
 @synthesize homeDelegate = _homeDelegate;
 @synthesize bookmarksTableView = _bookmarksTableView;
+@synthesize contextBar = _contextBar;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -142,13 +146,41 @@ const CGFloat kMenuWidth = 264;
 - (void)loadBookmarkViews {
   if (experimental_flags::IsBookmarkReorderingEnabled()) {
     // Set up new UI view. TODO(crbug.com/695749): Polish UI according to mocks.
+    _containerView = [[UIView alloc] initWithFrame:self.view.bounds];
+    [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                        UIViewAutoresizingFlexibleHeight];
+    [self.view addSubview:_containerView];
+
     self.bookmarksTableView =
         [[BookmarkTableView alloc] initWithBrowserState:self.browserState
                                                delegate:self
                                                rootNode:_rootNode
                                                   frame:self.view.bounds];
-    self.bookmarksTableView.autoresizingMask =
-        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+
+    [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [_containerView addSubview:self.bookmarksTableView];
+
+    // TODO(crbug.com/695749): Hide the context bar when browsing
+    // bookmarkModel->root_node.
+    self.contextBar = [[BookmarkContextBar alloc] initWithFrame:CGRectZero];
+    self.contextBar.delegate = self;
+    [self.contextBar setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+    // TODO(crbug.com/695749): Check if we need to create new strings for the
+    // context bar buttons.
+    [self.contextBar setButtonVisibility:YES forButton:ContextBarLeadingButton];
+    [self.contextBar
+        setButtonTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_BOOKMARK_NEW_GROUP_EDITOR_CREATE_TITLE)
+             forButton:ContextBarLeadingButton];
+
+    [self.contextBar setButtonVisibility:YES
+                               forButton:ContextBarTrailingButton];
+    [self.contextBar setButtonTitle:l10n_util::GetNSStringWithFixup(
+                                        IDS_IOS_BOOKMARK_ACTION_SELECT)
+                          forButton:ContextBarTrailingButton];
+
+    [_containerView addSubview:self.contextBar];
 
     // Set up the navigation bar.
     NSString* doneTitle =
@@ -170,8 +202,6 @@ const CGFloat kMenuWidth = 264;
     self.navigationController.navigationBar.tintColor = UIColor.blackColor;
     self.navigationController.navigationBar.backgroundColor =
         bookmark_utils_ios::mainBackgroundColor();
-
-    [self.view addSubview:self.bookmarksTableView];
   } else {
     // Set up old UI view.
     LayoutRect menuLayout =
@@ -242,6 +272,7 @@ const CGFloat kMenuWidth = 264;
         [self.folderView contentPositionInPortraitOrientation],
         [self primaryMenuItem]);
   }
+  // TODO(crbug.com/695749): Cache position for BookmarkTableView in new UI.
 }
 
 - (BOOL)shouldShowBackButtonOnNavigationBar {
@@ -859,6 +890,36 @@ const CGFloat kMenuWidth = 264;
   NSIndexPath* indexPath =
       [self.folderView.collectionView indexPathForCell:cell];
   return indexPath;
+}
+
+- (void)updateViewConstraints {
+  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+    NSDictionary* views = @{
+      @"tableView" : self.bookmarksTableView,
+      @"contextBar" : self.contextBar,
+    };
+    NSArray* constraints = @[
+      @"V:|[tableView][contextBar(==48)]|", @"H:|[tableView]|",
+      @"H:|[contextBar]|"
+    ];
+    ApplyVisualConstraints(constraints, views);
+  }
+  [super updateViewConstraints];
+}
+
+#pragma mark - ContextBarDelegate implementation
+
+// Called when the leading button is clicked.
+- (void)leadingButtonClicked {
+  // TODO(crbug.com/695749): Implement the button action here.
+}
+// Called when the center button is clicked.
+- (void)centerButtonClicked {
+  // TODO(crbug.com/695749): Implement the button action here.
+}
+// Called when the trailing button is clicked.
+- (void)trailingButtonClicked {
+  // TODO(crbug.com/695749): Implement the button action here.
 }
 
 @end

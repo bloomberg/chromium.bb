@@ -1327,6 +1327,27 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 }
 
+// Tests that the bookmark context bar is shown in MobileBookmarks.
+- (void)testBookmarkContextBarShown {
+  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
+  }
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Context Bar")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify the context bar's leading and trailing buttons are shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"Context Bar Leading Button")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"Context Bar Trailing Button")]
+      assertWithMatcher:grey_notNil()];
+}
+
 #pragma mark Helper Methods
 
 // Navigates to the bookmark manager UI.

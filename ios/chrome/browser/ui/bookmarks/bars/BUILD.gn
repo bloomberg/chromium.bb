@@ -5,6 +5,8 @@
 source_set("bars") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "bookmark_context_bar.h",
+    "bookmark_context_bar.mm",
     "bookmark_editing_bar.h",
     "bookmark_editing_bar.mm",
     "bookmark_navigation_bar.h",

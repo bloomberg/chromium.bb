@@ -133,6 +133,12 @@ using bookmarks::BookmarkNode;
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
 
+  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+    // TODO(crbug.com/695749): See if we need to store/restore the content
+    // scroll position for BookmarkTableView here.
+    return;
+  }
+
   // Store the content scroll position.
   CGFloat contentPosition =
       [[self folderView] contentPositionInPortraitOrientation];
@@ -174,6 +180,9 @@ using bookmarks::BookmarkNode;
   [super loadBookmarkViews];
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
+
+  // TODO(crbug.com/695749): Restore the content scroll position for
+  // BookmarkTableView in the UI.
 
   if (!experimental_flags::IsBookmarkReorderingEnabled()) {
     self.menuView.delegate = self;

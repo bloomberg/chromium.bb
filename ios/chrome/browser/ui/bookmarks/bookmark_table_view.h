@@ -18,7 +18,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-@class BookmarkNavBar;
 @class BookmarkTableView;
 
 // Delegate to handle actions on the table.
