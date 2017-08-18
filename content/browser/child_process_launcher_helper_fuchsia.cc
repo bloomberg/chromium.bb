@@ -42,6 +42,12 @@ void ChildProcessLauncherHelper::SetRegisteredFilesForService(
   NOTIMPLEMENTED();
 }
 
+// static
+void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
+  // TODO(fuchsia): Implement this. (crbug.com/707031)
+  NOTIMPLEMENTED();
+}
+
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   // TODO(fuchsia): Implement this. (crbug.com/707031)
   NOTIMPLEMENTED();
