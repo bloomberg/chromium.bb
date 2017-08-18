@@ -1007,6 +1007,7 @@ public class CronetUrlRequestContextTest {
         cronetEngine.shutdown();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet

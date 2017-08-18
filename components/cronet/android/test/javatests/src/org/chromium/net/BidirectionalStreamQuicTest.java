@@ -398,6 +398,7 @@ public class BidirectionalStreamQuicTest {
                 0 < quicException.getQuicDetailedErrorCode());
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
