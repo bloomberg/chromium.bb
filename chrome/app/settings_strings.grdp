@@ -2648,9 +2648,6 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT" desc="Label in the profile picture picker for the photo credit for the selected image.">
       Photo by <ph name="NAME">$1<ex>John Doe</ex></ph>
     </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
-      Google Profile photo (loading)
-    </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo, which was either taken by the webcam or read from a file.">
       Existing photo from camera or file
     </message>
