@@ -10,6 +10,8 @@
 
 #include "chrome/browser/media/router/discovery/discovery_network_info.h"
 
+namespace media_router {
+
 // Returns a list of information about each network to which the host is
 // connected, stable-sorted by network ID (stable relative to the order they are
 // returned by the OS during enumeration).
@@ -25,5 +27,7 @@ void StableSortDiscoveryNetworkInfo(InputIt first, InputIt last) {
         return info1.network_id < info2.network_id;
       });
 }
+
+}  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DISCOVERY_NETWORK_LIST_H_

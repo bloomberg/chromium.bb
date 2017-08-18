@@ -25,6 +25,7 @@
 #include <net/if_dl.h>
 #endif
 
+namespace media_router {
 namespace {
 
 #if !defined(OS_MACOSX)
@@ -102,3 +103,5 @@ std::vector<DiscoveryNetworkInfo> GetDiscoveryNetworkInfoList() {
   freeifaddrs(if_list);
   return network_ids;
 }
+
+}  // namespace media_router

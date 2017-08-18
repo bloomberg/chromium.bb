@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace media_router {
 namespace {
 
 using testing::Invoke;
@@ -190,3 +191,5 @@ TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithObserver) {
   discovery_network_monitor->GetNetworkId(base::BindOnce(check_network_id));
   scoped_task_environment.RunUntilIdle();
 }
+
+}  // namespace media_router
