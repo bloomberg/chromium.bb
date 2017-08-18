@@ -55,12 +55,12 @@ void CreateLinkCommand::DoApply(EditingState* editing_state) {
     AppendNode(text_node, anchor_element, editing_state);
     if (editing_state->IsAborted())
       return;
-    SetEndingSelection(
+    SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentBeforeNode(*anchor_element))
             .Extend(Position::InParentAfterNode(*anchor_element))
             .SetIsDirectional(EndingSelection().IsDirectional())
-            .Build());
+            .Build()));
   }
 }
 
