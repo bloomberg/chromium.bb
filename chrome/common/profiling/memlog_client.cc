@@ -17,21 +17,15 @@ namespace profiling {
 
 MemlogClient::MemlogClient() = default;
 
-MemlogClient::~MemlogClient() {
-  if (connection_) {
-    connection_->RemoveConnectionFilter(connection_filter_id_);
-  }
-}
+MemlogClient::~MemlogClient() = default;
 
 void MemlogClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  connection_ = connection;
-
   std::unique_ptr<service_manager::BinderRegistry> registry(
       new service_manager::BinderRegistry);
   registry->AddInterface(base::Bind(&profiling::MemlogClient::BindToInterface,
                                     base::Unretained(this)));
-  connection_filter_id_ = connection->AddConnectionFilter(
+  connection->AddConnectionFilter(
       base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
