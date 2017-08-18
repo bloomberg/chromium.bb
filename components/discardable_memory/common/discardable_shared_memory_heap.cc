@@ -395,11 +395,6 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
       base::StringPrintf("discardable/segment_%d", segment_id);
   base::trace_event::MemoryAllocatorDump* segment_dump =
       pmd->CreateAllocatorDump(segment_dump_name);
-  // The size is added here so that telemetry picks up the size. Usually it is
-  // just enough to add it to the global dump.
-  segment_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          allocated_objects_size_in_bytes);
   segment_dump->AddScalar("virtual_size",
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           size);
@@ -416,14 +411,9 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       locked_objects_size_in_bytes);
 
-  // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)
-  // the tracing UI will account the effective size of the segment to the
-  // client.
-  const int kImportance = 2;
-  auto shared_memory_guid = shared_memory->mapped_id();
-  segment_dump->AddString("id", "hash", shared_memory_guid.ToString());
-  pmd->CreateWeakSharedMemoryOwnershipEdge(segment_dump->guid(),
-                                           shared_memory_guid, kImportance);
+  // The memory is owned by the client process (current).
+  shared_memory->CreateSharedMemoryOwnershipEdge(segment_dump, pmd,
+                                                 /*is_owned=*/true);
 }
 
 base::trace_event::MemoryAllocatorDump*

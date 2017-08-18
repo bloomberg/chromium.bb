@@ -16,6 +16,7 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
@@ -286,8 +287,6 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
       if (!segment->memory()->mapped_size())
         continue;
 
-      // TODO(ssid): The "size" should be inherited from the shared memory dump,
-      // crbug.com/661257.
       std::string dump_name = base::StringPrintf(
           "discardable/process_%x/segment_%d", client_id, segment_id);
       base::trace_event::MemoryAllocatorDump* dump =
@@ -303,10 +302,8 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
           segment->memory()->IsMemoryLocked() ? segment->memory()->mapped_size()
                                               : 0u);
 
-      auto shared_memory_guid = segment->memory()->mapped_id();
-      dump->AddString("id", "hash", shared_memory_guid.ToString());
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                           0 /* importance */);
+      segment->memory()->CreateSharedMemoryOwnershipEdge(dump, pmd,
+                                                         /*is_owned=*/false);
     }
   }
   return true;
