@@ -147,7 +147,7 @@ void InstallableManager::GetData(const InstallableParams& params,
   if (page_status_ == InstallabilityCheckStatus::NOT_STARTED)
     page_status_ = InstallabilityCheckStatus::NOT_COMPLETED;
 
-  StartNextTask();
+  WorkOnTask();
 }
 
 void InstallableManager::RecordMenuOpenHistogram() {
@@ -366,11 +366,6 @@ void InstallableManager::RunCallback(const Task& task,
   task.second.Run(data);
 }
 
-void InstallableManager::StartNextTask() {
-  DCHECK(!task_queue_.IsEmpty());
-  WorkOnTask();
-}
-
 void InstallableManager::WorkOnTask() {
   const Task& task = task_queue_.Current();
   const InstallableParams& params = task.first;
@@ -390,7 +385,7 @@ void InstallableManager::WorkOnTask() {
     task_queue_.Next();
 
     if (!task_queue_.IsEmpty())
-      StartNextTask();
+      WorkOnTask();
 
     return;
   }
@@ -520,7 +515,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
         if (!task_queue_.IsEmpty())
-          StartNextTask();
+          WorkOnTask();
 
         return;
       }
@@ -596,9 +591,8 @@ void InstallableManager::OnRegistrationStored(const GURL& pattern) {
   // Start the pipeline again if it was not running. This will call
   // CheckHasServiceWorker to check if the SW has a fetch handler. Otherwise,
   // adding the tasks to the end of the active queue is sufficient.
-  if (!was_active) {
-    StartNextTask();
-  }
+  if (!was_active)
+    WorkOnTask();
 }
 
 void InstallableManager::DidFinishNavigation(
@@ -666,6 +660,6 @@ void InstallableManager::TaskQueue::Next() {
 
 bool InstallableManager::TaskQueue::IsEmpty() const {
   // TODO(mcgreevy): try to remove this method by removing the need to
-  // explicitly call StartNextTask.
+  // explicitly call WorkOnTask.
   return tasks_.empty();
 }

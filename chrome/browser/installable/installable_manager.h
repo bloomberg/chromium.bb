@@ -249,7 +249,6 @@ class InstallableManager
 
   // Methods coordinating and dispatching work for the current task.
   void RunCallback(const Task& task, InstallableStatusCode error);
-  void StartNextTask();
   void WorkOnTask();
 
   // Data retrieval methods.
