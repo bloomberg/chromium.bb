@@ -33,6 +33,8 @@ static_library("prefetch") {
     "page_bundle_update_task.cc",
     "page_bundle_update_task.h",
     "prefetch_background_task_handler.h",
+    "prefetch_configuration.cc",
+    "prefetch_configuration.h",
     "prefetch_dispatcher.h",
     "prefetch_dispatcher_impl.cc",
     "prefetch_dispatcher_impl.h",

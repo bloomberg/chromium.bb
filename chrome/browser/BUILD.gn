@@ -2236,6 +2236,8 @@ split_static_library("browser") {
       "offline_pages/prefetch/prefetch_background_task.h",
       "offline_pages/prefetch/prefetch_background_task_handler_impl.cc",
       "offline_pages/prefetch/prefetch_background_task_handler_impl.h",
+      "offline_pages/prefetch/prefetch_configuration_impl.cc",
+      "offline_pages/prefetch/prefetch_configuration_impl.h",
       "offline_pages/prefetch/prefetch_importer_impl.cc",
       "offline_pages/prefetch/prefetch_importer_impl.h",
       "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
