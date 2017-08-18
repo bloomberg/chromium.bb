@@ -286,10 +286,9 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
   expand_button_->SetImage(gfx::CreateVectorIcon(
       expanded ? kNotificationExpandLessIcon : kNotificationExpandMoreIcon,
       kExpandIconSize, accent_color_));
-  // TODO(tetsui): Replace by more helpful accessibility strings.
-  // https://crbug.com/755855
   expand_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      expanded ? IDS_APP_ACCNAME_MINIMIZE : IDS_APP_ACCNAME_MAXIMIZE));
+      expanded ? IDS_MESSAGE_CENTER_COLLAPSE_NOTIFICATION
+               : IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION));
 }
 
 void NotificationHeaderView::SetAccentColor(SkColor color) {

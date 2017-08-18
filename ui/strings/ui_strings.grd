@@ -634,6 +634,12 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
         Clear All
       </message>
+      <message name="IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION" desc="The button for expanding the notification. By clicking this, the long message and the buttons of the notification are shown.">
+        Expand notification
+      </message>
+      <message name="IDS_MESSAGE_CENTER_COLLAPSE_NOTIFICATION" desc="The button for collapsing the notification. By clicking this, the long message and the buttons of the notification are hidden.">
+        Collapse notification
+      </message>
       <message name="IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER" desc="The divider symbol of the title and the message of a sub item in list notification. In English, the title is on the left of this text. In RTL languages, the title is on the right of this message.">
         ''' - <ph name="message">$1<ex>This is the message!</ex></ph>'''
       </message>
