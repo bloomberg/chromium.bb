@@ -653,7 +653,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
 
 bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
-  DCHECK(url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
+  DCHECK(url.SchemeIs(kChromeUIScheme) ||
          (GetContentClient()->browser()->GetAdditionalWebUISchemes(
               &additional_schemes),
           SchemeIsInSchemes(url.scheme(), additional_schemes)));
@@ -706,48 +706,6 @@ std::vector<std::string> URLDataManagerBackend::GetWebUISchemes() {
   schemes.push_back(kChromeUIScheme);
   GetContentClient()->browser()->GetAdditionalWebUISchemes(&schemes);
   return schemes;
-}
-
-namespace {
-
-class DevToolsJobFactory
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit DevToolsJobFactory(ResourceContext* resource_context);
-  ~DevToolsJobFactory() override;
-
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override;
-
- private:
-  // |resource_context_| and |network_delegate_| are owned by ProfileIOData,
-  // which owns this ProtocolHandler.
-  ResourceContext* const resource_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
-};
-
-DevToolsJobFactory::DevToolsJobFactory(ResourceContext* resource_context)
-    : resource_context_(resource_context) {
-  DCHECK(resource_context_);
-}
-
-DevToolsJobFactory::~DevToolsJobFactory() {}
-
-net::URLRequestJob*
-DevToolsJobFactory::MaybeCreateJob(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return new URLRequestChromeJob(
-      request, network_delegate,
-      GetURLDataManagerForResourceContext(resource_context_));
-}
-
-}  // namespace
-
-net::URLRequestJobFactory::ProtocolHandler* CreateDevToolsProtocolHandler(
-    ResourceContext* resource_context) {
-  return new DevToolsJobFactory(resource_context);
 }
 
 }  // namespace content

@@ -419,11 +419,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                 .release());
   }
 
-  protocol_handlers[kChromeDevToolsScheme] =
-      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateDevToolsProtocolHandler(
-              browser_context_->GetResourceContext()));
-
   URLRequestInterceptorScopedVector request_interceptors;
   request_interceptors.push_back(
       base::MakeUnique<DevToolsURLRequestInterceptor>(browser_context_));

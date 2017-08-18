@@ -126,10 +126,6 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(URLDataManagerBackend);
 };
 
-// Creates protocol handler for chrome-devtools://.
-net::URLRequestJobFactory::ProtocolHandler* CreateDevToolsProtocolHandler(
-    ResourceContext* resource_context);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBUI_URL_DATA_MANAGER_BACKEND_H_
