@@ -370,7 +370,7 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
   NGLogicalSize overflow_size =
       overflow_physical_size.ConvertToLogical(writing_mode);
   // TODO(kojii): Implement use_first_line_style.
-  NGFragmentBuilder builder(*this, box_->StyleRef(), writing_mode,
+  NGFragmentBuilder builder(*this, box_->Style(), writing_mode,
                             box_->StyleRef().Direction());
   builder.SetSize(box_size)
       .SetOverflowSize(overflow_size);

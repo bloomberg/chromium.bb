@@ -53,9 +53,15 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
     NGConstraintSpace* space,
     NGInlineBreakToken* break_token)
-    // Use LTR direction since inline layout handles bidi by itself and lays out
-    // in visual order.
-    : NGLayoutAlgorithm(inline_node, space, TextDirection::kLtr, break_token),
+    : NGLayoutAlgorithm(
+          inline_node,
+          ComputedStyle::CreateAnonymousStyleWithDisplay(inline_node.Style(),
+                                                         EDisplay::kBlock),
+          space,
+          // Use LTR direction since inline layout handles bidi by itself and
+          // lays out in visual order.
+          TextDirection::kLtr,
+          break_token),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       space_builder_(space) {
@@ -140,7 +146,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
-  NGLineBoxFragmentBuilder line_box(Node(), line_style,
+  NGLineBoxFragmentBuilder line_box(Node(), &line_style,
                                     ConstraintSpace().WritingMode());
   NGTextFragmentBuilder text_builder(Node(), ConstraintSpace().WritingMode());
 
@@ -161,7 +167,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       DCHECK(item.GetLayoutObject()->IsText());
       DCHECK(!box->text_metrics.IsEmpty());
       DCHECK(item.Style());
-      text_builder.SetStyle(*item.Style());
+      text_builder.SetStyle(item.Style());
       text_builder.SetSize(
           {item_result.inline_size, box->text_metrics.LineHeight()});
       if (item_result.shape_result) {
@@ -308,7 +314,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
-  NGTextFragmentBuilder text_builder(Node(), style,
+  NGTextFragmentBuilder text_builder(Node(), &style,
                                      ConstraintSpace().WritingMode());
   text_builder.SetSize({fragment.InlineSize(), metrics.LineHeight()});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;

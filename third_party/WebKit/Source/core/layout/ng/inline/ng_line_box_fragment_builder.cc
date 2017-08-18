@@ -15,9 +15,10 @@
 
 namespace blink {
 
-NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(NGInlineNode node,
-                                                   const ComputedStyle& style,
-                                                   NGWritingMode writing_mode)
+NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
+    NGInlineNode node,
+    RefPtr<const ComputedStyle> style,
+    NGWritingMode writing_mode)
     : NGBaseFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
 

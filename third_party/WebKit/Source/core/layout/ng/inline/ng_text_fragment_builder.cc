@@ -33,7 +33,7 @@ NGLineOrientation ToLineOrientation(NGWritingMode writing_mode) {
 }  // namespace
 
 NGTextFragmentBuilder::NGTextFragmentBuilder(NGInlineNode node,
-                                             const ComputedStyle& style,
+                                             RefPtr<const ComputedStyle> style,
                                              NGWritingMode writing_mode)
     : NGBaseFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
