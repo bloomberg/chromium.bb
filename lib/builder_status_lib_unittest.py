@@ -10,6 +10,7 @@ import mock
 
 from chromite.cbuildbot import build_status_unittest
 from chromite.lib.const import waterfall
+from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -452,3 +453,45 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_GetMessage')
     manager = self.ConstructBuilderStatusManager()
     self.assertIsNotNone(manager.GetBuilderStatusForBuild(self.slave_1))
+
+  def testCancelBuilds(self):
+    """Test CancelBuilds."""
+    buildbucket_id_1 = '100'
+    buildbucket_id_2 = '200'
+    buildbucket_ids = [buildbucket_id_1, buildbucket_id_2]
+
+    cancel_mock = self.buildbucket_client.CancelBatchBuildsRequest
+
+    cancel_mock.return_value = dict()
+    builder_status_lib.CancelBuilds(buildbucket_ids, self.buildbucket_client)
+
+    self.assertEqual(cancel_mock.call_count, 1)
+
+  def testCancelNoBuilds(self):
+    """Test CancelBuilds with no builds to cancel."""
+    cancel_mock = self.buildbucket_client.CancelBatchBuildsRequest
+
+    builder_status_lib.CancelBuilds([], self.buildbucket_client)
+    self.assertEqual(cancel_mock.call_count, 0)
+
+  def testCancelWithBuildbucketClient(self):
+    """Test Buildbucket client cancels successfully during CancelBuilds."""
+    buildbucket_id_1 = '100'
+    buildbucket_id_2 = '200'
+    buildbucket_ids = [buildbucket_id_1, buildbucket_id_2]
+
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=True)
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
+    send_request_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                         'SendBuildbucketRequest',
+                                         return_value=dict())
+    buildbucket_client = buildbucket_lib.BuildbucketClient()
+
+    builder_status_lib.CancelBuilds(buildbucket_ids, buildbucket_client)
+
+    self.assertEqual(send_request_mock.call_count, 1)

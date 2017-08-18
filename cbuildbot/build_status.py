@@ -77,10 +77,13 @@ class SlaveStatus(object):
     # Dict mapping config names of slaves not in self.completed_builds to
     # their new BuildbucketInfo. Everytime UpdateSlaveStatus is called,
     # new (current) status will be pulled from Buildbucket.
+    # TODO(jkop): The code uses 'is not None' checks to determine if it's using
+    # Buildbucket. Initialize this to a dict for simplicity when that's been
+    # refactored.
     self.new_buildbucket_info_dict = None
     # Dict mapping all slave config names to BuildbucketInfo
-    self.all_buildbucket_info_dict = None
-    self.status_buildset_dict = None
+    self.all_buildbucket_info_dict = {}
+    self.status_buildset_dict = {}
 
     # Records history (per-tick) of self.completed_builds. Keep only the most
     # recent 2 entries of history. Used only for metrics purposes, not used for
@@ -515,11 +518,20 @@ class SlaveStatus(object):
 
     current_time = datetime.datetime.now()
 
-    # Guess there are some builders building, check if there is a problem.
+    uncompleted_builds = self._GetUncompletedBuilds(self.completed_builds)
+    incomplete_build_buildbucket_ids = [
+        v.buildbucket_id
+        for k, v in self.all_buildbucket_info_dict.iteritems() if k in
+        uncompleted_builds]
+
     if self._ShouldFailForBuilderStartTimeout(current_time):
       logging.error('Ending build since at least one builder has not started '
                     'within 5 mins.')
-      return False, True, False
+      builder_status_lib.CancelBuilds(incomplete_build_buildbucket_ids,
+                                      self.buildbucket_client,
+                                      self.dry_run,
+                                      self.config)
+      return False, False, False
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
@@ -551,7 +563,6 @@ class SlaveStatus(object):
 
         # For every uncompleted build, the master build will insert an
         # ignored_reason message into the buildMessageTable.
-        uncompleted_builds = self._GetUncompletedBuilds(self.completed_builds)
         for build in uncompleted_builds:
           if build in self.all_cidb_status_dict:
             self.db.InsertBuildMessage(
@@ -559,8 +570,11 @@ class SlaveStatus(object):
                 message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
                 message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
                 message_value=str(self.all_cidb_status_dict[build].build_id))
-
-        return False, True, True
+        builder_status_lib.CancelBuilds(incomplete_build_buildbucket_ids,
+                                        self.buildbucket_client,
+                                        self.dry_run,
+                                        self.config)
+        return False, False, True
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',

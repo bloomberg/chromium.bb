@@ -188,7 +188,7 @@ class CIDBStatusInfos(object):
 
 
 class SlaveStatusTest(cros_test_lib.MockTestCase):
-  """Test methods testing methods in SalveStatus class."""
+  """Test methods testing methods in SlaveStatus class."""
 
   def setUp(self):
     self.time_now = datetime.datetime.now()
@@ -1018,6 +1018,25 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         constants.METADATA_EXPERIMENTAL_BUILDERS: ['build1']
     })
     self.assertFalse(slave_status.ShouldWait())
+
+  def test_ShouldWaitInvokesCancelBuildsWithListOfIDs(self):
+    """Tests that _ShouldWait sends a serializable list of build IDs."""
+    mock_cancel_builds = self.PatchObject(builder_status_lib, "CancelBuilds")
+    cidb_status = {
+        'build1': CIDBStatusInfos.GetFailedBuild(),
+        'build2': CIDBStatusInfos.GetPlannedBuild()
+    }
+    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=['build1', 'build2'])
+    self.PatchObject(build_status.SlaveStatus,
+                     '_ShouldFailForBuilderStartTimeout',
+                     return_value=True)
+
+    slave_status._ShouldWait()
+    (ids, _, _, _), _ = mock_cancel_builds.call_args
+    self.assertTrue(isinstance(ids, list))
 
   def testUpdateSlaveStatusWithoutExperimentalBuilders(self):
     """UpdateSlaveStatus without experimental builders."""

@@ -281,6 +281,7 @@ class BuildbucketClient(object):
         'hostname': self.host
     }
 
+    assert isinstance(buildbucket_ids, list)
     body = json.dumps({'build_ids': buildbucket_ids})
 
     return self.SendBuildbucketRequest(url, POST_METHOD, body, dryrun)

@@ -18,13 +18,13 @@ from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import buildbucket_lib
+from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
-from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
@@ -157,29 +157,10 @@ class CleanUpStage(generic_stages.BuilderStage):
           logging.info('Found builds %s in status %s.', ids, status)
           buildbucket_ids.extend(ids)
 
-      if buildbucket_ids:
-        logging.info('Going to cancel buildbucket_ids: %s', buildbucket_ids)
-
-        if not self._run.options.debug:
-          fields = {'build_type': self._run.config.build_type,
-                    'build_name': self._run.config.name}
-          metrics.Counter(constants.MON_BB_CANCEL_BATCH_BUILDS_COUNT).increment(
-              fields=fields)
-
-        cancel_content = buildbucket_client.CancelBatchBuildsRequest(
-            buildbucket_ids,
-            dryrun=self._run.options.debug)
-
-        result_map = buildbucket_lib.GetResultMap(cancel_content)
-        for buildbucket_id, result in result_map.iteritems():
-          # Check if the result contains error messages.
-          if buildbucket_lib.GetNestedAttr(result, ['error']):
-            # TODO(nxia): Get build url and log url in the warnings.
-            logging.warning("Error cancelling build %s with reason: %s. "
-                            "Please check the status of the build.",
-                            buildbucket_id,
-                            buildbucket_lib.GetErrorReason(result))
-
+      builder_status_lib.CancelBuilds(buildbucket_ids,
+                                      buildbucket_client,
+                                      self._run.options.debug,
+                                      self._run.config)
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot)
