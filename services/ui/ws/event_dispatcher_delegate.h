@@ -13,6 +13,10 @@ namespace gfx {
 class Point;
 }
 
+namespace viz {
+class HitTestQuery;
+}
+
 namespace ui {
 
 class Event;
@@ -109,6 +113,11 @@ class EventDispatcherDelegate {
   // event.
   virtual void OnEventOccurredOutsideOfModalWindow(
       ServerWindow* modal_window) = 0;
+
+  virtual viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) = 0;
+
+  virtual ServerWindow* GetWindowFromFrameSinkId(
+      const viz::FrameSinkId& frame_sink_id) = 0;
 
  protected:
   virtual ~EventDispatcherDelegate() {}

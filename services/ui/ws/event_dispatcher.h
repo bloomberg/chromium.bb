@@ -23,6 +23,10 @@
 #include "services/ui/ws/server_window_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+namespace viz {
+class HitTestQuery;
+}
+
 namespace ui {
 class Event;
 class KeyEvent;
@@ -164,6 +168,9 @@ class EventDispatcher : public ServerWindowObserver,
   ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
                                         int64_t* display_id) override;
   void ProcessNextAvailableEvent() override;
+  viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) override;
+  ServerWindow* GetWindowFromFrameSinkId(
+      const viz::FrameSinkId& frame_sink_id) override;
 
  private:
   friend class test::EventDispatcherTestApi;

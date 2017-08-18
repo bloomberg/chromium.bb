@@ -8,6 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
+#include "services/ui/common/switches.h"
 #include "services/ui/ws/event_targeter_delegate.h"
 
 namespace ui {
@@ -54,14 +56,10 @@ void EventTargeter::ProcessFindTarget(EventSource event_source,
                                       const gfx::Point& location,
                                       int64_t display_id,
                                       HitTestCallback callback) {
-  // TODO(riajiang): After HitTestComponent is implemented, do synchronous
-  // hit-test for most cases using shared memory and only ask Blink
-  // asynchronously for hard cases. For now, assume all synchronous hit-tests
-  // failed if the "enable-async-event-targeting" flag is turned on.
-  // Get display id this EventTargeter is associated with in WindowTree and
-  // get the HitTestQuery that display id is associated with in WindowServer.
+  // TODO(riajiang): After the async ask-client part is implemented, the async
+  // part should be moved to after sync viz-hit-test call.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-async-event-targeting")) {
+          switches::kUseAsyncEventTargeting)) {
     DCHECK(!hit_test_in_flight_);
     hit_test_in_flight_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -84,10 +82,33 @@ void EventTargeter::FindTargetForLocationNow(EventSource event_source,
   location_target.display_id = display_id;
   ServerWindow* root = event_targeter_delegate_->GetRootWindowContaining(
       &location_target.location_in_root, &location_target.display_id);
-  if (root) {
-    location_target.deepest_window =
-        ui::ws::FindDeepestVisibleWindowForLocation(
-            root, event_source, location_target.location_in_root);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseVizHitTest)) {
+    if (root) {
+      location_target.deepest_window =
+          ui::ws::FindDeepestVisibleWindowForLocation(
+              root, event_source, location_target.location_in_root);
+    }
+  } else {
+    viz::HitTestQuery* hit_test_query =
+        event_targeter_delegate_->GetHitTestQueryForDisplay(
+            location_target.display_id);
+    if (hit_test_query) {
+      viz::Target target = hit_test_query->FindTargetForLocation(
+          location_target.location_in_root);
+      if (target.frame_sink_id.is_valid()) {
+        ServerWindow* target_window =
+            event_targeter_delegate_->GetWindowFromFrameSinkId(
+                target.frame_sink_id);
+        if (!target_window) {
+          // TODO(riajiang): There's no target window with this frame_sink_id,
+          // maybe a security fault. http://crbug.com/746470
+          NOTREACHED();
+        }
+        location_target.deepest_window.window = target_window;
+        location_target.location_in_target = target.location_in_target;
+      }
+    }
   }
   std::move(callback).Run(location_target);
   ProcessNextHitTestRequestFromQueue();
