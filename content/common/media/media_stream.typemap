@@ -10,7 +10,7 @@ public_headers = [
 ]
 
 traits_headers = [
-  "//content/common/media/media_stream_messages.h",
+  "//content/common/media/media_stream_param_traits.h",
   "//content/common/media/media_stream_typemap_traits.h",
 ]
 
