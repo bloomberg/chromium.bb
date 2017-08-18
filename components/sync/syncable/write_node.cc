@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/hash_util.h"
-#include "components/sync/base/sync_features.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
@@ -140,7 +139,6 @@ void WriteNode::SetPasswordSpecifics(
 
   const std::string metadata_url(data.signon_realm());
   if (!IsExplicitPassphrase(GetTransaction()->GetPassphraseType()) &&
-      base::FeatureList::IsEnabled(kFillPasswordMetadata) &&
       password_specifics->unencrypted_metadata().url() != metadata_url) {
     password_specifics->mutable_unencrypted_metadata()->set_url(metadata_url);
   }
