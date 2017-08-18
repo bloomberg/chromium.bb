@@ -10,5 +10,4 @@ startup.large_profile.cold.blank_page
 startup.large_profile.warm.blank_page
 startup.warm.blank_page
 thread_times.key_hit_test_cases
-thread_times.key_mobile_sites_smooth
 thread_times.key_noop_cases
