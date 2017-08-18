@@ -62,4 +62,15 @@ int64_t TaskTestBase::InsertPrefetchItemInStateWithOperation(
   return item.offline_id;
 }
 
+std::set<PrefetchItem> TaskTestBase::FilterByState(
+    const std::set<PrefetchItem>& items,
+    PrefetchItemState state) const {
+  std::set<PrefetchItem> result;
+  for (const PrefetchItem& item : items) {
+    if (item.state == state)
+      result.insert(item);
+  }
+  return result;
+}
+
 }  // namespace offline_pages
