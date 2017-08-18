@@ -683,24 +683,32 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 • Improved several UI animation effects.
         </message>
 
-        <!-- AppStore metadata text. Won't be bundled into the app. -->
-        <message name="IDS_APPSTORE_TITLE" desc="AppStore title of the Chrome Remote Desktop app for iOS. If needed to meet the 30-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=30] [NAME=appstore_title]" meaning="Title used in Play Store">
+        <!-- iOS App Store metadata text. Won't be bundled into the app. -->
+        <message name="IDS_APP_STORE_TITLE" desc="App Store title of the Chrome Remote Desktop app for iOS. If needed to meet the 30-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=30] [NAME=app_store_title]" meaning="Title used in App Store">
           Chrome Remote Desktop
         </message>
-        <message name="IDS_APPSTORE_KEYWORDS" desc="AppStore keywords for the Chrome Remote Desktop app for iOS. Separate keywords with newline. [NAME=appstore_keywords]">
+        <message name="IDS_APP_STORE_KEYWORDS" desc="App Store keywords (to be used to search for the app) for the Chrome Remote Desktop app for iOS. Separate keywords with newline. [NAME=app_store_keywords]">
 Chrome Remote Desktop
 Remote Desktop
 Remote PC
 Remote Computer
 Remote Access
+Remote Support
         </message>
-        <message name="IDS_APPSTORE_DESCRIPTION" desc="AppStore description of the Chrome Remote Desktop app for iOS. [CHAR-LIMIT=4000] [NAME=appstore_description]">
-Securely access your computers from your iOS device.
+        <message name="IDS_APP_STORE_DESCRIPTION" desc="App Store description of the Chrome Remote Desktop app for iOS. [CHAR-LIMIT=4000] [NAME=app_store_description]">
+Securely access your computer from your iOS device. Its fast, simple and free.
 
-• On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
+• On the computer you want to access remotely, find the Chrome Remote Desktop app on the Chrome Web Store  https://chrome.google.com/remotedesktop
+• Install Chrome Remote Desktop software and follow the instructions to complete setup.
 • On your iOS device, open the app and tap on any of your online computers to connect.
 
-For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).
+For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj).
+        </message>
+        <message name="IDS_APP_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for iOS. [CHAR-LIMIT=500] [NAME=app_store_changes]">
+• Redesigned user interface.
+• Improved performance, responsiveness and reliability.
+• Support for playing audio from Windows or Linux computers.
+• Enhanced keyboard support.
         </message>
       </if>  <!-- is_android or is_ios -->
 
