@@ -7,7 +7,11 @@
 namespace offline_pages {
 
 OfflinePageItem::OfflinePageItem()
-    : file_size(0), access_count(0), flags(NO_FLAG) {}
+    : file_size(0),
+      access_count(0),
+      flags(NO_FLAG),
+      system_download_id(0),
+      upgrade_attempt(0) {}
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
                                  int64_t offline_id,
@@ -20,7 +24,9 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       file_path(file_path),
       file_size(file_size),
       access_count(0),
-      flags(NO_FLAG) {}
+      flags(NO_FLAG),
+      system_download_id(0),
+      upgrade_attempt(0) {}
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
                                  int64_t offline_id,
@@ -36,7 +42,9 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       creation_time(creation_time),
       last_access_time(creation_time),
       access_count(0),
-      flags(NO_FLAG) {}
+      flags(NO_FLAG),
+      system_download_id(0),
+      upgrade_attempt(0) {}
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
                                  int64_t offline_id,
@@ -54,7 +62,9 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       last_access_time(creation_time),
       access_count(0),
       flags(NO_FLAG),
-      request_origin(request_origin) {}
+      request_origin(request_origin),
+      system_download_id(0),
+      upgrade_attempt(0) {}
 
 OfflinePageItem::OfflinePageItem(const OfflinePageItem& other) = default;
 
@@ -67,7 +77,10 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          last_access_time == other.last_access_time &&
          access_count == other.access_count && title == other.title &&
          flags == other.flags && original_url == other.original_url &&
-         request_origin == other.request_origin;
+         request_origin == other.request_origin &&
+         system_download_id == other.system_download_id &&
+         file_missing_time == other.file_missing_time &&
+         upgrade_attempt == other.upgrade_attempt && digest == digest;
 }
 
 }  // namespace offline_pages

@@ -79,6 +79,17 @@ struct OfflinePageItem {
   // The app, if any, that the item was saved on behalf of.
   // Empty string implies Chrome.
   std::string request_origin;
+  // System download id.
+  int64_t system_download_id;
+  // The most recent time when the file was discovered missing.
+  // NULL time implies the file is not missing.
+  base::Time file_missing_time;
+  // Number of attemps for upgrading the MHTML page into new format.
+  int upgrade_attempt;
+  // Digest of the page calculated when page is saved, in order to tell if the
+  // page can be trusted. This field will always be an empty string for
+  // temporary and shared pages.
+  std::string digest;
 };
 
 }  // namespace offline_pages
