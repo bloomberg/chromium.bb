@@ -388,6 +388,7 @@ void Button::OnDragDone() {
 }
 
 void Button::OnPaint(gfx::Canvas* canvas) {
+  InkDropHostView::OnPaint(canvas);
   PaintButtonContents(canvas);
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
