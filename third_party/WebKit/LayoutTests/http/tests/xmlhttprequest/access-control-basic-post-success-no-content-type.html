@@ -8,9 +8,9 @@ function log(message) {
     document.getElementById("log").innerHTML += message + "<br>";
 }
 
-if (window.layoutTestController) {
-    layoutTestController.dumpAsText();
-    layoutTestController.waitUntilDone();
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var xhr = new XMLHttpRequest();
@@ -18,14 +18,14 @@ var xhr = new XMLHttpRequest();
 xhr.open("POST", "http://localhost:8000/xmlhttprequest/resources/access-control-basic-post-success-no-content-type.php");
 xhr.onerror = function () {
     log("FAIL");
-    if (window.layoutTestController)
-        layoutTestController.notifyDone();
+    if (window.testRunner)
+        testRunner.notifyDone();
 };
 xhr.onload = function () {
     if (xhr.readyState == 4) {
         log(xhr.responseText);
-        if (window.layoutTestController)
-            layoutTestController.notifyDone();
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
 };
 xhr.send('Test');

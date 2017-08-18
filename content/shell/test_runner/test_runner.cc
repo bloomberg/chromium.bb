@@ -323,11 +323,7 @@ void TestRunnerBindings::Install(
   v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Value> v8_bindings = bindings.ToV8();
 
-  std::vector<std::string> names;
-  names.push_back("testRunner");
-  names.push_back("layoutTestController");
-  for (size_t i = 0; i < names.size(); ++i)
-    global->Set(gin::StringToV8(isolate, names[i].c_str()), v8_bindings);
+  global->Set(gin::StringToV8(isolate, "testRunner"), v8_bindings);
 
   // The web-platform-tests suite require that reference comparison is delayed
   // for any test with a 'reftest-wait' class on the root element, until that
