@@ -91,7 +91,7 @@ def PreParseArguments(argv):
     Branch as a string ('master' if nothing is specified).
   """
   parser = cbuildbot.CreateParser()
-  options, _ = cbuildbot.ParseCommandLine(parser, argv)
+  options = cbuildbot.ParseCommandLine(parser, argv)
   options.Freeze()
 
   # This option isn't required for cbuildbot, but is for us.
@@ -235,7 +235,7 @@ def RunCbuildbot(buildroot, argv):
   # This filters out command line arguments not supported by older versions
   # of cbuildbot.
   parser = cbuildbot.CreateParser()
-  options, _ = cbuildbot.ParseCommandLine(parser, argv)
+  options = cbuildbot.ParseCommandLine(parser, argv)
   cbuildbot_path = os.path.join(buildroot, 'chromite', 'bin', 'cbuildbot')
   cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
       buildroot, cbuildbot_path, options)

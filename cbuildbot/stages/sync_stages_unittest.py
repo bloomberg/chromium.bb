@@ -67,7 +67,7 @@ class BootstrapStageTest(
                      return_value=(constants.REEXEC_API_MAJOR,
                                    constants.REEXEC_API_MINOR))
 
-    self._Prepare()
+    self._Prepare(extra_cmd_args=[self.BOT_ID])
 
   def ConstructStage(self):
     patch_pool = trybot_patch_pool.TrybotPatchPool()

@@ -124,19 +124,20 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     if extra_cmd_args:
       cmd_args += extra_cmd_args
     (options, args) = parser.parse_args(cmd_args)
+    # Mimic cbuildbot.ParseCommandLine.
+    options.build_targets = args
 
     # The bot_id can either be specified as arg to _Prepare method or in the
     # cmd_args (as cbuildbot normally accepts it from command line).
-    if args:
-      self._bot_id = args[0]
+    if options.build_targets:
+      self._bot_id = options.build_targets[-1]
       if bot_id:
         # This means bot_id was specified as _Prepare arg and in cmd_args.
         # Make sure they are the same.
         self.assertEquals(self._bot_id, bot_id)
     else:
       self._bot_id = bot_id or self.BOT_ID
-      args = [self._bot_id]
-    cbuildbot._FinishParsing(options, args)
+    cbuildbot._FinishParsing(options)
 
     if site_config is None:
       site_config = chromeos_config.GetConfig()

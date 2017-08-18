@@ -733,7 +733,7 @@ def _CreateParser():
   return parser
 
 
-def _FinishParsing(options, args):
+def _FinishParsing(options):
   """Perform some parsing tasks that need to take place after optparse.
 
   This function needs to be easily testable!  Keep it free of
@@ -742,7 +742,6 @@ def _FinishParsing(options, args):
 
   Args:
     options: The options object returned by optparse
-    args: The args object returned by optparse
   """
   # Populate options.pass_through_args.
   accepted, _ = commandline.FilteringParser.FilterArgs(
@@ -784,9 +783,9 @@ def _FinishParsing(options, args):
     release_mode_with_patches = (options.buildbot and patches and
                                  '--debug' not in options.pass_through_args)
   else:
-    if len(args) > 1:
+    if len(options.build_targets) > 1:
       cros_build_lib.Die('Multiple configs not supported if not running with '
-                         '--remote.  Got %r', args)
+                         '--remote.  Got %r', options.build_targets)
 
     if options.slaves:
       cros_build_lib.Die('Cannot use --slaves if not running with --remote.')
@@ -815,9 +814,6 @@ def _FinishParsing(options, args):
     # 2. --remote invocations, because it needs to push changes to the tryjob
     #    repo.
     options.debug = not options.buildbot and not options.remote
-
-  # Record the configs targeted.
-  options.build_targets = args[:]
 
   if constants.BRANCH_UTIL_CONFIG in options.build_targets:
     if options.remote:
@@ -867,16 +863,15 @@ def _FinishParsing(options, args):
 
 
 # pylint: disable=W0613
-def _PostParseCheck(parser, options, args, site_config):
+def _PostParseCheck(parser, options, site_config):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
     parser: Option parser that was used to parse arguments.
     options: The options returned by optparse.
-    args: The args returned by optparse.
     site_config: config_lib.SiteConfig containing all config info.
   """
-  if not args:
+  if not options.build_targets:
     parser.error('Invalid usage: no configuration targets provided.'
                  'Use -h to see usage.  Use -l to list supported configs.')
 
@@ -926,7 +921,7 @@ def _PostParseCheck(parser, options, args, site_config):
 
   # Ensure that all args are legitimate config targets.
   invalid_targets = []
-  for arg in args:
+  for arg in options.build_targets:
     if arg not in site_config:
       invalid_targets.append(arg)
       logging.error('No such configuraton target: "%s".', arg)
@@ -964,9 +959,10 @@ def ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
+  # Record the configs targeted.
   # Strip out null arguments.
   # TODO(rcui): Remove when buildbot is fixed
-  args = [arg for arg in args if arg]
+  options.build_targets = [x for x in args if x]
 
   if options.deprecated_use_buildbucket:
     logging.warning('--use-buildbucket is deprecated, and ignored.')
@@ -975,8 +971,8 @@ def ParseCommandLine(parser, argv):
     print(constants.REEXEC_API_VERSION)
     sys.exit(0)
 
-  _FinishParsing(options, args)
-  return options, args
+  _FinishParsing(options)
+  return options
 
 
 _ENVIRONMENT_PROD = 'prod'
@@ -1054,6 +1050,9 @@ def _SetupConnections(options, build_config):
 
 # TODO(build): This function is too damn long.
 def main(argv):
+  # We get false positives with the options object.
+  # pylint: disable=attribute-defined-outside-init
+
   # Turn on strict sudo checks.
   cros_build_lib.STRICT_SUDO = True
 
@@ -1061,7 +1060,7 @@ def main(argv):
   os.umask(0o22)
 
   parser = _CreateParser()
-  options, args = ParseCommandLine(parser, argv)
+  options = ParseCommandLine(parser, argv)
 
   if options.config_repo:
     cros_build_lib.Die('Deprecated usage. Ping crbug.com/735696 you need it.')
@@ -1073,7 +1072,7 @@ def main(argv):
     _PrintValidConfigs(site_config, options.print_all)
     sys.exit(0)
 
-  _PostParseCheck(parser, options, args, site_config)
+  _PostParseCheck(parser, options, site_config)
 
   cros_build_lib.AssertOutsideChroot()
 
@@ -1085,7 +1084,7 @@ def main(argv):
     # Verify configs are valid.
     # If hwtest flag is enabled, post a warning that HWTest step may fail if the
     # specified board is not a released platform or it is a generic overlay.
-    for bot in args:
+    for bot in options.build_targets:
       build_config = site_config[bot]
       if options.hwtest:
         logging.warning(
@@ -1113,7 +1112,8 @@ def main(argv):
             options.branch,
             options.gerrit_patches+options.local_patches)
 
-      tryjob = remote_try.RemoteTryJob(args, patch_pool.local_patches,
+      tryjob = remote_try.RemoteTryJob(options.build_targets,
+                                       patch_pool.local_patches,
                                        options.pass_through_args,
                                        options.cache_dir,
                                        description,
@@ -1136,7 +1136,7 @@ def main(argv):
       cros_build_lib.Die('This host isn\'t a continuous-integration builder.')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
-  bot_id = args[-1]
+  bot_id = options.build_targets[-1]
   build_config = site_config[bot_id]
 
   # TODO: Re-enable this block when reference_repo support handles this

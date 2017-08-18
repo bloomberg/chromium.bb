@@ -167,7 +167,7 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
     if 'cmd_args' not in kwargs:
       # Fill in cmd_args so we do not use the default, which specifies
       # --branch.  That is incompatible with some branch-util flows.
-      kwargs['cmd_args'] = ['-r', self.build_root]
+      kwargs['cmd_args'] = ['-r', self.build_root, self.BOT_ID]
     super(BranchUtilStageTest, self)._Prepare(bot_id, **kwargs)
 
   def ConstructStage(self):
