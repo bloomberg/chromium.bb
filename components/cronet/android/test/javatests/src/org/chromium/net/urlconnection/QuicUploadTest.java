@@ -4,13 +4,23 @@
 
 package org.chromium.net.urlconnection;
 
+import static org.junit.Assert.assertEquals;
+
+import static org.chromium.net.CronetTestRule.getContext;
+
 import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine;
-import org.chromium.net.CronetTestBase;
+import org.chromium.net.CronetTestRule;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.CronetTestUtil;
 import org.chromium.net.ExperimentalCronetEngine;
@@ -24,13 +34,16 @@ import java.util.Arrays;
 /**
  * Tests HttpURLConnection upload using QUIC.
  */
-@SuppressWarnings("deprecation")
-public class QuicUploadTest extends CronetTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class QuicUploadTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
+
     private CronetEngine mCronetEngine;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         // Load library first to create MockCertVerifier.
         System.loadLibrary("cronet_tests");
         ExperimentalCronetEngine.Builder builder =
@@ -53,6 +66,7 @@ public class QuicUploadTest extends CronetTestBase {
         mCronetEngine = builder.build();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet

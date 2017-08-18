@@ -4,13 +4,25 @@
 
 package org.chromium.net;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.chromium.net.CronetTestRule.getContext;
+import static org.chromium.net.CronetTestRule.getTestStorage;
+
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
@@ -25,14 +37,17 @@ import java.util.concurrent.Executors;
 /**
  * Tests making requests using QUIC.
  */
-public class QuicTest extends CronetTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class QuicTest {
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
+
     private static final String TAG = QuicTest.class.getSimpleName();
     private static final String QUIC_PROTOCOL_STRING_PREFIX = "http/2+quic/";
     private ExperimentalCronetEngine.Builder mBuilder;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         // Load library first, since we need the Quic test server's URL.
         System.loadLibrary("cronet_tests");
         QuicTestServer.startQuicTestServer(getContext());
@@ -62,12 +77,12 @@ public class QuicTest extends CronetTestBase {
                 mBuilder, QuicTestServer.createMockCertVerifier());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         QuicTestServer.shutdownQuicTestServer();
-        super.tearDown();
     }
 
+    @Test
     @LargeTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
@@ -150,6 +165,7 @@ public class QuicTest extends CronetTestBase {
     /**
      * Tests that the network quality listeners are propoerly notified when QUIC is enabled.
      */
+    @Test
     @LargeTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
@@ -229,6 +245,7 @@ public class QuicTest extends CronetTestBase {
         cronetEngine.shutdown();
     }
 
+    @Test
     @SmallTest
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
