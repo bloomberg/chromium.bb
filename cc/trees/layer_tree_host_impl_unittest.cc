@@ -12718,6 +12718,7 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   LayerTreeSettings settings = DefaultSettings();
   settings.commit_to_active_tree = false;
   settings.enable_checker_imaging = true;
+  settings.min_image_bytes_to_checker = 512 * 1024;
   settings.default_tile_size = gfx::Size(256, 256);
   settings.max_untiled_layer_size = gfx::Size(256, 256);
   CreateHostImpl(settings, CreateLayerTreeFrameSink());

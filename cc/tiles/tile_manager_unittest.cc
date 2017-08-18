@@ -2329,6 +2329,7 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
     settings.enable_checker_imaging = true;
     settings.resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
+    settings.min_image_bytes_to_checker = 512 * 1024;
     return settings;
   }
 

@@ -7854,6 +7854,7 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->enable_checker_imaging = true;
+    settings->min_image_bytes_to_checker = 512 * 1024;
   }
 
   void WillBeginMainFrame() override {
