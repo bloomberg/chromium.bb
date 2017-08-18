@@ -39,6 +39,8 @@ namespace offline_pages {
 //   removed when metadata consistency check happens.
 // * In M58-M60 there were no changes.
 // * In M61 request_origin was added.
+// * In M62 system_download_id, file_missing_time, upgrade_attempt and digest
+//   were added to support P2P sharing feature.
 //
 // Here is a procedure to update the schema for this store:
 // * Decide how to detect that the store is on a particular version, which
