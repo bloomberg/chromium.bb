@@ -779,8 +779,9 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
       // Decode pixels one byte at a time, left to right (so, starting at
       // the most significant bits in the byte).
       const uint8_t mask = (1 << info_header_.bi_bit_count) - 1;
-      for (size_t byte = 0; byte < unpadded_num_bytes; ++byte) {
-        uint8_t pixel_data = ReadUint8(byte);
+      for (size_t end_offset = decoded_offset_ + unpadded_num_bytes;
+           decoded_offset_ < end_offset; ++decoded_offset_) {
+        uint8_t pixel_data = ReadUint8(0);
         for (size_t pixel = 0;
              (pixel < pixels_per_byte) && (coord_.X() < end_x); ++pixel) {
           const size_t color_index =
@@ -808,7 +809,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
       }
     } else {
       // RGB data.  Decode pixels one at a time, left to right.
-      while (coord_.X() < end_x) {
+      for (; coord_.X() < end_x; decoded_offset_ += bytes_per_pixel) {
         const uint32_t pixel = ReadCurrentPixel(bytes_per_pixel);
 
         // Some BMPs specify an alpha channel but don't actually use it
@@ -839,7 +840,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
     }
 
     // Success, keep going.
-    decoded_offset_ += padded_num_bytes;
+    decoded_offset_ += (padded_num_bytes - unpadded_num_bytes);
     if (in_rle)
       return kSuccess;
     MoveBufferToNextRow();
