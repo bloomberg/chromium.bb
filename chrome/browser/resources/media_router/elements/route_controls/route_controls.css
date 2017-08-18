@@ -23,6 +23,18 @@
   width: 90%;
 }
 
+:host-context([dir='rtl']) #play-pause-volume-controls {
+  transform: scaleX(-1);
+}
+
+:host-context([dir='rtl']) #route-play-pause-button {
+  transform: scaleX(-1);
+}
+
+:host-context([dir='rtl']) #route-volume-slider {
+  transform: scaleX(-1);
+}
+
 #media-controls {
   font-size: 1.25em;
   margin: 0 8px;

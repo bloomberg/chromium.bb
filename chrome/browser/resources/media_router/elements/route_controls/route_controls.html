@@ -37,7 +37,7 @@
           </div>
         </div>
         <div id="play-pause-volume-controls">
-          <span id="button-holder">
+          <span id="button-holder" dir="ltr">
             <paper-icon-button
                 id="route-play-pause-button"
                 hidden="[[!routeStatus.canPlayPause]]"
@@ -55,7 +55,6 @@
           </span>
           <span id="volume-holder">
             <paper-slider
-                dir="ltr"
                 id="route-volume-slider"
                 hidden="[[!routeStatus.canSetVolume]]"
                 disabled="[[!routeStatus.canSetVolume]]"
