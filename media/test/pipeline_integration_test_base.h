@@ -68,9 +68,6 @@ class PipelineTestRendererFactory {
 // than real-time.
 class PipelineIntegrationTestBase : public Pipeline::Client {
  public:
-  using CheckFirstAudioPacketTimestampCB =
-      base::RepeatingCallback<void(base::TimeDelta)>;
-
   PipelineIntegrationTestBase();
   virtual ~PipelineIntegrationTestBase();
 
@@ -142,13 +139,11 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
-  void set_check_first_audio_packet_timestamp_cb(
-      CheckFirstAudioPacketTimestampCB check_first_audio_packet_timestamp_cb) {
-    check_first_audio_packet_timestamp_cb_ =
-        std::move(check_first_audio_packet_timestamp_cb);
+  // Saves a test callback, ownership of which will be transferred to the next
+  // AudioRendererImpl created by CreateRenderer().
+  void set_audio_play_delay_cb(AudioRendererImpl::PlayDelayCBForTesting cb) {
+    audio_play_delay_cb_ = std::move(cb);
   }
-
-  void CheckFirstAudioPacketTimestamp(BufferingState state);
 
   std::unique_ptr<Renderer> CreateRenderer(
       CreateVideoDecodersCB prepend_video_decoders_cb,
@@ -176,12 +171,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
   base::TimeDelta current_duration_;
-
-  // Pointer to the audio renderer from CreateRenderer(). It is used only during
-  // CheckFirstAudioPacketTimestamp().
-  AudioRendererImpl* audio_renderer_;
-  CheckFirstAudioPacketTimestampCB check_first_audio_packet_timestamp_cb_;
-
+  AudioRendererImpl::PlayDelayCBForTesting audio_play_delay_cb_;
   std::unique_ptr<PipelineTestRendererFactory> renderer_factory_;
 
   PipelineStatus StartInternal(

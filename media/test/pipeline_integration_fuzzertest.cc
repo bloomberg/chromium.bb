@@ -10,17 +10,18 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media.h"
 #include "media/base/pipeline_status.h"
+#include "media/renderers/audio_renderer_impl.h"
 #include "media/test/pipeline_integration_test_base.h"
 
 namespace {
 
-// Limit the amount of initial audio silence padding allowed in rendering of
-// fuzzed input.
-constexpr base::TimeDelta kMaxFirstAudioPacketTime =
-    base::TimeDelta::FromSeconds(10);
+// Limit the amount of initial (or post-seek) audio silence padding allowed in
+// rendering of fuzzed input.
+constexpr base::TimeDelta kMaxPlayDelay = base::TimeDelta::FromSeconds(10);
 
 void OnEncryptedMediaInitData(media::PipelineIntegrationTestBase* test,
                               media::EmeInitDataType /* type */,
@@ -33,12 +34,11 @@ void OnEncryptedMediaInitData(media::PipelineIntegrationTestBase* test,
   test->FailTest(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
 
-void OnCheckFirstAudioPacketTimestamp(media::PipelineIntegrationTestBase* test,
-                                      base::TimeDelta first_packet_timestamp) {
-  if (first_packet_timestamp != media::kNoTimestamp &&
-      first_packet_timestamp > kMaxFirstAudioPacketTime) {
+void OnAudioPlayDelay(media::PipelineIntegrationTestBase* test,
+                      base::TimeDelta play_delay) {
+  CHECK_GT(play_delay, base::TimeDelta());
+  if (play_delay > kMaxPlayDelay)
     test->FailTest(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
-  }
 }
 
 }  // namespace
@@ -58,8 +58,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   test.set_encrypted_media_init_data_cb(
       base::Bind(&OnEncryptedMediaInitData, &test));
 
-  test.set_check_first_audio_packet_timestamp_cb(
-      base::BindRepeating(&OnCheckFirstAudioPacketTimestamp, &test));
+  test.set_audio_play_delay_cb(
+      media::BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, &test)));
 
   media::PipelineStatus pipeline_status =
       test.Start(data, size,
