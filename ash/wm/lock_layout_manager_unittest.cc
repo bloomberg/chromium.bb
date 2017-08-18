@@ -91,7 +91,7 @@ class LockLayoutManagerTest : public AshTestBase {
       return;
 
     if (show) {
-      keyboard->ShowKeyboard(true);
+      keyboard->ShowKeyboard(false);
       if (keyboard->ui()->GetContentsWindow()->bounds().height() == 0) {
         keyboard->ui()->GetContentsWindow()->SetBounds(
             keyboard::KeyboardBoundsFromRootBounds(

@@ -102,6 +102,7 @@ static_library("test_support") {
     "//base",
     "//skia",
     "//ui/aura",
+    "//ui/base:test_support",
   ]
 }
 

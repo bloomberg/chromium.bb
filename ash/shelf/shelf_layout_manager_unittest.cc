@@ -1959,12 +1959,15 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("800x600");
+    keyboard::SetTouchKeyboardEnabled(true);
     keyboard::SetAccessibilityKeyboardEnabled(true);
+    Shell::Get()->CreateKeyboard();
   }
 
   // AshTestBase:
   void TearDown() override {
     keyboard::SetAccessibilityKeyboardEnabled(false);
+    keyboard::SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
@@ -1990,9 +1993,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
   command_line->AppendSwitch(::switches::kDisableNewVirtualKeyboardBehavior);
 
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
-  Shell::Get()->CreateKeyboard();
   keyboard::KeyboardController* kb_controller =
       keyboard::KeyboardController::GetInstance();
   gfx::Rect orig_work_area(
@@ -2001,6 +2002,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+  layout_manager->LayoutShelf();
 
   // Work area should be changed.
   EXPECT_NE(orig_work_area,
@@ -2009,12 +2011,14 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
   kb_controller->HideKeyboard(
       keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
   layout_manager->OnKeyboardBoundsChanging(gfx::Rect());
+  layout_manager->LayoutShelf();
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
   layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+  layout_manager->LayoutShelf();
 
   // Work area should be changed.
   EXPECT_NE(orig_work_area,
@@ -2027,7 +2031,6 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
        ShelfIgnoreWorkAreaChangeInNonStickyMode) {
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  Shell::Get()->CreateKeyboard();
   keyboard::KeyboardController* kb_controller =
       keyboard::KeyboardController::GetInstance();
   gfx::Rect orig_work_area(
@@ -2036,6 +2039,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+  layout_manager->LayoutShelf();
 
   // Work area should not be changed.
   EXPECT_EQ(orig_work_area,
@@ -2044,12 +2048,14 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
   kb_controller->HideKeyboard(
       keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
   layout_manager->OnKeyboardBoundsChanging(gfx::Rect());
+  layout_manager->LayoutShelf();
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
   layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+  layout_manager->LayoutShelf();
 
   // Work area should be changed.
   EXPECT_NE(orig_work_area,

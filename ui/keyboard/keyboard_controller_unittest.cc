@@ -490,6 +490,12 @@ TEST_P(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
 // hide. Refer to crbug.com/401670 for more context.
 TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
+  // If overscroll mode is disabled by the command line argument, skip the test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableNewVirtualKeyboardBehavior)) {
+    return;
+  }
+
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 

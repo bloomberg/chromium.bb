@@ -98,4 +98,20 @@ gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                    root_bounds.width(), keyboard_height);
 }
 
+bool FakeKeyboardUI::HasContentsWindow() const {
+  return false;
+}
+
+bool FakeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
+  return true;
+}
+
+aura::Window* FakeKeyboardUI::GetContentsWindow() {
+  return nullptr;
+}
+
+ui::InputMethod* FakeKeyboardUI::GetInputMethod() {
+  return &ime_;
+}
+
 }  // namespace keyboard
