@@ -45,11 +45,11 @@ IntranetRedirectDetector::IntranetRedirectDetector()
                      weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 IntranetRedirectDetector::~IntranetRedirectDetector() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 // static
@@ -177,7 +177,10 @@ void IntranetRedirectDetector::OnURLFetchComplete(
           redirect_origin_.spec() : std::string());
 }
 
-void IntranetRedirectDetector::OnIPAddressChanged() {
+void IntranetRedirectDetector::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
   // If a request is already scheduled, do not scheduled yet another one.
   if (in_sleep_)
     return;
