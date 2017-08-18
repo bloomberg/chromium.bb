@@ -82,6 +82,9 @@ void TabRestoreServiceHelper::CreateHistoricalTab(LiveTab* live_tab,
   if (restoring_)
     return;
 
+  // If an entire window is being closed than all of the tabs have already
+  // been persisted via "BrowserClosing". Ignore the subsequent tab closing
+  // notifications.
   LiveTabContext* context = client_->FindLiveTabContextForTab(live_tab);
   if (closing_contexts_.find(context) != closing_contexts_.end())
     return;
@@ -101,6 +104,9 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   window->selected_tab_index = context->GetSelectedIndex();
   window->timestamp = TimeNow();
   window->app_name = context->GetAppName();
+  window->bounds = context->GetRestoredBounds();
+  window->show_state = context->GetRestoredState();
+  window->workspace = context->GetWorkspace();
 
   for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
     auto tab = base::MakeUnique<Tab>();
@@ -111,6 +117,7 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
       window->tabs.push_back(std::move(tab));
     }
   }
+
   if (window->tabs.size() == 1 && window->app_name.empty()) {
     // Short-circuit creating a Window if only 1 tab was present. This fixes
     // http://crbug.com/56744.
@@ -199,7 +206,9 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
       // single tab within it. If the entry's ID matches the one to restore,
       // then the entire window will be restored.
       if (!restoring_tab_in_window) {
-        context = client_->CreateLiveTabContext(window.app_name);
+        context =
+            client_->CreateLiveTabContext(window.app_name, window.bounds,
+                                          window.show_state, window.workspace);
         for (size_t tab_i = 0; tab_i < window.tabs.size(); ++tab_i) {
           const Tab& tab = *window.tabs[tab_i];
           LiveTab* restored_tab = context->AddRestoredTab(
@@ -220,8 +229,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
         }
       } else {
         // Restore a single tab from the window. Find the tab that matches the
-        // ID
-        // in the window and restore it.
+        // ID in the window and restore it.
         for (auto tab_i = window.tabs.begin(); tab_i != window.tabs.end();
              ++tab_i) {
           SessionID::id_type restored_tab_browser_id;
@@ -445,7 +453,7 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
         tab.navigations, tab.current_navigation_index, tab.from_last_session,
         tab.extension_app_id, tab.platform_data.get(), tab.user_agent_override);
   } else {
-    // We only respsect the tab's original browser if there's no disposition.
+    // We only respect the tab's original browser if there's no disposition.
     if (disposition == WindowOpenDisposition::UNKNOWN && tab.browser_id) {
       context = client_->FindLiveTabContextWithID(tab.browser_id);
     }
@@ -458,7 +466,8 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
     if (context && disposition != WindowOpenDisposition::NEW_WINDOW) {
       tab_index = tab.tabstrip_index;
     } else {
-      context = client_->CreateLiveTabContext(std::string());
+      context = client_->CreateLiveTabContext(
+          std::string(), gfx::Rect(), ui::SHOW_STATE_NORMAL, std::string());
       if (tab.browser_id)
         UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
     }
@@ -492,14 +501,12 @@ bool TabRestoreServiceHelper::ValidateTab(const Tab& tab) {
 }
 
 bool TabRestoreServiceHelper::ValidateWindow(const Window& window) {
-  if (static_cast<size_t>(window.selected_tab_index) >= window.tabs.size()) {
+  if (static_cast<size_t>(window.selected_tab_index) >= window.tabs.size())
     return false;
-  }
 
   for (const auto& tab : window.tabs) {
-    if (!ValidateTab(*tab)) {
+    if (!ValidateTab(*tab))
       return false;
-    }
   }
 
   return true;

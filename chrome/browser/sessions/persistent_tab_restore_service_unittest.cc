@@ -78,6 +78,9 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
 
   ~PersistentTabRestoreServiceTest() override {}
 
+  SessionID tab_id() const { return tab_id_; }
+  SessionID window_id() const { return window_id_; }
+
  protected:
   enum {
     kMaxEntries = sessions::TabRestoreServiceHelper::kMaxEntries,
@@ -137,22 +140,23 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // Adds a window with one tab and url to the profile's session service.
   // If |pinned| is true, the tab is marked as pinned in the session service.
   void AddWindowWithOneTabToSessionService(bool pinned) {
+    // Create new window / tab IDs so that these remain distinct.
+    window_id_ = SessionID();
+    tab_id_ = SessionID();
+
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile());
-    SessionID tab_id;
-    SessionID window_id;
-    session_service->SetWindowType(window_id,
-                                   Browser::TYPE_TABBED,
+    session_service->SetWindowType(window_id(), Browser::TYPE_TABBED,
                                    SessionService::TYPE_NORMAL);
-    session_service->SetTabWindow(window_id, tab_id);
-    session_service->SetTabIndexInWindow(window_id, tab_id, 0);
-    session_service->SetSelectedTabInWindow(window_id, 0);
+    session_service->SetTabWindow(window_id(), tab_id());
+    session_service->SetTabIndexInWindow(window_id(), tab_id(), 0);
+    session_service->SetSelectedTabInWindow(window_id(), 0);
     if (pinned)
-      session_service->SetPinnedState(window_id, tab_id, true);
+      session_service->SetPinnedState(window_id(), tab_id(), true);
     session_service->UpdateTabNavigation(
-        window_id, tab_id,
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            url1_.spec(), "title"));
+        window_id(), tab_id(),
+        SerializedNavigationEntryTestHelper::CreateNavigation(url1_.spec(),
+                                                              "title"));
   }
 
   // Creates a SessionService and assigns it to the Profile. The SessionService
@@ -186,6 +190,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<sessions::LiveTab> live_tab_;
   std::unique_ptr<sessions::PersistentTabRestoreService> service_;
   PersistentTabRestoreTimeFactory* time_factory_;
+  SessionID window_id_;
+  SessionID tab_id_;
 };
 
 namespace {
@@ -483,6 +489,60 @@ TEST_F(PersistentTabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
             tab->timestamp.ToInternalValue());
+  EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
+  EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
+  EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
+}
+
+// Make sure window bounds and workspace are properly loaded from the session
+// service.
+TEST_F(PersistentTabRestoreServiceTest, LoadWindowBoundsAndWorkspace) {
+  constexpr gfx::Rect kBounds(10, 20, 640, 480);
+  constexpr ui::WindowShowState kShowState = ui::SHOW_STATE_MINIMIZED;
+  constexpr char kWorkspace[] = "workspace";
+
+  CreateSessionServiceWithOneWindow(false);
+
+  // Set the bounds, show state and workspace.
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile());
+  session_service->SetWindowBounds(window_id(), kBounds, kShowState);
+  session_service->SetWindowWorkspace(window_id(), kWorkspace);
+
+  session_service->MoveCurrentSessionToLastSession();
+
+  AddThreeNavigations();
+
+  service_->CreateHistoricalTab(live_tab(), -1);
+
+  RecreateService();
+
+  // We should get back two entries, one from the previous session and one from
+  // the tab restore service. The previous session entry should be first.
+  ASSERT_EQ(2U, service_->entries().size());
+
+  // The first entry should come from the session service.
+  sessions::TabRestoreService::Entry* entry = service_->entries().front().get();
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW, entry->type);
+  sessions::TabRestoreService::Window* window =
+      static_cast<sessions::TabRestoreService::Window*>(entry);
+  ASSERT_EQ(kBounds, window->bounds);
+  ASSERT_EQ(kShowState, window->show_state);
+  ASSERT_EQ(kWorkspace, window->workspace);
+  ASSERT_EQ(1U, window->tabs.size());
+  EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_FALSE(window->tabs[0]->pinned);
+  ASSERT_EQ(1U, window->tabs[0]->navigations.size());
+  EXPECT_EQ(0, window->tabs[0]->current_navigation_index);
+  EXPECT_TRUE(url1_ == window->tabs[0]->navigations[0].virtual_url());
+
+  // Then the closed tab.
+  entry = (++service_->entries().begin())->get();
+  ASSERT_EQ(sessions::TabRestoreService::TAB, entry->type);
+  Tab* tab = static_cast<Tab*>(entry);
+  ASSERT_FALSE(tab->pinned);
+  ASSERT_EQ(3U, tab->navigations.size());
+  EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
   EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
   EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());

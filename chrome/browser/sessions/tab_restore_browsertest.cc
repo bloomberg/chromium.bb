@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -420,6 +421,69 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
   EXPECT_EQ(2, browser->tab_strip_model()->count());
   EXPECT_EQ(url1_,
             browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+// Open a window with two tabs, close the window, then restore the window.
+// Ensure that the restored window has the expected bounds.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
+  // Create a browser window with two tabs.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Create a second browser window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  EXPECT_EQ(2u, active_browser_list_->size());
+
+  // Deliberately change the bounds of the first window to something different.
+  gfx::Rect bounds = browser()->window()->GetBounds();
+  bounds.set_width(640);
+  bounds.set_height(480);
+  bounds.Offset(20, 20);
+  browser()->window()->SetBounds(bounds);
+  gfx::Rect bounds2 = browser()->window()->GetBounds();
+  EXPECT_EQ(bounds, bounds2);
+
+  // Close the first window.
+  content::WindowedNotificationObserver close_window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser());
+  close_window_observer.Wait();
+  EXPECT_EQ(1u, active_browser_list_->size());
+
+  // Check that the TabRestoreService has the contents of the closed window and
+  // the correct bounds.
+  Browser* browser = GetBrowser(0);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser->profile());
+  const sessions::TabRestoreService::Entries& entries = service->entries();
+  EXPECT_EQ(1u, entries.size());
+  sessions::TabRestoreService::Entry* entry = entries.front().get();
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW, entry->type);
+  sessions::TabRestoreService::Window* entry_win =
+      static_cast<sessions::TabRestoreService::Window*>(entry);
+  EXPECT_EQ(bounds, entry_win->bounds);
+  auto& tabs = entry_win->tabs;
+  EXPECT_EQ(2u, tabs.size());
+
+  // Restore the window. Ensure that a second window is created, that is has 2
+  // tabs, and that it has the expected bounds.
+  service->RestoreMostRecentEntry(browser->live_tab_context());
+  EXPECT_EQ(2u, active_browser_list_->size());
+  browser = GetBrowser(1);
+  EXPECT_EQ(2, browser->tab_strip_model()->count());
+  // We expect the overridden bounds to the browser window to have been
+  // specified at window creation. The actual bounds of the window itself may
+  // change as the browser refuses to create windows that are offscreen, so will
+  // adjust bounds slightly in some cases.
+  EXPECT_EQ(bounds, browser->override_bounds());
 }
 
 // Open a window with two tabs, close both (closing the window), then restore

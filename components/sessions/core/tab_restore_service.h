@@ -16,7 +16,9 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace sessions {
 
@@ -133,6 +135,11 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // If an application window, the name of the app.
     std::string app_name;
+
+    // Where and how the window is displayed.
+    gfx::Rect bounds;
+    ui::WindowShowState show_state;
+    std::string workspace;
   };
 
   typedef std::list<std::unique_ptr<Entry>> Entries;

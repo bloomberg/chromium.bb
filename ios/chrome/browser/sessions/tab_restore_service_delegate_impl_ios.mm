@@ -68,7 +68,23 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::GetActiveLiveTab() const {
 }
 
 bool TabRestoreServiceDelegateImplIOS::IsTabPinned(int index) const {
+  // Not supported by iOS.
   return false;
+}
+
+const gfx::Rect TabRestoreServiceDelegateImplIOS::GetRestoredBounds() const {
+  // Not supported by iOS.
+  return gfx::Rect();
+}
+
+ui::WindowShowState TabRestoreServiceDelegateImplIOS::GetRestoredState() const {
+  // Not supported by iOS.
+  return ui::SHOW_STATE_NORMAL;
+}
+
+std::string TabRestoreServiceDelegateImplIOS::GetWorkspace() const {
+  // Not supported by iOS.
+  return std::string();
 }
 
 sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
