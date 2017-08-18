@@ -361,7 +361,15 @@ if (!is_ios) {
   test("events_unittests") {
     sources = [
       "android/scroller_unittest.cc",
+      "blink/blink_event_util_unittest.cc",
+      "blink/input_handler_proxy_unittest.cc",
+      "blink/input_scroll_elasticity_controller_unittest.cc",
+      "blink/web_input_event_traits_unittest.cc",
+      "blink/web_input_event_unittest.cc",
       "cocoa/events_mac_unittest.mm",
+      "devices/device_data_manager_unittest.cc",
+      "devices/mojo/device_struct_traits_unittest.cc",
+      "devices/mojo/touch_device_transform_struct_traits_unittest.cc",
       "event_dispatcher_unittest.cc",
       "event_processor_unittest.cc",
       "event_rewriter_unittest.cc",
@@ -376,10 +384,12 @@ if (!is_ios) {
       "gesture_detection/snap_scroll_controller_unittest.cc",
       "gesture_detection/touch_disposition_gesture_filter_unittest.cc",
       "gesture_detection/velocity_tracker_unittest.cc",
+      "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "gestures/fling_curve_unittest.cc",
       "keycodes/dom/keycode_converter_unittest.cc",
       "keycodes/keyboard_code_conversion_unittest.cc",
       "keycodes/platform_key_map_win_unittest.cc",
+      "mojo/struct_traits_unittest.cc",
       "platform/platform_event_source_unittest.cc",
       "scoped_target_handler_unittest.cc",
       "win/event_utils_win_unittest.cc",
@@ -393,43 +403,28 @@ if (!is_ios) {
       ":test_support",
       "//base",
       "//base/test:test_support",
+      "//cc",
+      "//ipc:test_support",
       "//mojo/edk/test:run_all_unittests",
+      "//mojo/public/cpp/bindings",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/WebKit/public:blink_headers",
+      "//ui/display",
+      "//ui/events/blink",
       "//ui/events/devices",
+      "//ui/events/devices/mojo:test_interfaces",
+      "//ui/events/gestures/blink",
+      "//ui/events/mojo:test_interfaces",
       "//ui/events/platform",
       "//ui/gfx:test_support",
+      "//ui/gfx/ipc/geometry",
     ]
 
-    if (!is_ios) {
-      sources += [
-        "blink/blink_event_util_unittest.cc",
-        "blink/input_handler_proxy_unittest.cc",
-        "blink/input_scroll_elasticity_controller_unittest.cc",
-        "blink/web_input_event_traits_unittest.cc",
-        "blink/web_input_event_unittest.cc",
-        "devices/device_data_manager_unittest.cc",
-        "devices/mojo/device_struct_traits_unittest.cc",
-        "devices/mojo/touch_device_transform_struct_traits_unittest.cc",
-        "gestures/blink/web_gesture_curve_impl_unittest.cc",
-        "mojo/struct_traits_unittest.cc",
-      ]
-      deps += [
-        "//cc",
-        "//ipc:test_support",
-        "//mojo/public/cpp/bindings",
-        "//third_party/WebKit/public:blink_headers",
-        "//ui/display",
-        "//ui/events/blink",
-        "//ui/events/devices/mojo:test_interfaces",
-        "//ui/events/gestures/blink",
-        "//ui/events/mojo:test_interfaces",
-        "//ui/gfx/ipc/geometry",
-      ]
-    }
-
-    if (!is_android && !is_ios) {
+    if (is_android) {
+      sources += [ "android/motion_event_android_unittest.cc" ]
+    } else {
       data_deps = [
         "//third_party/mesa:osmesa",
       ]
@@ -484,14 +479,6 @@ if (!is_ios) {
         "gestures/gesture_provider_aura_unittest.cc",
         "gestures/motion_event_aura_unittest.cc",
       ]
-    }
-
-    if (is_android) {
-      sources += [ "android/motion_event_android_unittest.cc" ]
-    }
-
-    if (is_ios) {
-      assert_no_deps = ios_assert_no_deps
     }
 
     if (is_win) {
