@@ -232,11 +232,17 @@ bool PatchElementReader::Initialize(BufferSource* source) {
       LOG(ERROR) << "Impossible to read pool_tag from source.";
       return false;
     }
-
-    if (pool_tag_value >= extra_targets_.size())
-      extra_targets_.resize(pool_tag_value + 1);
-
-    if (!extra_targets_[pool_tag_value].Initialize(source))
+    PoolTag pool_tag(pool_tag_value);
+    if (pool_tag == kNoPoolTag) {
+      LOG(ERROR) << "Invalid pool_tag encountered in ExtraTargetList.";
+      return false;
+    }
+    auto insert_result = extra_targets_.insert({pool_tag, {}});
+    if (!insert_result.second) {  // Element already present.
+      LOG(ERROR) << "Multiple ExtraTargetList found for the same pool_tag";
+      return false;
+    }
+    if (!insert_result.first->second.Initialize(source))
       return false;
   }
   return true;
@@ -293,7 +299,6 @@ bool EnsemblePatchReader::Initialize(BufferSource* source) {
     }
   }
 
-  elements_.reserve(element_count);
   offset_t current_dst_offset = 0;
   for (uint32_t i = 0; i < element_count; ++i) {
     PatchElementReader element_patch;

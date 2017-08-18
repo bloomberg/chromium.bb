@@ -435,8 +435,6 @@ TEST(PatchElementTest, Normal) {
   EXPECT_EQ(0x03U, element_match.new_element.offset);
   EXPECT_EQ(0x04U, element_match.new_element.length);
 
-  EXPECT_EQ(3U, patch_element_reader.pool_count());
-
   EquivalenceSource equivalence_source =
       patch_element_reader.GetEquivalenceSource();
   EXPECT_EQ(ByteVector({0x10}), equivalence_source.src_skip());
