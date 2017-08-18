@@ -46,6 +46,17 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
   }, prefix + 'Test that "onerror" is send when start() call has failed.');
 
   sensor_test(sensor => {
+    let sensorObject = new sensorType();
+    sensorObject.start();
+
+    return sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        mockSensor.setStartShouldFail(true);
+        return mockSensor.addConfigurationCalled(); })
+      .then(mockSensor => mockSensor.removeConfigurationCalled());
+  }, prefix + 'Test that no pending configuration left after start() failure.');
+
+  sensor_test(sensor => {
       let sensorObject = new sensorType({frequency: 560});
       sensorObject.start();
 

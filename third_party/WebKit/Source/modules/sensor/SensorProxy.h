@@ -104,10 +104,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   // mojo call callbacks.
   void OnSensorCreated(device::mojom::blink::SensorInitParamsPtr,
                        device::mojom::blink::SensorClientRequest);
-  void OnAddConfigurationCompleted(double frequency,
-                                   Function<void(bool)> callback,
-                                   bool result);
-  void OnRemoveConfigurationCompleted(double frequency, bool result);
 
   void OnPollingTimer(TimerBase*);
 
@@ -121,6 +117,9 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   // Suspends or resumes the wrapped sensor.
   void UpdateSuspendedStatus();
+
+  void RemoveActiveFrequency(double frequency);
+  void AddActiveFrequency(double frequency);
 
   device::mojom::blink::SensorType type_;
   device::mojom::blink::ReportingMode mode_;
@@ -142,7 +141,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   device::SensorReading reading_;
   std::pair<double, double> frequency_limits_;
 
-  WTF::Vector<double> frequencies_used_;
+  WTF::Vector<double> active_frequencies_;
   TaskRunnerTimer<SensorProxy> polling_timer_;
 
   using ReadingBuffer = device::SensorReadingSharedBuffer;
