@@ -134,11 +134,6 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
       base::WrapUnique(
           (*protocol_handlers)[content::kChromeUIScheme].release()));
   DCHECK(set_protocol);
-  set_protocol = aw_job_factory->SetProtocolHandler(
-      content::kChromeDevToolsScheme,
-      base::WrapUnique(
-          (*protocol_handlers)[content::kChromeDevToolsScheme].release()));
-  DCHECK(set_protocol);
   protocol_handlers->clear();
 
   // Note that even though the content:// scheme handler is created here,

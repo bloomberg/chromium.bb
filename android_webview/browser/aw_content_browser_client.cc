@@ -256,7 +256,6 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
     url::kBlobScheme,
     url::kFileSystemScheme,
     content::kChromeUIScheme,
-    content::kChromeDevToolsScheme,
     url::kContentScheme,
   };
   if (scheme == url::kFileScheme) {

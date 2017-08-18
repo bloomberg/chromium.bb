@@ -28,7 +28,6 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
         url::kHttpScheme,
         url::kHttpsScheme,
         url::kFtpScheme,
-        kChromeDevToolsScheme,
         kChromeUIScheme,
         url::kFileScheme,
         url::kFileSystemScheme
