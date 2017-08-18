@@ -31,6 +31,7 @@ MemlogStreamParser::MemlogStreamParser(MemlogReceiver* receiver)
 MemlogStreamParser::~MemlogStreamParser() {}
 
 void MemlogStreamParser::DisconnectReceivers() {
+  base::AutoLock lock(lock_);
   receiver_ = nullptr;
 }
 
