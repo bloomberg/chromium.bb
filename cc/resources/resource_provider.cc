@@ -1157,6 +1157,11 @@ void ResourceProvider::ScopedWriteLockGL::AllocateGpuMemoryBuffer(
   gpu_memory_buffer_ =
       resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
           size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
+  // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
+  // http://crbug.com/554541
+  if (!gpu_memory_buffer_)
+    return;
+
   if (color_space_.IsValid())
     gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
 
@@ -1343,7 +1348,9 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
     gpu_memory_buffer_ =
         resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
             size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
-    if (color_space_.IsValid())
+    // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
+    // http://crbug.com/554541
+    if (gpu_memory_buffer_ && color_space_.IsValid())
       gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
   }
   return gpu_memory_buffer_.get();
