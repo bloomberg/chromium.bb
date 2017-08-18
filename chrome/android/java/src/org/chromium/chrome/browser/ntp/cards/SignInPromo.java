@@ -26,9 +26,9 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -234,7 +234,8 @@ public class SignInPromo extends OptionalLeaf
         @DrawableRes
         @Override
         protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
-            assert !SuggestionsConfig.useModern(); // Modern does not update the card background.
+            // Modern does not update the card background.
+            assert !FeatureUtilities.isChromeHomeModernEnabled();
             return R.drawable.ntp_signin_promo_card_single;
         }
     }
