@@ -14,6 +14,7 @@
 {% endfor %}
 
 {% set export_symbol = config["settings"]["export_symbol"] %}
+{% set sink_class = (name | to_singular) + "Sink" %}
 
 namespace blink {
 
@@ -42,6 +43,7 @@ class {{export_symbol}} {{probe.name}} : public ProbeBase {
  public:
   explicit {{probe.name}}({{ params_decl(probe) }});
   ~{{probe.name}}();
+  Member<{{sink_class}}> probe_sink;
 {% for param in probe.params %}
   {{param.member_type}} {{param.name}};
 {% endfor %}
