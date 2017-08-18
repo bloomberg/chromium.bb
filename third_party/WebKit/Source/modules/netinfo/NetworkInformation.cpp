@@ -234,6 +234,9 @@ DEFINE_TRACE(NetworkInformation) {
 }
 
 double NetworkInformation::GetRandomMultiplier() const {
+  if (!GetExecutionContext())
+    return 0.0;
+
   // The random number should be a function of the hostname to reduce
   // cross-origin fingerprinting. The random number should also be a function
   // of randomized salt which is known only to the device. This prevents
