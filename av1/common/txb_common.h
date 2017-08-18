@@ -425,6 +425,10 @@ static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
   }
 }
 
+#if LV_MAP_PROB
+void av1_init_txb_probs(FRAME_CONTEXT *fc);
+#endif  // LV_MAP_PROB
+
 void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
                          unsigned int update_factor);
 

@@ -10,9 +10,7 @@
  */
 #include "aom/aom_integer.h"
 #include "av1/common/onyxc_int.h"
-#if CONFIG_LV_MAP
 #include "av1/common/txb_common.h"
-#endif
 
 const int16_t av1_coeff_band_4x4[16] = { 0, 1, 2,  3,  4,  5,  6,  7,
                                          8, 9, 10, 11, 12, 13, 14, 15 };
@@ -97,6 +95,75 @@ const int16_t av1_coeff_band_32x32[1024] = {
   24, 24, 24, 24, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22,
   22, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24,
 };
+
+#if LV_MAP_PROB
+void av1_init_txb_probs(FRAME_CONTEXT *fc) {
+  TX_SIZE tx_size;
+  int plane, ctx, level;
+
+  // Update probability models for transform block skip flag
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx) {
+      fc->txb_skip_cdf[tx_size][ctx][0] =
+          AOM_ICDF(128 * (aom_cdf_prob)fc->txb_skip[tx_size][ctx]);
+      fc->txb_skip_cdf[tx_size][ctx][1] = AOM_ICDF(32768);
+      fc->txb_skip_cdf[tx_size][ctx][2] = 0;
+    }
+  }
+
+  for (plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx) {
+      fc->dc_sign_cdf[plane][ctx][0] =
+          AOM_ICDF(128 * (aom_cdf_prob)fc->dc_sign[plane][ctx]);
+      fc->dc_sign_cdf[plane][ctx][1] = AOM_ICDF(32768);
+      fc->dc_sign_cdf[plane][ctx][2] = 0;
+    }
+  }
+
+  // Update probability models for non-zero coefficient map and eob flag.
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (level = 0; level < NUM_BASE_LEVELS; ++level) {
+        for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx) {
+          fc->coeff_base_cdf[tx_size][plane][level][ctx][0] = AOM_ICDF(
+              128 * (aom_cdf_prob)fc->coeff_base[tx_size][plane][level][ctx]);
+          fc->coeff_base_cdf[tx_size][plane][level][ctx][1] = AOM_ICDF(32768);
+          fc->coeff_base_cdf[tx_size][plane][level][ctx][2] = 0;
+        }
+      }
+    }
+  }
+
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
+        fc->nz_map_cdf[tx_size][plane][ctx][0] =
+            AOM_ICDF(128 * (aom_cdf_prob)fc->nz_map[tx_size][plane][ctx]);
+        fc->nz_map_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
+        fc->nz_map_cdf[tx_size][plane][ctx][2] = 0;
+      }
+
+      for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
+        fc->eob_flag_cdf[tx_size][plane][ctx][0] =
+            AOM_ICDF(128 * (aom_cdf_prob)fc->eob_flag[tx_size][plane][ctx]);
+        fc->eob_flag_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
+        fc->eob_flag_cdf[tx_size][plane][ctx][2] = 0;
+      }
+    }
+  }
+
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+        fc->coeff_lps_cdf[tx_size][plane][ctx][0] =
+            AOM_ICDF(128 * (aom_cdf_prob)fc->coeff_lps[tx_size][plane][ctx]);
+        fc->coeff_lps_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
+        fc->coeff_lps_cdf[tx_size][plane][ctx][2] = 0;
+      }
+    }
+  }
+}
+#endif
 
 void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
                          unsigned int update_factor) {

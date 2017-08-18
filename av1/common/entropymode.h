@@ -177,6 +177,19 @@ typedef struct frame_contexts {
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
   aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
+
+#if LV_MAP_PROB
+  aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
+                         [CDF_SIZE(2)];
+  aom_cdf_prob eob_flag_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
+                           [CDF_SIZE(2)];
+  aom_cdf_prob dc_sign_cdf[PLANE_TYPES][DC_SIGN_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob coeff_base_cdf[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
+                             [COEFF_BASE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob coeff_lps_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
+                            [CDF_SIZE(2)];
+#endif  // LV_MAP_PROB
 #endif
 
   aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];

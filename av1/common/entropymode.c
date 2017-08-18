@@ -4651,6 +4651,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->dc_sign, default_dc_sign);
   av1_copy(fc->coeff_base, default_coeff_base);
   av1_copy(fc->coeff_lps, default_coeff_lps);
+
+#if LV_MAP_PROB
+  av1_init_txb_probs(fc);
+#endif  // LV_MAP_PROB
 #endif
 #if CONFIG_EXT_REFS
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
