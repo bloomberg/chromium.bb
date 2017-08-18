@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import base64
-import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.gerrit import GerritCL
@@ -16,10 +16,7 @@ from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
-class TestExporterTest(unittest.TestCase):
-
-    def setUp(self):
-        self.host = MockHost()
+class TestExporterTest(LoggingTestCase):
 
     def test_dry_run_stops_before_creating_pr(self):
         host = MockHost()
@@ -346,11 +343,11 @@ class TestExporterTest(unittest.TestCase):
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
-        test_exporter.get_exportable_commits = lambda: ([
-            ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240'),
-        ], ['There was an error with the rutabaga.'])
+        test_exporter.get_exportable_commits = lambda: ([], ['There was an error with the rutabaga.'])
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         success = test_exporter.run()
 
         self.assertFalse(success)
+        self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
+                        'WARNING: There was an error with the rutabaga.\n'])
