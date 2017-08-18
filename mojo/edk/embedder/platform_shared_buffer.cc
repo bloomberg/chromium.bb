@@ -333,10 +333,11 @@ bool PlatformSharedBufferMapping::Map() {
   size_t real_offset = offset_ - offset_rounding;
   size_t real_length = length_ + offset_rounding;
 
-  bool result =
-      shared_memory_.MapAt(static_cast<off_t>(real_offset), real_length);
-  DCHECK(result);
+  if (!shared_memory_.MapAt(static_cast<off_t>(real_offset), real_length))
+    return false;
+
   base_ = static_cast<char*>(shared_memory_.memory()) + offset_rounding;
+
   return true;
 }
 
