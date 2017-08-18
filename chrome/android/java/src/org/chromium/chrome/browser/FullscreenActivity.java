@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.provider.Browser;
@@ -110,6 +109,12 @@ public class FullscreenActivity extends SingleTabActivity {
             tab.getFullscreenManager().setTab(null);
         }
 
+        ChromeActivity activity = tab.getActivity();
+
+        if (!enableFullscreen) {
+            activity.exitFullscreenIfShowing();
+        }
+
         Runnable setFullscreen = () -> {
             // The Tab's FullscreenManager changes when it is moved.
             tab.getFullscreenManager().setTab(tab);
@@ -117,7 +122,6 @@ public class FullscreenActivity extends SingleTabActivity {
         };
 
         Intent intent = new Intent();
-        Activity activity = tab.getActivity();
 
         if (enableFullscreen) {
             // Send to the FullscreenActivity.
@@ -131,6 +135,11 @@ public class FullscreenActivity extends SingleTabActivity {
             // Send back to the Activity it came from.
             ComponentName parent = IntentUtils.safeGetParcelableExtra(
                     activity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+
+            // By default Intents from Chrome open in the current tab. We add this extra to prevent
+            // clobbering the top tab.
+            intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+
             if (parent != null) {
                 intent.setComponent(parent);
             } else {
