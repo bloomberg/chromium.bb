@@ -20,8 +20,10 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/renderer/media/mojo_audio_output_ipc.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
+#include "media/audio/audio_output_device.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -32,6 +34,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -41,19 +44,6 @@ using testing::_;
 using testing::StrictMock;
 using testing::Return;
 using testing::Test;
-using AudioOutputStreamFactory = mojom::RendererAudioOutputStreamFactory;
-using AudioOutputStreamFactoryPtr =
-    mojo::InterfacePtr<AudioOutputStreamFactory>;
-using AudioOutputStreamFactoryRequest =
-    mojo::InterfaceRequest<AudioOutputStreamFactory>;
-using AudioOutputStream = media::mojom::AudioOutputStream;
-using AudioOutputStreamPtr = mojo::InterfacePtr<AudioOutputStream>;
-using AudioOutputStreamRequest = mojo::InterfaceRequest<AudioOutputStream>;
-using AudioOutputStreamProvider = media::mojom::AudioOutputStreamProvider;
-using AudioOutputStreamProviderPtr =
-    mojo::InterfacePtr<AudioOutputStreamProvider>;
-using AudioOutputStreamProviderRequest =
-    mojo::InterfaceRequest<AudioOutputStreamProvider>;
 
 const int kRenderProcessId = 42;
 const int kRenderFrameId = 24;
@@ -203,93 +193,24 @@ class MockAudioOutputStream : public media::AudioOutputStream,
   AudioSourceCallback* callback_;
 };
 
-void AuthCallback(base::OnceClosure sync_closure,
-                  media::OutputDeviceStatus* status_out,
-                  media::AudioParameters* params_out,
-                  std::string* id_out,
-                  media::OutputDeviceStatus status,
-                  const media::AudioParameters& params,
-                  const std::string& id) {
-  *status_out = status;
-  *params_out = params;
-  *id_out = id;
-  std::move(sync_closure).Run();
-}
-
-// "Renderer-side" audio client. Provides the signal given by
-// GetTestAudioSource() from a dedicated thread when given sync socket and
-// shared memory.
-// TODO(maxmorin): Replace with an instance of the real client, when it exists.
-class TestIPCClient : public base::PlatformThread::Delegate {
+class TestRenderCallback : public media::AudioRendererSink::RenderCallback {
  public:
-  TestIPCClient() {}
+  TestRenderCallback() : source_(GetTestAudioSource()) {}
 
-  ~TestIPCClient() override { base::PlatformThread::Join(thread_handle_); }
+  ~TestRenderCallback() override {}
 
-  // Starts thread, sets up IPC primitives and sends signal on thread.
-  void Start(mojo::ScopedSharedBufferHandle shared_buffer,
-             mojo::ScopedHandle socket_handle) {
-    EXPECT_TRUE(socket_handle.is_valid());
-    // Set up socket.
-    base::PlatformFile fd;
-    mojo::UnwrapPlatformFile(std::move(socket_handle), &fd);
-    socket_ = base::MakeUnique<base::CancelableSyncSocket>(fd);
-    EXPECT_NE(socket_->handle(), base::CancelableSyncSocket::kInvalidHandle);
-
-    // Set up memory.
-    EXPECT_TRUE(shared_buffer.is_valid());
-    size_t memory_length;
-    base::SharedMemoryHandle shmem_handle;
-    bool read_only;
-    EXPECT_EQ(
-        mojo::UnwrapSharedMemoryHandle(std::move(shared_buffer), &shmem_handle,
-                                       &memory_length, &read_only),
-        MOJO_RESULT_OK);
-    EXPECT_EQ(memory_length, sizeof(media::AudioOutputBufferParameters) +
-                                 media::AudioBus::CalculateMemorySize(
-                                     GetTestAudioParameters()));
-    EXPECT_EQ(read_only, false);
-    memory_ = base::MakeUnique<base::SharedMemory>(shmem_handle, read_only);
-    EXPECT_TRUE(memory_->Map(memory_length));
-
-    EXPECT_TRUE(base::PlatformThread::CreateWithPriority(
-        0, this, &thread_handle_, base::ThreadPriority::REALTIME_AUDIO));
+  int Render(base::TimeDelta delay,
+             base::TimeTicks delay_timestamp,
+             int prior_frames_skipped,
+             media::AudioBus* dest) override {
+    return source_->OnMoreData(delay, delay_timestamp, prior_frames_skipped,
+                               dest);
   }
 
-  void ThreadMain() override {
-    std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
-        audio_source = GetTestAudioSource();
-
-    media::AudioOutputBuffer* buffer =
-        reinterpret_cast<media::AudioOutputBuffer*>(memory_->memory());
-    std::unique_ptr<media::AudioBus> output_bus =
-        media::AudioBus::WrapMemory(GetTestAudioParameters(), buffer->audio);
-
-    // Send s.
-    for (uint32_t i = 0; i < kBuffers;) {
-      uint32_t pending_data = 0;
-      size_t bytes_read = socket_->Receive(&pending_data, sizeof(pending_data));
-      // Use check here, since there's a risk of hangs in case of a bug.
-      PCHECK(sizeof(pending_data) == bytes_read)
-          << "Tried to read " << sizeof(pending_data) << " bytes but only read "
-          << bytes_read << " bytes";
-      CHECK_EQ(0u, pending_data);
-
-      ++i;
-      audio_source->OnMoreData(base::TimeDelta(), base::TimeTicks(), 0,
-                               output_bus.get());
-
-      size_t bytes_written = socket_->Send(&i, sizeof(i));
-      PCHECK(sizeof(pending_data) == bytes_written)
-          << "Tried to write " << sizeof(pending_data)
-          << " bytes but only wrote " << bytes_written << " bytes";
-    }
-  }
+  MOCK_METHOD0(OnRenderError, void());
 
  private:
-  base::PlatformThreadHandle thread_handle_;
-  std::unique_ptr<base::CancelableSyncSocket> socket_;
-  std::unique_ptr<base::SharedMemory> memory_;
+  std::unique_ptr<media::AudioOutputStream::AudioSourceCallback> source_;
 };
 
 }  // namespace
@@ -314,7 +235,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   }
 
   UniqueAudioOutputStreamFactoryPtr CreateAndBindFactory(
-      AudioOutputStreamFactoryRequest request) {
+      mojom::RendererAudioOutputStreamFactoryRequest request) {
     factory_context_.reset(new RendererAudioOutputStreamFactoryContextImpl(
         kRenderProcessId, audio_system_.get(), audio_manager_.get(),
         media_stream_manager_.get(), kSalt));
@@ -344,36 +265,59 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
               MakeLowLatencyOutputStream(_, "", _))
       .WillOnce(Return(stream));
 
-  AudioOutputStreamFactoryPtr factory_ptr;
-  auto factory_handle = CreateAndBindFactory(mojo::MakeRequest(&factory_ptr));
+  mojom::RendererAudioOutputStreamFactoryPtr stream_factory;
+  auto factory_handle =
+      CreateAndBindFactory(mojo::MakeRequest(&stream_factory));
 
-  AudioOutputStreamProviderPtr provider_ptr;
-  base::RunLoop loop;
-  media::OutputDeviceStatus status;
-  media::AudioParameters params;
-  std::string id;
-  factory_ptr->RequestDeviceAuthorization(
-      mojo::MakeRequest(&provider_ptr), kNoSessionId, "default",
-      base::BindOnce(&AuthCallback, loop.QuitWhenIdleClosure(),
-                     base::Unretained(&status), base::Unretained(&params),
-                     base::Unretained(&id)));
-  loop.Run();
-  ASSERT_EQ(status, media::OUTPUT_DEVICE_STATUS_OK);
-  ASSERT_EQ(GetTestAudioParameters().AsHumanReadableString(),
-            params.AsHumanReadableString());
-  ASSERT_TRUE(id.empty());
+  base::Thread renderer_side_ipc_thread("Renderer IPC thread");
+  ASSERT_TRUE(renderer_side_ipc_thread.Start());
+  auto renderer_ipc_task_runner =
+      renderer_side_ipc_thread.message_loop()->task_runner();
 
-  AudioOutputStreamPtr stream_ptr;
-  {
-    TestIPCClient client;
-    provider_ptr->Acquire(
-        mojo::MakeRequest(&stream_ptr), params,
-        base::BindOnce(&TestIPCClient::Start, base::Unretained(&client)));
-    SyncWithAllThreads();
-    stream_ptr->Play();
-    SyncWithAllThreads();
-  }  // Joining client thread.
-  stream_ptr.reset();
+  // Bind |stream_factory| to |renderer_ipc_task_runner|.
+  mojom::RendererAudioOutputStreamFactory* factory_ptr;
+  renderer_ipc_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](mojom::RendererAudioOutputStreamFactoryPtr* factory,
+                        mojom::RendererAudioOutputStreamFactoryPtrInfo info,
+                        mojom::RendererAudioOutputStreamFactory** ptr) {
+                       factory->Bind(std::move(info));
+                       *ptr = factory->get();
+                     },
+                     base::Unretained(&stream_factory),
+                     stream_factory.PassInterface(), &factory_ptr));
+  // Wait for factory_ptr to be set.
+  SyncWith(renderer_ipc_task_runner);
+
+  auto renderer_side_ipc =
+      base::MakeUnique<MojoAudioOutputIPC>(base::BindRepeating(
+          [](mojom::RendererAudioOutputStreamFactory* factory_ptr) {
+            return factory_ptr;
+          },
+          factory_ptr));
+
+  auto device = base::MakeRefCounted<media::AudioOutputDevice>(
+      std::move(renderer_side_ipc), renderer_ipc_task_runner, kNoSessionId, "",
+      url::Origin(), base::TimeDelta());
+
+  StrictMock<TestRenderCallback> source;
+
+  device->Initialize(GetTestAudioParameters(), &source);
+  device->Start();
+  device->Play();
+  // Wait for stream to start.
+  SyncWithAllThreads();
+  // Wait for stream to finish. Verifies data.
+  stream->Stop();
+  device->Stop();
+
+  // |stream_factory| must be destroyed on the correct thread.
+  renderer_ipc_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce([](mojom::RendererAudioOutputStreamFactoryPtr) {},
+                     std::move(stream_factory)));
+  SyncWith(renderer_ipc_task_runner);
+  // Wait for any clean-up tasks.
   SyncWithAllThreads();
 }
 
