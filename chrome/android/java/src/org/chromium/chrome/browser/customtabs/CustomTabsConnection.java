@@ -282,13 +282,10 @@ public class CustomTabsConnection {
     }
 
     public boolean warmup(long flags) {
-        try {
-            TraceEvent.begin("CustomTabsConnection.warmup");
+        try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.warmup")) {
             boolean success = warmupInternal(true);
             logCall("warmup()", success);
             return success;
-        } finally {
-            TraceEvent.end("CustomTabsConnection.warmup");
         }
     }
 
@@ -328,11 +325,12 @@ public class CustomTabsConnection {
             mWarmupTasks.add(new Runnable() {
                 @Override
                 public void run() {
-                    TraceEvent.begin("CustomTabsConnection.initializeBrowser()");
-                    initializeBrowser(mContext);
-                    ChromeBrowserInitializer.initNetworkChangeNotifier(mContext);
-                    mWarmupHasBeenFinished.set(true);
-                    TraceEvent.end("CustomTabsConnection.initializeBrowser()");
+                    try (TraceEvent e =
+                                    TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
+                        initializeBrowser(mContext);
+                        ChromeBrowserInitializer.initNetworkChangeNotifier(mContext);
+                        mWarmupHasBeenFinished.set(true);
+                    }
                 }
             });
         }
@@ -342,9 +340,9 @@ public class CustomTabsConnection {
             mWarmupTasks.add(new Runnable() {
                 @Override
                 public void run() {
-                    TraceEvent.begin("CreateSpareWebContents");
-                    WarmupManager.getInstance().createSpareWebContents();
-                    TraceEvent.end("CreateSpareWebContents");
+                    try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
+                        WarmupManager.getInstance().createSpareWebContents();
+                    }
                 }
             });
         }
@@ -353,10 +351,10 @@ public class CustomTabsConnection {
         mWarmupTasks.add(new Runnable() {
             @Override
             public void run() {
-                TraceEvent.begin("InitializeViewHierarchy");
-                WarmupManager.getInstance().initializeViewHierarchy(mContext,
-                        R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
-                TraceEvent.end("InitializeViewHierarchy");
+                try (TraceEvent e = TraceEvent.scoped("InitializeViewHierarchy")) {
+                    WarmupManager.getInstance().initializeViewHierarchy(mContext,
+                            R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);
+                }
             }
         });
 
@@ -364,17 +362,17 @@ public class CustomTabsConnection {
             mWarmupTasks.add(new Runnable() {
                 @Override
                 public void run() {
-                    TraceEvent.begin("WarmupInternalFinishInitialization");
-                    // (4)
-                    Profile profile = Profile.getLastUsedProfile();
-                    new LoadingPredictor(profile).startInitialization();
+                    try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
+                        // (4)
+                        Profile profile = Profile.getLastUsedProfile();
+                        new LoadingPredictor(profile).startInitialization();
 
-                    // (5)
-                    // The throttling database uses shared preferences, that can cause a
-                    // StrictMode violation on the first access. Make sure that this access is
-                    // not in mayLauchUrl.
-                    RequestThrottler.loadInBackground(mContext);
-                    TraceEvent.end("WarmupInternalFinishInitialization");
+                        // (5)
+                        // The throttling database uses shared preferences, that can cause a
+                        // StrictMode violation on the first access. Make sure that this access is
+                        // not in mayLauchUrl.
+                        RequestThrottler.loadInBackground(mContext);
+                    }
                 }
             });
         }
@@ -459,13 +457,10 @@ public class CustomTabsConnection {
 
     public boolean mayLaunchUrl(CustomTabsSessionToken session, Uri url, Bundle extras,
             List<Bundle> otherLikelyBundles) {
-        try {
-            TraceEvent.begin("CustomTabsConnection.mayLaunchUrl");
+        try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.mayLaunchUrl")) {
             boolean success = mayLaunchUrlInternal(session, url, extras, otherLikelyBundles);
             logCall("mayLaunchUrl(" + url + ")", success);
             return success;
-        } finally {
-            TraceEvent.end("CustomTabsConnection.mayLaunchUrl");
         }
     }
 
@@ -491,16 +486,14 @@ public class CustomTabsConnection {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    TraceEvent.begin("CustomTabsConnection.mayLaunchUrlInternal");
+                try (TraceEvent e =
+                                TraceEvent.scoped("CustomTabsConnection.mayLaunchUrlInternal")) {
                     if (lowConfidence) {
                         lowConfidenceMayLaunchUrl(otherLikelyBundles);
                     } else {
                         highConfidenceMayLaunchUrl(
                                 session, uid, urlString, extras, otherLikelyBundles);
                     }
-                } finally {
-                    TraceEvent.end("CustomTabsConnection.mayLaunchUrlInternal");
                 }
             }
         });
@@ -738,8 +731,7 @@ public class CustomTabsConnection {
      * @return The hidden tab, or null.
      */
     Tab takeHiddenTab(CustomTabsSessionToken session, String url, String referrer) {
-        try {
-            TraceEvent.begin("CustomTabsConnection.takeHiddenTab");
+        try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.takeHiddenTab")) {
             if (mSpeculation == null || session == null) return null;
             if (session.equals(mSpeculation.session) && mSpeculation.tab != null) {
                 Tab tab = mSpeculation.tab;
@@ -762,8 +754,6 @@ public class CustomTabsConnection {
                     tab.destroy();
                 }
             }
-        } finally {
-            TraceEvent.end("CustomTabsConnection.takeHiddenTab");
         }
         return null;
     }
