@@ -513,7 +513,11 @@ source_set("perftests") {
     "sinc_resampler_perftest.cc",
     "vector_math_perftest.cc",
   ]
-  configs += [ ":base_config" ]
+  configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:media_config",
+  ]
   deps = [
     "//base",
     "//base/test:test_support",
