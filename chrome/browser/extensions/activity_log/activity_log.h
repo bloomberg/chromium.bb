@@ -201,11 +201,6 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // * In testing mode, we choose a policy that logs all arguments.
   // testing_mode_ also causes us to print to the console.
   bool testing_mode_;
-  // We need the DB, FILE, and IO threads to write to the database.
-  // In some cases (tests), these threads might not exist, so we avoid
-  // dispatching anything to the policies/database to prevent things from
-  // exploding.
-  bool has_threads_;
 
   // Used to track whether the whitelisted extension is installed. If it's
   // added or removed, enabled_ may change.
