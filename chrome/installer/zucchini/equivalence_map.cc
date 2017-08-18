@@ -175,6 +175,8 @@ EquivalenceMap::EquivalenceMap(
   SortByDestination();
 }
 
+EquivalenceMap::EquivalenceMap(EquivalenceMap&&) = default;
+
 EquivalenceMap::~EquivalenceMap() = default;
 
 void EquivalenceMap::Build(const std::vector<offset_t>& old_sa,
@@ -197,6 +199,17 @@ void EquivalenceMap::Build(const std::vector<offset_t>& old_sa,
   LOG(INFO) << "Equivalence Count: " << size();
   LOG(INFO) << "Coverage / Extra / Total: " << coverage << " / "
             << new_image.size() - coverage << " / " << new_image.size();
+}
+
+std::vector<Equivalence> EquivalenceMap::MakeForwardEquivalences() const {
+  std::vector<Equivalence> equivalences(size());
+  std::transform(begin(), end(), equivalences.begin(),
+                 [](const EquivalenceCandidate& c) { return c.eq; });
+  std::sort(equivalences.begin(), equivalences.end(),
+            [](const Equivalence& a, const Equivalence& b) {
+              return a.src_offset < b.src_offset;
+            });
+  return equivalences;
 }
 
 void EquivalenceMap::CreateCandidates(const std::vector<offset_t>& old_sa,

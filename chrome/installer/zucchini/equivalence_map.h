@@ -10,7 +10,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/macros.h"
 #include "chrome/installer/zucchini/image_index.h"
 #include "chrome/installer/zucchini/image_utils.h"
 
@@ -69,6 +68,8 @@ class EquivalenceMap {
   // Initializes the object with |equivalences|.
   explicit EquivalenceMap(
       const std::vector<EquivalenceCandidate>& equivalences);
+  EquivalenceMap(EquivalenceMap&&);
+  EquivalenceMap(const EquivalenceMap&) = delete;
   ~EquivalenceMap();
 
   // Finds relevant equivalences between |old_image| and |new_image|, using
@@ -85,6 +86,10 @@ class EquivalenceMap {
   size_t size() const { return candidates_.size(); }
   const_iterator begin() const { return candidates_.begin(); }
   const_iterator end() const { return candidates_.end(); }
+
+  // Returns a vector containing equivalences sorted by
+  // |Equivalence::src_offset|.
+  std::vector<Equivalence> MakeForwardEquivalences() const;
 
  private:
   // Discovers equivalence candidates between |old_image| and |new_image| and
@@ -104,8 +109,6 @@ class EquivalenceMap {
              double min_similarity);
 
   std::vector<EquivalenceCandidate> candidates_;
-
-  DISALLOW_COPY_AND_ASSIGN(EquivalenceMap);
 };
 
 }  // namespace zucchini
