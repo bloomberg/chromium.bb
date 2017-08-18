@@ -958,9 +958,8 @@ void ThreadState::EagerSweep() {
   // eagerly.
   DCHECK(IsSweepingInProgress());
 
-  // Mirroring the completeSweep() condition; see its comment.
-  if (SweepForbidden())
-    return;
+  // TODO(yhirano): Turn this CHECK to DCHECK before M63 branch is cut.
+  CHECK(!SweepForbidden());
 
   SweepForbiddenScope scope(this);
   ScriptForbiddenIfMainThreadScope script_forbidden_scope;
