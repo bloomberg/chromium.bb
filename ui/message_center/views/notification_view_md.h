@@ -93,6 +93,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
 
   friend class NotificationViewMDTest;
 
@@ -122,6 +123,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
+
+  // Whether hiding icon on the right side when expanded.
+  bool hide_icon_on_expanded_ = false;
 
   // Number of total list items in the given Notification class.
   int list_items_count_ = 0;

@@ -587,4 +587,36 @@ TEST_F(NotificationViewMDTest, TestAccentColor) {
       notification_view()->action_buttons_[1]->enabled_color_for_testing());
 }
 
+TEST_F(NotificationViewMDTest, UseImageAsIcon) {
+  // TODO(tetsui): Remove duplicated integer literal in CreateOrUpdateIconView.
+  const int kNotificationIconSize = 30;
+
+  notification()->set_type(NotificationType::NOTIFICATION_TYPE_IMAGE);
+  notification()->set_icon(
+      CreateTestImage(kNotificationIconSize, kNotificationIconSize));
+
+  // Test normal notification.
+  UpdateNotificationViews();
+  EXPECT_FALSE(notification_view()->expanded_);
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+
+  // Icon on the right side is still visible when expanded.
+  notification_view()->ToggleExpanded();
+  EXPECT_TRUE(notification_view()->expanded_);
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+
+  notification_view()->ToggleExpanded();
+  EXPECT_FALSE(notification_view()->expanded_);
+
+  // Test notification with use_image_as_icon e.g. screenshot preview.
+  notification()->set_use_image_as_icon(true);
+  UpdateNotificationViews();
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+
+  // Icon on the right side is not visible when expanded.
+  notification_view()->ToggleExpanded();
+  EXPECT_TRUE(notification_view()->expanded_);
+  EXPECT_FALSE(notification_view()->icon_view_->visible());
+}
+
 }  // namespace message_center
