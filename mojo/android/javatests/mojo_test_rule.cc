@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/android/javatests/mojo_test_case.h"
+#include "mojo/android/javatests/mojo_test_rule.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_support_android.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/MojoTestCase_jni.h"
+#include "jni/MojoTestRule_jni.h"
 
 using base::android::JavaParamRef;
 
@@ -54,7 +54,7 @@ static void RunLoop(JNIEnv* env,
   base::RunLoop run_loop;
   if (timeout_ms) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromMilliseconds(timeout_ms));
     run_loop.Run();
   } else {
@@ -62,7 +62,7 @@ static void RunLoop(JNIEnv* env,
   }
 }
 
-bool RegisterMojoTestCase(JNIEnv* env) {
+bool RegisterMojoTestRule(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

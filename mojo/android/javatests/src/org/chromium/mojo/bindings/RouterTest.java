@@ -6,8 +6,15 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.mojo.MojoTestCase;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiverWithResponder;
 import org.chromium.mojo.system.Core;
@@ -25,7 +32,13 @@ import java.util.ArrayList;
 /**
  * Testing {@link Router}
  */
-public class RouterTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class RouterTest {
+
+
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
+
 
     private MessagePipeHandle mHandle;
     private Router mRouter;
@@ -35,9 +48,8 @@ public class RouterTest extends MojoTestCase {
     /**
      * @see MojoTestCase#setUp()
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+        public void setUp() throws Exception {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         mHandle = handles.first;
@@ -52,6 +64,7 @@ public class RouterTest extends MojoTestCase {
     /**
      * Testing sending a message via the router that expected a response.
      */
+    @Test
     @SmallTest
     public void testSendingToRouterWithResponse() {
         final int requestMessageType = 0xdead;
@@ -66,15 +79,15 @@ public class RouterTest extends MojoTestCase {
         ResultAnd<MessagePipeHandle.ReadMessageResult> result =
                 mHandle.readMessage(MessagePipeHandle.ReadFlags.NONE);
 
-        assertEquals(MojoResult.OK, result.getMojoResult());
+        Assert.assertEquals(MojoResult.OK, result.getMojoResult());
         MessageHeader receivedHeader =
                 new Message(ByteBuffer.wrap(result.getValue().mData), new ArrayList<Handle>())
                         .asServiceMessage()
                         .getHeader();
 
-        assertEquals(header.getType(), receivedHeader.getType());
-        assertEquals(header.getFlags(), receivedHeader.getFlags());
-        assertTrue(receivedHeader.getRequestId() != 0);
+        Assert.assertEquals(header.getType(), receivedHeader.getType());
+        Assert.assertEquals(header.getFlags(), receivedHeader.getFlags());
+        Assert.assertTrue(receivedHeader.getRequestId() != 0);
 
         // Sending the response.
         MessageHeader responseHeader = new MessageHeader(responseMessageType,
@@ -84,13 +97,13 @@ public class RouterTest extends MojoTestCase {
         Message responseMessage = encoder.getMessage();
         mHandle.writeMessage(responseMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertEquals(1, mReceiver.messages.size());
+        Assert.assertEquals(1, mReceiver.messages.size());
         ServiceMessage receivedResponseMessage = mReceiver.messages.get(0).asServiceMessage();
-        assertEquals(MessageHeader.MESSAGE_IS_RESPONSE_FLAG,
+        Assert.assertEquals(MessageHeader.MESSAGE_IS_RESPONSE_FLAG,
                 receivedResponseMessage.getHeader().getFlags());
-        assertEquals(responseMessage.getData(), receivedResponseMessage.getData());
+        Assert.assertEquals(responseMessage.getData(), receivedResponseMessage.getData());
     }
 
     /**
@@ -109,12 +122,12 @@ public class RouterTest extends MojoTestCase {
         Message headerMessage = encoder.getMessage();
         mHandle.writeMessage(headerMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
-        assertEquals(messageIndex + 1, mReceiver.messagesWithReceivers.size());
+        Assert.assertEquals(messageIndex + 1, mReceiver.messagesWithReceivers.size());
         Pair<Message, MessageReceiver> receivedMessage =
                 mReceiver.messagesWithReceivers.get(messageIndex);
-        assertEquals(headerMessage.getData(), receivedMessage.first.getData());
+        Assert.assertEquals(headerMessage.getData(), receivedMessage.first.getData());
     }
 
     /**
@@ -140,8 +153,8 @@ public class RouterTest extends MojoTestCase {
         ResultAnd<MessagePipeHandle.ReadMessageResult> result =
                 mHandle.readMessage(MessagePipeHandle.ReadFlags.NONE);
 
-        assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(message.getData(), ByteBuffer.wrap(result.getValue().mData));
+        Assert.assertEquals(MojoResult.OK, result.getMojoResult());
+        Assert.assertEquals(message.getData(), ByteBuffer.wrap(result.getValue().mData));
     }
 
     /**
@@ -181,6 +194,7 @@ public class RouterTest extends MojoTestCase {
     /**
      * Testing receiving a message via the router that expected a response.
      */
+    @Test
     @SmallTest
     public void testReceivingViaRouterWithResponse() {
         final int requestMessageType = 0xdead;
@@ -198,6 +212,7 @@ public class RouterTest extends MojoTestCase {
      * Tests that if a callback is dropped (i.e. becomes unreachable and is finalized
      * without being used), then the message pipe will be closed.
      */
+    @Test
     @SmallTest
     public void testDroppingReceiverWithoutUsingIt() {
         // Send 10 messages to the router without sending a response.
@@ -222,10 +237,10 @@ public class RouterTest extends MojoTestCase {
         // should close the pipe.
         clearAllMessageReceivers();
         // The close() occurs asynchronously on this thread.
-        runLoopUntilIdle();
+        mTestRule.runLoopUntilIdle();
 
         // Confirm that the pipe was closed on the Router side.
         HandleSignals closedFlag = HandleSignals.none().setPeerClosed(true);
-        assertEquals(closedFlag, mHandle.querySignalsState().getSatisfiedSignals());
+        Assert.assertEquals(closedFlag, mHandle.querySignalsState().getSatisfiedSignals());
     }
 }

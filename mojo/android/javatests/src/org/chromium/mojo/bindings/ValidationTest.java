@@ -7,9 +7,16 @@ package org.chromium.mojo.bindings;
 import android.annotation.SuppressLint;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
-import org.chromium.mojo.MojoTestCase;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.test.mojom.mojo.ConformanceTestInterface;
 import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface;
 import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterfaceTestHelper;
@@ -30,7 +37,12 @@ import java.util.Scanner;
  * One needs to pass '--test_data=bindings:{path to mojo/public/interfaces/bindings/tests/data}' to
  * the test_runner script for this test to find the validation data it needs.
  */
-public class ValidationTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ValidationTest {
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
 
     /**
      * The path where validation test data is.
@@ -85,7 +97,7 @@ public class ValidationTest extends MojoTestCase {
 
         // Fail if the test data is not present.
         if (!VALIDATION_TEST_DATA_PATH.isDirectory()) {
-            fail("No test data directory found. "
+            Assert.fail("No test data directory found. "
                     + "Expected directory at: " + VALIDATION_TEST_DATA_PATH);
         }
 
@@ -111,7 +123,7 @@ public class ValidationTest extends MojoTestCase {
             throws FileNotFoundException {
         List<TestData> testData = getTestData(prefix);
         for (TestData test : testData) {
-            assertNull("Unable to read: " + test.dataFile.getName()
+            Assert.assertNull("Unable to read: " + test.dataFile.getName()
                     + ": " + test.inputData.getErrorMessage(),
                     test.inputData.getErrorMessage());
             List<Handle> handles = new ArrayList<Handle>();
@@ -121,12 +133,12 @@ public class ValidationTest extends MojoTestCase {
             Message message = new Message(test.inputData.getData(), handles);
             boolean passed = messageReceiver.accept(message);
             if (passed && !test.expectedResult.equals("PASS")) {
-                fail("Input: " + test.dataFile.getName()
+                Assert.fail("Input: " + test.dataFile.getName()
                         + ": The message should have been refused. Expected error: "
                         + test.expectedResult);
             }
             if (!passed && test.expectedResult.equals("PASS")) {
-                fail("Input: " + test.dataFile.getName()
+                Assert.fail("Input: " + test.dataFile.getName()
                         + ": The message should have been accepted.");
             }
         }
@@ -191,6 +203,7 @@ public class ValidationTest extends MojoTestCase {
     /**
      * Testing the conformance suite.
      */
+    @Test
     @SmallTest
     public void testConformance() throws FileNotFoundException {
         runTest("conformance_",
@@ -202,6 +215,7 @@ public class ValidationTest extends MojoTestCase {
     /**
      * Testing the integration suite for message headers.
      */
+    @Test
     @SmallTest
     public void testIntegrationMessageHeader() throws FileNotFoundException {
         runTest("integration_msghdr_",
@@ -215,6 +229,7 @@ public class ValidationTest extends MojoTestCase {
     /**
      * Testing the integration suite for request messages.
      */
+    @Test
     @SmallTest
     public void testIntegrationRequestMessage() throws FileNotFoundException {
         runTest("integration_intf_rqst_",
@@ -228,6 +243,7 @@ public class ValidationTest extends MojoTestCase {
     /**
      * Testing the integration suite for response messages.
      */
+    @Test
     @SmallTest
     public void testIntegrationResponseMessage() throws FileNotFoundException {
         runTest("integration_intf_resp_",

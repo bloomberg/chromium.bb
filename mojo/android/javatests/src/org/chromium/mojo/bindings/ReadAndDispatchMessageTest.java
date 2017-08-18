@@ -6,7 +6,16 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import org.chromium.mojo.MojoTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiver;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.DataPipe;
@@ -25,7 +34,14 @@ import java.util.List;
 /**
  * Testing {@link Connector#readAndDispatchMessage}.
  */
-public class ReadAndDispatchMessageTest extends MojoTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ReadAndDispatchMessageTest {
+
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public MojoTestRule mTestRule = new MojoTestRule();
+
 
     private static final int DATA_SIZE = 1024;
 
@@ -38,9 +54,8 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
     /**
      * @see org.chromium.mojo.MojoTestCase#setUp()
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+        public void setUp() throws Exception {
         Core core = CoreImpl.getInstance();
         mData = BindingsTestUtils.newRandomMessage(DATA_SIZE).getData();
         mMessageReceiver = new RecordingMessageReceiver();
@@ -54,29 +69,29 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
     /**
      * @see org.chromium.mojo.MojoTestCase#tearDown()
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+        public void tearDown() throws Exception {
         for (Handle handle : mHandlesToClose) {
             handle.close();
         }
-        super.tearDown();
     }
 
     /**
      * Testing {@link Connector#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
      */
+    @Test
     @SmallTest
     public void testReadAndDispatchMessage() {
         mHandles.first.writeMessage(mData, mHandlesToSend, MessagePipeHandle.WriteFlags.NONE);
-        assertEquals(MojoResult.OK, Connector.readAndDispatchMessage(mHandles.second,
+        Assert.assertEquals(MojoResult.OK, Connector.readAndDispatchMessage(mHandles.second,
                                                       mMessageReceiver).getMojoResult());
-        assertEquals(1, mMessageReceiver.messages.size());
+        Assert.assertEquals(1, mMessageReceiver.messages.size());
         Message message = mMessageReceiver.messages.get(0);
         mHandlesToClose.addAll(message.getHandles());
-        assertEquals(mData, message.getData());
-        assertEquals(2, message.getHandles().size());
+        Assert.assertEquals(mData, message.getData());
+        Assert.assertEquals(2, message.getHandles().size());
         for (Handle handle : message.getHandles()) {
-            assertTrue(handle.isValid());
+            Assert.assertTrue(handle.isValid());
         }
     }
 
@@ -84,26 +99,30 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
      * Testing {@link Connector#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
      * with no message available.
      */
+    @Test
     @SmallTest
     public void testReadAndDispatchMessageOnEmptyHandle() {
-        assertEquals(MojoResult.SHOULD_WAIT, Connector.readAndDispatchMessage(mHandles.second,
-                                                               mMessageReceiver).getMojoResult());
-        assertEquals(0, mMessageReceiver.messages.size());
+        Assert.assertEquals(
+                MojoResult.SHOULD_WAIT,
+                Connector.readAndDispatchMessage(
+                    mHandles.second, mMessageReceiver).getMojoResult());
+        Assert.assertEquals(0, mMessageReceiver.messages.size());
     }
 
     /**
      * Testing {@link Connector#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
      * on closed handle.
      */
+    @Test
     @SmallTest
     public void testReadAndDispatchMessageOnClosedHandle() {
         mHandles.first.close();
         try {
             Connector.readAndDispatchMessage(mHandles.second, mMessageReceiver);
-            fail("MojoException should have been thrown");
+            Assert.fail("MojoException should have been thrown");
         } catch (MojoException expected) {
-            assertEquals(MojoResult.FAILED_PRECONDITION, expected.getMojoResult());
+            Assert.assertEquals(MojoResult.FAILED_PRECONDITION, expected.getMojoResult());
         }
-        assertEquals(0, mMessageReceiver.messages.size());
+        Assert.assertEquals(0, mMessageReceiver.messages.size());
     }
 }
