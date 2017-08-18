@@ -716,7 +716,7 @@ public class AutocompleteEditTextTest {
         assertTrue(mInputConnection.setComposingText("hell", 1));
         // Pretend that we have deleted 'o'.
         mInOrder.verify(mVerifier).onUpdateSelection(4, 4);
-        // We restore 'o', and clears autocomplete text instead.
+        // We restore 'o', and clear autocomplete text instead.
         mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
         assertTrue(mAutocomplete.isCursorVisible());
         // Remove autocomplete.
@@ -733,6 +733,56 @@ public class AutocompleteEditTextTest {
         mInOrder.verifyNoMoreInteractions();
         assertFalse(mAutocomplete.shouldAutocomplete());
         assertTexts("hello", "");
+    }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testDelete_SetComposingTextInBatchEditWithSpannableModel() {
+        // User types "hello".
+        assertTrue(mInputConnection.setComposingText("hello", 1));
+
+        mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
+        mInOrder.verify(mVerifier).onPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, "hello", "", 5, 5, 5, -1, -1);
+        mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+        mInOrder.verifyNoMoreInteractions();
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        // The controller kicks in.
+        mAutocomplete.setAutocompleteText("hello", " world");
+        assertFalse(mAutocomplete.isCursorVisible());
+        assertTexts("hello", " world");
+        mInOrder.verify(mVerifier).onPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "hello world", "hello", -1, 5, -1, 0, 6);
+        mInOrder.verifyNoMoreInteractions();
+
+        // User deletes 'o' in a batch edit.
+        assertTrue(mInputConnection.beginBatchEdit());
+        assertTrue(mInputConnection.setComposingText("hell", 1));
+
+        // We restore 'o', and clear autocomplete text instead.
+        assertTrue(mAutocomplete.isCursorVisible());
+        assertFalse(mAutocomplete.shouldAutocomplete());
+
+        // The user will see "hello" even in the middle of a batch edit.
+        assertEquals("hello", mAutocomplete.getText().toString());
+
+        // Keyboard app checks the current state.
+        assertEquals("hell", mInputConnection.getTextBeforeCursor(10, 0));
+        assertTrue(mAutocomplete.isCursorVisible());
+        assertFalse(mAutocomplete.shouldAutocomplete());
+
+        mInOrder.verifyNoMoreInteractions();
+
+        assertTrue(mInputConnection.endBatchEdit());
+        mInOrder.verify(mVerifier).onUpdateSelection(4, 4);
+        mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
+        mInOrder.verify(mVerifier).onPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "hello", "hello world", -1, 5, -1, 6, 0);
+        mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
+        assertFalse(mAutocomplete.shouldAutocomplete());
+        assertTexts("hello", "");
+        mInOrder.verifyNoMoreInteractions();
     }
 
     @Test

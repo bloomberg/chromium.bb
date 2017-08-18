@@ -61,6 +61,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     private boolean mLastEditWasTyping = true;
     private boolean mIgnoreTextChangeFromAutocomplete = true;
     private int mBatchEditNestCount;
+    private int mDeletePostfixOnNextBeginImeCommand;
 
     // For testing.
     private int mLastUpdateSelStart;
@@ -482,13 +483,24 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             boolean retVal = incrementBatchEditCount();
             if (mBatchEditNestCount == 1) {
                 mPreBatchEditState.copyFrom(mCurrentState);
+            } else if (mDeletePostfixOnNextBeginImeCommand > 0) {
+                int len = mDelegate.getText().length();
+                mDelegate.getText().delete(len - mDeletePostfixOnNextBeginImeCommand, len);
             }
+            mDeletePostfixOnNextBeginImeCommand = 0;
             mSpanCursorController.removeSpan();
             return retVal;
         }
 
         private void restoreBackspacedText(String diff) {
             if (DEBUG) Log.i(TAG, "restoreBackspacedText. diff: " + diff);
+
+            if (mBatchEditNestCount > 0) {
+                // If batch edit hasn't finished, we will restore backspaced text only for visual
+                // effects. However, for internal operations to work correctly, we need to remove
+                // the restored diff at the beginning of next IME operation.
+                mDeletePostfixOnNextBeginImeCommand = diff.length();
+            }
             incrementBatchEditCount(); // avoids additional notifyAutocompleteTextStateChanged()
             Editable editable = mDelegate.getEditableText();
             editable.append(diff);
@@ -521,16 +533,6 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
         private boolean onEndImeCommand() {
             if (DEBUG) Log.i(TAG, "onEndImeCommand: " + (mBatchEditNestCount - 1));
-            if (mBatchEditNestCount > 1) {
-                String diff = mCurrentState.getBackwardDeletedTextFrom(mPreBatchEditState);
-                if (diff == null) {
-                    // Restore autocomplete span when batch edit did not end such that onDraw() can
-                    // see the autocomplete span. Otherwise we will see a flicker.
-                    setAutocompleteSpan();
-                }
-                return decrementBatchEditCount();
-            }
-
             String diff = mCurrentState.getBackwardDeletedTextFrom(mPreBatchEditState);
             if (diff != null) {
                 // Update selection first such that keyboard app gets what it expects.
