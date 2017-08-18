@@ -10,11 +10,19 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {
+namespace {
+
+bool UseMd() {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+}
+
+}  // namespace
 
 typedef views::ViewsTestBase BubbleBorderTest;
 
@@ -216,6 +224,7 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
                              SK_ColorWHITE);
 
   const views::internal::BorderImages* kImages = border.GetImagesForTest();
+  const gfx::Insets kInsets = border.GetInsets();
 
   // kSmallSize is smaller than the minimum allowable size and does not
   // contribute to the resulting size.
@@ -225,29 +234,39 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
   const gfx::Size kMediumSize = gfx::Size(50, 60);
 
   const gfx::Size kSmallHorizArrow(
-      2 * kImages->border_thickness + kImages->arrow_width,
-      kImages->border_thickness + kImages->arrow_thickness +
-          kImages->border_interior_thickness);
+      UseMd() ? kSmallSize.width() + kInsets.width()
+              : 2 * kImages->border_thickness + kImages->arrow_width,
+      UseMd() ? kSmallSize.height() + kInsets.height()
+              : kImages->border_thickness + kImages->arrow_thickness +
+                    kImages->border_interior_thickness);
 
-  const gfx::Size kSmallVertArrow(kSmallHorizArrow.height(),
-                                  kSmallHorizArrow.width());
+  const gfx::Size kSmallVertArrow(
+      UseMd() ? kSmallHorizArrow.width() : kSmallHorizArrow.height(),
+      UseMd() ? kSmallHorizArrow.height() : kSmallHorizArrow.width());
 
-  const gfx::Size kSmallNoArrow(2 * kImages->border_thickness,
-                                2 * kImages->border_thickness);
+  const gfx::Size kSmallNoArrow(
+      UseMd() ? kSmallHorizArrow.width() : 2 * kImages->border_thickness,
+      UseMd() ? kSmallHorizArrow.height() : 2 * kImages->border_thickness);
 
   const gfx::Size kMediumHorizArrow(
-      kMediumSize.width() + 2 * border.GetBorderThickness(),
-      kMediumSize.height() + border.GetBorderThickness() +
-          kImages->arrow_thickness);
+      UseMd() ? kMediumSize.width() + kInsets.width()
+              : kMediumSize.width() + 2 * border.GetBorderThickness(),
+      UseMd() ? kMediumSize.height() + kInsets.height()
+              : kMediumSize.height() + border.GetBorderThickness() +
+                    kImages->arrow_thickness);
 
   const gfx::Size kMediumVertArrow(
-      kMediumSize.width() + border.GetBorderThickness() +
-          kImages->arrow_thickness,
-      kMediumSize.height() + 2 * border.GetBorderThickness());
+      UseMd() ? kMediumHorizArrow.width()
+              : kMediumSize.width() + border.GetBorderThickness() +
+                    kImages->arrow_thickness,
+      UseMd() ? kMediumHorizArrow.height()
+              : kMediumSize.height() + 2 * border.GetBorderThickness());
 
   const gfx::Size kMediumNoArrow(
-      kMediumSize.width() + 2 * border.GetBorderThickness(),
-      kMediumSize.height() + 2 * border.GetBorderThickness());
+      UseMd() ? kMediumHorizArrow.width()
+              : kMediumSize.width() + 2 * border.GetBorderThickness(),
+      UseMd() ? kMediumHorizArrow.height()
+              : kMediumSize.height() + 2 * border.GetBorderThickness());
 
   struct TestCase {
     BubbleBorder::Arrow arrow;
@@ -334,6 +353,7 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
 
     const gfx::Rect kAnchor(100, 100, 20, 30);
     const gfx::Size kContentSize(500, 600);
+    const gfx::Insets kInsets = border.GetInsets();
 
     const views::internal::BorderImages* kImages = border.GetImagesForTest();
 
@@ -354,14 +374,14 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const int kArrowOffsetForHorizCenter = kTotalSizeWithHorizArrow.width() / 2;
     const int kArrowOffsetForVertCenter = kTotalSizeWithVertArrow.height() / 2;
     const int kArrowOffsetForNotCenter =
-        kImages->border_thickness + (kImages->arrow_width / 2);
+        UseMd() ? 0 : kImages->border_thickness + (kImages->arrow_width / 2);
 
     const int kStrokeWidth =
         shadow == BubbleBorder::NO_ASSETS ? 0 : BubbleBorder::kStroke;
 
-    const int kArrowThickness = kImages->arrow_interior_thickness;
+    const int kArrowThickness = UseMd() ? 0 : kImages->arrow_interior_thickness;
     const int kArrowShift =
-        kArrowThickness + kStrokeWidth - kImages->arrow_thickness;
+        UseMd() ? 0 : kArrowThickness + kStrokeWidth - kImages->arrow_thickness;
     const int kHeightDifference =
         kTotalSizeWithHorizArrow.height() - kTotalSizeWithNoArrow.height();
     const int kWidthDifference =
@@ -371,19 +391,26 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     // The arrow only makes a difference in height if it is longer than the
     // shadow.
     const int kExpectedHeightDifference =
-        std::max(kImages->arrow_thickness + kImages->border_interior_thickness,
-                 kImages->border_thickness) -
-        std::max(kImages->border_interior_thickness, kImages->border_thickness);
+        UseMd() ? 0
+                : std::max(kImages->arrow_thickness +
+                               kImages->border_interior_thickness,
+                           kImages->border_thickness) -
+                      std::max(kImages->border_interior_thickness,
+                               kImages->border_thickness);
     EXPECT_EQ(kExpectedHeightDifference, kHeightDifference)
         << "Size with arrow: " << kTotalSizeWithHorizArrow.ToString()
         << " vs. size without arrow: " << kTotalSizeWithNoArrow.ToString();
 
-    const int kTopHorizArrowY = kAnchor.y() + kAnchor.height() + kArrowShift;
+    const int kTopHorizArrowY =
+        UseMd() ? kAnchor.bottom() + kStrokeWidth - kInsets.top()
+                : kAnchor.bottom() + kArrowShift;
     const int kBottomHorizArrowY =
-        kAnchor.y() - kArrowShift - kTotalSizeWithHorizArrow.height();
+        UseMd() ? kAnchor.y() - kTotalSizeWithHorizArrow.height()
+                : kAnchor.y() - kArrowShift - kTotalSizeWithHorizArrow.height();
     const int kLeftVertArrowX = kAnchor.x() + kAnchor.width() + kArrowShift;
     const int kRightVertArrowX =
-        kAnchor.x() - kArrowShift - kTotalSizeWithVertArrow.width();
+        UseMd() ? kAnchor.x() - kTotalSizeWithHorizArrow.width()
+                : kAnchor.x() - kArrowShift - kTotalSizeWithVertArrow.width();
 
     struct TestCase {
       BubbleBorder::Arrow arrow;
@@ -395,15 +422,21 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     TestCase cases[] = {
         // Horizontal arrow tests.
         {BubbleBorder::TOP_LEFT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kAnchor.CenterPoint().x() - kArrowOffsetForNotCenter, kTopHorizArrowY},
-        {BubbleBorder::TOP_LEFT, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
-         kAnchor.x() + kStrokeWidth - kBorderThickness, kTopHorizArrowY},
-        {BubbleBorder::TOP_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
+         UseMd() ? kAnchor.x() + kStrokeWidth - kInsets.left()
+                 : kAnchor.CenterPoint().x() - kArrowOffsetForNotCenter,
          kTopHorizArrowY},
+        {BubbleBorder::TOP_LEFT, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
+         UseMd() ? kAnchor.x() + kStrokeWidth - kInsets.left()
+                 : kAnchor.x() + kStrokeWidth - kBorderThickness,
+         kTopHorizArrowY},
+        {BubbleBorder::TOP_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+         UseMd() ? kAnchor.CenterPoint().x()
+                 : kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
+         kTopHorizArrowY + (UseMd() ? kInsets.top() - kStrokeWidth : 0)},
         {BubbleBorder::BOTTOM_RIGHT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kAnchor.CenterPoint().x() + kArrowOffsetForNotCenter -
-             kTotalSizeWithHorizArrow.width(),
+         UseMd() ? kAnchor.CenterPoint().x() - kTotalSizeWithHorizArrow.width()
+                 : kAnchor.CenterPoint().x() + kArrowOffsetForNotCenter -
+                       kTotalSizeWithHorizArrow.width(),
          kBottomHorizArrowY},
         {BubbleBorder::BOTTOM_RIGHT, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
          kAnchor.x() + kAnchor.width() - kTotalSizeWithHorizArrow.width() +
@@ -416,8 +449,9 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
         {BubbleBorder::LEFT_TOP, BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
          kLeftVertArrowX, kAnchor.y() + kStrokeWidth - kBorderThickness},
         {BubbleBorder::LEFT_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         kLeftVertArrowX,
-         kAnchor.CenterPoint().y() - kArrowOffsetForVertCenter},
+         kLeftVertArrowX - (UseMd() ? kInsets.right() - kStrokeWidth : 0),
+         kAnchor.CenterPoint().y() - kArrowOffsetForVertCenter +
+             (UseMd() ? 2 * kStrokeWidth : 0)},
         {BubbleBorder::RIGHT_BOTTOM, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
          kRightVertArrowX,
          kAnchor.CenterPoint().y() + kArrowOffsetForNotCenter -
@@ -485,6 +519,8 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
 
 // Ensure all the shadow types pass some size validation and paint sanely.
 TEST_F(BubbleBorderTest, ShadowTypes) {
+  if (UseMd())
+    return;  // This test doesn't mean anything in MD mode.
   const gfx::Rect rect(0, 0, 320, 200);
   View paint_view;
   paint_view.SetBoundsRect(rect);
