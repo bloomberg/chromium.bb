@@ -5,7 +5,6 @@
 #include "ios/web/public/test/web_test.h"
 
 #include "base/memory/ptr_util.h"
-#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 
@@ -30,16 +29,6 @@ WebTest::WebTest()
       crash_observer_(base::MakeUnique<WebTestRenderProcessCrashObserver>()) {}
 
 WebTest::~WebTest() {}
-
-void WebTest::SetUp() {
-  PlatformTest::SetUp();
-  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
-}
-
-void WebTest::TearDown() {
-  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
-  PlatformTest::TearDown();
-}
 
 TestWebClient* WebTest::GetWebClient() {
   return static_cast<TestWebClient*>(web_client_.Get());

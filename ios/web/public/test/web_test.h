@@ -23,10 +23,6 @@ class WebTest : public PlatformTest {
   WebTest();
   ~WebTest() override;
 
-  // PlatformTest methods.
-  void SetUp() override;
-  void TearDown() override;
-
   // Returns the WebClient that is used for testing.
   TestWebClient* GetWebClient();
 

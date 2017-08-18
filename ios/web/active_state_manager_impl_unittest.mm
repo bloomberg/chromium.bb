@@ -44,8 +44,6 @@ TEST_F(ActiveStateManagerImplTest, ActiveState) {
       BrowserState::GetActiveStateManager(GetBrowserState());
   ASSERT_TRUE(active_state_manager);
 
-  ASSERT_TRUE(active_state_manager->IsActive());
-
   active_state_manager->SetActive(true);
   EXPECT_TRUE(active_state_manager->IsActive());
 
