@@ -48,8 +48,8 @@ GURL GetBaseUrlForTesting(int port) {
   return GURL(base::StringPrintf("http://127.0.0.1:%d/", port));
 }
 
-void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure) {
-  closure.Run();
+void RunAndQuit(base::RunLoop* run_loop, base::OnceClosure closure) {
+  std::move(closure).Run();
   run_loop->Quit();
 }
 

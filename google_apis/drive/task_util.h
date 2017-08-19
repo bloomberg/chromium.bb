@@ -5,8 +5,6 @@
 #ifndef GOOGLE_APIS_DRIVE_TASK_UTIL_H_
 #define GOOGLE_APIS_DRIVE_TASK_UTIL_H_
 
-#include <memory>
-
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -14,89 +12,20 @@ namespace google_apis {
 
 // Runs the task with the task runner.
 void RunTaskWithTaskRunner(scoped_refptr<base::TaskRunner> task_runner,
-                           const base::Closure& task);
+                           base::OnceClosure task);
 
 namespace internal {
 
 // Implementation of the composed callback, whose signature is |Sig|.
 template<typename Sig> struct ComposedCallback;
 
-// ComposedCallback with no argument.
-template<>
-struct ComposedCallback<void()> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Closure& callback) {
-    runner.Run(callback);
-  }
-};
-
-// ComposedCallback with one argument.
-template<typename T1>
-struct ComposedCallback<void(T1)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1)>& callback,
-      T1 arg1) {
-    runner.Run(base::Bind(callback, arg1));
-  }
-};
-
-// ComposedCallback with two arguments.
-template<typename T1, typename T2>
-struct ComposedCallback<void(T1, T2)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1, T2)>& callback,
-      T1 arg1, T2 arg2) {
-    runner.Run(base::Bind(callback, arg1, arg2));
-  }
-};
-
-// ComposedCallback with two arguments, and the last one is scoped_ptr.
-template <typename T1, typename T2, typename D2>
-struct ComposedCallback<void(T1, std::unique_ptr<T2, D2>)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1, std::unique_ptr<T2, D2>)>& callback,
-      T1 arg1,
-      std::unique_ptr<T2, D2> arg2) {
-    runner.Run(base::Bind(callback, arg1, base::Passed(&arg2)));
-  }
-};
-
-// ComposedCallback with three arguments.
-template<typename T1, typename T2, typename T3>
-struct ComposedCallback<void(T1, T2, T3)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1, T2, T3)>& callback,
-      T1 arg1, T2 arg2, T3 arg3) {
-    runner.Run(base::Bind(callback, arg1, arg2, arg3));
-  }
-};
-
-// ComposedCallback with three arguments, and the last one is scoped_ptr.
-template <typename T1, typename T2, typename T3, typename D3>
-struct ComposedCallback<void(T1, T2, std::unique_ptr<T3, D3>)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1, T2, std::unique_ptr<T3, D3>)>& callback,
-      T1 arg1,
-      T2 arg2,
-      std::unique_ptr<T3, D3> arg3) {
-    runner.Run(base::Bind(callback, arg1, arg2, base::Passed(&arg3)));
-  }
-};
-
-// ComposedCallback with four arguments.
-template<typename T1, typename T2, typename T3, typename T4>
-struct ComposedCallback<void(T1, T2, T3, T4)> {
-  static void Run(
-      const base::Callback<void(const base::Closure&)>& runner,
-      const base::Callback<void(T1, T2, T3, T4)>& callback,
-      T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
-    runner.Run(base::Bind(callback, arg1, arg2, arg3, arg4));
+template <typename... Args>
+struct ComposedCallback<void(Args...)> {
+  static void Run(base::OnceCallback<void(base::OnceClosure)> runner,
+                  base::OnceCallback<void(Args...)> callback,
+                  Args... args) {
+    std::move(runner).Run(
+        base::BindOnce(std::move(callback), std::forward<Args>(args)...));
   }
 };
 
@@ -106,23 +35,59 @@ struct ComposedCallback<void(T1, T2, T3, T4)> {
 // by binding them to |callback|, and runs |runner| with the closure.
 // I.e. the returned callback works as follows:
 //   runner.Run(Bind(callback, arg1, arg2, ...))
-template<typename CallbackType>
-CallbackType CreateComposedCallback(
-    const base::Callback<void(const base::Closure&)>& runner,
-    const CallbackType& callback) {
-  DCHECK(!runner.is_null());
-  DCHECK(!callback.is_null());
-  return base::Bind(
-      &internal::ComposedCallback<typename CallbackType::RunType>::Run,
-      runner, callback);
+template <typename... Args>
+base::OnceCallback<void(Args...)> CreateComposedCallback(
+    base::OnceCallback<void(base::OnceClosure)> runner,
+    base::OnceCallback<void(Args...)> callback) {
+  DCHECK(runner);
+  DCHECK(callback);
+  return base::BindOnce(&internal::ComposedCallback<void(Args...)>::Run,
+                        std::move(runner), std::move(callback));
+}
+
+template <typename... Args>
+base::RepeatingCallback<void(Args...)> CreateComposedCallback(
+    base::RepeatingCallback<void(base::OnceClosure)> runner,
+    base::RepeatingCallback<void(Args...)> callback) {
+  DCHECK(runner);
+  DCHECK(callback);
+  return base::BindRepeating(&internal::ComposedCallback<void(Args...)>::Run,
+                             std::move(runner), std::move(callback));
 }
 
 // Returns callback which runs the given |callback| on the current thread.
-template<typename CallbackType>
-CallbackType CreateRelayCallback(const CallbackType& callback) {
+//
+// TODO(tzik): If the resulting callback is destroyed without invocation, its
+// |callback| and its bound arguments can be destroyed on the originating
+// thread.
+//
+// TODO(tzik): The parameter of the resulting callback will be forwarded to
+// the destination, but it doesn't mirror a wrapper. I.e. In an example below:
+//   auto cb1 = base::BindOnce([](int* p) { /* |p| is dangling. */ });
+//   auto cb2 = CreateRelayCallback(std::move(cb1));
+//   base::BindOnce(std::move(cb2), base::Owned(new int)).Run();
+// CreateRelayCallback forwards the callback invocation without base::Owned,
+// and forwarded pointer will be dangling in this case.
+//
+// TODO(tzik): Take FROM_HERE from the caller, and propagate it to the runner.
+//
+// TODO(tzik): Move media::BindToCurrentLoop to base namespace, and replace
+// CreateRelayCallback with it.
+template <typename Sig>
+base::OnceCallback<Sig> CreateRelayCallback(base::OnceCallback<Sig> callback) {
   return CreateComposedCallback(
-      base::Bind(&RunTaskWithTaskRunner, base::ThreadTaskRunnerHandle::Get()),
-      callback);
+      base::BindOnce(&RunTaskWithTaskRunner,
+                     base::ThreadTaskRunnerHandle::Get()),
+      std::move(callback));
+}
+
+template <typename Sig>
+base::RepeatingCallback<Sig> CreateRelayCallback(
+    base::RepeatingCallback<Sig> callback) {
+  return CreateComposedCallback(
+      base::BindRepeating(&RunTaskWithTaskRunner,
+                          base::ThreadTaskRunnerHandle::Get()),
+      std::move(callback));
 }
 
 }  // namespace google_apis
