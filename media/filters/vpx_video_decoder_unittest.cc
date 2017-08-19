@@ -9,11 +9,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/filters/in_memory_url_protocol.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -324,6 +327,60 @@ TEST_F(VpxVideoDecoderTest, StaleFramesAreExpired) {
   // The last frame should still have a ref internal to libvpx and the frame we
   // just released isn't stale yet, so only 2 frames should remain.
   EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
+}
+
+TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
+  // Initialize with dummy data, we could read it from the test clip, but it's
+  // not necessary for this test.
+  Initialize();
+
+  scoped_refptr<DecoderBuffer> data =
+      ReadTestDataFile("vp9-duplicate-frame.webm");
+  InMemoryUrlProtocol protocol(data->data(), data->data_size(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+
+  AVPacket packet;
+  while (av_read_frame(glue.format_context(), &packet) >= 0) {
+    if (Decode(DecoderBuffer::CopyFrom(packet.data, packet.size)) !=
+        DecodeStatus::OK) {
+      av_packet_unref(&packet);
+      break;
+    }
+    av_packet_unref(&packet);
+  }
+
+  // Android returns 25 frames while other platforms return 26 for some reason;
+  // we don't really care about the exact number.
+  ASSERT_GE(output_frames_.size(), 25u);
+
+  scoped_refptr<VideoFrame> last_frame = output_frames_.back();
+
+  // Duplicate frame is actually two before the last in this bitstream.
+  scoped_refptr<VideoFrame> dupe_frame =
+      output_frames_[output_frames_.size() - 3];
+
+#if !defined(OS_ANDROID)
+  // Android doesn't seem to expose this bug, but the rest of the test is still
+  // reasonable to complete even on Android.
+  EXPECT_EQ(last_frame->data(VideoFrame::kYPlane),
+            dupe_frame->data(VideoFrame::kYPlane));
+  EXPECT_EQ(last_frame->data(VideoFrame::kUPlane),
+            dupe_frame->data(VideoFrame::kUPlane));
+  EXPECT_EQ(last_frame->data(VideoFrame::kVPlane),
+            dupe_frame->data(VideoFrame::kVPlane));
+#endif
+
+  // This will release all frames held by the memory pool, but should not
+  // release |last_frame| since we still have a ref despite sharing the same
+  // memory as |dupe_frame|.
+  output_frames_.clear();
+  dupe_frame = nullptr;
+  Destroy();
+
+  // ASAN will be very unhappy with this line if the above is incorrect.
+  memset(last_frame->data(VideoFrame::kYPlane), 0,
+         last_frame->row_bytes(VideoFrame::kYPlane));
 }
 
 }  // namespace media
