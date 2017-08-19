@@ -169,6 +169,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // return the first one found.
   const AudioDevice* GetDeviceByType(AudioDeviceType type);
 
+  // Gets the default output buffer size in frames.
+  void GetDefaultOutputBufferSize(int32_t* buffer_size) const;
+
   // Whether there is alternative input/output audio device.
   bool has_alternative_input() const;
   bool has_alternative_output() const;
@@ -471,6 +474,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if there are any external devices.
   bool HasExternalDevice(bool is_input) const;
 
+  // Calling dbus to get default output buffer size.
+  void GetDefaultOutputBufferSizeInternal();
+
+  // Handle dbus callback for GetDefaultOutputBufferSize.
+  void HandleGetDefaultOutputBufferSize(int buffer_size, bool success);
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver> observers_;
 
@@ -517,6 +526,11 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   bool front_camera_on_ = false;
   bool rear_camera_on_ = false;
+
+  mutable base::Lock default_output_buffer_size_lock_;
+
+  // Default output buffer size in frames.
+  int32_t default_output_buffer_size_;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 
