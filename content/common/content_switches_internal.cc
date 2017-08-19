@@ -10,6 +10,9 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -52,6 +55,28 @@ const base::Feature kProgressBarCompletionResourcesBeforeDOMContentLoaded {
     "progress-bar-completion-resources-before-domContentLoaded",
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+#if defined(OS_WIN)
+
+base::string16 ToNativeString(base::StringPiece string) {
+  return base::ASCIIToUTF16(string);
+}
+
+std::string FromNativeString(base::StringPiece16 string) {
+  return base::UTF16ToASCII(string);
+}
+
+#else  // defined(OS_WIN)
+
+std::string ToNativeString(const std::string& string) {
+  return string;
+}
+
+std::string FromNativeString(const std::string& string) {
+  return string;
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -168,6 +193,35 @@ void WaitForDebugger(const std::string& label) {
   pause();
 #endif  // defined(OS_ANDROID)
 #endif  // defined(OS_POSIX)
+}
+
+std::vector<std::string> FeaturesFromSwitch(
+    const base::CommandLine& command_line,
+    const char* switch_name) {
+  using NativeString = base::CommandLine::StringType;
+  using NativeStringPiece = base::BasicStringPiece<NativeString>;
+
+  std::vector<std::string> features;
+  if (!command_line.HasSwitch(switch_name))
+    return features;
+
+  // Store prefix as native string to avoid conversions for every arg.
+  // (No string copies for the args that don't match the prefix.)
+  NativeString prefix =
+      ToNativeString(base::StringPrintf("--%s=", switch_name));
+  for (NativeStringPiece arg : command_line.argv()) {
+    // Switch names are case insensitive on Windows, but base::CommandLine has
+    // already made them lowercase when building argv().
+    if (!StartsWith(arg, prefix, base::CompareCase::SENSITIVE))
+      continue;
+    arg.remove_prefix(prefix.size());
+    if (!IsStringASCII(arg))
+      continue;
+    auto vals = SplitString(FromNativeString(arg.as_string()), ",",
+                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    features.insert(features.end(), vals.begin(), vals.end());
+  }
+  return features;
 }
 
 } // namespace content

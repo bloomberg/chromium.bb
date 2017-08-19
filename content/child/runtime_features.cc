@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/common/content_switches_internal.h"
@@ -416,19 +415,13 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
-  if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
-    std::vector<std::string> enabled_features = base::SplitString(
-        command_line.GetSwitchValueASCII(switches::kEnableBlinkFeatures),
-        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    for (const std::string& feature : enabled_features)
-      WebRuntimeFeatures::EnableFeatureFromString(feature, true);
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kEnableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, true);
   }
-  if (command_line.HasSwitch(switches::kDisableBlinkFeatures)) {
-    std::vector<std::string> disabled_features = base::SplitString(
-        command_line.GetSwitchValueASCII(switches::kDisableBlinkFeatures),
-        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    for (const std::string& feature : disabled_features)
-      WebRuntimeFeatures::EnableFeatureFromString(feature, false);
+  for (const std::string& feature :
+       FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
+    WebRuntimeFeatures::EnableFeatureFromString(feature, false);
   }
 }
 
