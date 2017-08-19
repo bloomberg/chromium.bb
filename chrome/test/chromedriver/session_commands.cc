@@ -281,7 +281,15 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->detach = capabilities.detach;
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities = CreateCapabilities(session, capabilities);
-  value->reset(session->capabilities->DeepCopy());
+
+  if (w3c_capability) {
+    base::DictionaryValue body;
+    body.SetDictionary("capabilities", std::move(session->capabilities));
+    body.SetString("sessionId", session->id);
+    value->reset(body.DeepCopy());
+  } else {
+    value->reset(session->capabilities->DeepCopy());
+  }
   return CheckSessionCreated(session);
 }
 
