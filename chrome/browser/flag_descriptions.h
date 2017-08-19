@@ -85,6 +85,9 @@ extern const char kCaptureThumbnailOnNavigatingAwayDescription[];
 extern const char kCastStreamingHwEncodingName[];
 extern const char kCastStreamingHwEncodingDescription[];
 
+extern const char kClickToOpenPDFName[];
+extern const char kClickToOpenPDFDescription[];
+
 extern const char kCloudImportName[];
 extern const char kCloudImportDescription[];
 
