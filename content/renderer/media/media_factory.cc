@@ -25,6 +25,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/surface_manager.h"
+#include "media/blink/resource_fetch_context.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/filters/context_3d.h"
@@ -74,6 +75,28 @@
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
 #endif
+
+namespace {
+class FrameFetchContext : public media::ResourceFetchContext {
+ public:
+  explicit FrameFetchContext(blink::WebLocalFrame* frame) : frame_(frame) {
+    DCHECK(frame_);
+  }
+  ~FrameFetchContext() override = default;
+
+  blink::WebLocalFrame* frame() const { return frame_; }
+
+  // media::ResourceFetchContext implementation.
+  std::unique_ptr<blink::WebAssociatedURLLoader> CreateUrlLoader(
+      const blink::WebAssociatedURLLoaderOptions& options) override {
+    return base::WrapUnique(frame_->CreateAssociatedURLLoader(options));
+  }
+
+ private:
+  blink::WebLocalFrame* frame_;
+  DISALLOW_COPY_AND_ASSIGN(FrameFetchContext);
+};
+}  // namespace
 
 namespace content {
 
@@ -226,9 +249,13 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   DCHECK(media_observer);
 #endif
 
-  if (!url_index_)
-    url_index_ = base::MakeUnique<media::UrlIndex>(web_frame);
-  DCHECK_EQ(url_index_->frame(), web_frame);
+  if (!fetch_context_) {
+    fetch_context_ = base::MakeUnique<FrameFetchContext>(web_frame);
+    DCHECK(!url_index_);
+    url_index_ = base::MakeUnique<media::UrlIndex>(fetch_context_.get());
+  }
+  DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
+            web_frame);
 
   if (!watch_time_recorder_provider_) {
     remote_interfaces_->GetInterface(

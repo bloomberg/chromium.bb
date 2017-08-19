@@ -110,10 +110,8 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   const GURL origin_;
 
   // Keeps track of an active WebAssociatedURLLoader.
+  // Only valid while loading resource.
   std::unique_ptr<blink::WebAssociatedURLLoader> active_loader_;
-
-  // Injected WebAssociatedURLLoader instance for testing purposes.
-  std::unique_ptr<blink::WebAssociatedURLLoader> test_loader_;
 
   // When we encounter a redirect, this is the source of the redirect.
   GURL redirects_to_;
