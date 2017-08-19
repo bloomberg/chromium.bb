@@ -4,7 +4,85 @@
 
 module device.mojom;
 
-import "device/serial/serial.mojom";
+struct SerialDeviceInfo {
+  string path;
+  uint16 vendor_id;
+  bool has_vendor_id = false;
+  uint16 product_id;
+  bool has_product_id = false;
+  string? display_name;
+};
+
+enum SerialSendError {
+  NONE,
+  DISCONNECTED,
+  PENDING,
+  TIMEOUT,
+  SYSTEM_ERROR,
+};
+
+enum SerialReceiveError {
+  NONE,
+  DISCONNECTED,
+  TIMEOUT,
+  DEVICE_LOST,
+  BREAK,
+  FRAME_ERROR,
+  OVERRUN,
+  BUFFER_OVERFLOW,
+  PARITY_ERROR,
+  SYSTEM_ERROR,
+};
+
+enum SerialDataBits {
+  NONE,
+  SEVEN,
+  EIGHT,
+};
+
+enum SerialParityBit {
+  NONE,
+  NO_PARITY,
+  ODD,
+  EVEN,
+};
+
+enum SerialStopBits {
+  NONE,
+  ONE,
+  TWO,
+};
+
+struct SerialConnectionOptions {
+  uint32 bitrate = 0;
+  SerialDataBits data_bits = NONE;
+  SerialParityBit parity_bit = NONE;
+  SerialStopBits stop_bits = NONE;
+  bool cts_flow_control;
+  bool has_cts_flow_control = false;
+};
+
+struct SerialConnectionInfo {
+  uint32 bitrate = 0;
+  SerialDataBits data_bits = NONE;
+  SerialParityBit parity_bit = NONE;
+  SerialStopBits stop_bits = NONE;
+  bool cts_flow_control;
+};
+
+struct SerialHostControlSignals {
+  bool dtr;
+  bool has_dtr = false;
+  bool rts;
+  bool has_rts = false;
+};
+
+struct SerialDeviceControlSignals {
+  bool dcd;
+  bool cts;
+  bool ri;
+  bool dsr;
+};
 
 // Discovers and enumerates serial devices available to the host.
 interface SerialDeviceEnumerator {

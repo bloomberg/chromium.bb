@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "device/serial/serial.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/common/api/serial.h"

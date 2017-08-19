@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "device/serial/serial.mojom.h"
+#include "services/device/public/interfaces/serial.mojom.h"
 
 namespace device {
 

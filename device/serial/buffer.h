@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "device/serial/serial.mojom.h"
 #include "net/base/io_buffer.h"
+#include "services/device/public/interfaces/serial.mojom.h"
 
 namespace device {
 
