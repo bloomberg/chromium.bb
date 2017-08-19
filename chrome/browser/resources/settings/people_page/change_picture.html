@@ -24,6 +24,7 @@
         align-items: flex-start;
         display: flex;
         padding-top: 16px;
+        position: absolute;
       }
 
       #picturePane {
@@ -43,7 +44,14 @@
       }
 
       #pictureList {
-        width: 350px;
+        /* 162px is the size of header above the picture list.
+           TODO(reveman): Find a way to have height align to viewport
+           without having to make assumptions about header height. */
+        height: calc(100vh - 162px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: relative;
+        width: 320px;
       }
 
     </style>
