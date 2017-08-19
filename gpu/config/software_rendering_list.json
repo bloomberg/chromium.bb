@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.11",
+  "version": "13.12",
   "entries": [
     {
       "id": 1,
@@ -496,8 +496,8 @@
     },
     {
       "id": 68,
-      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+",
-      "cr_bugs": [169470],
+      "description": "VMware has corrupt rendering on Windows",
+      "cr_bugs": [169470, 754435],
       "os": {
         "type": "win",
         "version": {
@@ -506,10 +506,6 @@
         }
       },
       "vendor_id": "0x15ad",
-      "driver_version": {
-        "op": "<=",
-        "value": "7.14.1.1134"
-      },
       "features": [
         "all"
       ]
