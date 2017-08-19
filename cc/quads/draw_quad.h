@@ -79,9 +79,7 @@ class CC_EXPORT DrawQuad {
   bool ShouldDrawWithBlending() const {
     if (needs_blending || shared_quad_state->opacity < 1.0f)
       return true;
-    if (visible_rect.IsEmpty())
-      return false;
-    return !opaque_rect.Contains(visible_rect);
+    return false;
   }
 
   // Is the left edge of this tile aligned with the originating layer's

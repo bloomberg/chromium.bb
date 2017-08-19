@@ -311,6 +311,32 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
   return overlay_quad;
 }
 
+TextureDrawQuad* CreateTransparentCandidateQuadAt(
+    ResourceProvider* resource_provider,
+    const SharedQuadState* shared_quad_state,
+    RenderPass* render_pass,
+    const gfx::Rect& rect) {
+  gfx::Rect opaque_rect = gfx::Rect();
+  bool premultiplied_alpha = false;
+  bool flipped = false;
+  bool nearest_neighbor = false;
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  gfx::Size resource_size_in_pixels = rect.size();
+  bool is_overlay_candidate = true;
+  viz::ResourceId resource_id = CreateResource(
+      resource_provider, resource_size_in_pixels, is_overlay_candidate);
+
+  TextureDrawQuad* overlay_quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  overlay_quad->SetNew(shared_quad_state, rect, opaque_rect, rect, resource_id,
+                       premultiplied_alpha, kUVTopLeft, kUVBottomRight,
+                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                       nearest_neighbor, false);
+  overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
+
+  return overlay_quad;
+}
+
 StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     ResourceProvider* resource_provider,
     const SharedQuadState* shared_quad_state,
@@ -531,10 +557,9 @@ TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
 
 TEST_F(FullscreenOverlayTest, AlphaFail) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
-      resource_provider_.get(), pass->shared_quad_state_list.back(),
-      pass.get());
-  original_quad->opaque_rect = gfx::Rect(0, 0, 0, 0);
+  CreateTransparentCandidateQuadAt(resource_provider_.get(),
+                                   pass->shared_quad_state_list.back(),
+                                   pass.get(), pass.get()->output_rect);
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
