@@ -123,6 +123,8 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/extend.h"
     "${AOM_ROOT}/av1/encoder/firstpass.c"
     "${AOM_ROOT}/av1/encoder/firstpass.h"
+    "${AOM_ROOT}/av1/encoder/hash.c"
+    "${AOM_ROOT}/av1/encoder/hash.h"
     "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.c"
     "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.h"
     "${AOM_ROOT}/av1/encoder/lookahead.c"

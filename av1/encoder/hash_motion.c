@@ -1,70 +1,12 @@
 #include <assert.h>
+#include "av1/encoder/hash.h"
 #include "av1/encoder/hash_motion.h"
 #include "./av1_rtcd.h"
 
-typedef struct _crc_calculator {
-  uint32_t remainder;
-  uint32_t trunc_poly;
-  uint32_t bits;
-  uint32_t table[256];
-  uint32_t final_result_mask;
-} crc_calculator;
-
-static void crc_calculator_process_data(crc_calculator *p_crc_calculator,
-                                        uint8_t *pData, uint32_t dataLength) {
-  for (uint32_t i = 0; i < dataLength; i++) {
-    const uint8_t index =
-        (p_crc_calculator->remainder >> (p_crc_calculator->bits - 8)) ^
-        pData[i];
-    p_crc_calculator->remainder <<= 8;
-    p_crc_calculator->remainder ^= p_crc_calculator->table[index];
-  }
-}
-
-static void crc_calculator_reset(crc_calculator *p_crc_calculator) {
-  p_crc_calculator->remainder = 0;
-}
-
-static uint32_t crc_calculator_get_crc(crc_calculator *p_crc_calculator) {
-  return p_crc_calculator->remainder & p_crc_calculator->final_result_mask;
-}
-
-static void crc_calculator_init_table(crc_calculator *p_crc_calculator) {
-  const uint32_t high_bit = 1 << (p_crc_calculator->bits - 1);
-  const uint32_t byte_high_bit = 1 << (8 - 1);
-
-  for (uint32_t value = 0; value < 256; value++) {
-    uint32_t remainder = 0;
-    for (uint8_t mask = byte_high_bit; mask != 0; mask >>= 1) {
-      if (value & mask) {
-        remainder ^= high_bit;
-      }
-
-      if (remainder & high_bit) {
-        remainder <<= 1;
-        remainder ^= p_crc_calculator->trunc_poly;
-      } else {
-        remainder <<= 1;
-      }
-    }
-    p_crc_calculator->table[value] = remainder;
-  }
-}
-
-static void crc_calculator_init(crc_calculator *p_crc_calculator, uint32_t bits,
-                                uint32_t truncPoly) {
-  p_crc_calculator->remainder = 0;
-  p_crc_calculator->bits = bits;
-  p_crc_calculator->trunc_poly = truncPoly;
-  p_crc_calculator->final_result_mask = (1 << bits) - 1;
-  crc_calculator_init_table(p_crc_calculator);
-}
-
 static const int crc_bits = 16;
 static const int block_size_bits = 2;
-
-static crc_calculator crc_calculator1;
-static crc_calculator crc_calculator2;
+static CRC_CALCULATOR crc_calculator1;
+static CRC_CALCULATOR crc_calculator2;
 static int g_crc_initialized = 0;
 
 static void hash_table_clear_all(hash_table *p_hash_table) {
@@ -79,18 +21,6 @@ static void hash_table_clear_all(hash_table *p_hash_table) {
       p_hash_table->p_lookup_table[i] = NULL;
     }
   }
-}
-
-static uint32_t get_crc_value1(uint8_t *p, int length) {
-  crc_calculator_reset(&crc_calculator1);
-  crc_calculator_process_data(&crc_calculator1, p, length);
-  return crc_calculator_get_crc(&crc_calculator1);
-}
-
-static uint32_t get_crc_value2(uint8_t *p, int length) {
-  crc_calculator_reset(&crc_calculator2);
-  crc_calculator_process_data(&crc_calculator2, p, length);
-  return crc_calculator_get_crc(&crc_calculator2);
 }
 
 // TODO(youzhou@microsoft.com): is higher than 8 bits screen content supported?
@@ -138,8 +68,8 @@ static int hash_block_size_to_index(int block_size) {
 
 void av1_hash_table_init(hash_table *p_hash_table) {
   if (g_crc_initialized == 0) {
-    crc_calculator_init(&crc_calculator1, 24, 0x5D6DCB);
-    crc_calculator_init(&crc_calculator2, 24, 0x864CFB);
+    av1_crc_calculator_init(&crc_calculator1, 24, 0x5D6DCB);
+    av1_crc_calculator_init(&crc_calculator2, 24, 0x864CFB);
     g_crc_initialized = 1;
   }
   p_hash_table->p_lookup_table = NULL;
@@ -226,8 +156,10 @@ void av1_generate_block_2x2_hash_value(const YV12_BUFFER_CONFIG *picture,
       pic_block_same_info[0][pos] = is_block_2x2_row_same_value(p);
       pic_block_same_info[1][pos] = is_block_2x2_col_same_value(p);
 
-      pic_block_hash[0][pos] = get_crc_value1(p, length * sizeof(p[0]));
-      pic_block_hash[1][pos] = get_crc_value2(p, length * sizeof(p[0]));
+      pic_block_hash[0][pos] =
+          av1_get_crc_value(&crc_calculator1, p, length * sizeof(p[0]));
+      pic_block_hash[1][pos] =
+          av1_get_crc_value(&crc_calculator2, p, length * sizeof(p[0]));
 
       pos++;
     }
@@ -258,13 +190,15 @@ void av1_generate_block_hash_value(const YV12_BUFFER_CONFIG *picture,
       p[1] = src_pic_block_hash[0][pos + src_size];
       p[2] = src_pic_block_hash[0][pos + src_size * pic_width];
       p[3] = src_pic_block_hash[0][pos + src_size * pic_width + src_size];
-      dst_pic_block_hash[0][pos] = get_crc_value1((uint8_t *)p, length);
+      dst_pic_block_hash[0][pos] =
+          av1_get_crc_value(&crc_calculator1, (uint8_t *)p, length);
 
       p[0] = src_pic_block_hash[1][pos];
       p[1] = src_pic_block_hash[1][pos + src_size];
       p[2] = src_pic_block_hash[1][pos + src_size * pic_width];
       p[3] = src_pic_block_hash[1][pos + src_size * pic_width + src_size];
-      dst_pic_block_hash[1][pos] = get_crc_value2((uint8_t *)p, length);
+      dst_pic_block_hash[1][pos] =
+          av1_get_crc_value(&crc_calculator2, (uint8_t *)p, length);
 
       dst_pic_block_same_info[0][pos] =
           src_pic_block_same_info[0][pos] &&
@@ -391,10 +325,10 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
       get_pixels_in_1D_char_array_by_block_2x2(y_src + y_pos * stride + x_pos,
                                                stride, pixel_to_hash);
 
-      hash_value_buffer[0][0][pos] =
-          get_crc_value1(pixel_to_hash, sizeof(pixel_to_hash));
-      hash_value_buffer[1][0][pos] =
-          get_crc_value2(pixel_to_hash, sizeof(pixel_to_hash));
+      hash_value_buffer[0][0][pos] = av1_get_crc_value(
+          &crc_calculator1, pixel_to_hash, sizeof(pixel_to_hash));
+      hash_value_buffer[1][0][pos] = av1_get_crc_value(
+          &crc_calculator2, pixel_to_hash, sizeof(pixel_to_hash));
     }
   }
 
@@ -421,8 +355,8 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
         to_hash[3] =
             hash_value_buffer[0][src_idx][srcPos + src_sub_block_in_width + 1];
 
-        hash_value_buffer[0][dst_idx][dst_pos] =
-            get_crc_value1((uint8_t *)to_hash, sizeof(to_hash));
+        hash_value_buffer[0][dst_idx][dst_pos] = av1_get_crc_value(
+            &crc_calculator1, (uint8_t *)to_hash, sizeof(to_hash));
 
         to_hash[0] = hash_value_buffer[1][src_idx][srcPos];
         to_hash[1] = hash_value_buffer[1][src_idx][srcPos + 1];
@@ -430,8 +364,8 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
             hash_value_buffer[1][src_idx][srcPos + src_sub_block_in_width];
         to_hash[3] =
             hash_value_buffer[1][src_idx][srcPos + src_sub_block_in_width + 1];
-        hash_value_buffer[1][dst_idx][dst_pos] =
-            get_crc_value2((uint8_t *)to_hash, sizeof(to_hash));
+        hash_value_buffer[1][dst_idx][dst_pos] = av1_get_crc_value(
+            &crc_calculator2, (uint8_t *)to_hash, sizeof(to_hash));
         dst_pos++;
       }
     }

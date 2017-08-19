@@ -18,6 +18,7 @@
 #include "av1/encoder/encint.h"
 #endif
 #include "av1/common/mvref_common.h"
+#include "av1/encoder/hash.h"
 #if CONFIG_DIST_8X8
 #include "aom/aomcx.h"
 #endif
@@ -115,9 +116,35 @@ typedef struct {
   float kmeans_data_buf[2 * MAX_SB_SQUARE];
 } PALETTE_BUFFER;
 
+typedef struct {
+  TX_TYPE tx_type;
+  TX_SIZE tx_size;
+#if CONFIG_VAR_TX
+  TX_SIZE min_tx_size;
+  TX_SIZE inter_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
+  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+#endif  // CONFIG_VAR_TX
+#if CONFIG_TXK_SEL
+  TX_TYPE txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+#endif  // CONFIG_TXK_SEL
+  RD_STATS rd_stats;
+  uint32_t hash_value;
+} TX_RD_INFO;
+
+#define RD_RECORD_BUFFER_LEN 8
+typedef struct {
+  TX_RD_INFO tx_rd_info[RD_RECORD_BUFFER_LEN];  // Circular buffer.
+  int index_start;
+  int num;
+  CRC_CALCULATOR crc_calculator;  // Hash function.
+} TX_RD_RECORD;
+
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
+
+  // Save the transform RD search info.
+  TX_RD_RECORD tx_rd_record;
 
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;
