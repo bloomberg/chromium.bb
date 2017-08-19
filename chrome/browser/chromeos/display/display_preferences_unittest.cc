@@ -176,16 +176,6 @@ class DisplayPreferencesTest : public ash::AshTestBase {
     pref_data->Set(name, std::move(insets_value));
   }
 
-  void StoreColorProfile(int64_t id, const std::string& profile) {
-    DictionaryPrefUpdate update(&local_state_, prefs::kDisplayProperties);
-    const std::string name = base::Int64ToString(id);
-
-    base::DictionaryValue* pref_data = update.Get();
-    auto property = base::MakeUnique<base::DictionaryValue>();
-    property->SetString("color_profile_name", profile);
-    pref_data->Set(name, std::move(property));
-  }
-
   void StoreDisplayRotationPrefsForTest(bool rotation_lock,
                                         display::Display::Rotation rotation) {
     DictionaryPrefUpdate update(local_state(), prefs::kDisplayRotationLock);
@@ -265,18 +255,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   int64_t dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
-  std::vector<display::ColorCalibrationProfile> profiles;
-  profiles.push_back(display::COLOR_PROFILE_STANDARD);
-  profiles.push_back(display::COLOR_PROFILE_DYNAMIC);
-  profiles.push_back(display::COLOR_PROFILE_MOVIE);
-  profiles.push_back(display::COLOR_PROFILE_READING);
-  // Allows only |id1|.
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetAvailableColorProfiles(id1, profiles);
-  display_manager()->SetColorCalibrationProfile(id1,
-                                                display::COLOR_PROFILE_DYNAMIC);
-  display_manager()->SetColorCalibrationProfile(id2,
-                                                display::COLOR_PROFILE_DYNAMIC);
 
   LoggedInAsUser();
 
@@ -370,10 +348,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger(kTouchCalibrationWidth, &width));
   EXPECT_FALSE(property->GetInteger(kTouchCalibrationHeight, &height));
 
-  std::string color_profile;
-  EXPECT_TRUE(property->GetString("color_profile_name", &color_profile));
-  EXPECT_EQ("dynamic", color_profile);
-
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
@@ -403,10 +377,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger(kTouchCalibrationHeight, &height));
   EXPECT_EQ(width, touch_size.width());
   EXPECT_EQ(height, touch_size.height());
-
-  // |id2| doesn't have the color_profile because it doesn't have 'dynamic' in
-  // its available list.
-  EXPECT_FALSE(property->GetString("color_profile_name", &color_profile));
 
   // Resolution is saved only when the resolution is set
   // by DisplayManager::SetDisplayMode
@@ -508,7 +478,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // Set new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
       id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, display::COLOR_PROFILE_STANDARD, nullptr);
+      1.0f, nullptr);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
@@ -534,7 +504,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // Set yet another new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
       id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, display::COLOR_PROFILE_STANDARD, nullptr);
+      1.0f, nullptr);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
@@ -675,33 +645,6 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     EXPECT_EQ(id1, stored_placement.parent_display_id);
     EXPECT_EQ(id1, stored_layout.primary_id);
   }
-}
-
-TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
-  int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-
-  StoreColorProfile(id1, "dynamic");
-
-  LoggedInAsUser();
-  LoadDisplayPreferences(false);
-
-  // id1's available color profiles list is empty, means somehow the color
-  // profile suport is temporary in trouble.
-  EXPECT_NE(display::COLOR_PROFILE_DYNAMIC,
-            display_manager()->GetDisplayInfo(id1).color_profile());
-
-  // Once the profile is supported, the color profile should be restored.
-  std::vector<display::ColorCalibrationProfile> profiles;
-  profiles.push_back(display::COLOR_PROFILE_STANDARD);
-  profiles.push_back(display::COLOR_PROFILE_DYNAMIC);
-  profiles.push_back(display::COLOR_PROFILE_MOVIE);
-  profiles.push_back(display::COLOR_PROFILE_READING);
-  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
-      .SetAvailableColorProfiles(id1, profiles);
-
-  LoadDisplayPreferences(false);
-  EXPECT_EQ(display::COLOR_PROFILE_DYNAMIC,
-            display_manager()->GetDisplayInfo(id1).color_profile());
 }
 
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {

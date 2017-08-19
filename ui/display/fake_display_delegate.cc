@@ -172,18 +172,6 @@ void FakeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
   callback.Run(false);
 }
 
-std::vector<ColorCalibrationProfile>
-FakeDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const DisplaySnapshot& output) {
-  return std::vector<ColorCalibrationProfile>();
-}
-
-bool FakeDisplayDelegate::SetColorCalibrationProfile(
-    const DisplaySnapshot& output,
-    ColorCalibrationProfile new_profile) {
-  return false;
-}
-
 bool FakeDisplayDelegate::SetColorCorrection(
     const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,

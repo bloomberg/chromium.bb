@@ -811,36 +811,6 @@ void DisplayConfigurator::OnSetContentProtectionCompleted(
     content_protection_tasks_.front().Run();
 }
 
-std::vector<ColorCalibrationProfile>
-DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDisplayColorCalibration)) {
-    for (const DisplaySnapshot* display : cached_displays_) {
-      if (display->display_id() == display_id &&
-          IsPhysicalDisplayType(display->type())) {
-        return native_display_delegate_->GetAvailableColorCalibrationProfiles(
-            *display);
-      }
-    }
-  }
-
-  return std::vector<ColorCalibrationProfile>();
-}
-
-bool DisplayConfigurator::SetColorCalibrationProfile(
-    int64_t display_id,
-    ColorCalibrationProfile new_profile) {
-  for (const DisplaySnapshot* display : cached_displays_) {
-    if (display->display_id() == display_id &&
-        IsPhysicalDisplayType(display->type())) {
-      return native_display_delegate_->SetColorCalibrationProfile(*display,
-                                                                  new_profile);
-    }
-  }
-
-  return false;
-}
-
 bool DisplayConfigurator::SetColorCorrection(
     int64_t display_id,
     const std::vector<GammaRampRGBEntry>& degamma_lut,

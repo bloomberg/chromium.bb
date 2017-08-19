@@ -44,8 +44,6 @@ const char kScreenConfig[] = "screen-config";
 const char kUseFirstDisplayAsInternal[] = "use-first-display-as-internal";
 
 #if defined(OS_CHROMEOS)
-const char kDisableDisplayColorCalibration[] =
-    "disable-display-color-calibration";
 
 // Enables unified desktop mode.
 const char kEnableUnifiedDesktop[] = "ash-enable-unified-desktop";

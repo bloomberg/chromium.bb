@@ -68,10 +68,6 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void SetHDCPState(const DisplaySnapshot& output,
                     HDCPState state,
                     const SetHDCPStateCallback& callback) override;
-  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
-      const DisplaySnapshot& output) override;
-  bool SetColorCalibrationProfile(const DisplaySnapshot& output,
-                                  ColorCalibrationProfile new_profile) override;
   bool SetColorCorrection(const DisplaySnapshot& output,
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
                           const std::vector<GammaRampRGBEntry>& gamma_lut,

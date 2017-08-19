@@ -42,12 +42,6 @@ class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
   void SetHDCPState(const display::DisplaySnapshot& output,
                     display::HDCPState state,
                     const display::SetHDCPStateCallback& callback) override;
-  std::vector<display::ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(
-      const display::DisplaySnapshot& output) override;
-  bool SetColorCalibrationProfile(
-      const display::DisplaySnapshot& output,
-      display::ColorCalibrationProfile new_profile) override;
   bool SetColorCorrection(
       const display::DisplaySnapshot& output,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,

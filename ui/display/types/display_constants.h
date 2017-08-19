@@ -55,16 +55,6 @@ enum HDCPState {
   HDCP_STATE_LAST = HDCP_STATE_ENABLED
 };
 
-// Color calibration profiles. Don't change the order, and edit
-// tools/metrics/histograms/histograms.xml when a new item is added.
-enum ColorCalibrationProfile {
-  COLOR_PROFILE_STANDARD,
-  COLOR_PROFILE_DYNAMIC,
-  COLOR_PROFILE_MOVIE,
-  COLOR_PROFILE_READING,
-  NUM_COLOR_PROFILES,
-};
-
 }  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_DISPLAY_CONSTANTS_H_

@@ -190,7 +190,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       const gfx::Insets* overscan_insets,
       const gfx::Size& resolution_in_pixels,
       float device_scale_factor,
-      ColorCalibrationProfile color_profile,
       const TouchCalibrationData* touch_calibration_data);
 
   // Register stored rotation properties for the internal display.
@@ -232,10 +231,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Returns an empty insets (0, 0, 0, 0) if no insets are specified for the
   // display.
   gfx::Insets GetOverscanInsets(int64_t display_id) const;
-
-  // Sets the color calibration of the display to |profile|.
-  void SetColorCalibrationProfile(int64_t display_id,
-                                  ColorCalibrationProfile profile);
 
   // Called when display configuration has changed. The new display
   // configurations is passed as a vector of Display object, which contains each
@@ -412,9 +407,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // be different from |new_info| (due to overscan state), so you must use
   // |GetDisplayInfo| to get the correct ManagedDisplayInfo for a display.
   void InsertAndUpdateDisplayInfo(const ManagedDisplayInfo& new_info);
-
-  // Called when the display info is updated through InsertAndUpdateDisplayInfo.
-  void OnDisplayInfoUpdated(const ManagedDisplayInfo& display_info);
 
   // Creates a display object from the ManagedDisplayInfo for
   // |display_id|.

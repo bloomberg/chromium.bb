@@ -45,11 +45,6 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Don't update the display when the root window's size was changed.
   void DisableChangeDisplayUponHostResize();
 
-  // Sets the available color profiles for |display_id|.
-  void SetAvailableColorProfiles(
-      int64_t display_id,
-      const std::vector<ColorCalibrationProfile>& profiles);
-
   // Gets the internal ManagedDisplayInfo for a specific display id.
   const ManagedDisplayInfo& GetInternalManagedDisplayInfo(int64_t display_id);
 

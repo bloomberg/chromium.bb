@@ -81,15 +81,6 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
                             HDCPState state,
                             const SetHDCPStateCallback& callback) = 0;
 
-  // Gets the available list of color calibrations.
-  virtual std::vector<ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) = 0;
-
-  // Sets the color calibration of |output| to |new_profile|.
-  virtual bool SetColorCalibrationProfile(
-      const DisplaySnapshot& output,
-      ColorCalibrationProfile new_profile) = 0;
-
   // Set the gamma tables and corection matrix for the display.
   virtual bool SetColorCorrection(
       const DisplaySnapshot& output,

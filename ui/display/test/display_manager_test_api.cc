@@ -114,13 +114,6 @@ void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
   display_manager_->set_change_display_upon_host_resize(false);
 }
 
-void DisplayManagerTestApi::SetAvailableColorProfiles(
-    int64_t display_id,
-    const std::vector<ColorCalibrationProfile>& profiles) {
-  display_manager_->display_info_[display_id].set_available_color_profiles(
-      profiles);
-}
-
 const ManagedDisplayInfo& DisplayManagerTestApi::GetInternalManagedDisplayInfo(
     int64_t display_id) {
   return display_manager_->display_info_[display_id];

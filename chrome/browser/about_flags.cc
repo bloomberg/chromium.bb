@@ -1513,12 +1513,6 @@ const FeatureEntry kFeatureEntries[] = {
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
     {
-        "disable-display-color-calibration",
-        flag_descriptions::kDisplayColorCalibrationName,
-        flag_descriptions::kDisplayColorCalibrationDescription, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(::switches::kDisableDisplayColorCalibration),
-    },
-    {
         "enable-fullscreen-app-list",
         flag_descriptions::kEnableFullscreenAppListName,
         flag_descriptions::kEnableFullscreenAppListDescription, kOsCrOS,

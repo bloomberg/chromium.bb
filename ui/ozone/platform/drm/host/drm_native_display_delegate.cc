@@ -79,19 +79,6 @@ void DrmNativeDisplayDelegate::SetHDCPState(
   display->SetHDCPState(state, callback);
 }
 
-std::vector<display::ColorCalibrationProfile>
-DrmNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const display::DisplaySnapshot& output) {
-  return std::vector<display::ColorCalibrationProfile>();
-}
-
-bool DrmNativeDisplayDelegate::SetColorCalibrationProfile(
-    const display::DisplaySnapshot& output,
-    display::ColorCalibrationProfile new_profile) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool DrmNativeDisplayDelegate::SetColorCorrection(
     const display::DisplaySnapshot& output,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
