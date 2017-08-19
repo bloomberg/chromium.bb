@@ -66,19 +66,15 @@
           menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
-    <div class="settings-box">
-      <settings-toggle-button class="start"
-          pref="{{prefs.settings.language.send_function_keys}}"
-          label="$i18n{keyboardSendFunctionKeys}"
-          sub-label="$i18n{keyboardSendFunctionKeysDescription}">
-      </settings-toggle-button>
-    </div>
-    <div class="settings-box">
-      <settings-toggle-button class="start"
-          pref="{{prefs.settings.language.xkb_auto_repeat_enabled_r2}}"
-          label="$i18n{keyboardEnableAutoRepeat}">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button
+        pref="{{prefs.settings.language.send_function_keys}}"
+        label="$i18n{keyboardSendFunctionKeys}"
+        sub-label="$i18n{keyboardSendFunctionKeysDescription}">
+    </settings-toggle-button>
+    <settings-toggle-button
+        pref="{{prefs.settings.language.xkb_auto_repeat_enabled_r2}}"
+        label="$i18n{keyboardEnableAutoRepeat}">
+    </settings-toggle-button>
     <iron-collapse
         opened="[[prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]">
       <div class="settings-box continuation settings-checkbox-spacer">

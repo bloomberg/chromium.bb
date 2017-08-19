@@ -63,12 +63,10 @@
     </style>
 
     <div>
-      <div id="screenLockDiv" class="settings-box first">
-        <settings-toggle-button class="start"
-            pref="{{prefs.settings.enable_screen_lock}}"
-            label="$i18n{enableScreenlock}">
-        </settings-toggle-button>
-      </div>
+      <settings-toggle-button id="screenLockDiv" class="first"
+          pref="{{prefs.settings.enable_screen_lock}}"
+          label="$i18n{enableScreenlock}">
+      </settings-toggle-button>
 
       <template is="dom-if" if="[[quickUnlockEnabled_]]">
         <div id="lockOptionsDiv">
@@ -107,12 +105,10 @@
 
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <div id="fingerprintDiv">
-          <div class="settings-box continuation">
-            <settings-toggle-button class="start"
-                pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
-                label="$i18n{lockScreenFingerprintEnable}">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button class="continuation"
+              pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
+              label="$i18n{lockScreenFingerprintEnable}">
+          </settings-toggle-button>
           <iron-collapse
               opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
             <div class="settings-box continuation">
@@ -165,13 +161,11 @@
         </div>
         <iron-collapse opened="[[easyUnlockEnabled_]]"
             id="easyUnlockSettingsCollapsable">
-          <div class="settings-box continuation no-padding underbar">
-            <settings-toggle-button
-              class="start"
+          <settings-toggle-button
+              class="continuation no-padding underbar"
               pref="{{prefs.proximity_auth.is_chromeos_login_enabled}}"
               label="$i18n{easyUnlockAllowSignInLabel}">
-            </settings-toggle-button>
-          </div>
+          </settings-toggle-button>
           <div class="settings-box continuation no-padding">
             <div class="start">
               $i18n{easyUnlockProximityThresholdLabel}

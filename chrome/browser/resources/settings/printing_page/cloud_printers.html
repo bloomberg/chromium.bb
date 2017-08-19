@@ -15,12 +15,10 @@
         </a>
       </span>
     </div>
-    <div class="settings-box">
-      <settings-toggle-button class="start"
-          pref="{{prefs.local_discovery.notifications_enabled}}"
-          label="$i18n{printingNotificationsLabel}">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button
+        pref="{{prefs.local_discovery.notifications_enabled}}"
+        label="$i18n{printingNotificationsLabel}">
+    </settings-toggle-button>
     <a class="settings-box inherit-color no-outline" tabindex="-1"
         target="_blank" href="$i18n{devicesUrl}">
       <div class="start">

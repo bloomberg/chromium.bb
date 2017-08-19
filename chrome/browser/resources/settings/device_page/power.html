@@ -58,14 +58,12 @@
       </div>
     </div>
 
-    <div id="lidClosedRow" class="settings-box continuation"
-        hidden$="[[!hasLid_]]">
-      <settings-toggle-button class="start" id="lidClosedToggle"
-          pref="[[lidClosedPref_]]" label="[[lidClosedLabel_]]"
-          on-settings-boolean-control-change="onLidClosedToggleChange_"
-          no-set-pref>
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button class="continuation" hidden$="[[!hasLid_]]"
+        id="lidClosedToggle"
+        pref="[[lidClosedPref_]]" label="[[lidClosedLabel_]]"
+        on-settings-boolean-control-change="onLidClosedToggleChange_"
+        no-set-pref>
+    </settings-toggle-button>
   </template>
   <script src="power.js"></script>
 </dom-module>

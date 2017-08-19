@@ -9,6 +9,19 @@
 <dom-module id="settings-toggle-button">
   <template>
     <style include="settings-shared iron-flex">
+      :host {
+        @apply(--settings-box);
+      }
+
+      :host(.first),
+      :host(.continuation) {
+        border-top: none;
+      }
+
+      :host(.three-line) {
+        min-height: var(--settings-row-three-line-min-height);
+      }
+
       :host([elide-label]),
       :host([elide-label]) #outerRow,
       :host([elide-label]) #outerRow > div.flex {

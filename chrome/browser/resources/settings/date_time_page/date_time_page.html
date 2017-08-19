@@ -15,6 +15,10 @@
 <dom-module id="settings-date-time-page">
   <template>
     <style include="settings-shared">
+      #timeZoneAutoDetect {
+        padding: 0;
+      }
+
       .embedded {
         -webkit-padding-start: var(--settings-box-row-indent);
       }
@@ -52,7 +56,7 @@
       </template>
       <template is="dom-if" restamp
           if="[[prefs.cros.flags.per_user_timezone_enabled.value]]">
-        <settings-toggle-button
+        <settings-toggle-button class="first"
             pref="{{prefs.settings.resolve_timezone_by_geolocation}}"
             id="timeZoneAutoDetect"
             aria-labelledby="timezoneGeolocateToggleLabel">
@@ -91,12 +95,10 @@
         </template>
       </template>
     </div>
-    <div class="settings-box">
-      <settings-toggle-button class="start"
-          pref="{{prefs.settings.clock.use_24hour_clock}}"
-          label="$i18n{use24HourClock}">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button
+        pref="{{prefs.settings.clock.use_24hour_clock}}"
+        label="$i18n{use24HourClock}">
+    </settings-toggle-button>
     <div class="settings-box" id="setDateTime" actionable
         on-tap="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]">
       <div class="start">$i18n{setDateTime}</div>

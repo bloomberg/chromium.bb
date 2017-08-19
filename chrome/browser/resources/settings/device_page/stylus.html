@@ -33,21 +33,17 @@
       }
     </style>
 
-    <div class="settings-box continuation">
-      <settings-toggle-button class="start"
-          pref="{{prefs.settings.enable_stylus_tools}}"
-          label="$i18n{stylusEnableStylusTools}">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button class="continuation"
+        pref="{{prefs.settings.enable_stylus_tools}}"
+        label="$i18n{stylusEnableStylusTools}">
+    </settings-toggle-button>
 
     <template is="dom-if" if="[[hasInternalStylus_]]">
-      <div class="settings-box">
-        <settings-toggle-button class="start"
-            pref="{{prefs.settings.launch_palette_on_eject_event}}"
-            label="$i18n{stylusAutoOpenStylusTools}"
-            disabled="[[!prefs.settings.enable_stylus_tools.value]]">
-        </settings-toggle-button>
-      </div>
+      <settings-toggle-button
+          pref="{{prefs.settings.launch_palette_on_eject_event}}"
+          label="$i18n{stylusAutoOpenStylusTools}"
+          disabled="[[!prefs.settings.enable_stylus_tools.value]]">
+      </settings-toggle-button>
     </template>
 
     <div class="settings-box">
@@ -120,12 +116,10 @@
         </div>
 
         <template is="dom-if" if="[[lockScreenSupportEnabled_(selectedApp_)]]">
-          <div class="settings-box">
-            <settings-toggle-button id="keep-last-note-on-lock-screen-toggle"
-                pref="{{prefs.settings.restore_last_lock_screen_note}}"
-                label="$i18n{stylusNoteTakingAppKeepsLastNoteOnLockScreen}">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button id="keep-last-note-on-lock-screen-toggle"
+              pref="{{prefs.settings.restore_last_lock_screen_note}}"
+              label="$i18n{stylusNoteTakingAppKeepsLastNoteOnLockScreen}">
+          </settings-toggle-button>
         </template>
       </div>
     </template>

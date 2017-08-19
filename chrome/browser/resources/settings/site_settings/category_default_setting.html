@@ -11,14 +11,14 @@
   <template>
     <style include="settings-shared"></style>
     <settings-toggle-button id="toggle"
-        class="settings-box first"
+        class="first"
         pref="{{controlParams_}}" label="[[optionLabel_]]"
         sub-label="[[optionDescription]]"
         disabled$="[[isToggleDisabled_(category)]]">
     </settings-toggle-button>
     <template is="dom-if" if="[[subOptionLabel]]">
       <settings-toggle-button id="subOptionToggle"
-          class="settings-box" pref="{{subControlParams_}}"
+          pref="{{subControlParams_}}"
           label="[[subOptionLabel]]" sub-label="[[subOptionDescription]]"
           disabled$="[[!controlParams_.value]]">
       </settings-toggle-button>

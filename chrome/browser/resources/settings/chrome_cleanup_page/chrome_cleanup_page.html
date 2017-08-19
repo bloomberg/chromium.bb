@@ -118,14 +118,12 @@
         </paper-button>
       </template>
     </div>
-    <div class="settings-box" hidden="[[!showLogsPermission_]]">
-      <settings-toggle-button class="start"
-              id="chromeCleanupLogsUploadControl"
-              label="$i18n{chromeCleanupLogsUploadPermission}"
-              pref="[[logsUploadPref_]]"
-              on-settings-boolean-control-change="changeLogsPermission_">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button hidden="[[!showLogsPermission_]]"
+        id="chromeCleanupLogsUploadControl"
+        label="$i18n{chromeCleanupLogsUploadPermission}"
+        pref="[[logsUploadPref_]]"
+        on-settings-boolean-control-change="changeLogsPermission_">
+    </settings-toggle-button>
     <div id="show-files-button" class="settings-box" actionable
         on-tap="toggleExpandButton_" hidden="[[!showDetails_]]">
       <div class="start">

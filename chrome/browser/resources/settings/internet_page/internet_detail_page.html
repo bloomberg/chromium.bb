@@ -177,12 +177,10 @@
       </template>
       <!-- Data roaming (Cellular only). -->
       <template is="dom-if" if="[[isCellular_(networkProperties)]]">
-        <div class="settings-box">
-          <settings-toggle-button id="allowDataRoaming" class="start"
-              pref="{{prefs.cros.signed.data_roaming_enabled}}"
-              label="$i18n{networkAllowDataRoaming}">
-          </settings-toggle-button>
-        </div>
+      <settings-toggle-button id="allowDataRoaming"
+          pref="{{prefs.cros.signed.data_roaming_enabled}}"
+          label="$i18n{networkAllowDataRoaming}">
+      </settings-toggle-button>
       </template>
       <!-- SIM Info (Cellular only). -->
       <template is="dom-if" if="[[showCellularSim_(networkProperties)]]">

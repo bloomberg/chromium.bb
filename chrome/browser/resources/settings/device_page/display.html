@@ -209,17 +209,12 @@
 
     <!-- Night Light Settings -->
     <template is="dom-if" if="[[nightLightFeatureEnabled_]]" restamp>
-      <div class="settings-box">
-        <div class="start">
-          <h2 id="nightLightLabel">$i18n{displayNightLightLabel}</h2>
-          <div class="secondary">$i18n{displayNightLightText}</div>
-        </div>
-        <settings-toggle-button
-            id="nightLightToggleButton"
-            pref="{{prefs.ash.night_light.enabled}}"
-            aria-labelledby="nightLightLabel">
-        </settings-toggle-button>
-      </div>
+      <settings-toggle-button
+          id="nightLightToggleButton"
+          label="$i18n{displayNightLightLabel}"
+          pref="{{prefs.ash.night_light.enabled}}"
+          sub-label="$i18n{displayNightLightText}">
+      </settings-toggle-button>
       <div id="nightLightSettingsDiv"
           class="settings-box continuation start layout vertical">
         <!-- Color temperature slider -->

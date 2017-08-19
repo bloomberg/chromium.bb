@@ -1043,15 +1043,17 @@ cr.define('device_page_tests', function() {
 
         test('hide lid behavior when lid not present', function() {
           return new Promise(function(resolve) {
-            expectFalse(powerPage.$$('#lidClosedRow').hidden);
-            sendPowerManagementSettings(
-                settings.IdleBehavior.DISPLAY_OFF_SLEEP,
-                false /* idleControlled */, settings.LidClosedBehavior.SUSPEND,
-                false /* lidClosedControlled */, false /* hasLid */);
-            powerPage.async(resolve);
-          }).then(function() {
-            expectTrue(powerPage.$$('#lidClosedRow').hidden);
-          });
+                   expectFalse(powerPage.$$('#lidClosedToggle').hidden);
+                   sendPowerManagementSettings(
+                       settings.IdleBehavior.DISPLAY_OFF_SLEEP,
+                       false /* idleControlled */,
+                       settings.LidClosedBehavior.SUSPEND,
+                       false /* lidClosedControlled */, false /* hasLid */);
+                   powerPage.async(resolve);
+                 })
+              .then(function() {
+                expectTrue(powerPage.$$('#lidClosedToggle').hidden);
+              });
         });
       });
     });

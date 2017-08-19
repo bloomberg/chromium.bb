@@ -13,25 +13,22 @@
 <dom-module id="settings-google-assistant-page">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first">
-      <settings-toggle-button id="googleAssistantEnable"
-          class="start primary-toggle"
-          pref="{{prefs.settings.voice_interaction.enabled}}"
-          label="[[getAssistantOnOffLabel_(
-              prefs.settings.voice_interaction.enabled.value)]]"
-          on-change="onGoogleAssistantEnableChange_">
-      </settings-toggle-button>
-    </div>
+    <settings-toggle-button id="googleAssistantEnable"
+        class="first primary-toggle"
+        pref="{{prefs.settings.voice_interaction.enabled}}"
+        label="[[getAssistantOnOffLabel_(
+            prefs.settings.voice_interaction.enabled.value)]]"
+        on-change="onGoogleAssistantEnableChange_">
+    </settings-toggle-button>
     <template is="dom-if"
         if="{{prefs.settings.voice_interaction.enabled.value}}">
-      <div class="settings-box continuation indented">
-        <settings-toggle-button id="googleAssistantContextEnable" class="start"
-            pref="{{prefs.settings.voice_interaction.context.enabled}}"
-            label="$i18n{googleAssistantEnableContext}"
-            sub-label="$i18n{googleAssistantEnableContextDescription}"
-            on-change="onGoogleAssistantContextEnableChange_">
-        </settings-toggle-button>
-      </div>
+      <settings-toggle-button id="googleAssistantContextEnable"
+          class="continuation indented"
+          pref="{{prefs.settings.voice_interaction.context.enabled}}"
+          label="$i18n{googleAssistantEnableContext}"
+          sub-label="$i18n{googleAssistantEnableContextDescription}"
+          on-change="onGoogleAssistantContextEnableChange_">
+      </settings-toggle-button>
       <div id="googleAssistantSettings" class="settings-box"
           on-tap="onGoogleAssistantSettingsTapped_" actionable>
         <div class="start">

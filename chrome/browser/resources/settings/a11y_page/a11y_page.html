@@ -19,12 +19,10 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y" focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
-        <div class="settings-box">
-          <settings-toggle-button id="optionsInMenuToggle" class="start"
-              label="$i18n{optionsInMenuLabel}"
-              pref="{{prefs.settings.a11y.enable_menu}}">
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button id="optionsInMenuToggle"
+            label="$i18n{optionsInMenuLabel}"
+            pref="{{prefs.settings.a11y.enable_menu}}">
+        </settings-toggle-button>
         <div id="subpage-trigger" class="settings-box two-line"
             on-tap="onManageAccessibilityFeaturesTap_" actionable>
           <div class="start">
