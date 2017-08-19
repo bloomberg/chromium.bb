@@ -557,5 +557,26 @@ TEST_F(CheckerImageTrackerTest, UseSrcRectForSize) {
       image, WhichTree::PENDING_TREE));
 }
 
+TEST_F(CheckerImageTrackerTest, DisableForSoftwareRaster) {
+  SetUpTracker(true);
+
+  // Should checker when not disabled.
+  checker_image_tracker_->set_force_disabled(false);
+  DrawImage image1 = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image1, WhichTree::PENDING_TREE));
+
+  // Toggle disable. If we were already checkering this image, we need to
+  // continue it.
+  checker_image_tracker_->set_force_disabled(true);
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image1, WhichTree::PENDING_TREE));
+
+  // New image should not be checkered while disabled.
+  DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
+      image2, WhichTree::PENDING_TREE));
+}
+
 }  // namespace
 }  // namespace cc
