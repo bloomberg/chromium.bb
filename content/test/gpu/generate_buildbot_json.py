@@ -42,17 +42,19 @@ class Predicates(object):
   @staticmethod
   def DEFAULT(x):
     # By default, tests run on the chromium.gpu and chromium.gpu.fyi
-    # waterfalls, but not on the optional tryservers, nor on the
-    # client.v8.fyi waterfall, nor on the Win ANGLE AMD tryserver.
-    return Types.OPTIONAL not in x and Types.V8_FYI not in x and \
-      Types.WIN_ANGLE_AMD_TRYSERVER not in x
+    # waterfalls, but not on the DEQP bots, not on the optional
+    # tryservers, not on the client.v8.fyi waterfall, nor on the Win
+    # ANGLE AMD tryserver.
+    return Types.DEQP not in x and Types.OPTIONAL not in x and \
+      Types.V8_FYI not in x and Types.WIN_ANGLE_AMD_TRYSERVER not in x
 
   @staticmethod
   def FYI_ONLY(x):
     # This predicate is more complex than desired because the optional
     # tryservers and the Win ANGLE AMD tryserver are considered to be
     # on the chromium.gpu.fyi waterfall.
-    return Types.GPU_FYI in x and Types.OPTIONAL not in x and \
+    return Types.GPU_FYI in x and Types.DEQP not in x and \
+      Types.OPTIONAL not in x and \
       Types.WIN_ANGLE_AMD_TRYSERVER not in x
 
   @staticmethod
