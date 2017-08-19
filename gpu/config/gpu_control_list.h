@@ -217,7 +217,7 @@ class GPU_EXPORT GpuControlList {
                                  const GPUInfo& gpu_info);
 
   // Return the active entry indices from the last MakeDecision() call.
-  std::vector<uint32_t> GetActiveEntries() const;
+  const std::vector<uint32_t>& GetActiveEntries() const;
   // Return corresponding entry IDs from entry indices.
   std::vector<uint32_t> GetEntryIDsFromIndices(
       const std::vector<uint32_t>& entry_indices) const;

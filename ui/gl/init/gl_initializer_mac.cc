@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
@@ -39,7 +40,7 @@ bool InitializeOneOffForSandbox() {
   // GPU-related stuff is very slow without this, probably because
   // the sandbox prevents loading graphics drivers or some such.
   std::vector<CGLPixelFormatAttribute> attribs;
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (GLContext::SwitchableGPUsSupported()) {
     // Avoid switching to the discrete GPU just for this pixel
     // format selection.
     attribs.push_back(kCGLPFAAllowOfflineRenderers);

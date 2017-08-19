@@ -5,6 +5,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"

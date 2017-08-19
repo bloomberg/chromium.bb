@@ -46,7 +46,7 @@ static CGLPixelFormatObj GetPixelFormat() {
   std::vector<CGLPixelFormatAttribute> attribs;
   // If the system supports dual gpus then allow offline renderers for every
   // context, so that they can all be in the same share group.
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (GLContext::SwitchableGPUsSupported()) {
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
     g_support_renderer_switching = true;
   }
@@ -101,8 +101,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
          attribs.bind_generates_resource);
 
   GpuPreference gpu_preference =
-      ui::GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
-          attribs.gpu_preference);
+      GLContext::AdjustGpuPreference(attribs.gpu_preference);
 
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : nullptr;
@@ -113,7 +112,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
   // If using the discrete gpu, create a pixel format requiring it before we
   // create the context.
-  if (!ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus() ||
+  if (!GLContext::SwitchableGPUsSupported() ||
       gpu_preference == PreferDiscreteGpu) {
     std::vector<CGLPixelFormatAttribute> discrete_attribs;
     discrete_attribs.push_back((CGLPixelFormatAttribute) 0);

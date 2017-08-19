@@ -105,6 +105,8 @@ source_set("config_sources") {
     "gpu_info_collector_win.cc",
     "gpu_switches.cc",
     "gpu_switches.h",
+    "gpu_switching.cc",
+    "gpu_switching.h",
     "gpu_test_config.cc",
     "gpu_test_config.h",
     "gpu_test_expectations_parser.cc",

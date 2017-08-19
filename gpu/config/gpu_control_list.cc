@@ -562,7 +562,7 @@ std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
   return features;
 }
 
-std::vector<uint32_t> GpuControlList::GetActiveEntries() const {
+const std::vector<uint32_t>& GpuControlList::GetActiveEntries() const {
   return active_entries_;
 }
 
