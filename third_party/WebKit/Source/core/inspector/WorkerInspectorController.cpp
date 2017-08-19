@@ -42,6 +42,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
 
@@ -124,6 +125,10 @@ void WorkerInspectorController::SendProtocolMessage(int session_id,
                                                     int call_id,
                                                     const String& response,
                                                     const String& state) {
+  // Make tests more predictable by flushing all sessions before sending
+  // protocol response in any of them.
+  if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
+    FlushProtocolNotifications();
   // Worker messages are wrapped, no need to handle callId or state.
   thread_->GetWorkerReportingProxy().PostMessageToPageInspector(session_id,
                                                                 response);

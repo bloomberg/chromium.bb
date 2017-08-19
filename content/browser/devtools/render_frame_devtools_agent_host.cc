@@ -219,7 +219,7 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
   auto it = infos_.find(chunk.session_id);
   if (it != infos_.end())
     return it->second.chunk_processor->ProcessChunkedMessageFromAgent(chunk);
-  return false;
+  return true;
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::SendChunkedMessage(

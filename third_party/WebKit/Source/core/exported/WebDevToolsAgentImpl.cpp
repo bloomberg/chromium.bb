@@ -72,6 +72,7 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -556,6 +557,10 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
                                                const String& response,
                                                const String& state) {
   DCHECK(Attached());
+  // Make tests more predictable by flushing all sessions before sending
+  // protocol response in any of them.
+  if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
+    FlushProtocolNotifications();
   if (client_)
     client_->SendProtocolMessage(session_id, call_id, response, state);
 }
