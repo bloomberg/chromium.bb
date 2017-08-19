@@ -98,16 +98,21 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
         usb_detector_(usb_detector),
-        usb_detector_observer_proxy_(this, kUsbDetector, usb_detector_),
         zeroconf_detector_(std::move(zeroconf_detector)),
-        zeroconf_detector_observer_proxy_(this,
-                                          kZeroconfDetector,
-                                          zeroconf_detector_.get()),
         ppd_provider_(std::move(ppd_provider)),
         event_tracker_(event_tracker),
         printers_(kNumPrinterClasses),
         weak_ptr_factory_(this) {
     synced_printers_manager_observer_.Add(synced_printers_manager_);
+
+    // Callbacks may ensue immediately when the observer proxies are set up, so
+    // these instantiations must come after everything else is initialized.
+    usb_detector_observer_proxy_ =
+        base::MakeUnique<PrinterDetectorObserverProxy>(this, kUsbDetector,
+                                                       usb_detector_);
+    zeroconf_detector_observer_proxy_ =
+        base::MakeUnique<PrinterDetectorObserverProxy>(
+            this, kZeroconfDetector, zeroconf_detector_.get());
   }
 
   ~CupsPrintersManagerImpl() override = default;
@@ -384,10 +389,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Not owned.
   PrinterDetector* usb_detector_;
-  PrinterDetectorObserverProxy usb_detector_observer_proxy_;
+  std::unique_ptr<PrinterDetectorObserverProxy> usb_detector_observer_proxy_;
 
   std::unique_ptr<PrinterDetector> zeroconf_detector_;
-  PrinterDetectorObserverProxy zeroconf_detector_observer_proxy_;
+  std::unique_ptr<PrinterDetectorObserverProxy>
+      zeroconf_detector_observer_proxy_;
 
   scoped_refptr<PpdProvider> ppd_provider_;
 
