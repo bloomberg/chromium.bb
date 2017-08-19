@@ -112,7 +112,7 @@ class ObjectAliveTrait<T, true> {
   NO_SANITIZE_ADDRESS
   static bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
-    return object->IsHeapObjectAlive();
+    return object->GetHeapObjectHeader()->IsMarked();
   }
 };
 

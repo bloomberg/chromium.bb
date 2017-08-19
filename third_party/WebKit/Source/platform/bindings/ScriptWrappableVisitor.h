@@ -46,13 +46,13 @@ using TraceWrappersCallback = void (*)(const ScriptWrappableVisitor*,
 #define DEFINE_INLINE_TRACE_WRAPPERS() DECLARE_TRACE_WRAPPERS()
 #define DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() DECLARE_VIRTUAL_TRACE_WRAPPERS()
 
-#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)            \
-  template <>                                                 \
-  inline void TraceTrait<ClassName>::TraceMarkedWrapper(      \
-      const ScriptWrappableVisitor* visitor, const void* t) { \
-    const ClassName* traceable = ToWrapperTracingType(t);     \
-    DCHECK(GetHeapObjectHeader(t)->IsWrapperHeaderMarked());  \
-    traceable->TraceWrappers(visitor);                        \
+#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)                   \
+  template <>                                                        \
+  inline void TraceTrait<ClassName>::TraceMarkedWrapper(             \
+      const ScriptWrappableVisitor* visitor, const void* t) {        \
+    const ClassName* traceable = ToWrapperTracingType(t);            \
+    DCHECK(GetHeapObjectHeader(traceable)->IsWrapperHeaderMarked()); \
+    traceable->TraceWrappers(visitor);                               \
   }
 
 class WrapperMarkingData {
@@ -126,8 +126,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // alive in the current GC cycle.
   template <typename T>
   static void WriteBarrier(const T* dst_object) {
-    static_assert(!NeedsAdjustAndMark<T>::value,
-                  "wrapper tracing is not supported within mixins");
     if (!dst_object) {
       return;
     }
@@ -217,6 +215,12 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
     // TraceWrapperBase cannot point to V8 and thus doesn't need to
     // mark wrappers.
   }
+
+  // Catch all handlers needed because of mixins.
+  void DispatchTraceWrappers(const void*) const { CHECK(false); }
+
+  // Catch all handlers needed because of mixins.
+  void MarkWrappersInAllWorlds(const void*) const { CHECK(false); }
 
   // v8::EmbedderHeapTracer interface.
 
@@ -339,6 +343,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   mutable WTF::Vector<HeapObjectHeader*> headers_to_unmark_;
   v8::Isolate* isolate_;
 
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest, MixinTracing);
   FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
                            OilpanClearsMarkingDequeWhenObjectDied);
   FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
