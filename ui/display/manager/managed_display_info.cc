@@ -304,8 +304,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false),
-      color_profile_(COLOR_PROFILE_STANDARD) {}
+      clear_overscan_insets_(false) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        const std::string& name,
@@ -322,8 +321,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false),
-      color_profile_(COLOR_PROFILE_STANDARD) {}
+      clear_overscan_insets_(false) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
     default;
@@ -363,7 +361,6 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   size_in_pixel_ = native_info.size_in_pixel_;
   is_aspect_preserving_scaling_ = native_info.is_aspect_preserving_scaling_;
   display_modes_ = native_info.display_modes_;
-  available_color_profiles_ = native_info.available_color_profiles_;
   maximum_cursor_size_ = native_info.maximum_cursor_size_;
 
   // Rotation, ui_scale, color_profile and overscan are given by preference,
@@ -383,7 +380,6 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
 
     rotations_ = native_info.rotations_;
     configured_ui_scale_ = native_info.configured_ui_scale_;
-    color_profile_ = native_info.color_profile();
   }
 }
 
@@ -497,16 +493,6 @@ std::string ManagedDisplayInfo::ToFullString() const {
         m->native() ? "(N)" : "", m->ui_scale(), m->device_scale_factor());
   }
   return ToString() + ", display_modes==" + display_modes_str;
-}
-
-void ManagedDisplayInfo::SetColorProfile(ColorCalibrationProfile profile) {
-  if (IsColorProfileAvailable(profile))
-    color_profile_ = profile;
-}
-
-bool ManagedDisplayInfo::IsColorProfileAvailable(
-    ColorCalibrationProfile profile) const {
-  return base::ContainsValue(available_color_profiles_, profile);
 }
 
 bool ManagedDisplayInfo::Use125DSFForUIScaling() const {

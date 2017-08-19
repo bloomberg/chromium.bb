@@ -8365,6 +8365,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChromeOS.Display.ColorProfile" enum="ChromeOSColorProfile">
+  <obsolete>
+    Deprecated 8/2017.
+  </obsolete>
   <owner>xiaowenx@chromium.org</owner>
   <owner>mukai@chromium.org</owner>
   <summary>

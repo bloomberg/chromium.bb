@@ -285,24 +285,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // empty size.
   gfx::Size GetNativeModeSize() const;
 
-  ColorCalibrationProfile color_profile() const { return color_profile_; }
-
-  // Sets the color profile. It will ignore if the specified |profile| is not in
-  // |available_color_profiles_|.
-  void SetColorProfile(ColorCalibrationProfile profile);
-
-  // Returns true if |profile| is in |available_color_profiles_|.
-  bool IsColorProfileAvailable(ColorCalibrationProfile profile) const;
-
-  const std::vector<ColorCalibrationProfile>& available_color_profiles() const {
-    return available_color_profiles_;
-  }
-
-  void set_available_color_profiles(
-      const std::vector<ColorCalibrationProfile>& profiles) {
-    available_color_profiles_ = profiles;
-  }
-
   bool is_aspect_preserving_scaling() const {
     return is_aspect_preserving_scaling_;
   }
@@ -382,12 +364,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   // The list of modes supported by this display.
   ManagedDisplayModeList display_modes_;
-
-  // The current profile of the color calibration.
-  ColorCalibrationProfile color_profile_;
-
-  // The list of available variations for the color calibration.
-  std::vector<ColorCalibrationProfile> available_color_profiles_;
 
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;

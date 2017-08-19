@@ -249,8 +249,6 @@ void DisplayChangeObserver::OnDisplayModeChanged(
             : GetExternalManagedDisplayModeList(*state);
     new_info.SetManagedDisplayModes(display_modes);
 
-    new_info.set_available_color_profiles(
-        display_configurator_->GetAvailableColorCalibrationProfiles(id));
     new_info.set_maximum_cursor_size(state->maximum_cursor_size());
   }
 

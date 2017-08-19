@@ -2871,18 +2871,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Button label to start calibrating the overscan preference.">
     Adjust...
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_STANDARD" desc="The color profile name for 'standard'.">
-    Standard
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_DYNAMIC" desc="The color profile name for 'dynamic'.">
-    Dynamic
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_MOVIE" desc="The color profile name for 'movie'.">
-    Movie
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_READING" desc="The color profile name for 'reading'.">
-    Reading
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_TAB_TITLE" desc="Title for the display overscan calibration tab.">
     TV alignment
   </message>

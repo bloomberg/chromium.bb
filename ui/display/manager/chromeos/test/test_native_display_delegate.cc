@@ -107,18 +107,6 @@ void TestNativeDisplayDelegate::SetHDCPState(
   callback.Run(set_hdcp_expectation_);
 }
 
-std::vector<ColorCalibrationProfile>
-TestNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const DisplaySnapshot& output) {
-  return std::vector<ColorCalibrationProfile>();
-}
-
-bool TestNativeDisplayDelegate::SetColorCalibrationProfile(
-    const DisplaySnapshot& output,
-    ColorCalibrationProfile new_profile) {
-  return false;
-}
-
 bool TestNativeDisplayDelegate::SetColorCorrection(
     const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,

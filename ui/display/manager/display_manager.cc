@@ -446,7 +446,6 @@ void DisplayManager::RegisterDisplayProperty(
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
     float device_scale_factor,
-    ColorCalibrationProfile color_profile,
     const TouchCalibrationData* touch_calibration_data) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] =
@@ -460,7 +459,6 @@ void DisplayManager::RegisterDisplayProperty(
                                         Display::ROTATION_SOURCE_USER);
   display_info_[display_id].SetRotation(rotation,
                                         Display::ROTATION_SOURCE_ACTIVE);
-  display_info_[display_id].SetColorProfile(color_profile);
   // Just in case the preference file was corrupted.
   // TODO(mukai): register |display_modes_| here as well, so the lookup for the
   // default mode in GetActiveModeForDisplayId() gets much simpler.
@@ -549,28 +547,6 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
       display_info_.find(display_id);
   return (it != display_info_.end()) ? it->second.overscan_insets_in_dip()
                                      : gfx::Insets();
-}
-
-void DisplayManager::SetColorCalibrationProfile(
-    int64_t display_id,
-    ColorCalibrationProfile profile) {
-#if defined(OS_CHROMEOS)
-  if (!display_info_[display_id].IsColorProfileAvailable(profile))
-    return;
-
-  if (delegate_)
-    delegate_->PreDisplayConfigurationChange(false);
-  // Just sets color profile if it's not running on ChromeOS (like tests).
-  if (!configure_displays_ ||
-      delegate_->display_configurator()->SetColorCalibrationProfile(display_id,
-                                                                    profile)) {
-    display_info_[display_id].SetColorProfile(profile);
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Display.ColorProfile", profile,
-                              NUM_COLOR_PROFILES);
-  }
-  if (delegate_)
-    delegate_->PostDisplayConfigurationChange();
-#endif
 }
 
 void DisplayManager::OnNativeDisplaysChanged(
@@ -1394,18 +1370,6 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
     }
   }
   display_info_[new_info.id()].UpdateDisplaySize();
-  OnDisplayInfoUpdated(display_info_[new_info.id()]);
-}
-
-void DisplayManager::OnDisplayInfoUpdated(
-    const ManagedDisplayInfo& display_info) {
-#if defined(OS_CHROMEOS)
-  ColorCalibrationProfile color_profile = display_info.color_profile();
-  if (color_profile != COLOR_PROFILE_STANDARD) {
-    delegate_->display_configurator()->SetColorCalibrationProfile(
-        display_info.id(), color_profile);
-  }
-#endif
 }
 
 Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {

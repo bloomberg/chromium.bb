@@ -23,7 +23,6 @@ DISPLAY_EXPORT extern const char kSecondaryDisplayLayout[];
 DISPLAY_EXPORT extern const char kUseFirstDisplayAsInternal[];
 
 #if defined(OS_CHROMEOS)
-DISPLAY_EXPORT extern const char kDisableDisplayColorCalibration[];
 DISPLAY_EXPORT extern const char kEnableUnifiedDesktop[];
 #endif
 

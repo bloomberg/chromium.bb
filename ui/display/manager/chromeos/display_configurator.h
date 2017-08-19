@@ -272,15 +272,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
                             uint32_t protection_mask,
                             const SetProtectionCallback& callback);
 
-  // Checks the available color profiles for |display_id| and fills the result
-  // into |profiles|.
-  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
-      int64_t display_id);
-
-  // Updates the color calibration to |new_profile|.
-  bool SetColorCalibrationProfile(int64_t display_id,
-                                  ColorCalibrationProfile new_profile);
-
   // Returns true if there is at least one display on.
   bool IsDisplayOn() const;
 

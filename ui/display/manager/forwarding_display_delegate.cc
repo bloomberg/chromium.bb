@@ -89,18 +89,6 @@ void ForwardingDisplayDelegate::SetHDCPState(
   delegate_->SetHDCPState(snapshot.display_id(), state, callback);
 }
 
-std::vector<ColorCalibrationProfile>
-ForwardingDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const DisplaySnapshot& output) {
-  return std::vector<ColorCalibrationProfile>();
-}
-
-bool ForwardingDisplayDelegate::SetColorCalibrationProfile(
-    const DisplaySnapshot& output,
-    ColorCalibrationProfile new_profile) {
-  return false;
-}
-
 bool ForwardingDisplayDelegate::SetColorCorrection(
     const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
