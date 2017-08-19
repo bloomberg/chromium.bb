@@ -53,33 +53,35 @@ const char kOkayCertName[] = "ok_cert.pem";
 // These certificates are self signed certificates with relevant issuer common
 // names generated using the following openssl command:
 //  openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+
+// Common name: "Outdated Antivirus"
 const char kOutdatedAntivirusCert[] =
     "-----BEGIN CERTIFICATE-----\n"
-    "MIIEKzCCAxOgAwIBAgIJAKEHkWB4gBwRMA0GCSqGSIb3DQEBCwUAMIGrMQswCQYD\n"
+    "MIID/zCCAuegAwIBAgIJANADVqnC0vPYMA0GCSqGSIb3DQEBCwUAMIGVMQswCQYD\n"
     "VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5j\n"
-    "aXNjbzEgMB4GA1UECgwXTWlzY29uZmlndXJlZCBBbnRpdmlydXMxLDAqBgNVBAMM\n"
-    "I01pc2NvbmZpZ3VyZWQgRmlyZXdhbGxfNEdIUE9TNTQxMkVGMR8wHQYJKoZIhvcN\n"
-    "AQkBFhB0ZXN0QGV4YW1wbGUuY29tMB4XDTE3MDgwOTA2MjQxMloXDTE4MDgwOTA2\n"
-    "MjQxMlowgasxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYD\n"
-    "VQQHDA1TYW4gRnJhbmNpc2NvMSAwHgYDVQQKDBdNaXNjb25maWd1cmVkIEFudGl2\n"
-    "aXJ1czEsMCoGA1UEAwwjTWlzY29uZmlndXJlZCBGaXJld2FsbF80R0hQT1M1NDEy\n"
-    "RUYxHzAdBgkqhkiG9w0BCQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3\n"
-    "DQEBAQUAA4IBDwAwggEKAoIBAQDJUkuPE7tJzTS1n2B8sPM/yUxRysJ3OgFGT2ah\n"
-    "X7O/SFujnbWngjJNeCd/5BFoWcvlNIvnCexgpmkwY7A2IF02lqloqpXUxDusshgx\n"
-    "CHWtpGJPsfQgBr/G+DuskDxstpZwL/U9ib/hfFH3BxacpIr67vP/phox5LilPL2x\n"
-    "K5++c1ky1m0nBV6tgQdHK6tNDzsUwDtLWQoastf/QpAHNQ4FwHeeMAS3MyIc4UrR\n"
-    "UY79jQM6pI/PvDvpIXAfR+p4FFrYQDqKANNUfL//AKoYxyLUmvLnmHDtFAyvJZDL\n"
-    "ET/owkPr97FF9tYrx4/yFKnTVlK1XLZtvMWfKf4dOKp6xXuPAgMBAAGjUDBOMB0G\n"
-    "A1UdDgQWBBRjVm9bd9WCEKU2moKxqG2Lb7AqADAfBgNVHSMEGDAWgBRjVm9bd9WC\n"
-    "EKU2moKxqG2Lb7AqADAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBo\n"
-    "Xes5dVRP336D6Hhna5S/y5rEz/GHgksljszTUMFQoUpsG+NHH/4PV85JQHv/+qgd\n"
-    "CcBug8i7C63Uvgex6dhPfiyOp1/EEdqQ+WCTCtuZuTGidEAAIHwC1RpcDlVZ46pM\n"
-    "aZyvRJcR+9axQ8KKvuJcgQQpYi3eqC/j9oaGP9O+qHKvcp94SvwRjgBsEEkcsaA5\n"
-    "4KE5UtzJg5+e4suG+GTKkE51LCGnP62/qaMujrxdVv6on1oDrGmGW0ro05gM+GiX\n"
-    "CbMn1qQ7+wn+sESgR45HnqhlWpTYL12tRVnDdJPupqkihr8nwV5+uR0C5CG0pIJ+\n"
-    "Sv4GFvNvKocwCQBPb/Hd\n"
+    "aXNjbzEbMBkGA1UECgwST3V0ZGF0ZWQgQW50aXZpcnVzMRswGQYDVQQDDBJPdXRk\n"
+    "YXRlZCBBbnRpdmlydXMxHzAdBgkqhkiG9w0BCQEWEHRlc3RAZXhhbXBsZS5jb20w\n"
+    "HhcNMTcwODE3MDYxNjIzWhcNMTgwODE3MDYxNjIzWjCBlTELMAkGA1UEBhMCVVMx\n"
+    "EzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xGzAZ\n"
+    "BgNVBAoMEk91dGRhdGVkIEFudGl2aXJ1czEbMBkGA1UEAwwST3V0ZGF0ZWQgQW50\n"
+    "aXZpcnVzMR8wHQYJKoZIhvcNAQkBFhB0ZXN0QGV4YW1wbGUuY29tMIIBIjANBgkq\n"
+    "hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApE60ozR0GRvhC8pLgvQiJGnZ+QNVq2+v\n"
+    "r0u8U4Gc9Rrau19owmik9N6SfViwgD8F335Ayo2Q9lF/M39fwH3fL/Ac2zHCD2Cs\n"
+    "u1YOD1DEFYFzV2mkWOUHFDpVSjJVVB0Bk9b2TscOrzn5Yn+uTMuFepwwRA14ljWS\n"
+    "l2spCM0LNwXBmPv3c1KI8WOTsPuLCSCgcPejQVPHhzALg9ymODPkX/zyYQKK4PzY\n"
+    "dCpg1WzgScERHLTQhKrq26bWeVcJwmQ42Ea4JQ6qnOHy/yzXm786rDFDlJLpLygo\n"
+    "nqERSwSpu8Up9tOp72Zo9OB05OjsneEp4W8xlVdH8cQsmBj4uztL6QIDAQABo1Aw\n"
+    "TjAdBgNVHQ4EFgQUeta5n0X4vG8ph9U+6/irRxgVocEwHwYDVR0jBBgwFoAUeta5\n"
+    "n0X4vG8ph9U+6/irRxgVocEwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC\n"
+    "AQEAowqui84tdVS9yDigrfKAFqqD5fZKpKbpRxi5aRKoaX6hOUNHSFA+pC9Xd4Sg\n"
+    "W1Q1sd7rSKLG9jh3aKwhDvRFvVvKePxIPjB9f9mamt5DXH1tYuz1SylOH8DtYs50\n"
+    "/9IDkaFQ8XryqSVDVZj1rpnj6pPPV00AfhVgqG1tgHzYqB7jtXoHqn/bKQX8eYZT\n"
+    "VtlyGhJIKpFAiv20Pfx3Af1aOVvfyg9cM117BjZ54GyA5Md8D7CXv6G/g4p10Q+a\n"
+    "LezwUjncyY0gLGm39RtPvUKHQi2i9NCfukrtKioixjvHsxQ6G2+o1np5PlO8/Xmg\n"
+    "b6PrWTR/FHT44s5H8bCUHDfrCQ==\n"
     "-----END CERTIFICATE-----";
 
+// Common name: "Misconfigured Firewall_4GHPOS5412EF"
 const char kMisconfiguredFirewallCert[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEJTCCAw2gAwIBAgIJAO0EVfP6VLU9MA0GCSqGSIb3DQEBCwUAMIGoMQswCQYD\n"
@@ -152,6 +154,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
         bad_clock_interstitial_shown_(false),
         captive_portal_interstitial_shown_(false),
         mitm_software_interstitial_shown_(false),
+        is_mitm_software_interstitial_enterprise_(false),
         redirected_to_suggested_url_(false),
         is_overridable_error_(true) {}
 
@@ -180,6 +183,9 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
   int mitm_software_interstitial_shown() const {
     return mitm_software_interstitial_shown_;
   }
+  bool is_mitm_software_interstitial_enterprise() const {
+    return is_mitm_software_interstitial_enterprise_;
+  }
   bool bad_clock_interstitial_shown() const {
     return bad_clock_interstitial_shown_;
   }
@@ -199,6 +205,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     bad_clock_interstitial_shown_ = false;
     captive_portal_interstitial_shown_ = false;
     mitm_software_interstitial_shown_ = false;
+    is_mitm_software_interstitial_enterprise_ = false;
     redirected_to_suggested_url_ = false;
   }
 
@@ -226,8 +233,10 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     captive_portal_interstitial_shown_ = true;
   }
 
-  void ShowMITMSoftwareInterstitial() override {
+  void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name,
+                                    bool is_enterprise_managed) override {
     mitm_software_interstitial_shown_ = true;
+    is_mitm_software_interstitial_enterprise_ = is_enterprise_managed;
   }
 
   void CheckSuggestedUrl(
@@ -252,6 +261,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
   bool bad_clock_interstitial_shown_;
   bool captive_portal_interstitial_shown_;
   bool mitm_software_interstitial_shown_;
+  bool is_mitm_software_interstitial_enterprise_;
   bool redirected_to_suggested_url_;
   bool is_overridable_error_;
   CommonNameMismatchHandler::CheckUrlCallback suggested_url_callback_;
@@ -1174,6 +1184,34 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_MisconfiguredFirewallCertificate) {
   delegate()->set_non_overridable_error();
 
   TestMITMSoftwareInterstitial();
+}
+
+TEST_F(SSLErrorAssistantTest, MITMSoftware_EnterpriseManaged) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(true);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+  delegate()->set_non_overridable_error();
+
+  TestMITMSoftwareInterstitial();
+
+  EXPECT_TRUE(delegate()->is_mitm_software_interstitial_enterprise());
+}
+
+TEST_F(SSLErrorAssistantTest, MITMSoftware_NotEnterpriseManaged) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+  delegate()->set_non_overridable_error();
+
+  TestMITMSoftwareInterstitial();
+
+  EXPECT_FALSE(delegate()->is_mitm_software_interstitial_enterprise());
 }
 
 TEST_F(SSLErrorAssistantTest, MITMSoftware_FeatureDisabled) {
