@@ -14,7 +14,10 @@ if (is_android) {
   # APK targets that depend on this indirectly, should also
   # depend on :media_java to get the corresponding Java classes.
   source_set("android") {
-    visibility = [ "//media" ]
+    visibility = [
+      "//media",
+      "//media/filters",
+    ]
     sources = [
       "android_cdm_factory.cc",
       "android_cdm_factory.h",

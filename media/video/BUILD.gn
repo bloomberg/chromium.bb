@@ -11,6 +11,7 @@ source_set("video") {
   visibility = [
     "//media",
     "//media/filters",
+    "//media/formats",
     "//media/renderers",
   ]
 
@@ -45,8 +46,7 @@ source_set("video") {
   ]
 
   configs += [
-    # TODO(wolenetz): Fix size_t to int truncation in win64.
-    # See http://crbug.com/171009
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
   ]
@@ -92,6 +92,7 @@ source_set("unit_tests") {
   configs += [ "//media:media_config" ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
