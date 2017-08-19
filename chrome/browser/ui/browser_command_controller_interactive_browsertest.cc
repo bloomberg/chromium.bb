@@ -555,8 +555,17 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 // the FullscreenChangeObserver won't finish if the command actually won't cause
 // the page to exit fullscreen mode. So we need to maintain a list of exiting /
 // non-exiting commands, which is not the goal of this test.
+
+#if defined(OS_CHROMEOS)
+// This test is flaky on ChromeOS, see bug http://crbug.com/754878.
+#define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
+        DISABLED_ShortcutsShouldTakeEffectInJsFullscreen
+#else
+#define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
+        ShortcutsShouldTakeEffectInJsFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
-                       ShortcutsShouldTakeEffectInJsFullscreen) {
+                       MAYBE_ShortcutsShouldTakeEffectInJsFullscreen) {
   ASSERT_NO_FATAL_FAILURE(SendShortcutsAndExpectNotPrevented(true));
 }
 
