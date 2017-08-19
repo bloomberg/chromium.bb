@@ -28,6 +28,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 import org.chromium.content_shell_apk.IChildProcessTest;
 
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
@@ -256,7 +257,8 @@ public class ChildProcessLauncherTest {
                             public ChildProcessLauncher call() {
                                 ChildProcessLauncher processLauncher = new ChildProcessLauncher(
                                         LauncherThread.getHandler(), delegate, commandLine,
-                                        filesToBeMapped, mConnectionAllocator, childProcessBinder);
+                                        filesToBeMapped, mConnectionAllocator,
+                                        Arrays.asList(childProcessBinder));
                                 processLauncher.start(true /* setupConnection */,
                                         false /*queueIfNoFreeConnection */);
                                 return processLauncher;

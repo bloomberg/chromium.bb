@@ -20,6 +20,8 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessService;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
 
+import java.util.List;
+
 import javax.annotation.concurrent.GuardedBy;
 
 /**
@@ -51,9 +53,9 @@ public class TestChildProcessService extends ChildProcessService {
         }
 
         @Override
-        public void onConnectionSetup(Bundle connectionBundle, IBinder callback) {
-            if (callback != null) {
-                mIChildProcessTest = IChildProcessTest.Stub.asInterface(callback);
+        public void onConnectionSetup(Bundle connectionBundle, List<IBinder> clientInterfaces) {
+            if (clientInterfaces != null && !clientInterfaces.isEmpty()) {
+                mIChildProcessTest = IChildProcessTest.Stub.asInterface(clientInterfaces.get(0));
             }
             if (mIChildProcessTest != null) {
                 try {
