@@ -736,10 +736,8 @@ _no_unittest_boards = frozenset((
 ))
 
 _cheets_vmtest_boards = frozenset([
-    'amd64-generic-cheets',
     'betty',
     'betty-arc64',
-    'cyan',
     'newbie',
     'novato',
     'novato-arc64',
@@ -2340,27 +2338,24 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
 
   _paladin_simple_vmtest_boards = frozenset([
-      'rambi',
-      'x86-mario',
+      'betty',
   ])
 
   _paladin_devmode_vmtest_boards = frozenset([
-      'parrot',
+      'betty',
   ])
 
   _paladin_cros_vmtest_boards = frozenset([
-      'stout',
+      'betty',
   ])
 
   _paladin_smoke_vmtest_boards = frozenset([
-      'amd64-generic',
-      'x86-generic',
       'betty',
       'betty-arc64',
   ])
 
   _paladin_default_vmtest_boards = frozenset([
-      'x32-generic',
+      'betty',
   ])
 
   # Jetstream devices run unique hw tests

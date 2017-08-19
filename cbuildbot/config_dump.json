@@ -1246,20 +1246,20 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "amd64-generic-cheets-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "amd64-generic-cheets-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -1292,11 +1292,11 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "amd64-generic-cheets-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -1326,7 +1326,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "amd64-generic-cheets-payloads": {
         "_template": "payloads",
@@ -1345,7 +1346,8 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "amd64-generic-cheets-release": {
         "_template": "release",
@@ -1353,14 +1355,14 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "amd64-generic-cheets-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -1368,7 +1370,9 @@
                     "amd64-generic-cheets"
                 ],
                 "grouped": true,
-                "name": "amd64-generic-cheets-release-afdo-generate"
+                "name": "amd64-generic-cheets-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release_afdo_use",
@@ -1376,41 +1380,47 @@
                     "amd64-generic-cheets"
                 ],
                 "grouped": true,
-                "name": "amd64-generic-cheets-release-afdo-use"
+                "name": "amd64-generic-cheets-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
             }
-        ]
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "amd64-generic-cheets-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "amd64-generic-cheets-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "amd64-generic-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "amd64-generic-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "amd64-generic-cheets-unittest-stress": {
         "_template": "unittest_stress",
@@ -1673,7 +1683,7 @@
         "boards": [
             "amd64-generic"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": []
     },
     "amd64-generic-pre-cq": {
         "_template": "pre_cq",
@@ -6447,23 +6457,23 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "cyan-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -6496,11 +6506,11 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -6550,7 +6560,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-payloads": {
         "_template": "payloads",
@@ -6569,7 +6580,8 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-release": {
         "_template": "release",
@@ -6577,15 +6589,15 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
-        "important": true
+        "important": true,
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -6593,7 +6605,9 @@
                     "cyan"
                 ],
                 "grouped": true,
-                "name": "cyan-release-afdo-generate"
+                "name": "cyan-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release_afdo_use",
@@ -6601,41 +6615,47 @@
                     "cyan"
                 ],
                 "grouped": true,
-                "name": "cyan-release-afdo-use"
+                "name": "cyan-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
             }
-        ]
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "cyan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-unittest-stress": {
         "_template": "unittest_stress",
@@ -18369,7 +18389,6 @@
         "boards": [
             "parrot"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "internal": true,
         "manifest": "official.xml",
@@ -18379,15 +18398,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "parrot-payloads": {
         "_template": "payloads",
@@ -20191,7 +20202,6 @@
         "boards": [
             "rambi"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -20202,9 +20212,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "rambi-payloads": {
         "_template": "payloads",
@@ -23707,7 +23715,6 @@
         "boards": [
             "stout"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "internal": true,
         "manifest": "official.xml",
@@ -23717,9 +23724,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "stout-payloads": {
         "_template": "payloads",
@@ -28734,9 +28739,9 @@
         "boards": [
             "x32-generic"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
-        "usepkg_toolchain": false
+        "usepkg_toolchain": false,
+        "vm_tests": []
     },
     "x32-generic-pre-cq": {
         "_template": "pre_cq",
@@ -29215,8 +29220,8 @@
         "boards": [
             "x86-generic"
         ],
-        "buildslave_type": "baremetal",
-        "important": false
+        "important": false,
+        "vm_tests": []
     },
     "x86-generic-pre-cq": {
         "_template": "pre_cq",
@@ -29340,7 +29345,6 @@
         "boards": [
             "x86-mario"
         ],
-        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -29351,9 +29355,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "x86-mario-payloads": {
         "_template": "payloads",
