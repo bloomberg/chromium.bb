@@ -17,6 +17,9 @@
                 "domain": "ApplicationCache"
             },
             {
+                "domain": "Audits"
+            },
+            {
                 "domain": "CacheStorage",
                 "async": ["requestCacheNames", "requestEntries", "deleteCache", "deleteEntry", "requestCachedResponse"]
             },

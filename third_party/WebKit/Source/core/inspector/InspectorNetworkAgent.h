@@ -226,6 +226,9 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   // Called from other agents.
   void SetHostId(const String&);
+  protocol::Response GetResponseBody(const String& request_id,
+                                     String* content,
+                                     bool* base64_encoded);
   bool FetchResourceContent(Document*,
                             const KURL&,
                             String* content,
