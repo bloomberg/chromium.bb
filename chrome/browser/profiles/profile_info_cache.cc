@@ -1134,18 +1134,6 @@ void ProfileInfoCache::RemoveProfile(const base::FilePath& profile_path) {
   DeleteProfileFromCache(profile_path);
 }
 
-std::vector<ProfileAttributesEntry*>
-ProfileInfoCache::GetAllProfilesAttributes() {
-  std::vector<ProfileAttributesEntry*> ret;
-  for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-    ProfileAttributesEntry* entry;
-    if (GetProfileAttributesWithPath(GetPathOfProfileAtIndex(i), &entry)) {
-      ret.push_back(entry);
-    }
-  }
-  return ret;
-}
-
 bool ProfileInfoCache::GetProfileAttributesWithPath(
     const base::FilePath& path, ProfileAttributesEntry** entry) {
   const auto entry_iter = profile_attributes_entries_.find(path.value());

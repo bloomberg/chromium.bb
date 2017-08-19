@@ -102,6 +102,20 @@ ProfileAttributesStorage::~ProfileAttributesStorage() {
 }
 
 std::vector<ProfileAttributesEntry*>
+ProfileAttributesStorage::GetAllProfilesAttributes() {
+  std::vector<ProfileAttributesEntry*> ret;
+  for (const auto& path_and_entry : profile_attributes_entries_) {
+    ProfileAttributesEntry* entry;
+    // Initialize any entries that are not yet initialized.
+    bool success = GetProfileAttributesWithPath(
+        base::FilePath(path_and_entry.first), &entry);
+    DCHECK(success);
+    ret.push_back(entry);
+  }
+  return ret;
+}
+
+std::vector<ProfileAttributesEntry*>
 ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
   UErrorCode error_code = U_ZERO_ERROR;
   // Use the default collator. The default locale should have been properly
