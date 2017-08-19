@@ -61,10 +61,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   test.set_audio_play_delay_cb(
       media::BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, &test)));
 
-  media::PipelineStatus pipeline_status =
-      test.Start(data, size,
-                 media::PipelineIntegrationTestBase::kClockless |
-                     media::PipelineIntegrationTestBase::kUnreliableDuration);
+  media::PipelineStatus pipeline_status = test.Start(
+      data, size, media::PipelineIntegrationTestBase::kUnreliableDuration);
   if (pipeline_status != media::PIPELINE_OK)
     return 0;
 

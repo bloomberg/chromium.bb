@@ -204,7 +204,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
     CreateVideoDecodersCB prepend_video_decoders_cb,
     CreateAudioDecodersCB prepend_audio_decoders_cb) {
   hashing_enabled_ = test_type & kHashed;
-  clockless_playback_ = test_type & kClockless;
+  clockless_playback_ = !(test_type & kNoClockless);
   webaudio_attached_ = test_type & kWebAudio;
 
   EXPECT_CALL(*this, OnMetadata(_))
@@ -545,7 +545,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
     uint8_t test_type,
     FakeEncryptedMedia* encrypted_media) {
   hashing_enabled_ = test_type & kHashed;
-  clockless_playback_ = test_type & kClockless;
+  clockless_playback_ = !(test_type & kNoClockless);
 
   if (!(test_type & kExpectDemuxerFailure))
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
