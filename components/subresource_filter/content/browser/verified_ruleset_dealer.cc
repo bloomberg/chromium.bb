@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 
@@ -26,6 +27,8 @@ void VerifiedRulesetDealer::SetRulesetFile(base::File ruleset_file) {
 
 scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
   DCHECK(CalledOnValidSequence());
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "VerifiedRulesetDealer::GetRuleset");
 
   // TODO(pkalinnikov): Record verification status to a histogram.
   switch (status_) {
