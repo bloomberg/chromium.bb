@@ -84,31 +84,29 @@
 
         <template is="dom-if" if="[[googleNowAvailable_]]">
           <!-- Google Now cards in the launcher -->
-          <div class="settings-box continuation indented">
-            <settings-toggle-button id="googleNowEnable" class="start"
-                pref="{{prefs.google_now_launcher.enabled}}"
-                label="$i18n{searchEnableGoogleNowLabel}">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button id="googleNowEnable"
+              class="continuation indented"
+              pref="{{prefs.google_now_launcher.enabled}}"
+              label="$i18n{searchEnableGoogleNowLabel}">
+          </settings-toggle-button>
         </template>
 
         <template is="dom-if" if="[[hotwordInfo_.allowed]]">
           <!-- Hotword (OK Google) -->
-          <div class="settings-box two-line continuation indented">
-            <settings-toggle-button id="hotwordSearchEnable" class="start"
-                pref="{{hotwordSearchEnablePref_}}"
-                label="$i18n{searchOkGoogleLabel}"
-                sub-label="[[getHotwordSearchEnableSubLabel_(
-                           hotwordInfo_.alwaysOn)]]"
-                on-change="onHotwordSearchEnableChange_">
-            </settings-toggle-button>
-            <div class="settings-row"
-                hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">
-              <div class="separator"></div>
-              <paper-button on-tap="onRetrainTap_" class="secondary-button">
-                $i18n{searchOkGoogleRetrain}
-              </paper-button>
-            </div>
+          <settings-toggle-button id="hotwordSearchEnable"
+              class="continuation indented"
+              pref="{{hotwordSearchEnablePref_}}"
+              label="$i18n{searchOkGoogleLabel}"
+              sub-label="[[getHotwordSearchEnableSubLabel_(
+                  hotwordInfo_.alwaysOn)]]"
+              on-change="onHotwordSearchEnableChange_">
+          </settings-toggle-button>
+          <div class="settings-row indented"
+              hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">
+            <div class="separator"></div>
+            <paper-button on-tap="onRetrainTap_" class="secondary-button">
+              $i18n{searchOkGoogleRetrain}
+            </paper-button>
           </div>
 
           <template is="dom-if"

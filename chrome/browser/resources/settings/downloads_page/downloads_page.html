@@ -34,19 +34,17 @@
           end-justified>
       </controlled-button>
     </div>
-    <div class="settings-box block">
-      <settings-toggle-button
-          pref="{{prefs.download.prompt_for_download}}"
-          label="$i18n{promptForDownload}">
-      </settings-toggle-button>
+    <settings-toggle-button
+        pref="{{prefs.download.prompt_for_download}}"
+        label="$i18n{promptForDownload}">
+    </settings-toggle-button>
 <if expr="chromeos">
-      <settings-toggle-button
-          pref="{{prefs.gdata.disabled}}"
-          label="$i18n{disconnectGoogleDriveAccount}"
-          hidden="[[!pageVisibility.googleDrive]]">
-      </settings-toggle-button>
+    <settings-toggle-button class="continuation"
+        pref="{{prefs.gdata.disabled}}"
+        label="$i18n{disconnectGoogleDriveAccount}"
+        hidden="[[!pageVisibility.googleDrive]]">
+    </settings-toggle-button>
 </if>
-    </div>
     <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
       <div class="settings-box">
         <div class="start">

@@ -241,11 +241,7 @@
       /* A settings-box is a horizontal row of text or controls within a
        * setting section (page or subpage). */
       .settings-box {
-        align-items: center;
-        border-top: var(--settings-separator-line);
-        display: flex;
-        min-height: var(--settings-row-min-height);
-        padding: 0 var(--settings-box-row-padding);
+        @apply(--settings-box);
       }
 
       .settings-box.two-line {

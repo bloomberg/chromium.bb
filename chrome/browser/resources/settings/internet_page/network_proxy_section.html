@@ -61,16 +61,14 @@
     </template>
 
     <!-- Allow shared proxies -->
-    <div class="settings-box continuation"
+    <settings-toggle-button id="allowShared" class="continuation"
         hidden$="[[!shouldShowAllowShared_(
-            networkProperties.ProxySettings.Type)]]">
-      <settings-toggle-button id="allowShared" class="start"
-          pref="{{prefs.settings.use_shared_proxies}}"
-          label="$i18n{networkProxyAllowShared}"
-          on-settings-boolean-control-change="onAllowSharedProxiesChange_"
-          no-set-pref>
-      </settings-toggle-button>
-    </div>
+            networkProperties.ProxySettings.Type)]]"
+        pref="{{prefs.settings.use_shared_proxies}}"
+        label="$i18n{networkProxyAllowShared}"
+        on-settings-boolean-control-change="onAllowSharedProxiesChange_"
+        no-set-pref>
+    </settings-toggle-button>
 
     <network-proxy editable
         network-properties="[[networkProperties]]"

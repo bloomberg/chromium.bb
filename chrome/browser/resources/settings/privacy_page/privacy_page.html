@@ -76,97 +76,68 @@
         <div class="settings-box first">
           <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>
         </div>
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.alternate_error_pages.enabled}}"
-              label="$i18n{linkDoctorPref}">
-          </settings-toggle-button>
-        </div>
-        <div class="settings-box" hidden="[[!pageVisibility.searchPrediction]]">
-          <settings-toggle-button class="start"
-              pref="{{prefs.search.suggest_enabled}}"
-              label="$i18n{searchSuggestPref}">
-          </settings-toggle-button>
-        </div>
-        <div class="settings-box"
-            hidden="[[!pageVisibility.networkPrediction]]">
-          <settings-toggle-button class="start"
-              pref="{{prefs.net.network_prediction_options}}"
-              label="$i18n{networkPredictionEnabled}"
-              numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]">
-          </settings-toggle-button>
-        </div>
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              id="safeBrowsingExtendedReportingControl"
-              pref="[[safeBrowsingExtendedReportingPref_]]"
-              label="$i18n{safeBrowsingEnableExtendedReporting}"
-              on-settings-boolean-control-change="onSberChange_"
-              no-set-pref>
-          </settings-toggle-button>
-        </div>
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.safebrowsing.enabled}}"
-              label="$i18n{safeBrowsingEnableProtection}">
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
+            label="$i18n{linkDoctorPref}">
+        </settings-toggle-button>
+        <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
+            pref="{{prefs.search.suggest_enabled}}"
+            label="$i18n{searchSuggestPref}">
+        </settings-toggle-button>
+        <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
+            pref="{{prefs.net.network_prediction_options}}"
+            label="$i18n{networkPredictionEnabled}"
+            numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]">
+        </settings-toggle-button>
+        <settings-toggle-button id="safeBrowsingExtendedReportingControl"
+            pref="[[safeBrowsingExtendedReportingPref_]]"
+            label="$i18n{safeBrowsingEnableExtendedReporting}"
+            on-settings-boolean-control-change="onSberChange_"
+            no-set-pref>
+        </settings-toggle-button>
+        <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
+            label="$i18n{safeBrowsingEnableProtection}">
+        </settings-toggle-button>
 <if expr="_google_chrome">
 <if expr="chromeos">
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.cros.metrics.reportingEnabled}}"
-              label="$i18n{enableLogging}">
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
+            label="$i18n{enableLogging}">
+        </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              id="metricsReportingControl"
-              pref="[[metricsReportingPref_]]"
-              label="$i18n{enableLogging}"
-              on-settings-boolean-control-change="onMetricsReportingChange_"
-              no-set-pref>
-            <template is="dom-if" if="[[showRestart_]]" restamp>
-              <paper-button on-tap="onRestartTap_" id="restart"
-                  slot="more-actions">
-                $i18n{restart}
-              </paper-button>
-            </template>
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button id="metricsReportingControl"
+            pref="[[metricsReportingPref_]]" label="$i18n{enableLogging}"
+            on-settings-boolean-control-change="onMetricsReportingChange_"
+            no-set-pref>
+          <template is="dom-if" if="[[showRestart_]]" restamp>
+            <paper-button on-tap="onRestartTap_" id="restart"
+                slot="more-actions">
+              $i18n{restart}
+            </paper-button>
+          </template>
+        </settings-toggle-button>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-        <div class="settings-box">
-          <settings-toggle-button id="doNotTrack" class="start"
-              pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
-              on-settings-boolean-control-change="onDoNotTrackChange_"
-              no-set-pref>
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button id="doNotTrack"
+            pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
+            on-settings-boolean-control-change="onDoNotTrackChange_"
+            no-set-pref>
+        </settings-toggle-button>
 <if expr="chromeos">
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-              label="$i18n{enableContentProtectionAttestation}">
-          </settings-toggle-button>
-        </div>
-        <div class="settings-box">
-          <settings-toggle-button class="start"
-              pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
-              label="$i18n{wakeOnWifi}">
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button
+            pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
+            label="$i18n{enableContentProtectionAttestation}">
+        </settings-toggle-button>
+        <settings-toggle-button
+            pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
+            label="$i18n{wakeOnWifi}">
+        </settings-toggle-button>
 </if>
 <if expr="_google_chrome">
-        <div class="settings-box two-line">
-          <settings-toggle-button class="start"
-              pref="{{prefs.spellcheck.use_spelling_service}}"
-              label="$i18n{spellingPref}"
-              sub-label="$i18n{spellingDescription}">
-          </settings-toggle-button>
-        </div>
+        <settings-toggle-button
+            pref="{{prefs.spellcheck.use_spelling_service}}"
+            label="$i18n{spellingPref}"
+            sub-label="$i18n{spellingDescription}">
+        </settings-toggle-button>
 </if>
 <if expr="use_nss_certs or is_win or is_macosx">
         <div id="manageCertificates" class="settings-box two-line"
@@ -286,13 +257,11 @@
               toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
               sub-option-label="$i18n{deleteDataPostSession}">
           </category-default-setting>
-          <div class="settings-box two-line">
-            <settings-toggle-button class="start"
-                pref="{{prefs.profile.block_third_party_cookies}}"
-                label="$i18n{thirdPartyCookie}"
-                sub-label="$i18n{thirdPartyCookieSublabel}">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button
+              pref="{{prefs.profile.block_third_party_cookies}}"
+              label="$i18n{thirdPartyCookie}"
+              sub-label="$i18n{thirdPartyCookieSublabel}">
+          </settings-toggle-button>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.COOKIES}}">
           </category-setting-exceptions>
@@ -473,26 +442,22 @@
       </template>
       <template is="dom-if" route-path="/content/protectedContent" no-search>
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
-          <div class="settings-box first">
-            <settings-toggle-button class="start"
-                pref="{{prefs.webkit.webprefs.encrypted_media_enabled}}"
-                label="[[getProtectedContentLabel_(
-                    prefs.webkit.webprefs.encrypted_media_enabled.value)]]"
-                disabled$="[[isGuest_]]">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button class="first"
+              pref="{{prefs.webkit.webprefs.encrypted_media_enabled}}"
+              label="[[getProtectedContentLabel_(
+                  prefs.webkit.webprefs.encrypted_media_enabled.value)]]"
+              disabled$="[[isGuest_]]">
+          </settings-toggle-button>
 <if expr="chromeos or is_win">
           <div class="settings-box first two-line">
             $i18n{siteSettingsProtectedContentIdentifiersExplanation}
           </div>
-          <div class="settings-box first">
-            <settings-toggle-button class="start"
-                pref="{{prefs.settings.privacy.drm_enabled}}"
-                label="[[getProtectedContentIdentifiersLabel_(
-                    prefs.settings.privacy.drm_enabled.value)]]"
-                disabled$="[[isGuest_]]">
-            </settings-toggle-button>
-          </div>
+          <settings-toggle-button class="first"
+              pref="{{prefs.settings.privacy.drm_enabled}}"
+              label="[[getProtectedContentIdentifiersLabel_(
+                  prefs.settings.privacy.drm_enabled.value)]]"
+              disabled$="[[isGuest_]]">
+          </settings-toggle-button>
 </if>
 <if expr="chromeos">
           <template is="dom-if"
