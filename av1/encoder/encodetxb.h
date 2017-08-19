@@ -67,7 +67,7 @@ typedef struct TxbProbs {
 
 void av1_alloc_txb_buf(AV1_COMP *cpi);
 void av1_free_txb_buf(AV1_COMP *cpi);
-int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
+int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                         int blk_row, int blk_col, int block, TX_SIZE tx_size,
                         TXB_CTX *txb_ctx);
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,

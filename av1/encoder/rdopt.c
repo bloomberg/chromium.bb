@@ -1663,10 +1663,10 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int blk_row, int blk_col, int block, TX_SIZE tx_size,
                     const SCAN_ORDER *scan_order, const ENTROPY_CONTEXT *a,
                     const ENTROPY_CONTEXT *l, int use_fast_coef_costing) {
+  const AV1_COMMON *const cm = &cpi->common;
 #if !CONFIG_LV_MAP
   (void)blk_row;
   (void)blk_col;
-  const AV1_COMMON *const cm = &cpi->common;
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
 #else  // !CONFIG_LV_MAP
@@ -1688,7 +1688,7 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_cost_coeffs_txb(cpi, x, plane, blk_row, blk_col, block, tx_size,
+  return av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
                              &txb_ctx);
 #endif  // !CONFIG_LV_MAP
 }

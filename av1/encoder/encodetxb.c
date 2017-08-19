@@ -288,10 +288,9 @@ static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
     return coeff_base[abs_qc == level];
 }
 
-int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
+int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                         int blk_row, int blk_col, int block, TX_SIZE tx_size,
                         TXB_CTX *txb_ctx) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
