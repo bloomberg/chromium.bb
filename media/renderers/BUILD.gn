@@ -13,7 +13,6 @@ source_set("renderers") {
     "audio_renderer_impl.h",
     "default_renderer_factory.cc",
     "default_renderer_factory.h",
-    "gpu_video_accelerator_factories.h",
     "renderer_impl.cc",
     "renderer_impl.h",
     "skcanvas_video_renderer.cc",

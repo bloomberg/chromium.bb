@@ -18,10 +18,10 @@
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_logging.h"
-#include "media/audio/sample_rates.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/sample_rates.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 

@@ -103,7 +103,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/renderers/audio_renderer_impl.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"

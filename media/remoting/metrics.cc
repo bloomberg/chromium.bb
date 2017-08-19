@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "media/audio/sample_rates.h"
+#include "media/base/sample_rates.h"
 
 namespace media {
 namespace remoting {

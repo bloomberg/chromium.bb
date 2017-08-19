@@ -29,8 +29,8 @@
 #include "media/filters/decoder_stream.h"
 #include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/default_renderer_factory.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 
 namespace base {
 class SingleThreadTaskRunner;

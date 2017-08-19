@@ -21,10 +21,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/audio_output_proxy.h"
-#include "media/audio/sample_rates.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
+#include "media/base/sample_rates.h"
 
 namespace media {
 
