@@ -1551,12 +1551,17 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
 
   TX_SIZE txsize_ctx = get_txsize_context(tx_size);
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   nz_map_count = &td->counts->nz_map[txsize_ctx][plane_type];
 
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
 
   ++td->counts->txb_skip[txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
+#if LV_MAP_PROB
+  update_cdf(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
+             2);
+#endif
   x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
 
   x->mbmi_ext->eobs[plane][block] = eob;
@@ -1580,9 +1585,16 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     if (c == seg_eob - 1) break;
 
     ++(*nz_map_count)[coeff_ctx][is_nz];
+#if LV_MAP_PROB
+    update_cdf(ec_ctx->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz, 2);
+#endif
 
     if (is_nz) {
       ++td->counts->eob_flag[txsize_ctx][plane_type][eob_ctx][c == (eob - 1)];
+#if LV_MAP_PROB
+      update_cdf(ec_ctx->eob_flag_cdf[txsize_ctx][plane_type][eob_ctx],
+                 c == (eob - 1), 2);
+#endif
     }
   }
 
@@ -1600,16 +1612,26 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
       if (level == i + 1) {
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];
+#if LV_MAP_PROB
+        update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 1,
+                   2);
+#endif
         if (c == 0) {
           int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
           ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+#if LV_MAP_PROB
+          update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+#endif
           x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
         }
         cul_level += level;
         continue;
       }
       ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][0];
+#if LV_MAP_PROB
+      update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 0, 2);
+#endif
       update_eob = AOMMAX(update_eob, c);
     }
   }
@@ -1627,6 +1649,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
       ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+#if LV_MAP_PROB
+      update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+#endif
       x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
     }
 
@@ -1635,9 +1660,15 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
       if (level == (idx + 1 + NUM_BASE_LEVELS)) {
         ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
+#if LV_MAP_PROB
+        update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1, 2);
+#endif
         break;
       }
       ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
+#if LV_MAP_PROB
+      update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
+#endif
     }
     if (idx < COEFF_BASE_RANGE) continue;
 
