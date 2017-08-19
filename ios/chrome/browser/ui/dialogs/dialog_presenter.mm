@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
-#import "ios/chrome/browser/ui/dialogs/javascript_dialog_blocking_util.h"
+#import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/shared/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
@@ -456,16 +456,20 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   DCHECK(alertCoordinator);
   DCHECK(webState);
 
+  JavaScriptDialogBlockingState::CreateForWebState(webState);
+  JavaScriptDialogBlockingState* blockingState =
+      JavaScriptDialogBlockingState::FromWebState(webState);
+
   // Set up the start action.
   ProceduralBlock originalStartAction = alertCoordinator.startAction;
   alertCoordinator.startAction = ^{
     if (originalStartAction)
       originalStartAction();
-    JavaScriptDialogWasShown(webState);
+    blockingState->JavaScriptDialogWasShown();
   };
 
   // Early return if a blocking option should not be added.
-  if (!ShouldShowDialogBlockingOption(webState))
+  if (!blockingState->show_blocking_option())
     return;
 
   ProceduralBlock blockingAction =
@@ -506,7 +510,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
       DialogPresenter* strongSelf = weakSelf;
       if (!strongSelf)
         return;
-      DialogBlockingOptionSelected([strongSelf presentedDialogWebState]);
+      web::WebState* webState = [strongSelf presentedDialogWebState];
+      JavaScriptDialogBlockingState::FromWebState(webState)
+          ->JavaScriptDialogBlockingOptionSelected();
       [strongSelf dialogCoordinatorWasStopped:weakCoordinator];
     };
     ProceduralBlock cancelHandler = ^{
