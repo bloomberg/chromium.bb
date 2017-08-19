@@ -38,7 +38,7 @@ void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->rect = rect;
   this->opaque_rect = opaque_rect;
   this->visible_rect = visible_rect;
-  this->needs_blending = needs_blending;
+  this->needs_blending = needs_blending || !opaque_rect.Contains(visible_rect);
   this->shared_quad_state = shared_quad_state;
 
   DCHECK(shared_quad_state);

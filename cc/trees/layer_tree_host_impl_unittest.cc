@@ -7567,7 +7567,7 @@ class BlendStateCheckLayer : public LayerImpl {
       opaque_rect = quad_rect_;
     else
       opaque_rect = opaque_content_rect_;
-    gfx::Rect visible_quad_rect = quad_rect_;
+    gfx::Rect visible_quad_rect = quad_visible_rect_;
 
     SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
@@ -7579,7 +7579,7 @@ class BlendStateCheckLayer : public LayerImpl {
                                     visible_quad_rect, resource_id_,
                                     gfx::RectF(0.f, 0.f, 1.f, 1.f),
                                     gfx::Size(1, 1), false, false);
-    test_blending_draw_quad->visible_rect = quad_visible_rect_;
+
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(has_render_surface_,
               GetRenderSurface(this) != GetRenderSurface(comparison_layer_));
