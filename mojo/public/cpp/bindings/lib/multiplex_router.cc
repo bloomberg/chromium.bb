@@ -153,9 +153,6 @@ class MultiplexRouter::InterfaceEndpoint
     router_->AssertLockAcquired();
 
     DCHECK(!client_);
-    DCHECK(closed_);
-    DCHECK(peer_closed_);
-    DCHECK(!sync_watcher_);
   }
 
   void OnSyncEventSignaled() {
@@ -243,9 +240,8 @@ class MultiplexRouter::InterfaceEndpoint
 };
 
 // MessageWrapper objects are always destroyed under the router's lock. On
-// destruction, if the message it wrappers contains
-// ScopedInterfaceEndpointHandles (which cannot be destructed under the
-// router's lock), the wrapper unlocks to clean them up.
+// destruction, if the message it wrappers contains interface IDs, the wrapper
+// closes the corresponding endpoints.
 class MultiplexRouter::MessageWrapper {
  public:
   MessageWrapper() = default;
@@ -257,14 +253,14 @@ class MultiplexRouter::MessageWrapper {
       : router_(other.router_), value_(std::move(other.value_)) {}
 
   ~MessageWrapper() {
-    if (value_.associated_endpoint_handles()->empty())
+    if (!router_ || value_.IsNull())
       return;
 
     router_->AssertLockAcquired();
-    {
-      MayAutoUnlock unlocker(&router_->lock_);
-      value_.mutable_associated_endpoint_handles()->clear();
-    }
+    // Don't try to close the endpoints if at this point the router is already
+    // half-destructed.
+    if (!router_->being_destructed_)
+      router_->CloseEndpointsForMessage(value_);
   }
 
   MessageWrapper& operator=(MessageWrapper&& other) {
@@ -273,7 +269,16 @@ class MultiplexRouter::MessageWrapper {
     return *this;
   }
 
-  Message& value() { return value_; }
+  const Message& value() const { return value_; }
+
+  // Must be called outside of the router's lock.
+  // Returns a null message if it fails to deseralize the associated endpoint
+  // handles.
+  Message DeserializeEndpointHandlesAndTake() {
+    if (!value_.DeserializeAssociatedEndpointHandles(router_))
+      return Message();
+    return std::move(value_);
+  }
 
  private:
   MultiplexRouter* router_ = nullptr;
@@ -322,19 +327,13 @@ MultiplexRouter::MultiplexRouter(
     scoped_refptr<base::SequencedTaskRunner> runner)
     : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       task_runner_(runner),
-      header_validator_(nullptr),
       filters_(this),
       connector_(std::move(message_pipe),
                  config == MULTI_INTERFACE ? Connector::MULTI_THREADED_SEND
                                            : Connector::SINGLE_THREADED_SEND,
                  std::move(runner)),
       control_message_handler_(this),
-      control_message_proxy_(&connector_),
-      next_interface_id_value_(1),
-      posted_to_process_tasks_(false),
-      encountered_error_(false),
-      paused_(false),
-      testing_mode_(false) {
+      control_message_proxy_(&connector_) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (config == MULTI_INTERFACE)
@@ -361,27 +360,11 @@ MultiplexRouter::MultiplexRouter(
 MultiplexRouter::~MultiplexRouter() {
   MayAutoLock locker(&lock_);
 
+  being_destructed_ = true;
+
   sync_message_tasks_.clear();
   tasks_.clear();
-
-  for (auto iter = endpoints_.begin(); iter != endpoints_.end();) {
-    InterfaceEndpoint* endpoint = iter->second.get();
-    // Increment the iterator before calling UpdateEndpointStateMayRemove()
-    // because it may remove the corresponding value from the map.
-    ++iter;
-
-    if (!endpoint->closed()) {
-      // This happens when a NotifyPeerEndpointClosed message been received, but
-      // the interface ID hasn't been used to create local endpoint handle.
-      DCHECK(!endpoint->client());
-      DCHECK(endpoint->peer_closed());
-      UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
-    } else {
-      UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
-    }
-  }
-
-  DCHECK(endpoints_.empty());
+  endpoints_.clear();
 }
 
 void MultiplexRouter::AddIncomingMessageFilter(
@@ -442,30 +425,15 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
   if (!IsValidInterfaceId(id))
     return ScopedInterfaceEndpointHandle();
 
-  // Unless it is the master ID, |id| is from the remote side and therefore its
-  // namespace bit is supposed to be different than the value that this router
-  // would use.
-  if (!IsMasterInterfaceId(id) &&
-      set_interface_id_namespace_bit_ == HasInterfaceIdNamespaceBitSet(id)) {
-    return ScopedInterfaceEndpointHandle();
-  }
-
   MayAutoLock locker(&lock_);
   bool inserted = false;
   InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, &inserted);
   if (inserted) {
-    DCHECK(!endpoint->handle_created());
-
     if (encountered_error_)
       UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
   } else {
-    if (endpoint->handle_created())
+    if (endpoint->handle_created() || endpoint->closed())
       return ScopedInterfaceEndpointHandle();
-
-    // If the endpoint already exist, it is because we have received a
-    // notification that the peer endpoint has closed.
-    DCHECK(!endpoint->closed());
-    DCHECK(endpoint->peer_closed());
   }
 
   endpoint->set_handle_created();
@@ -604,8 +572,17 @@ void MultiplexRouter::EnableTestingMode() {
 bool MultiplexRouter::Accept(Message* message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (message->is_serialized() &&
-      !message->DeserializeAssociatedEndpointHandles(this))
+  // Insert endpoints for the payload interface IDs as soon as the message
+  // arrives, instead of waiting till the message is dispatched. Consider the
+  // following sequence:
+  // 1) Async message msg1 arrives, containing interface ID x. Msg1 is not
+  //    dispatched because a sync call is blocking the thread.
+  // 2) Sync message msg2 arrives targeting interface ID x.
+  //
+  // If we don't insert endpoint for interface ID x, when trying to dispatch
+  // msg2 we don't know whether it is an unexpected message or it is just
+  // because the message containing x hasn't been dispatched.
+  if (!InsertEndpointsForMessage(*message))
     return false;
 
   scoped_refptr<MultiplexRouter> protector(this);
@@ -618,15 +595,15 @@ bool MultiplexRouter::Accept(Message* message) {
           ? ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES
           : ALLOW_DIRECT_CLIENT_CALLS;
 
-  bool processed =
-      tasks_.empty() && ProcessIncomingMessage(message, client_call_behavior,
-                                               connector_.task_runner());
+  MessageWrapper message_wrapper(this, std::move(*message));
+  bool processed = tasks_.empty() && ProcessIncomingMessage(
+                                         &message_wrapper, client_call_behavior,
+                                         connector_.task_runner());
 
   if (!processed) {
     // Either the task queue is not empty or we cannot process the message
     // directly. In both cases, there is no need to call ProcessTasks().
-    tasks_.push_back(
-        Task::CreateMessageTask(MessageWrapper(this, std::move(*message))));
+    tasks_.push_back(Task::CreateMessageTask(std::move(message_wrapper)));
     Task* task = tasks_.back().get();
 
     if (task->message_wrapper.value().has_flag(Message::kFlagIsSync)) {
@@ -727,7 +704,7 @@ void MultiplexRouter::ProcessTasks(
         task->IsNotifyErrorTask()
             ? ProcessNotifyErrorTask(task.get(), client_call_behavior,
                                      current_task_runner)
-            : ProcessIncomingMessage(&task->message_wrapper.value(),
+            : ProcessIncomingMessage(&task->message_wrapper,
                                      client_call_behavior, current_task_runner);
 
     if (!processed) {
@@ -765,8 +742,7 @@ bool MultiplexRouter::ProcessFirstSyncMessageForEndpoint(InterfaceId id) {
 
   // Note: after this call, |task| and |iter| may be invalidated.
   bool processed = ProcessIncomingMessage(
-      &message_wrapper.value(), ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES,
-      nullptr);
+      &message_wrapper, ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES, nullptr);
   DCHECK(processed);
 
   iter = sync_message_tasks_.find(id);
@@ -819,15 +795,16 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
 }
 
 bool MultiplexRouter::ProcessIncomingMessage(
-    Message* message,
+    MessageWrapper* message_wrapper,
     ClientCallBehavior client_call_behavior,
     base::SequencedTaskRunner* current_task_runner) {
   DCHECK(!current_task_runner ||
          current_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!paused_);
-  DCHECK(message);
+  DCHECK(message_wrapper);
   AssertLockAcquired();
 
+  const Message* message = &message_wrapper->value();
   if (message->IsNull()) {
     // This is a sync message and has been processed during sync handle
     // watching.
@@ -839,7 +816,10 @@ bool MultiplexRouter::ProcessIncomingMessage(
 
     {
       MayAutoUnlock unlocker(&lock_);
-      result = control_message_handler_.Accept(message);
+      Message tmp_message =
+          message_wrapper->DeserializeEndpointHandlesAndTake();
+      result = !tmp_message.IsNull() &&
+               control_message_handler_.Accept(&tmp_message);
     }
 
     if (!result)
@@ -887,7 +867,9 @@ bool MultiplexRouter::ProcessIncomingMessage(
     // It is safe to call into |client| without the lock. Because |client| is
     // always accessed on the same sequence, including DetachEndpointClient().
     MayAutoUnlock unlocker(&lock_);
-    result = client->HandleIncomingMessage(message);
+    Message tmp_message = message_wrapper->DeserializeEndpointHandlesAndTake();
+    result =
+        !tmp_message.IsNull() && client->HandleIncomingMessage(&tmp_message);
   }
   if (!result)
     RaiseErrorInNonTestingMode();
@@ -969,6 +951,68 @@ void MultiplexRouter::AssertLockAcquired() {
   if (lock_)
     lock_->AssertAcquired();
 #endif
+}
+
+bool MultiplexRouter::InsertEndpointsForMessage(const Message& message) {
+  if (!message.is_serialized())
+    return true;
+
+  uint32_t num_ids = message.payload_num_interface_ids();
+  if (num_ids == 0)
+    return true;
+
+  const uint32_t* ids = message.payload_interface_ids();
+
+  MayAutoLock locker(&lock_);
+  for (uint32_t i = 0; i < num_ids; ++i) {
+    // Message header validation already ensures that the IDs are valid and not
+    // the master ID.
+    // The IDs are from the remote side and therefore their namespace bit is
+    // supposed to be different than the value that this router would use.
+    if (set_interface_id_namespace_bit_ ==
+        HasInterfaceIdNamespaceBitSet(ids[i])) {
+      return false;
+    }
+
+    // It is possible that the endpoint already exists even when the remote side
+    // is well-behaved: it might have notified us that the peer endpoint has
+    // closed.
+    bool inserted = false;
+    InterfaceEndpoint* endpoint = FindOrInsertEndpoint(ids[i], &inserted);
+    if (endpoint->closed() || endpoint->handle_created())
+      return false;
+  }
+
+  return true;
+}
+
+void MultiplexRouter::CloseEndpointsForMessage(const Message& message) {
+  AssertLockAcquired();
+
+  if (!message.is_serialized())
+    return;
+
+  uint32_t num_ids = message.payload_num_interface_ids();
+  if (num_ids == 0)
+    return;
+
+  const uint32_t* ids = message.payload_interface_ids();
+  for (uint32_t i = 0; i < num_ids; ++i) {
+    InterfaceEndpoint* endpoint = FindEndpoint(ids[i]);
+    // If the remote side maliciously sends the same interface ID in another
+    // message which has been dispatched, we could get here with no endpoint
+    // for the ID, a closed endpoint, or an endpoint with handle created.
+    if (!endpoint || endpoint->closed() || endpoint->handle_created()) {
+      RaiseErrorInNonTestingMode();
+      continue;
+    }
+
+    UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
+    MayAutoUnlock unlocker(&lock_);
+    control_message_proxy_.NotifyPeerEndpointClosed(ids[i], base::nullopt);
+  }
+
+  ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);
 }
 
 }  // namespace internal
