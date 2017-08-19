@@ -4,7 +4,11 @@
 
 package org.chromium.components.minidump_uploader;
 
-import android.test.InstrumentationTestCase;
+import android.support.test.InstrumentationRegistry;
+
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -16,23 +20,43 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * Base case for Crash upload related tests.
+ * TestRule for Crash upload related tests.
  */
-public class CrashTestCase extends InstrumentationTestCase {
-    private static final String TAG = "CrashTestCase";
+public class CrashTestRule implements TestRule {
+    private static final String TAG = "CrashTestRule";
 
-    protected File mCrashDir;
-    protected File mCacheDir;
+    private File mCrashDir;
+    private File mCacheDir;
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public Statement apply(final Statement base, final Description desc) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                setUp();
+                base.evaluate();
+                tearDown();
+            }
+        };
+    }
+
+    public File getCrashDir() {
+        return mCrashDir;
+    }
+
+    public File getCacheDir() {
+        return mCacheDir;
+    }
+
+    private void setUp() throws Exception {
         ContextUtils.initApplicationContextForTests(
-                getInstrumentation().getTargetContext().getApplicationContext());
-        mCacheDir = getExistingCacheDir();
-        mCrashDir = new File(
-                mCacheDir,
-                CrashFileManager.CRASH_DUMP_DIR);
+                InstrumentationRegistry.getTargetContext().getApplicationContext());
+        if (mCacheDir == null) {
+            mCacheDir = getExistingCacheDir();
+        }
+        if (mCrashDir == null) {
+            mCrashDir = new File(mCacheDir, CrashFileManager.CRASH_DUMP_DIR);
+        }
         if (!mCrashDir.isDirectory() && !mCrashDir.mkdir()) {
             throw new Exception("Unable to create directory: " + mCrashDir.getAbsolutePath());
         }
@@ -42,13 +66,11 @@ public class CrashTestCase extends InstrumentationTestCase {
      * Returns the cache directory where we should store minidumps.
      * Can be overriden by sub-classes to allow for use with different cache directories.
      */
-    protected File getExistingCacheDir() {
+    public File getExistingCacheDir() {
         return ContextUtils.getApplicationContext().getCacheDir();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    private void tearDown() throws Exception {
         File[] crashFiles = mCrashDir.listFiles();
         if (crashFiles == null) {
             return;
@@ -64,11 +86,11 @@ public class CrashTestCase extends InstrumentationTestCase {
         }
     }
 
-    protected static void setUpMinidumpFile(File file, String boundary) throws IOException {
+    public static void setUpMinidumpFile(File file, String boundary) throws IOException {
         setUpMinidumpFile(file, boundary, null);
     }
 
-    protected static void setUpMinidumpFile(File file, String boundary, String processType)
+    public static void setUpMinidumpFile(File file, String boundary, String processType)
             throws IOException {
         PrintWriter minidumpWriter = null;
         try {

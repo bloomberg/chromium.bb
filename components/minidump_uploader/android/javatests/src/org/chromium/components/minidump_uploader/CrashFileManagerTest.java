@@ -11,7 +11,14 @@ import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 import java.io.File;
@@ -25,7 +32,11 @@ import java.util.regex.Pattern;
 /**
  * Unittests for {@link CrashFileManager}.
  */
-public class CrashFileManagerTest extends CrashTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CrashFileManagerTest {
+    @Rule
+    public CrashTestRule mTestRule = new CrashTestRule();
+
     private static final int TEST_PID = 23;
 
     private long mInitialModificationTimestamp;
@@ -55,239 +66,254 @@ public class CrashFileManagerTest extends CrashTestCase {
 
     private File mLogfile;
 
+    @Before
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    public void setUp() throws Exception {
         mInitialModificationTimestamp = new Date().getTime();
         mModificationTimestamp = mInitialModificationTimestamp;
 
-        // The following files will be deleted in CrashTestCase#tearDown().
-        mTmpFile1 = new File(mCrashDir, "12345ABCDE" + CrashFileManager.TMP_SUFFIX);
+        // The following files will be deleted in CrashTestRule#tearDown().
+        mTmpFile1 = new File(mTestRule.getCrashDir(), "12345ABCDE" + CrashFileManager.TMP_SUFFIX);
         mTmpFile1.createNewFile();
         mTmpFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mTmpFile2 = new File(mCrashDir, "abcde12345" + CrashFileManager.TMP_SUFFIX);
+        mTmpFile2 = new File(mTestRule.getCrashDir(), "abcde12345" + CrashFileManager.TMP_SUFFIX);
         mTmpFile2.createNewFile();
         mTmpFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mTmpFile3 = new File(mCrashDir, "abcdefghi" + CrashFileManager.TMP_SUFFIX);
+        mTmpFile3 = new File(mTestRule.getCrashDir(), "abcdefghi" + CrashFileManager.TMP_SUFFIX);
         mTmpFile3.createNewFile();
         mTmpFile3.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mDmpSansLogcatFile1 = new File(mCrashDir, "123_abc.dmp");
+        mDmpSansLogcatFile1 = new File(mTestRule.getCrashDir(), "123_abc.dmp");
         mDmpSansLogcatFile1.createNewFile();
         mDmpSansLogcatFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mDmpSansLogcatFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID);
+        mDmpSansLogcatFile2 =
+                new File(mTestRule.getCrashDir(), "chromium-renderer_abc.dmp" + TEST_PID);
         mDmpSansLogcatFile2.createNewFile();
         mDmpSansLogcatFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mDmpFile1 = new File(mCrashDir, "123_abc.dmp.try0");
+        mDmpFile1 = new File(mTestRule.getCrashDir(), "123_abc.dmp.try0");
         mDmpFile1.createNewFile();
         mDmpFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mDmpFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID + ".try1");
+        mDmpFile2 =
+                new File(mTestRule.getCrashDir(), "chromium-renderer_abc.dmp" + TEST_PID + ".try1");
         mDmpFile2.createNewFile();
         mDmpFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mOneBelowMaxTriesFile = new File(mCrashDir,
+        mOneBelowMaxTriesFile = new File(mTestRule.getCrashDir(),
                 "chromium-renderer_abc.dmp" + TEST_PID + ".try" + (MAX_TRIES_ALLOWED - 1));
         mOneBelowMaxTriesFile.createNewFile();
         mOneBelowMaxTriesFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mMaxTriesFile = new File(
-                mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID + ".try" + MAX_TRIES_ALLOWED);
+        mMaxTriesFile = new File(mTestRule.getCrashDir(),
+                "chromium-renderer_abc.dmp" + TEST_PID + ".try" + MAX_TRIES_ALLOWED);
         mMaxTriesFile.createNewFile();
         mMaxTriesFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mOneBelowMultiDigitMaxTriesFile = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID
-                        + ".try" + (MULTI_DIGIT_MAX_TRIES_ALLOWED - 1));
+        mOneBelowMultiDigitMaxTriesFile = new File(mTestRule.getCrashDir(),
+                "chromium-renderer_abc.dmp" + TEST_PID + ".try"
+                        + (MULTI_DIGIT_MAX_TRIES_ALLOWED - 1));
         mOneBelowMultiDigitMaxTriesFile.createNewFile();
         mOneBelowMultiDigitMaxTriesFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mMultiDigitMaxTriesFile = new File(mCrashDir,
+        mMultiDigitMaxTriesFile = new File(mTestRule.getCrashDir(),
                 "chromium-renderer_abc.dmp" + TEST_PID + ".try" + MULTI_DIGIT_MAX_TRIES_ALLOWED);
         mMultiDigitMaxTriesFile.createNewFile();
         mMultiDigitMaxTriesFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mUpFile1 = new File(mCrashDir, "123_abcd.up.try0");
+        mUpFile1 = new File(mTestRule.getCrashDir(), "123_abcd.up.try0");
         mUpFile1.createNewFile();
         mUpFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mUpFile2 = new File(mCrashDir, "chromium-renderer_abcd.up" + TEST_PID + ".try0");
+        mUpFile2 =
+                new File(mTestRule.getCrashDir(), "chromium-renderer_abcd.up" + TEST_PID + ".try0");
         mUpFile2.createNewFile();
         mUpFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mLogfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
+        mLogfile = new File(mTestRule.getCrashDir(), CrashFileManager.CRASH_DUMP_LOGFILE);
         mLogfile.createNewFile();
         mLogfile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testCrashFileManagerWithNull() {
         try {
             new CrashFileManager(null);
-            fail("Constructor should throw NullPointerException with null context.");
+            Assert.fail("Constructor should throw NullPointerException with null context.");
         } catch (NullPointerException npe) {
             return;
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetMatchingFiles() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         // Three files begin with 123.
         File[] expectedFiles = new File[] {mUpFile1, mDmpFile1, mDmpSansLogcatFile1, mTmpFile1};
         Pattern testPattern = Pattern.compile("^123");
         File[] actualFiles = crashFileManager.listCrashFiles(testPattern);
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to match file by pattern", expectedFiles, actualFiles);
     }
 
+    @Test
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testFileComparator() throws IOException {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {mTmpFile3, mTmpFile2, mTmpFile1};
         File[] originalFiles = new File[] {mTmpFile1, mTmpFile2, mTmpFile3};
         Arrays.sort(originalFiles, crashFileManager.sFileComparator);
-        assertNotNull(originalFiles);
+        Assert.assertNotNull(originalFiles);
         MoreAsserts.assertEquals("File comparator failed to prioritize last modified file",
                 expectedFiles, originalFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetAllFilesSorted() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mMultiDigitMaxTriesFile,
                 mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile, mOneBelowMaxTriesFile, mDmpFile2,
                 mDmpFile1, mDmpSansLogcatFile2, mDmpSansLogcatFile1, mTmpFile3, mTmpFile2,
                 mTmpFile1};
         File[] actualFiles = crashFileManager.listCrashFiles(null);
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals(
                 "Failed to sort all files by modification time", expectedFiles, actualFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetCrashDirectory() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File actualFile = crashFileManager.getCrashDirectory();
-        assertTrue(actualFile.isDirectory());
-        assertEquals(mCrashDir, actualFile);
+        Assert.assertTrue(actualFile.isDirectory());
+        Assert.assertEquals(mTestRule.getCrashDir(), actualFile);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testDeleteFile() {
-        assertTrue(mTmpFile1.exists());
-        assertTrue(CrashFileManager.deleteFile(mTmpFile1));
-        assertFalse(mTmpFile1.exists());
+        Assert.assertTrue(mTmpFile1.exists());
+        Assert.assertTrue(CrashFileManager.deleteFile(mTmpFile1));
+        Assert.assertFalse(mTmpFile1.exists());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testIsMinidumpSansLogcat() {
-        assertTrue(CrashFileManager.isMinidumpSansLogcat("foo.dmp"));
-        assertTrue(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID));
+        Assert.assertTrue(CrashFileManager.isMinidumpSansLogcat("foo.dmp"));
+        Assert.assertTrue(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID));
 
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.other"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.try0"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.try2"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmpblah"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.other"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".try0"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".try2"));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmpblah" + TEST_PID));
-        assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".other"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.other"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.try0"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.try2"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmpblah"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp.other"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".try0"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".try2"));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmpblah" + TEST_PID));
+        Assert.assertFalse(CrashFileManager.isMinidumpSansLogcat("foo.dmp" + TEST_PID + ".other"));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testSetReadyForUpload_MinidumpWithoutPid() throws IOException {
-        File minidumpWithoutLogcat = new File(mCrashDir, "foo.dmp");
+        File minidumpWithoutLogcat = new File(mTestRule.getCrashDir(), "foo.dmp");
         minidumpWithoutLogcat.createNewFile();
 
         File result = CrashFileManager.trySetReadyForUpload(minidumpWithoutLogcat);
-        assertEquals("foo.dmp.try0", result.getName());
-        assertTrue(result.exists());
+        Assert.assertEquals("foo.dmp.try0", result.getName());
+        Assert.assertTrue(result.exists());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testSetReadyForUpload_MinidumpWithPid() throws IOException {
-        File minidumpWithoutLogcat = new File(mCrashDir, "foo.dmp" + TEST_PID);
+        File minidumpWithoutLogcat = new File(mTestRule.getCrashDir(), "foo.dmp" + TEST_PID);
         minidumpWithoutLogcat.createNewFile();
 
         File result = CrashFileManager.trySetReadyForUpload(minidumpWithoutLogcat);
-        assertEquals("foo.dmp" + TEST_PID + ".try0", result.getName());
-        assertTrue(result.exists());
+        Assert.assertEquals("foo.dmp" + TEST_PID + ".try0", result.getName());
+        Assert.assertTrue(result.exists());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetMinidumpsSansLogcat() throws IOException {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {mDmpSansLogcatFile2, mDmpSansLogcatFile1};
         File[] actualFiles = crashFileManager.getMinidumpsSansLogcat();
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
                 expectedFiles, actualFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testGetMinidumpsReadyForUpload() throws IOException {
-        File forcedFile = new File(mCrashDir, "456_def.forced" + TEST_PID + ".try2");
+        File forcedFile = new File(mTestRule.getCrashDir(), "456_def.forced" + TEST_PID + ".try2");
         forcedFile.createNewFile();
         forcedFile.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {forcedFile, mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
         File[] actualFiles = crashFileManager.getMinidumpsReadyForUpload(MAX_TRIES_ALLOWED);
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
                 expectedFiles, actualFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetMinidumpsReadyForUpload_MultiDigitMaxTries() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] {mOneBelowMultiDigitMaxTriesFile, mMaxTriesFile,
                 mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
         File[] actualFiles =
                 crashFileManager.getMinidumpsReadyForUpload(MULTI_DIGIT_MAX_TRIES_ALLOWED);
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
                 expectedFiles, actualFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetFilesBelowMaxTries() {
@@ -305,166 +331,180 @@ public class CrashFileManagerTest extends CrashTestCase {
                         MAX_TRIES_ALLOWED));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testGetAllUploadedFiles() {
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         File[] expectedFiles = new File[] { mUpFile2, mUpFile1 };
         File[] actualFiles = crashFileManager.getAllUploadedFiles();
-        assertNotNull(actualFiles);
+        Assert.assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct uploaded files in directory",
                 expectedFiles, actualFiles);
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testReadAttemptNumber() {
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber(".try"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal(".try"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber(".try"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal(".try"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("try1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("try1"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("try1"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("try1"));
 
-        assertEquals(1, CrashFileManager.readAttemptNumber("file.try1.dmp"));
-        assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.try1.dmp"));
+        Assert.assertEquals(1, CrashFileManager.readAttemptNumber("file.try1.dmp"));
+        Assert.assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.try1.dmp"));
 
-        assertEquals(1, CrashFileManager.readAttemptNumber("file.dmp.try1"));
-        assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.dmp.try1"));
+        Assert.assertEquals(1, CrashFileManager.readAttemptNumber("file.dmp.try1"));
+        Assert.assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.dmp.try1"));
 
-        assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
-        assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
 
-        assertEquals(2, CrashFileManager.readAttemptNumber("file.try2.dmp"));
-        assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.try2.dmp"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumber("file.try2.dmp"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.try2.dmp"));
 
-        assertEquals(2, CrashFileManager.readAttemptNumber("file.dmp.try2"));
-        assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.dmp.try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumber("file.dmp.try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.dmp.try2"));
 
-        assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
-        assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
+        Assert.assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp1"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp1"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp1"));
 
-        assertEquals(9, CrashFileManager.readAttemptNumber("file.try9.dmp"));
-        assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.try9.dmp"));
+        Assert.assertEquals(9, CrashFileManager.readAttemptNumber("file.try9.dmp"));
+        Assert.assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.try9.dmp"));
 
-        assertEquals(10, CrashFileManager.readAttemptNumber("file.try10.dmp"));
-        assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.try10.dmp"));
+        Assert.assertEquals(10, CrashFileManager.readAttemptNumber("file.try10.dmp"));
+        Assert.assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.try10.dmp"));
 
-        assertEquals(9, CrashFileManager.readAttemptNumber("file.dmp.try9"));
-        assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.dmp.try9"));
+        Assert.assertEquals(9, CrashFileManager.readAttemptNumber("file.dmp.try9"));
+        Assert.assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.dmp.try9"));
 
-        assertEquals(10, CrashFileManager.readAttemptNumber("file.dmp.try10"));
-        assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.dmp.try10"));
+        Assert.assertEquals(10, CrashFileManager.readAttemptNumber("file.dmp.try10"));
+        Assert.assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.dmp.try10"));
 
-        assertEquals(300, CrashFileManager.readAttemptNumber("file.dmp.try300"));
-        assertEquals(300, CrashFileManager.readAttemptNumberInternal("file.dmp.try300"));
+        Assert.assertEquals(300, CrashFileManager.readAttemptNumber("file.dmp.try300"));
+        Assert.assertEquals(300, CrashFileManager.readAttemptNumberInternal("file.dmp.try300"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp202.try"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp202.try"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp202.try"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp202.try"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.try.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try.dmp1"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.try.dmp1"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try.dmp1"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.try-2.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-2.dmp1"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.try-2.dmp1"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-2.dmp1"));
 
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.try-20.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-20.dmp1"));
+        Assert.assertEquals(0, CrashFileManager.readAttemptNumber("file.try-20.dmp1"));
+        Assert.assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-20.dmp1"));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testAttemptNumberRename() {
-        assertEquals("file.dmp.try1",
-                CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp"));
-        assertEquals("f.dmp.try2",
-                CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try1"));
-        assertEquals(
+        Assert.assertEquals(
+                "file.dmp.try1", CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp"));
+        Assert.assertEquals(
+                "f.dmp.try2", CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try1"));
+        Assert.assertEquals(
                 "f.dmp.try10", CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try9"));
-        assertEquals("f.dmp.try11",
+        Assert.assertEquals("f.dmp.try11",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try10"));
-        assertEquals("f.try2.dmp",
-                CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
-        assertEquals("f.tryN.dmp.try1",
+        Assert.assertEquals(
+                "f.try2.dmp", CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
+        Assert.assertEquals("f.tryN.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
         // Cover the case where there exists a number after (but not immediately after) ".try".
-        assertEquals("f.tryN.dmp2.try1",
+        Assert.assertEquals("f.tryN.dmp2.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp2"));
-        assertEquals("f.forced.try3",
+        Assert.assertEquals("f.forced.try3",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.forced.try2"));
-        assertEquals("file.dmp.try1",
+        Assert.assertEquals("file.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp.try0"));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testFilenameWithForcedUploadState() {
         // The ".try0" suffix is sometimes implicit -- in particular, when logcat extraction fails.
-        assertEquals("file.forced", CrashFileManager.filenameWithForcedUploadState("file.dmp"));
+        Assert.assertEquals(
+                "file.forced", CrashFileManager.filenameWithForcedUploadState("file.dmp"));
         // A not-yet-attempted upload.
-        assertEquals("file.forced0.try0",
+        Assert.assertEquals("file.forced0.try0",
                 CrashFileManager.filenameWithForcedUploadState("file.dmp0.try0"));
         // A failed upload.
-        assertEquals("file.forced12.try0",
+        Assert.assertEquals("file.forced12.try0",
                 CrashFileManager.filenameWithForcedUploadState("file.dmp12.try3"));
 
         // The same set of tests as above, but for skipped uploads rather than failed or
         // not-yet-attempted uploads.
-        assertEquals("file.forced", CrashFileManager.filenameWithForcedUploadState("file.skipped"));
-        assertEquals("file.forced0.try0",
+        Assert.assertEquals(
+                "file.forced", CrashFileManager.filenameWithForcedUploadState("file.skipped"));
+        Assert.assertEquals("file.forced0.try0",
                 CrashFileManager.filenameWithForcedUploadState("file.skipped0.try0"));
-        assertEquals("file.forced12.try0",
+        Assert.assertEquals("file.forced12.try0",
                 CrashFileManager.filenameWithForcedUploadState("file.skipped12.try3"));
 
         // A failed previously-forced upload.
-        assertEquals("file.forced0.try0",
+        Assert.assertEquals("file.forced0.try0",
                 CrashFileManager.filenameWithForcedUploadState("file.forced0.try3"));
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMarkUploadSuccess() {
         CrashFileManager.markUploadSuccess(mDmpFile1);
-        assertFalse(mDmpFile1.exists());
-        assertTrue(new File(mCrashDir, "123_abc.up.try0").exists());
+        Assert.assertFalse(mDmpFile1.exists());
+        Assert.assertTrue(new File(mTestRule.getCrashDir(), "123_abc.up.try0").exists());
 
         CrashFileManager.markUploadSuccess(mDmpFile2);
-        assertFalse(mDmpFile2.exists());
-        assertTrue(new File(mCrashDir, "chromium-renderer_abc.up" + TEST_PID + ".try1").exists());
+        Assert.assertFalse(mDmpFile2.exists());
+        Assert.assertTrue(
+                new File(mTestRule.getCrashDir(), "chromium-renderer_abc.up" + TEST_PID + ".try1")
+                        .exists());
     }
 
+    @Test
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMarkUploadSuccess_ForcedUpload() throws IOException {
-        File forced = new File(mCrashDir, "123_abc.forced" + TEST_PID + ".try0");
+        File forced = new File(mTestRule.getCrashDir(), "123_abc.forced" + TEST_PID + ".try0");
         forced.createNewFile();
         CrashFileManager.markUploadSuccess(forced);
-        assertFalse(forced.exists());
-        assertTrue(new File(mCrashDir, "123_abc.up" + TEST_PID + ".try0").exists());
+        Assert.assertFalse(forced.exists());
+        Assert.assertTrue(
+                new File(mTestRule.getCrashDir(), "123_abc.up" + TEST_PID + ".try0").exists());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMarkUploadSkipped() {
         CrashFileManager.markUploadSkipped(mDmpFile1);
-        assertFalse(mDmpFile1.exists());
-        assertTrue(new File(mCrashDir, "123_abc.skipped.try0").exists());
+        Assert.assertFalse(mDmpFile1.exists());
+        Assert.assertTrue(new File(mTestRule.getCrashDir(), "123_abc.skipped.try0").exists());
 
         CrashFileManager.markUploadSkipped(mDmpFile2);
-        assertFalse(mDmpFile2.exists());
-        assertTrue(
-                new File(mCrashDir, "chromium-renderer_abc.skipped" + TEST_PID + ".try1").exists());
+        Assert.assertFalse(mDmpFile2.exists());
+        Assert.assertTrue(new File(
+                mTestRule.getCrashDir(), "chromium-renderer_abc.skipped" + TEST_PID + ".try1")
+                                  .exists());
     }
 
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testFilterMinidumpFilesOnUid() {
@@ -512,6 +552,7 @@ public class CrashFileManagerTest extends CrashTestCase {
      * Ensure we handle minidump copying correctly when we have reached our limit on the number of
      * stored minidumps for a certain uid.
      */
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMinidumpStorageRestrictionsPerUid() throws IOException {
@@ -522,6 +563,7 @@ public class CrashFileManagerTest extends CrashTestCase {
      * Ensure we handle minidump copying correctly when we have reached our limit on the number of
      * stored minidumps.
      */
+    @Test
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMinidumpStorageRestrictionsGlobal() throws IOException {
@@ -543,19 +585,19 @@ public class CrashFileManagerTest extends CrashTestCase {
     }
 
     private void testMinidumpStorageRestrictions(boolean perUid) throws IOException {
-        CrashFileManager fileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager fileManager = new CrashFileManager(mTestRule.getCacheDir());
         // Delete existing minidumps to ensure they don't interfere with this test.
         deleteFilesInDirIfExists(fileManager.getCrashDirectory());
-        assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
-        File tmpCopyDir = new File(getExistingCacheDir(), "tmpDir");
+        Assert.assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
+        File tmpCopyDir = new File(mTestRule.getExistingCacheDir(), "tmpDir");
 
         // Note that these minidump files are set up directly in the cache dir - not in the crash
         // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
         // copying them.
-        File minidumpToCopy = new File(getExistingCacheDir(), "toCopy.dmp.try0");
-        setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
+        File minidumpToCopy = new File(mTestRule.getExistingCacheDir(), "toCopy.dmp.try0");
+        CrashTestRule.setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
         // Ensure we didn't add any new minidumps to the crash directory.
-        assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
+        Assert.assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
 
         int minidumpLimit = perUid ? CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD_PER_UID
                                    : CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD;
@@ -577,7 +619,7 @@ public class CrashFileManagerTest extends CrashTestCase {
         }
 
         File[] allMinidumps = fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */);
-        assertEquals(minidumpLimit, allMinidumps.length);
+        Assert.assertEquals(minidumpLimit, allMinidumps.length);
 
         File oldestMinidump = getOldestFile(allMinidumps);
 
@@ -585,10 +627,10 @@ public class CrashFileManagerTest extends CrashTestCase {
         // existing minidump to be deleted.
         createFdForandCopyFile(fileManager, minidumpToCopy, tmpCopyDir, 1 /* uid */,
                 true /* shouldSucceed */);
-        assertEquals(
+        Assert.assertEquals(
                 minidumpLimit, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
         // Ensure we removed the oldest file.
-        assertFalse(oldestMinidump.exists());
+        Assert.assertFalse(oldestMinidump.exists());
     }
 
     /**
@@ -604,9 +646,9 @@ public class CrashFileManagerTest extends CrashTestCase {
             File copiedFile =
                     fileManager.copyMinidumpFromFD(minidumpFd.getFileDescriptor(), tmpCopyDir, uid);
             if (shouldSucceed) {
-                assertNotNull(copiedFile);
+                Assert.assertNotNull(copiedFile);
             } else {
-                assertNull(copiedFile);
+                Assert.assertNull(copiedFile);
             }
         } finally {
             if (minidumpFd != null) minidumpFd.close();
@@ -629,20 +671,21 @@ public class CrashFileManagerTest extends CrashTestCase {
     /**
      * Ensure that we won't copy minidumps that are too large.
      */
+    @Test
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testCantCopyLargeFile() throws IOException {
-        CrashFileManager fileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager fileManager = new CrashFileManager(mTestRule.getCacheDir());
         // Delete existing minidumps to ensure they don't interfere with this test.
         deleteFilesInDirIfExists(fileManager.getCrashDirectory());
-        assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
-        File tmpCopyDir = new File(getExistingCacheDir(), "tmpDir");
+        Assert.assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
+        File tmpCopyDir = new File(mTestRule.getExistingCacheDir(), "tmpDir");
 
         // Note that these minidump files are set up directly in the cache dir - not in the crash
         // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
         // copying them.
-        File minidumpToCopy = new File(getExistingCacheDir(), "toCopy.dmp.try0");
-        setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
+        File minidumpToCopy = new File(mTestRule.getExistingCacheDir(), "toCopy.dmp.try0");
+        CrashTestRule.setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
         // Write ~1MB data into the minidump file.
         final int kilo = 1024;
         byte[] kiloByteArray = new byte[kilo];
@@ -657,10 +700,11 @@ public class CrashFileManagerTest extends CrashTestCase {
         }
         createFdForandCopyFile(fileManager, minidumpToCopy, tmpCopyDir, 0 /* uid */,
                 false /* shouldSucceed */);
-        assertEquals(0, tmpCopyDir.listFiles().length);
-        assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
+        Assert.assertEquals(0, tmpCopyDir.listFiles().length);
+        Assert.assertEquals(0, fileManager.getMinidumpsReadyForUpload(10000 /* maxTries */).length);
     }
 
+    @Test
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @SmallTest
     @Feature({"Android-AppBase"})
@@ -668,9 +712,9 @@ public class CrashFileManagerTest extends CrashTestCase {
         // Create some simulated old files.
         long oldTimestamp = mInitialModificationTimestamp
                 - TimeUnit.MILLISECONDS.convert(31, TimeUnit.DAYS);
-        File old1 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.dmp");
-        File old2 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.up0");
-        File old3 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.logcat");
+        File old1 = new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-cooo10ff.dmp");
+        File old2 = new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-cooo10ff.up0");
+        File old3 = new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-cooo10ff.logcat");
         old1.setLastModified(oldTimestamp);
         old2.setLastModified(oldTimestamp - 1);
         old3.setLastModified(oldTimestamp - 2);
@@ -679,8 +723,8 @@ public class CrashFileManagerTest extends CrashTestCase {
         // files and all temp files are removed.
         File[] recentFiles = new File[CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP];
         for (int i = 0; i < CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP; ++i) {
-            File recentMinidump =
-                    new File(mCrashDir, "chromium-renderer-minidump-deadbeef" + i + ".dmp");
+            File recentMinidump = new File(
+                    mTestRule.getCrashDir(), "chromium-renderer-minidump-deadbeef" + i + ".dmp");
             recentMinidump.createNewFile();
             recentMinidump.setLastModified(mModificationTimestamp);
             mModificationTimestamp += 1000;
@@ -688,11 +732,12 @@ public class CrashFileManagerTest extends CrashTestCase {
         }
 
         // Create some additional successful uploads.
-        File success1 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe1.up.try0");
-        File success2 =
-                new File(mCrashDir, "chromium-renderer-minidump-cafebebe2.up" + TEST_PID + ".try1");
-        File success3 =
-                new File(mCrashDir, "chromium-renderer-minidump-cafebebe3.up" + TEST_PID + ".try2");
+        File success1 =
+                new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-cafebebe1.up.try0");
+        File success2 = new File(mTestRule.getCrashDir(),
+                "chromium-renderer-minidump-cafebebe2.up" + TEST_PID + ".try1");
+        File success3 = new File(mTestRule.getCrashDir(),
+                "chromium-renderer-minidump-cafebebe3.up" + TEST_PID + ".try2");
         success1.createNewFile();
         success2.createNewFile();
         success3.createNewFile();
@@ -704,8 +749,8 @@ public class CrashFileManagerTest extends CrashTestCase {
         mModificationTimestamp += 1000;
 
         // Create some additional temp files.
-        File temp1 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce1.tmp");
-        File temp2 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce2.tmp");
+        File temp1 = new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-oooff1ce1.tmp");
+        File temp2 = new File(mTestRule.getCrashDir(), "chromium-renderer-minidump-oooff1ce2.tmp");
         temp1.createNewFile();
         temp2.createNewFile();
         temp1.setLastModified(mModificationTimestamp);
@@ -713,31 +758,31 @@ public class CrashFileManagerTest extends CrashTestCase {
         temp2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        CrashFileManager crashFileManager = new CrashFileManager(mTestRule.getCacheDir());
         crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
-        assertFalse(old1.exists());
-        assertFalse(old2.exists());
-        assertFalse(old3.exists());
+        Assert.assertFalse(old1.exists());
+        Assert.assertFalse(old2.exists());
+        Assert.assertFalse(old3.exists());
         for (File f : recentFiles) {
-            assertTrue(f.exists());
+            Assert.assertTrue(f.exists());
         }
-        assertTrue(mLogfile.exists());
-        assertFalse(mTmpFile1.exists());
-        assertFalse(mTmpFile2.exists());
-        assertFalse(mTmpFile3.exists());
-        assertFalse(mDmpFile1.exists());
-        assertFalse(mDmpFile2.exists());
-        assertFalse(mOneBelowMaxTriesFile.exists());
-        assertFalse(mMaxTriesFile.exists());
-        assertFalse(mOneBelowMultiDigitMaxTriesFile.exists());
-        assertFalse(mMultiDigitMaxTriesFile.exists());
-        assertFalse(mUpFile1.exists());
-        assertFalse(mUpFile2.exists());
-        assertFalse(temp1.exists());
-        assertFalse(temp2.exists());
-        assertFalse(success1.exists());
-        assertFalse(success2.exists());
-        assertFalse(success3.exists());
+        Assert.assertTrue(mLogfile.exists());
+        Assert.assertFalse(mTmpFile1.exists());
+        Assert.assertFalse(mTmpFile2.exists());
+        Assert.assertFalse(mTmpFile3.exists());
+        Assert.assertFalse(mDmpFile1.exists());
+        Assert.assertFalse(mDmpFile2.exists());
+        Assert.assertFalse(mOneBelowMaxTriesFile.exists());
+        Assert.assertFalse(mMaxTriesFile.exists());
+        Assert.assertFalse(mOneBelowMultiDigitMaxTriesFile.exists());
+        Assert.assertFalse(mMultiDigitMaxTriesFile.exists());
+        Assert.assertFalse(mUpFile1.exists());
+        Assert.assertFalse(mUpFile2.exists());
+        Assert.assertFalse(temp1.exists());
+        Assert.assertFalse(temp2.exists());
+        Assert.assertFalse(success1.exists());
+        Assert.assertFalse(success2.exists());
+        Assert.assertFalse(success3.exists());
     }
 }
