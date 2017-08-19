@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,7 @@ class GURL;
 
 namespace base {
 class ScopedTempDir;
+class SimpleTestClock;
 }  // namespace base
 
 namespace offline_pages {
@@ -66,7 +68,17 @@ class PrefetchStoreTestUtil {
   // Returns number of rows affected by last SQL statement.
   int LastCommandChangeCount();
 
+  // Gets the prefetch downloader quota value for testing.
+  // Quota calculation will use |clock_| as time source.
+  int64_t GetPrefetchQuota();
+
+  // Sets the prefetch quota value for testing.
+  // Will use |clock_| as time source when writing back quota.
+  bool SetPrefetchQuota(int64_t available_quota);
+
   PrefetchStore* store() { return store_.get(); }
+
+  base::SimpleTestClock* clock() { return &clock_; }
 
  private:
   void RunUntilIdle();
@@ -74,6 +86,7 @@ class PrefetchStoreTestUtil {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_directory_;
   std::unique_ptr<PrefetchStore> store_;
+  base::SimpleTestClock clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchStoreTestUtil);
 };

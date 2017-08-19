@@ -25,6 +25,7 @@ namespace {
 
 // Name of the table with prefetch items.
 const char kPrefetchItemsTableName[] = "prefetch_items";
+const char kPrefetchQuotaTableName[] = "prefetch_downloader_quota";
 const char kPrefetchStoreFileName[] = "PrefetchStore.db";
 
 const int kCurrentVersion = 1;
@@ -73,6 +74,15 @@ bool CreatePrefetchItemsTable(sql::Connection* db) {
   return db->Execute(kTableCreationSql);
 }
 
+bool CreatePrefetchQuotaTable(sql::Connection* db) {
+  static const char kSql[] =
+      "CREATE TABLE prefetch_downloader_quota"
+      "(quota_id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,"
+      " update_time INTEGER NOT NULL,"
+      " available_quota INTEGER NOT NULL DEFAULT 0)";
+  return db->Execute(kSql);
+}
+
 bool CreateSchema(sql::Connection* db) {
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
@@ -82,6 +92,11 @@ bool CreateSchema(sql::Connection* db) {
 
   if (!db->DoesTableExist(kPrefetchItemsTableName)) {
     if (!CreatePrefetchItemsTable(db))
+      return false;
+  }
+
+  if (!db->DoesTableExist(kPrefetchQuotaTableName)) {
+    if (!CreatePrefetchQuotaTable(db))
       return false;
   }
 

@@ -1,5 +1,5 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
+// // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
@@ -7,10 +7,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -161,6 +164,18 @@ int UpdateItemsStateSync(const std::string& name_space,
   return kPrefetchStoreCommandFailed;
 }
 
+int64_t GetPrefetchQuotaSync(base::Clock* clock, sql::Connection* db) {
+  PrefetchDownloaderQuota downloader_quota(db, clock);
+  return downloader_quota.GetAvailableQuotaBytes();
+}
+
+bool SetPrefetchQuotaSync(int64_t available_quota,
+                          base::Clock* clock,
+                          sql::Connection* db) {
+  PrefetchDownloaderQuota downloader_quota(db, clock);
+  return downloader_quota.SetAvailableQuotaBytes(available_quota);
+}
+
 }  // namespace
 
 PrefetchStoreTestUtil::PrefetchStoreTestUtil(
@@ -190,6 +205,7 @@ void PrefetchStoreTestUtil::DeleteStore() {
     if (!temp_directory_.Delete())
       DVLOG(1) << "temp_directory_ not created";
   }
+  task_runner_->RunUntilIdle();
 }
 
 bool PrefetchStoreTestUtil::InsertPrefetchItem(const PrefetchItem& item) {
@@ -259,6 +275,26 @@ int PrefetchStoreTestUtil::LastCommandChangeCount() {
       base::BindOnce([](int* result, int count) { *result = count; }, &count));
   RunUntilIdle();
   return count;
+}
+
+int64_t PrefetchStoreTestUtil::GetPrefetchQuota() {
+  int64_t result;
+  store_->Execute(
+      base::BindOnce(&GetPrefetchQuotaSync, clock()),
+      base::BindOnce([](int64_t* result, int64_t quota) { *result = quota; },
+                     &result));
+  RunUntilIdle();
+  return result;
+}
+
+bool PrefetchStoreTestUtil::SetPrefetchQuota(int64_t available_quota) {
+  bool result;
+  store_->Execute(
+      base::BindOnce(&SetPrefetchQuotaSync, available_quota, clock()),
+      base::BindOnce([](bool* result, bool success) { *result = success; },
+                     &result));
+  RunUntilIdle();
+  return result;
 }
 
 }  // namespace offline_pages

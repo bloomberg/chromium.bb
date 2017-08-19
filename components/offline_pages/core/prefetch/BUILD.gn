@@ -68,6 +68,8 @@ static_library("prefetch") {
     "sent_get_operation_cleanup_task.h",
     "stale_entry_finalizer_task.cc",
     "stale_entry_finalizer_task.h",
+    "store/prefetch_downloader_quota.cc",
+    "store/prefetch_downloader_quota.h",
     "store/prefetch_store.cc",
     "store/prefetch_store.h",
     "store/prefetch_store_utils.cc",
@@ -175,6 +177,7 @@ source_set("unit_tests") {
     "prefetch_server_urls_unittest.cc",
     "sent_get_operation_cleanup_task_unittest.cc",
     "stale_entry_finalizer_task_unittest.cc",
+    "store/prefetch_downloader_quota_unittest.cc",
     "store/prefetch_store_unittest.cc",
     "suggested_articles_observer_unittest.cc",
   ]
