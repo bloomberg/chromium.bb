@@ -365,7 +365,7 @@ void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
   current_notifier_group_ = 0;
 
   std::vector<ProfileAttributesEntry*> entries =
-      profile_attributes_storage_.GetAllProfilesAttributes();
+      profile_attributes_storage_.GetAllProfilesAttributesSortedByName();
   for (auto* entry : entries) {
     std::unique_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(

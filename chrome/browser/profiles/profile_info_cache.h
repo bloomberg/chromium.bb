@@ -181,9 +181,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                   size_t icon_index,
                   const std::string& supervised_user_id) override;
   void RemoveProfile(const base::FilePath& profile_path) override;
-  // Returns a vector containing one attributes entry per known profile. They
-  // are not sorted in any particular order.
-  std::vector<ProfileAttributesEntry*> GetAllProfilesAttributes() override;
+
   bool GetProfileAttributesWithPath(const base::FilePath& path,
                                     ProfileAttributesEntry** entry) override;
 

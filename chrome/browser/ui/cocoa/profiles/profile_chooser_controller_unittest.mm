@@ -113,8 +113,10 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   }
 
   void SignInFirstProfile() {
-    std::vector<ProfileAttributesEntry*> entries = testing_profile_manager()->
-        profile_attributes_storage()->GetAllProfilesAttributes();
+    std::vector<ProfileAttributesEntry*> entries =
+        testing_profile_manager()
+            ->profile_attributes_storage()
+            ->GetAllProfilesAttributesSortedByName();
     ASSERT_LE(1U, entries.size());
     ProfileAttributesEntry* entry = entries.front();
     entry->SetAuthInfo(kGaiaId, base::ASCIIToUTF16(kEmail));
