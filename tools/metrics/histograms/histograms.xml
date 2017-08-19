@@ -78045,6 +78045,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.IndexRuleset.Verify.WallDuration"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The total time it took to verify the indexed ruleset in the browser process.
+    Logged every time verification occurs, which usually occurs when the first
+    page with activation is navigated to.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.IndexRuleset.WallDuration" units="ms">
   <owner>engedy@chromium.org</owner>
   <summary>
