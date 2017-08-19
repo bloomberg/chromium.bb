@@ -173,7 +173,17 @@ ScopedMessageHandle CreateUnserializedMessageObject(
 
 Message::Message() = default;
 
-Message::Message(Message&& other) = default;
+Message::Message(Message&& other)
+    : handle_(std::move(other.handle_)),
+      payload_buffer_(std::move(other.payload_buffer_)),
+      handles_(std::move(other.handles_)),
+      associated_endpoint_handles_(
+          std::move(other.associated_endpoint_handles_)),
+      transferable_(other.transferable_),
+      serialized_(other.serialized_) {
+  other.transferable_ = false;
+  other.serialized_ = false;
+}
 
 Message::Message(std::unique_ptr<internal::UnserializedMessageContext> context)
     : Message(CreateUnserializedMessageObject(std::move(context))) {}
@@ -243,7 +253,17 @@ Message::Message(ScopedMessageHandle handle) {
 
 Message::~Message() = default;
 
-Message& Message::operator=(Message&& other) = default;
+Message& Message::operator=(Message&& other) {
+  handle_ = std::move(other.handle_);
+  payload_buffer_ = std::move(other.payload_buffer_);
+  handles_ = std::move(other.handles_);
+  associated_endpoint_handles_ = std::move(other.associated_endpoint_handles_);
+  transferable_ = other.transferable_;
+  other.transferable_ = false;
+  serialized_ = other.serialized_;
+  other.serialized_ = false;
+  return *this;
+}
 
 void Message::Reset() {
   handle_.reset();
@@ -369,6 +389,9 @@ void Message::SerializeAssociatedEndpointHandles(
 
 bool Message::DeserializeAssociatedEndpointHandles(
     AssociatedGroupController* group_controller) {
+  if (!serialized_)
+    return true;
+
   associated_endpoint_handles_.clear();
 
   uint32_t num_ids = payload_num_interface_ids();

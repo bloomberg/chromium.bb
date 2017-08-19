@@ -211,7 +211,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   bool ProcessNotifyErrorTask(Task* task,
                               ClientCallBehavior client_call_behavior,
                               base::SequencedTaskRunner* current_task_runner);
-  bool ProcessIncomingMessage(Message* message,
+  bool ProcessIncomingMessage(MessageWrapper* message_wrapper,
                               ClientCallBehavior client_call_behavior,
                               base::SequencedTaskRunner* current_task_runner);
 
@@ -230,6 +230,10 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   InterfaceEndpoint* FindOrInsertEndpoint(InterfaceId id, bool* inserted);
   InterfaceEndpoint* FindEndpoint(InterfaceId id);
 
+  // Returns false if some interface IDs are invalid or have been used.
+  bool InsertEndpointsForMessage(const Message& message);
+  void CloseEndpointsForMessage(const Message& message);
+
   void AssertLockAcquired();
 
   // Whether to set the namespace bit when generating interface IDs. Please see
@@ -239,7 +243,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Owned by |filters_| below.
-  MessageHeaderValidator* header_validator_;
+  MessageHeaderValidator* header_validator_ = nullptr;
 
   FilterChain filters_;
   Connector connector_;
@@ -255,20 +259,22 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   PipeControlMessageProxy control_message_proxy_;
 
   std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>> endpoints_;
-  uint32_t next_interface_id_value_;
+  uint32_t next_interface_id_value_ = 1;
 
   base::circular_deque<std::unique_ptr<Task>> tasks_;
   // It refers to tasks in |tasks_| and doesn't own any of them.
   std::map<InterfaceId, base::circular_deque<Task*>> sync_message_tasks_;
 
-  bool posted_to_process_tasks_;
+  bool posted_to_process_tasks_ = false;
   scoped_refptr<base::SequencedTaskRunner> posted_to_task_runner_;
 
-  bool encountered_error_;
+  bool encountered_error_ = false;
 
-  bool paused_;
+  bool paused_ = false;
 
-  bool testing_mode_;
+  bool testing_mode_ = false;
+
+  bool being_destructed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MultiplexRouter);
 };
