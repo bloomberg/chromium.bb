@@ -21,9 +21,7 @@ static void RunPlaybackBenchmark(const std::string& filename,
   for (int i = 0; i < iterations; ++i) {
     PipelineIntegrationTestBase pipeline;
 
-    ASSERT_EQ(
-        PIPELINE_OK,
-        pipeline.Start(filename, PipelineIntegrationTestBase::kClockless));
+    ASSERT_EQ(PIPELINE_OK, pipeline.Start(filename));
 
     base::TimeTicks start = base::TimeTicks::Now();
     pipeline.Play();

@@ -77,7 +77,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   enum TestTypeFlags {
     kNormal = 0,
     kHashed = 1,
-    kClockless = 2,
+    kNoClockless = 2,
     kExpectDemuxerFailure = 4,
     kUnreliableDuration = 8,
     kWebAudio = 16,

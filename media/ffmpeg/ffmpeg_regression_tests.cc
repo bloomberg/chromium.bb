@@ -414,7 +414,7 @@ FLAKY_FFMPEG_TEST_CASE(Cr112670, "security/112670.mp4");
 // Uses ASSERTs to prevent sharded tests from hanging on failure.
 TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
-    ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename, kClockless));
+    ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename));
     Play();
     ASSERT_EQ(GetParam().end_status, WaitUntilEndedOrError());
 
@@ -434,7 +434,7 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
 }
 
 TEST_P(FlakyFFmpegRegressionTest, BasicPlayback) {
-  if (Start(GetParam().filename, kClockless) == PIPELINE_OK) {
+  if (Start(GetParam().filename) == PIPELINE_OK) {
     Play();
     WaitUntilEndedOrError();
   }

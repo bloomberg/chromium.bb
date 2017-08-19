@@ -58,9 +58,6 @@
 // renderer.
 #define DISABLE_TEXT_TRACK_TESTS 1
 
-// TODO(jrummell, dalecurtis): Clockless playback does not currently work with
-// mojo, so the tests take too long to run.
-#define DISABLE_CLOCKLESS_TESTS 1
 #else
 #define EXPECT_HASH_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_VIDEO_FORMAT_EQ(a, b) EXPECT_EQ(a, b)
@@ -77,12 +74,6 @@
 #define MAYBE_TEXT(test) DISABLED_##test
 #else
 #define MAYBE_TEXT(test) test
-#endif
-
-#if defined(DISABLE_CLOCKLESS_TESTS)
-#define MAYBE_CLOCKLESS(test) DISABLED_##test
-#else
-#define MAYBE_CLOCKLESS(test) test
 #endif
 
 using testing::_;
@@ -440,8 +431,10 @@ class PipelineIntegrationTest : public testing::Test,
                           int seek_append_size) {
     MockMediaSource source(filename, mimetype, initial_append_size);
 
-    if (StartPipelineWithMediaSource(&source) != PIPELINE_OK)
+    if (StartPipelineWithMediaSource(&source, kNoClockless, nullptr) !=
+        PIPELINE_OK) {
       return false;
+    }
 
     Play();
     if (!WaitUntilCurrentTimeIsAfter(start_seek_time))
@@ -493,8 +486,7 @@ class BasicMSEPlaybackTest
 TEST_P(BasicPlaybackTest, PlayToEnd) {
   PlaybackTestData data = GetParam();
 
-  ASSERT_EQ(PIPELINE_OK,
-            Start(data.filename, kClockless | kUnreliableDuration));
+  ASSERT_EQ(PIPELINE_OK, Start(data.filename, kUnreliableDuration));
   EXPECT_EQ(data.start_time_ms, demuxer_->GetStartTime().InMilliseconds());
   EXPECT_EQ(data.duration_ms, pipeline_->GetMediaDuration().InMilliseconds());
 
@@ -508,7 +500,7 @@ TEST_P(BasicMSEPlaybackTest, PlayToEnd) {
   MockMediaSource source(data.filename, data.mimetype, data.append_bytes);
   // TODO -- ADD uint8_t test_type to StartWithMSE and pass clockless flags
   ASSERT_EQ(PIPELINE_OK,
-            StartPipelineWithMediaSource(&source, kClockless, nullptr));
+            StartPipelineWithMediaSource(&source, kNormal, nullptr));
   source.EndOfStream();
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
@@ -570,8 +562,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_4ch_ChannelMapping2) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bear-opus-4ch-channelmapping2.ogg", kClockless | kWebAudio));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-4ch-channelmapping2.ogg", kWebAudio));
 
   Play();
 
@@ -579,8 +570,8 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_4ch_ChannelMapping2) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg_11ch_ChannelMapping2) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-11ch-channelmapping2.ogg",
-                               kClockless | kWebAudio));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear-opus-11ch-channelmapping2.ogg", kWebAudio));
 
   Play();
 
@@ -604,7 +595,7 @@ base::TimeDelta TimestampMs(int milliseconds) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
-  EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, Start("9ch.wav", kClockless));
+  EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, Start("9ch.wav"));
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
@@ -742,7 +733,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
 }
 
 TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
   Play();
 
   // These get triggered every time playback is resumed.
@@ -817,7 +808,8 @@ TEST_F(PipelineIntegrationTest, PipelineStoppedWhileVideoRestartPending) {
 }
 
 TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
-  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("multitrack-3video-2audio.webm", kHashed | kNoClockless));
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
   // The first audio track (TrackId=4) is enabled by default. This should
@@ -830,7 +822,8 @@ TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
 }
 
 TEST_F(PipelineIntegrationTest, SwitchVideoTrackDuringPlayback) {
-  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("multitrack-3video-2audio.webm", kHashed | kNoClockless));
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
   // The first video track (TrackId=1) is enabled by default. This should
@@ -840,10 +833,30 @@ TEST_F(PipelineIntegrationTest, SwitchVideoTrackDuringPlayback) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_CLOCKLESS(BasicPlaybackOpusOggTrimmingHashed)) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("opus-trimming-test.webm", kHashed | kClockless));
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOggTrimmingHashed) {
+  ASSERT_EQ(PIPELINE_OK, Start("opus-trimming-test.webm", kHashed));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_1, GetAudioHash());
+
+  // Seek within the pre-skip section, this should not cause a beep.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromSeconds(1)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_2, GetAudioHash());
+
+  // Seek somewhere outside of the pre-skip / end-trim section, demxuer should
+  // correctly preroll enough to accurately decode this segment.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromMilliseconds(6360)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusWebmTrimmingHashed) {
+  ASSERT_EQ(PIPELINE_OK, Start("opus-trimming-test.webm", kHashed));
 
   Play();
 
@@ -865,35 +878,11 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_CLOCKLESS(BasicPlaybackOpusWebmTrimmingHashed)) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("opus-trimming-test.webm", kHashed | kClockless));
-
-  Play();
-
-  ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_HASH_EQ(kOpusEndTrimmingHash_1, GetAudioHash());
-
-  // Seek within the pre-skip section, this should not cause a beep.
-  ASSERT_TRUE(Seek(base::TimeDelta::FromSeconds(1)));
-  Play();
-  ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_HASH_EQ(kOpusEndTrimmingHash_2, GetAudioHash());
-
-  // Seek somewhere outside of the pre-skip / end-trim section, demxuer should
-  // correctly preroll enough to accurately decode this segment.
-  ASSERT_TRUE(Seek(base::TimeDelta::FromMilliseconds(6360)));
-  Play();
-  ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
-}
-
-TEST_F(PipelineIntegrationTest,
-       MAYBE_CLOCKLESS(BasicPlaybackOpusWebmTrimmingHashed_MediaSource)) {
+       BasicPlaybackOpusWebmTrimmingHashed_MediaSource) {
   MockMediaSource source("opus-trimming-test.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile);
-  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(
-                             &source, kClockless | kHashed, nullptr));
+  EXPECT_EQ(PIPELINE_OK,
+            StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
 
   Play();
@@ -919,9 +908,8 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_CLOCKLESS(BasicPlaybackOpusPrerollExceedsCodecDelay)) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-opus.webm", kHashed | kClockless));
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusPrerollExceedsCodecDelay) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus.webm", kHashed));
 
   AudioDecoderConfig config =
       demuxer_->GetFirstStream(DemuxerStream::AUDIO)->audio_decoder_config();
@@ -944,11 +932,11 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_CLOCKLESS(BasicPlaybackOpusPrerollExceedsCodecDelay_MediaSource)) {
+       BasicPlaybackOpusPrerollExceedsCodecDelay_MediaSource) {
   MockMediaSource source("bear-opus.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile);
-  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(
-                             &source, kClockless | kHashed, nullptr));
+  EXPECT_EQ(PIPELINE_OK,
+            StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
 
   AudioDecoderConfig config =
@@ -1384,7 +1372,7 @@ TEST_F(PipelineIntegrationTest,
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_ANDROID)
 TEST_F(PipelineIntegrationTest, BasicPlaybackHi10PVP9) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p-vp9.webm", kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p-vp9.webm"));
 
   Play();
 
@@ -1392,7 +1380,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10PVP9) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi12p-vp9.webm", kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi12p-vp9.webm"));
 
   Play();
 
@@ -1403,7 +1391,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p.mp4", kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p.mp4"));
 
   Play();
 
@@ -1417,8 +1405,8 @@ std::vector<std::unique_ptr<VideoDecoder>> CreateFailingVideoDecoder() {
 }
 
 TEST_F(PipelineIntegrationTest, BasicFallback) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear.mp4", kClockless,
-                               base::Bind(&CreateFailingVideoDecoder)));
+  ASSERT_EQ(PIPELINE_OK,
+            Start("bear.mp4", kNormal, base::Bind(&CreateFailingVideoDecoder)));
 
   Play();
 
@@ -1509,7 +1497,6 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_FlacInMp4) {
   EXPECT_HASH_EQ(kSfxLosslessHash, GetAudioHash());
 }
 
-#if !defined(DISABLE_CLOCKLESS_TESTS)
 class Mp3FastSeekParams {
  public:
   Mp3FastSeekParams(const char* filename, const char* hash)
@@ -1576,7 +1563,6 @@ INSTANTIATE_TEST_CASE_P(
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-no-TOC.mp3",
                                         "-0.22,0.80,1.19,0.73,-0.31,-1.12,")));
-#endif  // !defined(DISABLE_CLOCKLESS_TESTS)
 
 TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
   MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
@@ -2240,7 +2226,7 @@ TEST_F(PipelineIntegrationTest, Rotated_Metadata_270) {
 }
 
 TEST_F(PipelineIntegrationTest, Spherical) {
-  ASSERT_EQ(PIPELINE_OK, Start("spherical.mp4", kHashed | kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("spherical.mp4", kHashed));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_HASH_EQ("1cb7f980020d99ea852e22dd6bd8d9de", GetVideoHash());
@@ -2272,18 +2258,18 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
 
 TEST_F(PipelineIntegrationTest,
        BasicPlayback_AudioOnly_Opus_4ch_ChannelMapping2_WebM) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bear-opus-end-trimming-4ch-channelmapping2.webm",
-                  kClockless | kWebAudio));
+  ASSERT_EQ(
+      PIPELINE_OK,
+      Start("bear-opus-end-trimming-4ch-channelmapping2.webm", kWebAudio));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 TEST_F(PipelineIntegrationTest,
        BasicPlayback_AudioOnly_Opus_11ch_ChannelMapping2_WebM) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("bear-opus-end-trimming-11ch-channelmapping2.webm",
-                  kClockless | kWebAudio));
+  ASSERT_EQ(
+      PIPELINE_OK,
+      Start("bear-opus-end-trimming-11ch-channelmapping2.webm", kWebAudio));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -2369,7 +2355,7 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
 }
 
 TEST_F(PipelineIntegrationTest, HD_VP9_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-1280x720.webm", kClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-1280x720.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
