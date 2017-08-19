@@ -737,13 +737,13 @@ HttpHandler::PrepareStandardResponse(
     std::string message;
     for (size_t i=1; i<status_details.size();++i)
       message += status_details[i];
-
-    body_params.SetString("error", status_details[0]);
-    body_params.SetString("message", message);
-    body_params.SetString("stacktrace", status.stack_trace());
+    std::unique_ptr<base::DictionaryValue> inner_params(
+        new base::DictionaryValue());
+    inner_params->SetString("error", status_details[0]);
+    inner_params->SetString("message", message);
+    inner_params->SetString("stacktrace", status.stack_trace());
+    body_params.SetDictionary("value", std::move(inner_params));
   } else {
-    body_params.SetString("sessionId", session_id);
-    body_params.SetString("status", status.message());
     body_params.Set("value", std::move(value));
   }
 
