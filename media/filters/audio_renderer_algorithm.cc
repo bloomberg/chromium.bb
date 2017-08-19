@@ -77,6 +77,7 @@ static const int kStartingCapacityForEncryptedInMs = 500;
 AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
+      is_bitstream_format_(false),
       muted_partial_frame_(0),
       capacity_(0),
       output_time_(0.0),
@@ -98,6 +99,7 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
 
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
+  is_bitstream_format_ = params.IsBitstreamFormat();
   initial_capacity_ = capacity_ = std::max(
       params.frames_per_buffer() * 2,
       ConvertMillisecondsToFrames(is_encrypted
@@ -156,6 +158,10 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
 
   DCHECK_GT(playback_rate, 0);
   DCHECK_EQ(channels_, dest->channels());
+
+  // In case of compressed bitstream formats, no post processing is allowed.
+  if (is_bitstream_format_)
+    return audio_buffer_.ReadFrames(requested_frames, dest_offset, dest);
 
   // Optimize the muted case to issue a single clear instead of performing
   // the full crossfade and clearing each crossfaded frame.

@@ -244,13 +244,28 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   DCHECK(!end_of_stream());
   DCHECK_EQ(dest->channels(), channel_count_);
   DCHECK_LE(source_frame_offset + frames_to_copy, adjusted_frame_count_);
+  DCHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
+
+  dest->set_is_bitstream_format(IsBitstreamFormat());
 
   if (IsBitstreamFormat()) {
-    // TODO(tsunghung): Implement it along with AudioBus changes.
-    NOTREACHED() << "Invalid sample format!";
-  }
+    // For bitstream formats, we only support 2 modes: 1) Overwrite the data to
+    // the beginning of the destination buffer. 2) Append new data to the end of
+    // the existing data.
+    DCHECK(!source_frame_offset);
+    DCHECK(!dest_frame_offset ||
+           dest_frame_offset == dest->GetBitstreamFrames());
 
-  DCHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
+    size_t bitstream_size =
+        dest_frame_offset ? dest->GetBitstreamDataSize() : 0;
+    uint8_t* dest_data =
+        reinterpret_cast<uint8_t*>(dest->channel(0)) + bitstream_size;
+
+    memcpy(dest_data, channel_data_[0], data_size());
+    dest->SetBitstreamDataSize(bitstream_size + data_size());
+    dest->SetBitstreamFrames(dest_frame_offset + frame_count());
+    return;
+  }
 
   if (!data_) {
     // Special case for an empty buffer.

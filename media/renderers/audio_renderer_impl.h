@@ -320,6 +320,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // suspend/is suspended and when it resumes.
   bool is_suspending_;
 
+  // Whether to pass compressed audio bitstream to audio sink directly.
+  bool is_passthrough_;
+
   // Set and used only in tests to report positive play_delay values in
   // Render().
   PlayDelayCBForTesting play_delay_cb_for_testing_;
