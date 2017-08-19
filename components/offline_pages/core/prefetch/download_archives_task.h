@@ -21,6 +21,9 @@ class PrefetchStore;
 // bundle information.
 class DownloadArchivesTask : public Task {
  public:
+  // Maximum number of parallel downloads.
+  static const int kMaxConcurrentDownloads;
+
   // Represents item to be downloaded as a result of running the task.
   struct DownloadItem {
     std::string guid;

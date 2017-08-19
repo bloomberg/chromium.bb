@@ -27,7 +27,6 @@ class PrefetchStoreTest : public testing::Test {
 
   void TearDown() override {
     store_test_util_.DeleteStore();
-    task_runner_->RunUntilIdle();
   }
 
   PrefetchStore* store() { return store_test_util_.store(); }
