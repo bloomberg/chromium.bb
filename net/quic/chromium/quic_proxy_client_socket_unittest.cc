@@ -468,6 +468,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
   QuicVersion version_;
 
   // order of destruction of these members matter
+  MockClock clock_;
   MockQuicData mock_quic_data_;
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
   std::unique_ptr<QuicChromiumClientSession> session_;
@@ -478,7 +479,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
 
   MockSendAlgorithm* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;
-  MockClock clock_;
 
   std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
   testing::StrictMock<MockQuicConnectionVisitor> visitor_;
