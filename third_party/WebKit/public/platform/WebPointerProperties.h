@@ -27,6 +27,7 @@ class WebPointerProperties {
     kLeft,
     kMiddle,
     kRight,
+    kBarrel = kRight,  // Barrel is aliased per pointer event spec
     kBack,
     kForward,
     kEraser,
