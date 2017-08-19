@@ -71,7 +71,6 @@ cr.define('extensions', function() {
       inDevMode: {
         type: Boolean,
         value: false,
-        observer: 'inDevModeChanged_',
       },
 
       // The underlying ExtensionInfo itself. Public for use in declarative
@@ -313,11 +312,6 @@ cr.define('extensions', function() {
      */
     computeWarningsClasses_: function() {
       return this.data.blacklistText ? 'severe' : 'mild';
-    },
-
-    /** @private */
-    inDevModeChanged_: function() {
-      this.fire('resize');  // Propagates to parent to rerender iron-list.
     },
   });
 

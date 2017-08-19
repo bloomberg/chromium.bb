@@ -42,15 +42,7 @@ cr.define('extensions', function() {
      */
     itemSizeChanged_: function(e) {
       this.$.list.updateSizeForItem(e.detail.item);
-    },
-
-    /**
-     * Called right before an item enters the detailed view.
-     * @param {CustomEvent} e
-     * @private
-     */
-    showItemDetails_: function(e) {
-      this.sharedElements = {hero: e.detail.element};
+      this.fire('resize');
     },
 
     /**
