@@ -2002,4 +2002,55 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   EXPECT_EQ(S_FALSE, result->get_isSelected(1, 4, &selected));
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildrenZero) {
+  Init(Build3X3Table());
+
+  ScopedComPtr<IAccessibleTableCell> cell = GetCellInTable();
+  ASSERT_NE(nullptr, cell.Get());
+
+  ScopedComPtr<IUnknown> table;
+  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+
+  ScopedComPtr<IAccessibleTable2> result;
+  table.CopyTo(result.GetAddressOf());
+  ASSERT_NE(nullptr, result.Get());
+
+  IUnknown** cell_accessibles;
+  LONG count;
+  EXPECT_EQ(S_OK, result->get_selectedCells(&cell_accessibles, &count));
+  EXPECT_EQ(0, count);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
+  AXTreeUpdate update = Build3X3Table();
+
+  // 7 == table_cell_1
+  // 12 == table_cell_4
+  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+
+  Init(update);
+
+  ScopedComPtr<IAccessibleTableCell> cell = GetCellInTable();
+  ASSERT_NE(nullptr, cell.Get());
+
+  ScopedComPtr<IUnknown> table;
+  EXPECT_EQ(S_OK, cell->get_table(table.GetAddressOf()));
+
+  ScopedComPtr<IAccessibleTable2> result;
+  table.CopyTo(result.GetAddressOf());
+  ASSERT_NE(nullptr, result.Get());
+
+  IUnknown** cell_accessibles;
+  LONG count;
+  EXPECT_EQ(S_OK, result->get_selectedCells(&cell_accessibles, &count));
+  EXPECT_EQ(2, count);
+
+  ScopedComPtr<IUnknown> table_cell_1(cell_accessibles[0]);
+  CheckIUnknownHasName(table_cell_1, L"1");
+
+  ScopedComPtr<IUnknown> table_cell_4(cell_accessibles[1]);
+  CheckIUnknownHasName(table_cell_4, L"4");
+}
+
 }  // namespace ui
