@@ -370,6 +370,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   // We can use a more aggressive limit on Android since decodes tend to take
   // longer on these devices.
   settings.min_image_bytes_to_checker = 512 * 1024;  // 512kB
+
+  // Re-rasterization of checker-imaged content with software raster can be too
+  // costly on Android.
+  settings.only_checker_images_with_gpu_raster = true;
 #endif
 
   // TODO(danakj): This should not be a setting O_O; it should change when the

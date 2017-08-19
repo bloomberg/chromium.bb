@@ -4217,6 +4217,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Image load state is unknown."/>
   <int value="7" label="Image was too small to consider checkering."/>
   <int value="8" label="Image was larger than the allowed cache limit."/>
+  <int value="9"
+      label="Vetoed because checkering of images is force disabled (used with
+             software raster)."/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">

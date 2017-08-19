@@ -105,6 +105,9 @@ class CC_EXPORT LayerTreeSettings {
   // deferred path.
   size_t min_image_bytes_to_checker = 1 * 1024 * 1024;  // 1MB.
 
+  // Disables checkering of images when not using gpu rasterization.
+  bool only_checker_images_with_gpu_raster = false;
+
   LayerTreeDebugState initial_debug_state;
 
   // Indicates that the LayerTreeHost should defer commits unless it has a valid

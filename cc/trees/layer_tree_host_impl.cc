@@ -2343,6 +2343,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
                                  ? std::numeric_limits<size_t>::max()
                                  : settings_.scheduled_raster_task_limit,
                              use_gpu_rasterization_);
+  tile_manager_.SetCheckerImagingForceDisabled(
+      settings_.only_checker_images_with_gpu_raster && !use_gpu_rasterization_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 

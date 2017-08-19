@@ -1467,6 +1467,10 @@ void TileManager::ClearCheckerImageTracking(
   checker_image_tracker_.ClearTracker(can_clear_decode_policy_tracking);
 }
 
+void TileManager::SetCheckerImagingForceDisabled(bool force_disable) {
+  checker_image_tracker_.set_force_disabled(force_disable);
+}
+
 void TileManager::NeedsInvalidationForCheckerImagedTiles() {
   client_->RequestImplSideInvalidationForCheckerImagedTiles();
 }
