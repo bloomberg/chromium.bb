@@ -18,6 +18,8 @@ var NetworkUI = (function() {
         loadTimeData.getString('networkListItemConnecting'),
     networkListItemConnectingTo:
         loadTimeData.getString('networkListItemConnectingTo'),
+    networkListItemInitializing:
+        loadTimeData.getString('networkListItemInitializing'),
     networkListItemNotConnected:
         loadTimeData.getString('networkListItemNotConnected'),
     vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),

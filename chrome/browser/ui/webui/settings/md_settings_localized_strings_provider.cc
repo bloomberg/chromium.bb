@@ -873,6 +873,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"internetConfigTitle", IDS_SETTINGS_INTERNET_CONFIG},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
       {"internetDeviceEnabling", IDS_SETTINGS_INTERNET_DEVICE_ENABLING},
+      {"internetDeviceInitializing", IDS_SETTINGS_INTERNET_DEVICE_INITIALIZING},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
       {"internetMobileSearching", IDS_SETTINGS_INTERNET_MOBILE_SEARCH},
       {"internetNoNetworks", IDS_SETTINGS_INTERNET_NO_NETWORKS},

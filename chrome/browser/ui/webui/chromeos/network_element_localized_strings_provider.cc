@@ -27,6 +27,7 @@ struct {
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
+    {"networkListItemInitializing", IDS_NETWORK_LIST_INITIALIZING},
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
 };
