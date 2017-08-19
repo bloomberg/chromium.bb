@@ -1819,7 +1819,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (_requireReloadOnDisplay) {
     PagePlaceholderTabHelper::FromWebState(self.webState)
         ->AddPlaceholderForNextNavigation();
-    [self.webController loadCurrentURL];
+    self.webState->GetNavigationManager()->LoadIfNecessary();
     _requireReloadOnDisplay = NO;
   }
 }
