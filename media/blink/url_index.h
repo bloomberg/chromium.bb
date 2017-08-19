@@ -18,13 +18,13 @@
 #include "media/blink/lru.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 namespace media {
 
 const int64_t kPositionNotSpecified = -1;
 
+class ResourceFetchContext;
 class UrlData;
 
 // A multibuffer for loading media resources which knows
@@ -138,9 +138,6 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Virtual so we can override it for testing.
   virtual ResourceMultiBuffer* multibuffer();
 
-  // Accessor
-  blink::WebLocalFrame* frame() const { return frame_; }
-
   void AddBytesRead(int64_t b) { bytes_read_from_cache_ += b; }
   int64_t BytesReadFromCache() const { return bytes_read_from_cache_; }
   void AddBytesReadFromNetwork(int64_t b) { bytes_read_from_network_ += b; }
@@ -208,8 +205,6 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
 
-  blink::WebLocalFrame* frame_;
-
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(UrlData);
 };
@@ -217,8 +212,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 // The UrlIndex lets you look up UrlData instances by url.
 class MEDIA_BLINK_EXPORT UrlIndex {
  public:
-  explicit UrlIndex(blink::WebLocalFrame*);
-  UrlIndex(blink::WebLocalFrame*, int block_shift);
+  explicit UrlIndex(ResourceFetchContext* fetch_context);
+  UrlIndex(ResourceFetchContext* fetch_context, int block_shift);
   virtual ~UrlIndex();
 
   // Look up an UrlData in the index and return it. If none is found,
@@ -248,7 +243,7 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   // TODO(hubbe): Add etag support.
   scoped_refptr<UrlData> TryInsert(const scoped_refptr<UrlData>& url_data);
 
-  blink::WebLocalFrame* frame() const { return frame_; }
+  ResourceFetchContext* fetch_context() const { return fetch_context_; }
   int block_shift() const { return block_shift_; }
 
  private:
@@ -260,10 +255,10 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   virtual scoped_refptr<UrlData> NewUrlData(const GURL& url,
                                             UrlData::CORSMode cors_mode);
 
+  ResourceFetchContext* fetch_context_;
   using UrlDataMap = std::map<UrlData::KeyType, scoped_refptr<UrlData>>;
   UrlDataMap unindexed_data_;
   UrlDataMap indexed_data_;
-  blink::WebLocalFrame* frame_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
 
   // log2 of block size in multibuffer cache. Defaults to kBlockSizeShift.

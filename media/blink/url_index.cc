@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/blink/url_index.h"
+
 #include <set>
 #include <utility>
 
@@ -12,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
-#include "media/blink/url_index.h"
 
 namespace media {
 
@@ -27,10 +28,10 @@ ResourceMultiBuffer::~ResourceMultiBuffer() {}
 
 std::unique_ptr<MultiBuffer::DataProvider> ResourceMultiBuffer::CreateWriter(
     const MultiBufferBlockId& pos) {
-  ResourceMultiBufferDataProvider* ret =
-      new ResourceMultiBufferDataProvider(url_data_, pos);
-  ret->Start();
-  return std::unique_ptr<MultiBuffer::DataProvider>(ret);
+  auto writer =
+      base::MakeUnique<ResourceMultiBufferDataProvider>(url_data_, pos);
+  writer->Start();
+  return writer;
 }
 
 bool ResourceMultiBuffer::RangeSupported() const {
@@ -50,8 +51,7 @@ UrlData::UrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index)
       range_supported_(false),
       cacheable_(false),
       last_used_(),
-      multibuffer_(this, url_index_->block_shift_),
-      frame_(url_index->frame()) {}
+      multibuffer_(this, url_index_->block_shift_) {}
 
 UrlData::~UrlData() {
   UMA_HISTOGRAM_MEMORY_KB("Media.BytesReadFromCache",
@@ -199,11 +199,11 @@ size_t UrlData::CachedSize() {
   return multibuffer()->map().size();
 }
 
-UrlIndex::UrlIndex(blink::WebLocalFrame* frame)
-    : UrlIndex(frame, kBlockSizeShift) {}
+UrlIndex::UrlIndex(ResourceFetchContext* fetch_context)
+    : UrlIndex(fetch_context, kBlockSizeShift) {}
 
-UrlIndex::UrlIndex(blink::WebLocalFrame* frame, int block_shift)
-    : frame_(frame),
+UrlIndex::UrlIndex(ResourceFetchContext* fetch_context, int block_shift)
+    : fetch_context_(fetch_context),
       lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
       block_shift_(block_shift) {}
 
