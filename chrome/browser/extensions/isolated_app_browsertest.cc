@@ -473,13 +473,13 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   // For the third tab, use window.open to keep it in process with an opener.
   OpenWindow(browser()->tab_strip_model()->GetWebContentsAt(0),
-             base_url.Resolve("app1/main.html"), true, NULL);
+             base_url.Resolve("app1/main.html"), true, true, nullptr);
 
   // In a fourth tab, use window.open to a non-app URL.  It should open in a
   // separate process, even though this would trigger the OAuth workaround
   // for hosted apps (from http://crbug.com/59285).
   OpenWindow(browser()->tab_strip_model()->GetWebContentsAt(0),
-             base_url.Resolve("non_app/main.html"), false, NULL);
+             base_url.Resolve("non_app/main.html"), false, true, nullptr);
 
   // We should now have four tabs, the first and third sharing a process.
   // The second one is an independent instance in a separate process.
