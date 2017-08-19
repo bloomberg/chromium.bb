@@ -3462,6 +3462,13 @@ crbug.com/757165 [ Win10 ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-
 crbug.com/757165 [ Win10 ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Pass Failure Crash ]
 crbug.com/757165 [ Win10 ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Pass Failure Crash ]
 crbug.com/757165 [ Win10 ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Pass Failure Crash ]
+
+# Tests need rebaselining due to slight pixel changes after Skia GPU image rendering change.
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html  [ NeedsManualRebaseline ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/757195 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsManualRebaseline ]
+
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Pass Failure Crash ]
 crbug.com/757165 [ Win ] css3/blending/mix-blend-mode-with-filters.html [ Pass Failure Crash ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-filter-test.js [ Pass Failure Crash ]
