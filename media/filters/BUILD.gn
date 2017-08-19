@@ -88,7 +88,6 @@ source_set("filters") {
   ]
 
   deps = [
-    "//media/audio",
     "//media/base",
     "//media/cdm",
     "//media/video",

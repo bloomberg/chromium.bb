@@ -27,7 +27,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"

@@ -17,7 +17,7 @@
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

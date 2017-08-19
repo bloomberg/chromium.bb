@@ -16,7 +16,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"

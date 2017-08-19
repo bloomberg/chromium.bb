@@ -25,7 +25,7 @@
 namespace base {
 class SingleThreadTaskRunner;
 class SharedMemory;
-}
+}  // namespace base
 
 namespace gfx {
 class Size;
@@ -127,7 +127,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Returns the supported codec profiles of video encode accelerator.
   virtual VideoEncodeAccelerator::SupportedProfiles
-      GetVideoEncodeAcceleratorSupportedProfiles() = 0;
+  GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
  protected:
   friend class base::RefCounted<GpuVideoAcceleratorFactories>;

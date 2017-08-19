@@ -218,6 +218,8 @@ source_set("base") {
     "routing_token_callback.h",
     "sample_format.cc",
     "sample_format.h",
+    "sample_rates.cc",
+    "sample_rates.h",
     "scoped_callback_runner.h",
     "seekable_buffer.cc",
     "seekable_buffer.h",

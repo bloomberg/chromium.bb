@@ -21,7 +21,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {

@@ -17,8 +17,8 @@
 #include "content/renderer/media/media_stream.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/skcanvas_video_renderer.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/origin.h"
 

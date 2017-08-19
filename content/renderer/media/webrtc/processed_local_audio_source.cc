@@ -17,8 +17,8 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
-#include "media/audio/sample_rates.h"
 #include "media/base/channel_layout.h"
+#include "media/base/sample_rates.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/media/base/mediachannel.h"
 

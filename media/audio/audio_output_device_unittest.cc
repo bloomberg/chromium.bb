@@ -22,7 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_output_device.h"
-#include "media/audio/sample_rates.h"
+#include "media/base/sample_rates.h"
 #include "media/base/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"

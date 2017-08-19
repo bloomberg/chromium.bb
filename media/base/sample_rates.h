@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SAMPLE_RATES_H_
-#define MEDIA_AUDIO_SAMPLE_RATES_H_
+#ifndef MEDIA_BASE_SAMPLE_RATES_H_
+#define MEDIA_BASE_SAMPLE_RATES_H_
 
 #include "media/base/media_export.h"
 
@@ -35,4 +35,4 @@ MEDIA_EXPORT bool ToAudioSampleRate(int sample_rate, AudioSampleRate* asr);
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_SAMPLE_RATES_H_
+#endif  // MEDIA_BASE_SAMPLE_RATES_H_

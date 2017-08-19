@@ -17,8 +17,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 
 const int kMinFrameSize = 2;
 

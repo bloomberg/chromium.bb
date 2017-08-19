@@ -58,9 +58,6 @@ source_set("audio") {
 
     # TODO(dalecurtis): Move android audio pieces into //media/audio.
     "//media/base/android",
-
-    # TODO(dalecurtis): Move sample_rates.{cc,h} into media/base.
-    "//media/filters",
   ]
   sources = [
     "agc_audio_stream.h",
@@ -129,8 +126,6 @@ source_set("audio") {
     "fake_audio_output_stream.h",
     "null_audio_sink.cc",
     "null_audio_sink.h",
-    "sample_rates.cc",
-    "sample_rates.h",
     "scoped_task_runner_observer.cc",
     "scoped_task_runner_observer.h",
     "simple_sources.cc",

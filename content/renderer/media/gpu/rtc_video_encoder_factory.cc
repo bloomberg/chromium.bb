@@ -10,7 +10,7 @@
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/renderer/media/gpu/rtc_video_encoder.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 
 namespace content {

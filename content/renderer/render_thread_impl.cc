@@ -143,7 +143,7 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"

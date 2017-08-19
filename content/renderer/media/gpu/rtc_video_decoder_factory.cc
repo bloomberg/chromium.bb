@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "content/renderer/media/gpu/rtc_video_decoder.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 
 namespace content {
 

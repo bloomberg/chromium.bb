@@ -30,7 +30,7 @@
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/media_features.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
