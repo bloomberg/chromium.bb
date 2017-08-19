@@ -136,11 +136,12 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
   printer.set_display_name(service_description.service_name);
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
-  if (service_description.service_name == base::StringPiece(kIppServiceName)) {
+  if (service_description.service_type() ==
+      base::StringPiece(kIppServiceName)) {
     printer.set_uri(base::StringPrintf("ipp://%s/%s",
                                        service_description.service_name.c_str(),
                                        metadata.rp.c_str()));
-  } else if (service_description.service_name ==
+  } else if (service_description.service_type() ==
              base::StringPiece(kIppsServiceName)) {
     printer.set_uri(base::StringPrintf("ipps://%s/%s",
                                        service_description.service_name.c_str(),
@@ -237,7 +238,7 @@ class ZeroconfPrinterDetectorImpl
     auto existing = printers_.find(service_description.service_name);
     if (existing == printers_.end() ||
         ShouldReplaceRecord(existing->second, printer)) {
-      existing->second = printer;
+      printers_[service_description.service_name] = printer;
       observer_list_->Notify(FROM_HERE,
                              &PrinterDetector::Observer::OnPrintersFound,
                              GetPrintersLocked());
