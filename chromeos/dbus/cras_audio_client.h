@@ -63,6 +63,12 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // succeeded.
   typedef base::Callback<void(const VolumeState&, bool)> GetVolumeStateCallback;
 
+  // Used for GetDefaultOutputBufferSize method. The first argument is the
+  // default output buffer size. The second argument indicates whether the
+  // request succeeded. The first argument is valid only when the request
+  // succeeded.
+  typedef base::Callback<void(int, bool)> GetDefaultOutputBufferSizeCallback;
+
   // GetNodesCallback is used for GetNodes method. It receives 2 arguments,
   // |audio_nodes| which containing a list of audio nodes data and
   // |success| which indicates whether or not the request succeeded.
@@ -79,6 +85,10 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
 
   // Gets the volume state, asynchronously.
   virtual void GetVolumeState(const GetVolumeStateCallback& callback) = 0;
+
+  // Gets the default output buffer size in frames.
+  virtual void GetDefaultOutputBufferSize(
+      const GetDefaultOutputBufferSizeCallback& callback) = 0;
 
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(const GetNodesCallback& callback,

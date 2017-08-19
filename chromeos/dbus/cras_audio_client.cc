@@ -52,6 +52,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void GetDefaultOutputBufferSize(
+      const GetDefaultOutputBufferSizeCallback& callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kGetDefaultOutputBufferSize);
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&CrasAudioClientImpl::OnGetDefaultOutputBufferSize,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   void GetNodes(const GetNodesCallback& callback,
                 const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
@@ -372,6 +382,27 @@ class CrasAudioClientImpl : public CrasAudioClient {
     }
 
     callback.Run(volume_state, success);
+  }
+
+  void OnGetDefaultOutputBufferSize(
+      const GetDefaultOutputBufferSizeCallback& callback,
+      dbus::Response* response) {
+    bool success = true;
+    int32_t buffer_size = 0;
+
+    if (response) {
+      dbus::MessageReader reader(response);
+      if (!reader.PopInt32(&buffer_size)) {
+        success = false;
+        LOG(ERROR) << "Error reading response from cras: "
+                   << response->ToString();
+      }
+    } else {
+      success = false;
+      LOG(ERROR) << "Error calling " << cras::kGetDefaultOutputBufferSize;
+    }
+
+    callback.Run(buffer_size, success);
   }
 
   void OnGetNodes(const GetNodesCallback& callback,

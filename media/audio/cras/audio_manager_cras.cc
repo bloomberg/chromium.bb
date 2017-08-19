@@ -343,15 +343,10 @@ AudioInputStream* AudioManagerCras::MakeLowLatencyInputStream(
   return MakeInputStream(params, device_id);
 }
 
-int AudioManagerCras::GetMinimumOutputBufferSizePerBoard() {
-  // On faster boards we can use smaller buffer size for lower latency.
-  // On slower boards we should use larger buffer size to prevent underrun.
-  std::string board = base::SysInfo::GetLsbReleaseBoard();
-  if (board == "kevin")
-    return 768;
-  else if (board == "samus")
-    return 256;
-  return 512;
+int AudioManagerCras::GetDefaultOutputBufferSizePerBoard() {
+  int32_t buffer_size;
+  chromeos::CrasAudioHandler::Get()->GetDefaultOutputBufferSize(&buffer_size);
+  return static_cast<int>(buffer_size);
 }
 
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
@@ -359,7 +354,7 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
-  int buffer_size = GetMinimumOutputBufferSizePerBoard();
+  int buffer_size = GetDefaultOutputBufferSizePerBoard();
   int bits_per_sample = 16;
   if (input_params.IsValid()) {
     sample_rate = input_params.sample_rate();

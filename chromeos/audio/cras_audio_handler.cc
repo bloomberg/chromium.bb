@@ -32,6 +32,9 @@ namespace {
 // Used when sound is unmuted, but volume was less than kMuteThresholdPercent.
 const int kDefaultUnmuteVolumePercent = 4;
 
+// Default output buffer size in frames.
+const int kDefaultOutputBufferSize = 512;
+
 // Volume value which should be considered as muted in range [0, 100].
 const int kMuteThresholdPercent = 1;
 
@@ -315,6 +318,11 @@ const AudioDevice* CrasAudioHandler::GetDeviceByType(AudioDeviceType type) {
       return &device;
   }
   return nullptr;
+}
+
+void CrasAudioHandler::GetDefaultOutputBufferSize(int32_t* buffer_size) const {
+  base::AutoLock auto_lock(default_output_buffer_size_lock_);
+  *buffer_size = default_output_buffer_size_;
 }
 
 void CrasAudioHandler::SetKeyboardMicActive(bool active) {
@@ -648,6 +656,7 @@ CrasAudioHandler::CrasAudioHandler(
       hdmi_rediscover_grace_period_duration_in_ms_(
           kHDMIRediscoverGracePeriodDurationInMs),
       hdmi_rediscovering_(false),
+      default_output_buffer_size_(kDefaultOutputBufferSize),
       weak_ptr_factory_(this) {
   if (!audio_pref_handler.get())
     return;
@@ -896,6 +905,7 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   }
 
   cras_service_available_ = true;
+  GetDefaultOutputBufferSizeInternal();
   GetNodes();
 }
 
@@ -1573,6 +1583,23 @@ bool CrasAudioHandler::HasExternalDevice(bool is_input) const {
       return true;
   }
   return false;
+}
+
+void CrasAudioHandler::GetDefaultOutputBufferSizeInternal() {
+  GetCrasAudioClient()->GetDefaultOutputBufferSize(
+      base::Bind(&CrasAudioHandler::HandleGetDefaultOutputBufferSize,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrasAudioHandler::HandleGetDefaultOutputBufferSize(int32_t buffer_size,
+                                                        bool success) {
+  if (!success) {
+    LOG_IF(ERROR, log_errors_) << "Failed to retrieve output buffer size";
+    return;
+  }
+
+  base::AutoLock auto_lock(default_output_buffer_size_lock_);
+  default_output_buffer_size_ = buffer_size;
 }
 
 }  // namespace chromeos
