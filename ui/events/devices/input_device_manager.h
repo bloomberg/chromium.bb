@@ -35,6 +35,10 @@ class EVENTS_DEVICES_EXPORT InputDeviceManager {
   virtual bool AreDeviceListsComplete() const = 0;
   virtual bool AreTouchscreensEnabled() const = 0;
 
+  // Returns true if the |target_display_id| of the TouchscreenDevices returned
+  // from GetTouchscreenDevices() is valid.
+  virtual bool AreTouchscreenTargetDisplaysValid() const = 0;
+
   virtual void AddObserver(InputDeviceEventObserver* observer) = 0;
   virtual void RemoveObserver(InputDeviceEventObserver* observer) = 0;
 

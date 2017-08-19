@@ -12,9 +12,12 @@ interface InputDeviceObserverMojo {
   // Is called when the list of keyboards changes.
   OnKeyboardDeviceConfigurationChanged(array<ui.mojom.InputDevice> devices);
 
-  // Is called when the list of touchscreens changes.
+  // Is called when the list of touchscreens changes. If
+  // |touchscreen_target_display_ids_changed| is true, then only the
+  // |target_display_id| of the TouchscreenDevices has changed.
   OnTouchscreenDeviceConfigurationChanged(
-      array<ui.mojom.TouchscreenDevice> devices);
+      array<ui.mojom.TouchscreenDevice> devices,
+      bool touchscreen_target_display_ids_changed);
 
   // Is called when the list of mice changes.
   OnMouseDeviceConfigurationChanged(array<ui.mojom.InputDevice> devices);
@@ -28,7 +31,8 @@ interface InputDeviceObserverMojo {
       array<ui.mojom.InputDevice> keyboard_devices,
       array<ui.mojom.TouchscreenDevice> touchscreen_devices,
       array<ui.mojom.InputDevice> mouse_devices,
-      array<ui.mojom.InputDevice> touchpad_devices);
+      array<ui.mojom.InputDevice> touchpad_devices,
+      bool are_touchscreen_target_displays_valid);
 
   // Is called when a stylus is removed or inserted into the device.
   OnStylusStateChanged(StylusState state);

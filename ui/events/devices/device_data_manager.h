@@ -61,14 +61,13 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   const std::vector<InputDevice>& GetTouchpadDevices() const override;
   bool AreDeviceListsComplete() const override;
   bool AreTouchscreensEnabled() const override;
+  bool AreTouchscreenTargetDisplaysValid() const override;
 
   void AddObserver(InputDeviceEventObserver* observer) override;
   void RemoveObserver(InputDeviceEventObserver* observer) override;
 
  protected:
   DeviceDataManager();
-
-  static DeviceDataManager* instance();
 
   static void set_instance(DeviceDataManager* instance);
 
@@ -110,6 +109,9 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   base::ObserverList<InputDeviceEventObserver> observers_;
 
   bool touch_screens_enabled_ = true;
+
+  // Set to true when ConfigureTouchDevices() is called.
+  bool are_touchscreen_target_displays_valid_ = false;
 
   // Contains touchscreen device info for each device mapped by device ID. Will
   // have default values if the device with corresponding ID isn't a touchscreen
