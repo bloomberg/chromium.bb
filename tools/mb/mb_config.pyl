@@ -1040,10 +1040,7 @@
     ],
 
     'clang_debug_bot_minimal_symbols_x86': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'debug_bot', 'minimal_symbols', 'x86',
+      'clang', 'debug_bot', 'minimal_symbols', 'x86',
     ],
 
     'clang_release_bot_minimal_symbols_x86': [
@@ -1051,24 +1048,15 @@
     ],
 
     'clang_minimal_symbols_shared_release_bot_x86_dcheck': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'minimal_symbols', 'shared_release_bot', 'x86', 'dcheck_always_on',
+      'clang', 'minimal_symbols', 'shared_release_bot', 'x86', 'dcheck_always_on',
     ],
 
     'clang_official_release_bot_minimal_symbols': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'official', 'release_bot', 'minimal_symbols',
+      'clang', 'official', 'release_bot', 'minimal_symbols',
     ],
 
     'clang_official_release_bot_minimal_symbols_x86': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
+      'clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
     'clang_official_optimize_release_bot_minimal_symbols_x86': [
@@ -1084,10 +1072,7 @@
     ],
 
     'clang_shared_release_bot_dcheck': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'shared_release_bot', 'dcheck_always_on',
+      'clang', 'shared_release_bot', 'dcheck_always_on',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -1555,17 +1540,11 @@
     ],
 
     'win_clang_debug_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'debug_bot', 'minimal_symbols',
+      'clang', 'debug_bot', 'minimal_symbols',
     ],
 
     'win_clang_release_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'release_bot', 'minimal_symbols',
+      'clang', 'release_bot', 'minimal_symbols',
     ],
 
     'windows_analyze': [
