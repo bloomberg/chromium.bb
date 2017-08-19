@@ -22,11 +22,14 @@ std::unique_ptr<AppCacheJob> AppCacheJob::Create(
     AppCacheStorage* storage,
     AppCacheRequest* request,
     net::NetworkDelegate* network_delegate,
-    const OnPrepareToRestartCallback& restart_callback) {
+    const OnPrepareToRestartCallback& restart_callback,
+    std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
+    URLLoaderFactoryGetter* loader_factory_getter) {
   std::unique_ptr<AppCacheJob> job;
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    job.reset(new AppCacheURLLoaderJob(*(request->GetResourceRequest()),
-                                       request->AsURLLoaderRequest(), storage));
+    job.reset(new AppCacheURLLoaderJob(
+        *(request->GetResourceRequest()), request->AsURLLoaderRequest(),
+        storage, std::move(subresource_load_info), loader_factory_getter));
   } else {
     job.reset(new AppCacheURLRequestJob(request->GetURLRequest(),
                                         network_delegate, storage, host,
