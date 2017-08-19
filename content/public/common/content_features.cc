@@ -296,6 +296,11 @@ const base::Feature kTopDocumentIsolation{"top-document-isolation",
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// An experiment to turn off compositing for 2D transform & opacity animations.
+const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
+    "TurnOff2DAndOpacityCompositorAnimations",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.
 const base::Feature kUseFeaturePolicyForPermissions{
