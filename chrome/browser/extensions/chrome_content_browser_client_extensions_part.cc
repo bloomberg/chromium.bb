@@ -585,7 +585,9 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
   const Extension* to_extension =
       registry->enabled_extensions().GetByID(to_origin.host());
   if (!to_extension) {
-    *result = true;
+    // Treat non-existent extensions the same as an extension without accessible
+    // resources.
+    *result = false;
     return true;
   }
 

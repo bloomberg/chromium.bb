@@ -62,6 +62,17 @@ bool CrossesExtensionProcessBoundary(
       return false;
   }
 
+  // If there are no extensions associated with either url, we check if the new
+  // url points to an extension origin. If it does, fork - extension
+  // installation should not be a factor.
+  if (!old_url_extension && !new_url_extension) {
+    // Hypothetically, we could also do an origin check here to make sure that
+    // the two urls point two different extensions, but it's not really
+    // necesary since we know there wasn't an associated extension with the old
+    // url.
+    return new_url.SchemeIs(kExtensionScheme);
+  }
+
   return old_url_extension != new_url_extension;
 }
 

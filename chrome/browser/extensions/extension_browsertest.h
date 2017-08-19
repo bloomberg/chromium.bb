@@ -276,9 +276,13 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   // Simulates a page calling window.open on an URL and waits for the
   // navigation.
+  // |should_succeed| indicates whether the navigation should succeed, in which
+  // case the last committed url should match the passed url and the page should
+  // not be an error or interstitial page.
   void OpenWindow(content::WebContents* contents,
                   const GURL& url,
                   bool newtab_process_should_equal_opener,
+                  bool should_succeed,
                   content::WebContents** newtab_result);
 
   // Simulates a page navigating itself to an URL and waits for the
