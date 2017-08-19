@@ -108,6 +108,10 @@ Polymer({
     if (!this.isStateTextVisible_())
       return '';
     var state = this.networkState.ConnectionState;
+    // For Cellular, an empty ConnectionState indicates that the device is
+    // still initializing.
+    if (!state && this.networkState.Type == CrOnc.Type.CELLULAR)
+      return CrOncStrings.networkListItemInitializing;
     if (state == CrOnc.ConnectionState.CONNECTED)
       return CrOncStrings.networkListItemConnected;
     if (state == CrOnc.ConnectionState.CONNECTING)

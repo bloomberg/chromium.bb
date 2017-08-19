@@ -131,6 +131,7 @@ bool IsCellularTechnology(const std::string& type) {
 }
 
 const char kTechnologyUnavailable[] = "unavailable";
+const char kTechnologyInitializing[] = "initializing";
 const char kNetworkActivated[] = "activated";
 const char kNetworkDisabled[] = "disabled";
 const char kCellularServicePath[] = "/service/cellular1";
@@ -780,7 +781,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
   // Cellular
   state = GetInitialStateForType(shill::kTypeCellular, &enabled);
-  if (state != kTechnologyUnavailable) {
+  if (state == kTechnologyInitializing) {
+    SetTechnologyInitializing(shill::kTypeCellular, true);
+  } else if (state != kTechnologyUnavailable) {
     bool activated = false;
     if (state == kNetworkActivated) {
       activated = true;
@@ -1157,6 +1160,9 @@ bool FakeShillManagerClient::SetInitialNetworkState(
   } else if (state_arg == "none" || state_arg == "offline") {
     // Technology not available, do not create services.
     state = kTechnologyUnavailable;
+  } else if (state_arg == "initializing") {
+    // Technology available but not initialized.
+    state = kTechnologyInitializing;
   } else if (state_arg == "portal") {
     // Technology is enabled, a service is connected and in Portal state.
     state = shill::kStatePortal;

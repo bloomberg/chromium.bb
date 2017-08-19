@@ -72,18 +72,25 @@ Polymer({
     var name = CrOnc.getNetworkName(activeNetworkState);
     if (state)
       return this.getConnectionStateText_(state, name);
+    // No network state, use device state.
     if (deviceState) {
-      if (deviceState.State == CrOnc.DeviceState.ENABLING)
-        return this.i18n('internetDeviceEnabling');
-      if (deviceState.Type == CrOnc.Type.CELLULAR && deviceState.Scanning)
-        return this.i18n('internetMobileSearching');
-      if (deviceState.Type == CrOnc.Type.TETHER &&
-          deviceState.State == CrOnc.DeviceState.UNINITIALIZED) {
-        return this.i18n('tetherEnableBluetooth');
+      // Type specific scanning or initialization states.
+      if (deviceState.Type == CrOnc.Type.CELLULAR) {
+        if (deviceState.Scanning)
+          return this.i18n('internetMobileSearching');
+        if (deviceState.State == CrOnc.DeviceState.UNINITIALIZED)
+          return this.i18n('internetDeviceInitializing');
+      } else if (deviceState.Type == CrOnc.Type.TETHER) {
+        if (deviceState.State == CrOnc.DeviceState.UNINITIALIZED)
+          return this.i18n('tetherEnableBluetooth');
       }
+      // Enabled or enabling states.
       if (deviceState.State == CrOnc.DeviceState.ENABLED)
         return CrOncStrings.networkListItemNotConnected;
+      if (deviceState.State == CrOnc.DeviceState.ENABLING)
+        return this.i18n('internetDeviceEnabling');
     }
+    // No device or unknown device state, use 'off'.
     return this.i18n('deviceOff');
   },
 
