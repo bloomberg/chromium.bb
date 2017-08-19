@@ -40,7 +40,7 @@ namespace google_apis {
 namespace test_util {
 
 // Runs the closure, and then quits the |run_loop|.
-void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure);
+void RunAndQuit(base::RunLoop* run_loop, base::OnceClosure closure);
 
 // Returns callback which runs the given |callback| and then quits |run_loop|.
 template<typename CallbackType>

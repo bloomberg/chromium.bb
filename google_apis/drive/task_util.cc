@@ -9,8 +9,8 @@
 namespace google_apis {
 
 void RunTaskWithTaskRunner(scoped_refptr<base::TaskRunner> task_runner,
-                           const base::Closure& task) {
-  const bool posted = task_runner->PostTask(FROM_HERE, task);
+                           base::OnceClosure task) {
+  const bool posted = task_runner->PostTask(FROM_HERE, std::move(task));
   DCHECK(posted);
 }
 
