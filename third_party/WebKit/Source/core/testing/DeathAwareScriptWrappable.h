@@ -59,8 +59,8 @@ class DeathAwareScriptWrappable
   }
 
   void SetRawDependency(DeathAwareScriptWrappable* dependency) {
-    ScriptWrappableVisitor::WriteBarrier(dependency);
     raw_dependency_ = dependency;
+    ScriptWrappableVisitor::WriteBarrier(dependency);
   }
 
   void SetWrappedDependency(DeathAwareScriptWrappable* dependency) {

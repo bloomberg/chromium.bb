@@ -27,7 +27,7 @@ static void RunV8FullGc(v8::Isolate* isolate) {
 }
 
 static bool DequeContains(const WTF::Deque<WrapperMarkingData>& deque,
-                          DeathAwareScriptWrappable* needle) {
+                          void* needle) {
   for (auto item : deque) {
     if (item.RawObjectPointer() == needle)
       return true;
@@ -63,7 +63,6 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   visitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
   EXPECT_TRUE(target_header->IsWrapperHeaderMarked());
   EXPECT_TRUE(dependency_header->IsWrapperHeaderMarked());
@@ -434,6 +433,95 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap2) {
   // barrier to fire.
   EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry2));
 
+  visitor->AbortTracing();
+}
+
+namespace {
+
+class Mixin : public GarbageCollectedMixin {
+ public:
+  explicit Mixin(DeathAwareScriptWrappable* wrapper_in_mixin)
+      : wrapper_in_mixin_(wrapper_in_mixin) {}
+
+  DEFINE_INLINE_TRACE_WRAPPERS() { visitor->TraceWrappers(wrapper_in_mixin_); }
+
+ protected:
+  DeathAwareScriptWrappable::Wrapper wrapper_in_mixin_;
+};
+
+class ClassWithField {
+ protected:
+  int field_;
+};
+
+class Base : public blink::GarbageCollected<Base>,
+             public blink::TraceWrapperBase,
+             public ClassWithField,
+             public Mixin {
+  USING_GARBAGE_COLLECTED_MIXIN(Base);
+
+ public:
+  static Base* Create(DeathAwareScriptWrappable* wrapper_in_base,
+                      DeathAwareScriptWrappable* wrapper_in_mixin) {
+    return new Base(wrapper_in_base, wrapper_in_mixin);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->TraceWrappers(wrapper_in_base_);
+    Mixin::TraceWrappers(visitor);
+  }
+
+ protected:
+  Base(DeathAwareScriptWrappable* wrapper_in_base,
+       DeathAwareScriptWrappable* wrapper_in_mixin)
+      : Mixin(wrapper_in_mixin), wrapper_in_base_(wrapper_in_base) {
+    // Use field_;
+    field_ = 0;
+  }
+
+  DeathAwareScriptWrappable::Wrapper wrapper_in_base_;
+};
+
+}  // namespace
+
+TEST(ScriptWrappableVisitorTest, MixinTracing) {
+  V8TestingScope scope;
+  ScriptWrappableVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+
+  DeathAwareScriptWrappable* base_wrapper = DeathAwareScriptWrappable::Create();
+  DeathAwareScriptWrappable* mixin_wrapper =
+      DeathAwareScriptWrappable::Create();
+  Base* base = Base::Create(base_wrapper, mixin_wrapper);
+  Mixin* mixin = static_cast<Mixin*>(base);
+
+  HeapObjectHeader* base_header = HeapObjectHeader::FromPayload(base);
+  EXPECT_FALSE(base_header->IsWrapperHeaderMarked());
+
+  // Make sure that mixin does not point to the object header.
+  EXPECT_NE(static_cast<void*>(base), static_cast<void*>(mixin));
+
+  visitor->TracePrologue();
+
+  EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
+
+  // TraceWrapperMember itself is not required to live in an Oilpan object.
+  TraceWrapperMember<Mixin> mixin_handle = mixin;
+  EXPECT_TRUE(base_header->IsWrapperHeaderMarked());
+  EXPECT_FALSE(visitor->MarkingDeque()->IsEmpty());
+  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), mixin));
+
+  visitor->AdvanceTracing(
+      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
+             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
+  EXPECT_TRUE(base_header->IsWrapperHeaderMarked());
+  EXPECT_TRUE(
+      HeapObjectHeader::FromPayload(base_wrapper)->IsWrapperHeaderMarked());
+  EXPECT_TRUE(
+      HeapObjectHeader::FromPayload(mixin_wrapper)->IsWrapperHeaderMarked());
+
+  mixin_handle = nullptr;
   visitor->AbortTracing();
 }
 
