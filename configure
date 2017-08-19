@@ -338,7 +338,7 @@ EXPERIMENT_LIST="
     var_tx_no_tx_mode
     mrc_tx
     lpf_direct
-    uv_lvl
+    loopfilter_level
     no_frame_context_signaling
     txmg
     hash_me

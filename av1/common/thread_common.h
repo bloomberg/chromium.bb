@@ -51,7 +51,7 @@ void av1_loop_filter_dealloc(AV1LfSync *lf_sync);
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                               struct macroblockd_plane planes[MAX_MB_PLANE],
                               int frame_filter_level,
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
                               int frame_filter_level_r,
 #endif
                               int y_only, int partial_frame, AVxWorker *workers,

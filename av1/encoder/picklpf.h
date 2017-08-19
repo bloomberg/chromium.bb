@@ -21,7 +21,7 @@ extern "C" {
 struct yv12_buffer_config;
 struct AV1_COMP;
 int av1_get_max_filter_level(const AV1_COMP *cpi);
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
 int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                             int partial_frame, double *err, int plane, int dir);
 #else

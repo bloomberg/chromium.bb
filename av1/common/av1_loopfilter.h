@@ -36,7 +36,7 @@ enum lf_path {
 };
 
 struct loopfilter {
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
   int filter_level[2];
   int filter_level_u;
   int filter_level_v;
@@ -71,7 +71,7 @@ typedef struct {
 
 typedef struct {
   loop_filter_thresh lfthr[MAX_LOOP_FILTER + 1];
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
   uint8_t lvl[MAX_SEGMENTS][2][TOTAL_REFS_PER_FRAME][MAX_MODE_LF_DELTAS];
 #else
   uint8_t lvl[MAX_SEGMENTS][TOTAL_REFS_PER_FRAME][MAX_MODE_LF_DELTAS];
@@ -143,7 +143,7 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
                            int filter_level_r,
 #endif
                            int y_only, int partial_frame);

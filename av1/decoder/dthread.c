@@ -181,7 +181,7 @@ void av1_frameworker_copy_context(AVxWorker *const dst_worker,
   memcpy(dst_cm->lf_info.lfthr, src_cm->lf_info.lfthr,
          (MAX_LOOP_FILTER + 1) * sizeof(loop_filter_thresh));
   dst_cm->lf.last_sharpness_level = src_cm->lf.sharpness_level;
-#if CONFIG_UV_LVL
+#if CONFIG_LOOPFILTER_LEVEL
   dst_cm->lf.filter_level[0] = src_cm->lf.filter_level[0];
   dst_cm->lf.filter_level[1] = src_cm->lf.filter_level[1];
 #else
