@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -70,6 +71,17 @@ class CONTENT_EXPORT AppCacheRequestHandler
     return !host_ || (host_->service() == service);
   }
 
+  // This method is called in the network service code path for creating a job
+  // for handling subresource load requests.
+  // The |subresource_load_info| parameter contains the information required to
+  // service the load request.
+  // The |loader_factory_getter| parameter points to the URLLoaderFactoryGetter
+  // instance which provides functionality to return the default network
+  // URLLoader interface.
+  AppCacheJob* MaybeCreateSubresourceLoader(
+      std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
+      URLLoaderFactoryGetter* loader_factory_getter);
+
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) ||
            type == RESOURCE_TYPE_SHARED_WORKER;
@@ -81,14 +93,11 @@ class CONTENT_EXPORT AppCacheRequestHandler
       AppCacheNavigationHandleCore* appcache_handle_core,
       URLLoaderFactoryGetter* url_loader_factory_getter);
 
-  // The following setters only apply for the network service code.
-  void set_network_url_loader_factory_getter(
-      URLLoaderFactoryGetter* url_loader_factory_getter) {
-    network_url_loader_factory_getter_ = url_loader_factory_getter;
-  }
+  // Called by unittests to indicate that we are in test mode.
+  static void SetRunningInTests(bool in_tests);
 
-  void SetSubresourceRequestLoadInfo(
-      std::unique_ptr<SubresourceLoadInfo> subresource_load_info);
+  // Returns true if we are running in tests.
+  static bool IsRunningInTests();
 
  private:
   friend class AppCacheHost;

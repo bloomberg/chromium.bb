@@ -31,7 +31,9 @@ class AppCacheResponseInfo;
 class AppCacheResponseReader;
 class AppCacheStorage;
 class AppCacheURLLoaderJob;
+class URLLoaderFactoryGetter;
 class URLRequestJob;
+struct SubresourceLoadInfo;
 
 // Interface for an AppCache job. This is used to send data stored in the
 // AppCache to networking consumers.
@@ -64,7 +66,9 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
       AppCacheStorage* storage,
       AppCacheRequest* request,
       net::NetworkDelegate* network_delegate,
-      const OnPrepareToRestartCallback& restart_callback);
+      const OnPrepareToRestartCallback& restart_callback,
+      std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
+      URLLoaderFactoryGetter* loader_factory_getter);
 
   virtual ~AppCacheJob();
 
@@ -117,6 +121,10 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   // Returns the underlying ApppCacheURLLoaderJob if any. This only applies to
   // AppCaches loaded via the URLRequest mechanism.
   virtual AppCacheURLLoaderJob* AsURLLoaderJob();
+
+  void set_delivery_type(DeliveryType delivery_type) {
+    delivery_type_ = delivery_type;
+  }
 
  protected:
   AppCacheJob();

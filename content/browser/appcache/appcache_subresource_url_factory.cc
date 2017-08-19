@@ -76,9 +76,6 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     return;
   }
 
-  handler->set_network_url_loader_factory_getter(
-      default_url_loader_factory_getter_.get());
-
   std::unique_ptr<SubresourceLoadInfo> load_info(new SubresourceLoadInfo());
   load_info->url_loader_request = std::move(url_loader_request);
   load_info->routing_id = routing_id;
@@ -88,12 +85,14 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
   load_info->client = std::move(client);
   load_info->traffic_annotation = traffic_annotation;
 
-  handler->SetSubresourceRequestLoadInfo(std::move(load_info));
-
-  AppCacheJob* job = handler->MaybeLoadResource(nullptr);
-  if (job) {
-    // The handler is owned by the job.
-    job->AsURLLoaderJob()->set_request_handler(std::move(handler));
+  // TODO(ananta/michaeln)
+  // We need to handle redirects correctly, i.e every subresource redirect
+  // could potentially be served out of the cache.
+  if (handler->MaybeCreateSubresourceLoader(
+          std::move(load_info), default_url_loader_factory_getter_.get())) {
+    // The handler is owned by the job and will be destoryed when the job is
+    // destroyed.
+    handler.release();
   }
 }
 

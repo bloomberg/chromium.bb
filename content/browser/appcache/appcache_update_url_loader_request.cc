@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_context.h"
@@ -13,6 +14,10 @@ namespace content {
 AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() {}
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
+  // If we are in tests mode, we don't need to issue network requests.
+  if (AppCacheRequestHandler::IsRunningInTests())
+    return;
+
   mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
 
