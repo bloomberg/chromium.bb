@@ -24,24 +24,29 @@ void TextSuggestionBackendImpl::Create(
 
 void TextSuggestionBackendImpl::ApplySpellCheckSuggestion(
     const WTF::String& suggestion) {
-  frame_->GetTextSuggestionController().ApplySpellCheckSuggestion(suggestion);
+  if (frame_)
+    frame_->GetTextSuggestionController().ApplySpellCheckSuggestion(suggestion);
 }
 
 void TextSuggestionBackendImpl::DeleteActiveSuggestionRange() {
-  frame_->GetTextSuggestionController().DeleteActiveSuggestionRange();
+  if (frame_)
+    frame_->GetTextSuggestionController().DeleteActiveSuggestionRange();
 }
 
 void TextSuggestionBackendImpl::NewWordAddedToDictionary(
     const WTF::String& word) {
-  frame_->GetTextSuggestionController().NewWordAddedToDictionary(word);
+  if (frame_)
+    frame_->GetTextSuggestionController().NewWordAddedToDictionary(word);
 }
 
 void TextSuggestionBackendImpl::SpellCheckMenuTimeoutCallback() {
-  frame_->GetTextSuggestionController().SpellCheckMenuTimeoutCallback();
+  if (frame_)
+    frame_->GetTextSuggestionController().SpellCheckMenuTimeoutCallback();
 }
 
 void TextSuggestionBackendImpl::SuggestionMenuClosed() {
-  frame_->GetTextSuggestionController().SuggestionMenuClosed();
+  if (frame_)
+    frame_->GetTextSuggestionController().SuggestionMenuClosed();
 }
 
 }  // namespace blink
