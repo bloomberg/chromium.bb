@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import argparse
 import os
 
 from chromite.lib import constants
@@ -142,7 +141,7 @@ Production Examples (danger, can break production if misused):
         help='This is a production build, NOT a test build. '
              'Confirm with Chrome OS deputy before use.')
     parser.add_argument(
-        '--passthrough', dest='passthrough_raw', nargs=argparse.REMAINDER,
+        '--pass-through', dest='passthrough_raw', action='append',
         help='Arguments to pass to cbuildbot. To be avoided.'
              'Confirm with Chrome OS deputy before use.')
 

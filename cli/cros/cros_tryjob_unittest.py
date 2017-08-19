@@ -67,8 +67,8 @@ class TryjobTestParsing(TryjobTest):
         '--local', '--buildroot', '/buildroot',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
+        '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         'lumpy-paladin', 'lumpy-release',
-        '--passthrough', 'foo', '--cbuild-arg', '--b-arg', 'bar',
     ])
     options = self.cmd_mock.inst.options
 
@@ -82,7 +82,7 @@ class TryjobTestParsing(TryjobTest):
             '--latest-toolchain', '--nochromesdk',
             '--hwtest', '--notests', '--novmtests', '--noimagetests',
         ],
-        'passthrough_raw': ['foo', '--cbuild-arg', '--b-arg', 'bar'],
+        'passthrough_raw': ['--cbuild-arg', 'bar'],
         'build_configs': ['lumpy-paladin', 'lumpy-release'],
     })
 
@@ -98,21 +98,6 @@ class TryjobTestParsing(TryjobTest):
     self.expected.update({
         'passthrough': ['--version', '9795.0.0', '--channel', 'canary'],
         'build_configs': ['lumpy-payloads'],
-    })
-
-    self.assertDictContainsSubset(self.expected, vars(options))
-
-  def testDashDashParsing(self):
-    """Tests flow for an interactive session."""
-    self.SetupCommandMock([
-        '--passthrough', 'foo', '--cbuild-arg', '--b-arg', 'bar',
-        '--', 'lumpy-paladin', 'lumpy-release',
-    ])
-    options = self.cmd_mock.inst.options
-
-    self.expected.update({
-        'passthrough_raw': ['foo', '--cbuild-arg', '--b-arg', 'bar'],
-        'build_configs': ['lumpy-paladin', 'lumpy-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -153,8 +138,8 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
+        '--pass-through=--cbuild-arg', '--pass-through=bar',
         'lumpy-paladin', 'lumpy-release',
-        '--passthrough', 'foo', '--cbuild-arg', '--b-arg', 'bar',
     ])
     self.assertEqual(result, [
         '--remote-trybot',
@@ -162,7 +147,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--version', '1.2.3', '--channel', 'chan',
-        'foo', '--cbuild-arg', '--b-arg', 'bar'
+        '--cbuild-arg', 'bar'
     ])
 
   def testCbuildbotArgsProduction(self):
