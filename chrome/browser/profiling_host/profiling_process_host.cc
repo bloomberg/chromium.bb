@@ -6,11 +6,9 @@
 
 #include "base/allocator/features.h"
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/common/profiling/profiling_constants.h"
@@ -167,7 +165,8 @@ ProfilingProcessHost* ProfilingProcessHost::GetInstance() {
       base::LeakySingletonTraits<ProfilingProcessHost>>::get();
 }
 
-void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid) {
+void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
+                                              const base::FilePath& dest) {
   if (!connector_) {
     LOG(ERROR)
         << "Requesting process dump when profiling process hasn't started.";
@@ -176,7 +175,7 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
-                     base::Unretained(this), pid));
+                     base::Unretained(this), pid, dest));
 }
 
 void ProfilingProcessHost::MakeConnector(
@@ -215,13 +214,11 @@ void ProfilingProcessHost::LaunchAsService() {
                          data_channel.PassClientHandle().release().handle)));
 }
 
-void ProfilingProcessHost::GetOutputFileOnBlockingThread(base::ProcessId pid) {
-  base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath output_path = user_data_dir.AppendASCII("memlog_dump.json.gz");
-  base::File file(output_path,
+void ProfilingProcessHost::GetOutputFileOnBlockingThread(
+    base::ProcessId pid,
+    const base::FilePath& dest) {
+  base::File file(dest,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProfilingProcessHost::HandleDumpProcessOnIOThread,
