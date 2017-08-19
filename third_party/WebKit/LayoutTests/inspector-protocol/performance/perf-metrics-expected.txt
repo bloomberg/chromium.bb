@@ -11,6 +11,7 @@ Received metrics:
 	LayoutDuration
 	RecalcStyleDuration
 	ScriptDuration
+	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 Received metrics:
@@ -24,6 +25,7 @@ Received metrics:
 	LayoutDuration
 	RecalcStyleDuration
 	ScriptDuration
+	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 Received metrics:
