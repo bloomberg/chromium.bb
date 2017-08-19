@@ -10,11 +10,15 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -22,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -29,6 +34,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace {
 
@@ -82,9 +89,10 @@ content::WebUIDataSource* CreateMemoryInternalsUIHTMLSource() {
   return source;
 }
 
-class MemoryInternalsDOMHandler : public content::WebUIMessageHandler {
+class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
+                                  ui::SelectFileDialog::Listener {
  public:
-  MemoryInternalsDOMHandler();
+  explicit MemoryInternalsDOMHandler(content::WebUI* web_ui);
   ~MemoryInternalsDOMHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -102,17 +110,28 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler {
   static void GetChildProcessesOnIOThread(
       base::WeakPtr<MemoryInternalsDOMHandler> dom_handler);
   void ReturnProcessListOnUIThread(std::vector<base::Value> children);
-  static void GetOutputFileOnFileThread(int32_t sender_id);
-  static void HandleDumpProcessOnUIThread(int32_t sender_id, base::File file);
+
+  // SelectFileDialog::Listener implementation:
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
+
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  content::WebUI* web_ui_;  // The WebUI that owns us.
 
   base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInternalsDOMHandler);
 };
 
-MemoryInternalsDOMHandler::MemoryInternalsDOMHandler() : weak_factory_(this) {}
+MemoryInternalsDOMHandler::MemoryInternalsDOMHandler(content::WebUI* web_ui)
+    : web_ui_(web_ui), weak_factory_(this) {}
 
-MemoryInternalsDOMHandler::~MemoryInternalsDOMHandler() {}
+MemoryInternalsDOMHandler::~MemoryInternalsDOMHandler() {
+  if (select_file_dialog_)
+    select_file_dialog_->ListenerDestroyed();
+}
 
 void MemoryInternalsDOMHandler::RegisterMessages() {
   // Unretained should be OK here since this class is bound to the lifetime of
@@ -131,9 +150,6 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
     const base::ListValue* args) {
   // This is called on the UI thread, the child process iterator must run on
   // the IO thread, while the render process iterator must run on the UI thread.
-  //
-  // TODO(brettw) Have some way to start the profiler if it's not started, or
-  // at least tell people to restart with --memlog if it's not running.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
@@ -147,8 +163,34 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
   if (!pid_value.is_int())
     return;
 
+  int pid = pid_value.GetInt();
+  base::FilePath default_file = base::FilePath().AppendASCII(
+      base::StringPrintf("memlog_%lld.json.gz", static_cast<long long>(pid)));
+
+#if defined(OS_ANDROID)
+  // On Android write to the user data dir.
+  // TODO(bug 757115) Does it make sense to show the Android file picker here
+  // insead? Need to test what that looks like.
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath output_path = user_data_dir.Append(default_file);
   profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
-      pid_value.GetInt());
+      pid, output_path);
+  (void)web_ui_;  // Avoid warning about not using private web_ui_ member.
+#else
+  if (select_file_dialog_)
+    return;  // Currently running, wait for existing save to complete.
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this,
+      std::make_unique<ChromeSelectFilePolicy>(web_ui_->GetWebContents()));
+
+  // Pass the PID to dump via the "params" for the callback to use.
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_file,
+      nullptr, 0, FILE_PATH_LITERAL(".json.gz"),
+      web_ui_->GetWebContents()->GetTopLevelNativeWindow(),
+      reinterpret_cast<void*>(pid));
+#endif
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
@@ -219,11 +261,25 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   DisallowJavascript();
 }
 
+void MemoryInternalsDOMHandler::FileSelected(const base::FilePath& path,
+                                             int index,
+                                             void* params) {
+  // The PID to dump was stashed in the params.
+  int pid = reinterpret_cast<intptr_t>(params);
+  profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(pid, path);
+  select_file_dialog_ = nullptr;
+}
+
+void MemoryInternalsDOMHandler::FileSelectionCanceled(void* params) {
+  select_file_dialog_ = nullptr;
+}
+
 }  // namespace
 
 MemoryInternalsUI::MemoryInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(base::MakeUnique<MemoryInternalsDOMHandler>());
+  web_ui->AddMessageHandler(
+      base::MakeUnique<MemoryInternalsDOMHandler>(web_ui));
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateMemoryInternalsUIHTMLSource());

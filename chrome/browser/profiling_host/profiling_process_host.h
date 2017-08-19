@@ -19,6 +19,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace profiling {
 
 // Represents the browser side of the profiling process (//chrome/profiling).
@@ -64,8 +68,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   static ProfilingProcessHost* GetInstance();
 
   // Sends a message to the profiling process that it dump the given process'
-  // memory data.
-  void RequestProcessDump(base::ProcessId pid);
+  // memory data to the given file.
+  void RequestProcessDump(base::ProcessId pid, const base::FilePath& dest);
 
  private:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
@@ -97,7 +101,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void SendPipeToClientProcess(profiling::mojom::MemlogClientPtr memlog_client,
                                mojo::ScopedHandle handle);
 
-  void GetOutputFileOnBlockingThread(base::ProcessId pid);
+  void GetOutputFileOnBlockingThread(base::ProcessId pid,
+                                     const base::FilePath& dest);
   void HandleDumpProcessOnIOThread(base::ProcessId pid, base::File file);
 
   void SetMode(Mode mode);
