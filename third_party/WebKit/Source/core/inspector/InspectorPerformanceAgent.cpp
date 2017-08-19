@@ -10,6 +10,7 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/InstanceCounters.h"
 #include "platform/wtf/dtoa/utils.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -36,6 +37,8 @@ protocol::Response InspectorPerformanceAgent::enable() {
   enabled_ = true;
   state_->setBoolean(kPerformanceAgentEnabled, true);
   instrumenting_agents_->addInspectorPerformanceAgent(this);
+  Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
+  task_start_time_ = 0;
   return Response::OK();
 }
 
@@ -45,6 +48,7 @@ protocol::Response InspectorPerformanceAgent::disable() {
   enabled_ = false;
   state_->setBoolean(kPerformanceAgentEnabled, false);
   instrumenting_agents_->removeInspectorPerformanceAgent(this);
+  Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
   return Response::OK();
 }
 
@@ -90,6 +94,7 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "LayoutDuration", layout_duration_);
   AppendMetric(result.get(), "RecalcStyleDuration", recalc_style_duration_);
   AppendMetric(result.get(), "ScriptDuration", script_duration_);
+  AppendMetric(result.get(), "TaskDuration", task_duration_);
 
   // Performance timings.
   Document* document = inspected_frames_->Root()->GetDocument();
@@ -153,6 +158,16 @@ void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
     return;
   layout_duration_ += probe.Duration();
   layout_count_++;
+}
+
+void InspectorPerformanceAgent::WillProcessTask(double start_time) {
+  task_start_time_ = start_time;
+}
+
+void InspectorPerformanceAgent::DidProcessTask(double start_time,
+                                               double end_time) {
+  if (task_start_time_ == start_time)
+    task_duration_ += end_time - start_time;
 }
 
 DEFINE_TRACE(InspectorPerformanceAgent) {

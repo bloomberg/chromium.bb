@@ -10,6 +10,7 @@ title: test1
 	LayoutDuration
 	RecalcStyleDuration
 	ScriptDuration
+	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 title: test1
@@ -23,6 +24,7 @@ title: test1
 	LayoutDuration
 	RecalcStyleDuration
 	ScriptDuration
+	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 title: 
@@ -36,6 +38,7 @@ title:
 	LayoutDuration
 	RecalcStyleDuration
 	ScriptDuration
+	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
 
