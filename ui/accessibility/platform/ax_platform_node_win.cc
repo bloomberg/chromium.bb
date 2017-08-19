@@ -1968,32 +1968,42 @@ STDMETHODIMP AXPlatformNodeWin::get_selectedCells(IUnknown*** cells,
   if (!cells || !n_selected_cells)
     return E_INVALIDARG;
 
-  // TODO(dmazzoni): Implement this.
+  *cells = nullptr;
   *n_selected_cells = 0;
+
+  int columns = GetTableColumnCount();
+  int rows = GetTableRowCount();
+  if (columns <= 0 || rows <= 0)
+    return S_FALSE;
+
+  std::vector<AXPlatformNodeBase*> selected;
+  for (int r = 0; r < rows; ++r) {
+    for (int c = 0; c < columns; ++c) {
+      AXPlatformNodeBase* cell = GetTableCell(r, c);
+      if (cell && cell->GetData().HasState(ui::AX_STATE_SELECTED))
+        selected.push_back(cell);
+    }
+  }
+
+  *n_selected_cells = static_cast<LONG>(selected.size());
+  *cells = static_cast<IUnknown**>(
+      CoTaskMemAlloc((*n_selected_cells) * sizeof(cells[0])));
+
+  for (size_t i = 0; i < selected.size(); ++i) {
+    auto* node_win = static_cast<AXPlatformNodeWin*>(selected[i]);
+    node_win->AddRef();
+    (*cells)[i] = static_cast<IAccessible*>(node_win);
+  }
   return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_selectedColumns(long** columns,
                                                     long* n_columns) {
-  // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
-  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!columns || !n_columns)
-    return E_INVALIDARG;
-
-  // TODO(dmazzoni): Implement this.
-  *n_columns = 0;
-  return S_OK;
+  return get_selectedColumns(INT_MAX, columns, n_columns);
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_selectedRows(long** rows, long* n_rows) {
-  // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
-  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!rows || !n_rows)
-    return E_INVALIDARG;
-
-  // TODO(dmazzoni): Implement this.
-  *n_rows = 0;
-  return S_OK;
+  return get_selectedRows(INT_MAX, rows, n_rows);
 }
 
 //
