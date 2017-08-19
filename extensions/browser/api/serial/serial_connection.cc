@@ -252,11 +252,13 @@ bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
           base::BindOnce(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
           std::vector<uint8_t>(),
           device::mojom::SerialReceiveError::DISCONNECTED));
-  receive_timeout_task_.reset();
+  receive_timeout_task_.Cancel();
   if (receive_timeout_ > 0) {
-    receive_timeout_task_.reset(new TimeoutTask(
-        base::BindOnce(&SerialConnection::OnReceiveTimeout, AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(receive_timeout_)));
+    receive_timeout_task_.Reset(
+        base::Bind(&SerialConnection::OnReceiveTimeout, AsWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, receive_timeout_task_.callback(),
+        base::TimeDelta::FromMilliseconds(receive_timeout_));
   }
   return true;
 }
@@ -274,11 +276,13 @@ bool SerialConnection::Send(const std::vector<char>& data,
           base::BindOnce(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()),
           static_cast<uint32_t>(0),
           device::mojom::SerialSendError::DISCONNECTED));
-  send_timeout_task_.reset();
+  send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
-    send_timeout_task_.reset(new TimeoutTask(
-        base::BindOnce(&SerialConnection::OnSendTimeout, AsWeakPtr()),
-        base::TimeDelta::FromMilliseconds(send_timeout_)));
+    send_timeout_task_.Reset(
+        base::Bind(&SerialConnection::OnSendTimeout, AsWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, send_timeout_task_.callback(),
+        base::TimeDelta::FromMilliseconds(send_timeout_));
   }
   return true;
 }
@@ -401,7 +405,7 @@ void SerialConnection::OnAsyncReadComplete(
     device::mojom::SerialReceiveError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(receive_complete_);
-  receive_timeout_task_.reset();
+  receive_timeout_task_.Cancel();
   std::move(receive_complete_)
       .Run(std::vector<char>(data_read.data(),
                              data_read.data() + data_read.size()),
@@ -413,7 +417,7 @@ void SerialConnection::OnAsyncWriteComplete(
     device::mojom::SerialSendError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(send_complete_);
-  send_timeout_task_.reset();
+  send_timeout_task_.Cancel();
   std::move(send_complete_).Run(bytes_sent, ConvertSendErrorFromMojo(error));
 }
 
@@ -422,21 +426,6 @@ void SerialConnection::OnConnectionError() {
   if (connection_error_handler_) {
     std::move(connection_error_handler_).Run();
   }
-}
-
-SerialConnection::TimeoutTask::TimeoutTask(base::OnceClosure closure,
-                                           const base::TimeDelta& delay)
-    : closure_(std::move(closure)), delay_(delay), weak_factory_(this) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&TimeoutTask::Run, weak_factory_.GetWeakPtr()),
-      delay_);
-}
-
-SerialConnection::TimeoutTask::~TimeoutTask() {
-}
-
-void SerialConnection::TimeoutTask::Run() {
-  std::move(closure_).Run();
 }
 
 }  // namespace extensions

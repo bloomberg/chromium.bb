@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -149,22 +150,6 @@ class SerialConnection : public ApiResource,
   friend class ApiResourceManager<SerialConnection>;
   static const char* service_name() { return "SerialConnectionManager"; }
 
-  // Encapsulates a cancelable, delayed timeout task. Posts a delayed
-  // task upon construction and implicitly cancels the task upon
-  // destruction if it hasn't run yet.
-  class TimeoutTask {
-   public:
-    TimeoutTask(base::OnceClosure closure, const base::TimeDelta& delay);
-    ~TimeoutTask();
-
-   private:
-    void Run();
-
-    base::OnceClosure closure_;
-    base::TimeDelta delay_;
-    base::WeakPtrFactory<TimeoutTask> weak_factory_;
-  };
-
   // Handles a receive timeout.
   void OnReceiveTimeout();
 
@@ -215,11 +200,11 @@ class SerialConnection : public ApiResource,
 
   // Closure which will trigger a receive timeout unless cancelled. Reset on
   // initialization and after every successful Receive().
-  std::unique_ptr<TimeoutTask> receive_timeout_task_;
+  base::CancelableClosure receive_timeout_task_;
 
   // Write timeout closure. Reset on initialization and after every successful
   // Send().
-  std::unique_ptr<TimeoutTask> send_timeout_task_;
+  base::CancelableClosure send_timeout_task_;
 
   // Mojo interface ptr corresponding with remote asynchronous I/O handler.
   device::mojom::SerialIoHandlerPtr io_handler_;
