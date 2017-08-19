@@ -14,18 +14,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-config("base_config") {
-  configs = [
-    "//build/config:precompiled_headers",
-
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-
-    "//media:media_dependent_config",
-    "//media:subcomponent_config",
-  ]
-}
-
 source_set("base") {
   visibility = media_subcomponent_deps
   visibility += [ "//media" ]
@@ -89,6 +77,7 @@ source_set("base") {
     "buffering_state.h",
     "byte_queue.cc",
     "byte_queue.h",
+    "callback_holder.h",
     "cdm_callback_promise.cc",
     "cdm_callback_promise.h",
     "cdm_config.h",
@@ -297,7 +286,15 @@ source_set("base") {
     "//url:url",
   ]
   libs = []
-  configs += [ ":base_config" ]
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+
+    "//media:media_dependent_config",
+    "//media:subcomponent_config",
+  ]
 
   if (media_use_ffmpeg) {
     deps += [
@@ -439,7 +436,6 @@ source_set("unit_tests") {
     "audio_timestamp_helper_unittest.cc",
     "bind_to_current_loop_unittest.cc",
     "bit_reader_unittest.cc",
-    "callback_holder.h",
     "callback_holder_unittest.cc",
     "channel_mixer_unittest.cc",
     "channel_mixing_matrix_unittest.cc",

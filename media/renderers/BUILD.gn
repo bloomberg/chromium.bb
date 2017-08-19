@@ -41,8 +41,7 @@ source_set("renderers") {
   configs += [
     "//media:subcomponent_config",
 
-    # TODO(wolenetz): Fix size_t to int trunctaion in win64.
-    # See http://crbug.com/171009
+    # TODO(crbug.com/167187): Fix size_t to int trunctaions.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
@@ -60,6 +59,7 @@ source_set("unit_tests") {
   configs += [ "//media:media_config" ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//cc/paint",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",

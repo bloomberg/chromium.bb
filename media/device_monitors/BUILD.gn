@@ -18,6 +18,7 @@ source_set("device_monitors") {
 
   deps = [
     "//base",
+    "//media/audio",
     "//media/base",
   ]
 

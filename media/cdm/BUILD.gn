@@ -36,8 +36,7 @@ source_set("cdm") {
     "player_tracker_impl.h",
   ]
 
-  # TODO(wolenetz): Fix size_t to int truncation in win64.
-  # See http://crbug.com/171009
+  # TODO(crbug.com/167187): Fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
@@ -140,8 +139,7 @@ source_set("unit_tests") {
   ]
 
   configs += [
-    # TODO(wolenetz): Fix size_t to int truncation in win64.
-    # See http://crbug.com/171009
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:media_config",
   ]

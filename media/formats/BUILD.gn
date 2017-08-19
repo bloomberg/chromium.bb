@@ -9,6 +9,7 @@ source_set("formats") {
     "//media",
     "//media/base/android/",
     "//media/cdm",
+    "//media/filters",
   ]
 
   sources = [
@@ -52,12 +53,12 @@ source_set("formats") {
   configs += [
     "//media:subcomponent_config",
 
-    # TODO(wolenetz): Fix size_t to int trunctaion in win64.
-    # See http://crbug.com/171009
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   if (proprietary_codecs) {
+    deps += [ "//media/video" ]
     sources += [
       "mp4/aac.cc",
       "mp4/aac.h",
@@ -103,6 +104,7 @@ source_set("formats") {
   }
 
   if (proprietary_codecs && enable_mse_mpeg2ts_stream_parser) {
+    deps += [ "//ui/gfx/geometry" ]
     sources += [
       "mp2t/descriptors.cc",
       "mp2t/descriptors.h",

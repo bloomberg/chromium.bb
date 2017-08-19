@@ -81,15 +81,16 @@ source_set("filters") {
   ]
 
   configs += [
-    # TODO(wolenetz): Fix size_t to int truncation in win64.
-    # See http://crbug.com/171009
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//media:subcomponent_config",
   ]
 
   deps = [
+    "//gpu/command_buffer/common",
     "//media/base",
     "//media/cdm",
+    "//media/formats",
     "//media/video",
     "//skia",
     "//third_party/libyuv",
@@ -108,6 +109,7 @@ source_set("filters") {
     deps += [
       "//media/ffmpeg",
       "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
       "//third_party/opus",
     ]
     sources += [
@@ -184,6 +186,7 @@ source_set("filters") {
       "android/media_codec_audio_decoder.cc",
       "android/media_codec_audio_decoder.h",
     ]
+    deps += [ "//media/base/android" ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {
