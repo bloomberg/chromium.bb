@@ -7,6 +7,7 @@
 #include <magenta/status.h>
 #include <magenta/syscalls.h>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 
 namespace base {
@@ -86,8 +87,7 @@ bool MessagePumpFuchsia::FdWatchController::StopWatchingFileDescriptor() {
   return success;
 }
 
-MessagePumpFuchsia::MessagePumpFuchsia()
-    : keep_running_(true), weak_factory_(this) {
+MessagePumpFuchsia::MessagePumpFuchsia() : weak_factory_(this) {
   CHECK_EQ(MX_OK, mx_port_create(0, port_.receive()));
 }
 
@@ -207,7 +207,7 @@ uint32_t MessagePumpFuchsia::MxHandleWatchController::WaitEnd(
 }
 
 void MessagePumpFuchsia::Run(Delegate* delegate) {
-  DCHECK(keep_running_);
+  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
 
   for (;;) {
     bool did_work = delegate->DoWork();
@@ -274,8 +274,6 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
       DCHECK_EQ(MX_PKT_TYPE_USER, packet.type);
     }
   }
-
-  keep_running_ = true;
 }
 
 void MessagePumpFuchsia::Quit() {

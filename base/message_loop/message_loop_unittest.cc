@@ -1328,6 +1328,41 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitNested) {
   EXPECT_EQ(static_cast<size_t>(task_index), order.Size());
 }
 
+// Quits current loop and immediately runs a nested loop.
+void QuitAndRunNestedLoop(TaskList* order,
+                          int cookie,
+                          RunLoop* outer_run_loop,
+                          RunLoop* nested_run_loop) {
+  order->RecordStart(RUNS, cookie);
+  outer_run_loop->Quit();
+  nested_run_loop->Run();
+  order->RecordEnd(RUNS, cookie);
+}
+
+// Test that we can run nested loop after quitting the current one.
+TEST_P(MessageLoopTypedTest, RunLoopNestedAfterQuit) {
+  MessageLoop loop(GetParam());
+
+  TaskList order;
+
+  RunLoop outer_run_loop;
+  RunLoop nested_run_loop;
+
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                          nested_run_loop.QuitClosure());
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&QuitAndRunNestedLoop, &order, 1, &outer_run_loop,
+                          &nested_run_loop));
+
+  outer_run_loop.Run();
+
+  ASSERT_EQ(2U, order.Size());
+  int task_index = 0;
+  EXPECT_EQ(order.Get(task_index++), TaskItem(RUNS, 1, true));
+  EXPECT_EQ(order.Get(task_index++), TaskItem(RUNS, 1, false));
+  EXPECT_EQ(static_cast<size_t>(task_index), order.Size());
+}
+
 // Tests RunLoopQuit only quits the corresponding MessageLoop::Run.
 TEST_P(MessageLoopTypedTest, RunLoopQuitBogus) {
   MessageLoop loop(GetParam());
