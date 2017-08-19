@@ -10285,6 +10285,18 @@
       {
         "args": [
           "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.single.mash.browser_tests.filter"
+        ],
+        "name": "single-mash_browser_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1800
+        },
+        "test": "mash_browser_tests"
+      },
+      {
+        "args": [
+          "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mus.browser_tests.filter"
         ],
         "swarming": {
