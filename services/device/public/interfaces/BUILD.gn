@@ -22,7 +22,6 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-    "//device/serial:serial_mojo",
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.

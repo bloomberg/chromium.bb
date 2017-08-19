@@ -40,9 +40,9 @@ if (is_win || is_linux || is_mac) {
     public_configs = [ ":platform_support" ]
 
     public_deps = [
-      ":serial_mojo",
       "//base",
       "//device/base",
+      "//services/device/public/interfaces",
     ]
 
     deps = [
@@ -78,17 +78,4 @@ if (is_win || is_linux || is_mac) {
       ":serial",
     ]
   }
-}
-
-mojom("serial_mojo") {
-  visibility = [
-    ":serial",
-    "//extensions:extensions_renderer_resources_grit",
-    "//services/device/public/interfaces",
-    "//services/device/public/interfaces:interfaces_blink",
-  ]
-
-  sources = [
-    "serial.mojom",
-  ]
 }
