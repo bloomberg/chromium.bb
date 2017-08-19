@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.R;
 import org.chromium.content.browser.WindowAndroidProvider;
 import org.chromium.ui.UiUtils;
@@ -191,6 +192,7 @@ public class SuggestionsPopupWindow
         }
 
         @Override
+        @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView textView = (TextView) convertView;
             if (textView == null) {

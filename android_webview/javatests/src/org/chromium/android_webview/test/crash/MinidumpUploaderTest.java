@@ -8,13 +8,20 @@ import android.os.ParcelFileDescriptor;
 import android.support.test.filters.MediumTest;
 import android.webkit.ValueCallback;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.crash.AwMinidumpUploaderDelegate;
 import org.chromium.android_webview.crash.CrashReceiverService;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.components.minidump_uploader.CrashTestCase;
+import org.chromium.components.minidump_uploader.CrashTestRule;
+import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadTestUtility;
 import org.chromium.components.minidump_uploader.MinidumpUploader;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
@@ -31,13 +38,17 @@ import java.io.IOException;
  * Instrumentation tests for WebView's implementation of MinidumpUploaderDelegate, and the
  * interoperability of WebView's minidump-copying and minidump-uploading logic.
  */
-public class MinidumpUploaderTest extends CrashTestCase {
-    private static final String BOUNDARY = "TESTBOUNDARY";
+@RunWith(BaseJUnit4ClassRunner.class)
+public class MinidumpUploaderTest {
+    @Rule
+    public CrashTestRule mTestRule = new CrashTestRule() {
+        @Override
+        public File getExistingCacheDir() {
+            return CrashReceiverService.getOrCreateWebViewCrashDir();
+        }
+    };
 
-    @Override
-    protected File getExistingCacheDir() {
-        return CrashReceiverService.getOrCreateWebViewCrashDir();
-    }
+    private static final String BOUNDARY = "TESTBOUNDARY";
 
     private static class TestPlatformServiceBridge extends PlatformServiceBridge {
         private final boolean mEnabled;
@@ -64,12 +75,13 @@ public class MinidumpUploaderTest extends CrashTestCase {
      *
      * MinidumpUploaderImpl should automatically recreate the directory.
      */
+    @Test
     @MediumTest
-    public void testUploadingWithoutCrashDir() throws IOException {
-        File webviewCrashDir = getExistingCacheDir();
+    public void testUploadingWithoutCrashDir() {
+        File webviewCrashDir = mTestRule.getExistingCacheDir();
         // Delete the WebView crash directory to ensure MinidumpUploader doesn't crash without it.
         FileUtils.recursivelyDeleteFile(webviewCrashDir);
-        assertFalse(webviewCrashDir.exists());
+        Assert.assertFalse(webviewCrashDir.exists());
 
         PlatformServiceBridge.injectInstance(new TestPlatformServiceBridge(true));
         final CrashReportingPermissionManager permManager =
@@ -94,6 +106,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
     /**
      * Ensures that the minidump copying works together with the minidump uploading.
      */
+    @Test
     @MediumTest
     public void testCopyAndUploadWebViewMinidump() throws IOException {
         final CrashFileManager fileManager =
@@ -101,8 +114,8 @@ public class MinidumpUploaderTest extends CrashTestCase {
         // Note that these minidump files are set up directly in the cache dir - not in the WebView
         // crash dir. This is to ensure the CrashFileManager doesn't see these minidumps without us
         // first copying them.
-        File minidumpToCopy = new File(getExistingCacheDir(), "toCopy.dmp.try0");
-        setUpMinidumpFile(minidumpToCopy, BOUNDARY, "browser");
+        File minidumpToCopy = new File(mTestRule.getExistingCacheDir(), "toCopy.dmp.try0");
+        CrashTestRule.setUpMinidumpFile(minidumpToCopy, BOUNDARY, "browser");
         final String expectedFileContent = readEntireFile(minidumpToCopy);
 
         File[] uploadedFiles = copyAndUploadMinidumpsSync(
@@ -112,17 +125,18 @@ public class MinidumpUploaderTest extends CrashTestCase {
         // meaning that we have to check the contents of the minidump rather than the file
         // name.
         try {
-            assertEquals(expectedFileContent, readEntireFile(uploadedFiles[0]));
+            Assert.assertEquals(expectedFileContent, readEntireFile(uploadedFiles[0]));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         File webviewTmpDir = CrashReceiverService.getWebViewTmpCrashDir();
-        assertEquals(0, webviewTmpDir.listFiles().length);
+        Assert.assertEquals(0, webviewTmpDir.listFiles().length);
     }
 
     /**
      * Ensure that when PlatformServiceBridge returns true we do upload minidumps.
      */
+    @Test
     @MediumTest
     public void testPlatformServicesBridgeIsUsedUserConsent() throws IOException {
         testPlatformServicesBridgeIsUsed(true);
@@ -131,6 +145,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
     /**
      * Ensure that when PlatformServiceBridge returns false we do not upload minidumps.
      */
+    @Test
     @MediumTest
     public void testPlatformServicesBridgeIsUsedNoUserConsent() throws IOException {
         testPlatformServicesBridgeIsUsed(false);
@@ -165,7 +180,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     // isUsageAndCrashReportingPermittedByUser.
                     boolean userPermitted =
                             realPermissionManager.isUsageAndCrashReportingPermittedByUser();
-                    assertEquals(mUserConsent, userPermitted);
+                    Assert.assertEquals(mUserConsent, userPermitted);
                     return userPermitted;
                 }
             };
@@ -180,18 +195,18 @@ public class MinidumpUploaderTest extends CrashTestCase {
 
         File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0.try0");
         File secondFile = createMinidumpFileInCrashDir("12_abcd.dmp0.try0");
-        File expectedFirstFile = new File(
-                mCrashDir, firstFile.getName().replace(".dmp", userConsent ? ".up" : ".skipped"));
-        File expectedSecondFile = new File(
-                mCrashDir, secondFile.getName().replace(".dmp", userConsent ? ".up" : ".skipped"));
+        File expectedFirstFile = new File(mTestRule.getCrashDir(),
+                firstFile.getName().replace(".dmp", userConsent ? ".up" : ".skipped"));
+        File expectedSecondFile = new File(mTestRule.getCrashDir(),
+                secondFile.getName().replace(".dmp", userConsent ? ".up" : ".skipped"));
 
         MinidumpUploadTestUtility.uploadMinidumpsSync(
                 minidumpUploader, false /* expectReschedule */);
 
-        assertFalse(firstFile.exists());
-        assertTrue(expectedFirstFile.exists());
-        assertFalse(secondFile.exists());
-        assertTrue(expectedSecondFile.exists());
+        Assert.assertFalse(firstFile.exists());
+        Assert.assertTrue(expectedFirstFile.exists());
+        Assert.assertFalse(secondFile.exists());
+        Assert.assertTrue(expectedSecondFile.exists());
     }
 
     private static String readEntireFile(File file) throws IOException {
@@ -206,6 +221,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
      * Ensure we can copy and upload several batches of files (i.e. emulate several copying-calls in
      * a row without the copying-service being destroyed in between).
      */
+    @Test
     @MediumTest
     public void testCopyAndUploadSeveralMinidumpBatches() throws IOException {
         final CrashFileManager fileManager =
@@ -213,10 +229,12 @@ public class MinidumpUploaderTest extends CrashTestCase {
         // Note that these minidump files are set up directly in the cache dir - not in the WebView
         // crash dir. This is to ensure the CrashFileManager doesn't see these minidumps without us
         // first copying them.
-        File firstMinidumpToCopy = new File(getExistingCacheDir(), "firstToCopy.dmp.try0");
-        File secondMinidumpToCopy = new File(getExistingCacheDir(), "secondToCopy.dmp.try0");
-        setUpMinidumpFile(firstMinidumpToCopy, BOUNDARY, "browser");
-        setUpMinidumpFile(secondMinidumpToCopy, BOUNDARY, "renderer");
+        File firstMinidumpToCopy =
+                new File(mTestRule.getExistingCacheDir(), "firstToCopy.dmp.try0");
+        File secondMinidumpToCopy =
+                new File(mTestRule.getExistingCacheDir(), "secondToCopy.dmp.try0");
+        CrashTestRule.setUpMinidumpFile(firstMinidumpToCopy, BOUNDARY, "browser");
+        CrashTestRule.setUpMinidumpFile(secondMinidumpToCopy, BOUNDARY, "renderer");
         final String expectedFirstFileContent = readEntireFile(firstMinidumpToCopy);
         final String expectedSecondFileContent = readEntireFile(secondMinidumpToCopy);
 
@@ -230,10 +248,10 @@ public class MinidumpUploaderTest extends CrashTestCase {
             final String actualFileContent0 = readEntireFile(uploadedFiles[0]);
             final String actualFileContent1 = readEntireFile(uploadedFiles[1]);
             if (expectedFirstFileContent.equals(actualFileContent0)) {
-                assertEquals(expectedSecondFileContent, actualFileContent1);
+                Assert.assertEquals(expectedSecondFileContent, actualFileContent1);
             } else {
-                assertEquals(expectedFirstFileContent, actualFileContent1);
-                assertEquals(expectedSecondFileContent, actualFileContent0);
+                Assert.assertEquals(expectedFirstFileContent, actualFileContent1);
+                Assert.assertEquals(expectedSecondFileContent, actualFileContent0);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -252,11 +270,11 @@ public class MinidumpUploaderTest extends CrashTestCase {
     private File[] copyAndUploadMinidumpsSync(CrashFileManager fileManager, File[][] minidumps,
             int[] uids) throws FileNotFoundException {
         CrashReceiverService crashReceiverService = new CrashReceiverService();
-        assertEquals(minidumps.length, uids.length);
+        Assert.assertEquals(minidumps.length, uids.length);
         // Ensure the upload service minidump directory is empty before we start copying files.
         File[] initialMinidumps = fileManager.getMinidumpsReadyForUpload(
                 MinidumpUploaderImpl.MAX_UPLOAD_TRIES_ALLOWED);
-        assertEquals(0, initialMinidumps.length);
+        Assert.assertEquals(0, initialMinidumps.length);
 
         // Open file descriptors to the files and then delete the files.
         ParcelFileDescriptor[][] fileDescriptors = new ParcelFileDescriptor[minidumps.length][];
@@ -268,7 +286,7 @@ public class MinidumpUploaderTest extends CrashTestCase {
             for (int m = 0; m < currentMinidumps.length; m++) {
                 fileDescriptors[n][m] = ParcelFileDescriptor.open(
                         currentMinidumps[m], ParcelFileDescriptor.MODE_READ_ONLY);
-                assertTrue(currentMinidumps[m].delete());
+                Assert.assertTrue(currentMinidumps[m].delete());
             }
             crashReceiverService.performMinidumpCopyingSerially(
                     uids[n] /* uid */, fileDescriptors[n], false /* scheduleUploads */);
@@ -294,16 +312,16 @@ public class MinidumpUploaderTest extends CrashTestCase {
         // Ensure there are no minidumps left to upload.
         File[] nonUploadedMinidumps = fileManager.getMinidumpsReadyForUpload(
                 MinidumpUploaderImpl.MAX_UPLOAD_TRIES_ALLOWED);
-        assertEquals(0, nonUploadedMinidumps.length);
+        Assert.assertEquals(0, nonUploadedMinidumps.length);
 
         File[] uploadedFiles = fileManager.getAllUploadedFiles();
-        assertEquals(numMinidumps, uploadedFiles.length);
+        Assert.assertEquals(numMinidumps, uploadedFiles.length);
         return uploadedFiles;
     }
 
     private File createMinidumpFileInCrashDir(String name) throws IOException {
-        File minidumpFile = new File(mCrashDir, name);
-        setUpMinidumpFile(minidumpFile, BOUNDARY);
+        File minidumpFile = new File(mTestRule.getCrashDir(), name);
+        CrashTestRule.setUpMinidumpFile(minidumpFile, BOUNDARY);
         return minidumpFile;
     }
 }
