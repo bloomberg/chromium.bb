@@ -15,6 +15,7 @@ namespace gl {
 // This API will likely need to be adjusted as the functionality is
 // implemented on more operating systems.
 enum GpuPreference {
+  GpuPreferenceNone,
   PreferIntegratedGpu,
   PreferDiscreteGpu,
   GpuPreferenceLast = PreferDiscreteGpu

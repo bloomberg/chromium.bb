@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
@@ -48,7 +49,7 @@ IOSurfaceContext::Get(Type type) {
   std::vector<CGLPixelFormatAttribute> attribs;
   attribs.push_back(kCGLPFADepthSize);
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
+  if (gl::GLContext::SwitchableGPUsSupported())
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
   attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
   GLint number_virtual_screens = 0;

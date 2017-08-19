@@ -79,9 +79,6 @@ const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 // Disables the use of DirectComposition to draw to the screen.
 const char kDisableDirectComposition[] = "disable-direct-composition";
 
-// Indicates whether the dual GPU switching is supported or not.
-const char kSupportsDualGpus[]              = "supports-dual-gpus";
-
 // Flag used for Linux tests: for desktop GL bindings, try to load this GL
 // library first, but fall back to regular library if loading fails.
 const char kTestGLLib[]                     = "test-gl-lib";

@@ -206,10 +206,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // gpu info is collected.
   void UpdatePreliminaryBlacklistedFeatures();
 
-  // Update the GPU switching status.
-  // This should only be called once at initialization time.
-  void UpdateGpuSwitchingManager(const gpu::GPUInfo& gpu_info);
-
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 

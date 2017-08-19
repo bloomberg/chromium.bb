@@ -34,6 +34,10 @@ base::LazyInstance<base::ThreadLocalPointer<GLContext>>::Leaky
 
 // static
 base::subtle::Atomic32 GLContext::total_gl_contexts_ = 0;
+// static
+bool GLContext::switchable_gpus_supported_ = false;
+// static
+GpuPreference GLContext::forced_gpu_preference_ = GpuPreferenceNone;
 
 GLContext::ScopedReleaseCurrent::ScopedReleaseCurrent() : canceled_(false) {}
 
@@ -69,6 +73,37 @@ GLContext::~GLContext() {
 int32_t GLContext::TotalGLContexts() {
   return static_cast<int32_t>(
       base::subtle::NoBarrier_Load(&total_gl_contexts_));
+}
+
+// static
+bool GLContext::SwitchableGPUsSupported() {
+  return switchable_gpus_supported_;
+}
+
+// static
+void GLContext::SetSwitchableGPUsSupported() {
+  DCHECK(!switchable_gpus_supported_);
+  switchable_gpus_supported_ = true;
+}
+
+// static
+void GLContext::SetForcedGpuPreference(GpuPreference gpu_preference) {
+  DCHECK_EQ(GpuPreferenceNone, forced_gpu_preference_);
+  forced_gpu_preference_ = gpu_preference;
+}
+
+// static
+GpuPreference GLContext::AdjustGpuPreference(GpuPreference gpu_preference) {
+  switch (forced_gpu_preference_) {
+    case GpuPreferenceNone:
+      return gpu_preference;
+    case PreferIntegratedGpu:
+    case PreferDiscreteGpu:
+      return forced_gpu_preference_;
+    default:
+      NOTREACHED();
+      return GpuPreferenceNone;
+  }
 }
 
 GLApi* GLContext::CreateGLApi(DriverGL* driver) {

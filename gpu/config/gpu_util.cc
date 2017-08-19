@@ -25,7 +25,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gpu_switching_manager.h"
 
 namespace gpu {
 
@@ -172,18 +171,6 @@ void ParseSecondaryGpuDevicesFromCommandLine(
     secondary_device.device_id = device_ids[i];
     gpu_info->secondary_gpus.push_back(secondary_device);
   }
-}
-
-void InitializeDualGpusIfSupported(
-    const std::set<int>& driver_bug_workarounds) {
-  ui::GpuSwitchingManager* switching_manager =
-      ui::GpuSwitchingManager::GetInstance();
-  if (!switching_manager->SupportsDualGpus())
-    return;
-  if (driver_bug_workarounds.count(gpu::FORCE_DISCRETE_GPU) == 1)
-    ui::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
-  else if (driver_bug_workarounds.count(gpu::FORCE_INTEGRATED_GPU) == 1)
-    ui::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
 }
 
 GpuFeatureInfo GetGpuFeatureInfo(const GPUInfo& gpu_info,

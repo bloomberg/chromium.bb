@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/command_line.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_export.h"
@@ -37,9 +36,6 @@ GPU_EXPORT void ParseSecondaryGpuDevicesFromCommandLine(
     const base::CommandLine& command_line,
     GPUInfo* gpu_info);
 
-GPU_EXPORT void InitializeDualGpusIfSupported(
-    const std::set<int>& driver_bug_workarounds);
-
 // This function should only be called from the GPU process, or the Browser
 // process while using in-process GPU. This function is safe to call at any
 // point, and is not dependent on sandbox initialization.
@@ -54,4 +50,3 @@ GPU_EXPORT std::string IntSetToString(const std::set<int>& list, char divider);
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_
-

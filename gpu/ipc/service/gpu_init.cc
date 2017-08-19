@@ -15,6 +15,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/switches.h"
@@ -139,15 +140,33 @@ bool CanAccessNvidiaDeviceFile() {
 
 GpuInit::GpuInit() {}
 
-GpuInit::~GpuInit() {}
+GpuInit::~GpuInit() {
+  gpu::StopForceDiscreteGPU();
+}
 
 bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
                                         bool in_process_gpu) {
-  if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
-    std::set<int> workarounds;
-    gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(&workarounds,
-                                                            command_line);
-    gpu::InitializeDualGpusIfSupported(workarounds);
+  // Get vendor_id, device_id, driver_version from browser process through
+  // commandline switches.
+  // TODO(zmo): Collect basic GPU info (without a context) here instead of
+  // passing from browser process.
+  GetGpuInfoFromCommandLine(gpu_info_, command_line);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
+      gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
+    return false;
+#endif
+  gpu_info_.in_process_gpu = in_process_gpu;
+
+  gpu_info_.passthrough_cmd_decoder =
+      gl::UsePassthroughCommandDecoder(&command_line);
+
+  // Compute blacklist and driver bug workaround decisions based on basic GPU
+  // info.
+  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
+  if (gpu::SwitchableGPUsSupported(gpu_info_, command_line)) {
+    gpu::InitializeSwitchableGPUs(
+        gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
 
   // In addition to disabling the watchdog if the command line switch is
@@ -190,19 +209,6 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
     DCHECK(watchdog_started);
 #endif  // OS_WIN
   }
-
-  // Get vendor_id, device_id, driver_version from browser process through
-  // commandline switches.
-  GetGpuInfoFromCommandLine(gpu_info_, command_line);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
-      gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
-    return false;
-#endif
-  gpu_info_.in_process_gpu = in_process_gpu;
-
-  gpu_info_.passthrough_cmd_decoder =
-      gl::UsePassthroughCommandDecoder(&command_line);
 
   sandbox_helper_->PreSandboxStartup();
 
