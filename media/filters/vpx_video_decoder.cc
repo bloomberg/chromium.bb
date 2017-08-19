@@ -219,7 +219,8 @@ class VpxVideoDecoder::MemoryPool
     std::vector<uint8_t> data;
     std::vector<uint8_t> alpha_data;
     bool held_by_libvpx = false;
-    bool held_by_frame = false;
+    // Needs to be a counter since libvpx may vend a framebuffer multiple times.
+    int held_by_frame = 0;
     base::TimeTicks last_use_time;
   };
 
@@ -354,7 +355,7 @@ base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb_priv_data);
-  frame_buffer->held_by_frame = true;
+  ++frame_buffer->held_by_frame;
 
   return BindToCurrentLoop(
       base::Bind(&MemoryPool::OnVideoFrameDestroyed, this, frame_buffer));
@@ -410,7 +411,7 @@ void VpxVideoDecoder::MemoryPool::Shutdown() {
 
 // static
 bool VpxVideoDecoder::MemoryPool::IsUsed(const VP9FrameBuffer* buf) {
-  return buf->held_by_libvpx || buf->held_by_frame;
+  return buf->held_by_libvpx || buf->held_by_frame > 0;
 }
 
 void VpxVideoDecoder::MemoryPool::EraseUnusedResources() {
@@ -423,8 +424,8 @@ void VpxVideoDecoder::MemoryPool::EraseUnusedResources() {
 void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
     VP9FrameBuffer* frame_buffer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(frame_buffer->held_by_frame);
-  frame_buffer->held_by_frame = false;
+  DCHECK_GT(frame_buffer->held_by_frame, 0);
+  --frame_buffer->held_by_frame;
 
   if (in_shutdown_) {
     // If we're in shutdown we can be sure that libvpx has been destroyed.
