@@ -221,12 +221,10 @@ void StreamTexture::OnForwardForSurfaceRequest(
 }
 
 bool StreamTexture::BindTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 
 void StreamTexture::ReleaseTexImage(unsigned target) {
-  NOTREACHED();
 }
 
 bool StreamTexture::CopyTexSubImage(unsigned target,
