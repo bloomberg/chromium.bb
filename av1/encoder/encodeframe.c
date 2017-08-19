@@ -4490,10 +4490,14 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     MODE_INFO **mi = cm->mi_grid_visible + idx_str;
     PC_TREE *const pc_root = td->pc_root[cm->mib_size_log2 - MIN_MIB_SIZE_LOG2];
 
+#if CONFIG_LV_MAP && LV_MAP_PROB
+    av1_fill_coeff_costs(&td->mb, cm->fc);
+#else
     av1_fill_token_costs_from_cdf(x->token_head_costs,
                                   x->e_mbd.tile_ctx->coef_head_cdfs);
     av1_fill_token_costs_from_cdf(x->token_tail_costs,
                                   x->e_mbd.tile_ctx->coef_tail_cdfs);
+#endif
 
     if (sf->adaptive_pred_interp_filter) {
       for (i = 0; i < leaf_nodes; ++i)

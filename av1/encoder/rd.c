@@ -452,16 +452,45 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
 }
 
 #if CONFIG_LV_MAP
+#if !LV_MAP_PROB
 static void get_rate_cost(aom_prob p, int cost[2]) {
   cost[0] = av1_cost_bit(p, 0);
   cost[1] = av1_cost_bit(p, 1);
 }
+#endif  // !LV_MAP_PROB
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
   for (TX_SIZE tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (int plane = 0; plane < PLANE_TYPES; ++plane) {
       LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
 
+#if LV_MAP_PROB
+      for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->txb_skip_cost[ctx],
+                                 fc->txb_skip_cdf[tx_size][ctx], NULL);
+
+      for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->nz_map_cost[ctx],
+                                 fc->nz_map_cdf[tx_size][plane][ctx], NULL);
+
+      for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->eob_cost[ctx],
+                                 fc->eob_flag_cdf[tx_size][plane][ctx], NULL);
+
+      for (int ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->dc_sign_cost[ctx],
+                                 fc->dc_sign_cdf[plane][ctx], NULL);
+
+      for (int layer = 0; layer < NUM_BASE_LEVELS; ++layer)
+        for (int ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
+          av1_cost_tokens_from_cdf(
+              pcost->base_cost[layer][ctx],
+              fc->coeff_base_cdf[tx_size][plane][layer][ctx], NULL);
+
+      for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->lps_cost[ctx],
+                                 fc->coeff_lps_cdf[tx_size][plane][ctx], NULL);
+#else
       for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
         get_rate_cost(fc->txb_skip[tx_size][ctx], pcost->txb_skip_cost[ctx]);
 
@@ -481,6 +510,7 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
 
       for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
         get_rate_cost(fc->coeff_lps[tx_size][plane][ctx], pcost->lps_cost[ctx]);
+#endif
     }
   }
 }
