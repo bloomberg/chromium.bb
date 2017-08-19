@@ -1,0 +1,32 @@
+Tests that multiple sessions cannot trace simultaneously.
+Starting tracing in session1
+{
+    id : <messageId>
+    result : {
+    }
+}
+Starting tracing in session2
+{
+    error : {
+        code : -32000
+        message : Tracing is already started
+    }
+    id : <messageId>
+}
+Stopping tracing in session1
+{
+    id : <messageId>
+    result : {
+    }
+}
+Stopping tracing in session2
+{
+    error : {
+        code : -32000
+        message : Tracing is not started
+    }
+    id : <messageId>
+}
+session1: dataCollected=true tracingComplete=true
+session2: dataCollected=false tracingComplete=false
+
