@@ -40,6 +40,27 @@
     Connect
   </message>
 
+  <!-- MITM software interstitial -->
+  <message name="IDS_MITM_SOFTWARE_HEADING" desc="Heading of the error page for SSL errors triggered by misconfigured MITM software">
+    An application is stopping Chrome from safely connecting to this site
+  </message>
+  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE" desc="Primary explanatory paragraph for the MITM software error page shown to enterprise users">
+    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; wasn’t installed properly on your computer or network. Ask your administrator to resolve this issue.
+  </message>
+  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_NONENTERPRISE" desc="Primary explanatory paragraph for the MITM software error page shown to non-enterprise users">
+    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; wasn’t installed properly on your computer or the network:
+    &lt;ul&gt;
+    &lt;li&gt;Try uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot;&lt;/li&gt;
+    &lt;li&gt;Try connecting to another Wi-Fi network&lt;/li&gt;
+    &lt;/ul&gt;
+  </message>
+  <message name="IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE" desc="Body text under the 'Advanced' button for the MITM software error page shown to enterprise users. Provides more context about the error and offers solutions aimed at the network administrator.">
+    A root certificate for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; is required but isn’t installed. Your network administrator should look at configuration instructions for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; to fix this problem. Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
+  </message>
+  <message name="IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE" desc="Body text under the 'Advanced' button for the MITM software error page shown to enterprise users. Provides more context about the error.">
+    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; isn’t configured correctly. Uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; usually fixes the problem. Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
+  </message>
+
   <!-- Clock errors -->
   <message name="IDS_CLOCK_ERROR_TITLE" desc="Tab title. Context: the browser can't load a page because the device's clock is wrong.">
     Clock error

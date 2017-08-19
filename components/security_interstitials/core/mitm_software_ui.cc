@@ -5,10 +5,14 @@
 #include "components/security_interstitials/core/mitm_software_ui.h"
 
 #include "base/i18n/time_formatting.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace security_interstitials {
@@ -16,10 +20,14 @@ namespace security_interstitials {
 MITMSoftwareUI::MITMSoftwareUI(const GURL& request_url,
                                int cert_error,
                                const net::SSLInfo& ssl_info,
+                               const std::string& mitm_software_name,
+                               bool is_enterprise_managed,
                                ControllerClient* controller)
     : request_url_(request_url),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
+      mitm_software_name_(mitm_software_name),
+      is_enterprise_managed_(is_enterprise_managed),
       controller_(controller) {
   controller_->metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::TOTAL_VISITS);
@@ -39,15 +47,26 @@ void MITMSoftwareUI::PopulateStringsForHTML(
   common_string_util::PopulateSSLDebuggingStrings(
       ssl_info_, base::Time::NowFromSystemTime(), load_time_data);
 
-  load_time_data->SetString("tabTitle", std::string());
-  load_time_data->SetString("heading", std::string());
-  load_time_data->SetString("primaryParagraph", std::string());
+  // Set display booleans.
   load_time_data->SetBoolean("overridable", false);
   load_time_data->SetBoolean("hide_primary_button", true);
   load_time_data->SetBoolean("bad_clock", false);
-  load_time_data->SetString("explanationParagraph", std::string());
+
+  // Set strings that are shared between enterprise and non-enterprise
+  // interstitials.
+  load_time_data->SetString("tabTitle",
+                            l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
+  load_time_data->SetString(
+      "heading", l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_HEADING));
   load_time_data->SetString("primaryButtonText", std::string());
   load_time_data->SetString("finalParagraph", std::string());
+
+  if (is_enterprise_managed_) {
+    MITMSoftwareUI::PopulateEnterpriseUserStringsForHTML(load_time_data);
+    return;
+  }
+
+  MITMSoftwareUI::PopulateAtHomeUserStringsForHTML(load_time_data);
 }
 
 void MITMSoftwareUI::HandleCommand(SecurityInterstitialCommands command) {
@@ -84,6 +103,34 @@ void MITMSoftwareUI::HandleCommand(SecurityInterstitialCommands command) {
       // Commands are for testing.
       break;
   }
+}
+
+void MITMSoftwareUI::PopulateEnterpriseUserStringsForHTML(
+    base::DictionaryValue* load_time_data) {
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE,
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
+  load_time_data->SetString(
+      "explanationParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE,
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
+}
+
+void MITMSoftwareUI::PopulateAtHomeUserStringsForHTML(
+    base::DictionaryValue* load_time_data) {
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_NONENTERPRISE,
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
+  load_time_data->SetString(
+      "explanationParagraph",
+      l10n_util::GetStringFUTF16(
+          IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE,
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
 }
 
 }  // namespace security_interstitials

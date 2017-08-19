@@ -108,6 +108,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
+#include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -5385,6 +5386,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, PortalChecksDisabled) {
 namespace {
 
 char kTestHostName[] = "example.test";
+char kTestMITMSoftwareName[] = "Misconfigured Firewall";
 
 // Set HSTS for the test host name, so that all errors thrown on this domain
 // will be nonoverridable.
@@ -5439,7 +5441,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
         base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     chrome_browser_ssl::MITMSoftware* mitm_software =
         config_proto->add_mitm_software();
-    mitm_software->set_name("Matching MITM Software");
+    mitm_software->set_name(kTestMITMSoftwareName);
     mitm_software->set_regex(cert_issuer);
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
   }
@@ -5662,6 +5664,67 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::SHOW_MITM_SOFTWARE_INTERSTITIAL,
                                0);
+}
+
+// Tests that the correct strings are displayed on the interstitial in the
+// enterprise managed case.
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(true);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+
+  TestMITMSoftwareInterstitial();
+
+  InterstitialPage* interstitial_page = browser()
+                                            ->tab_strip_model()
+                                            ->GetActiveWebContents()
+                                            ->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+
+  const std::string expected_primary_paragraph = l10n_util::GetStringFUTF8(
+      IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE,
+      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+  const std::string expected_explanation = l10n_util::GetStringFUTF8(
+      IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE,
+      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial_page, expected_primary_paragraph));
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial_page, expected_explanation));
+}
+
+// Tests that the correct strings are displayed on the interstitial in the
+// non-enterprise managed case.
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, NotEnterpriseManaged) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+
+  TestMITMSoftwareInterstitial();
+
+  InterstitialPage* interstitial_page = browser()
+                                            ->tab_strip_model()
+                                            ->GetActiveWebContents()
+                                            ->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+  EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+
+  // Don't check the primary paragraph in the nonenterprise case, because it
+  // has escaped HTML characters which throw an error.
+  const std::string expected_explanation = l10n_util::GetStringFUTF8(
+      IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE,
+      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial_page, expected_explanation));
 }
 
 #else

@@ -65,6 +65,8 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
+    const std::string& mitm_software_name,
+    bool is_enterprise_managed,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SecurityInterstitialPage(
           web_contents,
@@ -87,6 +89,8 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
           new security_interstitials::MITMSoftwareUI(request_url,
                                                      cert_error,
                                                      ssl_info,
+                                                     mitm_software_name,
+                                                     is_enterprise_managed,
                                                      controller())) {}
 
 MITMSoftwareBlockingPage::~MITMSoftwareBlockingPage() {
