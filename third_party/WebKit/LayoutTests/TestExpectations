@@ -3061,11 +3061,6 @@ crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-korean [ Timeout Pass ]
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass ]
 crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-hangul.html [ Timeout Pass ]
 
-# Timeout on Win 7
-crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBa.html [ Timeout Pass ]
-crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBb.html [ Timeout Pass ]
-crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-href-errors-han.html [ Timeout Pass ]
-
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
@@ -3457,6 +3452,7 @@ crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
 crbug.com/757165 [ Win ] css3/blending/mix-blend-mode-with-filters.html [ Skip ]
+crbug.com/757165 [ Win ] external/wpt/preload/download-resources.html [ Skip ]
 crbug.com/757165 [ Win ] external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-imagemap-simple.html [ Skip ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-overlapping-elements.html [ Skip ]
@@ -3465,22 +3461,33 @@ crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-wit
 crbug.com/757165 [ Win ] http/tests/inspector/extensions/extensions-panel.html [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
+crbug.com/757165 [ Win ] inspector-protocol/sessions/log-entry-added.js [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
+crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-on-accelerated-layer.html [ Skip ]
+crbug.com/757165 [ Win ] paint/invalidation/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
+crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
 crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/inspector/extensions/extensions-panel.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
+crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBa.html [ Skip ]
+crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBb.html [ Skip ]
+crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-href-errors-han.html [ Skip ]
 
 # Tests need rebaselining due to slight pixel changes after Skia GPU image rendering change.
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-color-over-color.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-color-over-gradient.html [ NeedsManualRebaseline Timeout ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-fill-style.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ NeedsManualRebaseline Timeout ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-image-over-pattern.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-pattern-over-color.html [ NeedsManualRebaseline Timeout ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-shadow.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-text.html  [ NeedsManualRebaseline Timeout ]
+crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-transforms.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html  [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline Timeout ]
