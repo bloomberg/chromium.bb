@@ -130,7 +130,10 @@ class CORE_EXPORT InspectorDOMAgent final
                                          const String& text,
                                          protocol::Maybe<String> name) override;
   protocol::Response removeAttribute(int node_id, const String& name) override;
-  protocol::Response getOuterHTML(int node_id, String* outer_html) override;
+  protocol::Response getOuterHTML(protocol::Maybe<int> node_id,
+                                  protocol::Maybe<int> backend_node_id,
+                                  protocol::Maybe<String> object_id,
+                                  String* outer_html) override;
   protocol::Response setOuterHTML(int node_id,
                                   const String& outer_html) override;
   protocol::Response performSearch(

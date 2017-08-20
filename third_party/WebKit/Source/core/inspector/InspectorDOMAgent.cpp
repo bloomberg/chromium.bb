@@ -857,9 +857,12 @@ Response InspectorDOMAgent::setNodeName(int node_id,
   return Response::OK();
 }
 
-Response InspectorDOMAgent::getOuterHTML(int node_id, WTF::String* outer_html) {
+Response InspectorDOMAgent::getOuterHTML(Maybe<int> node_id,
+                                         Maybe<int> backend_node_id,
+                                         Maybe<String> object_id,
+                                         WTF::String* outer_html) {
   Node* node = nullptr;
-  Response response = AssertNode(node_id, node);
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
 
