@@ -55,7 +55,6 @@ source_set("unit_tests") {
     ":trigger_throttler",
     ":triggers",
     "//base",
-    "//chrome/test:test_support",
     "//components/prefs:test_support",
     "//components/safe_browsing/browser:browser",
     "//content/test:test_support",
