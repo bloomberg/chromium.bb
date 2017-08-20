@@ -297,7 +297,7 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::Translation::Interaction interaction) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::Translation, Interaction,
-                     UNKNOWN, AUTO_TRANSLATION_BY_LINK);
+                     UNKNOWN, INITIALIZATION_ERROR);
   switch (interaction) {
     ENUM_CASE(sync_pb::UserEventSpecifics::Translation, UNKNOWN);
     ENUM_CASE(sync_pb::UserEventSpecifics::Translation, ACCEPT);
@@ -310,6 +310,7 @@ const char* ProtoEnumToString(
               AUTO_TRANSLATION_BY_PREF);
     ENUM_CASE(sync_pb::UserEventSpecifics::Translation,
               AUTO_TRANSLATION_BY_LINK);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, INITIALIZATION_ERROR);
   }
   NOTREACHED();
   return "";

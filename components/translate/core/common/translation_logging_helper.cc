@@ -66,6 +66,8 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
     case TranslateEventProto::AUTO_TRANSLATION_BY_LINK:
       translation->set_interaction(Translation::AUTO_TRANSLATION_BY_LINK);
       break;
+    case TranslateEventProto::INITIALIZATION_ERROR:
+      translation->set_interaction(Translation::INITIALIZATION_ERROR);
     default:  // We don't care about other events.
       return false;
   }
