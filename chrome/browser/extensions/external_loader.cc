@@ -40,7 +40,7 @@ ExternalLoader::~ExternalLoader() {}
 void ExternalLoader::LoadFinished() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (owner_) {
-    owner_->SetPrefs(prefs_.release());
+    owner_->SetPrefs(std::move(prefs_));
   }
 }
 
@@ -48,7 +48,7 @@ void ExternalLoader::OnUpdated(
     std::unique_ptr<base::DictionaryValue> updated_prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (owner_)
-    owner_->UpdatePrefs(updated_prefs.release());
+    owner_->UpdatePrefs(std::move(updated_prefs));
 }
 
 }  // namespace extensions
