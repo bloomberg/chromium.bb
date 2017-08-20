@@ -23,11 +23,24 @@ window.testSendMessage = function() {
   }
   var channel = new MessageChannel();
   channel.port1.onmessage = function(e) {
-    if (e.data == 'Worker reply: Hello world') {
-      chrome.test.sendMessage('SUCCESS');
-    } else {
+    if (e.data != 'Worker reply: Hello world') {
       chrome.test.sendMessage(FAILURE_MESSAGE);
     }
   };
   worker.postMessage('sendMessageTest', [channel.port2]);
+};
+
+window.roundtripToWorker = function() {
+  if (worker == null) {
+    window.domAutomationController.send('roundtrip-failed');
+  }
+  var channel = new MessageChannel();
+  channel.port1.onmessage = function(e) {
+    if (e.data == 'roundtrip-response') {
+      window.domAutomationController.send('roundtrip-succeeded');
+    } else {
+      window.domAutomationController.send('roundtrip-failed');
+    }
+  };
+  worker.postMessage('roundtrip-request', [channel.port2]);
 };
