@@ -93,7 +93,14 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowLoginFeedback DISABLED_ShowLoginFeedback
+#else
+#define MAYBE_ShowLoginFeedback ShowLoginFeedback
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -117,7 +124,14 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
 
 // Tests that there's an option in the email drop down box with a value
 // 'anonymous_user'.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_AnonymousUser DISABLED_AnonymousUser
+#else
+#define MAYBE_AnonymousUser AnonymousUser
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
