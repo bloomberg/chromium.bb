@@ -17,7 +17,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/sha1.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -729,10 +728,12 @@ bool VerifyEV(CERTCertificate* cert_handle,
       return false;
   }
 
-  SHA1HashValue weak_fingerprint;
-  base::SHA1HashBytes(root_ca->derCert.data, root_ca->derCert.len,
-                      weak_fingerprint.data);
-  return metadata->HasEVPolicyOID(weak_fingerprint, ev_policy_oid);
+  SHA256HashValue fingerprint;
+  crypto::SHA256HashString(
+      base::StringPiece(reinterpret_cast<const char*>(root_ca->derCert.data),
+                        root_ca->derCert.len),
+      fingerprint.data, sizeof(fingerprint.data));
+  return metadata->HasEVPolicyOID(fingerprint, ev_policy_oid);
 }
 
 // Convert a CertificateList to an NSS CERTCertList. If any certs couldn't be

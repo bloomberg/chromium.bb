@@ -343,8 +343,8 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
 TEST_P(CertVerifyProcInternalTest, TrustedTargetCertWithEVPolicy) {
   // The policy that "explicit-policy-chain.pem" target certificate asserts.
   static const char kEVTestCertPolicy[] = "1.2.3.4";
-  ScopedTestEVPolicy scoped_test_ev_policy(EVRootCAMetadata::GetInstance(),
-                                           SHA1HashValue(), kEVTestCertPolicy);
+  ScopedTestEVPolicy scoped_test_ev_policy(
+      EVRootCAMetadata::GetInstance(), SHA256HashValue(), kEVTestCertPolicy);
 
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(GetTestCertsDirectory(), "explicit-policy-chain.pem");
@@ -379,9 +379,10 @@ TEST_P(CertVerifyProcInternalTest,
   static const char kEVTestCertPolicy[] = "1.2.3.4";
   // This the fingerprint of the "explicit-policy-chain.pem" target certificate.
   // See net/data/ssl/certificates/explicit-policy-chain.pem
-  static const SHA1HashValue kEVTestCertFingerprint = {
-      {0x45, 0x1f, 0x20, 0x51, 0x97, 0xe9, 0x41, 0x96, 0xc4, 0xd8,
-       0x5f, 0x83, 0xc7, 0x52, 0x6e, 0x90, 0x1f, 0x87, 0x5b, 0xd4}};
+  static const SHA256HashValue kEVTestCertFingerprint = {
+      {0x71, 0xac, 0xfa, 0x12, 0xa4, 0x42, 0x31, 0x3c, 0xff, 0x10, 0xd2,
+       0x9d, 0xb6, 0x1b, 0x4a, 0xe8, 0x25, 0x4e, 0x77, 0xd3, 0x9f, 0xa3,
+       0x2f, 0xb3, 0x19, 0x8d, 0x46, 0x9f, 0xb7, 0x73, 0x07, 0x30}};
   ScopedTestEVPolicy scoped_test_ev_policy(EVRootCAMetadata::GetInstance(),
                                            kEVTestCertFingerprint,
                                            kEVTestCertPolicy);

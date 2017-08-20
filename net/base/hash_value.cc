@@ -69,7 +69,7 @@ size_t HashValue::size() const {
       // While an invalid tag should not happen, return a non-zero length
       // to avoid compiler warnings when the result of size() is
       // used with functions like memset.
-      return sizeof(fingerprint.sha1.data);
+      return sizeof(fingerprint.sha256.data);
   }
 }
 
