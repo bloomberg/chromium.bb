@@ -171,7 +171,9 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 // Setting this to 1 will disable trellis optimization within the
 // transform search. Trellis optimization will still be applied
 // in the final encode.
+#ifndef DISABLE_TRELLISQ_SEARCH
 #define DISABLE_TRELLISQ_SEARCH 0
+#endif
 
 const double ADST_FLIP_SVM[8] = { -6.6623, -2.8062, -3.2531, 3.1671,    // vert
                                   -7.7051, -3.2234, -3.6193, 3.4533 };  // horz
