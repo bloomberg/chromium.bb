@@ -271,6 +271,20 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
   return count;
 }
 
+static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
+  switch (tx_type) {
+#if CONFIG_EXT_TX
+    case V_DCT:
+    case V_ADST:
+    case V_FLIPADST: return TX_CLASS_VERT;
+    case H_DCT:
+    case H_ADST:
+    case H_FLIPADST: return TX_CLASS_HORIZ;
+#endif
+    default: return TX_CLASS_2D;
+  }
+}
+
 // TODO(angiebird): optimize this function by generate a table that maps from
 // count to ctx
 static INLINE int get_nz_map_ctx_from_count(int count,
@@ -282,12 +296,24 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int ctx = 0;
+#if CONFIG_EXT_TX
+  int tx_class = get_tx_class(tx_type);
+  int offset;
+  if (tx_class == TX_CLASS_2D)
+    offset = 0;
+  else if (tx_class == TX_CLASS_VERT)
+    offset = SIG_COEF_CONTEXTS_2D;
+  else
+    offset = SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D;
+#else
+  int offset = 0;
+#endif
 
-  if (row == 0 && col == 0) return 0;
+  if (row == 0 && col == 0) return offset + 0;
 
-  if (row == 0 && col == 1) return 1 + (tcoeffs[0] != 0);
+  if (row == 0 && col == 1) return offset + 1 + (tcoeffs[0] != 0);
 
-  if (row == 1 && col == 0) return 3 + (tcoeffs[0] != 0);
+  if (row == 1 && col == 0) return offset + 3 + (tcoeffs[0] != 0);
 
   if (row == 1 && col == 1) {
     int pos;
@@ -301,28 +327,28 @@ static INLINE int get_nz_map_ctx_from_count(int count,
 
     assert(5 + ctx <= 7);
 
-    return 5 + ctx;
+    return offset + 5 + ctx;
   }
 
   if (row == 0) {
     ctx = (count + 1) >> 1;
 
     assert(ctx < 3);
-    return 8 + ctx;
+    return offset + 8 + ctx;
   }
 
   if (col == 0) {
     ctx = (count + 1) >> 1;
 
     assert(ctx < 3);
-    return 11 + ctx;
+    return offset + 11 + ctx;
   }
 
   ctx = count >> 1;
 
   assert(14 + ctx < 20);
 
-  return 14 + ctx;
+  return offset + 14 + ctx;
 }
 
 static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
