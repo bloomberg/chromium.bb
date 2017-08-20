@@ -178,7 +178,6 @@
       'EarlGreyiOS': 'ios',
       'Fuchsia': 'release_bot_fuchsia',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
-      'Fuchsia Compile': 'release_bot_fuchsia',
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
