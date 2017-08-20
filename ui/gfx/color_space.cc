@@ -35,6 +35,14 @@ ColorSpace::ColorSpace(PrimaryID primaries,
       matrix_(matrix),
       range_(range) {}
 
+ColorSpace::ColorSpace(PrimaryID primaries,
+                       const SkColorSpaceTransferFn& fn,
+                       MatrixID matrix,
+                       RangeID range)
+    : primaries_(primaries), matrix_(matrix), range_(range) {
+  SetCustomTransferFunction(fn);
+}
+
 ColorSpace::ColorSpace(const ColorSpace& other)
     : primaries_(other.primaries_),
       transfer_(other.transfer_),
@@ -92,15 +100,20 @@ ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
       result.custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
     }
   }
-  result.custom_transfer_params_[0] = fn.fA;
-  result.custom_transfer_params_[1] = fn.fB;
-  result.custom_transfer_params_[2] = fn.fC;
-  result.custom_transfer_params_[3] = fn.fD;
-  result.custom_transfer_params_[4] = fn.fE;
-  result.custom_transfer_params_[5] = fn.fF;
-  result.custom_transfer_params_[6] = fn.fG;
-  // TODO(ccameron): Use enums for near matches to know color spaces.
+  result.SetCustomTransferFunction(fn);
   return result;
+}
+
+void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
+  custom_transfer_params_[0] = fn.fA;
+  custom_transfer_params_[1] = fn.fB;
+  custom_transfer_params_[2] = fn.fC;
+  custom_transfer_params_[3] = fn.fD;
+  custom_transfer_params_[4] = fn.fE;
+  custom_transfer_params_[5] = fn.fF;
+  custom_transfer_params_[6] = fn.fG;
+  // TODO(ccameron): Use enums for near matches to know color spaces.
+  transfer_ = TransferID::CUSTOM;
 }
 
 // static
@@ -281,8 +294,10 @@ std::string ColorSpace::ToString() const {
   ss << ", transfer:";
   if (transfer_ == TransferID::CUSTOM) {
     ss << "[";
-    for (size_t i = 0; i < 7; ++i)
+    for (size_t i = 0; i < 7; ++i) {
       ss << custom_transfer_params_[i];
+      ss << ",";
+    }
     ss << "]";
   } else {
     ss << static_cast<int>(transfer_);

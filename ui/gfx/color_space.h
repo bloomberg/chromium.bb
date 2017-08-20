@@ -124,6 +124,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
              TransferID transfer,
              MatrixID matrix,
              RangeID full_range);
+  ColorSpace(PrimaryID primaries,
+             const SkColorSpaceTransferFn& fn,
+             MatrixID matrix,
+             RangeID full_range);
   ColorSpace(const ColorSpace& other);
   ColorSpace(ColorSpace&& other);
   ColorSpace& operator=(const ColorSpace& other);
@@ -201,6 +205,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
 
  private:
+  void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
+
   // Returns true if the transfer function is defined by an
   // SkColorSpaceTransferFn which is extended to all real values.
   bool HasExtendedSkTransferFn() const;
