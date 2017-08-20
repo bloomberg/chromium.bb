@@ -488,7 +488,7 @@ class MockUpdateProviderVisitor : public MockProviderVisitor {
         GetDictionaryFromJSON(json_data);
     if (!new_prefs)
       return;
-    provider_->UpdatePrefs(new_prefs.release());
+    provider_->UpdatePrefs(std::move(new_prefs));
   }
 
   void OnExternalProviderUpdateComplete(

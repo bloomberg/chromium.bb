@@ -52,7 +52,7 @@ class Provider : public extensions::ExternalProviderImpl {
 
   // ExternalProviderImpl overrides:
   void VisitRegisteredExtension() override;
-  void SetPrefs(base::DictionaryValue* prefs) override;
+  void SetPrefs(std::unique_ptr<base::DictionaryValue> prefs) override;
 
  private:
   Profile* profile_;

@@ -111,14 +111,15 @@ void ExternalProviderImpl::VisitRegisteredExtension() {
   loader_->StartLoading();
 }
 
-void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
+void ExternalProviderImpl::SetPrefs(
+    std::unique_ptr<base::DictionaryValue> prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check if the service is still alive. It is possible that it went
   // away while |loader_| was working on the FILE thread.
   if (!service_) return;
 
-  prefs_.reset(prefs);
+  prefs_ = std::move(prefs);
   ready_ = true;  // Queries for extensions are allowed from this point.
 
   std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>
@@ -137,7 +138,8 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
   service_->OnExternalProviderReady(this);
 }
 
-void ExternalProviderImpl::UpdatePrefs(base::DictionaryValue* prefs) {
+void ExternalProviderImpl::UpdatePrefs(
+    std::unique_ptr<base::DictionaryValue> prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We only expect updates from windows registry or via policies on chromeos.
   CHECK(crx_location_ == Manifest::EXTERNAL_REGISTRY ||
@@ -159,7 +161,7 @@ void ExternalProviderImpl::UpdatePrefs(base::DictionaryValue* prefs) {
       removed_extensions.insert(extension_id);
   }
 
-  prefs_.reset(prefs);
+  prefs_ = std::move(prefs);
 
   std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>
       external_update_url_extensions;
