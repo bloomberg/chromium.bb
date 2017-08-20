@@ -447,6 +447,12 @@ void TranslateManager::PageTranslated(const std::string& source_lang,
     error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
 
+  // Currently we only want to log any error happens during the translation
+  // script initialization phase such as translation script failed because of
+  // CSP issues (crbug.com/738277).
+  // Note: NotifyTranslateError and ShowTranslateUI will not log the errors.
+  if (error_type == TranslateErrors::INITIALIZATION_ERROR)
+    RecordTranslateEvent(metrics::TranslateEventProto::INITIALIZATION_ERROR);
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_AFTER_TRANSLATE,
                                      source_lang, target_lang, error_type,
                                      false);

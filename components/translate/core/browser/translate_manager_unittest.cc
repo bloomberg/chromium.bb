@@ -589,6 +589,24 @@ TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Override) {
   histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
+TEST_F(TranslateManagerTest, RecordInitilizationError) {
+  PrepareTranslateManager();
+  const std::string target_lang = "en";
+  const std::string source_lang = "zh";
+  metrics::TranslateEventProto expected_tep;
+  expected_tep.set_target_language(target_lang);
+  expected_tep.set_source_language(source_lang);
+  EXPECT_CALL(
+      mock_translate_ranker_,
+      RecordTranslateEvent(metrics::TranslateEventProto::INITIALIZATION_ERROR,
+                           _, Pointee(EqualsTranslateEventProto(expected_tep))))
+      .Times(1);
+
+  InitTranslateEvent(source_lang, target_lang);
+  translate_manager_->PageTranslated(source_lang, target_lang,
+                                     TranslateErrors::INITIALIZATION_ERROR);
+}
+
 }  // namespace testing
 
 }  // namespace translate

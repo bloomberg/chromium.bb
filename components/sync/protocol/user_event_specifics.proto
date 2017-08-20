@@ -86,6 +86,9 @@ message UserEventSpecifics {
       AUTO_TRANSLATION_BY_PREF = 7;
       // User navigated through a click from a translated page.
       AUTO_TRANSLATION_BY_LINK = 8;
+      // Failed to initialize the translate script, this can happen for iOS due
+      // to CSPs.
+      INITIALIZATION_ERROR = 9;
     }
     optional Interaction interaction = 3;
   }
