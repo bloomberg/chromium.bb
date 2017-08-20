@@ -24,7 +24,7 @@ namespace base {
 TEST(SpanTest, ConstructFromDataAndSize) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  Span<int> span(vector.data(), vector.size());
+  span<int> span(vector.data(), vector.size());
   EXPECT_EQ(vector.data(), span.data());
   EXPECT_EQ(vector.size(), span.size());
 
@@ -35,7 +35,7 @@ TEST(SpanTest, ConstructFromDataAndSize) {
 TEST(SpanTest, ConstructFromConstexprArray) {
   static constexpr int kArray[] = {5, 4, 3, 2, 1};
 
-  constexpr Span<const int> span(kArray);
+  constexpr span<const int> span(kArray);
   EXPECT_EQ(kArray, span.data());
   EXPECT_EQ(arraysize(kArray), span.size());
 
@@ -46,13 +46,13 @@ TEST(SpanTest, ConstructFromConstexprArray) {
 TEST(SpanTest, ConstructFromArray) {
   int array[] = {5, 4, 3, 2, 1};
 
-  Span<const int> const_span(array);
+  span<const int> const_span(array);
   EXPECT_EQ(array, const_span.data());
   EXPECT_EQ(arraysize(array), const_span.size());
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(array[i], const_span[i]);
 
-  Span<int> span(array);
+  span<int> span(array);
   EXPECT_EQ(array, span.data());
   EXPECT_EQ(arraysize(array), span.size());
   for (size_t i = 0; i < span.size(); ++i)
@@ -62,7 +62,7 @@ TEST(SpanTest, ConstructFromArray) {
 TEST(SpanTest, ConstructFromConstContainer) {
   const std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  Span<const int> const_span(vector);
+  span<const int> const_span(vector);
   EXPECT_EQ(vector.data(), const_span.data());
   EXPECT_EQ(vector.size(), const_span.size());
 
@@ -73,14 +73,14 @@ TEST(SpanTest, ConstructFromConstContainer) {
 TEST(SpanTest, ConstructFromContainer) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  Span<const int> const_span(vector);
+  span<const int> const_span(vector);
   EXPECT_EQ(vector.data(), const_span.data());
   EXPECT_EQ(vector.size(), const_span.size());
 
   for (size_t i = 0; i < const_span.size(); ++i)
     EXPECT_EQ(vector[i], const_span[i]);
 
-  Span<int> span(vector);
+  span<int> span(vector);
   EXPECT_EQ(vector.data(), span.data());
   EXPECT_EQ(vector.size(), span.size());
 
@@ -91,9 +91,9 @@ TEST(SpanTest, ConstructFromContainer) {
 TEST(SpanTest, ConvertNonConstIntegralToConst) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
 
-  Span<int> span(vector.data(), vector.size());
-  Span<const int> const_span(span);
-  EXPECT_THAT(const_span, Pointwise(Eq(), span));
+  span<int> int_span(vector.data(), vector.size());
+  span<const int> const_span(int_span);
+  EXPECT_THAT(const_span, Pointwise(Eq(), int_span));
 }
 
 TEST(SpanTest, ConvertNonConstPointerToConst) {
@@ -102,13 +102,13 @@ TEST(SpanTest, ConvertNonConstPointerToConst) {
   auto c = std::make_unique<int>(33);
   std::vector<int*> vector = {a.get(), b.get(), c.get()};
 
-  Span<int*> non_const_pointer_span(vector);
+  span<int*> non_const_pointer_span(vector);
   EXPECT_THAT(non_const_pointer_span, Pointwise(Eq(), vector));
-  Span<int* const> const_pointer_span(non_const_pointer_span);
+  span<int* const> const_pointer_span(non_const_pointer_span);
   EXPECT_THAT(const_pointer_span, Pointwise(Eq(), non_const_pointer_span));
-  // Note: no test for conversion from Span<int> to Span<const int*>, since that
+  // Note: no test for conversion from span<int> to span<const int*>, since that
   // would imply a conversion from int** to const int**, which is unsafe.
-  Span<const int* const> const_pointer_to_const_data_span(
+  span<const int* const> const_pointer_to_const_data_span(
       non_const_pointer_span);
   EXPECT_THAT(const_pointer_to_const_data_span,
               Pointwise(Eq(), non_const_pointer_span));
@@ -117,14 +117,14 @@ TEST(SpanTest, ConvertNonConstPointerToConst) {
 TEST(SpanTest, ConvertBetweenEquivalentTypes) {
   std::vector<int32_t> vector = {2, 4, 8, 16, 32};
 
-  Span<int32_t> span(vector);
-  Span<int> converted_span(span);
-  EXPECT_EQ(span, converted_span);
+  span<int32_t> int32_t_span(vector);
+  span<int> converted_span(int32_t_span);
+  EXPECT_EQ(int32_t_span, converted_span);
 }
 
 TEST(SpanTest, Subspan) {
   int array[] = {1, 2, 3};
-  Span<int> span(array);
+  span<int> span(array);
 
   {
     auto subspan = span.subspan(0, 0);
@@ -193,7 +193,7 @@ TEST(SpanTest, Subspan) {
 
 TEST(SpanTest, Iterator) {
   static constexpr int kArray[] = {1, 6, 1, 8, 0};
-  constexpr Span<const int> span(kArray);
+  constexpr span<const int> span(kArray);
 
   std::vector<int> results;
   for (int i : span)
@@ -204,13 +204,13 @@ TEST(SpanTest, Iterator) {
 TEST(SpanTest, Equality) {
   static constexpr int kArray1[] = {3, 1, 4, 1, 5};
   static constexpr int kArray2[] = {3, 1, 4, 1, 5};
-  constexpr Span<const int> span1(kArray1);
-  constexpr Span<const int> span2(kArray2);
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
 
   EXPECT_EQ(span1, span2);
 
   static constexpr int kArray3[] = {2, 7, 1, 8, 3};
-  constexpr Span<const int> span3(kArray3);
+  constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 == span3);
 }
@@ -218,39 +218,39 @@ TEST(SpanTest, Equality) {
 TEST(SpanTest, Inequality) {
   static constexpr int kArray1[] = {2, 3, 5, 7, 11};
   static constexpr int kArray2[] = {1, 4, 6, 8, 9};
-  constexpr Span<const int> span1(kArray1);
-  constexpr Span<const int> span2(kArray2);
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
 
   EXPECT_NE(span1, span2);
 
   static constexpr int kArray3[] = {2, 3, 5, 7, 11};
-  constexpr Span<const int> span3(kArray3);
+  constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 != span3);
 }
 
 TEST(SpanTest, MakeSpanFromDataAndSize) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
-  Span<int> span(vector.data(), vector.size());
-  EXPECT_EQ(span, MakeSpan(vector.data(), vector.size()));
+  span<int> span(vector.data(), vector.size());
+  EXPECT_EQ(span, make_span(vector.data(), vector.size()));
 }
 
 TEST(SpanTest, MakeSpanFromConstexprArray) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
-  constexpr Span<const int> span(kArray);
-  EXPECT_EQ(span, MakeSpan(kArray));
+  constexpr span<const int> span(kArray);
+  EXPECT_EQ(span, make_span(kArray));
 }
 
 TEST(SpanTest, MakeSpanFromConstContainer) {
   const std::vector<int> vector = {-1, -2, -3, -4, -5};
-  Span<const int> span(vector);
-  EXPECT_EQ(span, MakeSpan(vector));
+  span<const int> span(vector);
+  EXPECT_EQ(span, make_span(vector));
 }
 
 TEST(SpanTest, MakeSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
-  Span<int> span(vector);
-  EXPECT_EQ(span, MakeSpan(vector));
+  span<int> span(vector);
+  EXPECT_EQ(span, make_span(vector));
 }
 
 }  // namespace base
