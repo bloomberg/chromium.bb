@@ -96,6 +96,8 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
   ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
 
+  ApplyCommonFontStyles(context, style, &size_delta, &font_weight);
+
   switch (context) {
     case views::style::CONTEXT_BUTTON_MD:
       font_weight = MediumWeightForUI();

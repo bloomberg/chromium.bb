@@ -1266,7 +1266,7 @@ test("browser_tests") {
       "../browser/fast_shutdown_browsertest.cc",
       "../browser/favicon/content_favicon_driver_browsertest.cc",
       "../browser/first_run/first_run_browsertest.cc",
-      "../browser/first_run/try_chrome_dialog_view_browsertest.cc",
+      "../browser/first_run/try_chrome_dialog_browsertest.cc",
       "../browser/gcm/fake_gcm_profile_service.cc",
       "../browser/gcm/fake_gcm_profile_service.h",
       "../browser/geolocation/access_token_store_browsertest.cc",

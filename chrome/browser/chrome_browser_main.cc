@@ -214,7 +214,7 @@
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
-#include "chrome/browser/ui/views/try_chrome_dialog_view.h"
+#include "chrome/browser/ui/views/try_chrome_dialog.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/install_static/install_util.h"
@@ -1515,21 +1515,21 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // successfully grabbed above.
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
-    TryChromeDialogView::Result answer = TryChromeDialogView::Show(
+    TryChromeDialog::Result answer = TryChromeDialog::Show(
         try_chrome_int,
         base::Bind(&ChromeProcessSingleton::SetActiveModalDialog,
                    base::Unretained(process_singleton_.get())));
-    if (answer == TryChromeDialogView::NOT_NOW)
-      return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
-    if (answer == TryChromeDialogView::UNINSTALL_CHROME)
-      return chrome::RESULT_CODE_NORMAL_EXIT_EXP2;
-    // At this point the user is willing to try chrome again.
-    if (answer == TryChromeDialogView::TRY_CHROME_AS_DEFAULT) {
-      // Only set in the unattended case. This is not true on Windows 8+.
-      if (shell_integration::GetDefaultWebClientSetPermission() ==
-          shell_integration::SET_DEFAULT_UNATTENDED) {
-        shell_integration::SetAsDefaultBrowser();
-      }
+    switch (answer) {
+      case TryChromeDialog::NOT_NOW:
+        return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
+      case TryChromeDialog::OPEN_CHROME_WELCOME:
+        browser_creator_->set_welcome_back_page(
+            StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard);
+      case TryChromeDialog::OPEN_CHROME_WELCOME_WIN10:
+        browser_creator_->set_welcome_back_page(
+            StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10);
+      case TryChromeDialog::OPEN_CHROME_DEFAULT:
+        break;
     }
 #else
     // We don't support retention experiments on Mac or Linux.
