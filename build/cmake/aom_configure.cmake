@@ -191,6 +191,7 @@ endif ()
 
 if (CONFIG_GCOV)
   message("--- Testing for CONFIG_GCOV support.")
+  require_linker_flag("-fprofile-arcs -ftest-coverage")
   require_compiler_flag("-fprofile-arcs -ftest-coverage" YES)
 endif ()
 
