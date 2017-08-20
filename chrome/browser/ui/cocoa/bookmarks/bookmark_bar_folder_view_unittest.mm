@@ -146,7 +146,8 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
   base::scoped_nsobject<id> mock_button_;
 };
 
-TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDrop) {
+// Disabled due to crash on Mac10.02 Tests bot (crbug.com/757063)
+TEST_F(BookmarkBarFolderViewTest, DISABLED_BookmarkButtonDragAndDrop) {
   id drag_info = GetFakeDragInfoForType(
       ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType));
   [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
@@ -161,7 +162,9 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDrop) {
 }
 
 // When dragging bookmarks across profiles, we should always copy, never move.
-TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
+// Disabled due to crash on Mac10.02 Tests bot (crbug.com/757063)
+TEST_F(BookmarkBarFolderViewTest,
+       DISABLED_BookmarkButtonDragAndDropAcrossProfiles) {
   // |other_profile| is owned by the |testing_profile_manager|.
   TestingProfile* other_profile =
       testing_profile_manager()->CreateTestingProfile("other");
