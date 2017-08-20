@@ -14,34 +14,34 @@ namespace mojo {
 
 // TODO(dcheng): Remove these type aliases.
 template <typename T>
-using CArray = base::Span<T>;
+using CArray = base::span<T>;
 
 template <typename T>
-using ConstCArray = base::Span<const T>;
+using ConstCArray = base::span<const T>;
 
 template <typename T>
-struct ArrayTraits<base::Span<T>> {
+struct ArrayTraits<base::span<T>> {
   using Element = T;
 
-  static bool IsNull(const base::Span<T>& input) { return !input.data(); }
+  static bool IsNull(const base::span<T>& input) { return !input.data(); }
 
-  static void SetToNull(base::Span<T>* output) { *output = base::Span<T>(); }
+  static void SetToNull(base::span<T>* output) { *output = base::span<T>(); }
 
-  static size_t GetSize(const base::Span<T>& input) { return input.size(); }
+  static size_t GetSize(const base::span<T>& input) { return input.size(); }
 
-  static T* GetData(base::Span<T>& input) { return input.data(); }
+  static T* GetData(base::span<T>& input) { return input.data(); }
 
-  static const T* GetData(const base::Span<T>& input) { return input.data(); }
+  static const T* GetData(const base::span<T>& input) { return input.data(); }
 
-  static T& GetAt(base::Span<T>& input, size_t index) {
+  static T& GetAt(base::span<T>& input, size_t index) {
     return input.data()[index];
   }
 
-  static const T& GetAt(const base::Span<T>& input, size_t index) {
+  static const T& GetAt(const base::span<T>& input, size_t index) {
     return input.data()[index];
   }
 
-  static bool Resize(base::Span<T>& input, size_t size) {
+  static bool Resize(base::span<T>& input, size_t size) {
     if (size > input.size())
       return false;
     input = input.subspan(0, size);
