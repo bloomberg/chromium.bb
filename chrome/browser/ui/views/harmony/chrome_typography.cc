@@ -4,8 +4,23 @@
 
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 
+#include "build/build_config.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/platform_font.h"
+
+void ApplyCommonFontStyles(int context,
+                           int style,
+                           int* size_delta,
+                           gfx::Font::Weight* weight) {
+#if defined(OS_WIN)
+  if (context == CONTEXT_WINDOWS10_NATIVE) {
+    // Adjusts default font size up to match Win10 modern UI.
+    *size_delta = 15 - gfx::PlatformFont::kDefaultBaseFontSize;
+    *weight = views::TypographyProvider::MediumWeightForUI();
+  }
+#endif
+}
 
 const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
                                                        int style) const {
@@ -19,6 +34,8 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
 #if defined(USE_ASH)
   ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
+
+  ApplyCommonFontStyles(context, style, &size_delta, &font_weight);
 
   switch (context) {
     case CONTEXT_HEADLINE:

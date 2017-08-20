@@ -51,6 +51,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "globe.icon",
     "google_g_logo.icon",
     "image.icon",
+    "inactive_toast_close.icon",
+    "inactive_toast_logo.icon",
     "incognito.1x.icon",
     "incognito.icon",
     "laptop.icon",

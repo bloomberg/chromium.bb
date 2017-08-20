@@ -83,7 +83,7 @@ include_rules = [
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h",
   "+chrome/browser/ui/views/extensions/request_file_system_dialog_view.h",
-  "+chrome/browser/ui/views/try_chrome_dialog_view.h",
+  "+chrome/browser/ui/views/try_chrome_dialog.h",
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
 
   # Explicitly disallow using SyncMessageFilter to prevent browser from

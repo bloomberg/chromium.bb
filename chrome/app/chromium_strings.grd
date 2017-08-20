@@ -464,15 +464,6 @@ Chromium is unable to recover your settings.
         <message name="IDS_TRY_TOAST_HEADING_SKYPE" desc="Top line of the try-chrome-again dialog">
           Chromium lets you click a phone number on the web and call it with Skype!
         </message>
-        <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
-          Try it out, it's already installed
-        </message>
-        <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
-          Don't bug me
-        </message>
-        <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
-          Why am I seeing this?
-        </message>
         <!-- about:conflicts strings -->
         <message name="IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG" desc="The long title on the compatibility page">
           Modules loaded into Chromium
@@ -926,13 +917,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">
         <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chromium as default' browser button">
-          Make Chromium the default browser
-        </message>
-      </if>
-
-      <!-- Toast experiment. -->
-      <if expr="is_win">
-        <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make Chromium the default browser">
           Make Chromium the default browser
         </message>
       </if>

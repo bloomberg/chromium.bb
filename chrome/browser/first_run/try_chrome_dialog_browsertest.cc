@@ -18,7 +18,7 @@
 // will be improved to support this so we can get coverage on other platforms.
 // See http://crbug.com/45115 for details.
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/try_chrome_dialog_view.h"
+#include "chrome/browser/ui/views/try_chrome_dialog.h"
 
 // By passing kTryChromeAgain with a magic value > 10000 we cause Chrome
 // to exit fairly early.
@@ -27,13 +27,13 @@
 // non-Windows) was a cause of crashes (see bug 34799 for example) so
 // this is a useful test of the startup/quick-shutdown cycle.
 class TryChromeDialogBrowserTest : public InProcessBrowserTest {
-public:
+ public:
   TryChromeDialogBrowserTest() {
     set_expected_exit_code(chrome::RESULT_CODE_NORMAL_EXIT_CANCEL);
   }
 
-protected:
- void SetUpCommandLine(base::CommandLine* command_line) override {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kTryChromeAgain, "10001");
   }
 };
@@ -70,8 +70,8 @@ class TryChromeDialogTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
     dialog_.ShowDialog(base::Bind(&TryChromeDialogTest::DialogHandler),
-                       TryChromeDialogView::kDialogType::MODELESS,
-                       TryChromeDialogView::kUsageType::FOR_TESTING);
+                       TryChromeDialog::DialogType::MODELESS_FOR_TEST,
+                       TryChromeDialog::UsageType::FOR_TESTING);
   }
 
   // content::BrowserTestBase:
@@ -80,7 +80,7 @@ class TryChromeDialogTest : public DialogBrowserTest {
   }
 
  private:
-  TryChromeDialogView dialog_;
+  TryChromeDialog dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogTest);
 };

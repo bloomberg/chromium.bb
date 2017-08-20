@@ -1908,8 +1908,8 @@ split_static_library("ui") {
 
       if (is_win) {
         sources += [
-          "views/try_chrome_dialog_view.cc",
-          "views/try_chrome_dialog_view.h",
+          "views/try_chrome_dialog.cc",
+          "views/try_chrome_dialog.h",
         ]
       }
 

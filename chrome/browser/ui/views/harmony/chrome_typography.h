@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_TYPOGRAPHY_H_
 
 #include "base/macros.h"
+#include "ui/gfx/font.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 
@@ -28,6 +29,10 @@ enum ChromeTextContext {
 
   // "Body 2". Usually 12pt.
   CONTEXT_BODY_TEXT_SMALL,
+
+  // Text for titles, body text and buttons that appear in dialogs attempting to
+  // mimic the native Windows 10 look and feel.
+  CONTEXT_WINDOWS10_NATIVE,
 
   // ResourceBundle::SmallFont (11 pt). There is no equivalent in the Harmony
   // spec, so new code should not be using this. It is only provided to avoid
@@ -54,6 +59,13 @@ enum ChromeTextStyle {
   // or hostname.
   STYLE_EMPHASIZED,
 };
+
+// Sets the |size_delta| and |font_weight| for text that should not be affected
+// by the Harmony spec.
+void ApplyCommonFontStyles(int context,
+                           int style,
+                           int* size_delta,
+                           gfx::Font::Weight* weight);
 
 // TypographyProvider that provides pre-Harmony fonts in Chrome.
 class LegacyTypographyProvider : public views::DefaultTypographyProvider {
