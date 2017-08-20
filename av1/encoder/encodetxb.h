@@ -31,6 +31,7 @@ typedef struct TxbInfo {
   int shift;
   TX_SIZE tx_size;
   TX_SIZE txs_ctx;
+  TX_TYPE tx_type;
   int bwl;
   int stride;
   int height;

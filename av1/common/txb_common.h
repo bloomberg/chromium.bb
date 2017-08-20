@@ -326,7 +326,8 @@ static INLINE int get_nz_map_ctx_from_count(int count,
 static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const int coeff_idx,  // raster order
                                  const int bwl, const int height,
-                                 const int16_t *iscan) {
+                                 const int16_t *iscan, TX_TYPE tx_type) {
+  (void)tx_type;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int count = get_nz_count(tcoeffs, bwl, height, row, col, iscan);

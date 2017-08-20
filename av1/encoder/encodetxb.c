@@ -114,7 +114,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
 
   for (c = 0; c < eob; ++c) {
-    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, iscan);
+    int coeff_ctx =
+        get_nz_map_ctx(tcoeff, scan[c], bwl, height, iscan, tx_type);
     int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx);
 
     tran_low_t v = tcoeff[scan[c]];
@@ -383,7 +384,8 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
     int level = abs(v);
 
     if (c < seg_eob) {
-      int coeff_ctx = get_nz_map_ctx(qcoeff, scan[c], bwl, height, iscan);
+      int coeff_ctx =
+          get_nz_map_ctx(qcoeff, scan[c], bwl, height, iscan, tx_type);
       cost += coeff_costs->nz_map_cost[coeff_ctx][is_nz];
     }
 
@@ -1024,7 +1026,7 @@ void update_level_down(int coeff_idx, TxbCache *txb_cache, TxbInfo *txb_info) {
         txb_cache->nz_ctx_arr[nb_coeff_idx] = get_nz_map_ctx_from_count(
             count, txb_info->qcoeff, nb_coeff_idx, txb_info->bwl, iscan);
         // int ref_ctx = get_nz_map_ctx(txb_info->qcoeff, nb_coeff_idx,
-        // txb_info->bwl, iscan);
+        // txb_info->bwl, iscan, tx_type);
         // if (ref_ctx != txb_cache->nz_ctx_arr[nb_coeff_idx])
         //   printf("nz ctx %d ref_ctx %d\n",
         //   txb_cache->nz_ctx_arr[nb_coeff_idx], ref_ctx);
@@ -1115,8 +1117,9 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
   const int16_t *iscan = txb_info->scan_order->iscan;
 
   if (scan_idx < txb_info->seg_eob) {
-    int coeff_ctx = get_nz_map_ctx(txb_info->qcoeff, scan[scan_idx],
-                                   txb_info->bwl, txb_info->height, iscan);
+    int coeff_ctx =
+        get_nz_map_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->bwl,
+                       txb_info->height, iscan, txb_info->tx_type);
     cost += txb_costs->nz_map_cost[coeff_ctx][is_nz];
   }
 
@@ -1467,10 +1470,23 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const int64_t rdmult =
       (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
 
-  TxbInfo txb_info = { qcoeff,     dqcoeff, tcoeff,  dequant,
-                       shift,      tx_size, txs_ctx, bwl,
-                       stride,     height,  eob,     seg_eob,
-                       scan_order, txb_ctx, rdmult,  &cm->coeff_ctx_table };
+  TxbInfo txb_info = { qcoeff,
+                       dqcoeff,
+                       tcoeff,
+                       dequant,
+                       shift,
+                       tx_size,
+                       txs_ctx,
+                       tx_type,
+                       bwl,
+                       stride,
+                       height,
+                       eob,
+                       seg_eob,
+                       scan_order,
+                       txb_ctx,
+                       rdmult,
+                       &cm->coeff_ctx_table };
 
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
@@ -1579,7 +1595,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   for (c = 0; c < eob; ++c) {
     tran_low_t v = qcoeff[scan[c]];
     int is_nz = (v != 0);
-    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, iscan);
+    int coeff_ctx =
+        get_nz_map_ctx(tcoeff, scan[c], bwl, height, iscan, tx_type);
     int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx);
 
     if (c == seg_eob - 1) break;
