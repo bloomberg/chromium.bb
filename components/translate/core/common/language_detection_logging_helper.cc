@@ -19,8 +19,6 @@ std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
   auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
   specifics->set_event_time_usec(base::Time::Now().ToInternalValue());
 
-  // TODO(renjieliu): Revisit this field when the best way to identify
-  // navigations is determined.
   specifics->set_navigation_id(navigation_id);
 
   sync_pb::UserEventSpecifics::LanguageDetection lang_detection;
