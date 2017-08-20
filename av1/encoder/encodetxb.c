@@ -510,8 +510,8 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     txb_cache->nz_count_arr[coeff_idx] =
         get_nz_count(qcoeff, bwl, height, row, col, iscan);
     const int nz_count = txb_cache->nz_count_arr[coeff_idx];
-    txb_cache->nz_ctx_arr[coeff_idx] =
-        get_nz_map_ctx_from_count(nz_count, qcoeff, coeff_idx, bwl, iscan);
+    txb_cache->nz_ctx_arr[coeff_idx] = get_nz_map_ctx_from_count(
+        nz_count, qcoeff, coeff_idx, bwl, iscan, txb_info->tx_type);
 
     // gen_base_count_mag_arr
     if (!has_base(qcoeff[coeff_idx], 0)) continue;
@@ -717,8 +717,9 @@ static int try_neighbor_level_down_nz(int coeff_idx, int nb_coeff_idx,
     const int count = txb_cache->nz_count_arr[coeff_idx];
     assert(count > 0);
     txb_info->qcoeff[nb_coeff_idx] = get_lower_coeff(nb_coeff);
-    const int new_ctx = get_nz_map_ctx_from_count(
-        count - 1, txb_info->qcoeff, coeff_idx, txb_info->bwl, iscan);
+    const int new_ctx =
+        get_nz_map_ctx_from_count(count - 1, txb_info->qcoeff, coeff_idx,
+                                  txb_info->bwl, iscan, txb_info->tx_type);
     txb_info->qcoeff[nb_coeff_idx] = nb_coeff;
     const int ctx = txb_cache->nz_ctx_arr[coeff_idx];
     const int is_nz = abs_qc > 0;
@@ -1023,8 +1024,9 @@ void update_level_down(int coeff_idx, TxbCache *txb_cache, TxbInfo *txb_info) {
           assert(txb_cache->nz_count_arr[nb_coeff_idx] >= 0);
         }
         const int count = txb_cache->nz_count_arr[nb_coeff_idx];
-        txb_cache->nz_ctx_arr[nb_coeff_idx] = get_nz_map_ctx_from_count(
-            count, txb_info->qcoeff, nb_coeff_idx, txb_info->bwl, iscan);
+        txb_cache->nz_ctx_arr[nb_coeff_idx] =
+            get_nz_map_ctx_from_count(count, txb_info->qcoeff, nb_coeff_idx,
+                                      txb_info->bwl, iscan, txb_info->tx_type);
         // int ref_ctx = get_nz_map_ctx(txb_info->qcoeff, nb_coeff_idx,
         // txb_info->bwl, iscan, tx_type);
         // if (ref_ctx != txb_cache->nz_ctx_arr[nb_coeff_idx])

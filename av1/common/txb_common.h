@@ -276,7 +276,9 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
 static INLINE int get_nz_map_ctx_from_count(int count,
                                             const tran_low_t *tcoeffs,
                                             int coeff_idx,  // raster order
-                                            int bwl, const int16_t *iscan) {
+                                            int bwl, const int16_t *iscan,
+                                            TX_TYPE tx_type) {
+  (void)tx_type;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int ctx = 0;
@@ -327,11 +329,11 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const int coeff_idx,  // raster order
                                  const int bwl, const int height,
                                  const int16_t *iscan, TX_TYPE tx_type) {
-  (void)tx_type;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int count = get_nz_count(tcoeffs, bwl, height, row, col, iscan);
-  return get_nz_map_ctx_from_count(count, tcoeffs, coeff_idx, bwl, iscan);
+  return get_nz_map_ctx_from_count(count, tcoeffs, coeff_idx, bwl, iscan,
+                                   tx_type);
 }
 
 static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
