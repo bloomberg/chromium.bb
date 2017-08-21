@@ -108,8 +108,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_accessibility_chromevox.icon",
     "system_menu_accessibility_contrast.1x.icon",
     "system_menu_accessibility_contrast.icon",
-    "system_menu_accessibility_large_cursor.1x.icon",
-    "system_menu_accessibility_large_cursor.icon",
     "system_menu_accessibility_screen_magnifier.1x.icon",
     "system_menu_audio_input.icon",
     "system_menu_audio_input.1x.icon",
