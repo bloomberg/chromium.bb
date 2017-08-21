@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -42,6 +43,9 @@ base::Time GetReferenceTime() {
 class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
+    scoped_feature_list_.InitFromCommandLine("RecordMediaEngagementScores",
+                                             std::string());
+
     ChromeRenderViewHostTestHarness::SetUp();
     test_clock.SetNow(GetReferenceTime());
     score_ = new MediaEngagementScore(&test_clock, GURL(), nullptr);
@@ -106,6 +110,9 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(details->last_media_playback_time,
               score->last_media_playback_time().ToJsTime());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Test Mojo serialization.

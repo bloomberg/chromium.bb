@@ -26,7 +26,8 @@ class MediaEngagementContentsObserverTest
     : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitFromCommandLine("media-engagement", std::string());
+    scoped_feature_list_.InitFromCommandLine("RecordMediaEngagementScores",
+                                             std::string());
 
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(content::WebContentsTester::CreateTestWebContents(

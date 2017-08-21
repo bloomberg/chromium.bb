@@ -6,6 +6,7 @@ include_rules = [
   "+components/sync_preferences",
   "+components/url_formatter",
   "+extensions/features",
+  "+media/base/media_switches.h",
   "+net/base",
   "+net/cookies",
   "+services/preferences/public",
