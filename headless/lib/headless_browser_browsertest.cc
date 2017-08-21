@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
@@ -645,9 +646,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, RendererCommandPrefixTest) {
   fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp.value().c_str());
   fprintf(launcher_file, "exec $@\n");
   fclose(launcher_file);
+#if !defined(OS_FUCHSIA)
   base::SetPosixFilePermissions(launcher_script,
                                 base::FILE_PERMISSION_READ_BY_USER |
                                     base::FILE_PERMISSION_EXECUTE_BY_USER);
+#endif  // !defined(OS_FUCHSIA)
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch("--no-sandbox");
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
