@@ -136,9 +136,12 @@ cr.define('route_controls', function() {
 
       // Tests that the play button sends a command to the browser API.
       test('send play command', function(done) {
-        document.addEventListener('mock-play-current-media', function(data) {
+        var waitForPlayEvent = function(data) {
+          document.removeEventListener(
+              'mock-play-current-media', waitForPlayEvent);
           done();
-        });
+        };
+        document.addEventListener('mock-play-current-media', waitForPlayEvent);
 
         controls.routeStatus = createRouteStatus(
             {canPlayPause: true, playState: media_router.PlayState.PAUSED});
@@ -147,9 +150,13 @@ cr.define('route_controls', function() {
 
       // Tests that the pause button sends a command to the browser API.
       test('send pause command', function(done) {
-        document.addEventListener('mock-pause-current-media', function(data) {
+        var waitForPauseEvent = function(data) {
+          document.removeEventListener(
+              'mock-pause-current-media', waitForPauseEvent);
           done();
-        });
+        };
+        document.addEventListener(
+            'mock-pause-current-media', waitForPauseEvent);
 
         controls.routeStatus = createRouteStatus(
             {canPlayPause: true, playState: media_router.PlayState.PLAYING});
@@ -158,7 +165,7 @@ cr.define('route_controls', function() {
 
       // Tests that the mute button sends a command to the browser API.
       test('send mute command', function(done) {
-        function waitForMuteEvent(data) {
+        var waitForMuteEvent = function(data) {
           // Remove the event listener to avoid interfering with other tests.
           document.removeEventListener(
               'mock-set-current-media-mute', waitForMuteEvent);
@@ -167,7 +174,7 @@ cr.define('route_controls', function() {
           } else {
             done('Expected the "Mute" command but received "Unmute".');
           }
-        }
+        };
         document.addEventListener(
             'mock-set-current-media-mute', waitForMuteEvent);
 
@@ -178,7 +185,7 @@ cr.define('route_controls', function() {
 
       // Tests that the unmute button sends a command to the browser API.
       test('send unmute command', function(done) {
-        function waitForUnmuteEvent(data) {
+        var waitForUnmuteEvent = function(data) {
           // Remove the event listener to avoid interfering with other tests.
           document.removeEventListener(
               'mock-set-current-media-mute', waitForUnmuteEvent);
@@ -187,7 +194,7 @@ cr.define('route_controls', function() {
           } else {
             done();
           }
-        }
+        };
         document.addEventListener(
             'mock-set-current-media-mute', waitForUnmuteEvent);
 
@@ -200,7 +207,9 @@ cr.define('route_controls', function() {
       test('send seek command', function(done) {
         var currentTime = 500;
         var duration = 1200;
-        document.addEventListener('mock-seek-current-media', function(data) {
+        var waitForSeekEvent = function(data) {
+          document.removeEventListener(
+              'mock-seek-current-media', waitForSeekEvent);
           if (data.detail.time == currentTime) {
             done();
           } else {
@@ -208,7 +217,8 @@ cr.define('route_controls', function() {
                 'Expected the time to be ' + currentTime + ' but instead got ' +
                 data.detail.time);
           }
-        });
+        };
+        document.addEventListener('mock-seek-current-media', waitForSeekEvent);
 
         controls.routeStatus =
             createRouteStatus({canSeek: true, duration: duration});
@@ -222,16 +232,19 @@ cr.define('route_controls', function() {
       // Tests that the volume slider sends a command to the browser API.
       test('send set volume command', function(done) {
         var volume = 0.45;
+        var waitForSetVolumeEvent = function(data) {
+          document.removeEventListener(
+              'mock-set-current-media-volume', waitForSetVolumeEvent);
+          if (data.detail.volume == volume) {
+            done();
+          } else {
+            done(
+                'Expected the volume to be ' + volume + ' but instead got ' +
+                data.detail.volume);
+          }
+        };
         document.addEventListener(
-            'mock-set-current-media-volume', function(data) {
-              if (data.detail.volume == volume) {
-                done();
-              } else {
-                done(
-                    'Expected the volume to be ' + volume +
-                    ' but instead got ' + data.detail.volume);
-              }
-            });
+            'mock-set-current-media-volume', waitForSetVolumeEvent);
 
         controls.routeStatus = createRouteStatus({canSetVolume: true});
 
@@ -263,6 +276,48 @@ cr.define('route_controls', function() {
             done();
           }, 1000);
         }, 1000);
+      });
+
+      test('ignore external updates right after using sliders', function(done) {
+        var currentTime = 500;
+        var externalCurrentTime = 800;
+        var volume = 0.45;
+        var externalVolume = 0.72;
+        var duration = 1200;
+        var doExternalUpdate = function() {
+          controls.routeStatus = createRouteStatus({
+            canSeek: true,
+            canSetVolume: true,
+            currentTime: externalCurrentTime,
+            duration: duration,
+            volume: externalVolume
+          });
+        };
+
+        controls.routeStatus = createRouteStatus(
+            {canSeek: true, canSetVolume: true, duration: duration});
+
+        // In actual usage, the change event gets fired when the user interacts
+        // with the slider.
+        controls.$$('#route-time-slider').value = currentTime;
+        controls.$$('#route-time-slider').fire('change');
+        controls.$$('#route-volume-slider').value = volume;
+        controls.$$('#route-volume-slider').fire('change');
+
+        // External updates right after slider interaction should be ignored.
+        doExternalUpdate();
+        assertEquals(controls.$$('#route-time-slider').value, currentTime);
+        assertEquals(controls.$$('#route-volume-slider').value, volume);
+
+        setTimeout(function() {
+          // External updates after some time should get applied to the sliders.
+          doExternalUpdate();
+          assertEquals(
+              controls.$$('#route-time-slider').value, externalCurrentTime);
+          assertEquals(
+              controls.$$('#route-volume-slider').value, externalVolume);
+          done();
+        }, 1001);
       });
     });
   }
