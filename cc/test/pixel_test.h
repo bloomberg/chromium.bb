@@ -72,7 +72,7 @@ class PixelTest : public testing::Test {
   SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
 
-  void SetUpGLRenderer(bool use_skia_gpu_backend, bool flipped_output_surface);
+  void SetUpGLRenderer(bool flipped_output_surface);
   void SetUpSoftwareRenderer();
 
   void EnableExternalStencilTest();
@@ -134,17 +134,17 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
 
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
-  SetUpGLRenderer(false, false);
+  SetUpGLRenderer(false);
 }
 
 template<>
 inline void RendererPixelTest<GLRendererWithExpandedViewport>::SetUp() {
-  SetUpGLRenderer(false, false);
+  SetUpGLRenderer(false);
 }
 
 template <>
 inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
-  SetUpGLRenderer(false, true);
+  SetUpGLRenderer(true);
 }
 
 template <>

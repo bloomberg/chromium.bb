@@ -153,8 +153,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
       *result_bitmap_, test_data_dir.Append(ref_file), comparator);
 }
 
-void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
-                                bool flipped_output_surface) {
+void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   enable_pixel_output_.reset(new gl::DisableNullDrawGLBindings);
 
   scoped_refptr<TestInProcessContextProvider> context_provider(
