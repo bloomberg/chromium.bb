@@ -657,11 +657,24 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
                  range:NSMakeRange(0, [attributing_display_string_ length])];
     }
 
+    NSRange strikethroughRange = range.ToNSRange();
+    // TODO(crbug.com/751801): remove this workaround.
+    // In iOS 11, UITextField has a bug: when the first character has
+    // strikethrough attribute, typing and setting text without strikethrough
+    // attribute will still result in strikethrough. The following is a
+    // workaround that prevents crossing out the first character.
+    if (base::ios::IsRunningOnOrLater(11, 0, 0)) {
+      if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
+        strikethroughRange.location += 1;
+        strikethroughRange.length -= 1;
+      }
+    }
+
     // Add a strikethrough through the scheme.
     [attributing_display_string_
         addAttribute:NSStrikethroughStyleAttributeName
                value:[NSNumber numberWithInteger:NSUnderlineStyleSingle]
-               range:range.ToNSRange()];
+               range:strikethroughRange];
   }
 
   UIColor* color = GetSecureTextColor(security_level, [field_ incognito]);
