@@ -33,21 +33,21 @@ ComplexFeature::~ComplexFeature() {
 }
 
 Feature::Availability ComplexFeature::IsAvailableToManifest(
-    const std::string& extension_id,
+    const HashedExtensionId& hashed_id,
     Manifest::Type type,
     Manifest::Location location,
     int manifest_version,
     Platform platform) const {
   Feature::Availability first_availability =
-      features_[0]->IsAvailableToManifest(
-          extension_id, type, location, manifest_version, platform);
+      features_[0]->IsAvailableToManifest(hashed_id, type, location,
+                                          manifest_version, platform);
   if (first_availability.is_available())
     return first_availability;
 
   for (FeatureList::const_iterator it = features_.begin() + 1;
        it != features_.end(); ++it) {
     Availability availability = (*it)->IsAvailableToManifest(
-        extension_id, type, location, manifest_version, platform);
+        hashed_id, type, location, manifest_version, platform);
     if (availability.is_available())
       return availability;
   }
@@ -78,21 +78,21 @@ Feature::Availability ComplexFeature::IsAvailableToContext(
   return first_availability;
 }
 
-bool ComplexFeature::IsIdInBlacklist(const std::string& extension_id) const {
+bool ComplexFeature::IsIdInBlacklist(const HashedExtensionId& hashed_id) const {
   for (FeatureList::const_iterator it = features_.begin();
        it != features_.end();
        ++it) {
-    if ((*it)->IsIdInBlacklist(extension_id))
+    if ((*it)->IsIdInBlacklist(hashed_id))
       return true;
   }
   return false;
 }
 
-bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {
+bool ComplexFeature::IsIdInWhitelist(const HashedExtensionId& hashed_id) const {
   for (FeatureList::const_iterator it = features_.begin();
        it != features_.end();
        ++it) {
-    if ((*it)->IsIdInWhitelist(extension_id))
+    if ((*it)->IsIdInWhitelist(hashed_id))
       return true;
   }
   return false;

@@ -32,10 +32,10 @@ namespace {
 
 struct WhitelistInfo {
   WhitelistInfo()
-      : extension_id(
+      : hashed_id(HashedIdInHex(
             base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kWhitelistedExtensionID)) {}
-  std::string extension_id;
+                switches::kWhitelistedExtensionID))) {}
+  std::string hashed_id;
 };
 // A singleton copy of the --whitelisted-extension-id so that we don't need to
 // copy it from the CommandLine each time.
@@ -43,14 +43,14 @@ base::LazyInstance<WhitelistInfo>::Leaky g_whitelist_info =
     LAZY_INSTANCE_INITIALIZER;
 
 Feature::Availability IsAvailableToManifestForBind(
-    const std::string& extension_id,
+    const HashedExtensionId& hashed_id,
     Manifest::Type type,
     Manifest::Location location,
     int manifest_version,
     Feature::Platform platform,
     const Feature* feature) {
-  return feature->IsAvailableToManifest(
-      extension_id, type, location, manifest_version, platform);
+  return feature->IsAvailableToManifest(hashed_id, type, location,
+                                        manifest_version, platform);
 }
 
 Feature::Availability IsAvailableToContextForBind(const Extension* extension,
@@ -183,28 +183,26 @@ bool IsCommandLineSwitchEnabled(base::CommandLine* command_line,
   return false;
 }
 
-bool IsWhitelistedForTest(const std::string& extension_id) {
+bool IsWhitelistedForTest(const HashedExtensionId& hashed_id) {
   // TODO(jackhou): Delete the commandline whitelisting mechanism.
   // Since it is only used it tests, ideally it should not be set via the
   // commandline. At the moment the commandline is used as a mechanism to pass
   // the id to the renderer process.
-  const std::string& whitelisted_extension_id =
-      g_whitelist_info.Get().extension_id;
-  return !whitelisted_extension_id.empty() &&
-         whitelisted_extension_id == extension_id;
+  const std::string& whitelisted_id = g_whitelist_info.Get().hashed_id;
+  return !whitelisted_id.empty() && whitelisted_id == hashed_id.value();
 }
 
 }  // namespace
 
 SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
     ScopedThreadUnsafeWhitelistForTest(const std::string& id)
-    : previous_id_(g_whitelist_info.Get().extension_id) {
-  g_whitelist_info.Get().extension_id = id;
+    : previous_id_(g_whitelist_info.Get().hashed_id) {
+  g_whitelist_info.Get().hashed_id = HashedIdInHex(id);
 }
 
 SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
     ~ScopedThreadUnsafeWhitelistForTest() {
-  g_whitelist_info.Get().extension_id = previous_id_;
+  g_whitelist_info.Get().hashed_id = previous_id_;
 }
 
 SimpleFeature::SimpleFeature()
@@ -217,7 +215,7 @@ SimpleFeature::SimpleFeature()
 SimpleFeature::~SimpleFeature() {}
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
-    const std::string& extension_id,
+    const HashedExtensionId& hashed_id,
     Manifest::Type type,
     Manifest::Location location,
     int manifest_version,
@@ -228,15 +226,12 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!environment_availability.is_available())
     return environment_availability;
   Availability manifest_availability =
-      GetManifestAvailability(extension_id, type, location, manifest_version);
+      GetManifestAvailability(hashed_id, type, location, manifest_version);
   if (!manifest_availability.is_available())
     return manifest_availability;
 
-  return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
-                                      extension_id,
-                                      type,
-                                      location,
-                                      manifest_version,
+  return CheckDependencies(base::Bind(&IsAvailableToManifestForBind, hashed_id,
+                                      type, location, manifest_version,
                                       platform));
 }
 
@@ -253,7 +248,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 
   if (extension) {
     Availability manifest_availability = GetManifestAvailability(
-        extension->id(), extension->GetType(), extension->location(),
+        extension->hashed_id(), extension->GetType(), extension->location(),
         extension->manifest_version());
     if (!manifest_availability.is_available())
       return manifest_availability;
@@ -403,12 +398,12 @@ bool SimpleFeature::IsInternal() const {
   return is_internal_;
 }
 
-bool SimpleFeature::IsIdInBlacklist(const std::string& extension_id) const {
-  return IsIdInList(extension_id, blacklist_);
+bool SimpleFeature::IsIdInBlacklist(const HashedExtensionId& hashed_id) const {
+  return IsIdInList(hashed_id, blacklist_);
 }
 
-bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
-  return IsIdInList(extension_id, whitelist_);
+bool SimpleFeature::IsIdInWhitelist(const HashedExtensionId& hashed_id) const {
+  return IsIdInList(hashed_id, whitelist_);
 }
 
 // static
@@ -426,13 +421,12 @@ bool SimpleFeature::IsIdInArray(const std::string& extension_id,
 }
 
 // static
-bool SimpleFeature::IsIdInList(const std::string& extension_id,
+bool SimpleFeature::IsIdInList(const HashedExtensionId& hashed_id,
                                const std::vector<std::string>& list) {
-  if (!IsValidExtensionId(extension_id))
+  if (!IsValidHashedExtensionId(hashed_id))
     return false;
 
-  return (base::ContainsValue(list, extension_id) ||
-          base::ContainsValue(list, HashedIdInHex(extension_id)));
+  return base::ContainsValue(list, hashed_id.value());
 }
 
 bool SimpleFeature::MatchesManifestLocation(
@@ -488,6 +482,13 @@ bool SimpleFeature::IsValidExtensionId(const std::string& extension_id) {
   // leads to hash collisions.
   // 128 bits / 4 = 32 mpdecimal characters
   return (extension_id.length() == 32);
+}
+
+// static
+bool SimpleFeature::IsValidHashedExtensionId(
+    const HashedExtensionId& hashed_id) {
+  // As above, just the bare-bones check.
+  return hashed_id.value().length() == 40;
 }
 
 void SimpleFeature::set_blacklist(
@@ -558,7 +559,7 @@ Feature::Availability SimpleFeature::GetEnvironmentAvailability(
 }
 
 Feature::Availability SimpleFeature::GetManifestAvailability(
-    const std::string& extension_id,
+    const HashedExtensionId& hashed_id,
     Manifest::Type type,
     Manifest::Location location,
     int manifest_version) const {
@@ -573,7 +574,7 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
     return CreateAvailability(INVALID_TYPE, type);
   }
 
-  if (IsIdInBlacklist(extension_id))
+  if (!blacklist_.empty() && IsIdInBlacklist(hashed_id))
     return CreateAvailability(FOUND_IN_BLACKLIST);
 
   // TODO(benwells): don't grant all component extensions.
@@ -583,8 +584,8 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
   if (component_extensions_auto_granted_ && location == Manifest::COMPONENT)
     return CreateAvailability(IS_AVAILABLE);
 
-  if (!whitelist_.empty() && !IsIdInWhitelist(extension_id) &&
-      !IsWhitelistedForTest(extension_id)) {
+  if (!whitelist_.empty() && !IsIdInWhitelist(hashed_id) &&
+      !IsWhitelistedForTest(hashed_id)) {
     return CreateAvailability(NOT_FOUND_IN_WHITELIST);
   }
 

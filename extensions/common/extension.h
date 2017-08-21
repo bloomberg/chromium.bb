@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/hashed_extension_id.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/url_pattern_set.h"
@@ -239,6 +240,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& url() const { return extension_url_; }
   Manifest::Location location() const;
   const ExtensionId& id() const;
+  const HashedExtensionId& hashed_id() const;
   const base::Version* version() const { return version_.get(); }
   const std::string& version_name() const { return version_name_; }
   const std::string VersionString() const;
