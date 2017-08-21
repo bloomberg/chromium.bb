@@ -8,6 +8,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import collections
+import socket
 
 import psutil
 
@@ -49,6 +50,7 @@ def collect_net_info():
   """Collect network metrics."""
   _collect_net_io_duplex_counters()
   _collect_net_if_stats()
+  _collect_fqdn()
 
 
 # Network IO metrics to collect
@@ -119,3 +121,12 @@ def _is_virtual_netif(nic):
   """Return whether the network interface is virtual."""
   # TODO(ayatane): Use a different way of identifying virtual interfaces
   return nic.startswith('veth')
+
+
+_fqdn_metric = metrics.StringMetric('net/fqdn', description='FQDN')
+
+
+def _collect_fqdn():
+  fqdn = socket.getfqdn()
+  logging.debug('Got FQDN: %s', fqdn)
+  _fqdn_metric.set(fqdn)

@@ -33,7 +33,8 @@ class TestNetMetrics(cros_test_lib.TestCase):
   def test_collect(self):
     with mock.patch('psutil.net_io_counters', autospec=True) \
              as net_io_counters, \
-         mock.patch('psutil.net_if_stats', autospec=True) as net_if_stats:
+         mock.patch('psutil.net_if_stats', autospec=True) as net_if_stats, \
+         mock.patch('socket.getfqdn', autospec=True) as getfqdn:
       net_io_counters.return_value = {
           'lo': snetio(
               bytes_sent=17247495681, bytes_recv=172474956,
@@ -43,6 +44,7 @@ class TestNetMetrics(cros_test_lib.TestCase):
       net_if_stats.return_value = {
           'lo': snicstats(isup=True, duplex=0, speed=0, mtu=65536),
       }
+      getfqdn.return_value = 'foo.example.com'
       net_metrics.collect_net_info()
 
     setter = self.store.set
@@ -71,6 +73,8 @@ class TestNetMetrics(cros_test_lib.TestCase):
                   0, enforce_ge=mock.ANY),
         mock.call('dev/net/mtu', ('lo',), None,
                   65536, enforce_ge=mock.ANY),
+        mock.call('net/fqdn', (), None,
+                  'foo.example.com', enforce_ge=mock.ANY),
     ]
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))
