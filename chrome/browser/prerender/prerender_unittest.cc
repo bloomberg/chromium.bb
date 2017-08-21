@@ -133,17 +133,6 @@ base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks(
   return tick_clock_ptr;
 }
 
-bool OverridePrerenderManagerTime(const char* utc_time,
-                                  PrerenderManager* prerender_manager) {
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
-  base::Time test_time;
-  if (!base::Time::FromUTCString(utc_time, &test_time))
-    return false;
-  test_clock->SetNow(test_time);
-  prerender_manager->SetClockForTesting(std::move(test_clock));
-  return true;
-}
-
 }  // namespace
 
 class UnitTestPrerenderManager : public PrerenderManager {
@@ -1449,101 +1438,6 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   EXPECT_FALSE(prerender_contents->prerendering_has_started());
   histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
                                         FINAL_STATUS_CELLULAR_NETWORK, 1);
-}
-
-// Checks that the "PrerenderSilence" experiment does not disable offline
-// prerendering.
-TEST_F(PrerenderTest, PrerenderSilenceAllowsOffline) {
-  // Set the time to 30 seconds before the experiment expires.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:01:00Z"));
-  ASSERT_TRUE(OverridePrerenderManagerTime("2016-12-20T00:00:30Z",
-                                           prerender_manager()));
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle =
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_EQ(prerender_contents, prerender_handle->contents());
-  EXPECT_EQ(ORIGIN_OFFLINE, prerender_handle->contents()->origin());
-}
-
-// Checks that the "PrerenderSilence" experiment does not disable
-// forced-cellular prerendering.
-TEST_F(PrerenderTest, PrerenderSilenceAllowsForcedCellular) {
-  // Set the time to 30 seconds before the experiment expires.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:01:00Z"));
-  ASSERT_TRUE(OverridePrerenderManagerTime("2016-12-20T00:00:30Z",
-                                           prerender_manager()));
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
-          FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle =
-      prerender_manager()->AddForcedPrerenderFromExternalRequest(
-          url, content::Referrer(), nullptr, gfx::Rect(kSize));
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_EQ(prerender_contents, prerender_handle->contents());
-  EXPECT_EQ(ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
-            prerender_handle->contents()->origin());
-}
-
-// Checks that the "PrerenderSilence" experiment disables prerendering and
-// re-enables it after expiration.
-TEST_F(PrerenderTest, PrerenderSilenceDisallowsNonOffline) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:02:00Z"));
-  Origin prerender_silence_origins[] = {
-      ORIGIN_GWS_PRERENDER,
-      ORIGIN_OMNIBOX,
-      ORIGIN_NONE,
-      ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN,
-      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
-      ORIGIN_EXTERNAL_REQUEST,
-      ORIGIN_INSTANT,
-      ORIGIN_LINK_REL_NEXT,
-  };
-
-  // Prerender before expiration of the experiment.
-  ASSERT_TRUE(OverridePrerenderManagerTime("2016-12-20T00:01:00Z",
-                                           prerender_manager()));
-  for (const Origin& origin : prerender_silence_origins) {
-    EXPECT_TRUE(
-        prerender_manager()->IsPrerenderSilenceExperimentForTesting(origin));
-  }
-
-  // Prerender after expiration of the experiment.
-  ASSERT_TRUE(OverridePrerenderManagerTime("2016-12-20T00:03:00Z",
-                                           prerender_manager()));
-  for (const Origin& origin : prerender_silence_origins) {
-    EXPECT_FALSE(
-        prerender_manager()->IsPrerenderSilenceExperimentForTesting(origin));
-  }
-}
-
-// Checks that prerendering is enabled after expiration of the
-// "PrerenderSilence" experiment.
-TEST_F(PrerenderTest, PrerenderSilenceAllowsAfterExpiration) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:02:00Z"));
-  ASSERT_TRUE(OverridePrerenderManagerTime("2016-12-20T00:01:60Z",
-                                           prerender_manager()));
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(url, FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  std::unique_ptr<PrerenderContents> entry =
-      prerender_manager()->FindAndUseEntry(url);
-  ASSERT_EQ(prerender_contents, entry.get());
 }
 
 TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {

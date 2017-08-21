@@ -23,10 +23,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -188,7 +186,6 @@ PrerenderManager::PrerenderManager(Profile* profile)
       histograms_(new PrerenderHistograms()),
       profile_network_bytes_(0),
       last_recorded_profile_network_bytes_(0),
-      clock_(new base::DefaultClock()),
       tick_clock_(new base::DefaultTickClock()),
       page_load_metric_observer_disabled_(false),
       weak_factory_(this) {
@@ -908,9 +905,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     origin = ORIGIN_GWS_PRERENDER;
   }
 
-  if (IsPrerenderSilenceExperiment(origin))
-    return nullptr;
-
   GURL url = url_arg;
   GURL alias_url;
 
@@ -1110,16 +1104,11 @@ void PrerenderManager::DeleteOldEntries() {
 }
 
 base::Time PrerenderManager::GetCurrentTime() const {
-  return clock_->Now();
+  return base::Time::Now();
 }
 
 base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
   return tick_clock_->NowTicks();
-}
-
-void PrerenderManager::SetClockForTesting(
-    std::unique_ptr<base::SimpleTestClock> clock) {
-  clock_ = std::move(clock);
 }
 
 void PrerenderManager::SetTickClockForTesting(
@@ -1326,38 +1315,6 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
   DCHECK_GE(recent_profile_bytes, 0);
   histograms_->RecordNetworkBytes(
       origin, used, prerender_bytes, recent_profile_bytes);
-}
-
-bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
-  if (origin == ORIGIN_OFFLINE ||
-      origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER) {
-    return false;
-  }
-
-  // The group name should contain expiration time formatted as:
-  //   "ExperimentYes_expires_YYYY-MM-DDTHH:MM:SSZ".
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PrerenderSilence");
-  const char kExperimentPrefix[] = "ExperimentYes";
-  if (!base::StartsWith(group_name, kExperimentPrefix,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-  const char kExperimentPrefixWithExpiration[] = "ExperimentYes_expires_";
-  if (!base::StartsWith(group_name, kExperimentPrefixWithExpiration,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    // Without expiration day in the group name, behave as a normal experiment,
-    // i.e. sticky to the Chrome session.
-    return true;
-  }
-  base::Time expiration_time;
-  if (!base::Time::FromString(
-          group_name.c_str() + (arraysize(kExperimentPrefixWithExpiration) - 1),
-          &expiration_time)) {
-    DLOG(ERROR) << "Could not parse expiration date in group: " << group_name;
-    return false;
-  }
-  return GetCurrentTime() < expiration_time;
 }
 
 NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
