@@ -259,11 +259,11 @@ void PowerHandler::SendBatteryStatus() {
   base::string16 status_text;
   if (show_time) {
     status_text = l10n_util::GetStringFUTF16(
-        charging ? IDS_OPTIONS_BATTERY_STATUS_CHARGING
-                 : IDS_OPTIONS_BATTERY_STATUS,
+        charging ? IDS_SETTINGS_BATTERY_STATUS_CHARGING
+                 : IDS_SETTINGS_BATTERY_STATUS,
         base::IntToString16(percent), GetBatteryTimeText(time_left));
   } else {
-    status_text = l10n_util::GetStringFUTF16(IDS_OPTIONS_BATTERY_STATUS_SHORT,
+    status_text = l10n_util::GetStringFUTF16(IDS_SETTINGS_BATTERY_STATUS_SHORT,
                                              base::IntToString16(percent));
   }
 

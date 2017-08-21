@@ -7420,24 +7420,6 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
           Retry
         </message>
-         <message name="IDS_SETTINGS_EASY_UNLOCK_ALLOW_SIGN_IN_LABEL" desc="The label text on the Easy unlock settings page for the radio box to allow the EasyUnlock on the sign-in screen (in addition to the lock screen).">
-          Use Smart Lock to sign in to your account
-        </message>
-         <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL" desc="The text on the Easy unlock settings page indicating how close the phone should be for unlock to work.">
-          Distance needed for phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-        </message>
-        <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_CLOSE" desc="The text on the Easy unlock settings page indicating the phone should be very close for the unlock to work.">
-          Very close
-        </message>
-        <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_CLOSE" desc="The text on the Easy unlock settings page indicating the phone should be close for the unlock to work.">
-          Close
-        </message>
-        <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_FAR" desc="The text on the Easy unlock settings page indicating the phone can be far for the unlock to work.">
-          Far
-        </message>
-        <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_FAR" desc="The text on the Easy unlock settings page indicating the phone can be very far for the unlock to work.">
-          Very far
-        </message>
         <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
           You have chosen to open certain file types automatically after downloading.
         </message>
@@ -7713,24 +7695,6 @@ I don't think this site should be blocked!
           Automatically send some system information and page content to Google to help detect dangerous apps and sites
         </message>
 
-        <if expr="chromeos">
-          <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the Chrome settings page">
-            Powerwash
-          </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
-            Restart your device
-          </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the Chrome settings page">
-            Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
-          </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the Chrome settings page">
-            Powerwash
-          </message>
-          <message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
-            A restart is required before your device can be reset with Powerwash.
-          </message>
-        </if>
-
         <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
           Import bookmarks and settings...
         </message>
@@ -7874,14 +7838,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_PROCESSING_SHORTCUTS" desc="A placeholder for the actual shortcuts in the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
           Processing shortcuts...
-        </message>
-
-        <!-- Automatic Settings Reset strings -->
-        <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that some settings have been tampered with and were reset to factory defaults.">
-          Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.
-        </message>
-        <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT" desc="The text on the reset button in the Automatic Settings Reset Banner suggesting to reset ALL settings after an automatic reset of SOME settings.">
-          Reset all settings
         </message>
       </if>
 
@@ -9070,9 +9026,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_DISABLE" desc="The label of a button that disables sending the 'Do Not Track' header">
         Cancel
-      </message>
-      <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
-        Pressing Tab on a webpage highlights links, as well as form fields
       </message>
 
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">

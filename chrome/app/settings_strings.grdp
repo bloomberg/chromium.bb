@@ -218,6 +218,75 @@
     <message name="IDS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="Informational message at the top of the accessibility section of the settings page about enabling additional accessibility-related features.">
       Enable accessibility features to make your device easier to use.
     </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_TITLE" desc="In the settings tab, the title of a link that adds additional accessibility features not found in the built-in settings.">
+      Add additional features
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_APPEARANCE_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the appearance settings allows you to change the size of text on the screen.">
+      Customize your text size
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_APPEARANCE_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open appearance settings.">
+      Open appearance settings
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_AUDIO_HEADING" desc="In the settings tab, the heading for the section on audio / sound settings.">
+      Audio
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the caret (the text insertion point) to make it easier to see.">
+      Highlight the text caret when it appears or moves
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the mouse cursor when it's moving to make it easier to see.">
+      Highlight the mouse cursor when it's moving
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_HEADING" desc="In the settings tab, the heading for accessibility features related to the computer's display.">
+      Display
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open display settings.">
+      Open display device settings
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the display settings have options to adjust the screen resolution.">
+      Allows you to adjust your screen resolution
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
+      Highlight the object with keyboard focus when it changes
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_HEADING" desc="In the settings tab, the heading above settings related to the keyboard.">
+      Keyboard
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open keyboard settings.">
+      Open keyboard device settings
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the keyboard settings let you adjust the rate at which keys automatically repeat when held down, automatic prediction of words, and more.">
+      Allows you to adjust your keyboard repeat rate, word prediction, and more
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES" desc="In the settings tab, the title of a link that opens a screen allowing the user to change accessibility features.">
+      Manage accessibility features
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_MOUSE_AND_TOUCHPAD_HEADING" desc="In the settings tab, the heading for the section on mouse and touchpad settings.">
+      Mouse and touchpad
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_TITLE" desc="In the settings tab, the title of a link to open mouse and touchpad settings.">
+      Open mouse and touchpad device settings
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_MOUSE_SETTINGS_DESCRIPTION" desc="In the settings tab, an explanation that the mouse and touchpad settings allows you to turn the tap-to-click feature on and off.">
+      Allows you to enable/disable tap-to-click
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_TITLE" desc="In the settings tab, the text next to the checkbox to enable an option to hold a key and click to speak any on-screen text out loud.">
+      Enable select-to-speak
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the description of an option to hold a key and click or drag a box with the mouse to speak any on-screen text out loud.">
+      Press and hold Search, then click or drag to select content to be read aloud
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Select-to-Speak feature.">
+      Open select-to-speak settings
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable switch access (for users with limited motor control).">
+      Switch access (control the computer with just one or two switches)
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Switch Access feature.">
+      Switch access options
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_HEADING" desc="In the settings tab, the heading for accessibility features that enable the computer to speak text from the computer screen.">
+      Text-to-Speech
+    </message>
   </if>
 
   <if expr="chromeos">
@@ -318,6 +387,11 @@
   <message name="IDS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
     Open the wallpaper app
   </message>
+  <if expr="is_macosx">
+    <message name="IDS_SETTINGS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
+      Pressing Tab on a webpage highlights links, as well as form fields
+    </message>
+  </if>
 
   <!-- Common -->
   <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">
@@ -1124,6 +1198,24 @@
     <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
       Retry
     </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_ALLOW_SIGN_IN_LABEL" desc="The label text on the Easy unlock settings page for the radio box to allow the EasyUnlock on the sign-in screen (in addition to the lock screen).">
+      Use Smart Lock to sign in to your account
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL" desc="The text on the Easy unlock settings page indicating how close the phone should be for unlock to work.">
+      Distance needed for phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_CLOSE" desc="The text on the Easy unlock settings page indicating the phone should be very close for the unlock to work.">
+      Very close
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_CLOSE" desc="The text on the Easy unlock settings page indicating the phone should be close for the unlock to work.">
+      Close
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_FAR" desc="The text on the Easy unlock settings page indicating the phone can be far for the unlock to work.">
+      Far
+    </message>
+    <message name="IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_VERY_FAR" desc="The text on the Easy unlock settings page indicating the phone can be very far for the unlock to work.">
+      Very far
+    </message>
 
     <!-- Strings specific to the Settings Internet Page -->
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
@@ -1897,6 +1989,28 @@
   <message name="IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="The label describing the 'reset profile setting' feature">
     Restore settings to their original defaults
   </message>
+  <message name="IDS_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that some settings have been tampered with and were reset to factory defaults.">
+    Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.
+  </message>
+  <message name="IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT" desc="The text on the reset button in the Automatic Settings Reset Banner suggesting to reset ALL settings after an automatic reset of SOME settings.">
+    Reset all settings
+  </message>
+
+  <!-- Factory Reset / Powerwash -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_FACTORY_RESET" desc="Name of the factory reset option on the Chrome settings page">
+      Powerwash
+    </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
+      Restart your device
+    </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the Chrome settings page">
+      Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
+    </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
+      A restart is required before your device can be reset with Powerwash.
+    </message>
+  </if>
 
   <!-- Search Page -->
   <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
@@ -3291,6 +3405,15 @@
     </message>
     <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL" desc="In Device Settings > Power, label for shutting down when lid is closed.">
       Shut down when lid is closed
+    </message>
+    <message name="IDS_SETTINGS_BATTERY_STATUS" desc="In Device Settings > Power, the battery status while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+      <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="time">$2<ex>2 hours and 20 minutes</ex></ph> left
+    </message>
+    <message name="IDS_SETTINGS_BATTERY_STATUS_CHARGING" desc="In Device Settings > Power, the battery status while the battery is charging, showing the battery power as a percentage and the time left until the battery is full.">
+      <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="time">$2<ex>2 hours and 20 minutes</ex></ph> until full
+    </message>
+    <message name="IDS_SETTINGS_BATTERY_STATUS_SHORT" desc="In Device Settings > Power, the battery status when the time left cannot be shown.">
+      <ph name="percentage">$1<ex>56</ex></ph>%
     </message>
   </if>
 
