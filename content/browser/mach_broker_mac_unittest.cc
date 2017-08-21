@@ -42,15 +42,14 @@ class MachBrokerTest : public testing::Test,
     return broker_.child_process_id_map_.count(child_process_id);
   }
 
-  base::SpawnChildResult LaunchTestChild(const std::string& function,
-                                         int child_process_id) {
+  base::Process LaunchTestChild(const std::string& function,
+                                int child_process_id) {
     base::AutoLock lock(broker_.GetLock());
-    base::SpawnChildResult spawn_child = base::SpawnMultiProcessTestChild(
+    base::Process test_child_process = base::SpawnMultiProcessTestChild(
         function, base::GetMultiProcessTestChildBaseCommandLine(),
         base::LaunchOptions());
-    broker_.AddPlaceholderForPid(spawn_child.process.Handle(),
-                                 child_process_id);
-    return spawn_child;
+    broker_.AddPlaceholderForPid(test_child_process.Handle(), child_process_id);
+    return test_child_process;
   }
 
   void WaitForChildExit(base::Process& process) {
@@ -92,23 +91,22 @@ TEST_F(MachBrokerTest, AddChildProcess) {
     base::AutoLock lock(broker_.GetLock());
     broker_.EnsureRunning();
   }
-  base::SpawnChildResult spawn_child =
-      LaunchTestChild("MachBrokerTestChild", 7);
+  base::Process child_process = LaunchTestChild("MachBrokerTestChild", 7);
   WaitForTaskPort();
-  EXPECT_EQ(spawn_child.process.Handle(), received_process_);
-  WaitForChildExit(spawn_child.process);
+  EXPECT_EQ(child_process.Handle(), received_process_);
+  WaitForChildExit(child_process);
 
   EXPECT_NE(static_cast<mach_port_t>(MACH_PORT_NULL),
-            broker_.TaskForPid(spawn_child.process.Handle()));
+            broker_.TaskForPid(child_process.Handle()));
   EXPECT_EQ(1, GetChildProcessCount(7));
 
   // Should be no entry for any other PID.
   EXPECT_EQ(static_cast<mach_port_t>(MACH_PORT_NULL),
-            broker_.TaskForPid(spawn_child.process.Handle() + 1));
+            broker_.TaskForPid(child_process.Handle() + 1));
 
   InvalidateChildProcessId(7);
   EXPECT_EQ(static_cast<mach_port_t>(MACH_PORT_NULL),
-            broker_.TaskForPid(spawn_child.process.Handle()));
+            broker_.TaskForPid(child_process.Handle()));
   EXPECT_EQ(0, GetChildProcessCount(7));
 }
 

@@ -47,11 +47,11 @@ MULTIPROCESS_TEST_MAIN(ServerTest) {
 }
 
 TEST_F(SeatbeltExecTest, ServerTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("ServerTest");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("ServerTest");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -73,11 +73,11 @@ MULTIPROCESS_TEST_MAIN(ClientTest) {
 }
 
 TEST_F(SeatbeltExecTest, ClientTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("ClientTest");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("ClientTest");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 

@@ -445,12 +445,8 @@ TEST_F(MemoryCoordinatorImplTest, MAYBE_GetStateForProcess) {
 
   coordinator_->CreateChildMemoryCoordinator(1);
   coordinator_->CreateChildMemoryCoordinator(2);
-
-  base::SpawnChildResult spawn_result1 = SpawnChild("process1");
-  base::Process& process1 = spawn_result1.process;
-  base::SpawnChildResult spawn_result2 = SpawnChild("process2");
-  base::Process& process2 = spawn_result2.process;
-
+  base::Process process1 = SpawnChild("process1");
+  base::Process process2 = SpawnChild("process2");
   coordinator_->GetMockRenderProcessHost(1)->SetProcessHandle(
       base::MakeUnique<base::ProcessHandle>(process1.Handle()));
   coordinator_->GetMockRenderProcessHost(2)->SetProcessHandle(

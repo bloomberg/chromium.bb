@@ -147,17 +147,17 @@ TEST(XPCMessageServerTest, GetSenderPID) {
 #pragma GCC diagnostic pop
   ASSERT_EQ(KERN_SUCCESS, kr);
 
-  base::SpawnChildResult spawn_child = base::SpawnMultiProcessTestChild(
+  base::Process child = base::SpawnMultiProcessTestChild(
       "GetSenderPID", base::GetMultiProcessTestChildBaseCommandLine(),
       base::LaunchOptions());
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  ASSERT_TRUE(child.IsValid());
 
   int exit_code = -1;
-  ASSERT_TRUE(spawn_child.process.WaitForExit(&exit_code));
+  ASSERT_TRUE(child.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
 
-  EXPECT_EQ(spawn_child.process.Pid(), sender_pid);
-  EXPECT_EQ(spawn_child.process.Pid(), child_pid);
+  EXPECT_EQ(child.Pid(), sender_pid);
+  EXPECT_EQ(child.Pid(), child_pid);
   EXPECT_EQ(sender_pid, child_pid);
 }
 

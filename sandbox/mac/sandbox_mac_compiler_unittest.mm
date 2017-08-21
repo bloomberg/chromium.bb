@@ -34,11 +34,11 @@ MULTIPROCESS_TEST_MAIN(BasicProfileProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, BasicProfileTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("BasicProfileProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("BasicProfileProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -58,12 +58,11 @@ MULTIPROCESS_TEST_MAIN(BasicProfileWithParamProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, BasicProfileTestWithParam) {
-  base::SpawnChildResult spawn_child =
-      SpawnChild("BasicProfileWithParamProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("BasicProfileWithParamProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -90,11 +89,11 @@ MULTIPROCESS_TEST_MAIN(ProfileFunctionalProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("ProfileFunctionalProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("ProfileFunctionalProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -130,12 +129,11 @@ MULTIPROCESS_TEST_MAIN(ProfileFunctionalTestWithParamsProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTestWithParams) {
-  base::SpawnChildResult spawn_child =
-      SpawnChild("ProfileFunctionalTestWithParamsProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("ProfileFunctionalTestWithParamsProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -154,12 +152,11 @@ MULTIPROCESS_TEST_MAIN(ProfileFunctionalityTestErrorProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTestError) {
-  base::SpawnChildResult spawn_child =
-      SpawnChild("ProfileFunctionalityTestErrorProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("ProfileFunctionalityTestErrorProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
@@ -178,11 +175,11 @@ MULTIPROCESS_TEST_MAIN(SandboxCheckTestProcess) {
 }
 
 TEST_F(SandboxMacCompilerTest, SandboxCheckTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("SandboxCheckTestProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("SandboxCheckTestProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 
