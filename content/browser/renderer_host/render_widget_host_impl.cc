@@ -2037,8 +2037,8 @@ void RenderWidgetHostImpl::OnUpdateRect(
     new_auto_size_ = params.view_size;
     if (post_callback) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&RenderWidgetHostImpl::DelayedAutoResized,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&RenderWidgetHostImpl::DelayedAutoResized,
+                                    weak_factory_.GetWeakPtr()));
     }
   }
 

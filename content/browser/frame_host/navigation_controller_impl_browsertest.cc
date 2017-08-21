@@ -913,8 +913,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&net::URLRequestFailedJob::AddUrlHandler));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -6143,7 +6144,7 @@ class GoBackAndCommitFilter : public BrowserMessageFilter {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NavigateBackAndCommit, message, web_contents_));
+        base::BindOnce(&NavigateBackAndCommit, message, web_contents_));
     return true;
   }
 
@@ -6584,7 +6585,7 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
       const net::test_server::HttpRequest& request) {
     postback_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &RequestMonitoringNavigationBrowserTest::MonitorRequestOnMainThread,
             weak_this, request));
   }

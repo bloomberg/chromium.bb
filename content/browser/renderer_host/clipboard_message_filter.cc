@@ -195,8 +195,8 @@ void ClipboardMessageFilter::ReadAndEncodeImage(const SkBitmap& bitmap,
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, png_data.get())) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&ClipboardMessageFilter::OnReadAndEncodeImageFinished,
-                     this, base::Passed(&png_data), reply_msg));
+          base::BindOnce(&ClipboardMessageFilter::OnReadAndEncodeImageFinished,
+                         this, base::Passed(&png_data), reply_msg));
       return;
     }
   }
@@ -225,7 +225,7 @@ void ClipboardMessageFilter::OnReadAndEncodeImageFinished(
       // timeout to clean up eventually. See https://crbug.com/604800.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&CleanupReadImageBlob, base::Passed(&blob_handle)),
+          base::BindOnce(&CleanupReadImageBlob, base::Passed(&blob_handle)),
           base::TimeDelta::FromMinutes(1));
       return;
     }

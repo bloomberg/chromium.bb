@@ -300,9 +300,9 @@ void RenderMessageFilter::OnCacheableMetadataAvailableForCacheStorage(
 
   cache_storage_context_->cache_manager()->OpenCache(
       cache_storage_origin.GetURL(), cache_storage_cache_name,
-      base::Bind(&RenderMessageFilter::OnCacheStorageOpenCallback,
-                 weak_ptr_factory_.GetWeakPtr(), url, expected_response_time,
-                 buf, data.size()));
+      base::BindOnce(&RenderMessageFilter::OnCacheStorageOpenCallback,
+                     weak_ptr_factory_.GetWeakPtr(), url,
+                     expected_response_time, buf, data.size()));
 }
 
 void RenderMessageFilter::OnCacheStorageOpenCallback(
@@ -317,8 +317,8 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
   CacheStorageCache* cache = cache_handle->value();
   if (!cache)
     return;
-  cache->WriteSideData(base::Bind(&NoOpCacheStorageErrorCallback,
-                                  base::Passed(std::move(cache_handle))),
+  cache->WriteSideData(base::BindOnce(&NoOpCacheStorageErrorCallback,
+                                      base::Passed(std::move(cache_handle))),
                        url, expected_response_time, buf, buf_len);
 }
 

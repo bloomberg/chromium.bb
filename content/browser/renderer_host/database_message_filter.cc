@@ -60,7 +60,8 @@ void DatabaseMessageFilter::OnChannelClosing() {
   if (observer_added_) {
     observer_added_ = false;
     db_tracker_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&DatabaseMessageFilter::RemoveObserver, this));
+        FROM_HERE,
+        base::BindOnce(&DatabaseMessageFilter::RemoveObserver, this));
   }
 }
 
@@ -84,7 +85,7 @@ base::TaskRunner* DatabaseMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == DatabaseHostMsg_Opened::ID && !observer_added_) {
     observer_added_ = true;
     db_tracker_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&DatabaseMessageFilter::AddObserver, this));
+        FROM_HERE, base::BindOnce(&DatabaseMessageFilter::AddObserver, this));
   }
 
   // GetSpaceAvailable talks to the quota manager on IO thread, so avoid

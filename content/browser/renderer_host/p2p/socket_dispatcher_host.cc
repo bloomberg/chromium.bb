@@ -162,7 +162,8 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
 void P2PSocketDispatcherHost::OnIPAddressChanged() {
   // Notify the renderer about changes to list of network interfaces.
   network_list_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketDispatcherHost::DoGetNetworkList, this));
+      FROM_HERE,
+      base::BindOnce(&P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::StartRtpDump(
@@ -189,12 +190,9 @@ void P2PSocketDispatcherHost::StopRtpDumpOnUIThread(bool incoming,
                                                     bool outgoing) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&P2PSocketDispatcherHost::StopRtpDumpOnIOThread,
-                 this,
-                 incoming,
-                 outgoing));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&P2PSocketDispatcherHost::StopRtpDumpOnIOThread, this,
+                     incoming, outgoing));
 }
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
@@ -217,7 +215,8 @@ void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
   }
 
   network_list_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketDispatcherHost::DoGetNetworkList, this));
+      FROM_HERE,
+      base::BindOnce(&P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
@@ -351,8 +350,8 @@ void P2PSocketDispatcherHost::DoGetNetworkList() {
   default_ipv6_local_address_ = GetDefaultLocalAddress(AF_INET6);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&P2PSocketDispatcherHost::SendNetworkList, this, list,
-                 default_ipv4_local_address_, default_ipv6_local_address_));
+      base::BindOnce(&P2PSocketDispatcherHost::SendNetworkList, this, list,
+                     default_ipv4_local_address_, default_ipv6_local_address_));
 }
 
 void P2PSocketDispatcherHost::SendNetworkList(

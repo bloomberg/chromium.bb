@@ -229,7 +229,7 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
             base::Unretained(ResourceDispatcherHostImpl::Get()),
             GetProcess()->GetID(), GetRoutingID(),
@@ -247,9 +247,9 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                   base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID()));
+        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
+                       base::Unretained(ResourceDispatcherHostImpl::Get()),
+                       GetProcess()->GetID(), GetRoutingID()));
   }
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
@@ -665,13 +665,11 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
-                   base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(),
-                   GetRoutingID(),
-                   is_loading));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
+            base::Unretained(ResourceDispatcherHostImpl::Get()),
+            GetProcess()->GetID(), GetRoutingID(), is_loading));
   }
 }
 
@@ -925,7 +923,7 @@ void RenderViewHostImpl::SelectWordAroundCaret() {
 }
 
 void RenderViewHostImpl::PostRenderViewReady() {
-  GetProcess()->PostTaskWhenProcessIsReady(base::Bind(
+  GetProcess()->PostTaskWhenProcessIsReady(base::BindOnce(
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
 }
 

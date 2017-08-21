@@ -591,8 +591,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     const base::Callback<void(const gfx::Rect&, bool)>& callback,
     std::unique_ptr<viz::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, gfx::Rect(), false));
-  base::ScopedClosureRunner scoped_return_subscriber_texture(base::Bind(
+      base::BindOnce(callback, gfx::Rect(), false));
+  base::ScopedClosureRunner scoped_return_subscriber_texture(base::BindOnce(
       &ReturnSubscriberTexture, dfh, subscriber_texture, gpu::SyncToken()));
 
   if (!dfh)

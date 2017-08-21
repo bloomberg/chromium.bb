@@ -833,8 +833,8 @@ void NavigationRequest::OnStartChecksComplete(
     // PostTask to avoid that.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&NavigationRequest::OnRequestFailed,
-                   weak_factory_.GetWeakPtr(), false, error_code));
+        base::BindOnce(&NavigationRequest::OnRequestFailed,
+                       weak_factory_.GetWeakPtr(), false, error_code));
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.

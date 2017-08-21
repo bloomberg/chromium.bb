@@ -161,7 +161,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     // Webdriver-safe url to hang the ui thread. Webdriver waits for the onload
     // event in javascript which needs a little more time to fire.
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                   base::Bind(&HangCurrentThread),
+                                   base::BindOnce(&HangCurrentThread),
                                    base::TimeDelta::FromSeconds(2));
     return true;
   }
@@ -210,7 +210,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
 
   if (url == kChromeUIPpapiFlashCrashURL || url == kChromeUIPpapiFlashHangURL) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&HandlePpapiFlashDebugURL, url));
+                            base::BindOnce(&HandlePpapiFlashDebugURL, url));
     return true;
   }
 
