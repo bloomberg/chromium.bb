@@ -111,25 +111,28 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
 
     // Voice Search
-    AddString(translated_strings.get(), "listening",
-              IDS_NEW_TAB_VOICE_LISTENING);
-    AddString(translated_strings.get(), "ready", IDS_NEW_TAB_VOICE_READY);
-    AddString(translated_strings.get(), "noTranslation",
-              IDS_NEW_TAB_VOICE_NO_TRANSLATION);
-    AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
     AddString(translated_strings.get(), "audioError",
               IDS_NEW_TAB_VOICE_AUDIO_ERROR);
-    AddString(translated_strings.get(), "networkError",
-              IDS_NEW_TAB_VOICE_NETWORK_ERROR);
-    AddString(translated_strings.get(), "languageError",
-              IDS_NEW_TAB_VOICE_LANGUAGE_ERROR);
-    AddString(translated_strings.get(), "noVoice", IDS_NEW_TAB_VOICE_NO_VOICE);
-    AddString(translated_strings.get(), "tryAgain",
-              IDS_NEW_TAB_VOICE_TRY_AGAIN);
-    AddString(translated_strings.get(), "learnMore",
-              IDS_NEW_TAB_VOICE_LEARN_MORE);
+    AddString(translated_strings.get(), "details", IDS_NEW_TAB_VOICE_DETAILS);
     AddString(translated_strings.get(), "fakeboxSpeechTooltip",
               IDS_TOOLTIP_MIC_SEARCH);
+    AddString(translated_strings.get(), "languageError",
+              IDS_NEW_TAB_VOICE_LANGUAGE_ERROR);
+    AddString(translated_strings.get(), "learnMore",
+              IDS_NEW_TAB_VOICE_LEARN_MORE);
+    AddString(translated_strings.get(), "listening",
+              IDS_NEW_TAB_VOICE_LISTENING);
+    AddString(translated_strings.get(), "networkError",
+              IDS_NEW_TAB_VOICE_NETWORK_ERROR);
+    AddString(translated_strings.get(), "noTranslation",
+              IDS_NEW_TAB_VOICE_NO_TRANSLATION);
+    AddString(translated_strings.get(), "noVoice", IDS_NEW_TAB_VOICE_NO_VOICE);
+    AddString(translated_strings.get(), "permissionError",
+              IDS_NEW_TAB_VOICE_PERMISSION_ERROR);
+    AddString(translated_strings.get(), "ready", IDS_NEW_TAB_VOICE_READY);
+    AddString(translated_strings.get(), "tryAgain",
+              IDS_NEW_TAB_VOICE_TRY_AGAIN);
+    AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
   }
 
   return translated_strings;
