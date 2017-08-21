@@ -25,7 +25,8 @@
     self.providedFeatures = @[
       step_features::kChromeMainStarted, step_features::kChromeMainStopped
     ];
-    self.requiredFeatures = @[ step_features::kProviders ];
+    self.requiredFeatures =
+        @[ step_features::kProviders, step_features::kBreakpad ];
   }
   return self;
 }
