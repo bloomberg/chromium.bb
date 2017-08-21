@@ -268,7 +268,6 @@ void DownloadDriverImpl::OnManagerInitialized(
 
 void DownloadDriverImpl::OnManagerGoingDown(content::DownloadManager* manager) {
   DCHECK_EQ(download_manager_, manager);
-  notifier_.reset();
   download_manager_ = nullptr;
 }
 
