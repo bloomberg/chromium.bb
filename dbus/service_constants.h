@@ -1020,4 +1020,12 @@ const char kArcOemCryptoServicePath[] = "/org/chromium/ArcOemCrypto";
 const char kBootstrapMojoConnection[] = "BootstrapMojoConnection";
 }  // namespace arc_oemcrypto
 
+namespace midis {
+constexpr char kMidisServiceName[] = "org.chromium.Midis";
+constexpr char kMidisServicePath[] = "/org/chromium/Midis";
+constexpr char kMidisInterfaceName[] = "org.chromium.Midis";
+// Methods
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+}  // namespace midis
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
