@@ -50,5 +50,14 @@ interface SpellCheckHost {
       (bool success, array<SpellCheckResult> results);
 };
 
-[Native]
-struct SpellCheckResult;
+enum Decoration {
+  kSpelling,
+  kGrammar,
+};
+
+struct SpellCheckResult {
+  Decoration decoration;
+  int32 location;
+  int32 length;
+  array<string> replacements;
+};

@@ -16,6 +16,8 @@ source_set("common") {
     "spellcheck_messages.h",
     "spellcheck_result.cc",
     "spellcheck_result.h",
+    "spellcheck_struct_traits.cc",
+    "spellcheck_struct_traits.h",
     "spellcheck_switches.cc",
     "spellcheck_switches.h",
   ]
