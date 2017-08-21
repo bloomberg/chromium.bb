@@ -6,6 +6,7 @@ module profiling.mojom;
 
 import "mojo/common/file.mojom";
 import "mojo/common/process_id.mojom";
+import "mojo/common/values.mojom";
 
 interface Memlog {
   // Adds a new platform-specific pipe to read memlog trace data from.
@@ -17,6 +18,8 @@ interface Memlog {
   AddSender(mojo.common.mojom.ProcessId pid, handle sender_pipe) => ();
 
   // Dumps the memory log of the process with the given |pid| into
-  // |output_file|.
-  DumpProcess(mojo.common.mojom.ProcessId pid, handle output_file);
+  // |output_file|. |metadata| is a dictionary that should be added to the trace
+  // under the "metadata" key.
+  DumpProcess(mojo.common.mojom.ProcessId pid, handle output_file,
+              mojo.common.mojom.DictionaryValue metadata);
 };

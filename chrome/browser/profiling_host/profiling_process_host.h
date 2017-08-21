@@ -107,6 +107,10 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   void SetMode(Mode mode);
 
+  // Returns the metadata for the trace. This is the minimum amount of metadata
+  // needed to symbolize the trace.
+  std::unique_ptr<base::DictionaryValue> GetMetadataJSONForTrace();
+
   content::NotificationRegistrar registrar_;
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::MemlogPtr memlog_;

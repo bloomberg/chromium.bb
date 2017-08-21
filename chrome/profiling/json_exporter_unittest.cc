@@ -8,6 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/process/process.h"
 #include "base/values.h"
 #include "chrome/profiling/backtrace_storage.h"
@@ -91,7 +92,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   events.insert(AllocationEvent(Address(0x3), 16, bt1));
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream);
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -130,7 +131,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   ASSERT_GT(memory_maps.size(), 2u);
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream);
+  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream, nullptr);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -163,20 +164,21 @@ TEST(ProfilingJsonExporterTest, Metadata) {
 
   std::vector<Address> stack1;
   stack1.push_back(Address(1234));
-  stack1.push_back(Address(5678));
   const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
-
-  std::vector<Address> stack2;
-  stack2.push_back(Address(9012));
-  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;
   events.insert(AllocationEvent(Address(0x1), 16, bt1));
-  events.insert(AllocationEvent(Address(0x2), 32, bt2));
-  events.insert(AllocationEvent(Address(0x3), 16, bt1));
+
+  // Generate metadata to pass in.
+  std::unique_ptr<base::DictionaryValue> metadata_dict(
+      new base::DictionaryValue);
+  metadata_dict->SetKey("product-version", base::Value("asdf1"));
+  metadata_dict->SetKey("user-agent", base::Value("\"\"\"9283hfa--+,/asdf2"));
+  base::DictionaryValue metadata_dict_copy = *metadata_dict;
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream);
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream,
+                                 std::move(metadata_dict));
   std::string json = stream.str();
 
   // JSON should parse.
@@ -192,15 +194,7 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   base::DictionaryValue* metadata;
   ASSERT_TRUE(found_metadatas->GetAsDictionary(&metadata));
 
-  // Assert existence of key fields needed for symbolize_trace.
-  ASSERT_TRUE(
-      metadata->FindKeyOfType("command_line", base::Value::Type::STRING));
-  ASSERT_TRUE(metadata->FindKeyOfType("os-name", base::Value::Type::STRING));
-  ASSERT_TRUE(metadata->FindKeyOfType("os-version", base::Value::Type::STRING));
-  ASSERT_TRUE(metadata->FindKeyOfType("trace-capture-datetime",
-                                      base::Value::Type::STRING));
-  ASSERT_TRUE(
-      metadata->FindKeyOfType("physical-memory", base::Value::Type::INTEGER));
+  EXPECT_EQ(metadata_dict_copy, *metadata);
 }
 
 }  // namespace profiling

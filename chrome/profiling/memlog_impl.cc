@@ -39,7 +39,8 @@ void MemlogImpl::AddSender(base::ProcessId pid,
 }
 
 void MemlogImpl::DumpProcess(base::ProcessId pid,
-                             mojo::ScopedHandle output_file) {
+                             mojo::ScopedHandle output_file,
+                             std::unique_ptr<base::DictionaryValue> metadata) {
   base::PlatformFile platform_file;
   MojoResult result =
       UnwrapPlatformFile(std::move(output_file), &platform_file);
@@ -55,11 +56,12 @@ void MemlogImpl::DumpProcess(base::ProcessId pid,
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->GetVmRegionsForHeapProfiler(base::Bind(
           &MemlogImpl::OnGetVmRegionsComplete, weak_factory_.GetWeakPtr(), pid,
-          base::Passed(std::move(file))));
+          base::Passed(std::move(metadata)), base::Passed(std::move(file))));
 }
 
 void MemlogImpl::OnGetVmRegionsComplete(
     base::ProcessId pid,
+    std::unique_ptr<base::DictionaryValue> metadata,
     base::File file,
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
@@ -87,7 +89,7 @@ void MemlogImpl::OnGetVmRegionsComplete(
       FROM_HERE,
       base::BindOnce(
           &MemlogConnectionManager::DumpProcess,
-          base::Unretained(connection_manager_.get()), pid,
+          base::Unretained(connection_manager_.get()), pid, std::move(metadata),
           std::move(process_dump->os_dump->memory_maps_for_heap_profiler),
           std::move(file)));
 }

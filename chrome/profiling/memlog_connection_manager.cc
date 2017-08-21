@@ -98,6 +98,7 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
 
 void MemlogConnectionManager::DumpProcess(
     base::ProcessId pid,
+    std::unique_ptr<base::DictionaryValue> metadata,
     const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
     base::File output_file) {
   base::AutoLock l(connections_lock_);
@@ -122,7 +123,7 @@ void MemlogConnectionManager::DumpProcess(
 
   std::ostringstream oss;
   ExportAllocationEventSetToJSON(pid, connection->tracker.live_allocs(), maps,
-                                 oss);
+                                 oss, std::move(metadata));
   std::string reply = oss.str();
 
   // Pass ownership of the underlying fd/HANDLE to zlib.

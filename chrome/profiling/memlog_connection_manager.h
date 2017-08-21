@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -45,6 +46,7 @@ class MemlogConnectionManager {
   // as part of the normal allocation process.
   void DumpProcess(
       base::ProcessId pid,
+      std::unique_ptr<base::DictionaryValue> metadata,
       const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
       base::File output_file);
 

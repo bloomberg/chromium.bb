@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/profiling/allocation_event.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -17,7 +18,8 @@ void ExportAllocationEventSetToJSON(
     int pid,
     const AllocationEventSet& set,
     const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
-    std::ostream& out);
+    std::ostream& out,
+    std::unique_ptr<base::DictionaryValue> metadata);
 
 }  // namespace profiling
 
