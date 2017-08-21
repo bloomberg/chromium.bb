@@ -47,8 +47,8 @@ TSAN_TEST(TextRendererThreadedTest, MeasureText) {
         TextDirection::kLtr, false);
     text_run.SetNormalizeSpace(true);
     FloatRect text_bounds = font.SelectionRectForText(
-        text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0, -1,
-        true);
+        text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0,
+        -1);
 
     // X direction.
     EXPECT_FLOAT_EQ(77.7363, font.Width(text_run));

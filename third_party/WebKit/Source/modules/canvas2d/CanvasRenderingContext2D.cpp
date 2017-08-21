@@ -762,8 +762,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
       direction, false);
   text_run.SetNormalizeSpace(true);
   FloatRect text_bounds = font.SelectionRectForText(
-      text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0, -1,
-      true);
+      text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0, -1);
 
   // x direction
   metrics->SetWidth(font.Width(text_run));

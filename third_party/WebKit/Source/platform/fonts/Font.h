@@ -155,8 +155,7 @@ class PLATFORM_EXPORT Font {
                                  const FloatPoint&,
                                  int h,
                                  int from = 0,
-                                 int to = -1,
-                                 bool account_for_glyph_bounds = false) const;
+                                 int to = -1) const;
   CharacterRange GetCharacterRange(const TextRun&,
                                    unsigned from,
                                    unsigned to) const;
