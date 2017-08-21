@@ -17,16 +17,17 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   DISALLOW_NEW();
 
  public:
-  NGConstraintSpaceBuilder(const NGConstraintSpace* parent_space);
+  // NOTE: This constructor doesn't act like a copy-constructor, it uses the
+  // writing_mode and icb_size from the parent constraint space, and passes
+  // them to the constructor below.
+  NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space);
 
-  NGConstraintSpaceBuilder(NGWritingMode writing_mode);
+  NGConstraintSpaceBuilder(NGWritingMode writing_mode, NGPhysicalSize icb_size);
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
 
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       NGLogicalSize percentage_resolution_size);
-
-  NGConstraintSpaceBuilder& SetInitialContainingBlockSize(NGPhysicalSize);
 
   NGConstraintSpaceBuilder& SetFragmentainerSpaceAvailable(LayoutUnit space) {
     fragmentainer_space_available_ = space;
@@ -60,6 +61,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetClearanceOffset(
       const WTF::Optional<LayoutUnit>& clearance_offset);
+
+  NGConstraintSpaceBuilder& SetExclusionSpace(
+      std::shared_ptr<NGExclusionSpace> exclusion_space);
 
   void AddBaselineRequests(const Vector<NGBaselineRequest>&);
   NGConstraintSpaceBuilder& AddBaselineRequest(const NGBaselineRequest&);

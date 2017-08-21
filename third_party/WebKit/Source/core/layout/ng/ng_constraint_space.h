@@ -74,6 +74,10 @@ class CORE_EXPORT NGConstraintSpace final
   // See: https://drafts.csswg.org/css-sizing/#available
   NGLogicalSize AvailableSize() const { return available_size_; }
 
+  NGPhysicalSize InitialContainingBlockSize() const {
+    return initial_containing_block_size_;
+  }
+
   // Return the block-direction space available in the current fragmentainer.
   LayoutUnit FragmentainerSpaceAvailable() const {
     DCHECK(HasBlockFragmentation());
@@ -201,10 +205,6 @@ class CORE_EXPORT NGConstraintSpace final
       Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
       const WTF::Optional<LayoutUnit>& clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
-
-  NGPhysicalSize InitialContainingBlockSize() const {
-    return initial_containing_block_size_;
-  }
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
