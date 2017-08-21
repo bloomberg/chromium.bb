@@ -20,7 +20,7 @@ public class AddToHomescreenManager {
     /** Interface for tracking fetch of add-to-homescreen data. */
     public interface Observer {
         /** Called when the title of the page is available. */
-        void onUserTitleAvailable(String title);
+        void onUserTitleAvailable(String title, boolean isTitleEditable);
 
         /**
          * Called once native has finished fetching the homescreen shortcut's data (like the Web
@@ -75,11 +75,6 @@ public class AddToHomescreenManager {
         nativeAddShortcut(mNativeAddToHomescreenManager, userRequestedTitle);
     }
 
-    @CalledByNative
-    public void onFinished() {
-        destroy();
-    }
-
     /**
      * Shows alert to prompt user for name of home screen shortcut.
      */
@@ -91,8 +86,8 @@ public class AddToHomescreenManager {
     }
 
     @CalledByNative
-    private void onUserTitleAvailable(String title) {
-        mObserver.onUserTitleAvailable(title);
+    private void onUserTitleAvailable(String title, boolean isTitleEditable) {
+        mObserver.onUserTitleAvailable(title, isTitleEditable);
     }
 
     @CalledByNative
