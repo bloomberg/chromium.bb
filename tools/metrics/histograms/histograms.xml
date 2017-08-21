@@ -50137,19 +50137,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the text being painted. If there are multiple keystrokes before a paint,
     logs the time since the earliest one.
 
-    This duration is composed of three parts: a) the time spent processing the
-    initial input event, b) the time spent for the repaint task to be scheduled
-    on the message loop and c) the time spent painting the Omnibox.
+    This duration is composed of three parts:
 
-    To diagnose a regression, check the following breakdown metrics:
-    Omnibox.QueryTime2 is a good proxy for (a) and Omnibox.PaintTime for (c).
-    (b) does not have a corresponding histogram but can be analyzed on the UMA
-    Task Profiler dashboard by looking at &quot;average queue time&quot; of the
-    task DisplayScheduler::ScheduleBeginFrameDeadline.
+    a) the time spent processing the initial input event
+
+    b) the time spent for the repaint task to be scheduled on the message loop
+
+    c) the time spent painting the Omnibox
+
+    d) (on views platforms) the time until the pixels are actually composited
+
+    There's a number of breakdown metrics to help diagnose a regression. First,
+    Omnibox.CharTypedToRepaintLatency.ToPaint measures the combined time of (a)
+    and (b). Omnibox.QueryTime2 is a good proxy for just (a). And there's also
+    Omnibox.PaintTime that corresponds to (c). We don't have a direct metric for
+    (d), but if neither Omnibox.CharTypedToRepaintLatency.ToPaint nor
+    Omnibox.PaintTime regressed, then the regression must be in (d).
+
+    It's also possible to get insight into (b) via the UMA Task Profiler
+    dashboard by looking at &quot;average queue time&quot; of the task
+    DisplayScheduler::ScheduleBeginFrameDeadline.
+
+    Note: The semantics of this metric on views platforms changed in M62, as
+    previously time (d) was not included in the metric.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.Composited" units="ms">
+  <obsolete>
+    This became the new implementation of Omnibox.CharTypedToRepaintLatency as
+    of 08/2017.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -50160,11 +50178,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the character insertion, which is not covered by
     Omnibox.CharTypedToRepaintLatency. If there are multiple keystrokes before a
     paint, logs the time since the earliest one.
+  </summary>
+</histogram>
 
-    TODO(asvitkine): This is currently implemented only on Views platforms
-    (Win/Linux/CrOS) and the intention is to replace the implementation of
-    Omnibox.CharTypedToRepaintLatency by this one once we vet that it's working
-    as expected.
+<histogram name="Omnibox.CharTypedToRepaintLatency.ToPaint" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Records the time taken between a keystroke being typed in the omnibox and
+    the time when we're ready to paint the omnibox. This is a breakdown
+    diagnostic metric for Omnibox.CharTypedToRepaintLatency, to help diagnose
+    regressions in that metric. See that metric's description for more info.
   </summary>
 </histogram>
 

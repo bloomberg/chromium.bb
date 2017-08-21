@@ -746,6 +746,10 @@ void OmniboxViewMac::OnInsertText() {
 }
 
 void OmniboxViewMac::OnBeforeDrawRect() {
+  if (!insert_char_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency.ToPaint",
+                        base::TimeTicks::Now() - insert_char_time_);
+  }
   draw_rect_start_time_ = base::TimeTicks::Now();
 }
 
