@@ -131,3 +131,17 @@ test("zucchini_unittests") {
     "//testing/gtest",
   ]
 }
+
+test("zucchini_integration_test") {
+  sources = [
+    "integration_test.cc",
+  ]
+
+  deps = [
+    ":zucchini_lib",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
