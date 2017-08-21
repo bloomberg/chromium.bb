@@ -194,9 +194,9 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   // Synthesize a zero-sized constraint space for passing to
   // ResolveInlineLength.
   NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
-  NGConstraintSpaceBuilder builder(
-      writing_mode,
-      /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite});
+  NGConstraintSpaceBuilder builder(writing_mode);
+  builder.SetInitialContainingBlockSize(
+      NGPhysicalSize{LayoutUnit(), LayoutUnit()});
   RefPtr<NGConstraintSpace> space = builder.ToConstraintSpace(writing_mode);
 
   MinMaxSize computed_sizes;

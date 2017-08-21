@@ -9,13 +9,29 @@
 namespace blink {
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
-    const NGConstraintSpace& parent_space)
-    : NGConstraintSpaceBuilder(parent_space.WritingMode(),
-                               parent_space.InitialContainingBlockSize()) {}
+    const NGConstraintSpace* parent_space)
+    : available_size_(parent_space->AvailableSize()),
+      percentage_resolution_size_(parent_space->PercentageResolutionSize()),
+      parent_percentage_resolution_size_(
+          parent_space->PercentageResolutionSize()),
+      initial_containing_block_size_(
+          parent_space->InitialContainingBlockSize()),
+      fragmentainer_space_available_(NGSizeIndefinite),
+      parent_writing_mode_(parent_space->WritingMode()),
+      is_fixed_size_inline_(false),
+      is_fixed_size_block_(false),
+      is_shrink_to_fit_(false),
+      is_inline_direction_triggers_scrollbar_(false),
+      is_block_direction_triggers_scrollbar_(false),
+      fragmentation_type_(parent_space->BlockFragmentationType()),
+      is_new_fc_(parent_space->IsNewFormattingContext()),
+      is_anonymous_(false),
+      text_direction_(static_cast<unsigned>(parent_space->Direction())),
+      bfc_offset_(parent_space->bfc_offset_),
+      exclusion_space_(parent_space->ExclusionSpace()) {}
 
-NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode,
-                                                   NGPhysicalSize icb_size)
-    : initial_containing_block_size_(icb_size),
+NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
+    : initial_containing_block_size_{NGSizeIndefinite, NGSizeIndefinite},
       fragmentainer_space_available_(NGSizeIndefinite),
       parent_writing_mode_(writing_mode),
       is_fixed_size_inline_(false),
@@ -38,6 +54,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
     NGLogicalSize percentage_resolution_size) {
   percentage_resolution_size_ = percentage_resolution_size;
+  return *this;
+}
+
+NGConstraintSpaceBuilder&
+NGConstraintSpaceBuilder::SetInitialContainingBlockSize(NGPhysicalSize size) {
+  initial_containing_block_size_ = size;
   return *this;
 }
 
@@ -68,12 +90,6 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
     const WTF::Optional<LayoutUnit>& clearance_offset) {
   clearance_offset_ = clearance_offset;
-  return *this;
-}
-
-NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetExclusionSpace(
-    std::shared_ptr<NGExclusionSpace> exclusion_space) {
-  exclusion_space_ = exclusion_space;
   return *this;
 }
 

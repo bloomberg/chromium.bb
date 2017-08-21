@@ -47,8 +47,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   NGLogicalOffset container_border_offset_;
   NGPhysicalOffset container_border_physical_offset_;
-  NGLogicalSize container_size_;
-  NGPhysicalSize icb_size_;
+  RefPtr<NGConstraintSpace> container_space_;
 };
 
 }  // namespace blink
