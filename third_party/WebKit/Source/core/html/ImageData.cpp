@@ -441,7 +441,7 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
   } else {
     unsigned data_type_size =
         ImageData::StorageFormatDataSize(color_settings_.storageFormat());
-    int src_index = (dst_rect.X() * src_rect.Width() + dst_rect.Y()) * 4;
+    int src_index = (dst_rect.X() + dst_rect.Y() * src_rect.Width()) * 4;
     int dst_index = 0;
     if (flip_y)
       dst_index = (dst_rect.Height() - 1) * dst_rect.Width() * 4;
