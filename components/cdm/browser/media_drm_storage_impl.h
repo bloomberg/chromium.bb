@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_CDM_BROWSER_MEDIA_DRM_STORAGE_IMPL_H_
 #define COMPONENTS_CDM_BROWSER_MEDIA_DRM_STORAGE_IMPL_H_
 
+#include <set>
+
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/interfaces/media_drm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 class PrefRegistrySimple;
@@ -29,6 +32,9 @@ class MediaDrmStorageImpl final : public media::mojom::MediaDrmStorage,
                                   public content::WebContentsObserver {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Get a list of origins that have persistent storage on the device.
+  static std::set<GURL> GetAllOrigins(const PrefService* pref_service);
 
   MediaDrmStorageImpl(content::RenderFrameHost* render_frame_host,
                       PrefService* pref_service,

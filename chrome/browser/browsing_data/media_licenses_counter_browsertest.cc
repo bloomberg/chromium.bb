@@ -154,12 +154,13 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
 // Tests that for the empty file system, the result is zero.
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, Empty) {
   Profile* profile = browser()->profile();
-  MediaLicensesCounter counter(profile);
-  counter.Init(profile->GetPrefs(),
-               browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&MediaLicensesCounterTest::CountingCallback,
-                          base::Unretained(this)));
-  counter.Restart();
+  std::unique_ptr<MediaLicensesCounter> counter =
+      MediaLicensesCounter::Create(profile);
+  counter->Init(profile->GetPrefs(),
+                browsing_data::ClearBrowsingDataTab::ADVANCED,
+                base::Bind(&MediaLicensesCounterTest::CountingCallback,
+                           base::Unretained(this)));
+  counter->Restart();
 
   RunAndWaitForResult();
 
@@ -173,12 +174,13 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, NonEmpty) {
   CreateMediaLicenseTestData();
 
   Profile* profile = browser()->profile();
-  MediaLicensesCounter counter(profile);
-  counter.Init(profile->GetPrefs(),
-               browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&MediaLicensesCounterTest::CountingCallback,
-                          base::Unretained(this)));
-  counter.Restart();
+  std::unique_ptr<MediaLicensesCounter> counter =
+      MediaLicensesCounter::Create(profile);
+  counter->Init(profile->GetPrefs(),
+                browsing_data::ClearBrowsingDataTab::ADVANCED,
+                base::Bind(&MediaLicensesCounterTest::CountingCallback,
+                           base::Unretained(this)));
+  counter->Restart();
 
   RunAndWaitForResult();
 
@@ -193,11 +195,12 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefChanged) {
   SetMediaLicenseDeletionPref(false);
 
   Profile* profile = browser()->profile();
-  MediaLicensesCounter counter(profile);
-  counter.Init(profile->GetPrefs(),
-               browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&MediaLicensesCounterTest::CountingCallback,
-                          base::Unretained(this)));
+  std::unique_ptr<MediaLicensesCounter> counter =
+      MediaLicensesCounter::Create(profile);
+  counter->Init(profile->GetPrefs(),
+                browsing_data::ClearBrowsingDataTab::ADVANCED,
+                base::Bind(&MediaLicensesCounterTest::CountingCallback,
+                           base::Unretained(this)));
   SetMediaLicenseDeletionPref(true);
 
   RunAndWaitForResult();
