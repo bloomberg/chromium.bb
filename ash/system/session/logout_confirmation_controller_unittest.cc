@@ -183,7 +183,7 @@ TEST_F(LastWindowClosedTest, RegularSession) {
   EXPECT_FALSE(controller->dialog_for_testing());
 
   // Dialog is not visible after login.
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   EXPECT_FALSE(controller->dialog_for_testing());
 
   // Creating and closing a window does not show the dialog because this is not

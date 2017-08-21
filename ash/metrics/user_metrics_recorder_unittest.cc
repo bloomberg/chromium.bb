@@ -67,7 +67,7 @@ TEST_F(UserMetricsRecorderTest, VerifyIsUserInActiveDesktopEnvironmentValues) {
   EXPECT_FALSE(test_api().IsUserInActiveDesktopEnvironment());
 
   // Environment is active after login.
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   ASSERT_TRUE(session->IsActiveUserSessionStarted());
   EXPECT_TRUE(test_api().IsUserInActiveDesktopEnvironment());
 
@@ -109,7 +109,7 @@ TEST_F(UserMetricsRecorderTest,
 // recorded when a user is active in a desktop environment.
 TEST_F(UserMetricsRecorderTest,
        VerifyStatsRecordedWhenUserInActiveDesktopEnvironment) {
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   ASSERT_TRUE(test_api().IsUserInActiveDesktopEnvironment());
   test_api().RecordPeriodicMetrics();
 
@@ -122,7 +122,7 @@ TEST_F(UserMetricsRecorderTest,
 // Verifies recording of stats which are always recorded by
 // RecordPeriodicMetrics.
 TEST_F(UserMetricsRecorderTest, VerifyStatsRecordedByRecordPeriodicMetrics) {
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   test_api().RecordPeriodicMetrics();
 
   histograms().ExpectTotalCount(kAsh_ActiveWindowShowTypeOverTime, 1);
@@ -135,7 +135,7 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
-  SetSessionStarted(true);
+  CreateUserSessions(1);
 
   // Make sure the shelf contains the app list launcher button.
   ShelfModel* shelf_model = Shell::Get()->shelf_model();

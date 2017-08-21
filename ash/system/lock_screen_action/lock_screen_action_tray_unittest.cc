@@ -85,7 +85,6 @@ using LockScreenActionTrayWithoutMdLoginTest = AshTestBase;
 }  // namespace
 
 TEST_F(LockScreenActionTrayTest, NoClient) {
-  SetUserLoggedIn(true);
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
@@ -96,8 +95,6 @@ TEST_F(LockScreenActionTrayTest, NoClient) {
 }
 
 TEST_F(LockScreenActionTrayTest, NotAvailableState) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -109,8 +106,6 @@ TEST_F(LockScreenActionTrayTest, NotAvailableState) {
 }
 
 TEST_F(LockScreenActionTrayTest, ActionAvailableState) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -134,8 +129,6 @@ TEST_F(LockScreenActionTrayTest, ActionAvailableState) {
 }
 
 TEST_F(LockScreenActionTrayTest, ActionAvailableStateSetWithClient) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -157,8 +150,6 @@ TEST_F(LockScreenActionTrayTest, ActionAvailableStateSetWithClient) {
 }
 
 TEST_F(LockScreenActionTrayTest, ActionActiveState) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -170,8 +161,6 @@ TEST_F(LockScreenActionTrayTest, ActionActiveState) {
 }
 
 TEST_F(LockScreenActionTrayTest, ActionBackgroundState) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -183,8 +172,6 @@ TEST_F(LockScreenActionTrayTest, ActionBackgroundState) {
 }
 
 TEST_F(LockScreenActionTrayTest, LaunchingState) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),
@@ -214,9 +201,6 @@ TEST_F(LockScreenActionTrayTest, TrayNotVisibleWhenSessionNotLocked) {
                          mojom::TrayActionState::kAvailable);
   EXPECT_FALSE(GetTray()->visible());
 
-  SetUserLoggedIn(true);
-  EXPECT_FALSE(GetTray()->visible());
-
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
   EXPECT_TRUE(GetTray()->visible());
@@ -235,13 +219,11 @@ TEST_F(LockScreenActionTrayTest, TrayNotVisibleWhenSessionNotLocked) {
       session_manager::SessionState::LOCKED);
   EXPECT_TRUE(GetTray()->visible());
 
-  SetUserLoggedIn(false);
+  ClearLogin();
   EXPECT_FALSE(GetTray()->visible());
 }
 
 TEST_F(LockScreenActionTrayWithoutMdLoginTest, NotVisible) {
-  SetUserLoggedIn(true);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient tray_action_client;
   tray_action->SetClient(tray_action_client.CreateInterfacePtrAndBind(),

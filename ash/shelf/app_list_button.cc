@@ -26,8 +26,6 @@
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -504,11 +502,13 @@ void AppListButton::OnVoiceInteractionStatusChanged(
 
 void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
   SchedulePaint();
+
   // If the active user is not the primary user, app list button animation will
   // be disabled.
-  if (!user_manager::UserManager::IsInitialized() ||
-      account_id !=
-          user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId()) {
+  const mojom::UserSession* const primary_user_session =
+      Shell::Get()->session_controller()->GetPrimaryUserSession();
+  if (!primary_user_session ||
+      account_id != primary_user_session->user_info->account_id) {
     is_primary_user_active_ = false;
     return;
   }

@@ -178,7 +178,7 @@ TEST_F(TraySessionLengthLimitLoginTest, NotificationShownAfterLogin) {
   EXPECT_FALSE(GetNotification());
 
   // Notification is shown after login.
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   EXPECT_TRUE(GetNotification());
 }
 

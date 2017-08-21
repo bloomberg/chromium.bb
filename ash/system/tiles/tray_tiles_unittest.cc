@@ -80,7 +80,7 @@ TEST_F(TrayTilesTest, ButtonStatesNotLoggedIn) {
 
 // All buttons are enabled after login.
 TEST_F(TrayTilesTest, ButtonStatesLoggedIn) {
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_NORMAL, GetSettingsButton()->state());

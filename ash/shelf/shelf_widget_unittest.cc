@@ -145,7 +145,7 @@ TEST_F(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
 // container and status widget has finished sizing.
 // See http://crbug.com/252533
 TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
-  SetUserLoggedIn(false);
+  ClearLogin();
   UpdateDisplay("300x200,400x300");
 
   // Both displays have a shelf controller.
@@ -162,8 +162,7 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   ASSERT_TRUE(shelf_widget2);
 
   // Simulate login.
-  SetUserLoggedIn(true);
-  SetSessionStarted(true);
+  CreateUserSessions(1);
 
   // The shelf view and status area horizontally fill the shelf widget.
   const int status_width1 =
@@ -330,8 +329,7 @@ class ShelfWidgetAfterLoginTest : public AshTestBase {
                  ShelfVisibilityState expected_shelf_visibility_state,
                  ShelfAutoHideState expected_shelf_auto_hide_state) {
     // Simulate login.
-    SetUserLoggedIn(true);
-    SetSessionStarted(true);
+    CreateUserSessions(1);
 
     // Simulate shelf settings being applied from profile prefs.
     Shelf* shelf = GetPrimaryShelf();
@@ -367,8 +365,7 @@ TEST_F(ShelfWidgetAfterLoginTest, InitialValues) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Simulate login.
-  SetUserLoggedIn(true);
-  SetSessionStarted(true);
+  CreateUserSessions(1);
 
   // Ensure settings are correct after login.
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());

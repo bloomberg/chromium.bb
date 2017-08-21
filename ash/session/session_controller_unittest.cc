@@ -300,11 +300,15 @@ TEST_F(SessionControllerTest, UserSessions) {
   EXPECT_TRUE(controller()->IsActiveUserSessionStarted());
   EXPECT_EQ("user1@test.com,", GetUserSessionEmails());
   EXPECT_EQ(GetUserSessionEmails(), observer()->GetUserSessionEmails());
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 
   UpdateSession(2u, "user2@test.com");
   EXPECT_TRUE(controller()->IsActiveUserSessionStarted());
   EXPECT_EQ("user1@test.com,user2@test.com,", GetUserSessionEmails());
   EXPECT_EQ(GetUserSessionEmails(), observer()->GetUserSessionEmails());
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 
   UpdateSession(1u, "user1_changed@test.com");
   EXPECT_EQ("user1_changed@test.com,user2@test.com,", GetUserSessionEmails());
@@ -315,21 +319,29 @@ TEST_F(SessionControllerTest, UserSessions) {
 TEST_F(SessionControllerTest, ActiveSession) {
   UpdateSession(1u, "user1@test.com");
   UpdateSession(2u, "user2@test.com");
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 
   std::vector<uint32_t> order = {1u, 2u};
   controller()->SetUserSessionOrder(order);
   EXPECT_EQ("user1@test.com,user2@test.com,", GetUserSessionEmails());
   EXPECT_EQ("user1@test.com", observer()->active_account_id().GetUserEmail());
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 
   order = {2u, 1u};
   controller()->SetUserSessionOrder(order);
   EXPECT_EQ("user2@test.com,user1@test.com,", GetUserSessionEmails());
   EXPECT_EQ("user2@test.com", observer()->active_account_id().GetUserEmail());
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 
   order = {1u, 2u};
   controller()->SetUserSessionOrder(order);
   EXPECT_EQ("user1@test.com,user2@test.com,", GetUserSessionEmails());
   EXPECT_EQ("user1@test.com", observer()->active_account_id().GetUserEmail());
+  EXPECT_EQ("user1@test.com",
+            controller()->GetPrimaryUserSession()->user_info->display_email);
 }
 
 // Tests that user session is unblocked with a running unlock animation so that

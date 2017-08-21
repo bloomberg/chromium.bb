@@ -176,12 +176,24 @@ class AshTestBase : public testing::Test,
 
   TestSessionControllerClient* GetSessionControllerClient();
 
-  // Utility methods to emulate user logged in or not, session started or not
-  // and user able to lock screen or not cases.
-  void SetSessionStarted(bool session_started);
-  void SetUserLoggedIn(bool user_logged_in);
+  // Emulates an ash session that have |session_count| user sessions running.
+  // Note that existing user sessions will be cleared.
+  void CreateUserSessions(int session_count);
+
+  // Simulates a user sign-in. It creates a new user session, adds it to
+  // existing user sessions and makes it the active user session.
+  void SimulateUserLogin(const std::string& user_email);
+
+  // Clears all user sessions and resets to the primary login screen state.
+  void ClearLogin();
+
+  // Emulates whether the active user can lock screen.
   void SetCanLockScreen(bool can_lock);
+
+  // Emulates whether the screen should be locked automatically.
   void SetShouldLockScreenAutomatically(bool should_lock);
+
+  // Emulates whether the user adding screen is running.
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
 
   // Methods to emulate blocking and unblocking user session with given
