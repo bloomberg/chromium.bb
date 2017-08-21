@@ -2173,7 +2173,7 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
     return false;
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTree();
-  return !selection.IsNone() && selection.IsContentRichlyEditable() &&
+  return !selection.IsNone() && IsRichlyEditablePosition(selection.Base()) &&
          selection.RootEditableElement();
 }
 
