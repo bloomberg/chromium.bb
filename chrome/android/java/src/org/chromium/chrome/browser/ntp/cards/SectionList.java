@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -222,12 +223,43 @@ public class SectionList
     }
 
     /**
-     * Clicks on the more button for the Articles for you section. This assumes that that is the
-     * only present section.
+     * Fetches more suggestions. The SectionList should contain exactly 1 SuggestionsSection that
+     * supports fetching more.
      */
-    public void clickArticlesMoreButton() {
-        assert mSections.size() == 1;
-        mSections.get(KnownCategories.ARTICLES).clickMoreButton(mUiDelegate);
+    public void fetchMore() {
+        List<SuggestionsSection> supportingSections = new LinkedList<>();
+
+        for (SuggestionsSection section : mSections.values()) {
+            if (section.getCategoryInfo().isFetchMoreSupported()) {
+                supportingSections.add(section);
+            }
+        }
+
+        if (supportingSections.size() > 1) {
+            assert false : "SectionList.fetchMore - Multiple supporting sections"
+                    + getCategoriesForDebugging();
+        } else if (supportingSections.size() == 0) {
+            Log.d(TAG, "SectionList.fetchMore - No supporting sections: %s",
+                    getCategoriesForDebugging());
+        } else if (getChildren().get(getChildren().size() - 1) != supportingSections.get(0)) {
+            Log.d(TAG, "SectionList.fetchMore - Supporting section not at end: %s",
+                    getCategoriesForDebugging());
+        } else {
+            supportingSections.get(0).clickMoreButton(mUiDelegate);
+        }
+    }
+
+    /** Returns a string showing the categories of all the contained sections. */
+    private String getCategoriesForDebugging() {
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (SuggestionsSection section : mSections.values()) {
+            sb.append(sep);
+            sb.append(section.getCategory());
+            sep = ", ";
+        }
+
+        return sb.toString();
     }
 
     /**

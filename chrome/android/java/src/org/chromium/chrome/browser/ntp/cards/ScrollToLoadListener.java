@@ -41,7 +41,7 @@ public class ScrollToLoadListener extends RecyclerView.OnScrollListener {
         if (mLayoutManager.findLastVisibleItemPosition()
                 > mAdapter.getItemCount() - RELOAD_DISTANCE) {
             // We need to post this since onScrolled may run during a measure & layout pass.
-            ThreadUtils.postOnUiThread(mSections::clickArticlesMoreButton);
+            ThreadUtils.postOnUiThread(mSections::fetchMore);
         }
     }
 }
