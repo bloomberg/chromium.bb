@@ -87,10 +87,7 @@ config("subcomponent_config") {
   visibility = media_subcomponent_deps
   if (is_mac) {
     visibility += [ "//media/base/mac" ]
-  } else if (is_win) {
-    visibility += [ "//media/base/win" ]
   }
-
   defines = [ "MEDIA_IMPLEMENTATION" ]
   configs = [ ":media_config" ]
 }
