@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/exo/data_device.h"
+#include "components/exo/file_helper.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/shared_memory.h"
@@ -53,10 +55,12 @@ const gfx::BufferFormat kOverlayFormatsForDrmAtomic[] = {
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() : Display(nullptr) {}
+Display::Display() : Display(nullptr, std::unique_ptr<FileHelper>()) {}
 
-Display::Display(NotificationSurfaceManager* notification_surface_manager)
-    : notification_surface_manager_(notification_surface_manager)
+Display::Display(NotificationSurfaceManager* notification_surface_manager,
+                 std::unique_ptr<FileHelper> file_helper)
+    : notification_surface_manager_(notification_surface_manager),
+      file_helper_(std::move(file_helper))
 #if defined(USE_OZONE)
       ,
       overlay_formats_(std::begin(kOverlayFormats), std::end(kOverlayFormats))
@@ -228,6 +232,11 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
 
   return base::MakeUnique<NotificationSurface>(notification_surface_manager_,
                                                surface, notification_key);
+}
+
+std::unique_ptr<DataDevice> Display::CreateDataDevice(
+    DataDeviceDelegate* delegate) {
+  return base::MakeUnique<DataDevice>(delegate, file_helper_.get());
 }
 
 }  // namespace exo

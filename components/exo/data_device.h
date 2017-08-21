@@ -20,6 +20,7 @@ namespace exo {
 class DataDeviceDelegate;
 class DataOffer;
 class DataSource;
+class FileHelper;
 class Surface;
 
 enum class DndAction { kNone, kCopy, kMove, kAsk };
@@ -28,7 +29,7 @@ enum class DndAction { kNone, kCopy, kMove, kAsk };
 // mechanisms such as copy-and-paste and drag-and-drop.
 class DataDevice : public WMHelper::DragDropObserver, public DataOfferObserver {
  public:
-  explicit DataDevice(DataDeviceDelegate* delegate);
+  explicit DataDevice(DataDeviceDelegate* delegate, FileHelper* file_helper);
   ~DataDevice() override;
 
   // Starts drag-and-drop operation.
@@ -60,6 +61,7 @@ class DataDevice : public WMHelper::DragDropObserver, public DataOfferObserver {
   void ClearDataOffer();
 
   DataDeviceDelegate* const delegate_;
+  FileHelper* const file_helper_;
   DataOffer* data_offer_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDevice);

@@ -47,6 +47,8 @@ per-file chrome_webusb_browser_client*=juncai@chromium.org
 per-file chrome_webusb_browser_client*=reillyg@chromium.org
 per-file chrome_webusb_browser_client*=rockot@chromium.org
 
+per-file exo_parts.*=reveman@chromium.org
+
 per-file io_thread*=cbentzel@chromium.org
 per-file io_thread*=mmenke@chromium.org
 per-file io_thread*=rch@chromium.org

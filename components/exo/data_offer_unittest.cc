@@ -76,7 +76,7 @@ TEST_F(DataOfferTest, SendEvents) {
   EXPECT_EQ(0u, delegate->source_actions().size());
   EXPECT_EQ(DndAction::kNone, delegate->dnd_action());
 
-  data_offer->SetDropData(data);
+  data_offer->SetDropData(nullptr, data);
   data_offer->SetSourceActions(source_actions);
   data_offer->SetActions(base::flat_set<DndAction>(), DndAction::kMove);
 

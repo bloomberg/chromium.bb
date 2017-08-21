@@ -22,6 +22,7 @@ namespace exo {
 
 class DataDevice;
 class DataOffer;
+class Surface;
 enum class DndAction;
 
 // Handles events on data devices in context-specific ways.
