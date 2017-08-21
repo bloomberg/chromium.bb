@@ -105,9 +105,8 @@ public class PopupZoomerTest {
                         new TestInputMethodManagerWrapper(mContentViewCore)));
                 mPopupZoomer = createPopupZoomerForTest(InstrumentationRegistry.getTargetContext());
                 mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
-                mContentViewCore.setTextSuggestionHostForTesting(new TextSuggestionHost(context,
-                        webContents, mActivityTestRule.getContentViewCore().getContainerView(),
-                        mContentViewCore, mContentViewCore.getRenderCoordinates()));
+                mContentViewCore.setTextSuggestionHostForTesting(
+                        new TextSuggestionHost(mActivityTestRule.getContentViewCore()));
             }
         });
     }

@@ -4,14 +4,10 @@
 
 package org.chromium.content.browser.input;
 
-import android.content.Context;
-import android.view.View;
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.RenderCoordinates;
-import org.chromium.content.browser.WindowAndroidProvider;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -22,39 +18,36 @@ import org.chromium.content_public.browser.WebContents;
 @JNINamespace("content")
 public class TextSuggestionHost {
     private long mNativeTextSuggestionHost;
-    private final Context mContext;
-    private final WebContents mWebContents;
-    private final View mContainerView;
-    private final WindowAndroidProvider mWindowAndroidProvider;
-    private final RenderCoordinates mRenderCoordinates;
+    private final ContentViewCore mContentViewCore;
 
     private SuggestionsPopupWindow mSuggestionsPopupWindow;
 
-    public TextSuggestionHost(Context context, WebContents webContents, View containerView,
-            WindowAndroidProvider windowAndroidProvider, RenderCoordinates renderCoordinates) {
-        mContext = context;
-        mWebContents = webContents;
-        mContainerView = containerView;
-        mWindowAndroidProvider = windowAndroidProvider;
-        mRenderCoordinates = renderCoordinates;
-
-        mNativeTextSuggestionHost = nativeInit(webContents);
+    public TextSuggestionHost(ContentViewCore contentViewCore) {
+        mContentViewCore = contentViewCore;
+        mNativeTextSuggestionHost = nativeInit(contentViewCore.getWebContents());
     }
 
     @CalledByNative
     private void showSpellCheckSuggestionMenu(
             double caretX, double caretY, String markedText, String[] suggestions) {
+        if (!mContentViewCore.isAttachedToWindow()) {
+            // This can happen if a new browser window is opened immediately after tapping a spell
+            // check underline, before the timer to open the menu fires.
+            suggestionMenuClosed(false);
+            return;
+        }
+
         if (mSuggestionsPopupWindow == null) {
-            mSuggestionsPopupWindow = new SuggestionsPopupWindow(
-                    mContext, this, mContainerView, mWindowAndroidProvider);
+            mSuggestionsPopupWindow = new SuggestionsPopupWindow(mContentViewCore.getContext(),
+                    this, mContentViewCore.getContainerView(), mContentViewCore);
         }
 
         mSuggestionsPopupWindow.setHighlightedText(markedText);
         mSuggestionsPopupWindow.setSpellCheckSuggestions(suggestions);
 
-        float density = mRenderCoordinates.getDeviceScaleFactor();
-        mSuggestionsPopupWindow.show(
-                density * caretX, density * caretY + mRenderCoordinates.getContentOffsetYPix());
+        float density = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
+        mSuggestionsPopupWindow.show(density * caretX,
+                density * caretY + mContentViewCore.getRenderCoordinates().getContentOffsetYPix());
     }
 
     /**

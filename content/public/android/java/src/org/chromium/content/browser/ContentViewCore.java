@@ -476,9 +476,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         initPopupZoomer(mContext);
         mImeAdapter = new ImeAdapter(
                 mWebContents, mContainerView, new InputMethodManagerWrapper(mContext));
-        mTextSuggestionHost = new TextSuggestionHost(
-                mContext, mWebContents, mContainerView, this, mRenderCoordinates);
         mImeAdapter.addEventObserver(this);
+        mTextSuggestionHost = new TextSuggestionHost(this);
 
         mSelectionPopupController = new SelectionPopupController(
                 mContext, windowAndroid, webContents, mContainerView, mRenderCoordinates);
@@ -1031,6 +1030,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void resetGestureDetection() {
         if (mNativeContentViewCore == 0) return;
         nativeResetGestureDetection(mNativeContentViewCore);
+    }
+
+    /**
+     * Whether or not the associated ContentView is currently attached to a window.
+     */
+    public boolean isAttachedToWindow() {
+        return mAttachedToWindow;
     }
 
     /**
