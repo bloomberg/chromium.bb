@@ -121,7 +121,7 @@ class VIEWS_EXPORT RootView : public View,
       const ViewHierarchyChangedDetails& details) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Vector2d CalculateOffsetToAncestorWithLayer(
+  View::LayerOffsetData CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) override;
   View::DragInfo* GetDragInfo() override;
 

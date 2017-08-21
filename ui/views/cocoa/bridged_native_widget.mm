@@ -21,6 +21,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -1293,7 +1294,7 @@ void BridgedNativeWidget::CreateCompositor() {
       context_factory_private->AllocateFrameSinkId(), context_factory,
       context_factory_private, GetCompositorTaskRunner(),
       false /* enable_surface_synchronization */,
-      false /* enable_pixel_canvas */));
+      ui::IsPixelCanvasRecordingEnabled()));
   compositor_->SetAcceleratedWidget(compositor_widget_->accelerated_widget());
   compositor_widget_->SetNSView(this);
 }

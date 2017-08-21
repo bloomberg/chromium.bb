@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -22,6 +23,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
@@ -4473,6 +4475,67 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(2.0f, size);
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
+}
+
+class ViewLayerPixelCanvasTest : public ViewLayerTest {
+ public:
+  ViewLayerPixelCanvasTest() {}
+
+  ~ViewLayerPixelCanvasTest() override {}
+
+  void SetUp() override {
+    // Enable pixel canvas
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    cmd_line->AppendSwitch(switches::kEnablePixelCanvasRecording);
+
+    ViewLayerTest::SetUp();
+  }
+};
+
+TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
+  View* v1 = new View;
+  View* v2 = new View;
+  View* v3 = new View;
+  v1->AddChildView(v2);
+  v2->AddChildView(v3);
+
+  widget()->SetContentsView(v1);
+
+  const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(1.6f, size);
+
+  v3->SetBoundsRect(gfx::Rect(4, 4, 20, 20));
+  v2->SetBoundsRect(gfx::Rect(7, 7, 50, 50));
+  v1->SetBoundsRect(gfx::Rect(9, 9, 100, 100));
+  v3->SetPaintToLayer();
+
+  EXPECT_EQ("-0.63 -0.63", ToString(v3->layer()->subpixel_position_offset()));
+
+  // Creating a layer in parent should update the child view's layer offset.
+  v1->SetPaintToLayer();
+  EXPECT_EQ("-0.25 -0.25", ToString(v1->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.37 -0.37", ToString(v3->layer()->subpixel_position_offset()));
+
+  // DSF change should get propagated and update offsets.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(1.5f, size);
+  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.33", ToString(v3->layer()->subpixel_position_offset()));
+
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(1.33f, size);
+  EXPECT_EQ("0.02 0.02", ToString(v1->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.47 -0.47", ToString(v3->layer()->subpixel_position_offset()));
+
+  // Deleting parent's layer should update the child view's layer's offset.
+  v1->DestroyLayer();
+  EXPECT_EQ("-0.45 -0.45", ToString(v3->layer()->subpixel_position_offset()));
+
+  // Setting parent view should update the child view's layer's offset.
+  v1->SetBoundsRect(gfx::Rect(3, 3, 10, 10));
+  EXPECT_EQ("-0.47 -0.47", ToString(v3->layer()->subpixel_position_offset()));
+
+  // Setting integral DSF should reset the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(2.0f, size);
+  EXPECT_EQ("0.00 0.00", ToString(v3->layer()->subpixel_position_offset()));
 }
 
 TEST_F(ViewTest, FocusableAssertions) {
