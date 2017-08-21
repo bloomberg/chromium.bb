@@ -1258,7 +1258,7 @@ if (enable_java_templates) {
           rebase_path(_desugar_input_jar, root_build_dir),
           "--output-jar",
           rebase_path(_desugar_output_jar, root_build_dir),
-          "--classpath=@FileArg($_rebased_build_config:deps_info:java:full_classpath)",
+          "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
           "--bootclasspath-entry",
           rebase_path(_android_sdk_ijar, root_build_dir),
         ]
