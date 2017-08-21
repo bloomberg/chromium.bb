@@ -26,7 +26,6 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
-#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,7 +55,7 @@ class PermissionMessagesUnittest : public testing::Test {
   void CreateAndInstallExtensionWithPermissions(
       std::unique_ptr<base::ListValue> required_permissions,
       std::unique_ptr<base::ListValue> optional_permissions) {
-    app_ = test_util::BuildExtension(ExtensionBuilder())
+    app_ = ExtensionBuilder("Test")
                .MergeManifest(
                    DictionaryBuilder()
                        .Set("permissions", std::move(required_permissions))
