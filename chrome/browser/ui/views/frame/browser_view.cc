@@ -2407,6 +2407,10 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return false;
 
+  // In Public Session, always use immersive fullscreen.
+  if (profiles::IsPublicSession())
+    return true;
+
   return url.is_empty();
 #else
   // No immersive except in Chrome OS.

@@ -817,10 +817,6 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
                            POLICY_SCOPE_MACHINE,
                            POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
                            base::MakeUnique<base::Value>(true), nullptr);
-  expected_policy_map_.Set(key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                           base::MakeUnique<base::Value>(false), nullptr);
 
   // Policy defaults (for policies not set by admin).
   SetEnterpriseUsersDefaults(&expected_policy_map_);

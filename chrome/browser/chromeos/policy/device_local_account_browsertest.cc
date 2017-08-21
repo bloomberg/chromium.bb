@@ -1047,28 +1047,6 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       SigninManagerFactory::GetForProfile(profile)->IsAuthenticated());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
-  UploadAndInstallDeviceLocalAccountPolicy();
-  AddPublicSessionToDevicePolicy(kAccountId1);
-
-  WaitForPolicy();
-
-  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
-  WaitForSessionStart();
-
-  BrowserList* browser_list = BrowserList::GetInstance();
-  EXPECT_EQ(1U, browser_list->size());
-  Browser* browser = browser_list->get(0);
-  ASSERT_TRUE(browser);
-  BrowserWindow* browser_window = browser->window();
-  ASSERT_TRUE(browser_window);
-
-  // Verify that an attempt to enter fullscreen mode is denied.
-  EXPECT_FALSE(browser_window->IsFullscreen());
-  chrome::ToggleFullscreenMode(browser);
-  EXPECT_FALSE(browser_window->IsFullscreen());
-}
-
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());

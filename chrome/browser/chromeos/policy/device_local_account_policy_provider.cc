@@ -78,12 +78,6 @@ DeviceLocalAccountPolicyProvider::Create(
                                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                                  POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
                                  base::MakeUnique<base::Value>(true), nullptr);
-    // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
-    // shelf cannot be hidden by entering fullscreen mode.
-    chrome_policy_overrides->Set(key::kFullscreenAllowed,
-                                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                                 POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                                 base::MakeUnique<base::Value>(false), nullptr);
   }
 
   std::unique_ptr<DeviceLocalAccountPolicyProvider> provider(
