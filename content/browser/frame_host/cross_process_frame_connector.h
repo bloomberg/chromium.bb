@@ -99,6 +99,10 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool IsInert() const override;
   bool IsHidden() const override;
 
+  // Set the visibility of immediate child views, i.e. views whose parent view
+  // is |view_|.
+  void SetVisibilityForChildViews(bool visible) const override;
+
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();

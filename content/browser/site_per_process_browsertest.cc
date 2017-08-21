@@ -7352,43 +7352,131 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   EXPECT_TRUE(watcher.did_exit_normally());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChanged) {
-  GURL main_url(
-      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+// TODO(ekaramad): Move this test out of this file when addressing
+// https://crbug.com/754726.
+// This test verifies that RFHImpl::ForEachImmediateLocalRoot works as expected.
+// The frame tree used in the test is:
+//                                A0
+//                            /    |    \
+//                          A1     B1    A2
+//                         /  \    |    /  \
+//                        B2   A3  B3  A4   C2
+//                       /    /   / \    \
+//                      D1   D2  C3  C4  C5
+//
+// As an example, the expected set of immediate local roots for the root node A0
+// should be {B1, B2, C2, D2, C5}. Note that the order is compatible with that
+// of a BFS traversal from root node A0.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FindImmediateLocalRoots) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(a(b(d),a(d)),b(b(c,c)),a(a(c),c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), main_url);
 
-  GURL cross_site_url =
-      embedded_test_server()->GetURL("oopif.com", "/title1.html");
+  // Each entry is of the frame "LABEL:ILR1ILR2..." where ILR stands for
+  // immediate local root.
+  std::string immediate_local_roots[] = {
+      "A0:B1B2C2D2C5", "A1:B2D2", "B1:C3C4", "A2:C2C5", "B2:D1",
+      "A3:D2",         "B3:C3C4", "A4:C5",   "C2:",     "D1:",
+      "D2:",           "C3:",     "C4:",     "C5:"};
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  std::map<RenderFrameHostImpl*, std::string>
+      frame_to_immediate_local_roots_map;
+  std::map<RenderFrameHostImpl*, std::string> frame_to_label_map;
+  size_t index = 0;
+  // Map each RenderFrameHostImpl to its label and set of immediate local roots.
+  for (auto* ftn : web_contents()->GetFrameTree()->Nodes()) {
+    std::string roots = immediate_local_roots[index++];
+    frame_to_immediate_local_roots_map[ftn->current_frame_host()] = roots;
+    frame_to_label_map[ftn->current_frame_host()] = roots.substr(0, 2);
+  }
 
-  TestNavigationObserver observer(shell()->web_contents());
+  // For each frame in the tree, verify that ForEachImmediateLocalRoot properly
+  // visits each and only each immediate local root in a BFS traversal order.
+  for (auto* ftn : web_contents()->GetFrameTree()->Nodes()) {
+    RenderFrameHostImpl* current_frame_host = ftn->current_frame_host();
+    std::list<RenderFrameHostImpl*> frame_list;
+    current_frame_host->ForEachImmediateLocalRoot(
+        base::Bind([](std::list<RenderFrameHostImpl*>* ilr_list,
+                      RenderFrameHostImpl* rfh) { ilr_list->push_back(rfh); },
+                   &frame_list));
 
-  NavigateFrameToURL(root->child_at(0), cross_site_url);
-  EXPECT_EQ(cross_site_url, observer.last_navigation_url());
-  EXPECT_TRUE(observer.last_navigation_succeeded());
+    std::string result = frame_to_label_map[current_frame_host];
+    result.append(":");
+    for (auto* ilr_ptr : frame_list)
+      result.append(frame_to_label_map[ilr_ptr]);
+    EXPECT_EQ(frame_to_immediate_local_roots_map[current_frame_host], result);
+  }
+}
 
-  RenderWidgetHostImpl* render_widget_host =
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
-  EXPECT_FALSE(render_widget_host->is_hidden());
+// This test verifies that changing the CSS visibility of a cross-origin
+// <iframe> is forwarded to its corresponding RenderWidgetHost and all other
+// RenderWidgetHosts corresponding to the nested cross-origin frame.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CSSVisibilityChanged) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b(c(d(d(a))))))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Find all child RenderWidgetHosts.
+  std::vector<RenderWidgetHostImpl*> child_widget_hosts;
+  FrameTreeNode* first_cross_process_child =
+      web_contents()->GetFrameTree()->root()->child_at(0);
+  for (auto* ftn : web_contents()->GetFrameTree()->SubtreeNodes(
+           first_cross_process_child)) {
+    RenderFrameHostImpl* frame_host = ftn->current_frame_host();
+    if (!frame_host->is_local_root())
+      continue;
+
+    child_widget_hosts.push_back(frame_host->GetRenderWidgetHost());
+  }
+
+  // Ignoring the root, there is exactly 4 local roots and hence 5
+  // RenderWidgetHosts on the page.
+  EXPECT_EQ(4U, child_widget_hosts.size());
+
+  // Initially all the RenderWidgetHosts should be visible.
+  for (size_t index = 0; index < child_widget_hosts.size(); ++index) {
+    EXPECT_FALSE(child_widget_hosts[index]->is_hidden())
+        << "The RWH at distance " << index + 1U
+        << " from root RWH should not be hidden.";
+  }
 
   std::string show_script =
       "document.querySelector('iframe').style.visibility = 'visible';";
   std::string hide_script =
       "document.querySelector('iframe').style.visibility = 'hidden';";
 
-  // Verify that hiding leads to a notification from RenderWidgetHost.
-  RenderWidgetHostVisibilityObserver hide_observer(
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), false);
-  EXPECT_TRUE(ExecuteScript(shell(), hide_script));
-  EXPECT_TRUE(hide_observer.WaitUntilSatisfied());
+  // Define observers for notifications about hiding child RenderWidgetHosts.
+  std::vector<std::unique_ptr<RenderWidgetHostVisibilityObserver>>
+      hide_widget_host_observers(child_widget_hosts.size());
+  for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
+    hide_widget_host_observers[index].reset(
+        new RenderWidgetHostVisibilityObserver(child_widget_hosts[index],
+                                               false));
+  }
 
-  // Verify showing leads to a notification as well.
-  RenderWidgetHostVisibilityObserver show_observer(
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), true);
+  EXPECT_TRUE(ExecuteScript(shell(), hide_script));
+  for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
+    EXPECT_TRUE(hide_widget_host_observers[index]->WaitUntilSatisfied())
+        << "Expected RenderWidgetHost at distance " << index + 1U
+        << " from root RenderWidgetHost to become hidden.";
+  }
+
+  // Define observers for notifications about showing child RenderWidgetHosts.
+  std::vector<std::unique_ptr<RenderWidgetHostVisibilityObserver>>
+      show_widget_host_observers(child_widget_hosts.size());
+  for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
+    show_widget_host_observers[index].reset(
+        new RenderWidgetHostVisibilityObserver(child_widget_hosts[index],
+                                               true));
+  }
+
   EXPECT_TRUE(ExecuteScript(shell(), show_script));
-  EXPECT_TRUE(show_observer.WaitUntilSatisfied());
+  for (size_t index = 0U; index < child_widget_hosts.size(); ++index) {
+    EXPECT_TRUE(show_widget_host_observers[index]->WaitUntilSatisfied())
+        << "Expected RenderWidgetHost at distance " << index + 1U
+        << " from root RenderWidgetHost to become shown.";
+  }
 }
 
 // A class which counts the number of times a RenderWidgetHostViewChildFrame

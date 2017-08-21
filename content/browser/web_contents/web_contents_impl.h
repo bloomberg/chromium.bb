@@ -1317,6 +1317,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   static DownloadUrlParameters::RequestHeadersType ParseDownloadHeaders(
       const std::string& headers);
 
+  // Sets the visibility of immediate child views, i.e. views whose parent view
+  // is that of the main frame.
+  void SetVisibilityForChildViews(bool visible);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
