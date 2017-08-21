@@ -5,6 +5,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
@@ -39,9 +40,13 @@ std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     auto prompt = base::MakeUnique<PermissionPromptImpl>(browser, delegate);
     // Note the PermissionPromptImpl constructor always shows the bubble, which
     // is necessary to call TrackBubbleState().
+    // Also note it's important to use BrowserWindow::GetNativeWindow() and not
+    // WebContents::GetTopLevelNativeWindow() below, since there's a brief
+    // period when attaching a dragged tab to a window that WebContents thinks
+    // it hasn't yet moved to the new window.
     TrackBubbleState(
         BubbleForWindow(prompt->GetNativeWindow()),
-        GetPageInfoDecoration(web_contents->GetTopLevelNativeWindow()));
+        GetPageInfoDecoration(browser->window()->GetNativeWindow()));
     return prompt;
   }
   return base::MakeUnique<PermissionBubbleCocoa>(browser, delegate);
