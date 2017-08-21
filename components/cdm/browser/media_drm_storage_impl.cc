@@ -124,6 +124,26 @@ void MediaDrmStorageImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kMediaDrmStorage);
 }
 
+// static
+std::set<GURL> MediaDrmStorageImpl::GetAllOrigins(
+    const PrefService* pref_service) {
+  DCHECK(pref_service);
+
+  const base::DictionaryValue* storage_dict =
+      pref_service->GetDictionary(kMediaDrmStorage);
+  if (!storage_dict)
+    return std::set<GURL>();
+
+  std::set<GURL> origin_set;
+  for (const auto& key_value : *storage_dict) {
+    GURL origin(key_value.first);
+    if (origin.is_valid())
+      origin_set.insert(origin);
+  }
+
+  return origin_set;
+}
+
 MediaDrmStorageImpl::MediaDrmStorageImpl(
     content::RenderFrameHost* render_frame_host,
     PrefService* pref_service,
