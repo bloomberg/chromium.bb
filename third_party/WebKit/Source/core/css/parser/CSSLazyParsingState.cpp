@@ -61,33 +61,15 @@ void CSSLazyParsingState::CountRuleParsed() {
   }
 }
 
-bool CSSLazyParsingState::ShouldLazilyParseProperties(
-    const CSSSelectorList& selectors,
-    const CSSParserTokenRange& block) const {
+bool CSSLazyParsingState::IsEmptyBlock(const CSSParserTokenRange& block) const {
   // Simple heuristic for an empty block. Note that |block| here does not
   // include {} brackets. We avoid lazy parsing empty blocks so we can avoid
   // considering them when possible for matching. Lazy blocks must always be
   // considered. Three tokens is a reasonable minimum for a block:
   // ident ':' <value>.
   if (block.end() - block.begin() <= 2)
-    return false;
-
-  //  Disallow lazy parsing for blocks which have before/after in their selector
-  //  list. This ensures we don't cause a collectFeatures() when we trigger
-  //  parsing for attr() functions which would trigger expensive invalidation
-  //  propagation.
-  for (const auto* s = selectors.First(); s; s = CSSSelectorList::Next(*s)) {
-    for (const CSSSelector* current = s; current;
-         current = current->TagHistory()) {
-      const CSSSelector::PseudoType type(current->GetPseudoType());
-      if (type == CSSSelector::kPseudoBefore ||
-          type == CSSSelector::kPseudoAfter)
-        return false;
-      if (current->Relation() != CSSSelector::kSubSelector)
-        break;
-    }
-  }
-  return true;
+    return true;
+  return false;
 }
 
 void CSSLazyParsingState::RecordUsageMetrics() {

@@ -38,8 +38,7 @@ class CSSLazyParsingState
 
   void CountRuleParsed();
 
-  bool ShouldLazilyParseProperties(const CSSSelectorList&,
-                                   const CSSParserTokenRange& block) const;
+  bool IsEmptyBlock(const CSSParserTokenRange& block) const;
 
   DECLARE_TRACE();
 

@@ -898,8 +898,7 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenRange prelude,
   // TODO(csharrison): How should we lazily parse css that needs the observer?
   if (observer_wrapper_) {
     ObserveSelectors(*observer_wrapper_, prelude);
-  } else if (lazy_state_ &&
-             lazy_state_->ShouldLazilyParseProperties(selector_list, block)) {
+  } else if (lazy_state_ && !lazy_state_->IsEmptyBlock(block)) {
     DCHECK(style_sheet_);
     return StyleRule::CreateLazy(std::move(selector_list),
                                  lazy_state_->CreateLazyParser(block));
