@@ -40,6 +40,10 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
                           IDR_SYNC_DRIVER_SYNC_INTERNALS_EVENTS_JS);
   source->AddResourcePath(syncer::sync_ui_util::kSearchJS,
                           IDR_SYNC_DRIVER_SYNC_INTERNALS_SEARCH_JS);
+  source->AddResourcePath(syncer::sync_ui_util::kUserEventsJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_USER_EVENTS_JS);
+  source->AddResourcePath(syncer::sync_ui_util::kTrafficLogJS,
+                          IDR_SYNC_DRIVER_SYNC_INTERNALS_TRAFFIC_LOG_JS);
   source->SetDefaultResource(IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_HTML);
   return source;
 }

@@ -37,6 +37,7 @@ extern const char kSyncNodeBrowserJS[];
 extern const char kSyncSearchJS[];
 extern const char kTypesJS[];
 extern const char kUserEventsJS[];
+extern const char kTrafficLogJS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.

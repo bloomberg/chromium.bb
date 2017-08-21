@@ -43,6 +43,7 @@ const char kSyncNodeBrowserJS[] = "sync_node_browser.js";
 const char kSyncSearchJS[] = "sync_search.js";
 const char kTypesJS[] = "types.js";
 const char kUserEventsJS[] = "user_events.js";
+const char kTrafficLogJS[] = "traffic_log.js";
 
 // Message handlers.
 const char kDispatchEvent[] = "chrome.sync.dispatchEvent";
