@@ -175,12 +175,6 @@
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
 <translation id="5170982930780719864">主機 ID 無效。</translation>
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>
-<translation id="5196958630269420102">透過 iOS 裝置安全存取你的電腦。
-
-• 在你的電腦上，透過 Chrome 遠端桌面應用程式設定遠端存取權限。你可前往 Chrome 線上應用程式商店 (https://chrome.google.com/remotedesktop) 下載該應用程式。
-• 在 iOS 裝置上開啟應用程式，然後輕觸任一線上電腦進行連線。
-
-如需隱私權相關資訊，請參閱《Google 隱私權政策》(http://goo.gl/SyrVzj) 和《Chrome 隱私權政策》(http://goo.gl/0uXE5d)。</translation>
 <translation id="5204575267916639804">常見問題</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5254120496627797685">如果離開這個頁面，你的 Chrome 遠端桌面工作階段也會結束。</translation>
@@ -235,11 +229,6 @@
 <translation id="6570205395680337606">重設應用程式。所有未儲存的變更都會遺失。</translation>
 <translation id="6572345186230665992">適用於 Mac (OS X Mavericks 10.9 以上版本)</translation>
 <translation id="6583902294974160967">支援</translation>
-<translation id="6598484667010442494">Chrome 遠端桌面
-遠端桌面
-遠端 PC
-遠端電腦
-遠端存取</translation>
 <translation id="6612717000975622067">傳送 Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">你的 PIN 已更新。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>

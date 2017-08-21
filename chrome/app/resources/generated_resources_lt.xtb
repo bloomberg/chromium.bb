@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Koreguoti...</translation>
 <translation id="1521442365706402292">Valdyti sertifikatus</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
-<translation id="1524152555482653726">Filmas</translation>
 <translation id="1524430321211440688">Klaviatūra</translation>
 <translation id="1525835343380843286">Ryšio su serveriu klaida</translation>
 <translation id="1526560967942511387">Dokumentas be pavadinimo</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Nepavyko pakeisti failo.</translation>
 <translation id="1665770420914915777">Naudotis naujo skirtuko puslapiu</translation>
 <translation id="1666058115165804494">Sukūrimo laikas</translation>
-<translation id="1666288758713846745">Dinaminis</translation>
 <translation id="1666788816626221136">Turite pateiktų sertifikatų, kurie netinka jokiose kitose kategorijose:</translation>
 <translation id="1670399744444387456">Bendrieji</translation>
 <translation id="1673103856845176271">Failo nepavyko pasiekti dėl saugumo.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">pastarosios valandos</translation>
 <translation id="2121825465123208577">Keisti dydį</translation>
 <translation id="2126167708562367080">Sinchronizavimą išjungė jūsų administratorius.</translation>
+<translation id="2126426811489709554">Teikia „Chrome“</translation>
 <translation id="2127166530420714525">Nepavyko pakeisti „Bluetooth“ adapterio maitinimo būsenos.</translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
 <translation id="212862741129535676">Dažnumo būsenos užėmimo procentas</translation>
@@ -1254,7 +1253,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2807517655263062534">Atsisiųsti failai rodomi čia</translation>
-<translation id="2809346626032021864">Skaitymas</translation>
 <translation id="2809586584051668049">ir dar <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Esamos naršyklės sesijos metu sukurtas naujas langas.</translation>
 <translation id="2812944337881233323">Bandykite atsijungti ir vėl prisijungti</translation>
@@ -4803,6 +4801,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8137331602592933310">Su jumis buvo bendrintas failas „<ph name="FILENAME" />“. Negalite jo ištrinti, nes jis jums nepriklauso.</translation>
 <translation id="8137559199583651773">Tvarkyti plėtinius</translation>
 <translation id="8138082791834443598">Pasirenkama: įveskite naują arba atnaujinkite esamą informaciją, kuri bus susieta su šiuo įrenginiu.</translation>
+<translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8140778357236808512">Importuoti esamą prižiūrimą naudotoją</translation>
 <translation id="8141725884565838206">Tvarkykite slaptažodžius</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>

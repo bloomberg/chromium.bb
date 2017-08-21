@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">एडजस्ट करें...</translation>
 <translation id="1521442365706402292">प्रमाणपत्र प्रबंधित करें</translation>
 <translation id="152234381334907219">कभी नहीं सहेजा गया</translation>
-<translation id="1524152555482653726">मूवी</translation>
 <translation id="1524430321211440688">कीबोर्ड</translation>
 <translation id="1525835343380843286">सर्वर संचार गड़बड़ी</translation>
 <translation id="1526560967942511387">शीर्षक रहित दस्तावेज़</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">फ़ाइल को संशोधित नहीं किया जा सका.</translation>
 <translation id="1665770420914915777">नए टैब पेज का उपयोग करें</translation>
 <translation id="1666058115165804494">बनाए जाने का समय</translation>
-<translation id="1666288758713846745">डायनैमिक</translation>
 <translation id="1666788816626221136">आपके पास किन्हीं अन्य श्रेणियों में फिट नहीं होने वाली फ़ाइल पर प्रमाणपत्र हैं:</translation>
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1673103856845176271">सुरक्षा कारणों से फ़ाइल तक नहीं पहुंचा जा सका.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">पिछले घंटे</translation>
 <translation id="2121825465123208577">आकार बदलें</translation>
 <translation id="2126167708562367080">सिंक को आपके व्यवस्थापक ने अक्षम किया है.</translation>
+<translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="2127166530420714525">ब्लूटूथ एडैप्‍टर की पॉवर स्थिति बदलने में विफल.</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="212862741129535676">आवृत्ति स्थिति उपयोग प्रतिशत</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">सभी साइट को पॉप-अप दिखाने की अनुमति दें</translation>
 <translation id="2805756323405976993">ऐप्स</translation>
 <translation id="2807517655263062534">आपकी डाउनलोड की गई फ़ाइलें यहां दिखाई देती हैं</translation>
-<translation id="2809346626032021864">पढ़ना</translation>
 <translation id="2809586584051668049">तथा <ph name="NUMBER_ADDITIONAL_DISABLED" /> और</translation>
 <translation id="281133045296806353">मौजूदा ब्राउज़र सत्र में नई विंडो बनाई गई.</translation>
 <translation id="2812944337881233323">प्रस्थान करके और वापस प्रवेश करके देखें</translation>
@@ -4799,6 +4797,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" को आपके साथ साझा किया गया है. आप इसे नहीं हटा सकते क्योंकि आप इसके स्वामी नहीं हैं.</translation>
 <translation id="8137559199583651773">एक्सटेंशन प्रबंधित करें</translation>
 <translation id="8138082791834443598">वैकल्पिक — इस डिवाइस के साथ संबद्ध रहने के लिए नई जानकारी डालें या मौजूदा जानकारी को अपडेट करें.</translation>
+<translation id="813913629614996137">शुरू हो रहा है...</translation>
 <translation id="8140778357236808512">कोई मौजूदा निगरानी में रखा गया उपयोगकर्ता आयात करें</translation>
 <translation id="8141725884565838206">अपने पासवर्ड प्रबंधित करें</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>

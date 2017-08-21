@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Input methods are configured by your administrator.</translation>
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Assistant (loading...)</translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="1856813161013948396">Skip the lock screen by just tapping the fingerprint sensor. Click to configure.</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
+<translation id="4351433414020964307">Assistant is loading...</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>

@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">समायोजित करा...</translation>
 <translation id="1521442365706402292">प्रमाणपत्रे व्यवस्थापित करा</translation>
 <translation id="152234381334907219">कधीही जतन न केलेले</translation>
-<translation id="1524152555482653726">चित्रपट</translation>
 <translation id="1524430321211440688">कीबोर्ड</translation>
 <translation id="1525835343380843286">सर्व्हर संप्रेषण त्रुटी</translation>
 <translation id="1526560967942511387">अशीर्षकांकित दस्तऐवज</translation>
@@ -466,7 +465,6 @@
 <translation id="1665611772925418501">फाइल सुधारली जाऊ शकली नाही.</translation>
 <translation id="1665770420914915777">नवीन टॅब पृष्ठ वापरा</translation>
 <translation id="1666058115165804494">तयार केल्याची वेळ</translation>
-<translation id="1666288758713846745">डायनॅमिक</translation>
 <translation id="1666788816626221136">आपल्याकडे फाइलवर प्रमाणपत्रे आहेत जी अन्य कोणत्याही श्रेणींमध्ये फिट होत नाहीत:</translation>
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1673103856845176271">फाइलमध्ये सुरक्षिततेच्या कारणांमुळे प्रवेश करता येऊ शकला नाही.</translation>
@@ -745,6 +743,7 @@
 <translation id="2116673936380190819">गेल्या तासात</translation>
 <translation id="2121825465123208577">आकार बदला</translation>
 <translation id="2126167708562367080">आपल्या प्रशासकाने संकालन अक्षम केले आहे.</translation>
+<translation id="2126426811489709554">Chrome द्वारे समर्थित</translation>
 <translation id="2127166530420714525">Bluetooth अ‍ॅडाप्टरची ऊर्जा स्थिती बदलण्‍यात अयशस्वी.</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="212862741129535676">फ्रिक्वेन्सी स्थिती कब्जा टक्केवारी</translation>
@@ -1252,7 +1251,6 @@
 <translation id="2805707493867224476">पॉप-अप दर्शविण्यासाठी सर्व साइटना परवानगी द्या</translation>
 <translation id="2805756323405976993">अॅप्लिकेशन</translation>
 <translation id="2807517655263062534">तुम्ही डाउनलोड केलेल्या फायली येथे दिसतात</translation>
-<translation id="2809346626032021864">वाचन</translation>
 <translation id="2809586584051668049">आणि <ph name="NUMBER_ADDITIONAL_DISABLED" /> अधिक</translation>
 <translation id="281133045296806353">विद्यमान ब्राउझर सत्रात नवीन विंडो तयार केली.</translation>
 <translation id="2812944337881233323">साइन आउट केल्यानंतर पुन्हा साइन इन करून पहा.</translation>
@@ -4791,6 +4789,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" आपल्यासह सामायिक केले गेले आहे. हे आपल्या मालकीचे नसल्यामुळे आपण ते हटवू शकत नाही.</translation>
 <translation id="8137559199583651773">विस्तार व्यवस्थापित करा</translation>
 <translation id="8138082791834443598">पर्यायी — या डिव्हाइसशी संबद्ध करण्यासाठी नवीन किंवा विद्यमान माहिती प्रविष्ट किंवा अपडेट करा.</translation>
+<translation id="813913629614996137">प्रारंभ करत आहे…</translation>
 <translation id="8140778357236808512">विद्यमान पर्यवेक्षी वापरकर्ता आयात करा</translation>
 <translation id="8141725884565838206">आपले संकेतशब्द व्यवस्थापित करा</translation>
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>

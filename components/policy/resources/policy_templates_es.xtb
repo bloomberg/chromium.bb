@@ -31,7 +31,7 @@
           Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="1117535567637097036">Los controladores de protocolo configurados a través de esta política no se utilizan al procesar los intents de Android.</translation>
-<translation id="1122282995569868661">Muestra el icono de la barra de tareas de <ph name="PRODUCT_NAME" /></translation>
+<translation id="1122282995569868661">Muestra el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para guardar los archivos almacenados en la memoria caché en el disco.
 
       Si se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado independientemente de que el usuario haya especificado el indicador "--disk-cache-dir". Para evitar la pérdida de datos u otros errores inesperados, esta política no debe establecerse en el directorio raíz del volumen o en un directorio utilizado para otros fines, ya que <ph name="PRODUCT_NAME" /> administra sus contenidos.
@@ -266,7 +266,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si no se establece esta política, el valor predeterminado será 0 grados y el usuario podrá
       cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar
       cuando se reinicie el dispositivo.</translation>
-<translation id="2156132677421487971">Configura políticas de <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen contenido de las pestañas, los sitios web o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
+<translation id="2156132677421487971">Configura las políticas de <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen contenido de las pestañas, los sitios web o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2176565653304920879">El flujo de detección automática de la zona horaria puede ser de una de las siguientes formas, en función del valor que se asigne a esta política:
@@ -971,9 +971,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se establece 0 como valor de esta política, se utilizará el tamaño de caché predeterminado, pero el usuario no podrá modificarlo.
 
       Si no se define esta política, se utilizará el tamaño predeterminado y el usuario podrá modificarlo mediante el indicador "--media-cache-size".</translation>
-<translation id="4508686775017063528">Si se asigna el valor "true" a esta política o esta no se define, <ph name="PRODUCT_NAME" /> se habilitará y los usuarios podrán iniciarla desde el menú de aplicaciones, los menús contextuales de las páginas, los controles multimedia de sitios web compatibles con Google Cast y (si aparece) el icono de la barra para enviar contenido.
+<translation id="4508686775017063528">Si se asigna el valor "True" a esta política o esta no se define, <ph name="PRODUCT_NAME" /> se habilitará y los usuarios podrán iniciarla desde el menú de aplicaciones, los menús contextuales de las páginas, los controles multimedia de sitios web compatibles con Google Cast y (si aparece) el icono de la barra de herramientas para enviar contenido.
 
-          Si se asigna el valor "false" a esta política, <ph name="PRODUCT_NAME" /> se inhabilitará.</translation>
+          Si se asigna el valor "False" a esta política, <ph name="PRODUCT_NAME" /> se inhabilitará.</translation>
 <translation id="4518251772179446575">Preguntar siempre que un sitio quiera hacer un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="4519046672992331730">Permite habilitar las sugerencias de búsqueda del omnibox de <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta configuración.
 

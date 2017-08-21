@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">调整…</translation>
 <translation id="1521442365706402292">管理证书</translation>
 <translation id="152234381334907219">一律不保存</translation>
-<translation id="1524152555482653726">电影</translation>
 <translation id="1524430321211440688">键盘</translation>
 <translation id="1525835343380843286">服务器通信错误</translation>
 <translation id="1526560967942511387">无标题文档</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">无法修改该文件。</translation>
 <translation id="1665770420914915777">使用“打开新的标签页”页面</translation>
 <translation id="1666058115165804494">创建时间</translation>
-<translation id="1666288758713846745">动态</translation>
 <translation id="1666788816626221136">您有一些证书不属于前面任何类别：</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1673103856845176271">出于安全原因，无法访问该文件。</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">过去一小时</translation>
 <translation id="2121825465123208577">调整大小</translation>
 <translation id="2126167708562367080">您的管理员已停用同步。</translation>
+<translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="2127166530420714525">无法更改蓝牙适配器的电源状态。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="212862741129535676">频率状态占用率</translation>
@@ -1249,7 +1248,6 @@
 <translation id="2805707493867224476">允许所有网站显示弹出式窗口</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2807517655263062534">您下载的文件会显示在此处</translation>
-<translation id="2809346626032021864">读取</translation>
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED" />个扩展程序</translation>
 <translation id="281133045296806353">已在现有的浏览器会话中创建新的窗口。</translation>
 <translation id="2812944337881233323">请尝试退出并重新登录</translation>
@@ -4772,6 +4770,7 @@
 <translation id="8137331602592933310">“<ph name="FILENAME" />”是其他人共享给您的。您无法删除该文件，因为您不是它的所有者。</translation>
 <translation id="8137559199583651773">管理扩展程序</translation>
 <translation id="8138082791834443598">选填 - 输入与此设备相关的新信息或更新现有信息。</translation>
+<translation id="813913629614996137">正在初始化…</translation>
 <translation id="8140778357236808512">导入现有受监管用户</translation>
 <translation id="8141725884565838206">管理您的密码</translation>
 <translation id="8142699993796781067">专用网络</translation>

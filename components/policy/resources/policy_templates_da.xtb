@@ -928,9 +928,9 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Hvis værdien af denne politik er 0, anvendes standardcachestørrelsen, men brugeren vil ikke kunne ændre den.
 
       Hvis denne politik ikke er indstillet, bruges standardstørrelsen, og brugeren vil kunne tilsidesætte den med flaget "--media-cache-size".</translation>
-<translation id="4508686775017063528">Hvis denne politik er angivet som Sand eller ikke er angivet, aktiveres <ph name="PRODUCT_NAME" />, og brugerne kan åbne produktet via appmenuen, genvejsmenuen til sider, mediekontrolelementer på Cast-kompatible websites og (hvis det er angivet) via Cast-ikonet på værktøjslinjen.
+<translation id="4508686775017063528">Hvis denne politik er angivet til Sand eller ikke er angivet, er <ph name="PRODUCT_NAME" /> aktiveret, og brugerne kan åbne det via appmenuen, genvejsmenuen til sider, mediekontrolelementer på Cast-kompatible websites og Cast-ikonet på værktøjslinjen (hvis det vises).
 
-          Hvis denne politik angives som Falsk, deaktiveres <ph name="PRODUCT_NAME" />.</translation>
+          Hvis denne politik er angivet som Falsk, er <ph name="PRODUCT_NAME" /> deaktiveret.</translation>
 <translation id="4518251772179446575">Spørg, hver gang et website ønsker at spore brugerens fysiske placering</translation>
 <translation id="4519046672992331730">Aktiverer søgeforslag i omnifeltet i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer denne indstilling.
 

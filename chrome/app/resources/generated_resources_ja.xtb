@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">調整...</translation>
 <translation id="1521442365706402292">証明書の管理</translation>
 <translation id="152234381334907219">常に保存しない</translation>
-<translation id="1524152555482653726">ムービー</translation>
 <translation id="1524430321211440688">キーボード</translation>
 <translation id="1525835343380843286">サーバー通信エラー</translation>
 <translation id="1526560967942511387">無題のドキュメント</translation>
@@ -468,7 +467,6 @@
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
 <translation id="1665770420914915777">新しいタブの画面を表示する</translation>
 <translation id="1666058115165804494">作成日時</translation>
-<translation id="1666288758713846745">ダイナミック</translation>
 <translation id="1666788816626221136">他のどのカテゴリにも適合しない証明書がファイルに格納されています:</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
@@ -747,6 +745,7 @@
 <translation id="2116673936380190819">1 時間以内</translation>
 <translation id="2121825465123208577">サイズを変更</translation>
 <translation id="2126167708562367080">同期は管理者により無効にされています。</translation>
+<translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2127166530420714525">Bluetooth アダプタの電源状態を変更できませんでした。</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="212862741129535676">周波数状態の占有率（%）</translation>
@@ -1254,7 +1253,6 @@
 <translation id="2805707493867224476">すべてのサイトに対してポップアップ表示を許可する</translation>
 <translation id="2805756323405976993">アプリ</translation>
 <translation id="2807517655263062534">ダウンロードしたファイルがここに表示されます</translation>
-<translation id="2809346626032021864">読書</translation>
 <translation id="2809586584051668049">、他 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 件</translation>
 <translation id="281133045296806353">既存のブラウザ セッションに新しいウィンドウが作成されました。</translation>
 <translation id="2812944337881233323">ログアウトして再度ログインしてみてください</translation>
@@ -4803,6 +4801,7 @@
 <translation id="8137331602592933310">「<ph name="FILENAME" />」を共有しました。ファイルの所有者ではないため、このファイルを削除することはできません。</translation>
 <translation id="8137559199583651773">拡張機能を管理</translation>
 <translation id="8138082791834443598">省略可 - このデバイスに関連付ける新しい情報を入力するか、既存の情報を更新します。</translation>
+<translation id="813913629614996137">初期化しています...</translation>
 <translation id="8140778357236808512">既存の監視対象ユーザーをインポートする</translation>
 <translation id="8141725884565838206">パスワードを管理する</translation>
 <translation id="8142699993796781067">プライベート ネットワーク</translation>

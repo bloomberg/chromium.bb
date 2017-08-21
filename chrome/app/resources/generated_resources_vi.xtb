@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">Điều chỉnh...</translation>
 <translation id="1521442365706402292">Quản lý chứng chỉ</translation>
 <translation id="152234381334907219">Không bao giờ lưu</translation>
-<translation id="1524152555482653726">Phim</translation>
 <translation id="1524430321211440688">Bàn phím</translation>
 <translation id="1525835343380843286">Lỗi kết nối với máy chủ</translation>
 <translation id="1526560967942511387">Tài liệu không Tên</translation>
@@ -468,7 +467,6 @@
 <translation id="1665611772925418501">Không thể sửa đổi tệp.</translation>
 <translation id="1665770420914915777">Sử dụng trang Tab mới</translation>
 <translation id="1666058115165804494">Thời gian tạo</translation>
-<translation id="1666288758713846745">Động</translation>
 <translation id="1666788816626221136">Bạn có các chứng chỉ trên tệp không phù hợp với bất kỳ danh mục nào khác:</translation>
 <translation id="1670399744444387456">Cơ bản</translation>
 <translation id="1673103856845176271">Không thể truy cập tệp vì các lý do bảo mật.</translation>
@@ -747,6 +745,7 @@
 <translation id="2116673936380190819">giờ trước</translation>
 <translation id="2121825465123208577">Đổi kích thước</translation>
 <translation id="2126167708562367080">Đồng bộ hóa bị quản trị viên của bạn tắt.</translation>
+<translation id="2126426811489709554">Được hỗ trợ bởi Chrome</translation>
 <translation id="2127166530420714525">Không thể thay đổi trạng thái nguồn của bộ điều hợp Bluetooth.</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="212862741129535676">Phần trăm sử dụng ở trạng thái tần số</translation>
@@ -1255,7 +1254,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2805707493867224476">Cho phép tất cả các trang web hiển thị cửa sổ bật lên</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2807517655263062534">Các tệp bạn tải xuống sẽ xuất hiện ở đây</translation>
-<translation id="2809346626032021864">Đọc</translation>
 <translation id="2809586584051668049">và <ph name="NUMBER_ADDITIONAL_DISABLED" /> mục khác</translation>
 <translation id="281133045296806353">Đã tạo cửa sổ mới trong phiên trình duyệt hiện có.</translation>
 <translation id="2812944337881233323">Thử đăng xuất và đăng nhập lại</translation>
@@ -2583,7 +2581,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4820334425169212497">Không, tôi không thấy mã</translation>
 <translation id="4821086771593057290">Mật khẩu của bạn đã thay đổi. Vui lòng thử lại bằng mật khẩu mới của bạn.</translation>
-<translation id="4821725298388681253">Đây là bản phát hành sớm. Một số tính năng, như tìm kiếm và mục nhập văn bản, vẫn chưa sử dụng được.</translation>
+<translation id="4821725298388681253">Đây là bản phát hành sớm. Một số tính năng, như tìm kiếm và nhập văn bản, vẫn chưa sử dụng được.</translation>
 <translation id="4821935166599369261">&amp;Bật cấu hình</translation>
 <translation id="4823484602432206655">Đọc và thay đổi cài đặt người dùng và thiết bị</translation>
 <translation id="4823651846660089135">Thiết bị chỉ đọc</translation>
@@ -4803,6 +4801,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8137331602592933310">"<ph name="FILENAME" />" đã được chia sẻ với bạn. Bạn không thể xóa tệp vì bạn không sở hữu tệp.</translation>
 <translation id="8137559199583651773">Quản lý tiện ích</translation>
 <translation id="8138082791834443598">Tùy chọn — nhập thông tin mới hoặc cập nhật thông tin hiện có được liên kết với thiết bị này.</translation>
+<translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8140778357236808512">Nhập một người dùng được giám sát hiện có</translation>
 <translation id="8141725884565838206">Quản lý mật khẩu của bạn</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>

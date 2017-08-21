@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Justera ...</translation>
 <translation id="1521442365706402292">Hantera certifikat</translation>
 <translation id="152234381334907219">Aldrig sparat</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tangentbord</translation>
 <translation id="1525835343380843286">Kommunikationsfel med servern</translation>
 <translation id="1526560967942511387">Namnlöst dokument</translation>
@@ -466,7 +465,6 @@
 <translation id="1665611772925418501">Det gick inte att ändra filen.</translation>
 <translation id="1665770420914915777">Använd sidan Ny flik</translation>
 <translation id="1666058115165804494">Skapades kl.</translation>
-<translation id="1666288758713846745">Dynamisk</translation>
 <translation id="1666788816626221136">Du har certifikat i din dator som inte passar i några av de andra kategorierna:</translation>
 <translation id="1670399744444387456">Grunder</translation>
 <translation id="1673103856845176271">Det gick inte att öppna filen av säkerhetsskäl.</translation>
@@ -745,6 +743,7 @@
 <translation id="2116673936380190819">senaste timmen</translation>
 <translation id="2121825465123208577">Ändra storlek</translation>
 <translation id="2126167708562367080">Synkronisering har inaktiverats av administratören.</translation>
+<translation id="2126426811489709554">Drivs av Chrome</translation>
 <translation id="2127166530420714525">Det gick inte att ändra energiläget för Bluetooth-adaptern.</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="212862741129535676">Kapacitetsprocentsats för frekvens</translation>
@@ -1253,7 +1252,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2807517655263062534">Filer som du laddar ned visas här</translation>
-<translation id="2809346626032021864">Läsning</translation>
 <translation id="2809586584051668049">och ytterligare <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Ett nytt fönster skapades under den aktuella webbläsarsessionen.</translation>
 <translation id="2812944337881233323">Testa att logga ut och logga in igen</translation>
@@ -4798,6 +4796,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8137331602592933310"><ph name="FILENAME" /> har delats med dig. Du kan inte ta bort det eftersom du inte äger det.</translation>
 <translation id="8137559199583651773">Hantera tillägg</translation>
 <translation id="8138082791834443598">Valfritt: Ange nya eller uppdatera befintliga uppgifter om du vill kopplas till den här enheten.</translation>
+<translation id="813913629614996137">Initierar …</translation>
 <translation id="8140778357236808512">Importera en befintlig hanterad användare</translation>
 <translation id="8141725884565838206">Hantera dina lösenord</translation>
 <translation id="8142699993796781067">Privat nätverk</translation>

@@ -6,7 +6,7 @@
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
-<translation id="1105960400813249514">Screen Capture</translation>
+<translation id="1105960400813249514">Captura de pantalla</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
 <translation id="1137305377394488060">hace una hora</translation>
@@ -334,6 +334,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4384468725000734951">Se usa Sogou para la búsqueda</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
+<translation id="443008484043213881">Herramientas</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4445444302979002552">Usar los servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
@@ -504,6 +505,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5958275228015807058">Encuentra tus archivos y páginas en Descargas</translation>
 <translation id="5962718611393537961">Presiona para contraer</translation>
 <translation id="6000066717592683814">Seguir usando Google</translation>
+<translation id="6023914116273780353">Personalizadas</translation>
 <translation id="6031101910111098835">Contraído (hacer clic para expandir)</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -582,6 +584,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6697947395630195233">Chrome necesita acceso a tu ubicación para compartirla con este sitio.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6701279291835318271">Informes de seguridad</translation>
+<translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6727612981472093924">Se abrió el panel de navegación</translation>
 <translation id="6738867403308150051">Descargando…</translation>

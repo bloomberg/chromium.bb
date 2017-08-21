@@ -175,12 +175,6 @@
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
 <translation id="5170982930780719864">รหัสโฮสต์ไม่ถูกต้อง</translation>
 <translation id="518094545883702183">ข้อมูลนี้จะใช้เพื่อวินิจฉัยปัญหาที่คุณรายงานเท่านั้น โดยจะมีเพียงผู้ตรวจสอบรายงานเท่านั้นที่ใช้งานได้ และจะมีการเก็บรักษาไว้ไม่เกิน 30 วัน</translation>
-<translation id="5196958630269420102">เข้าถึงคอมพิวเตอร์จากอุปกรณ์ iOS อย่างปลอดภัย
-
-• ในคอมพิวเตอร์แต่ละเครื่อง ให้ตั้งค่าการเข้าถึงระยะไกลโดยใช้แอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ที่ https://chrome.google.com/remotedesktop
-• ในอุปกรณ์ iOS ให้เปิดแอปและแตะคอมพิวเตอร์เครื่องที่ออนไลน์อยู่เพื่อเชื่อมต่อ
-
-สำหรับข้อมูลเกี่ยวกับความเป็นส่วนตัว โปรดดูนโยบายความเป็นส่วนตัวของ Google (http://goo.gl/SyrVzj) และนโยบายความเป็นส่วนตัวของ Chrome (http://goo.gl/0uXE5d)</translation>
 <translation id="5204575267916639804">คำถามที่พบบ่อย</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
@@ -235,11 +229,6 @@
 <translation id="6570205395680337606">รีเซ็ตแอปพลิเคชัน คุณจะสูญเสียงานที่ไม่ได้บันทึกไว้ทั้งหมด</translation>
 <translation id="6572345186230665992">สำหรับ Mac (OS X Mavericks 10.9 ขึ้นไป)</translation>
 <translation id="6583902294974160967">การสนับสนุน</translation>
-<translation id="6598484667010442494">Chrome Remote Desktop
-Remote Desktop
-Remote PC
-คอมพิวเตอร์ระยะไกล
-การเข้าถึงระยะไกล</translation>
 <translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">PIN ของคุณได้รับการอัปเดตแล้ว</translation>
 <translation id="6681800064886881394">ลิขสิทธิ์ 2013 Google Inc. สงวนลิขสิทธิ์</translation>

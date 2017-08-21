@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Chromiumi tulevased versioonid ei toeta enam Mac OS X 10.6, 10.7 ega 10.8.</translation>
 <translation id="1414495520565016063">Olete Chromiumi sisse logitud.</translation>
 <translation id="1444754455097148408">Chromiumi avatud lähtekoodi litsentsid</translation>
-<translation id="1480489203462860648">Proovige järele, see on juba installitud</translation>
 <translation id="1502360822835740515">Chromiumi vaikebrauseriks määramine</translation>
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
 <translation id="1559451348202814456">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam operatsioonisüsteemides Mac OS X 10.6, 10.7 ega 10.8.</translation>
@@ -176,7 +175,6 @@
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
 <translation id="6734291798041940871">Chromium on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
-<translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="6810143991807788455">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
@@ -189,7 +187,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="707471633328071618">Google Payments (Chromiumi kopeeritud)</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
 <translation id="7162152143154757523">Chromium võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
-<translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="7205698830395646142">Chromiumi menüüs peitmine</translation>
 <translation id="7223968959479464213">Tegumihaldur – Chromium</translation>
 <translation id="722928257909516027">Kuva Chromiumi menüü</translation>

@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">সামঞ্জস্য করুন...</translation>
 <translation id="1521442365706402292">শংসাপত্রগুলি পরিচালনা করুন</translation>
 <translation id="152234381334907219">কখনও সংরক্ষিত হয়নি</translation>
-<translation id="1524152555482653726">চলচ্চিত্র</translation>
 <translation id="1524430321211440688">কীবোর্ড</translation>
 <translation id="1525835343380843286">সার্ভারে যোগাযোগ করতে ত্রুটি</translation>
 <translation id="1526560967942511387">শিরোনামহীন দস্তাবেজ</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">ফাইল সংশোধন করা যায়নি৷</translation>
 <translation id="1665770420914915777">নতুন ট্যাব পৃষ্ঠাটি ব্যবহার করুন</translation>
 <translation id="1666058115165804494">যে সময় তৈরি করা হয়েছে</translation>
-<translation id="1666288758713846745">ডায়নামিক</translation>
 <translation id="1666788816626221136">আপনার কাছে সেই ফাইলে শংসাপত্রগুলি আছে যা অন্য বিভাগগুলির একটিতেও মেলে না:</translation>
 <translation id="1670399744444387456">প্রাথমিক</translation>
 <translation id="1673103856845176271">নিরাপত্তাজড়িন কারণে ফাইলটিতে অ্যাক্সেস করা যায়নি৷</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">বিগত ঘণ্টা</translation>
 <translation id="2121825465123208577">ছোট বড় করুন</translation>
 <translation id="2126167708562367080">আপনার প্রশাসকের দ্বারা সিঙ্ক অক্ষম করা হয়েছে।</translation>
+<translation id="2126426811489709554">Chrome দ্বারা চালিত</translation>
 <translation id="2127166530420714525">ব্লুটুথ এডাপ্টরের শক্তি অবস্থা পরিবর্তন করতে ব্যর্থ৷</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="212862741129535676">ফ্রিকোয়েন্সি স্টেট ওকুপেন্সির শতকরা হার</translation>
@@ -1255,7 +1254,6 @@
 <translation id="2805707493867224476"> পপ-আপগুলি দেখানোর জন্য সমস্ত সাইটকে অনুমতি দিন</translation>
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2807517655263062534">ডাউনলোড করা ফাইল এখানে দেখা যাবে</translation>
-<translation id="2809346626032021864">পড়াশোনা</translation>
 <translation id="2809586584051668049">এবং আরো <ph name="NUMBER_ADDITIONAL_DISABLED" />টি</translation>
 <translation id="281133045296806353">বিদ্যমান ব্রাউজার সেশনে নতুন উইন্ডো তৈরি হয়েছে৷</translation>
 <translation id="2812944337881233323">সাইন আউট করে আবার ফিরে এসে দেখুন</translation>
@@ -4791,6 +4789,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" আপনার সাথে শেয়ার করা হয়েছে৷ আপনি এটিকে মুছে ফেলতে পারবেন না কারণ আপনি এটির মালিক নন৷</translation>
 <translation id="8137559199583651773">এক্সটেনশানগুলি পরিচালনা করুন</translation>
 <translation id="8138082791834443598">ঐচ্ছিক —  এই ডিভাইসের সাথে যুক্ত করার জন্য নতুন তথ্য দিন বা বিদ্যমান তথ্য আপডেট করুন।</translation>
+<translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>
 <translation id="8140778357236808512">একটি বিদ্যমান তত্ত্বাবধানে থাকা ব্যবহারকারীকে আমদানি করুন</translation>
 <translation id="8141725884565838206">আপনার পাসওয়ার্ডগুলি পরিচালনা করুন</translation>
 <translation id="8142699993796781067">ব্যক্তিগত নেটওয়ার্ক</translation>

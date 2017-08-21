@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">ضبط…</translation>
 <translation id="1521442365706402292">تنظيم الشهادات</translation>
 <translation id="152234381334907219">لم يتم الحفظ مطلقًا</translation>
-<translation id="1524152555482653726">فيلم</translation>
 <translation id="1524430321211440688">لوحة المفاتيح</translation>
 <translation id="1525835343380843286">خطأ في اتصال الخادم</translation>
 <translation id="1526560967942511387">مستند بلا عنوان</translation>
@@ -468,7 +467,6 @@
 <translation id="1665611772925418501">تعذر تعديل على الملف.</translation>
 <translation id="1665770420914915777">استخدام صفحة "علامة تبويب جديدة"</translation>
 <translation id="1666058115165804494">وقت الإنشاء</translation>
-<translation id="1666288758713846745">ديناميكي</translation>
 <translation id="1666788816626221136">لديك شهادات في الملف لا تندرج تحت أية فئة من الفئات الأخرى:</translation>
 <translation id="1670399744444387456">الأساسية</translation>
 <translation id="1673103856845176271">تعذر الدخول إلى الملف لأسباب تتعلق بالأمان.</translation>
@@ -747,6 +745,7 @@
 <translation id="2116673936380190819">الساعة الماضية</translation>
 <translation id="2121825465123208577">تغيير الحجم</translation>
 <translation id="2126167708562367080">تم تعطيل المزامنة من قِبل المشرف.</translation>
+<translation id="2126426811489709554">‏يدعمها Chrome</translation>
 <translation id="2127166530420714525">تعذّر تغيير حالة تشغيل محول البلوتوث.</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="212862741129535676">نسبة إشغال حالة التردد</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">السماح لجميع المواقع بعرض النوافذ المنبثقة</translation>
 <translation id="2805756323405976993">تطبيقات</translation>
 <translation id="2807517655263062534">هنا تظهر الملفات التي تم تنزيلها</translation>
-<translation id="2809346626032021864">القراءة</translation>
 <translation id="2809586584051668049">و<ph name="NUMBER_ADDITIONAL_DISABLED" /> من الإضافات الأخرى</translation>
 <translation id="281133045296806353">تم فتح نافذة جديدة في جلسة المتصفح الحالي.</translation>
 <translation id="2812944337881233323">تجربة الخروج وتسجيل الدخول مرة أخرى</translation>
@@ -4795,6 +4793,7 @@
 <translation id="8137331602592933310">تمت مشاركة "<ph name="FILENAME" />" معك. لا يمكنك حذفه، نظرًا لأنك لا تمتلكه.</translation>
 <translation id="8137559199583651773">إدارة الإضافات</translation>
 <translation id="8138082791834443598">اختياري - إدخال معلومات جديدة أو تحديث المعلومات الحالية لتكون مرتبطة بهذا الجهاز.</translation>
+<translation id="813913629614996137">جارٍ التهيئة...</translation>
 <translation id="8140778357236808512">استيراد مستخدم حالي يخضع للإشراف</translation>
 <translation id="8141725884565838206">إدارة كلمات المرور</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>

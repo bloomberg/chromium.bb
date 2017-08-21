@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">Juster</translation>
 <translation id="1521442365706402292">Administrer sertifikater</translation>
 <translation id="152234381334907219">Aldri lagrede</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tastatur</translation>
 <translation id="1525835343380843286">Kommunikasjonsfeil med tjener</translation>
 <translation id="1526560967942511387">Dokument uten tittel</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">Kunne ikke endre filen.</translation>
 <translation id="1665770420914915777">Bruk siden Ny fane</translation>
 <translation id="1666058115165804494">Opprettet</translation>
-<translation id="1666288758713846745">Dynamisk</translation>
 <translation id="1666788816626221136">Du har en fil med sertifikater som ikke passer inn i de angitte kategoriene:</translation>
 <translation id="1670399744444387456">Enkle</translation>
 <translation id="1673103856845176271">Filen kunne ikke åpnes av sikkerhetsårsaker.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">den siste timen</translation>
 <translation id="2121825465123208577">Endre størrelse</translation>
 <translation id="2126167708562367080">Administratoren din har slått av synkronisering.</translation>
+<translation id="2126426811489709554">Drevet av Chrome</translation>
 <translation id="2127166530420714525">Kunne ikke endre strømtilstanden til Bluetooth-adapteren.</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="212862741129535676">Utnyttelsesgrad for frekvenstilstand</translation>
@@ -1249,7 +1248,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="2805756323405976993">Apper</translation>
 <translation id="2807517655263062534">Filer du laster ned, vises her</translation>
-<translation id="2809346626032021864">Lesing</translation>
 <translation id="2809586584051668049">og <ph name="NUMBER_ADDITIONAL_DISABLED" /> til</translation>
 <translation id="281133045296806353">Opprettet nytt vindu i eksisterende nettleserøkt.</translation>
 <translation id="2812944337881233323">Prøv å logge av og på igjen</translation>
@@ -4780,6 +4778,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8137331602592933310">«<ph name="FILENAME" />» er delt med deg. Du kan ikke slette filen fordi du ikke eier den.</translation>
 <translation id="8137559199583651773">Administrer utvidelser</translation>
 <translation id="8138082791834443598">Valgfritt – skriv inn ny eller oppdater eksisterende informasjon som skal knyttes til denne enheten.</translation>
+<translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8140778357236808512">Importér en eksisterende administrert bruker</translation>
 <translation id="8141725884565838206">Administrer passordene dine</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>

@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Módosítás...</translation>
 <translation id="1521442365706402292">Tanúsítványok beállítása</translation>
 <translation id="152234381334907219">Soha nem került mentésre</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Billentyűzet</translation>
 <translation id="1525835343380843286">Kommunikációs hiba a szerverrel</translation>
 <translation id="1526560967942511387">Név nélküli dokumentum</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">A fájlt nem lehet módosítani.</translation>
 <translation id="1665770420914915777">Használja az „Új lap” oldalt</translation>
 <translation id="1666058115165804494">Létrehozás ideje</translation>
-<translation id="1666288758713846745">Dinamikus</translation>
 <translation id="1666788816626221136">Vannak olyan tanúsítványok, amelyek nem illenek a többi kategória egyikébe se:</translation>
 <translation id="1670399744444387456">Alapvető</translation>
 <translation id="1673103856845176271">A fájl biztonsági okokból nem érhető el.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">elmúlt óra</translation>
 <translation id="2121825465123208577">Átméretezés</translation>
 <translation id="2126167708562367080">A szinkronizálást letiltotta a rendszergazda.</translation>
+<translation id="2126426811489709554">A Chrome erejével</translation>
 <translation id="2127166530420714525">Nem sikerült módosítani a Bluetooth-adapter energiaállapotát.</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="212862741129535676">Órajel lefoglaltsága százalékban</translation>
@@ -1254,7 +1253,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2805707493867224476">Előugró ablakok engedélyezése minden webhelyen</translation>
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2807517655263062534">A letöltött fájlok itt jelennek meg</translation>
-<translation id="2809346626032021864">Olvasás</translation>
 <translation id="2809586584051668049">és <ph name="NUMBER_ADDITIONAL_DISABLED" /> további</translation>
 <translation id="281133045296806353">Új ablak jött létre a már futó böngésző-programfolyamatban.</translation>
 <translation id="2812944337881233323">Próbáljon meg kijelentkezni, majd újra bejelentkezni</translation>
@@ -4800,6 +4798,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8137331602592933310">A következőt osztották meg Önnel: „<ph name="FILENAME" />”. Nem törölheti, mert nem az Ön tulajdonában áll.</translation>
 <translation id="8137559199583651773">Bővítmények kezelése</translation>
 <translation id="8138082791834443598">Opcionális – adjon meg új információkat, vagy frissítse az ezzel az eszközzel társítani kívánt régieket.</translation>
+<translation id="813913629614996137">Indítás…</translation>
 <translation id="8140778357236808512">Már meglévő felügyelt felhasználó importálása</translation>
 <translation id="8141725884565838206">Jelszavak kezelése</translation>
 <translation id="8142699993796781067">Privát hálózat</translation>

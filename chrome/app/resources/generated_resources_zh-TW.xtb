@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">調整...</translation>
 <translation id="1521442365706402292">管理憑證</translation>
 <translation id="152234381334907219">永不儲存</translation>
-<translation id="1524152555482653726">影片</translation>
 <translation id="1524430321211440688">鍵盤</translation>
 <translation id="1525835343380843286">伺服器通訊錯誤</translation>
 <translation id="1526560967942511387">未命名文件</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">無法修改檔案。</translation>
 <translation id="1665770420914915777">使用新分頁</translation>
 <translation id="1666058115165804494">建立日期</translation>
-<translation id="1666288758713846745">動態</translation>
 <translation id="1666788816626221136">下列檔案上的憑證不屬於任何其他類別：</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1673103856845176271">基於安全理由，你無法存取檔案。</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">過去 1 小時</translation>
 <translation id="2121825465123208577">調整大小</translation>
 <translation id="2126167708562367080">你的管理員停用了同步功能。</translation>
+<translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="2127166530420714525">無法變更藍牙轉接器的電源狀態。</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
 <translation id="212862741129535676">頻率狀態占用率</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2807517655263062534">你下載的檔案會顯示在這裡</translation>
-<translation id="2809346626032021864">閱讀</translation>
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
 <translation id="281133045296806353">已在目前的瀏覽器工作階段開啟新視窗。</translation>
 <translation id="2812944337881233323">請嘗試登出，再重新登入</translation>
@@ -1681,7 +1679,7 @@
 <translation id="3423858849633684918">請重新啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">說明分頁當掉時你正在執行的動作</translation>
 <translation id="3427092606871434483">允許 (預設)</translation>
-<translation id="3429275422858276529">將這個網頁加入書籤，方面日後查看</translation>
+<translation id="3429275422858276529">將這個網頁加入書籤，方便日後查看</translation>
 <translation id="3429599832623003132">$1 個項目</translation>
 <translation id="3432227430032737297">將顯示的項目全部移除</translation>
 <translation id="3432757130254800023">傳送要在區域網路顯示的影音內容</translation>
@@ -2578,7 +2576,7 @@
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4820334425169212497">否，我沒有看到</translation>
 <translation id="4821086771593057290">你的密碼已變更，請使用你的新密碼再試一次。</translation>
-<translation id="4821725298388681253">這是初期版本，目前還無法使用部分功能 (例如搜尋和輸入文字)。</translation>
+<translation id="4821725298388681253">這是初期版本，目前還不支援部分功能 (例如搜尋和輸入文字)。</translation>
 <translation id="4821935166599369261">分析已啟用(&amp;P)</translation>
 <translation id="4823484602432206655">讀取及變更使用者和裝置設定</translation>
 <translation id="4823651846660089135">裝置目前是唯讀模式</translation>
@@ -4791,6 +4789,7 @@
 <translation id="8137331602592933310">「<ph name="FILENAME" />」是他人與你共用的項目。你不是這個檔案的擁有者，無法刪除這個檔案。</translation>
 <translation id="8137559199583651773">管理擴充功能</translation>
 <translation id="8138082791834443598">選填 — 新增這部裝置的相關資訊，或更新現有的裝置相關資訊。</translation>
+<translation id="813913629614996137">正在初始化...</translation>
 <translation id="8140778357236808512">匯入目前受監管的使用者</translation>
 <translation id="8141725884565838206">管理你的密碼</translation>
 <translation id="8142699993796781067">私人網路</translation>

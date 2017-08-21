@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Regola...</translation>
 <translation id="1521442365706402292">Gestisci certificati</translation>
 <translation id="152234381334907219">Mai salvate</translation>
-<translation id="1524152555482653726">Filmato</translation>
 <translation id="1524430321211440688">Tastiera</translation>
 <translation id="1525835343380843286">Errore di comunicazione del server</translation>
 <translation id="1526560967942511387">Documento senza titolo</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Impossibile modificare il file.</translation>
 <translation id="1665770420914915777">Usa la pagina Nuova scheda</translation>
 <translation id="1666058115165804494">Data/ora creazione</translation>
-<translation id="1666288758713846745">Dinamico</translation>
 <translation id="1666788816626221136">Hai certificati su file che non rientrano in nessuna delle altre categorie:</translation>
 <translation id="1670399744444387456">Di base</translation>
 <translation id="1673103856845176271">Impossibile accedere al file per motivi di sicurezza.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ultima ora</translation>
 <translation id="2121825465123208577">Ridimensiona</translation>
 <translation id="2126167708562367080">La sincronizzazione è stata disattivata dall'amministratore.</translation>
+<translation id="2126426811489709554">Con tecnologia Chrome</translation>
 <translation id="2127166530420714525">Impossibile modificare lo stato di alimentazione dell'adattatore Bluetooth.</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="212862741129535676">Percentuale di occupazione dello stato di frequenza</translation>
@@ -1252,7 +1251,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2805707493867224476">Consenti la visualizzazione di popup in tutti i siti</translation>
 <translation id="2805756323405976993">App</translation>
 <translation id="2807517655263062534">I file scaricati vengono mostrati qui</translation>
-<translation id="2809346626032021864">Lettura</translation>
 <translation id="2809586584051668049">e altre <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">È stata creata una nuova finestra nella sessione corrente del browser.</translation>
 <translation id="2812944337881233323">Prova a uscire e ad accedere di nuovo</translation>
@@ -4784,6 +4782,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8137331602592933310">Il file "<ph name="FILENAME" />" è stato condiviso con te. Non puoi eliminarlo perché non ne sei il proprietario.</translation>
 <translation id="8137559199583651773">Gestisci estensioni</translation>
 <translation id="8138082791834443598">Facoltativo. Inserisci nuove informazioni o aggiorna informazioni esistenti da associare a questo dispositivo.</translation>
+<translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8140778357236808512">Importa un utente supervisionato esistente</translation>
 <translation id="8141725884565838206">Gestisci le tue password</translation>
 <translation id="8142699993796781067">Rete privata</translation>

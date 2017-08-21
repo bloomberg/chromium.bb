@@ -355,7 +355,6 @@
 <translation id="1520635877184409083">Rekebisha...</translation>
 <translation id="1521442365706402292">Dhibiti vyeti</translation>
 <translation id="152234381334907219">Hayatahifadhiwa Kamwe</translation>
-<translation id="1524152555482653726">Filamu</translation>
 <translation id="1524430321211440688">Kibodi</translation>
 <translation id="1525835343380843286">Hitilafu ya mawasiliano ya seva</translation>
 <translation id="1526560967942511387">Andiko lisilo na kichwa</translation>
@@ -465,7 +464,6 @@
 <translation id="1665611772925418501">Faili isingeweza kurekebishwa.</translation>
 <translation id="1665770420914915777">Tumia ukurasa wa Kichupo Kipya</translation>
 <translation id="1666058115165804494">Wakati Ilipoundwa</translation>
-<translation id="1666288758713846745">Mahiri</translation>
 <translation id="1666788816626221136">Una vyeti vilivyorekodiwa visivyolingana na kikundi kingine chochote:</translation>
 <translation id="1670399744444387456">Msingi</translation>
 <translation id="1673103856845176271">Faili isingeweza kufikiwa kwa sababu za usalama.</translation>
@@ -744,6 +742,7 @@
 <translation id="2116673936380190819">saa iliyopita</translation>
 <translation id="2121825465123208577">Badilisha ukubwa</translation>
 <translation id="2126167708562367080">Usawazishaji umezimwa na msimamizi wako.</translation>
+<translation id="2126426811489709554">Unaendeshwa na Chrome</translation>
 <translation id="2127166530420714525">Imeshindwa kubadilisha hali ya kuwasha ya adapta ya Bluetooth.</translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
 <translation id="212862741129535676">Asilimia ya Ukaaji wa Hali ya Masafa</translation>
@@ -1251,7 +1250,6 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2805707493867224476">Ruhusu tovuti zote zionyeshe madirisha ibukizi</translation>
 <translation id="2805756323405976993">Programu</translation>
 <translation id="2807517655263062534">Faili unazopakua zitaonekana hapa</translation>
-<translation id="2809346626032021864">Kusoma</translation>
 <translation id="2809586584051668049">na <ph name="NUMBER_ADDITIONAL_DISABLED" /> zaidi</translation>
 <translation id="281133045296806353">Imeunda ukurasa mpya katika kipindi cha kivinjari kilichopo.</translation>
 <translation id="2812944337881233323">Jaribu kuondoka na uingie tena katika akaunti</translation>
@@ -4792,6 +4790,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8137331602592933310">"<ph name="FILENAME" />" imeshirikiwa na wewe. Huwezi kuifuta kwa sababu huimiliki.</translation>
 <translation id="8137559199583651773">Dhibiti viendelezi</translation>
 <translation id="8138082791834443598">Hiari — weka maelezo mapya au sasisha yaliyopo ili yahusishwe na kifaa hiki.</translation>
+<translation id="813913629614996137">Inaanzisha…</translation>
 <translation id="8140778357236808512">Ingiza mtumiaji anayesimamiwa aliyepo</translation>
 <translation id="8141725884565838206">Simamia manenosiri yako</translation>
 <translation id="8142699993796781067">Mtandao binafsi</translation>

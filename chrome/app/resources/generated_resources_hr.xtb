@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Prilagodba...</translation>
 <translation id="1521442365706402292">Upravljanje potvrdama</translation>
 <translation id="152234381334907219">Nikad spremljeno</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tipkovnica</translation>
 <translation id="1525835343380843286">Pogreška prilikom komunikacije s poslužiteljem</translation>
 <translation id="1526560967942511387">Neimenovani dokument</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Nije bilo moguće mijenjati datoteku.</translation>
 <translation id="1665770420914915777">Upotrijebi stranicu "Nova kartica"</translation>
 <translation id="1666058115165804494">Vrijeme izrade</translation>
-<translation id="1666288758713846745">Dinamično</translation>
 <translation id="1666788816626221136">Imate certifikate u arhivi koji ne odgovaraju ni jednoj od ovih kategorija:</translation>
 <translation id="1670399744444387456">Osnovne</translation>
 <translation id="1673103856845176271">Nije bilo moguće pristupiti datoteci zbog sigurnosnih razloga.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">protekli sat</translation>
 <translation id="2121825465123208577">Promijeni veličinu</translation>
 <translation id="2126167708562367080">Administrator je onemogućio sinkronizaciju.</translation>
+<translation id="2126426811489709554">Omogućuje Chrome</translation>
 <translation id="2127166530420714525">Promjena stanja napajanja Bluetooth pretvarača nije uspjela.</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="212862741129535676">Postotak zauzetosti u stanju učestalosti</translation>
@@ -1253,7 +1252,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2805707493867224476">Dopusti svim web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2807517655263062534">Ovdje se prikazuju datoteke koje ste preuzeli</translation>
-<translation id="2809346626032021864">Čitanje</translation>
 <translation id="2809586584051668049">i još <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Stvoren je novi prozor u postojećoj sesiji pregledavanja.</translation>
 <translation id="2812944337881233323">Odjavite se, pa se ponovo prijavite</translation>
@@ -4798,6 +4796,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8137331602592933310">S vama je podijeljena datoteka "<ph name="FILENAME" />". Ne možete je izbrisati jer joj niste vlasnik.</translation>
 <translation id="8137559199583651773">Upravljanje proširenjima</translation>
 <translation id="8138082791834443598">Dodajte nove ili ažurirajte postojeće informacije povezane s ovim uređajem (nije obavezno).</translation>
+<translation id="813913629614996137">Pokretanje...</translation>
 <translation id="8140778357236808512">Uvezi postojećeg zaštićenog korisnika</translation>
 <translation id="8141725884565838206">Upravljanje zaporkama</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>

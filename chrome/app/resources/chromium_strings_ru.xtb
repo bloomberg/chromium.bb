@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">В следующих версиях Chromium будет прекращена поддержка Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="1444754455097148408">Лицензии Chromium на ПО с открытым исходным кодом</translation>
-<translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="1502360822835740515">Как сделать Chromium браузером по умолчанию</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="1559451348202814456">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.6, 10.7 и 10.8.</translation>
@@ -174,7 +173,6 @@
 Некоторые возможности могут быть недоступны. Укажите другой каталог профиля либо используйте более новую версию Chromium.</translation>
 <translation id="6734080038664603509">Обновить &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже установлен для всех пользователей вашего компьютера</translation>
-<translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="6810143991807788455">Отправьте отчет о текущих настройках Chromium и помогите усовершенствовать работу браузера</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты.</translation>
@@ -187,7 +185,6 @@
 <translation id="707471633328071618">Google Payments (скопировано в Chromium)</translation>
 <translation id="7138853919861947730">Chromium предоставляет новые возможности для работы в  Интернете за счет использования веб-служб.</translation>
 <translation id="7162152143154757523">Chromium предлагает интеллектуальную технологию проверки правописания. Введенный вами текст отправляется на серверы Google, что позволяет использовать механизмы проверки Google Поиска.</translation>
-<translation id="7196020411877309443">Что это?</translation>
 <translation id="7205698830395646142">Не показывать в Меню Chromium</translation>
 <translation id="7223968959479464213">Диспетчер задач – Chromium</translation>
 <translation id="722928257909516027">Отображение меню Chromium</translation>

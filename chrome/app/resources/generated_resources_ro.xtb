@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ajustați...</translation>
 <translation id="1521442365706402292">Gestionează certificatele</translation>
 <translation id="152234381334907219">Nu se salvează niciodată</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tastatură</translation>
 <translation id="1525835343380843286">Eroare de comunicare cu serverul</translation>
 <translation id="1526560967942511387">Document fără titlu</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Fișierul nu a putut fi modificat.</translation>
 <translation id="1665770420914915777">Utilizează pagina Filă nouă</translation>
 <translation id="1666058115165804494">Ora creării</translation>
-<translation id="1666288758713846745">Dinamic</translation>
 <translation id="1666788816626221136">Ai stocate certificate care nu se încadrează în niciuna dintre celelalte categorii:</translation>
 <translation id="1670399744444387456">De bază</translation>
 <translation id="1673103856845176271">Fișierul nu a putut fi accesat din motive de securitate.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ultima oră</translation>
 <translation id="2121825465123208577">Redimensionează</translation>
 <translation id="2126167708562367080">Sincronizarea este dezactivată de administrator.</translation>
+<translation id="2126426811489709554">Afișată de Chrome</translation>
 <translation id="2127166530420714525">Modificarea stării de alimentare a adaptorului Bluetooth a eșuat.</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="212862741129535676">Procentaj de ocupare în starea activă</translation>
@@ -1253,7 +1252,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2805707493867224476">Permite tuturor site-urilor să afișeze ferestre pop-up</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2807517655263062534">Fișierele pe care le descarci apar aici</translation>
-<translation id="2809346626032021864">Lectură</translation>
 <translation id="2809586584051668049">și încă <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">În sesiunea de browser existentă a fost creată o fereastră nouă.</translation>
 <translation id="2812944337881233323">Deconectează-te și conectează-te din nou</translation>
@@ -4798,6 +4796,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8137331602592933310">V-a fost permis accesul la „<ph name="FILENAME" />”. Nu puteți șterge fișierul, deoarece nu vă aparține.</translation>
 <translation id="8137559199583651773">Gestionați extensiile</translation>
 <translation id="8138082791834443598">Opțional: introdu informații noi sau actualizează informațiile existente, pentru a le asocia acestui dispozitiv.</translation>
+<translation id="813913629614996137">Se inițializează...</translation>
 <translation id="8140778357236808512">Importați un utilizator monitorizat existent</translation>
 <translation id="8141725884565838206">Gestionați parolele</translation>
 <translation id="8142699993796781067">Rețea privată</translation>

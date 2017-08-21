@@ -175,12 +175,6 @@
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
 <translation id="5170982930780719864">主机 ID 无效。</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
-<translation id="5196958630269420102">通过您的 iOS 设备安全地访问您的计算机。
-
-• 在您的每台计算机上，使用 Chrome 网上应用店中的“Chrome 远程桌面”应用（下载地址：https://chrome.google.com/remotedesktop）设置远程访问权限
-• 在您的 iOS 设备上，打开该应用，然后点按任一台已联网的计算机，即可建立连接。
-
-有关隐私权方面的信息，请参阅 Google 隐私权政策 (http://goo.gl/SyrVzj) 和 Chrome 隐私权政策 (http://goo.gl/0uXE5d)。</translation>
 <translation id="5204575267916639804">常见问题解答</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
@@ -235,11 +229,6 @@
 <translation id="6570205395680337606">重置该应用。所有未保存的工作都将会丢失。</translation>
 <translation id="6572345186230665992">适用于 Mac（OS X Mavericks 10.9 及更高版本）</translation>
 <translation id="6583902294974160967">支持</translation>
-<translation id="6598484667010442494">Chrome 远程桌面
-远程桌面
-远程 PC
-远程计算机
-远程访问</translation>
 <translation id="6612717000975622067">发送Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>

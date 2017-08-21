@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">Ajustar...</translation>
 <translation id="1521442365706402292">Gerir certificados</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
-<translation id="1524152555482653726">Filme</translation>
 <translation id="1524430321211440688">Teclado</translation>
 <translation id="1525835343380843286">Erro de comunicação do servidor</translation>
 <translation id="1526560967942511387">Documento sem nome</translation>
@@ -468,7 +467,6 @@
 <translation id="1665611772925418501">Não foi possível modificar o ficheiro.</translation>
 <translation id="1665770420914915777">Utilizar a página Novo separador</translation>
 <translation id="1666058115165804494">Hora de criação</translation>
-<translation id="1666288758713846745">Dinâmico</translation>
 <translation id="1666788816626221136">Tem certificados que não encaixam em nenhuma das restantes categorias:</translation>
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1673103856845176271">Não foi possível aceder ao ficheiro por razões de segurança.</translation>
@@ -747,6 +745,7 @@
 <translation id="2116673936380190819">hora anterior</translation>
 <translation id="2121825465123208577">Redimensionar</translation>
 <translation id="2126167708562367080">A sincronização foi desativada pelo administrador.</translation>
+<translation id="2126426811489709554">Com tecnologia do Chrome</translation>
 <translation id="2127166530420714525">Falha ao alterar o estado de energia do adaptador Bluetooth.</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="212862741129535676">Percentagem de ocupação no estado de frequência</translation>
@@ -1254,7 +1253,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2805707493867224476">Permitir que todos os sites mostrem pop-ups</translation>
 <translation id="2805756323405976993">Aplicações</translation>
 <translation id="2807517655263062534">Os ficheiros que transferir são apresentados aqui</translation>
-<translation id="2809346626032021864">Leitura</translation>
 <translation id="2809586584051668049">e mais <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Nova janela criada na sessão de browser existente</translation>
 <translation id="2812944337881233323">Experimente terminar e iniciar sessão novamente</translation>
@@ -4803,6 +4801,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8137331602592933310">"<ph name="FILENAME" />" foi partilhado consigo. Não o pode eliminar porque não lhe pertence.</translation>
 <translation id="8137559199583651773">Gerir extensões</translation>
 <translation id="8138082791834443598">Opcional: introduza informações novas ou atualize informações existentes a associar a este dispositivo.</translation>
+<translation id="813913629614996137">A inicializar...</translation>
 <translation id="8140778357236808512">Importar um utilizador supervisionado existente</translation>
 <translation id="8141725884565838206">Gerir as palavras-passe</translation>
 <translation id="8142699993796781067">Rede privada</translation>

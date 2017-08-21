@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ayarla...</translation>
 <translation id="1521442365706402292">Sertifikaları yönet</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyenler</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Klavye</translation>
 <translation id="1525835343380843286">Sunucu iletişim hatası</translation>
 <translation id="1526560967942511387">Adsız Doküman</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Dosya değiştirilemedi.</translation>
 <translation id="1665770420914915777">Yeni Sekme sayfasını kullan</translation>
 <translation id="1666058115165804494">Oluşturma Zamanı</translation>
-<translation id="1666288758713846745">Dinamik</translation>
 <translation id="1666788816626221136">Dosyanızda aşağıdaki kategorilerin hiçbirine uymayan sertifikalar var:</translation>
 <translation id="1670399744444387456">Temel</translation>
 <translation id="1673103856845176271">Güvenlik nedenleriyle dosyaya erişilemedi.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">son 1 saat</translation>
 <translation id="2121825465123208577">Yeniden Boyutlandır</translation>
 <translation id="2126167708562367080">Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
+<translation id="2126426811489709554">Chrome tarafından desteklenmektedir</translation>
 <translation id="2127166530420714525">Bluetooth adaptörün güç durumu değiştirilemedi.</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="212862741129535676">Frekans Durumu Kullanma Yüzdesi</translation>
@@ -1254,7 +1253,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2805707493867224476">Tüm sitelerin pop-up göstermesine izin ver</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2807517655263062534">İndirdiğiniz dosyalar burada görünür</translation>
-<translation id="2809346626032021864">Okuma</translation>
 <translation id="2809586584051668049">ve diğer <ph name="NUMBER_ADDITIONAL_DISABLED" /> öğe</translation>
 <translation id="281133045296806353">Mevcut tarayıcı oturumunda yeni pencere oluşturuldu.</translation>
 <translation id="2812944337881233323">Oturumu kapatıp tekrar açmayı deneyin</translation>
@@ -3789,7 +3787,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 
 Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6581162200855843583">Google Drive bağlantısı</translation>
-<translation id="6582421931165117398">Kişisel bilgilerinizi korumak için şimdi şifrenizi değiştirin. Şifrenizi değiştirebilmeniz için önce oturum açmanız gerekir.</translation>
+<translation id="6582421931165117398">Kişisel bilgilerinizi korumak için şifrenizi hemen değiştirin. Şifrenizi değiştirebilmek için önce oturum açmanız gerekir.</translation>
 <translation id="6583851739559471707">Araya giren reklamlar gösterme eğiliminde olan sitelerde engellendi (önerilen)</translation>
 <translation id="6584878029876017575">Microsoft Ömür Boyu İmzalama</translation>
 <translation id="6585234750898046415">Oturum açma ekranında hesabınız için görüntülenecek bir resim seçin.</translation>
@@ -4801,6 +4799,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8137331602592933310">"<ph name="FILENAME" />" sizinle paylaşıldı. Sahibi siz olmadığınız için bu dosyayı silemezsiniz.</translation>
 <translation id="8137559199583651773">Uzantıları yönet</translation>
 <translation id="8138082791834443598">İsteğe bağlı — bu cihazla ilişkilendirilecek yeni bilgiler girin veya varolan bilgileri güncelleyin.</translation>
+<translation id="813913629614996137">İlk kullanıma hazırlanıyor...</translation>
 <translation id="8140778357236808512">Varolan bir denetlenen kullanıcıyı içe aktar</translation>
 <translation id="8141725884565838206">Şifrelerinizi yönetin</translation>
 <translation id="8142699993796781067">Özel ağ</translation>

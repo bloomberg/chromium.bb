@@ -148,7 +148,7 @@
 <translation id="4517233780764084060">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chromoting ל'פתח כחלון'.</translation>
 <translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">גישה</translation>
-<translation id="4592037108270173918">כשמחברים מכשיר לרשת סלולרית, ייתכן שיחולו עליך חיובים בגין צריכת נתונים. להמשיך?</translation>
+<translation id="4592037108270173918">כשמתחברים למכשיר ברשת סלולרית, עשויים לחול חיובים על צריכת נתונים. להמשיך?</translation>
 <translation id="4619978527973181021">קבל והתקן</translation>
 <translation id="4635770493235256822">מכשירים מרוחקים</translation>
 <translation id="4660011489602794167">הצגת מקלדת</translation>
@@ -175,12 +175,6 @@
 <translation id="5156271271724754543">‏הזן את אותו PIN בשתי התיבות.</translation>
 <translation id="5170982930780719864">מזהה מארח לא חוקי.</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>
-<translation id="5196958630269420102">‏גישה למחשבים שלך באופן מאובטח ממכשיר iOS שלך.
-
-• בכל אחד מהמחשבים, יש להגדיר גישה מרחוק באמצעות אפליקציית שולחן העבודה המרוחק של Chrome. ניתן להוריד אותה מחנות האינטרנט של Chrome‏: https://chrome.google.com/remotedesktop
-• במכשיר iOS, פתח את האפליקציה והקש על מחשב הנמצא במצב מקוון כדי להתחבר אליו.
-
-למידע על פרטיות, יש לעיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ובמדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">שאלות נפוצות</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
@@ -235,11 +229,6 @@
 <translation id="6570205395680337606">אפס את היישום. תאבד עבודות שלא נשמרו.</translation>
 <translation id="6572345186230665992">‏ל-Mac ‏(OS X Mavericks מגירסה 10.9 ואילך)</translation>
 <translation id="6583902294974160967">תמיכה</translation>
-<translation id="6598484667010442494">‏שולחן עבודה מרוחק של Chrome
-שולחן עבודה מרוחק
-מחשב אישי מרוחק
-מחשב מרוחק
-גישה מרוחקת</translation>
 <translation id="6612717000975622067">‏שלח Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>

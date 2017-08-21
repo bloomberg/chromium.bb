@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Коригувати…</translation>
 <translation id="1521442365706402292">Керування сертифікатами</translation>
 <translation id="152234381334907219">Ніколи не зберігалося</translation>
-<translation id="1524152555482653726">Фільм</translation>
 <translation id="1524430321211440688">Клавіатура</translation>
 <translation id="1525835343380843286">Помилка з’єднання із сервером</translation>
 <translation id="1526560967942511387">Документ без імені</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Файл неможливо змінити.</translation>
 <translation id="1665770420914915777">Використати сторінку нової вкладки</translation>
 <translation id="1666058115165804494">Час створення</translation>
-<translation id="1666288758713846745">Динамічний</translation>
 <translation id="1666788816626221136">У вас є сертифікати, які не відповідають жодній іншій категорії:</translation>
 <translation id="1670399744444387456">Основні параметри</translation>
 <translation id="1673103856845176271">Доступ до файлу неможливо отримати з міркувань безпеки.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">останню годину</translation>
 <translation id="2121825465123208577">Змінити розмір</translation>
 <translation id="2126167708562367080">Ваш адміністратор вимкнув синхронізацію.</translation>
+<translation id="2126426811489709554">Технології Chrome</translation>
 <translation id="2127166530420714525">Не вдалося змінити статус живлення для адаптера Bluetooth.</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
 <translation id="212862741129535676">Відсоток заряду акумулятора, який використовує стан частоти</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">Дозволяти всім сайтам показувати спливаючі вікна</translation>
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2807517655263062534">Тут відображаються завантажені файли</translation>
-<translation id="2809346626032021864">Читання</translation>
 <translation id="2809586584051668049">і ще <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Відкрито нове вікно в поточному сеансі веб-переглядача.</translation>
 <translation id="2812944337881233323">Вийдіть зі свого облікового запису та ввійдіть у нього знову</translation>
@@ -4800,6 +4798,7 @@
 <translation id="8137331602592933310">Вам надали доступ до файлу "<ph name="FILENAME" />". Ви не можете його видалити, оскільки він вам не належить.</translation>
 <translation id="8137559199583651773">Керувати розширеннями</translation>
 <translation id="8138082791834443598">Введіть нову або оновіть наявну інформацію, яку потрібно пов’язати з цим пристроєм (необов’язково).</translation>
+<translation id="813913629614996137">Ініціалізація...</translation>
 <translation id="8140778357236808512">Імпортувати існуючого контрольованого користувача</translation>
 <translation id="8141725884565838206">Керування паролями</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>

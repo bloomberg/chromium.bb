@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Pielāgot...</translation>
 <translation id="1521442365706402292">Pārvaldīt sertifikātus</translation>
 <translation id="152234381334907219">Jaunākie saglabātie</translation>
-<translation id="1524152555482653726">Filma</translation>
 <translation id="1524430321211440688">Tastatūra</translation>
 <translation id="1525835343380843286">Servera komunikācijas kļūda</translation>
 <translation id="1526560967942511387">Dokuments bez nosaukuma</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Failu nevarēja pārveidot.</translation>
 <translation id="1665770420914915777">Izmantot jaunas cilnes lapu</translation>
 <translation id="1666058115165804494">Izveides laiks</translation>
-<translation id="1666288758713846745">Dinamisks</translation>
 <translation id="1666788816626221136">Jums failā ir sertifikāti, kas neiederas nevienā no citām kategorijām:</translation>
 <translation id="1670399744444387456">Pamata</translation>
 <translation id="1673103856845176271">Failam nevar piekļūt drošības apsvērumu dēļ.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">iepriekšējās stundas</translation>
 <translation id="2121825465123208577">Mainīt lielumu</translation>
 <translation id="2126167708562367080">Administrators ir atspējojis sinhronizēšanu.</translation>
+<translation id="2126426811489709554">Nodrošina Chrome</translation>
 <translation id="2127166530420714525">Neizdevās nomainīt Bluetooth adaptera enerģijas stāvokli.</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="212862741129535676">Frekvences stāvoklis — noslogojuma procentuālais daudzums</translation>
@@ -1254,7 +1253,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2805707493867224476">Atļaut visām vietnēm rādīt uznirstošos logus</translation>
 <translation id="2805756323405976993">Lietotnes</translation>
 <translation id="2807517655263062534">Šeit ir redzami lejupielādētie faili.</translation>
-<translation id="2809346626032021864">Lasīšana</translation>
 <translation id="2809586584051668049">un vēl <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Esošās pārlūkprogrammas sesijā tika izveidots jauns logs.</translation>
 <translation id="2812944337881233323">Izrakstieties un atkārtoti pierakstieties.</translation>
@@ -4801,6 +4799,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8137331602592933310">Fails “<ph name="FILENAME" />” tika kopīgots ar jums. Jūs nevarat to dzēst, jo tas nepieder jums.</translation>
 <translation id="8137559199583651773">Pārvaldīt paplašinājumus</translation>
 <translation id="8138082791834443598">Neobligāti — ievadiet jaunu informāciju, kas jāsaista ar šo ierīci, vai atjauniniet esošo informāciju.</translation>
+<translation id="813913629614996137">Notiek inicializēšana...</translation>
 <translation id="8140778357236808512">Importēt esošo uzraudzīto lietotāju</translation>
 <translation id="8141725884565838206">Pārvaldīt savas paroles</translation>
 <translation id="8142699993796781067">Privāts tīkls</translation>

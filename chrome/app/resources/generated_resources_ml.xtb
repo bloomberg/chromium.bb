@@ -355,7 +355,6 @@
 <translation id="1520635877184409083">ക്രമീകരിക്കുക...</translation>
 <translation id="1521442365706402292">സര്‍ട്ടിഫിക്കറ്റുകള്‍ മാനേജ് ചെയ്യുക</translation>
 <translation id="152234381334907219">ഒരിക്കലും സംരക്ഷിച്ചില്ല</translation>
-<translation id="1524152555482653726">മൂവി</translation>
 <translation id="1524430321211440688">കീബോർഡ്</translation>
 <translation id="1525835343380843286">സെർവർ കമ്മ്യൂണിക്കേഷൻ പിശക്</translation>
 <translation id="1526560967942511387">പേരില്ലാത്ത പ്രമാണം</translation>
@@ -465,7 +464,6 @@
 <translation id="1665611772925418501">ഫയൽ പരിഷ്‌ക്കരിക്കാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="1665770420914915777">പുതിയ ടാബ് പേജ് ഉപയോഗിക്കുക</translation>
 <translation id="1666058115165804494">സൃഷ്‌ടിച്ച സമയം</translation>
-<translation id="1666288758713846745">ഡൈനാമിക്</translation>
 <translation id="1666788816626221136">മറ്റ് വിഭാഗങ്ങളിലൊന്നും അനുയോജ്യമാകാത്ത സര്‍‌ട്ടിഫിക്കറ്റുകള്‍‌ നിങ്ങള്‍‌ക്ക് ഫയലിലുണ്ട്:</translation>
 <translation id="1670399744444387456">അടിസ്ഥാനം</translation>
 <translation id="1673103856845176271">സുരക്ഷാ കാരണങ്ങളാൽ ഫയൽ ആക്‌സസ്സുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
@@ -744,6 +742,7 @@
 <translation id="2116673936380190819">കഴിഞ്ഞ മണിക്കൂര്‍</translation>
 <translation id="2121825465123208577">വലുപ്പംമാറ്റുക</translation>
 <translation id="2126167708562367080">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ സമന്വയം പ്രവർത്തനരഹിതമാക്കി.</translation>
+<translation id="2126426811489709554">Chrome നൽകുന്നത്</translation>
 <translation id="2127166530420714525">Bluetooth അഡാപ്റ്ററിന്റെ പവർ നില മാറ്റുന്നതിൽ പരാജയപ്പെട്ടു.</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
 <translation id="212862741129535676">ആവൃത്തി നില ഒക്യുപ്പെൻസി ശതമാനം</translation>
@@ -1252,7 +1251,6 @@
 <translation id="2805707493867224476">പോപ്പ്-അപ്പുകള്‍‌ കാണിക്കുന്നതിന് എല്ലാ സൈറ്റുകളെയും അനുവദിക്കുക</translation>
 <translation id="2805756323405976993">ആപ്സ്</translation>
 <translation id="2807517655263062534">നിങ്ങൾ ഡൗൺലോഡ് ചെയ്യുന്ന ഫയലുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
-<translation id="2809346626032021864">റീഡിംഗ്</translation>
 <translation id="2809586584051668049">ഒപ്പം <ph name="NUMBER_ADDITIONAL_DISABLED" /> എണ്ണം കൂടി</translation>
 <translation id="281133045296806353">നിലവിലുള്ള ബ്രൌസിംഗ് സെഷനില്‍ പുതിയ വിന്‍ഡോ സൃഷ്‌ടിച്ചു.</translation>
 <translation id="2812944337881233323">സൈൻ ഔട്ട് ചെയ്‌ത്, വീണ്ടും ആരംഭിക്കുന്നത് പരീക്ഷിച്ചുനോക്കൂ</translation>
@@ -4798,6 +4796,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8137331602592933310">നിങ്ങളുമായി "<ph name="FILENAME" />" എന്നത് പങ്കിട്ടിരിക്കുന്നു. ഇത് നിങ്ങളുടേതല്ലാത്തതിനാൽ നിങ്ങൾക്ക് അത് ഇല്ലാതാക്കാനാകില്ല.</translation>
 <translation id="8137559199583651773">വിപുലീകരണങ്ങള്‍ നിയന്ത്രിക്കുക</translation>
 <translation id="8138082791834443598">ഓപ്‌ഷണൽ — ഈ ഉപകരണവുമായി ബന്ധപ്പെടുത്തേണ്ട പുതിയ വിവരങ്ങൾ നൽകുക അല്ലെങ്കിൽ ഇപ്പോഴുള്ള വിവരങ്ങൾ അപ്‌ഡേറ്റുചെയ്യുക.</translation>
+<translation id="813913629614996137">ആരംഭിക്കുന്നു...</translation>
 <translation id="8140778357236808512">നിലവിലുള്ള സൂപ്പർവൈസുചെയ്‌ത ഒരു ഉപയോക്താവിനെ ഇമ്പോർട്ടുചെയ്യുക</translation>
 <translation id="8141725884565838206">നിങ്ങളുടെ പാസ്‌വേഡുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="8142699993796781067">സ്വകാര്യ നെറ്റ്‌വര്‍ക്ക്</translation>
@@ -4882,7 +4881,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8260864402787962391">മൗസ്</translation>
 <translation id="8261378640211443080">ഈ വിപുലീകരണം <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> എന്നതിൽ ലിസ്റ്റുചെയ്‌തിട്ടില്ല, ഇത് നിങ്ങളുടെ അറിവില്ലാതെ ചേർത്തിരിക്കാനിടയുണ്ട്.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> എന്നയാൾക്കായി അക്കൗണ്ട് ചേർക്കുക</translation>
-<translation id="8261506727792406068">ഇല്ലാതാക്കൂ</translation>
+<translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8261580862248730866">Microphone ഒഴിവാക്കലുകൾ</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ <ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> ബാക്കപ്പുചെയ്യുന്നു</translation>
 <translation id="826246685091802258">ഈ ബിൽഡിൽ <ph name="BAD_FLAG" /> നടപ്പിലാക്കിയിട്ടില്ല</translation>

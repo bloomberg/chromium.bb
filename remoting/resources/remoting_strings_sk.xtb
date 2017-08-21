@@ -175,12 +175,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="5156271271724754543">Do obidvoch polí zadajte rovnaký kód PIN.</translation>
 <translation id="5170982930780719864">Neplatný identifikátor hostiteľa</translation>
 <translation id="518094545883702183">K týmto informáciám, ktoré sa používajú iba na diagnostiku vami nahláseného problému, má prístup výhradne osoba prešetrujúca vaše hlásenie. Tieto informácie budú uchovávané maximálne 30 dní.</translation>
-<translation id="5196958630269420102">Zaistite bezpečný prístup k počítačom zo svojho zariadenia so systémom iOS.
-
-• V každom zo svojich počítačov nastavte vzdialený prístup pomocou aplikácie Vzdialená plocha Chrome z Internetového obchodu Chrome na adrese https://chrome.google.com/remotedesktop.
-• V zariadení so systémom iOS spustite danú aplikáciu a klepnutím na niektorý počítač sa pripojte.
-
-Informácie o ochrane súkromia nájdete v pravidlách ochrany súkromia (http://goo.gl/SyrVzj) a v pravidlách ochrany súkromia prehliadača Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Časté otázky</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
@@ -235,11 +229,6 @@ Informácie o ochrane súkromia nájdete v pravidlách ochrany súkromia (http
 <translation id="6570205395680337606">Resetovať aplikáciu. Prídete o všetku neuloženú prácu.</translation>
 <translation id="6572345186230665992">Pre počítače Mac (OS X Mavericks 10.9 a vyšší)</translation>
 <translation id="6583902294974160967">Podpora</translation>
-<translation id="6598484667010442494">Vzdialená plocha Chrome
-Vzdialená plocha
-Vzdialené PC
-Vzdialený počítač
-Vzdialený prístup</translation>
 <translation id="6612717000975622067">Odoslať akciu Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">Váš kód PIN bol aktualizovaný.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všetky práva vyhradené.</translation>

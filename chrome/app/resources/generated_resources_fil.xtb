@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Isaayos...</translation>
 <translation id="1521442365706402292">Pamahalaan ang mga sertipiko</translation>
 <translation id="152234381334907219">Hindi Kailanman Na-save</translation>
-<translation id="1524152555482653726">Pelikula</translation>
 <translation id="1524430321211440688">Keyboard</translation>
 <translation id="1525835343380843286">Nagkaroon ng error sa komunikasyon ng server</translation>
 <translation id="1526560967942511387">Walang pamagat na Dokumento</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Hindi mababago ang file.</translation>
 <translation id="1665770420914915777">Gamitin ang page na Bagong Tab</translation>
 <translation id="1666058115165804494">Oras ng Pagkakagawa</translation>
-<translation id="1666288758713846745">Dynamic</translation>
 <translation id="1666788816626221136">Mayroon kang ibinigay na mga certificate na hindi umaangkop sa alinman sa sumusunod na mga kategorya:</translation>
 <translation id="1670399744444387456">Pangunahin</translation>
 <translation id="1673103856845176271">Hindi ma-access ang file sa mga kadahilanang pang-seguridad.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ang nakalipas na oras</translation>
 <translation id="2121825465123208577">Baguhin ang laki</translation>
 <translation id="2126167708562367080">Na-disable ng iyong administrator ang pag-sync.</translation>
+<translation id="2126426811489709554">Pinapagana ng Chrome</translation>
 <translation id="2127166530420714525">Nabigong baguhin ang katayuan ng power ng adapter ng Bluetooth.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="212862741129535676">Porsyento ng Ginagamit sa Estado ng Dalas</translation>
@@ -1255,7 +1254,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng site</translation>
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2807517655263062534">Dito lalabas ang mga file na iyong ida-download</translation>
-<translation id="2809346626032021864">Pagbabasa</translation>
 <translation id="2809586584051668049">at <ph name="NUMBER_ADDITIONAL_DISABLED" /> pa</translation>
 <translation id="281133045296806353">Lumikha ng bagong window sa umiiral nang session ng browser.</translation>
 <translation id="2812944337881233323">Subukang mag-sign out at muling mag-sign in</translation>
@@ -4804,6 +4802,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8137331602592933310">Ibinahagi sa iyo ang "<ph name="FILENAME" />." Hindi mo ito matatanggal dahil hindi mo ito pagmamay-ari.</translation>
 <translation id="8137559199583651773">Pamahalaan ang mga extension</translation>
 <translation id="8138082791834443598">Opsyonal — maglagay ng bago o mag-update ng umiiral nang impormasyon na iuugnay sa device na ito.</translation>
+<translation id="813913629614996137">Sinisimulan...</translation>
 <translation id="8140778357236808512">Mag-import ng isang umiiral na pinangangasiwaang user</translation>
 <translation id="8141725884565838206">Pamahalaan ang iyong mga password</translation>
 <translation id="8142699993796781067">Pribadong network</translation>

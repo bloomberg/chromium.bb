@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Aanpassen...</translation>
 <translation id="1521442365706402292">Certificaten beheren</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Toetsenbord</translation>
 <translation id="1525835343380843286">Servercommunicatiefout</translation>
 <translation id="1526560967942511387">Naamloos document</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Het bestand kan niet worden aangepast.</translation>
 <translation id="1665770420914915777">De pagina 'Nieuw tabblad' gebruiken</translation>
 <translation id="1666058115165804494">Aanmaaktijd</translation>
-<translation id="1666288758713846745">Dynamisch</translation>
 <translation id="1666788816626221136">Je hebt certificaten die niet in een van de andere categorieën vallen:</translation>
 <translation id="1670399744444387456">Basis</translation>
 <translation id="1673103856845176271">Uit veiligheidsoverwegingen kan het bestand niet worden geopend.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">het afgelopen uur</translation>
 <translation id="2121825465123208577">Formaat aanpassen</translation>
 <translation id="2126167708562367080">Synchronisatie is uitgeschakeld door je beheerder.</translation>
+<translation id="2126426811489709554">Mogelijk gemaakt door Chrome</translation>
 <translation id="2127166530420714525">Wijzigen energiestatus van de Bluetooth-adapter mislukt.</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
 <translation id="212862741129535676">Bezettingspercentage van frequentiestatus</translation>
@@ -1254,7 +1253,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2807517655263062534">Bestanden die je downloadt, worden hier weergegeven</translation>
-<translation id="2809346626032021864">Lezen</translation>
 <translation id="2809586584051668049">en <ph name="NUMBER_ADDITIONAL_DISABLED" /> meer</translation>
 <translation id="281133045296806353">Er is een nieuw venster gemaakt in de bestaande browsersessie.</translation>
 <translation id="2812944337881233323">Probeer uit en weer in te loggen</translation>
@@ -4799,6 +4797,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8137331602592933310">'<ph name="FILENAME" />' is met je gedeeld. Je kunt dit niet verwijderen omdat jij niet de eigenaar bent.</translation>
 <translation id="8137559199583651773">Extensies beheren</translation>
 <translation id="8138082791834443598">Optioneel: Voer nieuwe informatie in of update bestaande informatie die aan dit apparaat moet worden gekoppeld.</translation>
+<translation id="813913629614996137">Starten...</translation>
 <translation id="8140778357236808512">Een bestaande gebruiker met beperkte rechten importeren</translation>
 <translation id="8141725884565838206">Uw wachtwoorden beheren</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>

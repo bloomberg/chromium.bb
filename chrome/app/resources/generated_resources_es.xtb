@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ajustar...</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Contraseñas que nunca se guardan</translation>
-<translation id="1524152555482653726">Película</translation>
 <translation id="1524430321211440688">Teclado</translation>
 <translation id="1525835343380843286">Error de comunicación con el servidor</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">No se ha podido modificar el archivo.</translation>
 <translation id="1665770420914915777">Utilizar la página Nueva pestaña</translation>
 <translation id="1666058115165804494">Hora de creación</translation>
-<translation id="1666288758713846745">Dinámico</translation>
 <translation id="1666788816626221136">Tienes certificados registrados que no corresponden a ninguna otra categoría:</translation>
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1673103856845176271">No se ha podido acceder al archivo por razones de seguridad.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">hace una hora</translation>
 <translation id="2121825465123208577">Modificar tamaño</translation>
 <translation id="2126167708562367080">El administrador ha inhabilitado la sincronización.</translation>
+<translation id="2126426811489709554">Con la tecnología de Chrome</translation>
 <translation id="2127166530420714525">Error al cambiar el estado de alimentación del adaptador Bluetooth</translation>
 <translation id="2127372758936585790">Carga lenta</translation>
 <translation id="212862741129535676">Porcentaje de ocupación de estado de frecuencia</translation>
@@ -1256,7 +1255,6 @@ sistema operativo desde una unidad USB
 <translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2807517655263062534">Los archivos que descargues aparecen aquí</translation>
-<translation id="2809346626032021864">Lectura</translation>
 <translation id="2809586584051668049">y <ph name="NUMBER_ADDITIONAL_DISABLED" /> más</translation>
 <translation id="281133045296806353">Se ha abierto una nueva ventana en la sesión actual del navegador.</translation>
 <translation id="2812944337881233323">Prueba a cerrar sesión y volver a iniciarla</translation>
@@ -4794,6 +4792,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8137331602592933310">El archivo "<ph name="FILENAME" />" se ha compartido contigo. No puedes eliminarlo porque no es tuyo.</translation>
 <translation id="8137559199583651773">Administrar extensiones</translation>
 <translation id="8138082791834443598">Opcional: introduce nueva información o actualiza la existente para asociarla a este dispositivo.</translation>
+<translation id="813913629614996137">Inicializando…</translation>
 <translation id="8140778357236808512">Importar un usuario supervisado</translation>
 <translation id="8141725884565838206">Administra tus contraseñas</translation>
 <translation id="8142699993796781067">Red privada</translation>

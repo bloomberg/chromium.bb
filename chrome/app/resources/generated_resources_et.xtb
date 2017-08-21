@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Korrigeerimine ...</translation>
 <translation id="1521442365706402292">Halda serte</translation>
 <translation id="152234381334907219">Ei ole kunagi salvestatud</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Klaviatuur</translation>
 <translation id="1525835343380843286">Serveri kommunikatsiooniviga</translation>
 <translation id="1526560967942511387">Pealkirjata dokument</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Faili ei saa muuta.</translation>
 <translation id="1665770420914915777">Kasuta Uue vahelehe lehekülge</translation>
 <translation id="1666058115165804494">Loomisaeg</translation>
-<translation id="1666288758713846745">Dünaamiline</translation>
 <translation id="1666788816626221136">Teil on sertifikaate, mis ei sobi ühtegi muusse kategooriasse:</translation>
 <translation id="1670399744444387456">Põhiseaded</translation>
 <translation id="1673103856845176271">Turvalisuse tagamiseks on juurdepääs failile keelatud.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">viimasel tunnil</translation>
 <translation id="2121825465123208577">Muuda suurust</translation>
 <translation id="2126167708562367080">Administraator on sünkroonimise keelanud.</translation>
+<translation id="2126426811489709554">Chrome'i toega</translation>
 <translation id="2127166530420714525">Bluetooth-adapteri toite oleku muutmine nurjus.</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="212862741129535676">Sageduse oleku protsent</translation>
@@ -1254,7 +1253,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2805707493867224476">Luba kõigil saitidel hüpikakende kuvamine</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2807517655263062534">Siin kuvatakse teie allalaaditud failid</translation>
-<translation id="2809346626032021864">Lugemine</translation>
 <translation id="2809586584051668049">ja veel <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Olemasoleva brauseri seansi ajal loodi uus aken.</translation>
 <translation id="2812944337881233323">Proovige välja ja seejärel uuesti sisse logida</translation>
@@ -1358,7 +1356,7 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2951247061394563839">Vii aken keskele</translation>
 <translation id="2951721188322348056">Video teave</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> küpsist</translation>
-<translation id="2958721676848865875">Pakettlaienduse hoiatus</translation>
+<translation id="2958721676848865875">Laienduse ettevalmistamise hoiatus</translation>
 <translation id="2959614062380389916">Administraator on keelanud</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (pikendatud)</translation>
 <translation id="2961695502793809356">Klõpsake edasi minemiseks, hoidke all ajaloo kuvamiseks</translation>
@@ -4799,6 +4797,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8137331602592933310">Faili „<ph name="FILENAME" />” on teiega jagatud. Te ei saa seda kustutada, kuna te pole selle omanik.</translation>
 <translation id="8137559199583651773">Laienduste haldamine</translation>
 <translation id="8138082791834443598">Valikuline – sisestage uus teave või värskendage olemasolevat teavet, mis selle seadmega seostatakse.</translation>
+<translation id="813913629614996137">Lähtestamine …</translation>
 <translation id="8140778357236808512">Olemasoleva jälgitava kasutaja importimine</translation>
 <translation id="8141725884565838206">Paroolide haldamine</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
@@ -5114,7 +5113,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> või <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Sundlaadi see leht uuesti</translation>
 <translation id="8652139471850419555">Eelistatud võrgud</translation>
-<translation id="8652400352452647993">Pakettlaienduse viga</translation>
+<translation id="8652400352452647993">Viga laienduse ettevalmistamisel</translation>
 <translation id="8652487083013326477">lehtede vahemiku raadionupp</translation>
 <translation id="8654151524613148204">Kahjuks on fail teie arvuti jaoks liiga suur.</translation>
 <translation id="8655295600908251630">Kanal</translation>

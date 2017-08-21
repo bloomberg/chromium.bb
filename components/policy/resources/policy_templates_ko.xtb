@@ -54,7 +54,7 @@
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
-<translation id="123081309365616809">기기에 콘텐츠 전송 사용 설정</translation>
+<translation id="123081309365616809">기기에 콘텐츠 전송 허용</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
 
@@ -971,9 +971,9 @@
       이 정책 값이 0인 경우 기본 캐시 크기가 사용되지만 사용자가 변경할 수는 없습니다.
 
       이 정책이 설정되지 않으면 기본 크기가 사용되며 사용자는 --media-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
-<translation id="4508686775017063528">이 정책을 true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되어 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시된 경우)을 통해 실행할 수 있습니다.
+<translation id="4508686775017063528">이 정책을 'true'로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되어 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시된 경우)을 통해 실행할 수 있습니다.
 
-          이 정책을 false로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
+          이 정책을 'false'로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
 <translation id="4518251772179446575">사이트에서 사용자의 실제 위치를 추적할 때마다 확인</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" />의 검색주소창에서 추천 검색어를 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
