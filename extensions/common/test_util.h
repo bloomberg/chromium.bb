@@ -11,12 +11,8 @@
 
 namespace extensions {
 class Extension;
-class ExtensionBuilder;
 
 namespace test_util {
-
-// Adds an extension manifest to a builder.
-ExtensionBuilder BuildExtension(ExtensionBuilder builder);
 
 // Create an extension with a variable |id|, for tests that require multiple
 // extensions side-by-side having distinct IDs.

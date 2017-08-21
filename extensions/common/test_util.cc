@@ -13,15 +13,6 @@
 namespace extensions {
 namespace test_util {
 
-ExtensionBuilder BuildExtension(ExtensionBuilder builder) {
-  builder.SetManifest(DictionaryBuilder()
-                          .Set("name", "Test extension")
-                          .Set("version", "1.0")
-                          .Set("manifest_version", 2)
-                          .Build());
-  return builder;
-}
-
 scoped_refptr<Extension> CreateEmptyExtension(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(
