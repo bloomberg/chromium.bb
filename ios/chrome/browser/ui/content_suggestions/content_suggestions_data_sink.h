@@ -15,8 +15,11 @@
 
 // Notifies the Data Sink that new data is available for the section identified
 // by |sectionInfo|.
+// If |forceReload| is YES, the section is reloaded with the new suggestions.
+// If |forceReload| is NO, the new data are loaded only if the section is empty.
 - (void)dataAvailableForSection:
-    (ContentSuggestionsSectionInformation*)sectionInfo;
+            (ContentSuggestionsSectionInformation*)sectionInfo
+                    forceReload:(BOOL)forceReload;
 
 // The suggestion associated with |suggestionIdentifier| has been invalidated by
 // the backend data source and should be cleared now. This is why this method is

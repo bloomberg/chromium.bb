@@ -316,6 +316,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 }
 
 - (void)addItemToReadingList:(ContentSuggestionsItem*)item {
+  self.contentSuggestionsMediator.readingListNeedsReload = YES;
   ReadingListAddCommand* command =
       [[ReadingListAddCommand alloc] initWithURL:item.URL title:item.title];
   [self.dispatcher addToReadingList:command];
