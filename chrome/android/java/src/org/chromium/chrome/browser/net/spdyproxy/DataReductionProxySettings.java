@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -102,6 +103,15 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Handles calls for data reduction proxy initialization that need to happen after the native
+     * library has been loaded.
+     */
+    public static void handlePostNativeInitialization() {
+        reconcileDataReductionProxyEnabledState();
+        DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
+    }
+
+    /**
      * Reconciles the Java-side data reduction proxy state with the native one.
      *
      * The data reduction proxy state needs to be accessible before the native
@@ -110,10 +120,8 @@ public class DataReductionProxySettings {
      * Java preference has to be updated.
      * This method must be called early at startup, but once the native library
      * has been loaded.
-     *
-     * @param context The application context.
      */
-    public static void reconcileDataReductionProxyEnabledState(Context context) {
+    private static void reconcileDataReductionProxyEnabledState() {
         ThreadUtils.assertOnUiThread();
         boolean enabled = getInstance().isDataReductionProxyEnabled();
         ContextUtils.getAppSharedPreferences().edit()
@@ -133,9 +141,17 @@ public class DataReductionProxySettings {
         return sSettings;
     }
 
+    /**
+     * Sets a singleton instance of the settings object for testing.
+     */
+    @VisibleForTesting
+    public static void setInstanceForTesting(DataReductionProxySettings settings) {
+        sSettings = settings;
+    }
+
     private final long mNativeDataReductionProxySettings;
 
-    private DataReductionProxySettings() {
+    protected DataReductionProxySettings() {
         // Note that this technically leaks the native object, however,
         // DataReductionProxySettings is a singleton that lives forever and there's no clean
         // shutdown of Chrome on Android
@@ -214,7 +230,7 @@ public class DataReductionProxySettings {
      * Returns the time that the data reduction statistics were last updated.
      * @return The last update time in milliseconds since the epoch.
      */
-    public long getDataReductionLastUpdateTime()  {
+    public long getDataReductionLastUpdateTime() {
         return nativeGetDataReductionLastUpdateTime(mNativeDataReductionProxySettings);
     }
 
