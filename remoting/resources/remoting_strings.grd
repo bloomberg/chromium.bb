@@ -784,18 +784,16 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         Remember my PIN on this device.
       </message>
 
-      <message desc="Title for the instructions for setting up a remote host. Shown when the user has no host available. One sentence per line." name="IDS_HOST_SETUP_TITLE">
-You don't have a remote desktop
-To get started,
+      <message desc="Title for the instructions for setting up a remote host. Shown when the user has no host available." name="IDS_HOST_SETUP_TITLE">
+        Welcome to Chrome Remote Desktop
       </message>
       <message desc="Instructions for setting up a computer to be remotely accessible. Please make sure the translated string has exactly the same number of lines." name="IDS_HOST_SETUP_INSTRUCTIONS">
-Go to the computer that you want to remotely access
-Visit <ph name="INSTALLATION_LINK">$1<ex>google.com/remotedesktop</ex></ph> from your Chrome browser
-Install the Chrome Remote Desktop software and follow the instructions to complete the setup
-After your remote device is setup, you can access it directly from this page
+On the computer you want to access remotely, open Chrome and visit <ph name="INSTALLATION_LINK">$1<ex>google.com/remotedesktop</ex></ph>
+Install Chrome Remote Desktop software and follow the instructions to complete setup
+After setup is complete, you'll be able to access the computer from this page by entering the PIN or access code
       </message>
       <message desc="Label for a button for sending the user an email with link and instructions for setting up a computer for remote access." name="IDS_EMAIL_LINKS_AND_INSTRUCTIONS">
-        Email link and instructions
+        Email these instructions
       </message>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
