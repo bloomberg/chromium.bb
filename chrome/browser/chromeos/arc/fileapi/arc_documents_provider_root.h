@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -37,6 +38,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
     base::FilePath::StringType name;
     std::string document_id;
     bool is_directory;
+    base::Time last_modified;
   };
 
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;

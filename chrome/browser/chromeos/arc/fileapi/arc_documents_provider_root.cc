@@ -35,6 +35,7 @@ constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(60);
 struct ArcDocumentsProviderRoot::ThinDocument {
   std::string document_id;
   bool is_directory;
+  base::Time last_modified;
 };
 
 // Represents the status of a document watcher.
@@ -253,7 +254,8 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
   std::vector<ThinFileInfo> files;
   for (const auto& pair : mapping) {
     files.emplace_back(ThinFileInfo{pair.first, pair.second.document_id,
-                                    pair.second.is_directory});
+                                    pair.second.is_directory,
+                                    pair.second.last_modified});
   }
   std::move(callback).Run(base::File::FILE_OK, std::move(files));
 }
@@ -442,9 +444,9 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
 
     DCHECK_EQ(0u, mapping.count(filename));
 
-    mapping[filename] =
-        ThinDocument{document->document_id,
-                     document->mime_type == kAndroidDirectoryMimeType};
+    mapping[filename] = ThinDocument{
+        document->document_id, document->mime_type == kAndroidDirectoryMimeType,
+        base::Time::FromJavaTime(document->last_modified)};
   }
 
   // This may create a new cache, or just update an existing cache.
