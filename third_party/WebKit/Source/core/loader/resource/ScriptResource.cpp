@@ -98,6 +98,7 @@ const String& ScriptResource::SourceText() {
 
 void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
   source_text_ = AtomicString();
+  SetDecodedSize(0);
 }
 
 // static
