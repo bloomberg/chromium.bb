@@ -78,9 +78,6 @@ class MIDI_EXPORT MidiService final {
   // actually enabled.
   const bool is_dynamic_instantiation_enabled_;
 
-  // Counts active clients to manage dynamic MidiManager instantiation.
-  size_t active_clients_;
-
   // Protects all members above.
   base::Lock lock_;
 
