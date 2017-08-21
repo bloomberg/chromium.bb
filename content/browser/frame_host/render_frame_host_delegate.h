@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
@@ -261,6 +262,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view) {}
+
+  // The frame reached painted content for the first time, as defined by the
+  // First Paint API. See https://github.com/WICG/paint-timing.
+  virtual void OnFirstPaintInFrame(RenderFrameHost* render_frame_host,
+                                   base::TimeDelta time_to_first_paint) {}
 
   // The page is trying to open a new page (e.g. a popup window). The window
   // should be created associated with the given |main_frame_widget_route_id| in

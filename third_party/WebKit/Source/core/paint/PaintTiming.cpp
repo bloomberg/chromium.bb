@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/ProgressTracker.h"
@@ -20,7 +21,9 @@
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "public/platform/frame_broker.mojom-blink.h"
 
 namespace blink {
 
@@ -240,6 +243,12 @@ void PaintTiming::SetFirstPaintSwap(double stamp) {
     performance->AddFirstPaintTiming(first_paint_swap_);
   ReportSwapTimeDeltaHistogram(first_paint_, first_paint_swap_);
   NotifyPaintTimingChanged();
+
+  if (GetFrame()) {
+    auto timing = GetSupplementable()->Loader()->GetTiming();
+    GetFrame()->GetFrameBroker()->OnFirstPaint(
+        WTF::TimeDelta::FromSecondsD(stamp - timing.NavigationStart()));
+  }
 }
 
 void PaintTiming::SetFirstContentfulPaintSwap(double stamp) {

@@ -556,6 +556,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view) override;
+  void OnFirstPaintInFrame(RenderFrameHost* render_frame_host,
+                           base::TimeDelta time_to_first_paint) override;
   void CreateNewWindow(
       RenderFrameHost* opener,
       int32_t render_view_route_id,

@@ -99,6 +99,7 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -990,6 +991,12 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
   DCHECK(Client());
   return *Client()->GetInterfaceProvider();
+}
+
+mojom::blink::FrameBroker* LocalFrame::GetFrameBroker() {
+  if (!frame_broker_)
+    GetInterfaceProvider().GetInterface(mojo::MakeRequest(&frame_broker_));
+  return frame_broker_.get();
 }
 
 LocalFrameClient* LocalFrame::Client() const {

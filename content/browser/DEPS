@@ -92,6 +92,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/input_messages.mojom.h",
   "+third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
   "+third_party/WebKit/public/platform/mime_registry.mojom.h",
+  "+third_party/WebKit/public/platform/frame_broker.mojom.h",
   "+third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h",
   "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
