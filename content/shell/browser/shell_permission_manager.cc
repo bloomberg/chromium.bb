@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 
 namespace content {
@@ -83,6 +84,13 @@ blink::mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
       command_line->HasSwitch(switches::kUseFakeUIForMediaStream)) {
     return blink::mojom::PermissionStatus::GRANTED;
   }
+
+  // Generic sensor browser tests require permission to be granted.
+  if (permission == PermissionType::SENSORS &&
+      command_line->HasSwitch(switches::kContentBrowserTest)) {
+    return blink::mojom::PermissionStatus::GRANTED;
+  }
+
   return blink::mojom::PermissionStatus::DENIED;
 }
 

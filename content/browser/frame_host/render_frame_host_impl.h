@@ -10,8 +10,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -106,6 +108,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class ResourceRequestBody;
+class SensorProviderProxyImpl;
 class StreamHandle;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
@@ -1136,6 +1139,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // GeolocationService which provides Geolocation.
   std::unique_ptr<GeolocationServiceImpl> geolocation_service_;
+
+  // SensorProvider proxy which acts as a gatekeeper to the real SensorProvider.
+  std::unique_ptr<SensorProviderProxyImpl> sensor_provider_proxy_;
 
   std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_registry_;
 
