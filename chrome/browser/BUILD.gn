@@ -3171,8 +3171,6 @@ split_static_library("browser") {
       "cryptauth/chrome_cryptauth_service_factory.h",
       "custom_handlers/register_protocol_handler_permission_request.cc",
       "custom_handlers/register_protocol_handler_permission_request.h",
-      "custom_home_pages_table_model.cc",
-      "custom_home_pages_table_model.h",
       "diagnostics/diagnostics_controller.cc",
       "diagnostics/diagnostics_controller.h",
       "diagnostics/diagnostics_metrics.cc",

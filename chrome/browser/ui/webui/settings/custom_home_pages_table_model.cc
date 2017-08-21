@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/ui/webui/settings/custom_home_pages_table_model.h"
 
 #include <stddef.h>
 
@@ -196,9 +196,11 @@ base::string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
 }
 
 base::string16 CustomHomePagesTableModel::GetTooltip(int row) {
-  return entries_[row].title.empty() ? base::string16() :
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
-                                 entries_[row].title, FormattedURL(row));
+  return entries_[row].title.empty()
+             ? base::string16()
+             : l10n_util::GetStringFUTF16(IDS_SETTINGS_ON_STARTUP_PAGE_TOOLTIP,
+                                          entries_[row].title,
+                                          FormattedURL(row));
 }
 
 void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {

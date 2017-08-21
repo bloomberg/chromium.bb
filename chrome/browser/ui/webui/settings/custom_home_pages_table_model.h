@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
-#define CHROME_BROWSER_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
+#define CHROME_BROWSER_UI_WEBUI_SETTINGS_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
 
 #include <string>
 #include <vector>
@@ -124,4 +124,4 @@ class CustomHomePagesTableModel : public ui::TableModel {
   DISALLOW_COPY_AND_ASSIGN(CustomHomePagesTableModel);
 };
 
-#endif  // CHROME_BROWSER_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CUSTOM_HOME_PAGES_TABLE_MODEL_H_
