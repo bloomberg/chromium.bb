@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 // Controller for the Cocoa manage passwords bubble. Transitions through several
 // views according to user interaction and updates the password management state
@@ -24,6 +25,9 @@
 }
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                      model:(ManagePasswordsBubbleModel*)model;
+
+// Overridden to customize the touch bar.
+- (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
 @end
 
 @interface ManagePasswordsBubbleController (Testing)

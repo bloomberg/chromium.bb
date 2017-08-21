@@ -19,16 +19,23 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/common/chrome_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 // Gmock matcher
 using testing::_;
 
 namespace {
+
+// Touch bar item identifiers.
+NSString* const kEditTouchBarId = @"EDIT";
+NSString* const kNeverTouchBarId = @"NEVER";
+NSString* const kSaveTouchBarId = @"SAVE";
 
 class SavePendingPasswordViewControllerTest
     : public ManagePasswordsControllerTest {
@@ -208,6 +215,25 @@ TEST_F(SavePendingPasswordViewControllerTest, CloseBubbleAndHandleClick) {
   [delegate() setModel:nil];
   [controller().neverButton performClick:nil];
   [controller().saveButton performClick:nil];
+}
+
+// Verifies the touch bar items.
+TEST_F(SavePendingPasswordViewControllerTest, TouchBar) {
+  SetUpSavePendingState(false);
+  if (@available(macOS 10.12.2, *)) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kDialogTouchBar);
+
+    NSTouchBar* touch_bar = [controller() makeTouchBar];
+    NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+    EXPECT_EQ(3u, [touch_bar_items count]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:[controller() touchBarIdForItem:kEditTouchBarId]]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:[controller() touchBarIdForItem:kNeverTouchBarId]]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:[controller() touchBarIdForItem:kSaveTouchBarId]]);
+  }
 }
 
 }  // namespace
