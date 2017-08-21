@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history_popup/tab_history_coordinator.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -24,7 +24,7 @@
 
 using base::UserMetricsAction;
 
-@interface TabHistoryCoordinator ()<PopupMenuDelegate>
+@interface LegacyTabHistoryCoordinator ()<PopupMenuDelegate>
 
 // The TabHistoryPopupController instance that this coordinator will be
 // presenting.
@@ -33,7 +33,7 @@ using base::UserMetricsAction;
 
 @end
 
-@implementation TabHistoryCoordinator
+@implementation LegacyTabHistoryCoordinator
 
 @synthesize dispatcher = _dispatcher;
 @synthesize positionProvider = _positionProvider;
@@ -64,13 +64,14 @@ using base::UserMetricsAction;
   Tab* tab = [self.tabModel currentTab];
   web::NavigationItemList backwardItems =
       [tab navigationManager]->GetBackwardItems();
-  CGPoint origin = [self.baseViewController.view.window
+  CGPoint origin = [
+      [self.presentationProvider viewForTabHistoryPresentation].window
       convertPoint:[self.positionProvider
-                       originPointForToolbarButton:ToolbarButtonBack]
-            toView:self.baseViewController.view];
+                       originPointForToolbarButton:ToolbarButtonTypeBack]
+            toView:[self.presentationProvider viewForTabHistoryPresentation]];
 
   [self.tabHistoryUIUpdater
-      updateUIForTabHistoryPresentationFrom:ToolbarButtonBack];
+      updateUIForTabHistoryPresentationFrom:ToolbarButtonTypeBack];
   [self presentTabHistoryPopupWithItems:backwardItems origin:origin];
 }
 
@@ -78,13 +79,14 @@ using base::UserMetricsAction;
   Tab* tab = [self.tabModel currentTab];
   web::NavigationItemList forwardItems =
       [tab navigationManager]->GetForwardItems();
-  CGPoint origin = [self.baseViewController.view.window
+  CGPoint origin = [
+      [self.presentationProvider viewForTabHistoryPresentation].window
       convertPoint:[self.positionProvider
-                       originPointForToolbarButton:ToolbarButtonForward]
-            toView:self.baseViewController.view];
+                       originPointForToolbarButton:ToolbarButtonTypeForward]
+            toView:[self.presentationProvider viewForTabHistoryPresentation]];
 
   [self.tabHistoryUIUpdater
-      updateUIForTabHistoryPresentationFrom:ToolbarButtonForward];
+      updateUIForTabHistoryPresentationFrom:ToolbarButtonTypeForward];
   [self presentTabHistoryPopupWithItems:forwardItems origin:origin];
 }
 
@@ -108,7 +110,7 @@ using base::UserMetricsAction;
   // Initializing also displays the Tab History Popup VC.
   self.tabHistoryPopupController = [[TabHistoryPopupController alloc]
       initWithOrigin:historyPopupOrigin
-          parentView:self.baseViewController.view
+          parentView:[self.presentationProvider viewForTabHistoryPresentation]
                items:items
           dispatcher:static_cast<id<TabHistoryPopupCommands>>(self.dispatcher)];
 

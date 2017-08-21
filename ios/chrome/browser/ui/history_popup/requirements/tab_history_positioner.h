@@ -9,7 +9,7 @@
 
 @protocol TabHistoryPositioner
 // CGPoint which the Tab History Popup will be presented from.
-- (CGPoint)originPointForToolbarButton:(ToolbarButton)toolbarButton;
+- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_POPUP_REQUIREMENTS_TAB_HISTORY_POSITIONER_H_
