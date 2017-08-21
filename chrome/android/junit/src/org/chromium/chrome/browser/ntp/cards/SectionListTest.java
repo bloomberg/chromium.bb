@@ -61,6 +61,10 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features({
+        @Features.Register(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
+        @Features.Register(ChromeFeatureList.CHROME_HOME)
+})
 public class SectionListTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -173,9 +177,9 @@ public class SectionListTest {
         List<SnippetArticle> newSuggestions1 = createDummySuggestions(2, CATEGORY1, "new");
         List<SnippetArticle> newSuggestions2 = createDummySuggestions(2, CATEGORY2, "new");
 
-        sectionList.getSectionForTesting(CATEGORY1).appendSuggestions(
+        sectionList.getSection(CATEGORY1).appendSuggestions(
                 newSuggestions1.subList(0, 1), /*keepSectionSize=*/false);
-        sectionList.getSectionForTesting(CATEGORY2).appendSuggestions(
+        sectionList.getSection(CATEGORY2).appendSuggestions(
                 newSuggestions2, /*keepSectionSize=*/false);
 
         bindViewHolders(sectionList, 3, sectionList.getItemCount());
@@ -209,7 +213,7 @@ public class SectionListTest {
         assertThat(newSuggestions2.get(1).getPerSectionRank(), equalTo(5));
 
         // Add one more suggestions1
-        sectionList.getSectionForTesting(CATEGORY1).appendSuggestions(
+        sectionList.getSection(CATEGORY1).appendSuggestions(
                 newSuggestions1.subList(1, 2), /*keepSectionSize=*/false);
         bindViewHolders(sectionList);
 
@@ -259,13 +263,9 @@ public class SectionListTest {
         sectionList.refreshSuggestions();
         bindViewHolders(sectionList);
 
-        assertThat(sectionList.getSectionForTesting(CATEGORY1)
-                           .getActionItemForTesting()
-                           .getPerSectionRank(),
+        assertThat(sectionList.getSection(CATEGORY1).getActionItemForTesting().getPerSectionRank(),
                 equalTo(0));
-        assertThat(sectionList.getSectionForTesting(CATEGORY2)
-                           .getActionItemForTesting()
-                           .getPerSectionRank(),
+        assertThat(sectionList.getSection(CATEGORY2).getActionItemForTesting().getPerSectionRank(),
                 equalTo(3));
     }
 
@@ -288,7 +288,7 @@ public class SectionListTest {
         verify(mUiDelegate, atLeastOnce()).addDestructionObserver(argument.capture());
 
         assertFalse(sectionList.isEmpty());
-        SuggestionsSection section = sectionList.getSectionForTesting(CATEGORY1);
+        SuggestionsSection section = sectionList.getSection(CATEGORY1);
         assertNotNull(section);
 
         // Now destroy the UI and thus notify the SectionList.
@@ -307,7 +307,7 @@ public class SectionListTest {
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
-        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        SuggestionsSection articles = sectionList.getSection(KnownCategories.ARTICLES);
         assertFalse(articles.getHeaderItemForTesting().isVisible());
     }
 
@@ -318,7 +318,7 @@ public class SectionListTest {
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
-        SuggestionsSection section = sectionList.getSectionForTesting(CATEGORY1);
+        SuggestionsSection section = sectionList.getSection(CATEGORY1);
         assertTrue(section.getHeaderItemForTesting().isVisible());
     }
 
@@ -330,17 +330,16 @@ public class SectionListTest {
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
-        SuggestionsSection articles = sectionList.getSectionForTesting(KnownCategories.ARTICLES);
+        SuggestionsSection articles = sectionList.getSection(KnownCategories.ARTICLES);
         assertTrue(articles.getHeaderItemForTesting().isVisible());
     }
 
     @Test
-    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testSynchroniseWithSourceWithNoChange() {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, CATEGORY2, 2);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
 
         // No changes since initialisation
@@ -355,26 +354,23 @@ public class SectionListTest {
     }
 
     @Test
-    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testSynchroniseWithSourceWithStaleSection() {
         final int initialSectionSize = 2;
         final int updatedSectionSize = 5;
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, CATEGORY2, initialSectionSize);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
 
-        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
-                is(initialSectionSize));
+        assertThat(sectionList.getSection(CATEGORY2).getSuggestionsCount(), is(initialSectionSize));
 
         // New suggestions are added, which will make CATEGORY2 stale.
         bindViewHolders(sectionList);
         mSuggestionSource.setSuggestionsForCategory(
                 CATEGORY2, createDummySuggestions(updatedSectionSize, CATEGORY2));
-        assertTrue(sectionList.getSectionForTesting(CATEGORY2).isDataStale());
-        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
-                is(initialSectionSize));
+        assertTrue(sectionList.getSection(CATEGORY2).isDataStale());
+        assertThat(sectionList.getSection(CATEGORY2).getSuggestionsCount(), is(initialSectionSize));
 
         clearInvocations(mSuggestionSource);
         sectionList.synchroniseWithSource();
@@ -384,12 +380,10 @@ public class SectionListTest {
         inOrder.verify(mSuggestionSource).getSuggestionsForCategory(CATEGORY2);
         // CATEGORY1 doesn't need to be refreshed.
         inOrder.verify(mSuggestionSource, never()).getSuggestionsForCategory(CATEGORY1);
-        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
-                is(updatedSectionSize));
+        assertThat(sectionList.getSection(CATEGORY2).getSuggestionsCount(), is(updatedSectionSize));
     }
 
     @Test
-    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testSynchroniseWithSourceWithChangedCategories() {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 

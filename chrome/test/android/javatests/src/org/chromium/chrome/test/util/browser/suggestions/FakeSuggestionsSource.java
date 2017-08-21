@@ -162,6 +162,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         mCategories.remove(Integer.valueOf(category));
     }
 
+    /**
+     * Clears the list of observers.
+     */
+    public void removeObservers() {
+        mObserverList.clear();
+    }
+
     @Override
     public void fetchRemoteSuggestions() {}
 

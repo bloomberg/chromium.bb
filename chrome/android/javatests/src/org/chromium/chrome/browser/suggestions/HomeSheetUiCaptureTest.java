@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotSame;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
@@ -26,16 +26,17 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.ScreenShooter;
-import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 
@@ -52,12 +53,14 @@ public class HomeSheetUiCaptureTest {
     @Rule
     public BottomSheetTestRule mActivityTestRule = new BottomSheetTestRule();
 
+    private FakeSuggestionsSource mSuggestionsSource;
+
     @Rule
     public SuggestionsDependenciesRule setupSuggestions() {
         SuggestionsDependenciesRule.TestFactory depsFactory = NtpUiCaptureTestData.createFactory();
-        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
-        NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
-        depsFactory.suggestionsSource = suggestionsSource;
+        mSuggestionsSource = new FakeSuggestionsSource();
+        NtpUiCaptureTestData.registerArticleSamples(mSuggestionsSource);
+        depsFactory.suggestionsSource = mSuggestionsSource;
         return new SuggestionsDependenciesRule(depsFactory);
     }
 
@@ -72,9 +75,10 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @CommandLineParameter({ENABLE_CHROME_HOME,
+    // TODO(bauerb): Parameterize this test to test without the modern layout.
+    @CommandLineFlags.Add({
             "enable-features=" + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT + ","
-                    + ChromeFeatureList.CHROME_HOME})
+            + ChromeFeatureList.CHROME_HOME})
     @ScreenShooter.Directory("SignInPromo")
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
@@ -86,10 +90,44 @@ public class HomeSheetUiCaptureTest {
                 "SignInPromo" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
     }
 
+    @Test
+    @MediumTest
+    @Feature({"UiCatalogue"})
+    // TODO(bauerb): Parameterize this test to test without the modern layout.
+    @CommandLineFlags.Add({
+            "enable-features=" + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT + ","
+            + ChromeFeatureList.CHROME_HOME})
+    @ScreenShooter.Directory("AllDismissed")
+    public void testAllDismissed() {
+        final SuggestionsRecyclerView recyclerView = getRecyclerView();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            NewTabPageAdapter newTabPageAdapter = recyclerView.getNewTabPageAdapter();
+            int signInPromoPosition = newTabPageAdapter.getFirstPositionForType(ItemViewType.PROMO);
+            assertNotEquals(signInPromoPosition, RecyclerView.NO_POSITION);
+            newTabPageAdapter.dismissItem(signInPromoPosition, ignored -> { });
+
+            // Dismiss all articles.
+            while (true) {
+                int articlePosition =
+                        newTabPageAdapter.getFirstPositionForType(ItemViewType.SNIPPET);
+                if (articlePosition == RecyclerView.NO_POSITION) break;
+                newTabPageAdapter.dismissItem(articlePosition, ignored -> { });
+            }
+        });
+
+        scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
+
+        mScreenShooter.shoot(
+                "All_dismissed" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
+    }
+
     private void scrollToFirstItemOfType(@ItemViewType int itemViewType) {
         SuggestionsRecyclerView recyclerView = getRecyclerView();
-        int position = recyclerView.getNewTabPageAdapter().getFirstPositionForType(itemViewType);
-        assertNotSame("Scroll target of type " + itemViewType + " not found.",
+        NewTabPageAdapter newTabPageAdapter = recyclerView.getNewTabPageAdapter();
+        int position = newTabPageAdapter.getFirstPositionForType(itemViewType);
+        assertNotEquals("Scroll target of type " + itemViewType + " not found\n"
+                        + ContentSuggestionsTestUtils.stringify(
+                                  newTabPageAdapter.getRootForTesting()),
                 RecyclerView.NO_POSITION, position);
 
         ThreadUtils.runOnUiThreadBlocking(

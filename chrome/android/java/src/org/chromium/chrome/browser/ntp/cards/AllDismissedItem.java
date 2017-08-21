@@ -6,14 +6,13 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Calendar;
 
@@ -53,17 +52,17 @@ public class AllDismissedItem extends OptionalLeaf {
         public ViewHolder(ViewGroup root, final SectionList sections) {
             super(LayoutInflater.from(root.getContext())
                             .inflate(R.layout.new_tab_page_all_dismissed, root, false));
-            mBodyTextView = (TextView) itemView.findViewById(R.id.body_text);
+            mBodyTextView = itemView.findViewById(R.id.body_text);
 
-            ((Button) itemView.findViewById(R.id.action_button))
-                    .setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            NewTabPageUma.recordAction(
-                                    NewTabPageUma.ACTION_CLICKED_ALL_DISMISSED_REFRESH);
-                            sections.restoreDismissedSections();
-                        }
-                    });
+            Button refreshButton = itemView.findViewById(R.id.action_button);
+            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+                ((ViewGroup) itemView).removeView(refreshButton);
+            } else {
+                refreshButton.setOnClickListener(v -> {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_ALL_DISMISSED_REFRESH);
+                    sections.restoreDismissedSections();
+                });
+            }
         }
 
         public void onBindViewHolder() {
