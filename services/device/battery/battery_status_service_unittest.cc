@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/device/battery/battery_status_manager.h"
@@ -69,8 +70,8 @@ class BatteryStatusServiceTest : public testing::Test {
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.
-    std::unique_ptr<FakeBatteryManager> battery_manager(
-        new FakeBatteryManager(battery_service_.GetUpdateCallbackForTesting()));
+    auto battery_manager = base::MakeUnique<FakeBatteryManager>(
+        battery_service_.GetUpdateCallbackForTesting());
     battery_manager_ = battery_manager.get();
 
     battery_service_.SetBatteryManagerForTesting(std::move(battery_manager));

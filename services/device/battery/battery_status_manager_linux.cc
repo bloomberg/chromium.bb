@@ -235,7 +235,7 @@ class BatteryObject {
                 const PropertyChangedCallback& property_changed_callback);
   ~BatteryObject();
 
-  bool IsValid();
+  bool IsValid() const;
 
   dbus::ObjectProxy* proxy() { return proxy_; }
   BatteryProperties* properties() { return properties_.get(); }
@@ -264,7 +264,7 @@ BatteryObject::~BatteryObject() {
                            base::Bind(&base::DoNothing));
 }
 
-bool BatteryObject::IsValid() {
+bool BatteryObject::IsValid() const {
   return properties_->is_present() &&
          properties_->type() == UPOWER_DEVICE_TYPE_BATTERY;
 }
