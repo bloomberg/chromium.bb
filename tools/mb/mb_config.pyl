@@ -1003,7 +1003,7 @@
     ],
 
     'cfi_full_cfi_diag_recover_release_static': [
-      'cfi_full', 'cfi_diag', 'cfi_recover', 'release', 'static',
+      'cfi_full', 'cfi_diag', 'cfi_recover', 'thin_lto', 'release', 'static',
     ],
 
     'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
