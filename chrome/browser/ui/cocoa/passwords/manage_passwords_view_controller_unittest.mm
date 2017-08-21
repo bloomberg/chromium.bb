@@ -9,18 +9,24 @@
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/common/chrome_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 using testing::Return;
 using testing::ReturnRef;
 
 namespace {
+
+// Touch bar item identifier.
+NSString* const kDoneTouchBarId = @"DONE";
 
 class ManagePasswordsViewControllerTest : public ManagePasswordsControllerTest {
  public:
@@ -112,6 +118,22 @@ TEST_F(ManagePasswordsViewControllerTest, CloseBubbleAndHandleClick) {
   [delegate() setModel:nil];
   [controller().doneButton performClick:nil];
   [controller().manageButton performClick:nil];
+}
+
+// Verifies the touch bar items.
+TEST_F(ManagePasswordsViewControllerTest, TouchBar) {
+  if (@available(macOS 10.12.2, *)) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kDialogTouchBar);
+
+    SetUpManageState();
+    NSTouchBar* touch_bar = [controller() makeTouchBar];
+    EXPECT_TRUE(touch_bar);
+    NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+    EXPECT_EQ(1u, [touch_bar_items count]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:[controller() touchBarIdForItem:kDoneTouchBarId]]);
+  }
 }
 
 }  // namespace

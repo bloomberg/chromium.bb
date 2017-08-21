@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
@@ -57,6 +58,16 @@
   // The bubble is about to be closed. It destroys the model.
   model_ = nil;
   [super close];
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
+    return nil;
+
+  if ([currentController_ respondsToSelector:@selector(makeTouchBar)])
+    return [currentController_ makeTouchBar];
+
+  return nil;
 }
 
 - (LocationBarDecoration*)decorationForBubble {

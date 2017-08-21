@@ -11,12 +11,21 @@
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+// Touch bar item identifier.
+NSString* const kDoneTouchBarId = @"DONE";
+
+}  // end namespace
 
 @implementation NoPasswordsView
 - (id)initWithWidth:(CGFloat)width {
@@ -136,6 +145,32 @@
   [view setFrameSize:NSMakeSize(curX, curY)];
 
   [self setView:view];
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (!base::FeatureList::IsEnabled(features::kDialogTouchBar))
+    return nil;
+
+  base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
+  NSArray* dialogItems = @[ [self touchBarIdForItem:kDoneTouchBarId] ];
+  [touchBar setDefaultItemIdentifiers:dialogItems];
+  [touchBar setDelegate:self];
+
+  return touchBar.autorelease();
+}
+
+- (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
+  if (![identifier isEqual:[self touchBarIdForItem:kDoneTouchBarId]])
+    return nil;
+
+  NSButton* button = ui::GetBlueTouchBarButton(l10n_util::GetNSString(IDS_DONE),
+                                               self, @selector(onDoneClicked:));
+  base::scoped_nsobject<NSCustomTouchBarItem> item(
+      [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:identifier]);
+  [item setView:button];
+  return item.autorelease();
 }
 
 - (void)onDoneClicked:(id)sender {
