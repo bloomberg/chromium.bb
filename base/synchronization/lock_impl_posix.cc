@@ -48,7 +48,7 @@ LockImpl::LockImpl() {
 
 LockImpl::~LockImpl() {
   int rv = pthread_mutex_destroy(&native_handle_);
-  CHECK_EQ(rv, 0) << ". " << strerror(rv);
+  DCHECK_EQ(rv, 0) << ". " << strerror(rv);
 }
 
 bool LockImpl::Try() {
