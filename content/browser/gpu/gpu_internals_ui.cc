@@ -309,6 +309,8 @@ const char* BufferUsageToString(gfx::BufferUsage usage) {
       return "GPU_READ";
     case gfx::BufferUsage::SCANOUT:
       return "SCANOUT";
+    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+      return "SCANOUT_CAMERA_READ_WRITE";
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       return "SCANOUT_CPU_READ_WRITE";
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
