@@ -976,43 +976,58 @@ TEST_P(RenderTextTest, ElidedText) {
     const wchar_t* display_text;
     const bool elision_expected;
   } cases[] = {
-    // Strings shorter than the elision width should be laid out in full.
-    { L"",        L""       , false },
-    { L"M",       L""       , false },
-    { L" . ",     L" . "    , false },
-    { kWeak,      kWeak     , false },
-    { kLtr,       kLtr      , false },
-    { kLtrRtl,    kLtrRtl   , false },
-    { kLtrRtlLtr, kLtrRtlLtr, false },
-    { kRtl,       kRtl      , false },
-    { kRtlLtr,    kRtlLtr   , false },
-    { kRtlLtrRtl, kRtlLtrRtl, false },
-    // Strings as long as the elision width should be laid out in full.
-    { L"012ab",   L"012ab"  , false },
-    // Long strings should be elided with an ellipsis appended at the end.
-    { L"012abc",              L"012a\x2026", true },
-    { L"012ab" L"\x5d0\x5d1", L"012a\x2026", true },
-    { L"012a" L"\x5d1" L"b",  L"012a\x2026", true },
-    // No RLM marker added as digits (012) have weak directionality.
-    { L"01" L"\x5d0\x5d1\x5d2", L"01\x5d0\x5d1\x2026", true },
-    // RLM marker added as "ab" have strong LTR directionality.
-    { L"ab" L"\x5d0\x5d1\x5d2", L"ab\x5d0\x5d1\x2026\x200f", true },
-    // Test surrogate pairs. \xd834\xdd1e forms a single code point U+1D11E;
-    // \xd834\xdd22 forms a second code point U+1D122. The first should be kept;
-    // the second removed (no surrogate pair should be partially elided).
-    { L"0123\xd834\xdd1e\xd834\xdd22", L"0123\xd834\xdd1e\x2026", true },
-    // Test combining character sequences. U+0915 U+093F forms a compound glyph;
-    // U+0915 U+0942 forms a second compound glyph. The first should be kept;
-    // the second removed (no combining sequence should be partially elided).
-    { L"0123\x0915\x093f\x0915\x0942", L"0123\x0915\x093f\x2026", true },
-    // U+05E9 U+05BC U+05C1 U+05B8 forms a four-character compound glyph. Again,
-    // it should be either fully elided, or not elided at all. If completely
-    // elided, an LTR Mark (U+200E) should be added.
-    { L"0\x05e9\x05bc\x05c1\x05b8",   L"0\x05e9\x05bc\x05c1\x05b8", false },
-    { L"0\x05e9\x05bc\x05c1\x05b8",   L"0\x2026\x200E"            , true  },
-    { L"01\x05e9\x05bc\x05c1\x05b8",  L"01\x2026\x200E"           , true  },
-    { L"012\x05e9\x05bc\x05c1\x05b8", L"012\x2026\x200E"          , true  },
-    { L"012\xF0\x9D\x84\x9E",         L"012\xF0\x2026"            , true  },
+      // Strings shorter than the elision width should be laid out in full.
+      {L"", L"", false},
+      {L"M", L"", false},
+      {L" . ", L" . ", false},
+      {kWeak, kWeak, false},
+      {kLtr, kLtr, false},
+      {kLtrRtl, kLtrRtl, false},
+      {kLtrRtlLtr, kLtrRtlLtr, false},
+      {kRtl, kRtl, false},
+      {kRtlLtr, kRtlLtr, false},
+      {kRtlLtrRtl, kRtlLtrRtl, false},
+      // Strings as long as the elision width should be laid out in full.
+      {L"012ab", L"012ab", false},
+      // Long strings should be elided with an ellipsis appended at the end.
+      {L"012abc", L"012a\x2026", true},
+      {L"012ab"
+       L"\x5d0\x5d1",
+       L"012a\x2026", true},
+      {L"012a"
+       L"\x5d1"
+       L"b",
+       L"012a\x2026", true},
+      // No RLM marker added as digits (012) have weak directionality.
+      {L"01"
+       L"\x5d0\x5d1\x5d2",
+       L"01\x5d0\x5d1\x2026", true},
+      // RLM marker added as "ab" have strong LTR directionality.
+      {L"ab"
+       L"\x5d0\x5d1\x5d2",
+       L"ab\x5d0\x5d1\x2026\x200f", true},
+      // Test surrogate pairs. \xd834\xdd1e forms a single code point U+1D11E;
+      // \xd834\xdd22 forms a second code point U+1D122. The first should be
+      // kept;
+      // the second removed (no surrogate pair should be partially elided).
+      {L"0123\xd834\xdd1e\xd834\xdd22", L"0123\xd834\xdd1e\x2026", true},
+      // Test combining character sequences. U+0915 U+093F forms a compound
+      // glyph;
+      // U+0915 U+0942 forms a second compound glyph. The first should be kept;
+      // the second removed (no combining sequence should be partially elided).
+      {L"0123\x0915\x093f\x0915\x0942", L"0123\x0915\x093f\x2026", true},
+      // U+05E9 U+05BC U+05C1 U+05B8 forms a four-character compound glyph.
+      // Again,
+      // it should be either fully elided, or not elided at all. If completely
+      // elided, an LTR Mark (U+200E) should be added.
+      {L"0\x05e9\x05bc\x05c1\x05b8", L"0\x05e9\x05bc\x05c1\x05b8", false},
+      {L"0\x05e9\x05bc\x05c1\x05b8", L"0\x2026\x200E", true},
+      {L"01\x05e9\x05bc\x05c1\x05b8", L"01\x2026\x200E", true},
+      {L"012\x05e9\x05bc\x05c1\x05b8", L"012\x2026\x200E", true},
+      // \xF0\x9D\x84\x9E is the UTF-8 bytestring for MUSICAL SYMBOL G CLEF.  It
+      // should not have any internal grapheme boundaries; it should be
+      // completely removed when eliding.
+      {L"012\xF0\x9D\x84\x9E", L"012\x2026", true},
   };
 
   std::unique_ptr<RenderText> expected_render_text(CreateRenderTextInstance());
