@@ -12950,5 +12950,45 @@ TEST_F(LayerTreeHostImplTest, RasterTilePrioritizationForNonDrawingLayers) {
   EXPECT_EQ(queue->Top().tile()->layer_id(), 3);
 }
 
+TEST_F(LayerTreeHostImplTest, DrawAfterDroppingTileResources) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.using_synchronous_renderer_compositor = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  host_impl_->CreatePendingTree();
+
+  gfx::Size bounds(100, 100);
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(bounds));
+  {
+    std::unique_ptr<FakePictureLayerImpl> scoped_layer =
+        FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                     1, raster_source);
+    scoped_layer->SetBounds(bounds);
+    scoped_layer->SetDrawsContent(true);
+    host_impl_->pending_tree()->SetRootLayerForTesting(std::move(scoped_layer));
+  }
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ActivateSyncTree();
+
+  FakePictureLayerImpl* layer = static_cast<FakePictureLayerImpl*>(
+      host_impl_->active_tree()->FindActiveTreeLayerById(1));
+
+  DrawFrame();
+  EXPECT_FALSE(host_impl_->active_tree()->needs_update_draw_properties());
+  EXPECT_LT(0.f, layer->raster_page_scale());
+  EXPECT_GT(layer->tilings()->num_tilings(), 0u);
+
+  const ManagedMemoryPolicy policy = host_impl_->ActualManagedMemoryPolicy();
+  const ManagedMemoryPolicy zero_policy(0u);
+  host_impl_->SetMemoryPolicy(zero_policy);
+  EXPECT_EQ(0.f, layer->raster_page_scale());
+  EXPECT_EQ(layer->tilings()->num_tilings(), 0u);
+
+  host_impl_->SetMemoryPolicy(policy);
+  DrawFrame();
+  EXPECT_LT(0.f, layer->raster_page_scale());
+  EXPECT_GT(layer->tilings()->num_tilings(), 0u);
+}
+
 }  // namespace
 }  // namespace cc
