@@ -24,7 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api_test_utils.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -106,7 +106,7 @@ class WebrtcEventLogApiTest : public WebRtcTestBase {
  protected:
   void SetUp() override {
     WebRtcTestBase::SetUp();
-    extension_ = extensions::test_util::CreateEmptyExtension();
+    extension_ = extensions::ExtensionBuilder("Test").Build();
   }
 
   void SetUpInProcessBrowserTestFixture() override {

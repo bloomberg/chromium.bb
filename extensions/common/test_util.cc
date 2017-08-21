@@ -22,13 +22,6 @@ ExtensionBuilder BuildExtension(ExtensionBuilder builder) {
   return builder;
 }
 
-scoped_refptr<Extension> CreateEmptyExtension() {
-  return ExtensionBuilder()
-      .SetManifest(
-          DictionaryBuilder().Set("name", "Test").Set("version", "1.0").Build())
-      .Build();
-}
-
 scoped_refptr<Extension> CreateEmptyExtension(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(

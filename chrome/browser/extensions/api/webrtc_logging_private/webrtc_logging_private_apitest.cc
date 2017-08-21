@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 using compression::GzipUncompress;
@@ -69,7 +69,7 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
  protected:
   void SetUp() override {
     ExtensionApiTest::SetUp();
-    extension_ = extensions::test_util::CreateEmptyExtension();
+    extension_ = extensions::ExtensionBuilder("Test").Build();
   }
 
   template<typename T>

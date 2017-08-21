@@ -34,8 +34,8 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "ui/message_center/notifier_settings.h"
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
   scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
+      extensions::ExtensionBuilder("Test").Build());
 
   // Get permission level for the extension whose notifications are enabled.
   {

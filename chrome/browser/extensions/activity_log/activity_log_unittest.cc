@@ -425,7 +425,7 @@ TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
       ExtensionSystem::Get(profile()))->SetReady();
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   scoped_refptr<const Extension> empty_extension =
-      test_util::CreateEmptyExtension();
+      ExtensionBuilder("Test").Build();
   extension_service_->AddExtension(empty_extension.get());
   // Since the command line switch for logging isn't enabled and there's no
   // watchdog app active, the activity log shouldn't log anything.

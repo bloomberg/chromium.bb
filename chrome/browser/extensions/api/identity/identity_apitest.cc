@@ -61,6 +61,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/test_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -101,7 +102,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
     if (!function->extension()) {
       scoped_refptr<Extension> empty_extension(
-          test_util::CreateEmptyExtension());
+          ExtensionBuilder("Test").Build());
       function->set_extension(empty_extension.get());
     }
 
@@ -1912,7 +1913,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   WaitForGURLAndCloseWindow popup_observer(auth_url);
@@ -1936,7 +1937,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": false, \"url\": \"" +
@@ -1956,7 +1957,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   std::string args = "[{\"interactive\": true, \"url\": \"" +
@@ -1970,7 +1971,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -1990,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(
     LaunchWebAuthFlowFunctionTest, InteractiveFirstNavigationSuccess) {
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
@@ -2016,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
 
   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
       new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
   function->set_extension(empty_extension.get());
 
   function->InitFinalRedirectURLPrefixForTest("abcdefghij");
