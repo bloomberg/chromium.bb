@@ -13,7 +13,6 @@
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
-#include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -247,8 +246,7 @@ void AppBannerManagerAndroid::ShowBannerUi() {
             contents, GetWeakPtr(),
             CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
                                badge_icon_url_, can_install_webapk_),
-            primary_icon_, badge_icon_, can_install_webapk_,
-            webapk::INSTALL_SOURCE_BANNER)) {
+            primary_icon_, badge_icon_, can_install_webapk_)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       ReportStatus(contents, SHOWING_WEB_APP_BANNER);

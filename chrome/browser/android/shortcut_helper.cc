@@ -153,17 +153,6 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
   AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
 }
 
-// static
-void ShortcutHelper::InstallWebApkWithSkBitmap(
-    content::WebContents* web_contents,
-    const ShortcutInfo& info,
-    const SkBitmap& primary_icon_bitmap,
-    const SkBitmap& badge_icon_bitmap,
-    const WebApkInstallService::FinishCallback& callback) {
-  WebApkInstallService::Get(web_contents->GetBrowserContext())
-      ->InstallAsync(info, primary_icon_bitmap, badge_icon_bitmap, callback);
-}
-
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {
   Java_ShortcutHelper_showWebApkInstallInProgressToast(
       base::android::AttachCurrentThread());

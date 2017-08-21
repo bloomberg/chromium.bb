@@ -4217,6 +4217,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHost.java",
+      "../android/java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
