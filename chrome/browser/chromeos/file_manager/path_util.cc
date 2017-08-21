@@ -24,8 +24,13 @@ namespace {
 
 const char kDownloadsFolderName[] = "Downloads";
 
-constexpr base::FilePath::CharType kArcDownloadPath[] =
-    FILE_PATH_LITERAL("/sdcard/Download");
+// Sync with the file provider in ARC++ side.
+constexpr char kArcFileProviderUrl[] =
+    "content://org.chromium.arc.intent_helper.fileprovider/";
+// Sync with the root name defined with the file provider in ARC++ side.
+constexpr base::FilePath::CharType kArcDownloadRoot[] =
+    FILE_PATH_LITERAL("/download");
+// Sync with the removable media provider in ARC++ side.
 constexpr char kArcRemovableMediaProviderUrl[] =
     "content://org.chromium.arc.removablemediaprovider/";
 
@@ -99,9 +104,10 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   // Convert paths under primary profile's Downloads directory.
   base::FilePath primary_downloads =
       GetDownloadsFolderForProfile(primary_profile);
-  base::FilePath result_path(kArcDownloadPath);
+  base::FilePath result_path(kArcDownloadRoot);
   if (primary_downloads.AppendRelativePath(path, &result_path)) {
-    *arc_url_out = net::FilePathToFileURL(result_path);
+    *arc_url_out = GURL(kArcFileProviderUrl)
+                       .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
   }
 
