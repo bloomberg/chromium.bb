@@ -79,6 +79,10 @@ constexpr int kAppListBezelMargin = 50;
 // The blur radius of the app list background.
 constexpr int kAppListBlurRadius = 30;
 
+// The size of app info dialog in fullscreen app list.
+constexpr int kAppInfoDialogWidth = 512;
+constexpr int kAppInfoDialogHeight = 384;
+
 // The vertical position for the appearing animation of the speech UI.
 constexpr float kSpeechUIAppearingPosition = 12;
 
@@ -1160,6 +1164,15 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
 
 PaginationModel* AppListView::GetAppsPaginationModel() const {
   return GetAppsGridView()->pagination_model();
+}
+
+gfx::Rect AppListView::GetAppInfoDialogBounds() const {
+  if (!is_fullscreen_app_list_enabled_)
+    return GetBoundsInScreen();
+  gfx::Rect app_info_bounds(GetDisplayNearestView().bounds());
+  app_info_bounds.ClampToCenteredSize(
+      gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight));
+  return app_info_bounds;
 }
 
 void AppListView::OnSpeechRecognitionStateChanged(
