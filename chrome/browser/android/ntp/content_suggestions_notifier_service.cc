@@ -252,7 +252,11 @@ ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
     ContentSuggestionsService* suggestions)
     : profile_(profile), suggestions_service_(suggestions) {
   ContentSuggestionsNotificationHelper::FlushCachedMetrics();
-  UpdateObserverRegistrationState();
+  if (IsEnabled()) {
+    Enable();
+  } else {
+    Disable();
+  }
 }
 
 ContentSuggestionsNotifierService::~ContentSuggestionsNotifierService() =
@@ -276,7 +280,11 @@ void ContentSuggestionsNotifierService::RegisterProfilePrefs(
 void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
   profile_->GetPrefs()->SetBoolean(
       prefs::kContentSuggestionsNotificationsEnabled, enabled);
-  UpdateObserverRegistrationState();
+  if (enabled) {
+    Enable();
+  } else {
+    Disable();
+  }
 }
 
 bool ContentSuggestionsNotifierService::IsEnabled() const {
@@ -284,12 +292,18 @@ bool ContentSuggestionsNotifierService::IsEnabled() const {
       prefs::kContentSuggestionsNotificationsEnabled);
 }
 
-void ContentSuggestionsNotifierService::UpdateObserverRegistrationState() {
-  if (observer_ && !IsEnabled()) {
-    suggestions_service_->RemoveObserver(observer_.get());
-    observer_.reset();
-  } else if (IsEnabled() && !observer_) {
+void ContentSuggestionsNotifierService::Enable() {
+  ContentSuggestionsNotificationHelper::RegisterChannel();
+  if (!observer_) {
     observer_.reset(new NotifyingObserver(suggestions_service_, profile_));
     suggestions_service_->AddObserver(observer_.get());
+  }
+}
+
+void ContentSuggestionsNotifierService::Disable() {
+  ContentSuggestionsNotificationHelper::UnregisterChannel();
+  if (observer_) {
+    suggestions_service_->RemoveObserver(observer_.get());
+    observer_.reset();
   }
 }

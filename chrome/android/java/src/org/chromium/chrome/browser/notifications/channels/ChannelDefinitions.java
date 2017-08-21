@@ -37,6 +37,7 @@ public class ChannelDefinitions {
     public static final String CHANNEL_ID_INCOGNITO = "incognito";
     public static final String CHANNEL_ID_MEDIA = "media";
     public static final String CHANNEL_ID_SCREEN_CAPTURE = "screen_capture";
+    public static final String CHANNEL_ID_CONTENT_SUGGESTIONS = "content_suggestions";
     // TODO(crbug.com/700377): Deprecate the 'sites' channel.
     public static final String CHANNEL_ID_SITES = "sites";
     public static final String CHANNEL_ID_PREFIX_SITES = "web:";
@@ -56,7 +57,7 @@ public class ChannelDefinitions {
      * Predefined Channels.MAP, and add the ID to the LEGACY_CHANNELS_ID array below.
      */
     @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_DOWNLOADS, CHANNEL_ID_INCOGNITO, CHANNEL_ID_MEDIA,
-            CHANNEL_ID_SCREEN_CAPTURE, CHANNEL_ID_SITES})
+            CHANNEL_ID_SCREEN_CAPTURE, CHANNEL_ID_CONTENT_SUGGESTIONS, CHANNEL_ID_SITES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {}
 
@@ -119,6 +120,13 @@ public class ChannelDefinitions {
                     new PredefinedChannel(CHANNEL_ID_SITES, R.string.notification_category_sites,
                             NotificationManager.IMPORTANCE_DEFAULT, CHANNEL_GROUP_ID_GENERAL));
             startup.add(CHANNEL_ID_SITES);
+
+            // As of Aug 2017, this channel is experimental and enabled only through the associated
+            // feature (see org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper).
+            map.put(CHANNEL_ID_CONTENT_SUGGESTIONS,
+                    new PredefinedChannel(CHANNEL_ID_CONTENT_SUGGESTIONS,
+                            R.string.notification_category_content_suggestions,
+                            NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
 
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);

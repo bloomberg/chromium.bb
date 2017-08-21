@@ -37,8 +37,11 @@ class ContentSuggestionsNotifierService : public KeyedService {
   bool IsEnabled() const;
 
  private:
-  // Syncs up the state of |observer_| with that of the service.
-  void UpdateObserverRegistrationState();
+  // Creates |observer_| if necessary and registers notification channel.
+  void Enable();
+
+  // Destroys |observer_| if necessary and deregisters notification channel.
+  void Disable();
 
   class NotifyingObserver;
   std::unique_ptr<NotifyingObserver> observer_;
