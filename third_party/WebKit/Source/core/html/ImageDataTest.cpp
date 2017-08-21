@@ -415,15 +415,15 @@ TEST_F(ImageDataTest, TestCropRect) {
   float* f32_pixels = new float[data_length];
 
   // Test scenarios
-  const int num_test_cases = 12;
-  const IntRect crop_rects[12] = {
+  const int num_test_cases = 14;
+  const IntRect crop_rects[14] = {
       IntRect(3, 4, 5, 6),     IntRect(3, 4, 5, 6),    IntRect(10, 10, 20, 20),
       IntRect(10, 10, 20, 20), IntRect(0, 0, 20, 20),  IntRect(0, 0, 20, 20),
       IntRect(0, 0, 10, 10),   IntRect(0, 0, 10, 10),  IntRect(0, 0, 10, 0),
       IntRect(0, 0, 0, 10),    IntRect(10, 0, 10, 10), IntRect(0, 10, 10, 10),
-  };
-  const bool crop_flips[12] = {true, false, true,  false, true,  false,
-                               true, false, false, false, false, false};
+      IntRect(0, 5, 20, 15),   IntRect(0, 5, 20, 15)};
+  const bool crop_flips[14] = {true,  false, true,  false, true,  false, true,
+                               false, false, false, false, false, true,  false};
 
   // Fill the pixels with numbers related to their positions
   unsigned set_value = 0;
@@ -490,7 +490,7 @@ TEST_F(ImageDataTest, TestCropRect) {
             index =
                 row_index * cropped_image_data->Size().Width() * 4 + m * 4 + n;
             expected_value =
-                (k + crop_rect.X() + 1) * (m + crop_rect.Y() + 1) * (n + 1);
+                (k + crop_rect.Y() + 1) * (m + crop_rect.X() + 1) * (n + 1);
             if (image_data_storage_formats[i] ==
                 kUint8ClampedArrayStorageFormat)
               expected_value %= 255;
