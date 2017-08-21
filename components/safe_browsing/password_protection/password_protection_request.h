@@ -14,6 +14,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
+#include <vector>
+
 class GURL;
 
 namespace safe_browsing {
@@ -44,7 +46,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
                             const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
-                            const std::string& saved_domain,
+                            bool matches_sync_password,
+                            const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
                             bool password_field_exists,
                             PasswordProtectionService* pps,
@@ -113,9 +116,6 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void Finish(PasswordProtectionService::RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
 
-  // If this request is about a chrome sync password reuse.
-  bool IsSyncPasswordReuse() const;
-
   // WebContents of the password protection event.
   content::WebContents* web_contents_;
 
@@ -128,8 +128,12 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Frame url of the detected password form.
   const GURL password_form_frame_url_;
 
-  // Domain on which a password is saved and gets reused.
-  const std::string saved_domain_;
+  // True if the password is the sync/Google password.
+  const bool matches_sync_password_;
+
+  // Domains from the Password Manager that match this password.
+  // Can be empty iff |matches_sync_password_| == true
+  const std::vector<std::string> matching_domains_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType trigger_type_;

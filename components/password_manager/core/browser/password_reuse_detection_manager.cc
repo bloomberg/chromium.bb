@@ -71,16 +71,22 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
 
 void PasswordReuseDetectionManager::OnReuseFound(
     const base::string16& password,
-    const std::string& legitimate_domain,
-    int saved_passwords,
-    int number_matches) {
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
+    int saved_passwords) {
   reuse_on_this_page_was_found_ = true;
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
-                      legitimate_domain);
+    std::vector<std::string> domains_to_log(matching_domains);
+    if (matches_sync_password)
+      domains_to_log.push_back("CHROME SYNC PASSWORD");
+    // TODO(nparker): Implement LogList() to log all domains in one call.
+    for (const auto& domain : domains_to_log) {
+      logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
+                        domain);
+    }
   }
 
   // PasswordManager could be nullptr in tests.
@@ -90,16 +96,16 @@ void PasswordReuseDetectionManager::OnReuseFound(
           : false;
 
   metrics_util::LogPasswordReuse(password.size(), saved_passwords,
-                                 number_matches, password_field_detected);
+                                 matching_domains.size(),
+                                 password_field_detected);
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(jialiul): After CSD whitelist being added to Android, we should gate
   // this by either SAFE_BROWSING_DB_LOCAL or SAFE_BROWSING_DB_REMOTE.
-  if (!number_matches) {
-    // |number_matches| == 0 means sync password reuse was detected.
+  if (matches_sync_password) {
     client_->LogPasswordReuseDetectedEvent();
   }
 
-  client_->CheckProtectedPasswordEntry(legitimate_domain,
+  client_->CheckProtectedPasswordEntry(matches_sync_password, matching_domains,
                                        password_field_detected);
 #endif
 }

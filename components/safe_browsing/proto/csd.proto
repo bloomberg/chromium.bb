@@ -209,11 +209,11 @@ message LoginReputationClientRequest {
   // The message contains fields needed for a password reuse event.
   // Next tag: 4
   message PasswordReuseEvent {
-    // Origins from the Chrome password manager DB that are associated with
+    // Domains from the Chrome password manager DB that are associated with
     // the same password as the one triggering this event. The field is filled
     // in only when TriggerType is PASSWORD_REUSE_EVENT, and only for users
     // opted in to extended reporting.
-    repeated string password_reused_original_origins = 1;
+    repeated string domains_matching_password = 1;
 
     // The frame that the password reuse is detected.
     optional int32 frame_id = 2;

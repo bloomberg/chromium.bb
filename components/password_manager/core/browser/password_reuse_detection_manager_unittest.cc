@@ -138,7 +138,7 @@ TEST_F(PasswordReuseDetectionManagerTest, NoReuseCheckingAfterReuseFound) {
   PasswordReuseDetectionManager manager(&client_);
 
   // Simulate that reuse found.
-  manager.OnReuseFound(base::string16(), std::string(), 0, 0);
+  manager.OnReuseFound(base::string16(), true, {}, 0);
 
   // Expect no checking of reuse.
   EXPECT_CALL(*store_, CheckReuse(_, _, _)).Times(0);
