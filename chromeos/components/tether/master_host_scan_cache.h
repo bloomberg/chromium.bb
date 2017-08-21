@@ -32,18 +32,15 @@ class TimerFactory;
 class MasterHostScanCache : public HostScanCache {
  public:
   // The number of minutes that a cache entry is considered to be valid before
-  // it becomes stale. Once a cache entry is inserted, it will be automatically
-  // removed after this amount of time passes unless it corresponds to the
-  // active host. This value was chosen for two reasons:
-  //     (1) Tether properties such as battery percentage and signal strength
-  //         are ephemeral in nature, so keeping these values cached for more
-  //         than a short period makes it likely that the values will be wrong.
-  //     (2) Tether networks rely on proximity to a tether host device, so it is
-  //         possible that host devices have physically moved away from each
-  //         other. We assume that the devices do not stay in proximity to one
-  //         another until a new scan result is received which proves that they
-  //         are still within the distance needed to communicate.
-  static constexpr int kNumMinutesBeforeCacheEntryExpires = 5;
+  // it is removed from the cache. Very old host scan results are removed from
+  // the cache because the results contain properties such as battery percentage
+  // and signal strength which are ephemeral in nature. However, this timeout
+  // value is chosen to be rather long because we assume that most users usually
+  // do not move their Chrome OS devices physically away from their potential
+  // tether host devices while in use. Note that when network settings UI is
+  // opened, a new scan will be triggered, and any devices currently in the
+  // cache which are not discovered during the scan are removed.
+  static constexpr int kNumMinutesBeforeCacheEntryExpires = 120;
 
   MasterHostScanCache(std::unique_ptr<TimerFactory> timer_factory,
                       ActiveHost* active_host,
