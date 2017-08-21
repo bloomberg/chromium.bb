@@ -198,7 +198,6 @@ interface MyIFaceBig2 {
   static void staticFunction(long long myLong);
 };
 
-
 /** TREE
  *Interface(MyIFaceSpecials)
  *  Operation(set)
