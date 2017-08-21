@@ -15,5 +15,6 @@ NSString* const kBrowserState = @"browserState";
 NSString* const kBrowserStateInitialized = @"browserStateInit";
 NSString* const kMainWindow = @"mainWindow";
 NSString* const kRootCoordinatorStarted = @"rootCoordinatorStarted";
+NSString* const kBreakpad = @"breakpad";
 
 }  // namespace step_features

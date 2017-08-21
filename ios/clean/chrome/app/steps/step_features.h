@@ -18,6 +18,7 @@ extern NSString* const kBrowserState;
 extern NSString* const kBrowserStateInitialized;
 extern NSString* const kMainWindow;
 extern NSString* const kRootCoordinatorStarted;
+extern NSString* const kBreakpad;
 
 }  // namespace step_features
 

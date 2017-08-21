@@ -19,6 +19,8 @@ source_set("step_runner") {
 
 source_set("steps") {
   sources = [
+    "breakpad_initializer.h",
+    "breakpad_initializer.mm",
     "browser_state_setter.h",
     "browser_state_setter.mm",
     "bundle_and_defaults_configurator.h",
@@ -46,6 +48,7 @@ source_set("steps") {
   deps = [
     ":step_runner",
     "//base",
+    "//breakpad:client",
     "//components/content_settings/core/browser",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/startup",
