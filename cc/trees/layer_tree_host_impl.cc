@@ -2300,6 +2300,10 @@ void LayerTreeHostImpl::ReleaseTileResources() {
     pending_tree_->ReleaseTileResources();
   if (recycle_tree_)
     recycle_tree_->ReleaseTileResources();
+
+  // Need to update tiles again in order to kick of raster work for all the
+  // tiles that are dropped here.
+  active_tree_->set_needs_update_draw_properties();
 }
 
 void LayerTreeHostImpl::RecreateTileResources() {
