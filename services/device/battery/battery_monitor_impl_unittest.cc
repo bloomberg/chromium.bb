@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/battery/battery_status_manager.h"
@@ -90,8 +91,8 @@ class BatteryMonitorImplTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::SetUp();
 
     BatteryStatusService* battery_service = BatteryStatusService::GetInstance();
-    std::unique_ptr<FakeBatteryManager> battery_manager(
-        new FakeBatteryManager(battery_service->GetUpdateCallbackForTesting()));
+    auto battery_manager = base::MakeUnique<FakeBatteryManager>(
+        battery_service->GetUpdateCallbackForTesting());
     battery_manager_ = battery_manager.get();
     battery_service->SetBatteryManagerForTesting(std::move(battery_manager));
 

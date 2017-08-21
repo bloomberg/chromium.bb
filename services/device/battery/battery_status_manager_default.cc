@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 
 namespace device {
 
@@ -36,8 +37,7 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return std::unique_ptr<BatteryStatusManager>(
-      new BatteryStatusManagerDefault(callback));
+  return base::MakeUnique<BatteryStatusManagerDefault>(callback);
 }
 
 }  // namespace device
