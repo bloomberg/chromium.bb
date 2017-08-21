@@ -776,6 +776,28 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       ConnectFailsCharacteristicsFoundThenUnavailable) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+  ConnectGatt(connection.get());
+
+  // Simulate the inability to fetch the characteristic after it was received.
+  // This would most likely be due to the Bluetooth device or service being
+  // removed during a connection attempt. See crbug.com/756174.
+  EXPECT_CALL(*service_, GetCharacteristic(_)).WillOnce(Return(nullptr));
+
+  EXPECT_FALSE(characteristics_finder_error_callback_.is_null());
+  ASSERT_FALSE(characteristics_finder_success_callback_.is_null());
+  characteristics_finder_success_callback_.Run(
+      {service_uuid_, kServiceID},
+      {tx_characteristic_uuid_, kTXCharacteristicID},
+      {rx_characteristic_uuid_, kRXCharacteristicID});
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        ConnectFailsNotifySessionError) {
   std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
       CreateConnection());
