@@ -42,6 +42,8 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
       const override;
   void ProvideModulesToPage(Page&, WebViewClient*) const override;
   void ForceNextWebGLContextCreationToFail() const override;
+
+  void CollectAllGarbageForAnimationWorklet() const override;
 };
 
 }  // namespace blink

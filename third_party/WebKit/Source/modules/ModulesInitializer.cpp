@@ -17,6 +17,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorSession.h"
+#include "core/leak_detector/BlinkLeakDetector.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/page/ChromeClient.h"
@@ -35,6 +36,7 @@
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
+#include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
@@ -272,6 +274,10 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
   WebGLRenderingContext::ForceNextWebGLContextCreationToFail();
+}
+
+void ModulesInitializer::CollectAllGarbageForAnimationWorklet() const {
+  AbstractAnimationWorkletThread::CollectAllGarbage();
 }
 
 }  // namespace blink
