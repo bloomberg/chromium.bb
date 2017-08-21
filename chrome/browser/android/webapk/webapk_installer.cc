@@ -38,6 +38,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
 #include "url/gurl.h"
@@ -288,12 +289,14 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
       base::android::ConvertUTF8ToJavaString(env, token);
   base::android::ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, start_url_.spec());
+  base::android::ScopedJavaLocalRef<jobject> java_primary_icon =
+      gfx::ConvertToJavaBitmap(&install_primary_icon_);
 
   if (task_type_ == WebApkInstaller::INSTALL) {
     webapk::TrackRequestTokenDuration(install_duration_timer_->Elapsed());
     Java_WebApkInstaller_installWebApkAsync(
         env, java_ref_, java_webapk_package, version, java_title, java_token,
-        java_url, install_shortcut_info_->source);
+        java_url, install_shortcut_info_->source, java_primary_icon);
   } else {
     Java_WebApkInstaller_updateAsync(env, java_ref_, java_webapk_package,
                                      version, java_title, java_token, java_url);
