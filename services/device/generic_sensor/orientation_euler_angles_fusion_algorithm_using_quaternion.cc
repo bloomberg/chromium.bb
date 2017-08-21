@@ -53,13 +53,13 @@ void ComputeEulerAnglesFromQuaternion(double x,
                                       double y,
                                       double z,
                                       double w,
-                                      double* alpha,
-                                      double* beta,
-                                      double* gamma) {
+                                      double* alpha_in_degrees,
+                                      double* beta_in_degrees,
+                                      double* gamma_in_degrees) {
   std::vector<double> rotation_matrix =
       ComputeRotationMatrixFromQuaternion(x, y, z, w);
-  device::ComputeOrientationEulerAnglesFromRotationMatrix(rotation_matrix,
-                                                          alpha, beta, gamma);
+  device::ComputeOrientationEulerAnglesFromRotationMatrix(
+      rotation_matrix, alpha_in_degrees, beta_in_degrees, gamma_in_degrees);
 }
 
 constexpr mojom::SensorType GetFusedType(bool absolute) {
@@ -93,16 +93,12 @@ bool OrientationEulerAnglesFusionAlgorithmUsingQuaternion::GetFusedDataInternal(
   if (!fusion_sensor_->GetSourceReading(which_sensor_changed, &reading))
     return false;
 
-  double x = reading.orientation_quat.x;
-  double y = reading.orientation_quat.y;
-  double z = reading.orientation_quat.z;
-  double w = reading.orientation_quat.w;
-  double alpha, beta, gamma;
-  ComputeEulerAnglesFromQuaternion(x, y, z, w, &alpha, &beta, &gamma);
-
-  fused_reading->orientation_euler.x = beta;
-  fused_reading->orientation_euler.y = gamma;
-  fused_reading->orientation_euler.z = alpha;
+  ComputeEulerAnglesFromQuaternion(
+      reading.orientation_quat.x, reading.orientation_quat.y,
+      reading.orientation_quat.z, reading.orientation_quat.w,
+      &fused_reading->orientation_euler.z.value() /* alpha_in_degrees */,
+      &fused_reading->orientation_euler.x.value() /* beta_in_degrees */,
+      &fused_reading->orientation_euler.y.value() /* gamma_in_degrees */);
 
   return true;
 }

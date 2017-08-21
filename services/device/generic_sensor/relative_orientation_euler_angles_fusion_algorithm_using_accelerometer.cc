@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
+#include "services/device/generic_sensor/orientation_util.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
 namespace device {
@@ -57,13 +58,27 @@ bool RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer::
   double acceleration_y = reading.accel.y;
   double acceleration_z = reading.accel.z;
 
-  double alpha = 0.0;
-  double beta = std::atan2(-acceleration_y, acceleration_z);
-  double gamma = std::asin(acceleration_x / kMeanGravity);
+  double alpha_in_degrees = 0.0;
+  double beta_in_degrees =
+      kRadToDeg * std::atan2(-acceleration_y, acceleration_z);
+  double gamma_in_degrees =
+      kRadToDeg * std::asin(acceleration_x / kMeanGravity);
 
-  fused_reading->orientation_euler.x = beta;
-  fused_reading->orientation_euler.y = gamma;
-  fused_reading->orientation_euler.z = alpha;
+  // Convert beta and gamma to fit the intervals in the specification. Beta is
+  // [-180, 180) and gamma is [-90, 90).
+  if (beta_in_degrees >= 180.0)
+    beta_in_degrees = -180.0;
+  if (gamma_in_degrees >= 90.0)
+    gamma_in_degrees = -90.0;
+
+  DCHECK_GE(beta_in_degrees, -180.0);
+  DCHECK_LT(beta_in_degrees, 180.0);
+  DCHECK_GE(gamma_in_degrees, -90.0);
+  DCHECK_LT(gamma_in_degrees, 90.0);
+
+  fused_reading->orientation_euler.x = beta_in_degrees;
+  fused_reading->orientation_euler.y = gamma_in_degrees;
+  fused_reading->orientation_euler.z = alpha_in_degrees;
 
   return true;
 }

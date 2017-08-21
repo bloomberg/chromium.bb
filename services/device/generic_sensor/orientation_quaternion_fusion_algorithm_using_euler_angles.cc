@@ -7,25 +7,30 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "services/device/generic_sensor/orientation_util.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
 namespace device {
 
 namespace {
 
-void ComputeQuaternionFromEulerAngles(double alpha,
-                                      double beta,
-                                      double gamma,
+void ComputeQuaternionFromEulerAngles(double alpha_in_degrees,
+                                      double beta_in_degrees,
+                                      double gamma_in_degrees,
                                       double* x,
                                       double* y,
                                       double* z,
                                       double* w) {
-  double cx = std::cos(beta / 2);
-  double cy = std::cos(gamma / 2);
-  double cz = std::cos(alpha / 2);
-  double sx = std::sin(beta / 2);
-  double sy = std::sin(gamma / 2);
-  double sz = std::sin(alpha / 2);
+  double alpha_in_radians = device::kDegToRad * alpha_in_degrees;
+  double beta_in_radians = device::kDegToRad * beta_in_degrees;
+  double gamma_in_radians = device::kDegToRad * gamma_in_degrees;
+
+  double cx = std::cos(beta_in_radians / 2);
+  double cy = std::cos(gamma_in_radians / 2);
+  double cz = std::cos(alpha_in_radians / 2);
+  double sx = std::sin(beta_in_radians / 2);
+  double sy = std::sin(gamma_in_radians / 2);
+  double sz = std::sin(alpha_in_radians / 2);
 
   *x = sx * cy * cz - cx * sy * sz;
   *y = cx * sy * cz + sx * cy * sz;
@@ -64,15 +69,14 @@ bool OrientationQuaternionFusionAlgorithmUsingEulerAngles::GetFusedDataInternal(
   if (!fusion_sensor_->GetSourceReading(which_sensor_changed, &reading))
     return false;
 
-  double beta = reading.orientation_euler.x;
-  double gamma = reading.orientation_euler.y;
-  double alpha = reading.orientation_euler.z;
-  double x, y, z, w;
-  ComputeQuaternionFromEulerAngles(alpha, beta, gamma, &x, &y, &z, &w);
-  fused_reading->orientation_quat.x = x;
-  fused_reading->orientation_quat.y = y;
-  fused_reading->orientation_quat.z = z;
-  fused_reading->orientation_quat.w = w;
+  ComputeQuaternionFromEulerAngles(
+      reading.orientation_euler.z /* alpha_in_degrees */,
+      reading.orientation_euler.x /* beta_in_degrees */,
+      reading.orientation_euler.y /* gamma_in_degrees */,
+      &fused_reading->orientation_quat.x.value(),
+      &fused_reading->orientation_quat.y.value(),
+      &fused_reading->orientation_quat.z.value(),
+      &fused_reading->orientation_quat.w.value());
 
   return true;
 }
