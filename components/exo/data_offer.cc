@@ -6,11 +6,14 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/exo/data_offer_delegate.h"
 #include "components/exo/data_offer_observer.h"
+#include "components/exo/file_helper.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "url/gurl.h"
 
 namespace exo {
 namespace {
@@ -96,14 +99,28 @@ void DataOffer::SetSourceActions(
   delegate_->OnSourceActions(source_actions);
 }
 
-void DataOffer::SetDropData(const ui::OSExchangeData& data) {
+void DataOffer::SetDropData(FileHelper* file_helper,
+                            const ui::OSExchangeData& data) {
   DCHECK_EQ(0u, drop_data_.size());
   if (data.HasString()) {
     base::string16 string_content;
-    data.GetString(&string_content);
-    drop_data_.emplace(
-        std::string(ui::Clipboard::kMimeTypeText),
-        RefCountedString16::TakeString(std::move(string_content)));
+    if (data.GetString(&string_content)) {
+      drop_data_.emplace(
+          std::string(ui::Clipboard::kMimeTypeText),
+          RefCountedString16::TakeString(std::move(string_content)));
+    }
+  }
+  if (data.HasFile()) {
+    base::FilePath path;
+    if (data.GetFilename(&path)) {
+      GURL url;
+      if (file_helper->ConvertPathToUrl(path, &url)) {
+        base::string16 url_string = base::UTF8ToUTF16(url.spec());
+        drop_data_.emplace(
+            file_helper->GetMimeTypeForUriList(),
+            RefCountedString16::TakeString(std::move(url_string)));
+      }
+    }
   }
   for (const auto& pair : drop_data_) {
     delegate_->OnOffer(pair.first);

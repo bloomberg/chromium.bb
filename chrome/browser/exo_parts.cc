@@ -14,14 +14,36 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/exo/display.h"
+#include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_ash.h"
 #include "components/exo/wm_helper_mus.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
+
+namespace {
+
+constexpr char kMimeTypeArcUriList[] = "application/x-arc-uri-list";
+
+class ChromeFileHelper : public exo::FileHelper {
+ public:
+  ChromeFileHelper() {}
+  ~ChromeFileHelper() override {}
+
+  // exo::FileHelper:
+  std::string GetMimeTypeForUriList() const override {
+    return kMimeTypeArcUriList;
+  }
+  bool ConvertPathToUrl(const base::FilePath& path, GURL* out) override {
+    return file_manager::util::ConvertPathToArcUrl(path, out);
+  }
+};
+
+}  // namespace
 
 #if defined(USE_GLIB)
 namespace {
@@ -139,7 +161,8 @@ ExoParts::ExoParts() {
     wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ =
-      base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get());
+      base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get(),
+                                     base::MakeUnique<ChromeFileHelper>());
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)

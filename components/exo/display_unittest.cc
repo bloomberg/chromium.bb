@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/display.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/buffer.h"
-#include "components/exo/display.h"
+#include "components/exo/data_device.h"
+#include "components/exo/data_device_delegate.h"
+#include "components/exo/file_helper.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -220,6 +223,43 @@ TEST_F(DisplayTest, CreateSubSurface) {
 
   // Create a sub surface for parent.
   EXPECT_TRUE(display->CreateSubSurface(parent.get(), toplevel.get()));
+}
+
+class TestDataDeviceDelegate : public DataDeviceDelegate {
+ public:
+  // Overriden from DataDeviceDelegate:
+  void OnDataDeviceDestroying(DataDevice* data_device) override {}
+  DataOffer* OnDataOffer() override { return nullptr; }
+  void OnEnter(Surface* surface,
+               const gfx::PointF& location,
+               const DataOffer& data_offer) override {}
+  void OnLeave() override {}
+  void OnMotion(base::TimeTicks time_stamp,
+                const gfx::PointF& location) override {}
+  void OnDrop() override {}
+  void OnSelection(const DataOffer& data_offer) override {}
+  bool CanAcceptDataEventsForSurface(Surface* surface) override {
+    return false;
+  }
+};
+
+class TestFileHelper : public FileHelper {
+ public:
+  // Overriden from TestFileHelper:
+  TestFileHelper() {}
+  std::string GetMimeTypeForUriList() const override { return ""; }
+  bool ConvertPathToUrl(const base::FilePath& path, GURL* out) override {
+    return true;
+  }
+};
+
+TEST_F(DisplayTest, CreateDataDevice) {
+  TestDataDeviceDelegate device_delegate;
+  Display display(nullptr, base::MakeUnique<TestFileHelper>());
+
+  std::unique_ptr<DataDevice> device =
+      display.CreateDataDevice(&device_delegate);
+  EXPECT_TRUE(device.get());
 }
 
 }  // namespace
