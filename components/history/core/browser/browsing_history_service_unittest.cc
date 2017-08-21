@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/browsing_history_service.h"
+#include "components/history/core/browser/browsing_history_service.h"
 
 #include <stdint.h>
 #include <memory>
@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace history {
 
 namespace {
 
@@ -142,3 +144,5 @@ TEST_F(BrowsingHistoryServiceTest, MergeDuplicateResults) {
     EXPECT_EQ(1u, results[1].all_timestamps.size());
   }
 }
+
+}  // namespace history
