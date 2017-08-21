@@ -649,6 +649,44 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
   // This test passes if it doesn't crash.
 }
 
+// This test mouse move with modifier kRelativeMotionEvent
+// should not start drag.
+TEST_F(EventHandlerTest, FakeMouseMoveNotStartDrag) {
+  SetHtmlInnerHTML(
+      "<style>"
+      "body { margin: 0px; }"
+      ".line { font-family: sans-serif; background: blue; width: 300px; "
+      "height: 30px; font-size: 40px; margin-left: 250px; }"
+      "</style>"
+      "<div style='width: 300px; height: 100px;'>"
+      "<span class='line' draggable='true'>abcd</span>"
+      "</div>");
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown,
+                                 WebFloatPoint(262, 29), WebFloatPoint(329, 67),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  WebMouseEvent fake_mouse_move(
+      WebMouseEvent::kMouseMove, WebFloatPoint(618, 298),
+      WebFloatPoint(685, 436), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown |
+          WebInputEvent::Modifiers::kRelativeMotionEvent,
+      WebInputEvent::kTimeStampForTesting);
+  fake_mouse_move.SetFrameScale(1);
+  EXPECT_EQ(WebInputEventResult::kHandledSuppressed,
+            GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+                fake_mouse_move, Vector<WebMouseEvent>()));
+
+  EXPECT_EQ(IntPoint(0, 0), GetDocument()
+                                .GetFrame()
+                                ->GetEventHandler()
+                                .DragDataTransferLocationForTesting());
+}
+
 class TooltipCapturingChromeClient : public EmptyChromeClient {
  public:
   TooltipCapturingChromeClient() {}

@@ -548,7 +548,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if ((mouse_event_type == EventTypeNames::mousemove) &&
       mouse_event.GetModifiers() &
           WebInputEvent::Modifiers::kRelativeMotionEvent) {
-    return WebInputEventResult::kNotHandled;
+    return WebInputEventResult::kHandledSuppressed;
   }
 
   WebInputEventResult result =
@@ -623,8 +623,6 @@ bool PointerEventManager::GetPointerCaptureState(
   return pointer_capture_target_temp != pending_pointercapture_target_temp;
 }
 
-// TODO(lanwei): Replace the last two parameters by a single WebMouseEvent
-// pointer which defaults to null, crbug.com/727333.
 EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     PointerEvent* pointer_event,
     EventTarget* hit_test_target,
