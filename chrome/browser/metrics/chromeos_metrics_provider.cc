@@ -77,11 +77,6 @@ PairedDevice::Type AsBluetoothDeviceType(
   return PairedDevice::DEVICE_UNKNOWN;
 }
 
-void WriteExternalTouchscreensProto(SystemProfileProto::Hardware* hardware) {
-  // TODO: this needs to be converted to Ozone, or remove the protos.
-  NOTIMPLEMENTED();
-}
-
 void IncrementPrefValue(const char* path) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
@@ -204,7 +199,6 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     hardware->set_internal_display_supports_touch(true);
   else if (has_touch == display::Display::TOUCH_SUPPORT_UNAVAILABLE)
     hardware->set_internal_display_supports_touch(false);
-  WriteExternalTouchscreensProto(hardware);
 }
 
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(

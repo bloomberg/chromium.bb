@@ -256,7 +256,8 @@ message SystemProfileProto {
     optional bool internal_display_supports_touch = 14;
 
     // Vendor ids and product ids of external touchscreens.
-    message TouchScreen {
+    // Deprecated as of 8/11/2017.
+    message DeprecatedTouchScreen {
       // Touch screen vendor id.
       optional uint32 vendor_id = 1;
       // Touch screen product id.
@@ -264,7 +265,9 @@ message SystemProfileProto {
     }
     // Lists vendor and product ids of external touchscreens.
     // Logged on ChromeOS only.
-    repeated TouchScreen external_touchscreen = 15;
+    // Deprecated as of 8/11/2017.
+    repeated DeprecatedTouchScreen deprecated_external_touchscreen = 15
+        [deprecated = true];
 
     // Drive messages are currently logged on Windows 7+, iOS, and Android.
     message Drive {
