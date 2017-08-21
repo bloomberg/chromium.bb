@@ -1816,9 +1816,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_APP_BANNER_OPEN" desc="Text that indicates that clicking on the button will launch an application. [CHAR-LIMIT=25]">
         Open
       </message>
-      <message name="IDS_APP_BANNER_INSTALLING_WEBAPK" desc="Button text indicating that a WebAPK is being installed. [CHAR-LIMIT=25]">
-        Adding…
-      </message>
 
       <!-- App banner accessibility strings, used for touch exploration -->
       <message name="IDS_APP_BANNER_VIEW_NATIVE_APP_ACCESSIBILITY" desc="Accessibility text: Describes a prompt promoting the installation of an app related to the current page, including the app's name and its rating.">
@@ -1898,6 +1895,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that an installation for the WebAPK for the specific website is already in progress.">
         Still adding previous site
+      </message>
+      <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that the install of a WebAPK is in progress.">
+        Installing <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph> ...
       </message>
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully installed.">
         Successfully installed.

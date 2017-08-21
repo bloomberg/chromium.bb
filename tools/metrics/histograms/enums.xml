@@ -39375,6 +39375,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="WebApkInstallInfoBarShown">
+  <obsolete>
+    Deprecated as of 8/2017
+  </obsolete>
   <int value="0" label="WebApk infobar shown from the app banner"/>
   <int value="1" label="WebApk infobar shown from the add to homescreen menu"/>
 </enum>
@@ -39403,6 +39406,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="WebApkUserAction">
+  <obsolete>
+    Deprecated as of 8/2017.
+  </obsolete>
   <int value="0" label="Open a previously installed WebAPK"/>
   <int value="1" label="Dismiss to open a previously installed WebAPK"/>
   <int value="2" label="Open a newly installed WebAPK"/>

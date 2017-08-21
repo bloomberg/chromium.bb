@@ -22,11 +22,8 @@ AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
     std::unique_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
-    const GURL& app_url,
-    bool is_webapk)
-    : ConfirmInfoBar(std::move(delegate)),
-    app_url_(app_url),
-    is_webapk_(is_webapk) {}
+    const GURL& app_url)
+    : ConfirmInfoBar(std::move(delegate)), app_url_(app_url) {}
 
 AppBannerInfoBarAndroid::~AppBannerInfoBarAndroid() {
 }
@@ -60,7 +57,7 @@ AppBannerInfoBarAndroid::CreateRenderInfoBar(JNIEnv* env) {
         base::android::ConvertUTF8ToJavaString(env, trimmed_url);
 
     infobar.Reset(Java_AppBannerInfoBarAndroid_createWebAppInfoBar(
-        env, app_title, java_bitmap, app_url, is_webapk_));
+        env, app_title, java_bitmap, app_url));
   }
 
   java_infobar_.Reset(env, infobar.obj());

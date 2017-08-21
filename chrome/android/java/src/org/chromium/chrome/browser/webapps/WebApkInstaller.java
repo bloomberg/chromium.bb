@@ -4,29 +4,15 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static android.content.Context.NOTIFICATION_SERVICE;
-
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
-import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -93,12 +79,6 @@ public class WebApkInstaller {
                 WebApkInstaller.this.notify(result);
                 if (result == WebApkInstallResult.FAILURE) return;
 
-                if (result == WebApkInstallResult.SUCCESS
-                        && CommandLine.getInstance().hasSwitch(
-                                   ChromeSwitches.ENABLE_WEBAPK_NEW_INSTALL_UI)) {
-                    showInstallNotification(packageName, title, url, icon);
-                }
-
                 // Stores the source info of WebAPK in WebappDataStorage.
                 WebappRegistry.getInstance().register(
                         WebApkConstants.WEBAPK_ID_PREFIX + packageName,
@@ -118,34 +98,6 @@ public class WebApkInstaller {
         if (mNativePointer != 0) {
             nativeOnInstallFinished(mNativePointer, result);
         }
-    }
-
-    /** Displays a notification that a WebAPK is successfully installed. */
-    private void showInstallNotification(
-            String webApkPackage, String title, String url, Bitmap icon) {
-        Context context = ContextUtils.getApplicationContext();
-
-        Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                webApkPackage, url, false /* forceNavigation */);
-        PendingIntent clickIntent =
-                PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        ChromeNotificationBuilder notificationBuilder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER);
-        notificationBuilder.setContentTitle(title)
-                .setContentText(
-                        context.getResources().getString(R.string.notification_webapk_installed))
-                .setLargeIcon(icon)
-                .setSmallIcon(R.drawable.ic_chrome)
-                .setContentIntent(clickIntent)
-                .setWhen(System.currentTimeMillis())
-                .setSubText(UrlFormatter.formatUrlForSecurityDisplay(url, false /* showScheme */))
-                .setAutoCancel(true);
-
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(webApkPackage, 0, notificationBuilder.build());
     }
 
     /**
