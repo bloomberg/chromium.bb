@@ -56,7 +56,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
 
-- (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled {
+- (instancetype)init {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   if ((self = [super initWithLayout:layout
                               style:CollectionViewControllerStyleAppBar])) {
@@ -83,7 +83,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    action:@selector(onConfirm)
          forControlEvents:UIControlEventTouchUpInside];
     [_payButton sizeToFit];
-    [_payButton setEnabled:payButtonEnabled];
     [_payButton setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                                     UIViewAutoresizingFlexibleTopMargin |
                                     UIViewAutoresizingFlexibleBottomMargin];
@@ -118,6 +117,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)onConfirm {
   [_payButton setEnabled:NO];
   [_delegate paymentItemsDisplayViewControllerDidConfirm:self];
+}
+
+#pragma mark - Setters
+
+- (void)setDataSource:
+    (id<PaymentItemsDisplayViewControllerDataSource>)dataSource {
+  _dataSource = dataSource;
+  [_payButton setEnabled:[_dataSource canPay]];
 }
 
 #pragma mark - CollectionViewController methods
