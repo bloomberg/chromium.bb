@@ -40,6 +40,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/frame_broker.mojom-blink.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -234,6 +235,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   service_manager::InterfaceProvider& GetInterfaceProvider();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
+  mojom::blink::FrameBroker* GetFrameBroker();
+
   LocalFrameClient* Client() const;
 
   ContentSettingsClient* GetContentSettingsClient();
@@ -329,6 +332,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<CoreProbeSink> probe_sink_;
   Member<PerformanceMonitor> performance_monitor_;
 
+  mojom::blink::FrameBrokerPtr frame_broker_;
   InterfaceRegistry* const interface_registry_;
 
   IntRect remote_viewport_intersection_;

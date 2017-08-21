@@ -5295,6 +5295,13 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
       Details<FocusedNodeDetails>(&details));
 }
 
+void WebContentsImpl::OnFirstPaintInFrame(RenderFrameHost* render_frame_host,
+                                          base::TimeDelta time_to_first_paint) {
+  // TODO(csharrison): Forward this to WebContentsObservers, and add a comment
+  // to prefer this over DidFirstVisuallyNonEmptyPaint. Also add tests for this
+  // IPC once the observer interface is in place.
+}
+
 bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
                                              const base::string16& message,
                                              int32_t line_no,

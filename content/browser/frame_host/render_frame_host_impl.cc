@@ -491,6 +491,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
       frame_host_interface_broker_binding_(this),
       frame_host_associated_binding_(this),
+      frame_broker_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
       weak_ptr_factory_(this) {
@@ -2870,6 +2871,10 @@ void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
+  registry_->AddInterface(
+      base::Bind(&RenderFrameHostImpl::BindFrameBrokerService,
+                 weak_ptr_factory_.GetWeakPtr()));
+
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
@@ -3416,6 +3421,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_.reset();
   frame_host_interface_broker_binding_.Close();
   frame_bindings_control_.reset();
+  frame_broker_binding_.Close();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
@@ -3734,6 +3740,10 @@ void RenderFrameHostImpl::GetInterfaceProvider(
   interface_provider_bindings_.AddBinding(this, mojo::MakeRequest(&provider));
   connector->FilterInterfaces(mojom::kNavigation_FrameSpec, child_identity,
                               std::move(interfaces), std::move(provider));
+}
+
+void RenderFrameHostImpl::OnFirstPaint(base::TimeDelta time_to_first_paint) {
+  delegate_->OnFirstPaintInFrame(this, time_to_first_paint);
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -4299,6 +4309,12 @@ void RenderFrameHostImpl::SetVisibilityForChildViews(bool visible) {
           return is_visible ? view->Show() : view->Hide();
       },
       visible));
+}
+
+void RenderFrameHostImpl::BindFrameBrokerService(
+    blink::mojom::FrameBrokerRequest request) {
+  frame_broker_binding_.Close();
+  frame_broker_binding_.Bind(std::move(request));
 }
 
 }  // namespace content
