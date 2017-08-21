@@ -524,6 +524,17 @@ TEST_P(RunLoopTest, DisallowNestingDeathTest) {
 }
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
+TEST_P(RunLoopTest, DisallowRunningForTesting) {
+  RunLoop::ScopedDisallowRunningForTesting disallow_running;
+  EXPECT_DCHECK_DEATH({ run_loop_.Run(); });
+}
+
+TEST_P(RunLoopTest, ExpiredDisallowRunningForTesting) {
+  { RunLoop::ScopedDisallowRunningForTesting disallow_running; }
+  // Running should be fine after |disallow_running| goes out of scope.
+  run_loop_.RunUntilIdle();
+}
+
 INSTANTIATE_TEST_CASE_P(Real,
                         RunLoopTest,
                         testing::Values(RunLoopTestType::kRealEnvironment));
