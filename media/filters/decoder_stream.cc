@@ -208,7 +208,8 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
 template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanReadWithoutStalling() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return !ready_outputs_.empty() || decoder_->CanReadWithoutStalling();
+  return !ready_outputs_.empty() ||
+         (decoder_ && decoder_->CanReadWithoutStalling());
 }
 
 template <>

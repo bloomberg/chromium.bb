@@ -473,6 +473,10 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(VideoFrameStreamTestParams(false, false, 0, 3),
                       VideoFrameStreamTestParams(false, false, 2, 3)));
 
+TEST_P(VideoFrameStreamTest, CanReadWithoutStallingAtAnyTime) {
+  ASSERT_FALSE(video_frame_stream_->CanReadWithoutStalling());
+}
+
 TEST_P(VideoFrameStreamTest, Initialization) {
   Initialize();
   EXPECT_TRUE(is_initialized_);
