@@ -202,6 +202,14 @@ id<GREYMatcher> SignInMenuButton() {
   return grey_accessibilityID(kSettingsSignInCellId);
 }
 
+id<GREYMatcher> PrimarySignInButton() {
+  return SignInMenuButton();
+}
+
+id<GREYMatcher> SecondarySignInButton() {
+  return SignInMenuButton();
+}
+
 id<GREYMatcher> SettingsAccountButton() {
   return grey_accessibilityID(kSettingsAccountCellId);
 }
