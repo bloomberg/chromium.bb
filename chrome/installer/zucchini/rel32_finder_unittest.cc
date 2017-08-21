@@ -7,8 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 

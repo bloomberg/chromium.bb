@@ -5,6 +5,7 @@
 #include "chrome/installer/zucchini/suffix_array.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <initializer_list>

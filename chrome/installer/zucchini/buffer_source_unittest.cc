@@ -4,6 +4,7 @@
 
 #include "chrome/installer/zucchini/buffer_source.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <iterator>

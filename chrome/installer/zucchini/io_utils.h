@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_IO_UTILS_H_
 #define CHROME_INSTALLER_ZUCCHINI_IO_UTILS_H_
 
+#include <stdint.h>
+
 #include <cctype>
 #include <istream>
 #include <ostream>

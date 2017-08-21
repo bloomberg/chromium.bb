@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "chrome/installer/zucchini/address_translator.h"
 #include "chrome/installer/zucchini/buffer_view.h"
-#include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/image_utils.h"
 
 namespace zucchini {
@@ -46,7 +45,7 @@ class Rel32ReaderX86 : public ReferenceReader {
 };
 
 // Writer for x86 / x64 rel32 references.
-class Rel32WriterX86 : ReferenceWriter {
+class Rel32WriterX86 : public ReferenceWriter {
  public:
   // |image| wraps the raw bytes of a binary in which rel32 references will be
   // written. |translator| is a suitable address translator for the binary

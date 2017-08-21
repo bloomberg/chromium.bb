@@ -4,6 +4,9 @@
 
 #include "chrome/installer/zucchini/zucchini_commands.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iostream>
 #include <ostream>
 
