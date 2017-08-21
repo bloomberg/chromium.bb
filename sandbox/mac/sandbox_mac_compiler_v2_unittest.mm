@@ -141,11 +141,11 @@ MULTIPROCESS_TEST_MAIN(V2ProfileProcess) {
 }
 
 TEST_F(SandboxMacCompilerV2Test, V2ProfileTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("V2ProfileProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("V2ProfileProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 

@@ -167,11 +167,11 @@ MULTIPROCESS_TEST_MAIN(SandboxProfileProcess) {
 }
 
 TEST_F(SandboxV2Test, SandboxProfileTest) {
-  base::SpawnChildResult spawn_child = SpawnChild("SandboxProfileProcess");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("SandboxProfileProcess");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  EXPECT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(exit_code, 0);
 }
 

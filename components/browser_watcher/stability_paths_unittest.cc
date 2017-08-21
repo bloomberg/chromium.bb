@@ -38,10 +38,10 @@ TEST_F(StabilityPathsMultiProcTest, GetStabilityFileForProcessTest) {
   EXPECT_EQ(stability_path, stability_path_two);
 
   // Ensure a different process has a different stability path.
-  base::SpawnChildResult spawn_result = SpawnChild("DummyProcess");
+  base::Process process = SpawnChild("DummyProcess");
   base::FilePath stability_path_other;
-  ASSERT_TRUE(GetStabilityFileForProcess(spawn_result.process, empty_path,
-                                         &stability_path_other));
+  ASSERT_TRUE(
+      GetStabilityFileForProcess(process, empty_path, &stability_path_other));
   EXPECT_NE(stability_path, stability_path_other);
 }
 

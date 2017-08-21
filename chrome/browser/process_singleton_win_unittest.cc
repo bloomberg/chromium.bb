@@ -162,9 +162,9 @@ class ProcessSingletonTest : public base::MultiProcessTest {
   void TearDown() override {
     chrome::SetNotificationTimeoutForTesting(old_notification_timeout_);
 
-    if (browser_victim_.process.IsValid()) {
+    if (browser_victim_.IsValid()) {
       EXPECT_TRUE(::SetEvent(continue_event_.Get()));
-      EXPECT_TRUE(browser_victim_.process.WaitForExit(nullptr));
+      EXPECT_TRUE(browser_victim_.WaitForExit(nullptr));
     }
 
     base::MultiProcessTest::TearDown();
@@ -196,7 +196,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
         SpawnChildWithOptions("ProcessSingletonTestProcessMain", options);
 
     // Wait for the ready event (or process exit).
-    HANDLE handles[] = {ready_event.Get(), browser_victim_.process.Handle()};
+    HANDLE handles[] = {ready_event.Get(), browser_victim_.Handle()};
     // The wait should always return because either |ready_event| is signaled or
     // |browser_victim_| died unexpectedly or exited on error.
     DWORD result =
@@ -229,7 +229,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
                    base::Unretained(this), allow_kill));
   }
 
-  base::Process* browser_victim() { return &(browser_victim_.process); }
+  base::Process* browser_victim() { return &browser_victim_; }
   const base::FilePath& user_data_dir() const {
     return user_data_dir_.GetPath();
   }
@@ -251,7 +251,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
 
   WindowOption window_option_;
   base::ScopedTempDir user_data_dir_;
-  base::SpawnChildResult browser_victim_;
+  base::Process browser_victim_;
   base::win::ScopedHandle continue_event_;
 
   std::unique_ptr<ProcessSingleton> test_singleton_;

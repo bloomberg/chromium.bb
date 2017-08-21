@@ -157,11 +157,11 @@ MULTIPROCESS_TEST_MAIN(NoExecMountTest) {
 }
 
 TEST_F(ComponentFlashHintFileTest, ExecTest2) {
-  base::SpawnChildResult spawn_child = SpawnChild("NoExecMountTest");
-  ASSERT_TRUE(spawn_child.process.IsValid());
+  base::Process process = SpawnChild("NoExecMountTest");
+  ASSERT_TRUE(process.IsValid());
   int exit_code = 42;
-  ASSERT_TRUE(spawn_child.process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), &exit_code));
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),
+                                             &exit_code));
   EXPECT_EQ(0, exit_code);
 }
 
