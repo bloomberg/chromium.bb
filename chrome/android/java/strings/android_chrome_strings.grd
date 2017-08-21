@@ -316,6 +316,9 @@ CHAR-LIMIT guidelines:
       </message>
 
       <!-- Autofill and Payments preferences -->
+      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
+        Suggestions available
+      </message>
       <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">
         Autofill and payments
       </message>
@@ -460,6 +463,9 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
         To view or copy your password here, set screen lock on this device.
+      </message>
+      <message name="IDS_PASSWORD_GENERATION_POPUP_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the password generation popup is shown.">
+        Showing password generation popup
       </message>
 
       <!-- Lock Screen Fragment -->
@@ -3148,6 +3154,22 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       </message>
       <message name="IDS_BOTTOM_SHEET_HOME_TAB" desc="Accessibility string read when the home tab is selected.">
         Home tab selected
+      </message>
+
+      <!-- Photo picker -->
+      <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">
+        Select images
+      </message>
+      <message name="IDS_PHOTO_PICKER_CAMERA" desc="The label for the Camera action in the Photo Picker (opening the camera system intent).">
+        Camera
+      </message>
+      <message name="IDS_PHOTO_PICKER_BROWSE" desc="The label for the Browse action in the Photo Picker (browsing for photos).">
+        Browse
+      </message>
+
+      <!-- Migration strings -->
+      <message name="IDS_UPDATING_CHROME" desc="String that indicates that Chrome is updating">
+        Updating Chrome...
       </message>
     </messages>
   </release>

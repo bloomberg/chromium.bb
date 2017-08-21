@@ -635,15 +635,6 @@
         <message desc="Text shown in tooltip when user touches an offline host on the device." name="IDS_HOST_OFFLINE_TOOLTIP" formatter_data="android_java">
           Host is offline.
         </message>
-        <message desc="Error that is shown in tooltip if the app loses its connection to the Cast device." name="IDS_CONNECTION_TO_CAST_FAILED" formatter_data="android_java">
-          Failed to connect to Cast device.
-        </message>
-         <message desc="Text shown in tooltip when the application has closed its connection to the Cast device." name="IDS_CONNECTION_TO_CAST_CLOSED" formatter_data="android_java">
-          Closed connection to Cast device.
-        </message>
-        <message desc="Title for Cast button in Android application menu." name="IDS_CAST_BUTTON_TITLE" formatter_data="android_java">
-          Cast
-        </message>
         <message name="IDS_MOBILE_NETWORK_WARNING" desc="Message shown in an alert dialog that warns the user that they are trying to connect to a device over mobile network.">
           Data charges may apply when connecting to a device over mobile network. Do you want to continue?
         </message>
@@ -913,7 +904,7 @@ After your remote device is setup, you can access it directly from this page
       <message desc="Menu option for toggle full-screen mode." name="IDS_FULL_SCREEN" formatter_data="android_java">
         Full screen
       </message>
-      <message desc="Icon to leave full-screen mode." name="IDS_EXIT_FULL_SCREEN" formatter_data="android_java">
+      <message desc="Icon to leave full-screen mode." name="IDS_EXIT_FULL_SCREEN">
         Exit full screen
       </message>
       <message desc="Tool-tip for the window's close icon." name="IDS_CLOSE_WINDOW">
@@ -1056,10 +1047,6 @@ After your remote device is setup, you can access it directly from this page
         <message desc="This string represents a host status line, which is shown below the host name for offline hosts.  The status line consists of 1) a host offline status (i.e. a specific 'Host failed to read the policy.' or 'Invalid host owner.' or a generic 'Host if offline.') and 2) statement when the host was last seen online (i.e. 'Last seen online 20 minutes ago.')."
                  name="IDS_HOST_STATUS_LINE" formatter_data="android_java">
           <ph name="OPTIONAL_OFFLINE_REASON">%2$s<ex>Host failed to read the policy.</ex></ph>  Last seen online <ph name="RELATIVE_TIMESTAMP">%1$s<ex>yesterday</ex></ph>.
-        </message>
-        <message desc="Content description (used for accessibility) of a host icon representing an online host."
-                 name="IDS_HOST_ICON_ONLINE_DESCRIPTION" formatter_data="android_java">
-          Online.
         </message>
         <message desc="Content description (used for accessibility) of a host icon representing an offline host."
                  name="IDS_HOST_ICON_OFFLINE_DESCRIPTION" formatter_data="android_java">

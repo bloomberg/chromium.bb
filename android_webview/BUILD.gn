@@ -843,6 +843,7 @@ android_library("android_webview_java") {
     ":android_webview_platform_services_java",
     ":resources",
     ":strings_grd",
+    ":system_webview_manifest",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
@@ -873,6 +874,9 @@ android_library("android_webview_java") {
     ":aw_safe_browsing_action",
     "//components/safe_browsing_db:sb_threat_values",
   ]
+
+  # Manifest used for linting (determining unused resources).
+  android_manifest = system_webview_android_manifest
 }
 
 java_strings_grd("strings_grd") {
