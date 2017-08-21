@@ -71,4 +71,8 @@
 
     <!-- Value for scaleX to mirror drawables correctly for LTR / RTL layouts. -->
     <integer name="automirror_scale_x">1</integer>
+
+    <!-- Selectable List -->
+    <integer name="selectable_item_level_default">0</integer>
+    <integer name="selectable_item_level_selected">1</integer>
 </resources>

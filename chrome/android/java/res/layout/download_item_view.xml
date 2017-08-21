@@ -13,18 +13,18 @@
     <!-- The end margin is not assigned because the cancel button overlaps it. -->
     <LinearLayout
             android:id="@+id/layout_container"
-            style="@style/DownloadRowContainer" >
+            style="@style/ListItemContainer" >
 
         <org.chromium.chrome.browser.widget.TintedImageView
-                android:id="@+id/icon_view"
-                style="@style/DownloadIconView" />
+            android:id="@+id/icon_view"
+            style="@style/DownloadIconView" />
 
         <!-- Shown for completed downloads. -->
         <RelativeLayout
                 android:id="@+id/completed_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                android:layout_weight="1">
 
             <TextView
                     android:id="@+id/filename_completed_view"
@@ -54,7 +54,7 @@
                     android:layout_toStartOf="@+id/pause_button"
                     android:minHeight="18dp"
                     android:singleLine="true"
-                    android:textAppearance="@style/BlackBodyDefault" />
+                    android:textAppearance="@style/BlackDenseListText1" />
 
             <org.chromium.chrome.browser.widget.MaterialProgressBar
                     android:id="@+id/download_progress_view"

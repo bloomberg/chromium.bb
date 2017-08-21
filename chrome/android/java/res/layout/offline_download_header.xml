@@ -12,7 +12,7 @@
 
     <LinearLayout
             android:id="@+id/layout_container"
-            style="@style/DownloadRowContainer" >
+            style="@style/ListItemContainer" >
 
         <org.chromium.chrome.browser.widget.TintedImageView
                 android:id="@+id/icon_view"
