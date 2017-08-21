@@ -3516,7 +3516,6 @@ crbug.com/757165 [ Win ] http/tests/inspector/extensions/extensions-panel.html [
 crbug.com/757165 [ Win ] http/tests/inspector/sources/ui-source-code-metadata.html [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
-crbug.com/757165 [ Win ] inspector-protocol/sessions/log-entry-added.js [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-on-accelerated-layer.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
