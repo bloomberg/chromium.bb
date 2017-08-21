@@ -709,8 +709,13 @@ void CheckNavigationEntryMatchLoadParams(
 
 TEST_F(NavigationControllerTest, LoadURLWithParams) {
   // Start a navigation in order to have enough state to fake a transfer.
-  contents()->NavigateAndCommit(GURL("http://foo"));
-  contents()->StartNavigation(GURL("http://bar"));
+  const GURL url1("http://foo");
+  const GURL url2("http://bar");
+
+  contents()->NavigateAndCommit(url1);
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  navigation->Start();
 
   NavigationControllerImpl& controller = controller_impl();
 
