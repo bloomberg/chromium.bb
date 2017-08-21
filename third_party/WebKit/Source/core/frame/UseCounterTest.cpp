@@ -477,4 +477,42 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
 }
 
+class FeaturePolicyDisabledDeprecationTest : public ::testing::Test {
+ public:
+  FeaturePolicyDisabledDeprecationTest() {
+    feature_policy_was_enabled = RuntimeEnabledFeatures::FeaturePolicyEnabled();
+    RuntimeEnabledFeatures::SetFeaturePolicyEnabled(false);
+    dummy_ = DummyPageHolder::Create();
+  }
+  ~FeaturePolicyDisabledDeprecationTest() {
+    RuntimeEnabledFeatures::SetFeaturePolicyEnabled(feature_policy_was_enabled);
+  }
+
+ protected:
+  Document& GetDocument() { return dummy_->GetDocument(); }
+  UseCounter& GetUseCounter() { return dummy_->GetPage().GetUseCounter(); }
+
+  std::unique_ptr<DummyPageHolder> dummy_;
+
+ private:
+  bool feature_policy_was_enabled;
+};
+
+TEST_F(FeaturePolicyDisabledDeprecationTest,
+       TestCountDeprecationFeaturePolicy) {
+  // The specific feature we use here isn't important, but we need the
+  // corresponding FP feature as well.
+  WebFeaturePolicyFeature policy_feature =
+      WebFeaturePolicyFeature::kGeolocation;
+  WebFeature feature =
+      WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe;
+
+  // Verify that there is, in fact, no policy attacted to the document
+  ASSERT_EQ(GetDocument().GetFeaturePolicy(), nullptr);
+  // Trigger the deprecation counter as if the feature was used.
+  Deprecation::CountDeprecationFeaturePolicy(GetDocument(), policy_feature);
+  // Verify that no usage was recorded.
+  EXPECT_FALSE(GetUseCounter().HasRecordedMeasurement(feature));
+}
+
 }  // namespace blink
