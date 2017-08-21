@@ -67,6 +67,7 @@ source_set("tests") {
   sources = [
     "battery/battery_status_manager_win_unittest.cc",
     "battery/battery_status_service_unittest.cc",
+    "generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer_unittest.cc",
     "generic_sensor/fake_platform_sensor_fusion.cc",
     "generic_sensor/fake_platform_sensor_fusion.h",
     "generic_sensor/generic_sensor_service_unittest.cc",

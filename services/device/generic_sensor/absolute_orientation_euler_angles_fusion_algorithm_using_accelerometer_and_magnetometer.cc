@@ -122,9 +122,8 @@ bool AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetome
   DCHECK(fusion_sensor_);
 
   // Only generate a new sensor value when the accelerometer reading changes.
-  if (which_sensor_changed != mojom::SensorType::ACCELEROMETER) {
+  if (which_sensor_changed != mojom::SensorType::ACCELEROMETER)
     return false;
-  }
 
   SensorReading gravity_reading;
   SensorReading geomagnetic_reading;
