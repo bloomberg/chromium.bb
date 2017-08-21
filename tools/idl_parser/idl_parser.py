@@ -8,7 +8,7 @@
 #
 # IDL Parser
 #
-# The parser is uses the PLY yacc library to build a set of parsing rules based
+# The parser uses the PLY yacc library to build a set of parsing rules based
 # on Web IDL.
 #
 # Web IDL, and Web IDL grammar can be found at:
