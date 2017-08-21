@@ -202,8 +202,11 @@ class MultiBrowserSharedState(story_module.SharedState):
   def DumpStateUponFailure(self, unused_story, unused_results):
     if self._browsers:
       for browser_type, browser in self._browsers.iteritems():
-        logging.info('vvvvv BROWSER STATE BELOW FOR \'%s\' vvvvv', browser_type)
-        browser.DumpStateUponFailure()
+        if browser is not None:
+          logging.info("vvvvv BROWSER STATE BELOW FOR '%s' vvvvv", browser_type)
+          browser.DumpStateUponFailure()
+        else:
+          logging.info("browser '%s' not yet created", browser_type)
     else:
       logging.warning('Cannot dump browser states: No browsers.')
 
