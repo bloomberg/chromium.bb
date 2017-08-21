@@ -103,6 +103,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   ShelfView* shelf_view_;
   Shelf* shelf_;
 
+  // Owned by the view hierarchy. Null if the voice interaction is not enabled.
   VoiceInteractionOverlay* voice_interaction_overlay_ = nullptr;
   std::unique_ptr<base::OneShotTimer> voice_interaction_animation_delay_timer_;
   std::unique_ptr<base::OneShotTimer>

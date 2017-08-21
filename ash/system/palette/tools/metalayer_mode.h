@@ -6,6 +6,8 @@
 #define ASH_SYSTEM_PALETTE_TOOLS_METALAYER_MODE_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/voice_interaction_state.h"
+#include "ash/shell_observer.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"
@@ -18,7 +20,8 @@ namespace ash {
 // Unlike other palette tools, it can be activated not only through the stylus
 // menu, but also by the stylus button click.
 class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
-                                 public ui::EventHandler {
+                                 public ui::EventHandler,
+                                 public ShellObserver {
  public:
   explicit MetalayerMode(Delegate* delegate);
   ~MetalayerMode() override;
@@ -38,7 +41,17 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
 
+  // ShellObserver:
+  void OnVoiceInteractionStatusChanged(
+      ash::VoiceInteractionState state) override;
+
   void OnMetalayerDone();
+
+  // Update the palette menu item based on the current availability of the tool.
+  void UpdateView();
+
+  ash::VoiceInteractionState voice_interaction_state_ =
+      ash::VoiceInteractionState::NOT_READY;
 
   base::WeakPtrFactory<MetalayerMode> weak_factory_;
 

@@ -9,6 +9,7 @@
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
@@ -191,6 +192,9 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
 }
 
 TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
+  ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
+      ash::VoiceInteractionState::RUNNING);
+
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
   test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
@@ -262,6 +266,9 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
 }
 
 TEST_F(PaletteTrayTest, StylusBarrelButtonActivatesHighlighter) {
+  ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
+      ash::VoiceInteractionState::RUNNING);
+
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
   test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
