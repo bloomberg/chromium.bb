@@ -30,10 +30,9 @@ void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
     uint64_t submit_time) {
   if (local_surface_id != local_surface_id_) {
     local_surface_id_ = local_surface_id;
-    gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-    display_private_->ResizeDisplay(frame_size);
+    display_private_->ResizeDisplay(frame.size_in_pixels());
     display_private_->SetLocalSurfaceId(local_surface_id_,
-                                        frame.metadata.device_scale_factor);
+                                        frame.device_scale_factor());
   }
   compositor_frame_sink_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),

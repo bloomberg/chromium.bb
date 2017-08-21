@@ -120,10 +120,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
         std::move(child_frame_->frame);
 
-    float device_scale_factor =
-        child_compositor_frame->metadata.device_scale_factor;
-    gfx::Size frame_size =
-        child_compositor_frame->render_pass_list.back()->output_rect.size();
+    float device_scale_factor = child_compositor_frame->device_scale_factor();
+    gfx::Size frame_size = child_compositor_frame->size_in_pixels();
     if (!child_id_.is_valid() || surface_size_ != frame_size ||
         device_scale_factor_ != device_scale_factor) {
       if (child_id_.is_valid())

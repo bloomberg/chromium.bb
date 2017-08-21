@@ -138,8 +138,8 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
             frame.metadata.begin_frame_ack.sequence_number);
   test_client_->DisplayReceivedCompositorFrame(frame);
 
-  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-  float device_scale_factor = frame.metadata.device_scale_factor;
+  gfx::Size frame_size = frame.size_in_pixels();
+  float device_scale_factor = frame.device_scale_factor();
   if (!local_surface_id_.is_valid() || frame_size != display_size_ ||
       device_scale_factor != device_scale_factor_) {
     local_surface_id_ = local_surface_id_allocator_->GenerateId();

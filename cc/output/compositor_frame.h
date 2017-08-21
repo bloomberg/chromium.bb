@@ -30,6 +30,13 @@ class CC_EXPORT CompositorFrame {
 
   CompositorFrame& operator=(CompositorFrame&& other);
 
+  float device_scale_factor() const { return metadata.device_scale_factor; }
+
+  const gfx::Size& size_in_pixels() const {
+    DCHECK(!render_pass_list.empty());
+    return render_pass_list.back()->output_rect.size();
+  }
+
   CompositorFrameMetadata metadata;
   std::vector<viz::TransferableResource> resource_list;
   // This list is in the order that each RenderPass will be drawn. The last one
