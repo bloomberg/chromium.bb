@@ -114,11 +114,9 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
       const base::FilePath& screenshot_path,
       gfx::Image image);
 
-  void SetProfileForTest(Profile* profile);
   Profile* GetProfile();
 
   std::unique_ptr<ui::ScreenshotGrabber> screenshot_grabber_;
-  Profile* profile_for_test_;
 
   base::WeakPtrFactory<ChromeScreenshotGrabber> weak_factory_;
 
