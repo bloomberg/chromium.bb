@@ -9,11 +9,17 @@
 
 namespace device {
 
+// Conversion ratio from radians to degrees.
+extern const double kRadToDeg;
+
+// Conversion ratio from degrees to radians.
+extern const double kDegToRad;
+
 void ComputeOrientationEulerAnglesFromRotationMatrix(
     const std::vector<double>& r,
-    double* alpha,
-    double* beta,
-    double* gamma);
+    double* alpha_in_degrees,
+    double* beta_in_degrees,
+    double* gamma_in_degrees);
 
 }  // namespace device
 

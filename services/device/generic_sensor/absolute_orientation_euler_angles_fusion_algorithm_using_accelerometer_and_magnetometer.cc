@@ -84,9 +84,9 @@ bool ComputeAbsoluteOrientationEulerAnglesFromGravityAndGeomagnetic(
     double geomagnetic_x,
     double geomagnetic_y,
     double geomagnetic_z,
-    double* alpha,
-    double* beta,
-    double* gamma) {
+    double* alpha_in_degrees,
+    double* beta_in_degrees,
+    double* gamma_in_degrees) {
   std::vector<double> rotation_matrix;
   if (!ComputeRotationMatrixFromGravityAndGeomagnetic(
           gravity_x, gravity_y, gravity_z, geomagnetic_x, geomagnetic_y,
@@ -94,8 +94,8 @@ bool ComputeAbsoluteOrientationEulerAnglesFromGravityAndGeomagnetic(
     return false;
   }
 
-  device::ComputeOrientationEulerAnglesFromRotationMatrix(rotation_matrix,
-                                                          alpha, beta, gamma);
+  device::ComputeOrientationEulerAnglesFromRotationMatrix(
+      rotation_matrix, alpha_in_degrees, beta_in_degrees, gamma_in_degrees);
   return true;
 }
 
@@ -135,25 +135,13 @@ bool AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetome
     return false;
   }
 
-  double gravity_x = gravity_reading.accel.x;
-  double gravity_y = gravity_reading.accel.y;
-  double gravity_z = gravity_reading.accel.z;
-  double geomagnetic_x = geomagnetic_reading.magn.x;
-  double geomagnetic_y = geomagnetic_reading.magn.y;
-  double geomagnetic_z = geomagnetic_reading.magn.z;
-
-  double alpha, beta, gamma;
-  if (!ComputeAbsoluteOrientationEulerAnglesFromGravityAndGeomagnetic(
-          gravity_x, gravity_y, gravity_z, geomagnetic_x, geomagnetic_y,
-          geomagnetic_z, &alpha, &beta, &gamma)) {
-    return false;
-  }
-
-  fused_reading->orientation_euler.x = beta;
-  fused_reading->orientation_euler.y = gamma;
-  fused_reading->orientation_euler.z = alpha;
-
-  return true;
+  return ComputeAbsoluteOrientationEulerAnglesFromGravityAndGeomagnetic(
+      gravity_reading.accel.x, gravity_reading.accel.y, gravity_reading.accel.z,
+      geomagnetic_reading.magn.x, geomagnetic_reading.magn.y,
+      geomagnetic_reading.magn.z,
+      &fused_reading->orientation_euler.z.value() /* alpha_in_degrees */,
+      &fused_reading->orientation_euler.x.value() /* beta_in_degrees */,
+      &fused_reading->orientation_euler.y.value() /* gamma_in_degrees */);
 }
 
 }  // namespace device

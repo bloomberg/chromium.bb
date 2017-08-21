@@ -12,6 +12,8 @@
 
 namespace {
 
+const double kEpsilon = 1e-8;
+
 // Returns orientation angles from a rotation matrix, such that the angles are
 // according to spec http://dev.w3.org/geo/api/spec-source-orientation.html}.
 //
@@ -39,67 +41,74 @@ namespace {
 // r[ 3]   r[ 4]   r[ 5]
 // r[ 6]   r[ 7]   r[ 8]
 //
-// alpha: rotation around the z axis, in [0, 2*pi)
-// beta: rotation around the x axis, in [-pi, pi)
-// gamma: rotation around the y axis, in [-pi/2, pi/2)
+// alpha_in_radians: rotation around the z axis, in [0, 2*pi)
+// beta_in_radians: rotation around the x axis, in [-pi, pi)
+// gamma_in_radians: rotation around the y axis, in [-pi/2, pi/2)
 void ComputeOrientationEulerAnglesInRadiansFromRotationMatrix(
     const std::vector<double>& r,
-    double* alpha,
-    double* beta,
-    double* gamma) {
+    double* alpha_in_radians,
+    double* beta_in_radians,
+    double* gamma_in_radians) {
   DCHECK_EQ(9u, r.size());
 
-  if (r[8] > 0) {  // cos(beta) > 0
-    *alpha = std::atan2(-r[1], r[4]);
-    *beta = std::asin(r[7]);           // beta (-pi/2, pi/2)
-    *gamma = std::atan2(-r[6], r[8]);  // gamma (-pi/2, pi/2)
-  } else if (r[8] < 0) {               // cos(beta) < 0
-    *alpha = std::atan2(r[1], -r[4]);
-    *beta = -std::asin(r[7]);
-    *beta += (*beta >= 0) ? -M_PI : M_PI;  // beta [-pi,-pi/2) U (pi/2,pi)
-    *gamma = std::atan2(r[6], -r[8]);      // gamma (-pi/2, pi/2)
-  } else {                                 // r[8] == 0
-    if (r[6] > 0) {                        // cos(gamma) == 0, cos(beta) > 0
-      *alpha = std::atan2(-r[1], r[4]);
-      *beta = std::asin(r[7]);  // beta [-pi/2, pi/2]
-      *gamma = -M_PI / 2;       // gamma = -pi/2
-    } else if (r[6] < 0) {      // cos(gamma) == 0, cos(beta) < 0
-      *alpha = std::atan2(r[1], -r[4]);
-      *beta = -std::asin(r[7]);
-      *beta += (*beta >= 0) ? -M_PI : M_PI;  // beta [-pi,-pi/2) U (pi/2,pi)
-      *gamma = -M_PI / 2;                    // gamma = -pi/2
-    } else {                                 // r[6] == 0, cos(beta) == 0
+  // Since |r| contains double, directly compare it with 0 won't be accurate,
+  // so here |kEpsilon| is used to check if r[8] and r[6] is close to 0. And
+  // this needs to be done before checking if it is greater or less than 0
+  // since a number close to 0 can be either a positive or negative number.
+  if (std::abs(r[8]) < kEpsilon) {    // r[8] == 0
+    if (std::abs(r[6]) < kEpsilon) {  // r[6] == 0, cos(beta) == 0
       // gimbal lock discontinuity
-      *alpha = std::atan2(r[3], r[0]);
-      *beta = (r[7] > 0) ? M_PI / 2 : -M_PI / 2;  // beta = +-pi/2
-      *gamma = 0;                                 // gamma = 0
+      *alpha_in_radians = std::atan2(r[3], r[0]);
+      *beta_in_radians = (r[7] > 0) ? M_PI / 2 : -M_PI / 2;  // beta = +-pi/2
+      *gamma_in_radians = 0;                                 // gamma = 0
+    } else if (r[6] > 0) {  // cos(gamma) == 0, cos(beta) > 0
+      *alpha_in_radians = std::atan2(-r[1], r[4]);
+      *beta_in_radians = std::asin(r[7]);  // beta [-pi/2, pi/2]
+      *gamma_in_radians = -M_PI / 2;       // gamma = -pi/2
+    } else {                               // cos(gamma) == 0, cos(beta) < 0
+      *alpha_in_radians = std::atan2(r[1], -r[4]);
+      *beta_in_radians = -std::asin(r[7]);
+      *beta_in_radians += (*beta_in_radians >= 0)
+                              ? -M_PI
+                              : M_PI;  // beta [-pi,-pi/2) U (pi/2,pi)
+      *gamma_in_radians = -M_PI / 2;   // gamma = -pi/2
     }
+  } else if (r[8] > 0) {  // cos(beta) > 0
+    *alpha_in_radians = std::atan2(-r[1], r[4]);
+    *beta_in_radians = std::asin(r[7]);           // beta (-pi/2, pi/2)
+    *gamma_in_radians = std::atan2(-r[6], r[8]);  // gamma (-pi/2, pi/2)
+  } else {                                        // cos(beta) < 0
+    *alpha_in_radians = std::atan2(r[1], -r[4]);
+    *beta_in_radians = -std::asin(r[7]);
+    *beta_in_radians +=
+        (*beta_in_radians >= 0) ? -M_PI : M_PI;  // beta [-pi,-pi/2) U (pi/2,pi)
+    *gamma_in_radians = std::atan2(r[6], -r[8]);  // gamma (-pi/2, pi/2)
   }
 
   // alpha is in [-pi, pi], make sure it is in [0, 2*pi).
-  if (*alpha < 0)
-    *alpha += 2 * M_PI;  // alpha [0, 2*pi)
-}
-
-double RadiansToDegrees(double radians) {
-  return (180.0 * radians) / M_PI;
+  if (*alpha_in_radians < 0)
+    *alpha_in_radians += 2 * M_PI;  // alpha [0, 2*pi)
 }
 
 }  // namespace
 
 namespace device {
 
+const double kRadToDeg = 180.0 / M_PI;
+
+const double kDegToRad = M_PI / 180.0;
+
 void ComputeOrientationEulerAnglesFromRotationMatrix(
     const std::vector<double>& r,
-    double* alpha,
-    double* beta,
-    double* gamma) {
-  double alpha_radians, beta_radians, gamma_radians;
+    double* alpha_in_degrees,
+    double* beta_in_degrees,
+    double* gamma_in_degrees) {
+  double alpha_in_radians, beta_in_radians, gamma_in_radians;
   ComputeOrientationEulerAnglesInRadiansFromRotationMatrix(
-      r, &alpha_radians, &beta_radians, &gamma_radians);
-  *alpha = RadiansToDegrees(alpha_radians);
-  *beta = RadiansToDegrees(beta_radians);
-  *gamma = RadiansToDegrees(gamma_radians);
+      r, &alpha_in_radians, &beta_in_radians, &gamma_in_radians);
+  *alpha_in_degrees = kRadToDeg * alpha_in_radians;
+  *beta_in_degrees = kRadToDeg * beta_in_radians;
+  *gamma_in_degrees = kRadToDeg * gamma_in_radians;
 }
 
 }  // namespace device

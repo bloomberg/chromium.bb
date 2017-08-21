@@ -25,7 +25,8 @@ PlatformSensor::PlatformSensor(mojom::SensorType type,
       weak_factory_(this) {}
 
 PlatformSensor::~PlatformSensor() {
-  provider_->RemoveSensor(GetType());
+  if (provider_)
+    provider_->RemoveSensor(GetType());
 }
 
 mojom::SensorType PlatformSensor::GetType() const {

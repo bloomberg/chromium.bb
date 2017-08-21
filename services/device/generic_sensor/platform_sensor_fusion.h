@@ -55,7 +55,7 @@ class PlatformSensorFusion : public PlatformSensor,
   void OnSensorError() override;
   bool IsSuspended() override;
 
-  bool GetSourceReading(mojom::SensorType type, SensorReading* result);
+  virtual bool GetSourceReading(mojom::SensorType type, SensorReading* result);
 
  protected:
   ~PlatformSensorFusion() override;
