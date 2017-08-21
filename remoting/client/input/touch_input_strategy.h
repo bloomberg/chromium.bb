@@ -57,6 +57,9 @@ class TouchInputStrategy {
   // Returns the current cursor position.
   virtual ViewMatrix::Point GetCursorPosition() const = 0;
 
+  // Focuses the viewport on the cursor position if necessary.
+  virtual void FocusViewportOnCursor(DesktopViewport* viewport) const = 0;
+
   // Maps a vector (or movement) in the surface coordinate to the vector to be
   // used on the desktop. For example it can be used to map a scroll gesture
   // on the screen to change in mouse wheel position.

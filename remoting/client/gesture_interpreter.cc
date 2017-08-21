@@ -151,6 +151,7 @@ void GestureInterpreter::ProcessAnimations() {
 
 void GestureInterpreter::OnSurfaceSizeChanged(int width, int height) {
   viewport_.SetSurfaceSize(width, height);
+  input_strategy_->FocusViewportOnCursor(&viewport_);
 }
 
 void GestureInterpreter::OnDesktopSizeChanged(int width, int height) {

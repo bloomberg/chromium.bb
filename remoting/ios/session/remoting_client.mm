@@ -173,6 +173,9 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   if (_renderer) {
     _runtime->display_task_runner()->DeleteSoon(FROM_HERE, _renderer.release());
   }
+
+  _gestureInterpreter.reset();
+  _keyboardInterpreter.reset();
 }
 
 #pragma mark - Eventing
