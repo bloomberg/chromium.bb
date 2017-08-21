@@ -265,6 +265,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_SCREEN_CAPTURE" desc="Label for notifications shown when screen is sharing or recording, within a list of notification categories. [CHAR-LIMIT=32]">
         Screen Capture
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_CONTENT_SUGGESTIONS" desc="Label for Content Suggestions, within a list of notification categories. [CHAR-LIMIT=32]">
+        Content Suggestions
+      </message>
       <message name="IDS_NOTIFICATION_CATEGORY_SITES" desc="Label for notifications from websites, within a list of notification categories. [CHAR-LIMIT=32]">
         Sites
       </message>

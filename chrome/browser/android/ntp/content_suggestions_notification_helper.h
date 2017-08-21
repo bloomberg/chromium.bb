@@ -49,6 +49,12 @@ class ContentSuggestionsNotificationHelper {
   // notifications that we no longer think that the user is interested in them.
   static bool IsEnabledForProfile(Profile* profile);
 
+  // Registers or unregisters the notification channel on Android O. May be
+  // called regardless of Android version or registration state; they are no-ops
+  // before Android O, or if the channel is already (de)registered.
+  static void RegisterChannel();
+  static void UnregisterChannel();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSuggestionsNotificationHelper);
 };

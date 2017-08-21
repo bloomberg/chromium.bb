@@ -122,6 +122,16 @@ bool ContentSuggestionsNotificationHelper::IsEnabledForProfile(
   return ntp_snippets::IsEnabledForProfile(profile);
 }
 
+void ContentSuggestionsNotificationHelper::RegisterChannel() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContentSuggestionsNotificationHelper_registerChannel(env);
+}
+
+void ContentSuggestionsNotificationHelper::UnregisterChannel() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContentSuggestionsNotificationHelper_unregisterChannel(env);
+}
+
 static void RecordNotificationOptOut(JNIEnv* env,
                                      const JavaParamRef<jclass>& class_object,
                                      jint reason) {

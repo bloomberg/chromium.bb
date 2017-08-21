@@ -27,8 +27,11 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
 import org.chromium.chrome.browser.preferences.NotificationsPreferences;
@@ -52,6 +55,9 @@ public class ContentSuggestionsNotificationHelper {
     private static final String NOTIFICATION_ID_EXTRA = "notification_id";
     private static final String NOTIFICATION_CATEGORY_EXTRA = "category";
     private static final String NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA = "id_within_category";
+
+    private static final String PREF_CHANNEL_CREATED =
+            "ntp.content_suggestions.notification.channel_created";
 
     private static final String PREF_CACHED_ACTION_TAP =
             "ntp.content_suggestions.notification.cached_action_tap";
@@ -171,8 +177,8 @@ public class ContentSuggestionsNotificationHelper {
                 0);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS)
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)
                         .setContentTitle(title)
@@ -194,7 +200,8 @@ public class ContentSuggestionsNotificationHelper {
         }
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.CONTENT_SUGGESTION, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                NotificationUmaTracker.CONTENT_SUGGESTION,
+                ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
         // Set timeout.
@@ -431,6 +438,47 @@ public class ContentSuggestionsNotificationHelper {
                 .apply();
 
         flushCachedMetrics();
+    }
+
+    /**
+     * Registers the Content Suggestions notification channel on Android O.
+     *
+     * <p>The registration state is tracked in a preference, as a boolean. If the pref is false or
+     * missing, the channel will be (re-)registered.
+     *
+     * <p>May be called on any Android version; before Android O, it is a no-op.
+     */
+    @CalledByNative
+    private static void registerChannel() {
+        if (!BuildInfo.isAtLeastO()) return;
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        if (prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return;
+
+        ChannelsInitializer initializer = new ChannelsInitializer(
+                new NotificationManagerProxyImpl(
+                        (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                                Context.NOTIFICATION_SERVICE)),
+                ContextUtils.getApplicationContext().getResources());
+        initializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        prefs.edit().putBoolean(PREF_CHANNEL_CREATED, true).apply();
+    }
+
+    /**
+     * Unregisters the Content Suggestions notification channel on Android O.
+     *
+     * <p>May be called on any Android version; before Android O, it is a no-op.
+     */
+    @CalledByNative
+    private static void unregisterChannel() {
+        if (!BuildInfo.isAtLeastO()) return;
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        if (!prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return;
+
+        NotificationManagerProxy manager = new NotificationManagerProxyImpl(
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.NOTIFICATION_SERVICE));
+        manager.deleteNotificationChannel(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        prefs.edit().remove(PREF_CHANNEL_CREATED).apply();
     }
 
     /**
