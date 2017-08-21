@@ -438,8 +438,8 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
   // "Fire an event named install..."
   new_version()->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::INSTALL,
-      base::Bind(&ServiceWorkerRegisterJob::DispatchInstallEvent,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ServiceWorkerRegisterJob::DispatchInstallEvent,
+                     weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
                  weak_factory_.GetWeakPtr()));
 }

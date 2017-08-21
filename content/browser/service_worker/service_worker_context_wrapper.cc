@@ -112,8 +112,8 @@ void FoundReadyRegistrationForStartActiveWorker(
     DCHECK(active_version.get());
     active_version->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
-        base::Bind(&DidStartWorker, active_version,
-                   base::Passed(&info_callback)),
+        base::BindOnce(&DidStartWorker, active_version,
+                       std::move(info_callback)),
         base::Bind(&DidFailStartWorker, base::Passed(&failure_callback)));
   } else {
     std::move(failure_callback).Run();
@@ -708,7 +708,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
 
   if (active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     // Wait until the version is activated.
-    active_version->RegisterStatusChangeCallback(base::Bind(
+    active_version->RegisterStatusChangeCallback(base::BindOnce(
         &ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration,
         this, callback, std::move(registration)));
     return;

@@ -788,8 +788,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::INSTALL,
-        base::Bind(&self::DispatchInstallEventOnIOThread,
-                   base::Unretained(this), done, result),
+        base::BindOnce(&self::DispatchInstallEventOnIOThread,
+                       base::Unretained(this), done, result),
         CreateReceiver(BrowserThread::UI, done, result));
   }
 
@@ -843,8 +843,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::ACTIVATE,
-        base::Bind(&self::DispatchActivateEventOnIOThread,
-                   base::Unretained(this), done, result),
+        base::BindOnce(&self::DispatchActivateEventOnIOThread,
+                       base::Unretained(this), done, result),
         CreateReceiver(BrowserThread::UI, done, result));
   }
 

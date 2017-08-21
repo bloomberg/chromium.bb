@@ -269,9 +269,9 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
   if (changed_mask.active_changed() && registration->active_version()) {
     // Wait until the state change so we don't send the get for ready
     // registration complete message before set version attributes message.
-    registration->active_version()->RegisterStatusChangeCallback(base::Bind(
-          &ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded,
-          AsWeakPtr()));
+    registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
+        &ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded,
+        AsWeakPtr()));
   }
 }
 

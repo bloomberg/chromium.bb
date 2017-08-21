@@ -79,9 +79,10 @@ const char kForceUpdateInfoMessage[] =
     "Service Worker was updated because \"Update on reload\" was "
     "checked in the DevTools Application panel.";
 
-void RunSoon(const base::Closure& callback) {
+void RunSoon(base::OnceClosure callback) {
   if (!callback.is_null())
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
 }
 
 template <typename CallbackArray, typename Arg>
@@ -102,11 +103,10 @@ void RunStartWorkerCallback(
 }
 
 // A callback adapter to start a |task| after StartWorker.
-void RunTaskAfterStartWorker(
-    base::WeakPtr<ServiceWorkerVersion> version,
-    const StatusCallback& error_callback,
-    const base::Closure& task,
-    ServiceWorkerStatusCode status) {
+void RunTaskAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
+                             const StatusCallback& error_callback,
+                             base::OnceClosure task,
+                             ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
     if (!error_callback.is_null())
       error_callback.Run(status);
@@ -120,7 +120,7 @@ void RunTaskAfterStartWorker(
       error_callback.Run(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
     return;
   }
-  task.Run();
+  std::move(task).Run();
 }
 
 void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
@@ -367,10 +367,10 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   for (auto& observer : listeners_)
     observer.OnVersionStateChanged(this);
 
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks.swap(status_change_callbacks_);
-  for (const auto& callback : callbacks)
-    callback.Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 
   if (status == INSTALLED)
     embedded_worker_->OnWorkerVersionInstalled();
@@ -379,8 +379,8 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
-    const base::Closure& callback) {
-  status_change_callbacks_.push_back(callback);
+    base::OnceClosure callback) {
+  status_change_callbacks_.push_back(std::move(callback));
 }
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
@@ -434,14 +434,14 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_ABORT);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
   if (is_redundant()) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_REDUNDANT);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
+    RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
 
@@ -456,7 +456,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_DISALLOWED);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_DISALLOWED));
+    RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_DISALLOWED));
     return;
   }
 
@@ -485,7 +485,7 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
       // TODO(shimazu): Remove this check after Stop() hides the IPC behavior.
       // See also a TODO on EmbeddedWorkerInstance::Stop.
       if (!embedded_worker_->Stop()) {
-        RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_IPC_FAILED));
+        RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_IPC_FAILED));
         return;
       }
       stop_callbacks_.push_back(callback);
@@ -494,7 +494,7 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
       stop_callbacks_.push_back(callback);
       return;
     case EmbeddedWorkerStatus::STOPPED:
-      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+      RunSoon(base::BindOnce(callback, SERVICE_WORKER_OK));
       return;
   }
 }
@@ -643,16 +643,16 @@ ServiceWorkerVersion::CreateSimpleEventCallback(int request_id) {
 
 void ServiceWorkerVersion::RunAfterStartWorker(
     ServiceWorkerMetrics::EventType purpose,
-    const base::Closure& task,
+    base::OnceClosure task,
     const StatusCallback& error_callback) {
   if (running_status() == EmbeddedWorkerStatus::RUNNING) {
     DCHECK(start_callbacks_.empty());
-    task.Run();
+    std::move(task).Run();
     return;
   }
   StartWorker(purpose,
               base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-                         error_callback, task));
+                         error_callback, base::Passed(std::move(task))));
 }
 
 void ServiceWorkerVersion::AddControllee(
@@ -1431,14 +1431,14 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
   if (status != SERVICE_WORKER_OK) {
     RecordStartWorkerResult(purpose, prestart_status, kInvalidTraceId,
                             is_browser_startup_complete, status);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
   if (is_redundant()) {
     RecordStartWorkerResult(purpose, prestart_status, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_REDUNDANT);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
+    RunSoon(base::BindOnce(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
 
@@ -1446,7 +1446,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
   switch (running_status()) {
     case EmbeddedWorkerStatus::RUNNING:
-      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+      RunSoon(base::BindOnce(callback, SERVICE_WORKER_OK));
       return;
     case EmbeddedWorkerStatus::STARTING:
       DCHECK(!start_callbacks_.empty());

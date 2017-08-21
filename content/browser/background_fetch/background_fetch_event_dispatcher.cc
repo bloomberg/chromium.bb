@@ -196,9 +196,9 @@ void BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch(
 
   service_worker_version->RunAfterStartWorker(
       event,
-      base::Bind(&BackgroundFetchEventDispatcher::DispatchEvent, event,
-                 finished_closure, loaded_callback,
-                 make_scoped_refptr(service_worker_version)),
+      base::BindOnce(&BackgroundFetchEventDispatcher::DispatchEvent, event,
+                     finished_closure, loaded_callback,
+                     make_scoped_refptr(service_worker_version)),
       base::Bind(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
                  finished_closure, DispatchPhase::STARTING));
 }

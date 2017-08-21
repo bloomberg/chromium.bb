@@ -349,7 +349,7 @@ void ServiceWorkerControlleeRequestHandler::
   if (active_version.get() &&
       active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     provider_host_->SetAllowAssociation(false);
-    registration->active_version()->RegisterStatusChangeCallback(base::Bind(
+    registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
         &self::OnVersionStatusChanged, weak_factory_.GetWeakPtr(),
         base::RetainedRef(registration), base::RetainedRef(active_version)));
     TRACE_EVENT_ASYNC_END2(
@@ -451,7 +451,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
       original_registration->installing_version();
   new_version->ReportForceUpdateToDevTools();
   new_version->set_skip_waiting(true);
-  new_version->RegisterStatusChangeCallback(base::Bind(
+  new_version->RegisterStatusChangeCallback(base::BindOnce(
       &self::OnUpdatedVersionStatusChanged, weak_factory_.GetWeakPtr(),
       original_registration, new_version));
 }
@@ -478,8 +478,8 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     return;
   }
   version->RegisterStatusChangeCallback(
-      base::Bind(&self::OnUpdatedVersionStatusChanged,
-                 weak_factory_.GetWeakPtr(), registration, version));
+      base::BindOnce(&self::OnUpdatedVersionStatusChanged,
+                     weak_factory_.GetWeakPtr(), registration, version));
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {

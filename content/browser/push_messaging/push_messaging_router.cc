@@ -104,9 +104,9 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   // service worker.
   version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::PUSH,
-      base::Bind(&PushMessagingRouter::DeliverMessageToWorker,
-                 make_scoped_refptr(version), service_worker_registration,
-                 payload, deliver_message_callback),
+      base::BindOnce(&PushMessagingRouter::DeliverMessageToWorker,
+                     make_scoped_refptr(version), service_worker_registration,
+                     payload, deliver_message_callback),
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
                  deliver_message_callback, service_worker_registration));
 }

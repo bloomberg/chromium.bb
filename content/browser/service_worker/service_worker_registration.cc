@@ -395,8 +395,8 @@ void ServiceWorkerRegistration::ContinueActivation(
   DCHECK_EQ(ServiceWorkerVersion::ACTIVATING, activating_version->status());
   activating_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::ACTIVATE,
-      base::Bind(&ServiceWorkerRegistration::DispatchActivateEvent, this,
-                 activating_version),
+      base::BindOnce(&ServiceWorkerRegistration::DispatchActivateEvent, this,
+                     activating_version),
       base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
                  activating_version));
 }

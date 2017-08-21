@@ -423,8 +423,8 @@ void ServiceWorkerFetchDispatcher::Run() {
     net_log_.BeginEvent(
         net::NetLogEventType::SERVICE_WORKER_WAIT_FOR_ACTIVATION);
     version_->RegisterStatusChangeCallback(
-        base::Bind(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
   StartWorker();
@@ -451,8 +451,9 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
   version_->RunAfterStartWorker(
-      GetEventType(), base::Bind(&ServiceWorkerFetchDispatcher::DidStartWorker,
-                                 weak_factory_.GetWeakPtr()),
+      GetEventType(),
+      base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
+                     weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFailToStartWorker,
                  weak_factory_.GetWeakPtr()));
 }

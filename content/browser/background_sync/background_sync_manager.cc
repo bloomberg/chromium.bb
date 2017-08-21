@@ -763,10 +763,9 @@ void BackgroundSyncManager::DispatchSyncEvent(
   if (active_version->running_status() != EmbeddedWorkerStatus::RUNNING) {
     active_version->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::SYNC,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&BackgroundSyncManager::DispatchSyncEvent,
-                           weak_ptr_factory_.GetWeakPtr(), tag, active_version,
-                           last_chance, callback)),
+        base::BindOnce(&BackgroundSyncManager::DispatchSyncEvent,
+                       weak_ptr_factory_.GetWeakPtr(), tag, active_version,
+                       last_chance, callback),
         callback);
     return;
   }
