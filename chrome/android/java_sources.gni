@@ -1629,6 +1629,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/preferences/PasswordViewingTypeTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/PreferencesTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionPromoUtilsTest.java",
+  "javatests/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionStatsPreferenceTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/password/SavePasswordsPreferencesTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataBridgeTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferencesTest.java",

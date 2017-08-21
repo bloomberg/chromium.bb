@@ -11,7 +11,9 @@ import static org.chromium.third_party.android.datausagechart.ChartDataUsageView
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.preference.Preference;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
@@ -23,6 +25,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -37,6 +40,13 @@ import java.util.TimeZone;
  * Preference used to display statistics on data reduction.
  */
 public class DataReductionStatsPreference extends Preference {
+    /**
+     * Key used to save the date on which the site breakdown should be shown. If the user has
+     * historical data saver stats, the site breakdown cannot be shown for DAYS_IN_CHART.
+     */
+    private static final String PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE =
+            "data_reduction_site_breakdown_allowed_date";
+
     private NetworkStatsHistory mOriginalNetworkStatsHistory;
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
     private List<DataReductionDataUseItem> mSiteBreakdownItems;
@@ -60,6 +70,34 @@ public class DataReductionStatsPreference extends Preference {
     private String mPercentReductionPhrase;
     private String mStartDatePhrase;
     private String mEndDatePhrase;
+
+    /**
+     * If this is the first time the site breakdown feature is enabled, set the first allowable date
+     * the breakdown can be shown.
+     */
+    public static void initializeDataReductionSiteBreakdownPref() {
+        // If the site breakdown feature isn't enabled or the pref has already been set, don't set
+        // it.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_REDUCTION_SITE_BREAKDOWN)
+                || ContextUtils.getAppSharedPreferences().contains(
+                           PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE)) {
+            return;
+        }
+
+        long lastUpdateTimeMillis =
+                DataReductionProxySettings.getInstance().getDataReductionLastUpdateTime();
+
+        // If the site breakdown is enabled and there are historical stats within the last
+        // DAYS_IN_CHART days, don't show the breakdown for another DAYS_IN_CHART days from the last
+        // update time. Otherwise, the site breakdown can be shown starting now.
+        long timeChartCanBeShown = lastUpdateTimeMillis + DAYS_IN_CHART * DateUtils.DAY_IN_MILLIS;
+        long now = System.currentTimeMillis();
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                        timeChartCanBeShown > now ? timeChartCanBeShown : now)
+                .apply();
+    }
 
     public DataReductionStatsPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -90,7 +128,11 @@ public class DataReductionStatsPreference extends Preference {
         mOriginalNetworkStatsHistory = getNetworkStatsHistory(original, DAYS_IN_CHART);
         mReceivedNetworkStatsHistory = getNetworkStatsHistory(received, DAYS_IN_CHART);
 
-        if (mDataReductionBreakdownView != null) {
+        if (mDataReductionBreakdownView != null
+                && System.currentTimeMillis()
+                        > ContextUtils.getAppSharedPreferences().getLong(
+                                  PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                                  Long.MAX_VALUE)) {
             DataReductionProxySettings.getInstance().queryDataUsage(
                     DAYS_IN_CHART, new Callback<List<DataReductionDataUseItem>>() {
                         @Override
@@ -183,18 +225,54 @@ public class DataReductionStatsPreference extends Preference {
 
         mResetStatisticsButton = (Button) view.findViewById(R.id.data_reduction_reset_statistics);
         if (mResetStatisticsButton != null) {
-            mResetStatisticsButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    DataReductionProxySettings.getInstance().clearDataSavingStatistics();
-                    updateReductionStatistics();
-                    setDetailText();
-                    notifyChanged();
-                    DataReductionProxyUma.dataReductionProxyUIAction(
-                            DataReductionProxyUma.ACTION_STATS_RESET);
-                }
-            });
+            setUpResetStatisticsButton();
         }
+    }
+
+    private void setUpResetStatisticsButton() {
+        mResetStatisticsButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialogInterface.OnClickListener dialogListener = new AlertDialog.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == AlertDialog.BUTTON_POSITIVE) {
+                            // If the site breakdown hasn't been shown yet because there was
+                            // historical data, reset that state so that the site breakdown can
+                            // now be shown.
+                            long now = System.currentTimeMillis();
+                            if (ContextUtils.getAppSharedPreferences().getLong(
+                                        PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                                        Long.MAX_VALUE)
+                                    > now) {
+                                ContextUtils.getAppSharedPreferences()
+                                        .edit()
+                                        .putLong(PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                                                now)
+                                        .apply();
+                            }
+                            DataReductionProxySettings.getInstance().clearDataSavingStatistics();
+                            updateReductionStatistics();
+                            setDetailText();
+                            notifyChanged();
+                            DataReductionProxyUma.dataReductionProxyUIAction(
+                                    DataReductionProxyUma.ACTION_STATS_RESET);
+                        } else {
+                            // Do nothing if canceled.
+                        }
+                    }
+                };
+
+                new AlertDialog.Builder(getContext(), R.style.AlertDialogTheme)
+                        .setTitle(
+                                R.string.data_reduction_usage_reset_statistics_confirmation_dialog)
+                        .setPositiveButton(
+                                R.string.data_reduction_usage_reset_statistics_confirmation_button,
+                                dialogListener)
+                        .setNegativeButton(R.string.cancel, dialogListener)
+                        .show();
+            }
+        });
     }
 
     /**
