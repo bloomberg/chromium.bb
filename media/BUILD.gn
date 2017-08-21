@@ -292,9 +292,6 @@ source_set("unit_tests") {
         "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
       ]
     }
-    if (enable_hevc_demuxing) {
-      sources += [ "filters/h265_parser_unittest.cc" ]
-    }
     if (enable_hls_sample_aes) {
       deps += [ "//third_party/boringssl" ]
     }

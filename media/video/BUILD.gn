@@ -37,12 +37,20 @@ source_set("video") {
     "video_encode_accelerator.h",
   ]
 
+  if (proprietary_codecs && enable_hevc_demuxing) {
+    sources += [
+      "h265_parser.cc",
+      "h265_parser.h",
+    ]
+  }
+
   deps = [
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//media/base",
     "//third_party/libyuv",
     "//ui/gfx",
+    "//ui/gl",
   ]
 
   configs += [
@@ -89,6 +97,10 @@ source_set("unit_tests") {
     "h264_poc_unittest.cc",
     "half_float_maker_unittest.cc",
   ]
+  if (enable_hevc_demuxing) {
+    sources += [ "h265_parser_unittest.cc" ]
+  }
+
   configs += [ "//media:media_config" ]
   deps = [
     "//base",

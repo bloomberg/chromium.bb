@@ -154,13 +154,6 @@ source_set("filters") {
     ]
   }
 
-  if (proprietary_codecs && enable_hevc_demuxing) {
-    sources += [
-      "h265_parser.cc",
-      "h265_parser.h",
-    ]
-  }
-
   if (media_use_ffmpeg && !disable_ffmpeg_video_decoders) {
     sources += [
       "ffmpeg_video_decoder.cc",
