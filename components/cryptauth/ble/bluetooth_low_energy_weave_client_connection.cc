@@ -345,6 +345,11 @@ void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(
 void BluetoothLowEnergyWeaveClientConnection::CompleteConnection() {
   connection_response_timer_->Stop();
   SetSubStatus(SubStatus::CONNECTED);
+
+  // Notify |bluetooth_throttler_| that the connection has been established.
+  // Note that this should *not* be done before the status is CONNECTED to
+  // prevent a possible crash (see crbug.com/756141).
+  bluetooth_throttler_->OnConnection(this);
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnSetConnectionLatencyError() {
@@ -367,9 +372,6 @@ void BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError(
 void BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated(
     std::unique_ptr<device::BluetoothGattConnection> gatt_connection) {
   DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
-
-  // Informing |bluetooth_trottler_| a new connection was established.
-  bluetooth_throttler_->OnConnection(this);
 
   gatt_connection_ = std::move(gatt_connection);
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
