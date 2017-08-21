@@ -63865,6 +63865,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer4.SoftwarePaintDurationMS">
+  <obsolete>
+    Deprecated in issue 755432 as no longer being needed.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     Time spent by WebKit painting the page, in milliseconds, when the page is
@@ -63873,6 +63876,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer4.SoftwarePaintMegapixPerSecond">
+  <obsolete>
+    Deprecated in issue 755432 as no longer being needed.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     WebKit paint throughput, measured in megapixels per second, when the page is
