@@ -20,6 +20,7 @@
 #include "ash/wm/window_state_observer.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -314,16 +315,20 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
 
   if (immersive_fullscreen_controller_.get()) {
     // |immersive_fullscreen_controller_| should only be set if immersive
-    // fullscreen is the fullscreen type used by the OS.
+    // fullscreen is the fullscreen type used by the OS, or if we're in a public
+    // session where we always use immersive.
+    const bool immersive_enabled = profiles::IsPublicSession() ||
+        (fullscreen_types & AppWindow::FULLSCREEN_TYPE_OS) != 0;
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
-        (fullscreen_types & AppWindow::FULLSCREEN_TYPE_OS) != 0);
+        immersive_enabled);
     // Autohide the shelf instead of hiding the shelf completely when only in
-    // OS fullscreen.
+    // OS fullscreen or when in a public session.
+    const bool should_hide_shelf = !profiles::IsPublicSession() &&
+        fullscreen_types != AppWindow::FULLSCREEN_TYPE_OS;
     ash::wm::WindowState* window_state =
         ash::wm::GetWindowState(widget()->GetNativeWindow());
-    window_state->set_hide_shelf_when_fullscreen(fullscreen_types !=
-                                                 AppWindow::FULLSCREEN_TYPE_OS);
+    window_state->set_hide_shelf_when_fullscreen(should_hide_shelf);
     if (!ash_util::IsRunningInMash()) {
       DCHECK(ash::Shell::HasInstance());
       ash::Shell::Get()->UpdateShelfVisibility();
