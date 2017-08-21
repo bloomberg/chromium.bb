@@ -230,6 +230,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
         views::ImageButton::STATE_NORMAL,
         gfx::CreateVectorIcon(kIcCloseIcon, kCloseIconSize, search_box_color_));
     close_button_->SetVisible(false);
+    close_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));
     content_container_->AddChildView(close_button_);
   }
 
@@ -331,7 +333,8 @@ bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
       NOTREACHED();
   }
 
-  SetSelected(search_box_->text().empty() && focused_view_ == FOCUS_SEARCH_BOX);
+  SetSelected(IsSearchBoxTrimmedQueryEmpty() &&
+              focused_view_ == FOCUS_SEARCH_BOX);
   return (focused_view_ < FOCUS_CONTENTS_VIEW);
 }
 
@@ -422,18 +425,11 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
         back_button_->SetSelected(true);
       break;
     case FOCUS_SEARCH_BOX:
-      if (search_box_->text().empty()) {
-        // The search box should only be selected in PEEKING or
-        // FULLSCREEN_ALL_APPS state.
-        search_box_selected = true;
-      }
-      // Set the ChromeVox focus to the search box. However, DO NOT do this if
-      // we are in the search results state (i.e., if the search box has text in
-      // it), because the focus is about to be shifted to the first search
-      // result and we do not want to read out the name of the search box as
-      // well.
-      if (search_box_->text().empty())
-        search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+      if (!IsSearchBoxTrimmedQueryEmpty())
+        break;
+      // The search box should only be selected in PEEKING or
+      // FULLSCREEN_ALL_APPS state.
+      search_box_selected = true;
       break;
     case FOCUS_MIC_BUTTON:
       if (speech_button_)
@@ -694,20 +690,18 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   UpdateModel();
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
-  if (is_fullscreen_app_list_enabled_) {
-    SetSearchBoxActive(true);
-    UpdateCloseButtonVisisbility();
-    // If the query is only whitespace, don't transition the AppListView state.
-    base::string16 trimmed_query = search_box_->text();
-    base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
-                         &trimmed_query);
-    app_list_view_->SetStateFromSearchBoxView(trimmed_query.empty());
-    if (!search_box_->text().empty()) {
-      // Unselect the search box when the state is transiting to HALF or
-      // FULLSCREEN_SEARCH.
-      SetSelected(false);
-    }
-  }
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+  SetSearchBoxActive(true);
+  UpdateCloseButtonVisisbility();
+  const bool is_trimmed_query_empty = IsSearchBoxTrimmedQueryEmpty();
+  // If the query is only whitespace, don't transition the AppListView state.
+  app_list_view_->SetStateFromSearchBoxView(is_trimmed_query_empty);
+  if (is_trimmed_query_empty)
+    return;
+  // Unselect the search box when the state is transiting to HALF or
+  // FULLSCREEN_SEARCH.
+  SetSelected(false);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
@@ -938,6 +932,13 @@ SearchBoxBackground* SearchBoxView::GetSearchBoxBackground() const {
   return static_cast<SearchBoxBackground*>(content_container_->background());
 }
 
+bool SearchBoxView::IsSearchBoxTrimmedQueryEmpty() const {
+  base::string16 trimmed_query;
+  base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
+                       &trimmed_query);
+  return trimmed_query.empty();
+}
+
 void SearchBoxView::SetDefaultBorder() {
   if (!is_fullscreen_app_list_enabled_)
     return;
@@ -956,6 +957,12 @@ void SearchBoxView::SetSelected(bool selected) {
     SetBorder(views::CreateRoundedRectBorder(kSearchBoxBorderWidth,
                                              kSearchBoxFocusBorderCornerRadius,
                                              kSearchBoxBorderColor));
+    // Set the ChromeVox focus to the search box. However, DO NOT do this if
+    // we are in the search results state (i.e., if the search box has text in
+    // it), because the focus is about to be shifted to the first search
+    // result and we do not want to read out the name of the search box as
+    // well.
+    search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   } else {
     SetDefaultBorder();
   }

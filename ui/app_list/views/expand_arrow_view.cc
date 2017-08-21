@@ -9,8 +9,10 @@
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -50,6 +52,8 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   AddChildView(icon_);
 
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
+
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 }
 
 ExpandArrowView::~ExpandArrowView() = default;
