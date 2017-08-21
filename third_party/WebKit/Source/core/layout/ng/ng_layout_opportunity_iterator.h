@@ -6,10 +6,8 @@
 #define NGLayoutOpportunityIterator_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -23,6 +23,10 @@ NGLayoutResult::NGLayoutResult(
   oof_positioned_descendants_.swap(oof_positioned_descendants);
 }
 
+// Keep the implementation of the destructor here, to avoid dependencies on
+// NGUnpositionedFloat in the header file.
+NGLayoutResult::~NGLayoutResult() {}
+
 RefPtr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants(
       oof_positioned_descendants_);

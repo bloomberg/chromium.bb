@@ -4,12 +4,14 @@
 
 #include "core/layout/ng/ng_physical_fragment.h"
 
+#include "core/layout/ng/geometry/ng_border_edges.h"
+#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
+#include "core/style/ComputedStyle.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace {
@@ -92,6 +94,10 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       break_token_(std::move(break_token)),
       type_(type),
       is_placed_(false) {}
+
+// Keep the implementation of the destructor here, to avoid dependencies on
+// ComputedStyle in the header file.
+NGPhysicalFragment::~NGPhysicalFragment() {}
 
 void NGPhysicalFragment::Destroy() const {
   switch (Type()) {

@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Optional.h"

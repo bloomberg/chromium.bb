@@ -6,12 +6,10 @@
 #define NGLayoutResult_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_static_position.h"
-#include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
-#include "platform/LayoutUnit.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
@@ -33,6 +31,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     // When adding new values, make sure the bit size of |status_| is large
     // enough to store.
   };
+
+  ~NGLayoutResult();
 
   RefPtr<NGPhysicalFragment> PhysicalFragment() const {
     return physical_fragment_;

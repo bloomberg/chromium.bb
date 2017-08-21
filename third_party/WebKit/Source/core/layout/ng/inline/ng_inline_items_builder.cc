@@ -5,10 +5,7 @@
 #include "core/layout/ng/inline/ng_inline_items_builder.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_offset_mapping_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

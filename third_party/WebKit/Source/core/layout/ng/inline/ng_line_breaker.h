@@ -11,16 +11,13 @@
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "platform/heap/Handle.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
 class NGInlineBreakToken;
 class NGInlineItem;
-class NGInlineNode;
 class NGFragmentBuilder;
 
 // Represents a line breaker.

@@ -7,7 +7,6 @@
 
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/layout/ng/ng_base_fragment_builder.h"
 #include "platform/wtf/Allocator.h"
 

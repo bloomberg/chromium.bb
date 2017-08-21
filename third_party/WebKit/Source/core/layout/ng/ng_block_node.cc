@@ -4,13 +4,10 @@
 
 #include "core/layout/ng/ng_block_node.h"
 
-#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/MinMaxSize.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/line/InlineIterator.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_break_token.h"

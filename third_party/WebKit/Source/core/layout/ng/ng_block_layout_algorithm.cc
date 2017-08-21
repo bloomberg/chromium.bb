@@ -4,22 +4,21 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_absolute_utils.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_block_child_iterator.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_floats_utils.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "core/layout/ng/ng_positioned_float.h"
 #include "core/layout/ng/ng_space_utils.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/LengthFunctions.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

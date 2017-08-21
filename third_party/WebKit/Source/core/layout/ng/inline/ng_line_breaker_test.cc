@@ -4,11 +4,11 @@
 
 #include "core/layout/ng/ng_base_layout_algorithm_test.h"
 
-#include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_breaker.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

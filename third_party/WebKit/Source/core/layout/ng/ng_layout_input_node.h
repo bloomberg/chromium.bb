@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -15,7 +14,6 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class LayoutBox;
-class LayoutUnit;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;

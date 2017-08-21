@@ -4,10 +4,6 @@
 
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
-
 namespace blink {
 
 NGInlineBreakToken::NGInlineBreakToken(NGInlineNode node,

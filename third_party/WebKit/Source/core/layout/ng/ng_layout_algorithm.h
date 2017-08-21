@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_floats_utils.h"
+#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
@@ -15,7 +15,6 @@
 namespace blink {
 
 class ComputedStyle;
-class NGConstraintSpace;
 class NGLayoutResult;
 
 // Base class for all LayoutNG algorithms.

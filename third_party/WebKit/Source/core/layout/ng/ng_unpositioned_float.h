@@ -9,13 +9,11 @@
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
-
-class NGLayoutResult;
 
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGUnpositionedFloat

@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/empty_offset_mapping_builder.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_inline_item.h"
 #include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"

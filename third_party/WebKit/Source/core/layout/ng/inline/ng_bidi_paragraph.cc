@@ -4,9 +4,6 @@
 
 #include "core/layout/ng/inline/ng_bidi_paragraph.h"
 
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/ICUError.h"
 

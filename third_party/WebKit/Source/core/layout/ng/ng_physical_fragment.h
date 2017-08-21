@@ -6,21 +6,16 @@
 #define NGPhysicalFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_border_edges.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_break_token.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LayoutUnit.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
+struct NGPixelSnappedPhysicalBoxStrut;
 
 // The NGPhysicalFragment contains the output geometry from layout. The
 // fragment stores all of its information in the physical coordinate system for
@@ -42,6 +37,8 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
     // When adding new values, make sure the bit size of |type_| is large
     // enough to store.
   };
+
+  ~NGPhysicalFragment();
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }

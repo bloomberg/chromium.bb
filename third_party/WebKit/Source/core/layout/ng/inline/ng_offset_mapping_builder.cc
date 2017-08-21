@@ -4,8 +4,8 @@
 
 #include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 
+#include "core/layout/LayoutText.h"
 #include "core/layout/ng/inline/ng_offset_mapping_result.h"
-#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
