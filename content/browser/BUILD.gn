@@ -782,6 +782,8 @@ source_set("browser") {
     "frame_host/render_frame_proxy_host.h",
     "frame_host/render_widget_host_view_guest.cc",
     "frame_host/render_widget_host_view_guest.h",
+    "generic_sensor/sensor_provider_proxy_impl.cc",
+    "generic_sensor/sensor_provider_proxy_impl.h",
     "geolocation/geolocation_service_impl.cc",
     "geolocation/geolocation_service_impl.h",
     "gpu/browser_gpu_channel_host_factory.cc",

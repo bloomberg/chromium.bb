@@ -39,6 +39,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
@@ -2874,11 +2875,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&InstalledAppProviderImplDefault::Create));
 #endif  // !defined(OS_ANDROID)
 
+  PermissionManager* permission_manager =
+      GetProcess()->GetBrowserContext()->GetPermissionManager();
+
   if (delegate_) {
     device::GeolocationContext* geolocation_context =
         delegate_->GetGeolocationContext();
-    PermissionManager* permission_manager =
-        GetProcess()->GetBrowserContext()->GetPermissionManager();
     if (geolocation_context && permission_manager) {
       geolocation_service_.reset(new GeolocationServiceImpl(
           geolocation_context, permission_manager, this));
@@ -3001,10 +3003,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
+  if (base::FeatureList::IsEnabled(features::kGenericSensor) &&
+      permission_manager) {
+    sensor_provider_proxy_.reset(
+        new SensorProviderProxyImpl(permission_manager, this));
     registry_->AddInterface(
-        base::Bind(&ForwardRequest<device::mojom::SensorProvider>,
-                   device::mojom::kServiceName));
+        base::Bind(&SensorProviderProxyImpl::Bind,
+                   base::Unretained(sensor_provider_proxy_.get())));
   }
 
   registry_->AddInterface(
@@ -3416,9 +3421,11 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 
   frame_resource_coordinator_.reset();
 
-  // The geolocation service may attempt to cancel permission requests so it
-  // must be reset before the routing_id mapping is removed.
+  // The geolocation service and sensor provider proxy may attempt to cancel
+  // permission requests so they must be reset before the routing_id mapping is
+  // removed.
   geolocation_service_.reset();
+  sensor_provider_proxy_.reset();
 }
 
 bool RenderFrameHostImpl::IsFocused() {
