@@ -29,9 +29,7 @@ namespace signin {
 // Removes the header if it is already in the headers but should not be there.
 void FixAccountConsistencyRequestHeader(net::URLRequest* request,
                                         const GURL& redirect_url,
-                                        ProfileIOData* io_data,
-                                        int child_id,
-                                        int route_id);
+                                        ProfileIOData* io_data);
 
 // Processes account consistency response headers (X-Chrome-Manage-Accounts and
 // Dice). |redirect_url| is empty if the request is not a redirect.

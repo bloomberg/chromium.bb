@@ -7,7 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +31,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync/base/sync_prefs.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -62,6 +66,7 @@ const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 const char kMainEmail[] = "main_email@example.com";
 const char kMainGaiaID[] = "main_gaia_id";
+const char kNoDiceRequestHeader[] = "NoDiceHeader";
 const char kOAuth2TokenExchangeURL[] = "/oauth2/v4/token";
 const char kOAuth2TokenRevokeURL[] = "/o/oauth2/revoke";
 const char kSecondaryEmail[] = "secondary_email@example.com";
@@ -81,7 +86,7 @@ std::unique_ptr<HttpResponse> HandleSigninURL(const HttpRequest& request) {
   if (!net::test_server::ShouldHandle(request, kSigninURL))
     return nullptr;
 
-  std::string header_value = "None";
+  std::string header_value = kNoDiceRequestHeader;
   auto it = request.headers.find(signin::kDiceRequestHeader);
   if (it != request.headers.end())
     header_value = it->second;
@@ -183,6 +188,26 @@ std::unique_ptr<HttpResponse> HandleOAuth2TokenRevokeURL(
   return std::move(http_response);
 }
 
+// Handler for ServiceLogin on the embedded test server.
+// Calls the callback with the dice request header, or kNoDiceRequestHeader if
+// there is no Dice header.
+std::unique_ptr<HttpResponse> HandleServiceLoginURL(
+    base::Callback<void(const std::string&)> callback,
+    const HttpRequest& request) {
+  if (!net::test_server::ShouldHandle(request, "/ServiceLogin"))
+    return nullptr;
+
+  std::string dice_request_header(kNoDiceRequestHeader);
+  auto it = request.headers.find(signin::kDiceRequestHeader);
+  if (it != request.headers.end())
+    dice_request_header = it->second;
+  callback.Run(dice_request_header);
+
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+  http_response->AddCustomHeader("Cache-Control", "no-store");
+  return std::move(http_response);
+}
+
 }  // namespace FakeGaia
 
 class DiceBrowserTestBase : public InProcessBrowserTest,
@@ -206,6 +231,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         base::Bind(&FakeGaia::HandleOAuth2TokenExchangeURL, &token_requested_));
     https_server_.RegisterDefaultHandler(base::Bind(
         &FakeGaia::HandleOAuth2TokenRevokeURL, &token_revoked_count_));
+    https_server_.RegisterDefaultHandler(
+        base::Bind(&FakeGaia::HandleServiceLoginURL,
+                   base::Bind(&DiceBrowserTestBase::OnServiceLoginRequest,
+                              base::Unretained(this))));
   }
 
   // Navigates to the given path on the test server.
@@ -308,6 +337,12 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     ++token_revoked_notification_count_;
   }
 
+  void OnServiceLoginRequest(const std::string& dice_request_header) {
+    dice_request_header_ = dice_request_header;
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     runloop_quit_closure_);
+  }
+
   net::EmbeddedTestServer https_server_;
   AccountConsistencyMethod account_consistency_method_;
   std::unique_ptr<signin::ScopedAccountConsistency> scoped_account_consistency_;
@@ -315,6 +350,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   bool refresh_token_available_;
   int token_revoked_notification_count_;
   int token_revoked_count_;
+  std::string dice_request_header_;
+  base::Closure runloop_quit_closure_;
 };
 
 class DiceBrowserTest : public DiceBrowserTestBase {
@@ -443,6 +480,20 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   EXPECT_EQ(2, token_revoked_count_);
 }
 
+// Checks that Dice request header is not set from request from WebUI.
+// See https://crbug.com/428396
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, NoDiceFromWebUI) {
+  base::RunLoop loop;
+  runloop_quit_closure_ = loop.QuitClosure();
+
+  // Navigate to Gaia and from the native tab, which uses an extension.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome:chrome-signin"));
+
+  // Check that the request had no Dice request header.
+  loop.Run();
+  EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
+}
+
 // Checks that signin on Gaia does not trigger the fetch of refresh token when
 // there is no authentication error.
 IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, SigninNoAuthError) {
@@ -458,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, SigninNoAuthError) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
-  EXPECT_EQ("None", header_value);
+  EXPECT_EQ(kNoDiceRequestHeader, header_value);
 }
 
 // Checks that signin on Gaia does not triggers the fetch for a refresh token
@@ -476,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, NotSignedInChrome) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
-  EXPECT_EQ("None", header_value);
+  EXPECT_EQ(kNoDiceRequestHeader, header_value);
 }
 
 // Checks that a refresh token is not requested when accounts don't match.
