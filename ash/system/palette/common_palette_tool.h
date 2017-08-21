@@ -39,9 +39,9 @@ class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
   // Creates a default view implementation to be returned by CreateView.
   views::View* CreateDefaultView(const base::string16& name);
 
- private:
   HoverHighlightView* highlight_view_ = nullptr;
 
+ private:
   // start_time_ is initialized when the tool becomes active.
   // Used for recording UMA metrics.
   base::TimeTicks start_time_;

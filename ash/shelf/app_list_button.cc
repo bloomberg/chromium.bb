@@ -474,6 +474,9 @@ void AppListButton::OnVoiceInteractionStatusChanged(
   voice_interaction_state_ = state;
   SchedulePaint();
 
+  if (!voice_interaction_overlay_)
+    return;
+
   switch (state) {
     case ash::VoiceInteractionState::STOPPED:
       break;
