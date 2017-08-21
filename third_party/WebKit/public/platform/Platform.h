@@ -413,6 +413,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Creates an embedder-defined thread.
   virtual std::unique_ptr<WebThread> CreateThread(const char* name);
 
+  // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
+  // for any other purpose.
+  virtual std::unique_ptr<WebThread> CreateWebAudioThread();
+
   // Returns an interface to the current thread. This is owned by the
   // embedder.
   virtual WebThread* CurrentThread() { return nullptr; }
