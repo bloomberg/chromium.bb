@@ -576,8 +576,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 
   signin::FixAccountConsistencyRequestHeader(request, GURL() /* redirect_url */,
-                                             io_data, info->GetChildID(),
-                                             info->GetRouteID());
+                                             io_data);
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -874,8 +873,6 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceResponse* response) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-
   // Chrome tries to ensure that the identity is consistent between Chrome and
   // the content area.
   //
@@ -883,14 +880,13 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // identity is mirrored into the content area. To do so, Chrome appends a
   // X-Chrome-Connected header to all Gaia requests from a connected profile so
   // Gaia could return a 204 response and let Chrome handle the action with
-  // native UI. The only exception is requests from gaia webview, since the
-  // native profile management UI is built on top of it.
-  signin::FixAccountConsistencyRequestHeader(
-      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
+  // native UI.
+  signin::FixAccountConsistencyRequestHeader(request, redirect_url, io_data);
   signin::ProcessAccountConsistencyResponseHeaders(request, redirect_url,
                                                    io_data->IsOffTheRecord());
 
   if (io_data->loading_predictor_observer()) {
+    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
     io_data->loading_predictor_observer()->OnRequestRedirected(
         request, redirect_url, info->GetWebContentsGetterForRequest());
   }
