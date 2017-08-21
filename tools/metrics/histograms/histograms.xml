@@ -29369,6 +29369,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Android.IsHttpLiveStreamingMedia" enum="MediaUrlType">
+  <obsolete>
+    Deprecated as of 08/2017
+  </obsolete>
   <owner>qinmin@chromium.org</owner>
   <summary>
     Android: Records whether a regular media URL is HLS (HTTP Live Streaming)
@@ -29378,6 +29381,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.Android.IsHttpLiveStreamingMediaPredictionResult"
     enum="MediaTypePredictionResult">
+  <obsolete>
+    Deprecated as of 08/2017
+  </obsolete>
   <owner>sandersd@chromium.org</owner>
   <summary>
     Android: Records which HLS prediction based on the original URL was best.
