@@ -12,4 +12,5 @@
   <include name="IDR_SYNC_DRIVER_SYNC_INTERNALS_EVENTS_JS" file="../sync/driver/resources/events.js" type="BINDATA" />
   <include name="IDR_SYNC_DRIVER_SYNC_INTERNALS_SEARCH_JS" file="../sync/driver/resources/search.js" type="BINDATA" />
   <include name="IDR_SYNC_DRIVER_SYNC_INTERNALS_USER_EVENTS_JS" file="../sync/driver/resources/user_events.js" type="BINDATA" />
+  <include name="IDR_SYNC_DRIVER_SYNC_INTERNALS_TRAFFIC_LOG_JS"  file="../sync/driver/resources/traffic_log.js" type="BINDATA" />
 </grit-part>
