@@ -490,3 +490,6 @@ crbug.com/748418 virtual/mojo-loading/http/tests/streams/chromium/simple-queue-m
 crbug.com/748418 virtual/mojo-loading/http/tests/streams/chromium/simple-queue-push-shift-peek.html [ Slow ]
 
 crbug.com/626703 [ Debug ] external/wpt/html/nemantics/tabular-data/processing-model-1/span-limits.html [ Slow ]
+
+# This test continues to fail as timeout on Win7(dbg)
+crbug.com/757292 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-han.html [ Slow ]
