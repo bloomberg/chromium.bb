@@ -182,11 +182,6 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // Time of the last detach.
   TimeTicks last_detach_time_;
 
-#if DCHECK_IS_ON()
-  // Time when GetWork() first returned nullptr.
-  TimeTicks idle_start_time_ = TimeTicks::Now();
-#endif
-
   // Number of tasks executed since the last time the
   // TaskScheduler.NumTasksBetweenWaits histogram was recorded.
   size_t num_tasks_since_last_wait_ = 0;
@@ -462,11 +457,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     DCHECK_EQ(is_on_idle_workers_stack_,
               outer_->idle_workers_stack_.Contains(worker));
     if (is_on_idle_workers_stack_) {
-#if DCHECK_IS_ON()
-      DCHECK(!idle_start_time_.is_null());
-      DCHECK((TimeTicks::Now() - idle_start_time_) >
-             outer_->suggested_reclaim_time_);
-#endif
       if (CanCleanup(worker))
         Cleanup(worker);
 
@@ -514,10 +504,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       outer_->AddToIdleWorkersStack(worker);
       SetIsOnIdleWorkersStack(worker);
 
-#if DCHECK_IS_ON()
-      if (idle_start_time_.is_null())
-        idle_start_time_ = TimeTicks::Now();
-#endif
       return nullptr;
     }
     sequence = shared_transaction->PopSequence();
@@ -527,7 +513,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
     DCHECK(!outer_->idle_workers_stack_.Contains(worker));
-    idle_start_time_ = TimeTicks();
   }
 #endif
   return sequence;
