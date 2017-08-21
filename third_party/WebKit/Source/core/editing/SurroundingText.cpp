@@ -64,14 +64,11 @@ void SurroundingText::Initialize(const Position& start_position,
     return;
   DCHECK(!document->NeedsLayoutTreeUpdate());
 
-  // The forward range starts at the selection end and ends at the document's
-  // or the input element's end. It will then be updated to only contain the
-  // text in the right range around the selection.
+  // Do not create surrounding text for input elements.
   DCHECK_EQ(RootEditableElementOf(start_position),
             RootEditableElementOf(end_position));
-  Element* const root_editable = RootEditableElementOf(start_position);
-  Element* const root_element =
-      root_editable ? root_editable : document->documentElement();
+  if (RootEditableElementOf(start_position))
+    return;
 
   // Do not create surrounding text if start or end position is within a
   // control.
@@ -81,9 +78,13 @@ void SurroundingText::Initialize(const Position& start_position,
           end_position.ComputeContainerNode()))
     return;
 
+  // The forward range starts at the selection end and ends at the document's
+  // end. It will then be updated to only contain the text in the right range
+  // around the selection.
   CharacterIterator forward_iterator(
       end_position,
-      Position::LastPositionInNode(*root_element).ParentAnchoredEquivalent(),
+      Position::LastPositionInNode(*document->documentElement())
+          .ParentAnchoredEquivalent(),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   if (!forward_iterator.AtEnd())
     forward_iterator.Advance(max_length - half_max_length);
@@ -92,7 +93,8 @@ void SurroundingText::Initialize(const Position& start_position,
   // starts at the document's or input element's start and ends at the selection
   // start and will be updated.
   BackwardsCharacterIterator backwards_iterator(
-      Position::FirstPositionInNode(*root_element).ParentAnchoredEquivalent(),
+      Position::FirstPositionInNode(*document->documentElement())
+          .ParentAnchoredEquivalent(),
       start_position,
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   if (!backwards_iterator.AtEnd())
