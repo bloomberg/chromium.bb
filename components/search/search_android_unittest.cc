@@ -4,8 +4,6 @@
 
 #include "components/search/search.h"
 
-#include "base/command_line.h"
-#include "components/search/search.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace search {
@@ -13,7 +11,6 @@ namespace search {
 namespace {
 
 TEST(SearchTest, EmbeddedSearchAPIEnabled) {
-  EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
 }
 
