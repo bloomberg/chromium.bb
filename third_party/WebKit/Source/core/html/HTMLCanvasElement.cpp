@@ -1073,9 +1073,9 @@ void HTMLCanvasElement::UpdateExternallyAllocatedMemory() const {
   if (copied_image_)
     buffer_count++;
 
-  // Four bytes per pixel per buffer.
+  // Multiplying number of buffers by bytes per pixel
   CheckedNumeric<intptr_t> checked_externally_allocated_memory =
-      4 * buffer_count;
+      buffer_count * GetCanvasColorParams().BytesPerPixel();
   if (Is3d()) {
     checked_externally_allocated_memory +=
         context_->ExternallyAllocatedBytesPerPixel();
