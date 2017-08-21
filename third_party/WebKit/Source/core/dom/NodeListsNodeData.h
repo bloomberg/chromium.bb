@@ -48,7 +48,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return ToChildNodeList(child_node_list_);
     ChildNodeList* list = ChildNodeList::Create(node);
     child_node_list_ = list;
-    ScriptWrappableVisitor::WriteBarrier(list);
     return list;
   }
 
@@ -58,7 +57,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return ToEmptyNodeList(child_node_list_);
     EmptyNodeList* list = EmptyNodeList::Create(node);
     child_node_list_ = list;
-    ScriptWrappableVisitor::WriteBarrier(list);
     return list;
   }
 
@@ -76,13 +74,11 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
         DefaultHash<AtomicString>::Hash::safe_to_compare_to_empty_or_deleted;
   };
 
-  // Oilpan: keep a weak reference to the collection objects.
-  // Object unregistration is handled by GC's weak processing.
   typedef HeapHashMap<NamedNodeListKey,
-                      WeakMember<LiveNodeListBase>,
+                      TraceWrapperMember<LiveNodeListBase>,
                       NodeListAtomicCacheMapEntryHash>
       NodeListAtomicNameCacheMap;
-  typedef HeapHashMap<QualifiedName, WeakMember<TagCollectionNS>>
+  typedef HeapHashMap<QualifiedName, TraceWrapperMember<TagCollectionNS>>
       TagCollectionNSCache;
 
   template <typename T>
@@ -98,7 +94,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
     T* list = T::Create(node, collection_type, name);
     result.stored_value->value = list;
-    ScriptWrappableVisitor::WriteBarrier(list);
     return list;
   }
 
@@ -113,7 +108,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
     T* list = T::Create(node, collection_type);
     result.stored_value->value = list;
-    ScriptWrappableVisitor::WriteBarrier(list);
     return list;
   }
 
@@ -136,7 +130,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     TagCollectionNS* list =
         TagCollectionNS::Create(node, namespace_uri, local_name);
     result.stored_value->value = list;
-    ScriptWrappableVisitor::WriteBarrier(list);
     return list;
   }
 
@@ -173,15 +166,15 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       list->DidMoveToDocument(old_document, new_document);
     }
   }
-  DECLARE_TRACE();
 
+  DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
  private:
   NodeListsNodeData() : child_node_list_(nullptr) {}
 
   // Can be a ChildNodeList or an EmptyNodeList.
-  WeakMember<NodeList> child_node_list_;
+  TraceWrapperMember<NodeList> child_node_list_;
   NodeListAtomicNameCacheMap atomic_name_caches_;
   TagCollectionNSCache tag_collection_ns_caches_;
 };

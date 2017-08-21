@@ -52,18 +52,12 @@ DEFINE_TRACE(NodeListsNodeData) {
 }
 
 DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
-  visitor->TraceWrappersWithManualWriteBarrier(child_node_list_);
+  visitor->TraceWrappers(child_node_list_);
   for (const auto list : atomic_name_caches_.Values()) {
-    if (IsHTMLCollectionType(list->GetType())) {
-      visitor->TraceWrappersWithManualWriteBarrier(
-          static_cast<const HTMLCollection*>(list.Get()));
-    } else {
-      visitor->TraceWrappersWithManualWriteBarrier(
-          static_cast<const LiveNodeList*>(list.Get()));
-    }
+    visitor->TraceWrappers(list);
   }
   for (const auto list : tag_collection_ns_caches_.Values()) {
-    visitor->TraceWrappersWithManualWriteBarrier(list.Get());
+    visitor->TraceWrappers(list);
   }
 }
 
