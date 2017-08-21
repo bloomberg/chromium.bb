@@ -72,6 +72,20 @@ void AddToHomescreenManager::AddShortcut(
   data_fetcher_->shortcut_info().user_title = user_title;
 
   RecordAddToHomescreen();
+  if (is_webapk_compatible_) {
+    WebApkInstallService* install_service =
+        WebApkInstallService::Get(web_contents->GetBrowserContext());
+    if (install_service->IsInstallInProgress(
+            data_fetcher_->shortcut_info().manifest_url)) {
+      ShortcutHelper::ShowWebApkInstallInProgressToast();
+    } else {
+      CreateInfoBarForWebApk(data_fetcher_->shortcut_info(),
+                             data_fetcher_->primary_icon(),
+                             data_fetcher_->badge_icon());
+    }
+    return;
+  }
+
   ShortcutHelper::AddToLauncherWithSkBitmap(web_contents,
                                             data_fetcher_->shortcut_info(),
                                             data_fetcher_->primary_icon());
@@ -90,9 +104,10 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   if (ChromeWebApkHost::CanInstallWebApk() &&
       InstallableManager::IsContentSecure(web_contents)) {
     check_webapk_compatible = true;
-  } else {
-    ShowDialog();
   }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AddToHomescreenManager_showDialog(env, java_ref_);
 
   data_fetcher_ = base::MakeUnique<AddToHomescreenDataFetcher>(
       web_contents, ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
@@ -104,11 +119,6 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
 }
 
 AddToHomescreenManager::~AddToHomescreenManager() {}
-
-void AddToHomescreenManager::ShowDialog() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AddToHomescreenManager_showDialog(env, java_ref_);
-}
 
 void AddToHomescreenManager::RecordAddToHomescreen() {
   // Record that the shortcut has been added, so no banners will be shown
@@ -127,39 +137,21 @@ void AddToHomescreenManager::RecordAddToHomescreen() {
 void AddToHomescreenManager::OnDidDetermineWebApkCompatibility(
     bool is_webapk_compatible) {
   is_webapk_compatible_ = is_webapk_compatible;
-  if (!is_webapk_compatible)
-    ShowDialog();
 }
 
 void AddToHomescreenManager::OnUserTitleAvailable(
     const base::string16& user_title) {
-  if (is_webapk_compatible_)
-    return;
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_user_title =
       base::android::ConvertUTF16ToJavaString(env, user_title);
-  Java_AddToHomescreenManager_onUserTitleAvailable(env,
-                                                   java_ref_,
-                                                   j_user_title);
+  Java_AddToHomescreenManager_onUserTitleAvailable(
+      env, java_ref_, j_user_title,
+      !is_webapk_compatible_ /* isTitleEditable */);
 }
 
 void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
                                              const SkBitmap& primary_icon,
                                              const SkBitmap& badge_icon) {
-  if (is_webapk_compatible_) {
-    WebApkInstallService* install_service =
-        WebApkInstallService::Get(
-            data_fetcher_->web_contents()->GetBrowserContext());
-    if (install_service->IsInstallInProgress(info.manifest_url))
-      ShortcutHelper::ShowWebApkInstallInProgressToast();
-    else
-      CreateInfoBarForWebApk(info, primary_icon, badge_icon);
-
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_AddToHomescreenManager_onFinished(env, java_ref_);
-    return;
-  }
-
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (!primary_icon.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&primary_icon);

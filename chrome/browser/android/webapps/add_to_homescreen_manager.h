@@ -41,9 +41,6 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
  private:
   ~AddToHomescreenManager() override;
 
-  // Shows alert to prompt user for name of home screen shortcut.
-  void ShowDialog();
-
   // Called only when the AddToHomescreenDataFetcher has retrieved all of the
   // data needed to install a WebAPK.
   void CreateInfoBarForWebApk(const ShortcutInfo& info,

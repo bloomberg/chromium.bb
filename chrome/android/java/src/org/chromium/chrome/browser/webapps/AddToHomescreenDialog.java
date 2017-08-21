@@ -127,7 +127,7 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 mDialog = null;
-                mManager.onFinished();
+                mManager.destroy();
             }
         });
 
@@ -138,8 +138,8 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
      * Called when the title of the page is available.
      */
     @Override
-    public void onUserTitleAvailable(String title) {
-        mInput.setEnabled(true);
+    public void onUserTitleAvailable(String title, boolean isTitleEditable) {
+        mInput.setEnabled(isTitleEditable);
         mInput.setText(title);
     }
 

@@ -153,7 +153,7 @@ public class AddToHomescreenManagerTest {
         public void showDialog() {
             AddToHomescreenManager.Observer observer = new AddToHomescreenManager.Observer() {
                 @Override
-                public void onUserTitleAvailable(String title) {
+                public void onUserTitleAvailable(String title, boolean isTitleEditable) {
                     if (TextUtils.isEmpty(mTitle)) {
                         mTitle = title;
                     }
