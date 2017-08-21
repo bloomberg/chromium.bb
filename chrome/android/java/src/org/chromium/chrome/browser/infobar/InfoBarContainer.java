@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
@@ -16,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -163,6 +166,15 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     /** Whether or not another View is occupying the same space as this one. */
     private boolean mIsObscured;
+
+    /** Animation used to snap the container to the nearest state if scroll direction changes. */
+    private Animator mScrollDirectionChangeAnimation;
+
+    /** Whether or not the current scroll is downward. */
+    private boolean mIsScrollingDownward;
+
+    /** Tracks the previous event's scroll offset to determine if a scroll is up or down. */
+    private int mLastScrollOffsetY;
 
     /** A {@link BottomSheetObserver} so this view knows when to show/hide. */
     private BottomSheetObserver mBottomSheetObserver;
@@ -444,6 +456,61 @@ public class InfoBarContainer extends SwipableOverlayView {
         }
 
         super.onLayout(changed, l, t, r, b);
+    }
+
+    @Override
+    protected boolean shouldConsumeScroll(int scrollOffsetY, int scrollExtentY) {
+        ChromeFullscreenManager manager = mTab.getActivity().getFullscreenManager();
+
+        if (!manager.areBrowserControlsAtBottom()) return true;
+
+        boolean isScrollingDownward = scrollOffsetY > mLastScrollOffsetY;
+        boolean didDirectionChange = isScrollingDownward != mIsScrollingDownward;
+        mLastScrollOffsetY = scrollOffsetY;
+        mIsScrollingDownward = isScrollingDownward;
+
+        // If the scroll changed directions, snap to a completely shown or hidden state.
+        if (didDirectionChange) {
+            runDirectionChangeAnimation(shouldSnapToVisibleState(scrollOffsetY));
+            return false;
+        }
+
+        boolean areControlsCompletelyShown = manager.getBottomControlOffset() > 0;
+        boolean areControlsCompletelyHidden = manager.areBrowserControlsOffScreen();
+
+        if ((!mIsScrollingDownward && areControlsCompletelyShown)
+                || (mIsScrollingDownward && !areControlsCompletelyHidden)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void runUpEventAnimation(boolean visible) {
+        if (mScrollDirectionChangeAnimation != null) mScrollDirectionChangeAnimation.cancel();
+        super.runUpEventAnimation(visible);
+    }
+
+    @Override
+    protected boolean isIndependentlyAnimating() {
+        return mScrollDirectionChangeAnimation != null;
+    }
+
+    /**
+     * Run an animation when the scrolling direction of a gesture has changed (this does not mean
+     * the gesture has ended).
+     * @param visible Whether or not the view should be visible.
+     */
+    private void runDirectionChangeAnimation(boolean visible) {
+        mScrollDirectionChangeAnimation = createVerticalSnapAnimation(visible);
+        mScrollDirectionChangeAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mScrollDirectionChangeAnimation = null;
+            }
+        });
+        mScrollDirectionChangeAnimation.start();
     }
 
     private native long nativeInit();
