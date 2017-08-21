@@ -442,6 +442,9 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
     web_contents_.reset();
     synced_tab_delegate_->ResetWebContents();
   } else {
+    // Remove the link from the native WebContents to |this|, since the
+    // lifetimes of the two objects are no longer intertwined.
+    CoreTabHelper::FromWebContents(web_contents())->set_delegate(nullptr);
     // Release the WebContents so it does not get deleted by the scoped_ptr.
     ignore_result(web_contents_.release());
   }
