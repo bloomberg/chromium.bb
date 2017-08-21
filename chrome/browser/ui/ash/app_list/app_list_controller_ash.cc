@@ -29,10 +29,10 @@ gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
   return app_list_presenter_->GetWindow();
 }
 
-gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
+gfx::Rect AppListControllerDelegateAsh::GetAppInfoDialogBounds() {
   app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (app_list_view)
-    return app_list_view->GetBoundsInScreen();
+    return app_list_view->GetAppInfoDialogBounds();
   return gfx::Rect();
 }
 

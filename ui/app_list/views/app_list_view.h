@@ -162,6 +162,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel() const;
 
+  // Gets the content bounds of the app info dialog of the app list in the
+  // screen coordinates.
+  gfx::Rect GetAppInfoDialogBounds() const;
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }

@@ -22,7 +22,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   // AppListControllerDelegate overrides:
   void DismissView() override;
   gfx::NativeWindow GetAppListWindow() override;
-  gfx::Rect GetAppListBounds() override;
+  gfx::Rect GetAppInfoDialogBounds() override;
   bool IsAppPinned(const std::string& app_id) override;
   bool IsAppOpen(const std::string& app_id) const override;
   void PinApp(const std::string& app_id) override;
