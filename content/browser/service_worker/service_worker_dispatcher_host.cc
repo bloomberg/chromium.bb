@@ -1005,10 +1005,11 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
 
   worker->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::MESSAGE,
-      base::Bind(&ServiceWorkerDispatcherHost::
-                     DispatchExtendableMessageEventAfterStartWorker,
-                 this, worker, message, source_origin, sent_message_ports,
-                 ExtendableMessageEventSource(source_info), timeout, callback),
+      base::BindOnce(&ServiceWorkerDispatcherHost::
+                         DispatchExtendableMessageEventAfterStartWorker,
+                     this, worker, message, source_origin, sent_message_ports,
+                     ExtendableMessageEventSource(source_info), timeout,
+                     callback),
       base::Bind(
           &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent<
               SourceInfo>,

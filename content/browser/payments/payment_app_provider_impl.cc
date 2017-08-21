@@ -259,7 +259,7 @@ void DidFindRegistrationOnIO(
 
   active_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-      base::Bind(done_callback, service_worker_status), done_callback);
+      base::BindOnce(done_callback, service_worker_status), done_callback);
 }
 
 void FindRegistrationOnIO(
