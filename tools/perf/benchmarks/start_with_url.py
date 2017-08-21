@@ -31,7 +31,6 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
     return options
 
 
-@benchmark.Enabled('has tabs')
 @benchmark.Owner(emails=['pasko@chromium.org'])
 class StartWithUrlColdTBM(_StartupPerfBenchmark):
   """Measures time to start Chrome cold with startup URLs."""
@@ -58,12 +57,13 @@ class StartWithUrlColdTBM(_StartupPerfBenchmark):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ANDROID_WEBVIEW], 'Requires tabs')
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
 
 
-@benchmark.Enabled('has tabs')
 @benchmark.Owner(emails=['pasko@chromium.org'])
 class StartWithUrlWarmTBM(_StartupPerfBenchmark):
   """Measures stimetime to start Chrome warm with startup URLs."""
@@ -88,6 +88,8 @@ class StartWithUrlWarmTBM(_StartupPerfBenchmark):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ANDROID_WEBVIEW], 'Requires tabs')
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
