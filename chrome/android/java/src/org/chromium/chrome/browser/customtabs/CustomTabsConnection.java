@@ -195,7 +195,7 @@ public class CustomTabsConnection {
     private long mNativeTickOffsetUs;
     private boolean mNativeTickOffsetUsComputed;
 
-    private ChainedTasks mWarmupTasks;
+    private volatile ChainedTasks mWarmupTasks;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -309,7 +309,7 @@ public class CustomTabsConnection {
         final boolean initialized = !mWarmupHasBeenCalled.compareAndSet(false, true);
 
         // The call is non-blocking and this must execute on the UI thread, post chained tasks.
-        mWarmupTasks = new ChainedTasks();
+        ChainedTasks tasks = new ChainedTasks();
 
         // Ordering of actions here:
         // 1. Initializing the browser needs to be done once, and first.
@@ -322,7 +322,7 @@ public class CustomTabsConnection {
 
         // (1)
         if (!initialized) {
-            mWarmupTasks.add(new Runnable() {
+            tasks.add(new Runnable() {
                 @Override
                 public void run() {
                     try (TraceEvent e =
@@ -337,7 +337,7 @@ public class CustomTabsConnection {
 
         // (2)
         if (mayCreateSpareWebContents && mSpeculation == null) {
-            mWarmupTasks.add(new Runnable() {
+            tasks.add(new Runnable() {
                 @Override
                 public void run() {
                     try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
@@ -348,7 +348,7 @@ public class CustomTabsConnection {
         }
 
         // (3)
-        mWarmupTasks.add(new Runnable() {
+        tasks.add(new Runnable() {
             @Override
             public void run() {
                 try (TraceEvent e = TraceEvent.scoped("InitializeViewHierarchy")) {
@@ -359,7 +359,7 @@ public class CustomTabsConnection {
         });
 
         if (!initialized) {
-            mWarmupTasks.add(new Runnable() {
+            tasks.add(new Runnable() {
                 @Override
                 public void run() {
                     try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
@@ -376,9 +376,10 @@ public class CustomTabsConnection {
                 }
             });
         }
-        if (mWarmupFinishedCallback != null) mWarmupTasks.add(mWarmupFinishedCallback);
+        if (mWarmupFinishedCallback != null) tasks.add(mWarmupFinishedCallback);
 
-        mWarmupTasks.start(false);
+        tasks.start(false);
+        mWarmupTasks = tasks;
         return true;
     }
 
