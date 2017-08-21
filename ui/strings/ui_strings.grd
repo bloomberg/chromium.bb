@@ -753,6 +753,12 @@ need to be translated for each locale.-->
       <message name="IDS_APP_LIST_SPEECH_NETWORK_ERROR_HINT_TEXT" desc="The text label in the speech recognition UI to show the speech recognition can't start because of network error.">
         No internet connection
       </message>
+      <message name="IDS_APP_LIST_EXPAND_BUTTON" desc="Tooltip for the button that expands the app list from suggested apps to a fullscreen view which shows all apps.">
+        Expand to all apps
+      </message>
+      <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
+        Clear searchbox text button
+      </message>
 
       <!-- Strings describing the touch calibration UX -->
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_EXIT_LABEL" desc="A message to notify the user about using the escape key to exit the calibration mode.">

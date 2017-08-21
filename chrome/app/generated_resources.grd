@@ -11132,12 +11132,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_APP_LIST_STATE_FULLSCREEN_SEARCH" desc="Accessibility announcement for the app list when search results are shown in fullscreen.">
         Launcher, fullscreen search results
         </message>
-        <message name="IDS_APP_LIST_EXPAND_BUTTON" desc="Tooltip for the button that expands the app list from suggested apps to a fullscreen view which shows all apps.">
-        Expand to all apps
-        </message>
-        <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
-        Clear searchbox text button
-        </message>
         <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
           Search, or say "Ok Google"
         </message>

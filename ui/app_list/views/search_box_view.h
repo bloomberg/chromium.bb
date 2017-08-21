@@ -178,6 +178,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Gets the search box background.
   SearchBoxBackground* GetSearchBoxBackground() const;
 
+  // Whether the trimmed query in the search box is empty.
+  bool IsSearchBoxTrimmedQueryEmpty() const;
+
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
