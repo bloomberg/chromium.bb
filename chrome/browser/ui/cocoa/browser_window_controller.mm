@@ -1529,6 +1529,14 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
   [infoBarContainerController_ tabDetachedWithContents:contents];
+
+  // If there are permission requests, hide them. This may be checked again in
+  // -onActiveTabChanged:, but not if this was the last tab in the window, in
+  // which case there is nothing to change to.
+  if (PermissionRequestManager* manager =
+          PermissionRequestManager::FromWebContents(contents)) {
+    manager->HideBubble();
+  }
 }
 
 - (void)onTabInsertedWithContents:(content::WebContents*)contents

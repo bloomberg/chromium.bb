@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -128,7 +129,6 @@ class PermissionDialogTest
     ui_test_utils::NavigateToURL(browser(), GetUrl());
   }
 
- private:
   GURL GetUrl() { return GURL("https://example.com"); }
 
   PermissionRequest* MakeRegisterProtocolHandlerRequest();
@@ -142,6 +142,7 @@ class PermissionDialogTest
   // Holds requests that do not delete themselves.
   std::vector<std::unique_ptr<PermissionRequest>> owned_requests_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PermissionDialogTest);
 };
 
@@ -447,6 +448,33 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ("denied", result);
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+}
+
+// Test bubbles showing when tabs move between windows. Simulates a situation
+// that could result in permission bubbles not being dismissed, and a problem
+// referencing a temporary drag window. See http://crbug.com/754552.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
+  ShowDialog("geolocation");
+  TabStripModel* strip = browser()->tab_strip_model();
+
+  // Drag out into a dragging window. E.g. see steps in [BrowserWindowController
+  // detachTabsToNewWindow:..].
+  std::vector<TabStripModelDelegate::NewStripContents> contentses(1);
+  contentses.back().web_contents = strip->GetWebContentsAt(0);
+  strip->DetachWebContentsAt(0);
+  Browser* dragging_browser = strip->delegate()->CreateNewStripWithContents(
+      contentses, gfx::Rect(100, 100, 640, 480), false);
+
+  // Attach the tab back to the original window. E.g. See steps in
+  // [BrowserWindowController moveTabViews:..].
+  TabStripModel* drag_strip = dragging_browser->tab_strip_model();
+  drag_strip->DetachWebContentsAt(0);
+  strip->InsertWebContentsAt(0, contentses.back().web_contents,
+                             TabStripModel::ADD_ACTIVE);
+
+  // Clear the request. There should be no crash.
+  GetPermissionRequestManager()->CancelRequest(owned_requests_.back().get());
+  owned_requests_.clear();
 }
 
 // Host wants to run flash.
