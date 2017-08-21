@@ -17,9 +17,10 @@ namespace ntp_snippets {
 const base::Feature* const kAllFeatures[] = {
     &kArticleSuggestionsFeature,
     &kBookmarkSuggestionsFeature,
+    &kBreakingNewsPushFeature,
     &kCategoryOrder,
     &kCategoryRanker,
-    &kBreakingNewsPushFeature,
+    &kDeleteRemoteCategoriesNotPresentInLastFetch,
     &kForeignSessionsSuggestionsFeature,
     &kIncreasedVisibility,
     &kKeepPrefetchedContentSuggestions,
@@ -152,5 +153,9 @@ const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 
 const base::Feature kKeepPrefetchedContentSuggestions{
     "KeepPrefetchedContentSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDeleteRemoteCategoriesNotPresentInLastFetch{
+    "DeleteRemoteCategoriesNotPresentInLastFetch",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ntp_snippets
