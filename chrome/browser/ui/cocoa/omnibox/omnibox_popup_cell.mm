@@ -118,12 +118,13 @@ NSFont* LargeSuperscriptFont() {
 void SetTextDirectionForRange(NSMutableAttributedString* attributedString,
                               NSWritingDirection direction,
                               NSRange range) {
-  base::scoped_nsobject<NSMutableParagraphStyle> paragraph_style(
-      [[NSMutableParagraphStyle alloc] init]);
-  [paragraph_style setBaseWritingDirection:direction];
-  [attributedString addAttribute:NSParagraphStyleAttributeName
-                           value:paragraph_style
-                           range:range];
+  [attributedString
+      enumerateAttribute:NSParagraphStyleAttributeName
+                 inRange:range
+                 options:0
+              usingBlock:^(id paragraph_style, NSRange range, BOOL* stop) {
+                [paragraph_style setBaseWritingDirection:direction];
+              }];
 }
 
 NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
@@ -293,6 +294,8 @@ NSMutableAttributedString* CreateAttributedString(
       [[[NSMutableParagraphStyle alloc] init] autorelease];
   [style setTighteningFactorForTruncation:0.0];
   [style setAlignment:textAlignment];
+  if (@available(macOS 10.11, *))
+    [style setAllowsDefaultTighteningForTruncation:NO];
   [attributedString addAttribute:NSParagraphStyleAttributeName
                            value:style
                            range:NSMakeRange(0, [attributedString length])];
