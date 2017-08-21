@@ -1,0 +1,211 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image'",
+      "position": [8, 8],
+      "bounds": [560, 144],
+      "contentsOpaque": false,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+          "rect": [500, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+          "rect": [500, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+          "rect": [450, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+          "rect": [450, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+          "rect": [400, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+          "rect": [350, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+          "rect": [350, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
+          "rect": [300, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
+          "rect": [300, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
+          "rect": [250, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
+          "rect": [200, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
+          "rect": [200, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated size-contain'",
+          "rect": [100, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+          "rect": [100, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated size-cover'",
+          "rect": [50, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+          "rect": [50, 0, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+          "rect": [0, 100, 60, 44],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
+          "rect": [400, 40, 60, 4],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image top'",
+          "rect": [250, 40, 60, 4],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
+          "rect": [150, 40, 60, 4],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image'",
+          "rect": [0, 40, 60, 4],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image top'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated size-cover'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated size-contain'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+      "reason": "geometry"
+    }
+  ]
+}
+
