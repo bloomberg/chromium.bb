@@ -160,6 +160,7 @@ void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Could not create GATT connection with "
                     << device_address_ << " - device not found.";
+    DestroyConnection();
     return;
   }
 
@@ -180,6 +181,7 @@ void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Could not create GATT connection with "
                     << device_address_ << " - device not found.";
+    DestroyConnection();
     return;
   }
 
@@ -427,9 +429,15 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError(
 
 void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
   DCHECK(sub_status() == SubStatus::CHARACTERISTICS_FOUND);
+
   device::BluetoothRemoteGattCharacteristic* characteristic =
       GetGattCharacteristic(rx_characteristic_.id);
-  CHECK(characteristic);
+  if (!characteristic) {
+    PA_LOG(WARNING) << "Characteristic no longer available after it was found. "
+                    << "Cannot start notification session.";
+    DestroyConnection();
+    return;
+  }
 
   // This is a workaround for crbug.com/507325. If |characteristic| is already
   // notifying |characteristic->StartNotifySession()| will fail with
