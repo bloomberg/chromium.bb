@@ -16,7 +16,6 @@ window.reportDragAndDropEvent = function(ev) {
   console.log(msg);
 
   if (window.domAutomationController) {
-    window.domAutomationController.setAutomationId(0);
     window.domAutomationController.send({
       client_position: safe(function() {
         return "(" + ev.clientX + ", " + ev.clientY + ")";

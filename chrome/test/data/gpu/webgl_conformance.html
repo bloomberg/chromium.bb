@@ -51,7 +51,6 @@ function start(start_url) {
         } else {
           messages.push("SUCCESS");
         }
-        domAutomationController.setAutomationId(1);
         domAutomationController.send(messages.join("\n"));
         break;
     }
@@ -76,7 +75,6 @@ function start(start_url) {
   // Assert the WebGL context exists.
   gl = create3DContext();
   if (!gl) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE: unable to fetch WebGL context");
     return;
   }
