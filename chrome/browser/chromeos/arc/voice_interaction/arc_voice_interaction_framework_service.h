@@ -13,6 +13,7 @@
 #include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class KeyedServiceBaseFactory;
@@ -36,7 +37,8 @@ class ArcVoiceInteractionFrameworkService
     : public KeyedService,
       public mojom::VoiceInteractionFrameworkHost,
       public InstanceHolder<mojom::VoiceInteractionFrameworkInstance>::Observer,
-      public ArcSessionManager::Observer {
+      public ArcSessionManager::Observer,
+      public session_manager::SessionManagerObserver {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -70,6 +72,9 @@ class ArcVoiceInteractionFrameworkService
 
   // ArcSessionManager::Observer overrides.
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
+
+  // session_manager::SessionManagerObserver overrides.
+  void OnSessionStateChanged() override;
 
   // Starts a voice interaction session after user-initiated interaction.
   // Records a timestamp and sets number of allowed requests to 2 since by

@@ -74,6 +74,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
                                   aura::Window* root_window) override;
   void OnVoiceInteractionStatusChanged(
       ash::VoiceInteractionState state) override;
+  void OnVoiceInteractionEnabled(bool enabled) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -119,6 +120,9 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // Whether the primary user session is active. Arc is only supported in
   // primary user session.
   bool is_primary_user_active_ = false;
+
+  // Whether voice interaction is enabled in system settings.
+  bool voice_interaction_settings_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };
