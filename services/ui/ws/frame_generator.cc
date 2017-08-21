@@ -100,12 +100,11 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame());
-  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (!local_surface_id_.is_valid() ||
-      frame_size != last_submitted_frame_size_ ||
-      frame.metadata.device_scale_factor != last_device_scale_factor_) {
-    last_device_scale_factor_ = frame.metadata.device_scale_factor;
-    last_submitted_frame_size_ = frame_size;
+      frame.size_in_pixels() != last_submitted_frame_size_ ||
+      frame.device_scale_factor() != last_device_scale_factor_) {
+    last_device_scale_factor_ = frame.device_scale_factor();
+    last_submitted_frame_size_ = frame.size_in_pixels();
     local_surface_id_ = id_allocator_.GenerateId();
   }
   compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,

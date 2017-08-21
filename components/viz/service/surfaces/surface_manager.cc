@@ -551,15 +551,13 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
     if (surface->HasPendingFrame()) {
       // This provides the surface size from the root render pass.
       const cc::CompositorFrame& frame = surface->GetPendingFrame();
-      *str << " pending "
-           << frame.render_pass_list.back()->output_rect.size().ToString();
+      *str << " pending " << frame.size_in_pixels().ToString();
     }
 
     if (surface->HasActiveFrame()) {
       // This provides the surface size from the root render pass.
       const cc::CompositorFrame& frame = surface->GetActiveFrame();
-      *str << " active "
-           << frame.render_pass_list.back()->output_rect.size().ToString();
+      *str << " active " << frame.size_in_pixels().ToString();
     }
   } else {
     *str << surface_id;

@@ -11,8 +11,8 @@ RenderWidgetSurfaceProperties
 RenderWidgetSurfaceProperties::FromCompositorFrame(
     const cc::CompositorFrame& frame) {
   RenderWidgetSurfaceProperties properties;
-  properties.size = frame.render_pass_list.back()->output_rect.size();
-  properties.device_scale_factor = frame.metadata.device_scale_factor;
+  properties.size = frame.size_in_pixels();
+  properties.device_scale_factor = frame.device_scale_factor();
 #ifdef OS_ANDROID
   properties.top_controls_height = frame.metadata.top_controls_height;
   properties.top_controls_shown_ratio = frame.metadata.top_controls_shown_ratio;

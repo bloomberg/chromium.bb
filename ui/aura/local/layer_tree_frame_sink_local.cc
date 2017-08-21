@@ -75,12 +75,11 @@ void LayerTreeFrameSinkLocal::SubmitCompositorFrame(cc::CompositorFrame frame) {
             frame.metadata.begin_frame_ack.sequence_number);
 
   viz::LocalSurfaceId old_local_surface_id = local_surface_id_;
-  const auto& frame_size = frame.render_pass_list.back()->output_rect.size();
-  if (frame_size != surface_size_ ||
-      frame.metadata.device_scale_factor != device_scale_factor_ ||
+  if (frame.size_in_pixels() != surface_size_ ||
+      frame.device_scale_factor() != device_scale_factor_ ||
       !local_surface_id_.is_valid()) {
-    surface_size_ = frame_size;
-    device_scale_factor_ = frame.metadata.device_scale_factor;
+    surface_size_ = frame.size_in_pixels();
+    device_scale_factor_ = frame.device_scale_factor();
     local_surface_id_ = id_allocator_.GenerateId();
   }
   bool result =

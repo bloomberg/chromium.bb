@@ -477,8 +477,8 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
-  current_surface_scale_factor_ = frame.metadata.device_scale_factor;
+  current_surface_size_ = frame.size_in_pixels();
+  current_surface_scale_factor_ = frame.device_scale_factor();
 
   bool result =
       support_->SubmitCompositorFrame(local_surface_id, std::move(frame));

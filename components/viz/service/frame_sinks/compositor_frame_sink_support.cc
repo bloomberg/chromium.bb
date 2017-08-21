@@ -166,9 +166,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     current_surface = prev_surface;
   } else {
     SurfaceId surface_id(frame_sink_id_, local_surface_id);
-    gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-    float device_scale_factor = frame.metadata.device_scale_factor;
-    SurfaceInfo surface_info(surface_id, device_scale_factor, frame_size);
+    SurfaceInfo surface_info(surface_id, frame.device_scale_factor(),
+                             frame.size_in_pixels());
 
     if (!surface_info.is_valid()) {
       TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
