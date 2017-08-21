@@ -34,7 +34,6 @@ ArcPlayStoreEnabledPreferenceHandler::ArcPlayStoreEnabledPreferenceHandler(
 }
 
 ArcPlayStoreEnabledPreferenceHandler::~ArcPlayStoreEnabledPreferenceHandler() {
-  ArcAuthNotification::Hide();
   sync_preferences::PrefServiceSyncable* pref_service_syncable =
       PrefServiceSyncableFromProfile(profile_);
   pref_service_syncable->RemoveObserver(this);
@@ -100,7 +99,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
   // Hide auth notification if it was opened before and arc.enabled pref was
   // explicitly set to true or false.
   if (profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
-    ArcAuthNotification::Hide();
+    auth_notification_.reset();
 
   UpdateArcSessionManager();
 
@@ -131,13 +130,15 @@ void ArcPlayStoreEnabledPreferenceHandler::OnIsSyncingChanged() {
   pref_service_syncable->RemoveObserver(this);
 
   // TODO(hidehiko): Extract kEnableArcOOBEOptIn check as a utility method.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOOBEOptIn) &&
-      profile_->IsNewProfile() &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled) &&
-      arc::IsPlayStoreAvailable()) {
-    ArcAuthNotification::Show(profile_);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableArcOOBEOptIn) ||
+      !profile_->IsNewProfile() ||
+      profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled) ||
+      !arc::IsPlayStoreAvailable()) {
+    return;
   }
+
+  auth_notification_ = base::MakeUnique<ArcAuthNotification>(profile_);
 }
 
 }  // namespace arc

@@ -10,12 +10,14 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -79,14 +81,23 @@ class ArcAuthNotificationDelegate
   ~ArcAuthNotificationDelegate() override { StopObserving(); }
 
   void StartObserving() {
+    if (observing_message_center_)
+      return;
     message_center::MessageCenter::Get()->AddObserver(this);
+    observing_message_center_ = true;
   }
 
   void StopObserving() {
+    if (!observing_message_center_)
+      return;
     message_center::MessageCenter::Get()->RemoveObserver(this);
+    observing_message_center_ = false;
   }
 
+  // Unowned pointer.
   Profile* const profile_;
+  // To prevent double observing.
+  bool observing_message_center_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthNotificationDelegate);
 };
@@ -95,15 +106,42 @@ class ArcAuthNotificationDelegate
 
 namespace arc {
 
-// static
-void ArcAuthNotification::Show(Profile* profile) {
+ArcAuthNotification::ArcAuthNotification(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {
   if (g_disabled)
     return;
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (!session_manager) {
+    // In case we have message center to show notification.
+    Show();
+    return;
+  }
+
+  if (session_manager->session_state() ==
+      session_manager::SessionState::ACTIVE) {
+    Show();
+  } else {
+    session_manager->AddObserver(this);
+  }
+}
+
+ArcAuthNotification::~ArcAuthNotification() {
+  Hide();
+}
+
+// static
+void ArcAuthNotification::DisableForTesting() {
+  g_disabled = true;
+}
+
+void ArcAuthNotification::Show() {
+  DCHECK(!g_disabled);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
-      multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
+      multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
@@ -119,23 +157,36 @@ void ArcAuthNotification::Show(Profile* profile) {
           l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE),
           resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
           base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id, data,
-          new ArcAuthNotificationDelegate(profile)));
+          new ArcAuthNotificationDelegate(profile_)));
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
 
-// static
 void ArcAuthNotification::Hide() {
-  if (g_disabled)
-    return;
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  if (message_center)
+    message_center->RemoveNotification(kFirstRunNotificationId, false);
 
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kFirstRunNotificationId, false);
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (session_manager)
+    session_manager->RemoveObserver(this);
 }
 
-// static
-void ArcAuthNotification::DisableForTesting() {
-  g_disabled = true;
+void ArcAuthNotification::OnSessionStateChanged() {
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (session_manager->session_state() !=
+      session_manager::SessionState::ACTIVE) {
+    return;
+  }
+
+  session_manager->RemoveObserver(this);
+  // Don't call Show directly due race condition in observers.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ArcAuthNotification::Show, weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace arc

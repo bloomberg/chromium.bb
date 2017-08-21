@@ -5,18 +5,37 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_NOTIFICATION_H_
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/session_manager/core/session_manager_observer.h"
+
 class Profile;
 
 namespace arc {
 
-// First run notification that can enable ARC.
-class ArcAuthNotification {
+// First run notification that can enable ARC. It is shown when Chrome session
+// is in active state to prevent quick disappearing after session switches from
+// login screen to active state.
+class ArcAuthNotification : public session_manager::SessionManagerObserver {
  public:
-  static void Show(Profile* profile);
-  static void Hide();
+  explicit ArcAuthNotification(Profile* profile);
+  ~ArcAuthNotification() override;
 
-  // Disables showing ArcAuthNotification to make testing easier.
   static void DisableForTesting();
+
+ private:
+  void Show();
+  void Hide();
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
+
+  Profile* const profile_;
+
+  // Keep last.
+  base::WeakPtrFactory<ArcAuthNotification> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcAuthNotification);
 };
 
 }  // namespace arc
