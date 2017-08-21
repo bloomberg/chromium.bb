@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
@@ -650,6 +651,26 @@ bool CheckIfEditableFormTextArea(int flags, int form_type) {
 
 bool IsLinkArea(PDFiumPage::Area area) {
   return area == PDFiumPage::WEBLINK_AREA || area == PDFiumPage::DOCLINK_AREA;
+}
+
+// Normalize a MouseInputEvent. For Mac, this means transforming ctrl + left
+// button down events into a right button down events.
+pp::MouseInputEvent NormalizeMouseEvent(pp::Instance* instance,
+                                        const pp::MouseInputEvent& event) {
+  pp::MouseInputEvent normalized_event = event;
+#if defined(OS_MACOSX)
+  uint32_t modifiers = event.GetModifiers();
+  if ((modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY) &&
+      event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
+      event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN) {
+    uint32_t new_modifiers = modifiers & ~PP_INPUTEVENT_MODIFIER_CONTROLKEY;
+    normalized_event = pp::MouseInputEvent(
+        instance, PP_INPUTEVENT_TYPE_MOUSEDOWN, event.GetTimeStamp(),
+        new_modifiers, PP_INPUTEVENT_MOUSEBUTTON_RIGHT, event.GetPosition(), 1,
+        event.GetMovement());
+  }
+#endif
+  return normalized_event;
 }
 
 }  // namespace
@@ -1727,12 +1748,14 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
 }
 
 bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
-    return OnLeftMouseDown(event);
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
-    return OnMiddleMouseDown(event);
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
-    return OnRightMouseDown(event);
+  pp::MouseInputEvent normalized_event =
+      NormalizeMouseEvent(client_->GetPluginInstance(), event);
+  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+    return OnLeftMouseDown(normalized_event);
+  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+    return OnMiddleMouseDown(normalized_event);
+  if (normalized_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
+    return OnRightMouseDown(normalized_event);
   return false;
 }
 
