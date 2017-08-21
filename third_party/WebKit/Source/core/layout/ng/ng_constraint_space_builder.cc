@@ -5,8 +5,6 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 
 #include "core/layout/ng/ng_exclusion_space.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_length_utils.h"
 
 namespace blink {
 

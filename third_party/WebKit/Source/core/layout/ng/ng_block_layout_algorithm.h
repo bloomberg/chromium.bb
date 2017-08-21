@@ -9,14 +9,13 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
 class NGConstraintSpace;
+class NGFragment;
 class NGLayoutResult;
 
 // This struct is used for communicating to a child the position of the

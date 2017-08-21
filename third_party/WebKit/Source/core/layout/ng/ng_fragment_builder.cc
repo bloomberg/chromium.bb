@@ -4,15 +4,11 @@
 
 #include "core/layout/ng/ng_fragment_builder.h"
 
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 

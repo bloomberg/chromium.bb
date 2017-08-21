@@ -6,12 +6,8 @@
 #define NGPhysicalBoxFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/ng_physical_fragment.h"
-#include "core/layout/ng/ng_positioned_float.h"
-#include "platform/wtf/Optional.h"
 
 namespace blink {
 

@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_box_fragment.h"
@@ -13,20 +14,14 @@
 #include "core/layout/ng/inline/ng_line_breaker.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment_builder.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_space_utils.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/text/BidiRunList.h"
 
 namespace blink {
 namespace {

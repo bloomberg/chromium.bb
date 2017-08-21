@@ -6,14 +6,14 @@
 #define NGFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
+struct NGBorderEdges;
+struct NGLogicalOffset;
 struct NGLogicalSize;
 
 class CORE_EXPORT NGFragment {

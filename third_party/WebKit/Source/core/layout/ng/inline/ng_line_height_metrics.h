@@ -5,8 +5,7 @@
 #ifndef NGLineHeightMetrics_h
 #define NGLineHeightMetrics_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "platform/LayoutUnit.h"
 #include "platform/fonts/FontBaseline.h"
 
 namespace blink {

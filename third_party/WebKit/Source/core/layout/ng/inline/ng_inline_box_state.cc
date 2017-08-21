@@ -4,8 +4,8 @@
 
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 
+#include "core/layout/ng/geometry/ng_logical_rect.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"

@@ -14,7 +14,6 @@
 #include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/layout/ng/ng_writing_mode.h"
-#include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"

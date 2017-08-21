@@ -4,11 +4,8 @@
 
 #include "core/layout/ng/ng_length_utils.h"
 
-#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"

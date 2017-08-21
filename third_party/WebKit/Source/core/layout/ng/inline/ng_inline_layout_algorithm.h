@@ -8,15 +8,11 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"
-#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_line_height_metrics.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "platform/fonts/FontBaseline.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

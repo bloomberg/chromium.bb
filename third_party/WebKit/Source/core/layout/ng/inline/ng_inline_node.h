@@ -10,7 +10,6 @@
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_layout_input_node.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -28,6 +27,7 @@ class NGInlineItem;
 class NGInlineItemRange;
 using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
+struct NGInlineNodeData;
 class NGLayoutResult;
 class NGOffsetMappingResult;
 

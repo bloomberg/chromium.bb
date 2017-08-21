@@ -7,10 +7,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_macros.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
 

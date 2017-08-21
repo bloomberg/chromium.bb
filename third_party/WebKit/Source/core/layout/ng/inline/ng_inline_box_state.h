@@ -5,7 +5,7 @@
 #ifndef NGInlineBoxState_h
 #define NGInlineBoxState_h
 
-#include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/style/ComputedStyleConstants.h"

@@ -6,10 +6,8 @@
 #define NGPhysicalTextFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_physical_fragment.h"
-#include "platform/heap/Handle.h"
+#include "platform/fonts/shaping/ShapeResult.h"
 
 namespace blink {
 

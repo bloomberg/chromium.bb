@@ -5,7 +5,6 @@
 #include "core/layout/ng/inline/ng_inline_items_builder.h"
 
 #include "core/layout/LayoutInline.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"

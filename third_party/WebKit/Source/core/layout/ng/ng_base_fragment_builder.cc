@@ -4,9 +4,6 @@
 
 #include "core/layout/ng/ng_base_fragment_builder.h"
 
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_layout_result.h"
-
 namespace blink {
 
 NGBaseFragmentBuilder::NGBaseFragmentBuilder(RefPtr<const ComputedStyle> style,

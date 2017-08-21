@@ -7,7 +7,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 

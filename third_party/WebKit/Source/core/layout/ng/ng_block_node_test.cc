@@ -6,9 +6,6 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/style/ComputedStyle.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {

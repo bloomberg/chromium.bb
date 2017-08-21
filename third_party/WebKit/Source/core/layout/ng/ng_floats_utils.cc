@@ -7,10 +7,11 @@
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_positioned_float.h"
 #include "core/layout/ng/ng_space_utils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace {
