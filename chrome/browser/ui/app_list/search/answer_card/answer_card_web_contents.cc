@@ -137,18 +137,19 @@ void AnswerCardWebContents::LoadURL(const GURL& url) {
   load_params.should_clear_history_list = true;
   web_contents_->GetController().LoadURLWithParams(load_params);
 
-  web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
+  web_contents_->GetRenderViewHost()->EnableAutoResize(
+      gfx::Size(1, 1), gfx::Size(INT_MAX, INT_MAX));
 }
 
 views::View* AnswerCardWebContents::GetView() {
   return web_view_.get();
 }
 
-void AnswerCardWebContents::UpdatePreferredSize(
+void AnswerCardWebContents::ResizeDueToAutoResize(
     content::WebContents* web_contents,
-    const gfx::Size& pref_size) {
+    const gfx::Size& new_size) {
   delegate()->UpdatePreferredSize(this);
-  web_view_->SetPreferredSize(pref_size);
+  web_view_->SetPreferredSize(new_size);
 }
 
 content::WebContents* AnswerCardWebContents::OpenURLFromTab(
