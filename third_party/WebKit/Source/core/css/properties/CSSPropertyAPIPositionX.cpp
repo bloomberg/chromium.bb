@@ -11,9 +11,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIPositionX::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
                                                         CSSValueRight>,

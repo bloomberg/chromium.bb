@@ -12,9 +12,10 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontSize::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyFontUtils::ConsumeFontSize(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }

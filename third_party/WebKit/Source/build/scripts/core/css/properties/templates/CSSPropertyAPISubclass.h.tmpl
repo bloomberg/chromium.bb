@@ -1,0 +1,32 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+
+#ifndef {{api_classname}}_h
+#define {{api_classname}}_h
+
+#include "core/CSSPropertyNames.h"
+#include "core/css/properties/CSSPropertyAPI.h"
+#include "platform/heap/HeapAllocator.h"
+
+namespace blink {
+
+class CSSParserTokenRange;
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSProperty;
+class CSSValue;
+
+class {{api_classname}} : public CSSPropertyAPI {
+ public:
+  {% for api_method in methods_for_class %}
+  {{api_method.return_type}} {{api_method.name}}{{api_method.parameters}} const override;
+  {% endfor %}
+};
+
+}  // namespace blink
+
+#endif  // {{api_classname}}_h

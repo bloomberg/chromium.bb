@@ -11,11 +11,12 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIBorder::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   CSSValue* width = nullptr;
   const CSSValue* style = nullptr;
   CSSValue* color = nullptr;
@@ -31,8 +32,7 @@ bool CSSShorthandPropertyAPIBorder::ParseShorthand(
     if (!style) {
       bool needs_legacy_parsing = false;
       style = CSSPropertyParserHelpers::ParseLonghandViaAPI(
-          CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range,
-          needs_legacy_parsing);
+          CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
       DCHECK(!needs_legacy_parsing);
       if (style)
         continue;

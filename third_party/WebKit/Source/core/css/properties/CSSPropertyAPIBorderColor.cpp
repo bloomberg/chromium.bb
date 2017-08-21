@@ -13,9 +13,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBorderColor::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) {
+    const CSSParserLocalContext& local_context) const {
   CSSPropertyID shorthand = local_context.CurrentShorthand();
   bool allow_quirky_colors =
       IsQuirksModeBehavior(context.Mode()) &&

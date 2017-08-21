@@ -6,13 +6,15 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
+class CSSParserLocalContext;
+
 const CSSValue* CSSPropertyAPIListStyleImage::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
 }
 

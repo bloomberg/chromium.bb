@@ -11,9 +11,10 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIAlignOrJustifyContent::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   return CSSPropertyAlignmentUtils::ConsumeContentDistributionOverflowPosition(
       range);
