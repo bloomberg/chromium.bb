@@ -79,6 +79,7 @@ public class HostInfo {
             return context.getString(R.string.host_offline_tooltip);
         }
         try {
+            // TODO(wnwen): Replace this with explicit usage so errors move to compile time.
             String resourceName = "offline_reason_" + hostOfflineReason.toLowerCase(Locale.ENGLISH);
             int resourceId = context.getResources().getIdentifier(
                     resourceName, "string", context.getPackageName());

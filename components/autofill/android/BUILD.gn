@@ -7,6 +7,9 @@ import("//build/config/android/rules.gni")
 android_resources("autofill_java_resources") {
   custom_package = "org.chromium.components.autofill"
   resource_dirs = [ "java/res" ]
+  deps = [
+    "//components/strings:components_strings_grd",
+  ]
 }
 
 android_library("autofill_java") {
