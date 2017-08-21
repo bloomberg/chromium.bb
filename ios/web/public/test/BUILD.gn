@@ -11,7 +11,6 @@ source_set("test") {
     "//base/test:test_support",
     "//ios/testing:ios_test_support",
     "//ios/web:web",
-    "//ios/web:web_arc",
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
     "//ios/web/test:test_support",
