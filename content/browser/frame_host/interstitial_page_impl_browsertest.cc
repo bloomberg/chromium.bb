@@ -105,15 +105,15 @@ class ClipboardMessageWatcher : public IPC::MessageFilter {
       if (ClipboardHostMsg_WriteText::Read(&message, &params)) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&ClipboardMessageWatcher::OnWriteText, this,
-                       base::UTF16ToUTF8(std::get<1>(params))));
+            base::BindOnce(&ClipboardMessageWatcher::OnWriteText, this,
+                           base::UTF16ToUTF8(std::get<1>(params))));
       }
       return true;
     }
     if (message.type() == ClipboardHostMsg_CommitWrite::ID) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ClipboardMessageWatcher::OnCommitWrite, this));
+          base::BindOnce(&ClipboardMessageWatcher::OnCommitWrite, this));
       return true;
     }
     return false;

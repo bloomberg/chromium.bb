@@ -151,7 +151,7 @@ class SurfaceRefMessageFilter : public BrowserMessageFilter {
                  const viz::SurfaceSequence sequence) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SurfaceRefMessageFilter::OnRequireOnUI, this));
+        base::BindOnce(&SurfaceRefMessageFilter::OnRequireOnUI, this));
   }
 
   void OnRequireOnUI() {
@@ -163,7 +163,7 @@ class SurfaceRefMessageFilter : public BrowserMessageFilter {
   void OnSatisfy(const viz::SurfaceSequence sequence) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SurfaceRefMessageFilter::OnSatisfyOnUI, this));
+        base::BindOnce(&SurfaceRefMessageFilter::OnSatisfyOnUI, this));
   }
 
   void OnSatisfyOnUI() {

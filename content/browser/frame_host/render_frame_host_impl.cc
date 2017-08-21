@@ -340,9 +340,10 @@ void NotifyForEachFrameFromUI(
     if (pending_frame_host)
       routing_ids->insert(pending_frame_host->GetGlobalFrameRoutingId());
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&NotifyRouteChangesOnIO, frame_callback,
-                                     base::Passed(std::move(routing_ids))));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&NotifyRouteChangesOnIO, frame_callback,
+                     base::Passed(std::move(routing_ids))));
 }
 
 void LookupRenderFrameHostOrProxy(int process_id,
@@ -576,8 +577,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     g_token_frame_map.Get().erase(*overlay_routing_token_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&NotifyRenderFrameDetachedOnIO,
-                                     GetProcess()->GetID(), routing_id_));
+                          base::BindOnce(&NotifyRenderFrameDetachedOnIO,
+                                         GetProcess()->GetID(), routing_id_));
 
   site_instance_->RemoveObserver(this);
 

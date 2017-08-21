@@ -202,9 +202,9 @@ NavigationHandleImpl::~NavigationHandleImpl() {
   // from the renderer need to be cleaned up. These are marked as protected in
   // the RDHI, so they do not get cancelled when frames are destroyed.
   if (is_transferring()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&NotifyAbandonedTransferNavigation, GetGlobalRequestID()));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&NotifyAbandonedTransferNavigation,
+                                           GetGlobalRequestID()));
   }
 
   if (!IsRendererDebugURL(url_))
