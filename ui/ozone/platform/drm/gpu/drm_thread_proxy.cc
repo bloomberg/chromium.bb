@@ -70,4 +70,11 @@ void DrmThreadProxy::AddBinding(ozone::mojom::DeviceCursorRequest request) {
                  base::Passed(&request)));
 }
 
+void DrmThreadProxy::AddBindingGpu(ozone::mojom::GpuAdapterRequest request) {
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DrmThread::AddBindingGpu, base::Unretained(&drm_thread_),
+                 base::Passed(&request)));
+}
+
 }  // namespace ui

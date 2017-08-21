@@ -192,9 +192,11 @@ void DrmThreadMessageProxy::OnAddGraphicsDevice(
     const base::FilePath& path,
     const base::FileDescriptor& fd) {
   DCHECK(drm_thread_->IsRunning());
+  base::File file(fd.fd);
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::AddGraphicsDevice,
-                            base::Unretained(drm_thread_), path, fd));
+      FROM_HERE,
+      base::Bind(&DrmThread::AddGraphicsDevice, base::Unretained(drm_thread_),
+                 path, Passed(&file)));
 }
 
 void DrmThreadMessageProxy::OnRemoveGraphicsDevice(const base::FilePath& path) {

@@ -19,7 +19,8 @@
         ],
         // Interfaces provided by mus-gpu for mus-ws.
         "ozone": [
-          "ui::ozone::mojom::DeviceCursor"
+          "ui::ozone::mojom::DeviceCursor",
+          "ui::ozone::mojom::GpuAdapter"
         ],
         "test": [
           "ui::mojom::WindowServerTest"
