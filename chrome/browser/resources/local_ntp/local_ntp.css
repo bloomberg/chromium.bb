@@ -198,11 +198,11 @@ body.fakebox-focused #fakebox-text {
   visibility: hidden;
 }
 
-body.fakebox-drag-focused #cursor {
+body.fakebox-drag-focused #fakebox-cursor {
   visibility: inherit;
 }
 
-body.fakebox-focused #cursor {
+body.fakebox-focused #fakebox-cursor {
   animation: blink 1.3s step-end infinite;
   visibility: inherit;
 }
