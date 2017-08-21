@@ -96,8 +96,10 @@ class NGInlineNodeTest : public RenderingTest {
 
   void CreateLine(NGInlineNode node,
                   Vector<RefPtr<const NGPhysicalTextFragment>>* fragments_out) {
+    NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
+
     RefPtr<NGConstraintSpace> constraint_space =
-        NGConstraintSpaceBuilder(kHorizontalTopBottom)
+        NGConstraintSpaceBuilder(kHorizontalTopBottom, icb_size)
             .ToConstraintSpace(kHorizontalTopBottom);
     RefPtr<NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, constraint_space.Get()).Layout();
