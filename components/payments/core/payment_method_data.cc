@@ -64,20 +64,30 @@ bool PaymentMethodData::FromDictionaryValue(
   this->supported_networks.clear();
   this->supported_types.clear();
 
+  // The value of supportedMethods can be an array or a string.
   const base::ListValue* supported_methods_list = nullptr;
-  // At least one supported method is required.
-  if (!value.GetList(kSupportedMethods, &supported_methods_list) ||
-      supported_methods_list->GetSize() == 0) {
-    return false;
-  }
-  for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
+  if (value.GetList(kSupportedMethods, &supported_methods_list)) {
+    for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
+      std::string supported_method;
+      if (!supported_methods_list->GetString(i, &supported_method) ||
+          !base::IsStringASCII(supported_method)) {
+        return false;
+      }
+      if (!supported_method.empty())
+        this->supported_methods.push_back(supported_method);
+    }
+  } else {
     std::string supported_method;
-    if (!supported_methods_list->GetString(i, &supported_method) ||
-        !base::IsStringASCII(supported_method)) {
+    if (!value.GetString(kSupportedMethods, &supported_method) ||
+        !base::IsStringASCII(supported_method) || supported_method.empty()) {
       return false;
     }
     this->supported_methods.push_back(supported_method);
   }
+
+  // At least one supported method is required.
+  if (supported_methods.empty())
+    return false;
 
   // Data is optional, but if a dictionary is present, save a stringified
   // version and attempt to parse supportedNetworks/supportedTypes.
