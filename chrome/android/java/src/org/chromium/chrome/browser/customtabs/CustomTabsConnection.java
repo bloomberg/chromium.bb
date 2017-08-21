@@ -35,6 +35,7 @@ import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -465,7 +467,7 @@ public class CustomTabsConnection {
         }
     }
 
-    private boolean mayLaunchUrlInternal(final CustomTabsSessionToken session, Uri url,
+    private boolean mayLaunchUrlInternal(final CustomTabsSessionToken session, final Uri url,
             final Bundle extras, final List<Bundle> otherLikelyBundles) {
         final boolean lowConfidence =
                 (url == null || TextUtils.isEmpty(url.toString())) && otherLikelyBundles != null;
@@ -484,21 +486,41 @@ public class CustomTabsConnection {
                     session, uid, urlString, otherLikelyBundles != null)) {
             return false;
         }
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try (TraceEvent e =
-                                TraceEvent.scoped("CustomTabsConnection.mayLaunchUrlInternal")) {
-                    if (lowConfidence) {
-                        lowConfidenceMayLaunchUrl(otherLikelyBundles);
-                    } else {
-                        highConfidenceMayLaunchUrl(
-                                session, uid, urlString, extras, otherLikelyBundles);
-                    }
-                }
-            }
+
+        ThreadUtils.postOnUiThread(() -> {
+            doMayLaunchUrlOnUiThread(
+                    lowConfidence, session, uid, urlString, extras, otherLikelyBundles, true);
         });
         return true;
+    }
+
+    private void doMayLaunchUrlOnUiThread(final boolean lowConfidence,
+            final CustomTabsSessionToken session, final int uid, final String urlString,
+            final Bundle extras, final List<Bundle> otherLikelyBundles, boolean retryIfNotLoaded) {
+        ThreadUtils.assertOnUiThread();
+        try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.mayLaunchUrlOnUiThread")) {
+            // doMayLaunchUrlInternal() is always called once the native level initialization is
+            // done, at least the initial profile load. However, at that stage the startup callback
+            // may not have run, which causes Profile.getLastUsedProfile() to throw an
+            // exception. But the tasks have been posted by then, so reschedule ourselves, only
+            // once.
+            if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                            .isStartupSuccessfullyCompleted()) {
+                if (retryIfNotLoaded) {
+                    ThreadUtils.postOnUiThread(() -> {
+                        doMayLaunchUrlOnUiThread(lowConfidence, session, uid, urlString, extras,
+                                otherLikelyBundles, false);
+                    });
+                }
+                return;
+            }
+
+            if (lowConfidence) {
+                lowConfidenceMayLaunchUrl(otherLikelyBundles);
+            } else {
+                highConfidenceMayLaunchUrl(session, uid, urlString, extras, otherLikelyBundles);
+            }
+        }
     }
 
     public Bundle extraCommand(String commandName, Bundle args) {
