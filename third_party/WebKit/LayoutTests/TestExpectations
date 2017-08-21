@@ -3057,7 +3057,7 @@ crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.ht
 
 # These imported tests exercise tens of thousands of code points and generate large results. Marked slow, but still timeout.
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-japanese [ Timeout Pass ]
-crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-korean [ Timeout Pass ]
+crbug.com/736056 [ Mac Win7 ] external/wpt/encoding/legacy-mb-korean [ Timeout Pass ]
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass ]
 crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-hangul.html [ Timeout Pass ]
 
