@@ -12,4 +12,8 @@ namespace ntp_home {
 NSString* FakeOmniboxAccessibilityID() {
   return @"NTPHomeFakeOmniboxAccessibilityID";
 }
+
+const CGFloat kMostVisitedBottomMarginIPad = 80;
+const CGFloat kMostVisitedBottomMarginIPhone = 60;
+const CGFloat kSuggestionPeekingHeight = 60;
 }  // namespace ntp_home
