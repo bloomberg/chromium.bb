@@ -80,6 +80,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
   if (frame_dispatcher_) {
     frame_dispatcher_->Reshape(size_.Width(), size_.Height());
   }
+  current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
 }
 
 void OffscreenCanvas::SetNeutered() {
