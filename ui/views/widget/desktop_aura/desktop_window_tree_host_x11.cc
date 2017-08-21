@@ -1323,6 +1323,8 @@ void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
   }
 }
 
+void DesktopWindowTreeHostX11::OnMaximizedStateChanged() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
@@ -1565,10 +1567,14 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list);
 
   bool was_minimized = IsMinimized();
+  bool was_maximized = IsMaximized();
 
   window_properties_.clear();
   std::copy(atom_list.begin(), atom_list.end(),
             inserter(window_properties_, window_properties_.begin()));
+
+  bool is_minimized = IsMinimized();
+  bool is_maximized = IsMaximized();
 
   // Propagate the window minimization information to the content window, so
   // the render side can update its visibility properly. OnWMStateUpdated() is
@@ -1582,7 +1588,6 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // don't draw any 'blank' frames that could be noticed in applications such as
   // window manager previews, which show content even when a window is
   // minimized.
-  bool is_minimized = IsMinimized();
   if (is_minimized != was_minimized) {
     if (is_minimized) {
       compositor()->SetVisible(false);
@@ -1615,6 +1620,9 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // do preprocessing before the x window's fullscreen state is toggled.
 
   is_always_on_top_ = HasWMSpecProperty("_NET_WM_STATE_ABOVE");
+
+  if (was_maximized != is_maximized)
+    OnMaximizedStateChanged();
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is

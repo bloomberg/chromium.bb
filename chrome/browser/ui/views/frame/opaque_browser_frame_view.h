@@ -16,12 +16,17 @@
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
 class OpaqueBrowserFrameViewLayout;
 class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
+
+namespace chrome {
+enum class FrameButtonDisplayType;
+}
 
 namespace views {
 class ImageButton;
@@ -40,6 +45,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   ~OpaqueBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
+  void OnBrowserViewInitViewsComplete() override;
+  void OnMaximizedStateChanged() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
@@ -60,6 +67,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -89,6 +97,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripPreferredSize() const override;
+  bool ShouldRenderNativeNavButtons() const override;
+  int GetTopAreaHeight() const override;
+  const views::NavButtonProvider* GetNavButtonProvider() const override;
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }
@@ -133,9 +144,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Returns true if the view should draw its own custom title bar.
   bool ShouldShowWindowTitleBar() const;
 
-  // Computes the height of the top area of the frame.
-  int GetTopAreaHeight() const;
-
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.
@@ -149,6 +157,15 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                            bool draw_bottom,
                            SkColor color,
                            gfx::Canvas* canvas) const;
+
+  // Returns one of |{minimize,maximize,restore,close}_button_|
+  // corresponding to |type|.
+  views::ImageButton* GetButtonFromDisplayType(
+      chrome::FrameButtonDisplayType type);
+
+  // If native window frame buttons are enabled, redraws the image resources
+  // associated with |{minimize,maximize,restore,close}_button_|.
+  void MaybeRedrawFrameButtons();
 
   // Our layout manager also calculates various bounds.
   OpaqueBrowserFrameViewLayout* layout_;
@@ -171,6 +188,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Observer that handles platform dependent configuration.
   std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific> platform_observer_;
+
+  std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

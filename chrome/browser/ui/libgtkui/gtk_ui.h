@@ -65,7 +65,7 @@ class GtkUi : public views::LinuxUI {
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) const override;
 
-  // ui::LinuxUI:
+  // views::LinuxUI:
   void Initialize() override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color) const override;
@@ -99,18 +99,17 @@ class GtkUi : public views::LinuxUI {
   bool UnityIsRunning() override;
   NonClientMiddleClickAction GetNonClientMiddleClickAction() override;
   void NotifyWindowManagerStartupComplete() override;
+  void UpdateDeviceScaleFactor() override;
+  float GetDeviceScaleFactor() const override;
   void AddDeviceScaleFactorObserver(
       views::DeviceScaleFactorObserver* observer) override;
   void RemoveDeviceScaleFactorObserver(
       views::DeviceScaleFactorObserver* observer) override;
+  std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
-
-  // ui::Views::LinuxUI:
-  void UpdateDeviceScaleFactor() override;
-  float GetDeviceScaleFactor() const override;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

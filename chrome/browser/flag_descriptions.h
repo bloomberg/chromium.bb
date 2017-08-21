@@ -869,6 +869,9 @@ extern const char kWebvrDescription[];
 extern const char kWifiCredentialSyncName[];
 extern const char kWifiCredentialSyncDescription[];
 
+extern const char kWindowNavNativeFlagName[];
+extern const char kWindowNavNativeFlagDescription[];
+
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 

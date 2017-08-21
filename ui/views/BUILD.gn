@@ -229,6 +229,7 @@ component("views") {
     "window/frame_background.h",
     "window/frame_buttons.h",
     "window/native_frame_view.h",
+    "window/nav_button_provider.h",
     "window/non_client_view.h",
     "window/window_button_order_provider.h",
     "window/window_resources.h",
