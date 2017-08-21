@@ -164,6 +164,22 @@ TEST_P(CSSParserTokenStreamTest, MakeSubRangeFromMultipleIterators) {
   EXPECT_TRUE(range4.AtEnd());
 }
 
+TEST_P(CSSParserTokenStreamTest, ConsumeWhitespace) {
+  CSSTokenizer tokenizer(" \t\n");  // kWhitespace
+  auto stream = GetStream(tokenizer, GetParam());
+
+  EXPECT_EQ(kWhitespaceToken, stream.Consume().GetType());
+  EXPECT_TRUE(stream.AtEnd());
+}
+
+TEST_P(CSSParserTokenStreamTest, ConsumeIncludingWhitespace) {
+  CSSTokenizer tokenizer("A \t\n");  // kIdent kWhitespace
+  auto stream = GetStream(tokenizer, GetParam());
+
+  EXPECT_EQ(kIdentToken, stream.ConsumeIncludingWhitespace().GetType());
+  EXPECT_TRUE(stream.AtEnd());
+}
+
 INSTANTIATE_TEST_CASE_P(ShouldTokenizeToEnd,
                         CSSParserTokenStreamTest,
                         ::testing::Bool());

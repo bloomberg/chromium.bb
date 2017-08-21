@@ -459,6 +459,71 @@ bool CSSParserImpl::ConsumeRuleList(CSSParserTokenRange range,
   return first_rule_valid;
 }
 
+StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
+                                            AllowedRulesType allowed_rules) {
+  DCHECK_EQ(stream.Peek().GetType(), kAtKeywordToken);
+  const StringView name = stream.ConsumeIncludingWhitespace().Value();
+  const CSSAtRuleID id = CssAtRuleID(name);
+
+  const auto prelude_start = stream.Position();
+  while (!stream.AtEnd() &&
+         stream.UncheckedPeek().GetType() != kLeftBraceToken &&
+         stream.UncheckedPeek().GetType() != kSemicolonToken)
+    stream.UncheckedConsumeComponentValue();
+
+  CSSParserTokenRange prelude =
+      stream.MakeSubRange(prelude_start, stream.Position());
+  if (id != kCSSAtRuleInvalid && context_->IsUseCounterRecordingEnabled())
+    CountAtRule(context_, id);
+
+  if (stream.AtEnd() || stream.Peek().GetType() == kSemicolonToken) {
+    stream.Consume();
+    if (allowed_rules == kAllowCharsetRules && id == kCSSAtRuleCharset)
+      return ConsumeCharsetRule(prelude);
+    if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport)
+      return ConsumeImportRule(prelude);
+    if (allowed_rules <= kAllowNamespaceRules && id == kCSSAtRuleNamespace)
+      return ConsumeNamespaceRule(prelude);
+    if (allowed_rules == kApplyRules && id == kCSSAtRuleApply) {
+      ConsumeApplyRule(prelude);
+      return nullptr;  // ConsumeApplyRule just updates parsed_properties_
+    }
+    return nullptr;  // Parse error, unrecognised at-rule without block
+  }
+
+  // TODO(shend): Use streams instead of ranges
+  CSSParserTokenRange range = stream.MakeRangeToEOF();
+  CSSParserTokenRange block = range.ConsumeBlock();
+  stream.UpdatePositionFromRange(range);
+
+  if (allowed_rules == kKeyframeRules)
+    return nullptr;  // Parse error, no at-rules supported inside @keyframes
+  if (allowed_rules == kNoRules || allowed_rules == kApplyRules)
+    return nullptr;  // Parse error, no at-rules with blocks supported inside
+                     // declaration lists
+
+  DCHECK_LE(allowed_rules, kRegularRules);
+
+  switch (id) {
+    case kCSSAtRuleMedia:
+      return ConsumeMediaRule(prelude, block);
+    case kCSSAtRuleSupports:
+      return ConsumeSupportsRule(prelude, block);
+    case kCSSAtRuleViewport:
+      return ConsumeViewportRule(prelude, block);
+    case kCSSAtRuleFontFace:
+      return ConsumeFontFaceRule(prelude, block);
+    case kCSSAtRuleWebkitKeyframes:
+      return ConsumeKeyframesRule(true, prelude, block);
+    case kCSSAtRuleKeyframes:
+      return ConsumeKeyframesRule(false, prelude, block);
+    case kCSSAtRulePage:
+      return ConsumePageRule(prelude, block);
+    default:
+      return nullptr;  // Parse error, unrecognised at-rule with block
+  }
+}
+
 StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenRange& range,
                                             AllowedRulesType allowed_rules) {
   DCHECK_EQ(range.Peek().GetType(), kAtKeywordToken);
@@ -889,10 +954,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
                 ? kApplyRules
                 : kNoRules;
 
-        // TODO(shend): Use streams instead of ranges
-        auto range = stream.MakeRangeToEOF();
-        StyleRuleBase* rule = ConsumeAtRule(range, allowed_rules);
-        stream.UpdatePositionFromRange(range);
+        StyleRuleBase* rule = ConsumeAtRule(stream, allowed_rules);
         DCHECK(!rule);
         break;
       }
