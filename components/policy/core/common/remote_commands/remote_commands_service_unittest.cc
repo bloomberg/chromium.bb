@@ -172,84 +172,14 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   DISALLOW_COPY_AND_ASSIGN(TestingCloudPolicyClientForRemoteCommands);
 };
 
-// A scoped TestMockTimeTaskRunner capable to run tasks until Quit() is called.
-class ScopedMockTimeTaskRunner : public base::TestMockTimeTaskRunner {
- public:
-  class ScopedRunner {
-   public:
-    explicit ScopedRunner(
-        const scoped_refptr<ScopedMockTimeTaskRunner>& task_runner)
-        : task_runner_(task_runner) {
-      DCHECK(!task_runner_->attached_runner_);
-      task_runner_->attached_runner_ = this;
-    }
-
-    virtual ~ScopedRunner() {
-      DCHECK_EQ(this, task_runner_->attached_runner_);
-      DCHECK(run_called_);
-      DCHECK(quit_called_);
-
-      task_runner_->attached_runner_ = nullptr;
-    }
-
-    void Run() {
-      DCHECK(!run_called_);
-      run_called_ = true;
-
-      // It's okay to call Quit() before calling Run().
-      if (quit_called_)
-        return;
-      task_runner_->FastForwardUntilNoTasksRemain();
-    }
-
-    void Quit() {
-      DCHECK(!quit_called_);
-      quit_called_ = true;
-    }
-
-    base::Closure QuitClosure() {
-      // It's safe to use Unretained here since Quit() is required to be
-      // called before dtor is called.
-      return base::Bind(&ScopedRunner::Quit, base::Unretained(this));
-    }
-
-   private:
-    friend class ScopedMockTimeTaskRunner;
-
-    bool run_called_ = false;
-    bool quit_called_ = false;
-
-    scoped_refptr<ScopedMockTimeTaskRunner> task_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedRunner);
-  };
-
-  ScopedMockTimeTaskRunner() {}
-
- private:
-  ~ScopedMockTimeTaskRunner() override { DCHECK(!attached_runner_); }
-
-  bool IsElapsingStopped() override {
-    return attached_runner_ && attached_runner_->quit_called_;
-  }
-
-  // Points to the current attached ScopedRunner, and is null if no runner is
-  // attached.
-  ScopedRunner* attached_runner_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMockTimeTaskRunner);
-};
-
 // Base class for unit tests regarding remote commands service.
 class RemoteCommandsServiceTest : public testing::Test {
  protected:
-  RemoteCommandsServiceTest()
-      : task_runner_(new ScopedMockTimeTaskRunner()),
-        runner_handle_(task_runner_) {}
+  RemoteCommandsServiceTest() = default;
 
   void SetUp() override {
     server_.reset(new TestingRemoteCommandsServer());
-    server_->SetClock(task_runner_->GetMockTickClock());
+    server_->SetClock(mock_task_runner_->GetMockTickClock());
     cloud_policy_client_.reset(
         new TestingCloudPolicyClientForRemoteCommands(server_.get()));
   }
@@ -264,22 +194,20 @@ class RemoteCommandsServiceTest : public testing::Test {
     remote_commands_service_.reset(new RemoteCommandsService(
         std::move(factory), cloud_policy_client_.get()));
     remote_commands_service_->SetClockForTesting(
-        task_runner_->GetMockTickClock());
+        mock_task_runner_->GetMockTickClock());
   }
 
-  void FlushAllTasks() {
-    task_runner_->FastForwardUntilNoTasksRemain();
-  }
+  void FlushAllTasks() { mock_task_runner_->FastForwardUntilNoTasksRemain(); }
 
   std::unique_ptr<TestingRemoteCommandsServer> server_;
   std::unique_ptr<TestingCloudPolicyClientForRemoteCommands>
       cloud_policy_client_;
   std::unique_ptr<RemoteCommandsService> remote_commands_service_;
 
-  scoped_refptr<ScopedMockTimeTaskRunner> task_runner_;
-
  private:
-  base::ThreadTaskRunnerHandle runner_handle_;
+  const scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+          base::TestMockTimeTaskRunner::Type::kBoundToThread);
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandsServiceTest);
 };
@@ -306,7 +234,7 @@ TEST_F(RemoteCommandsServiceTest, ExistingCommand) {
   EXPECT_CALL(*factory, BuildTestCommand()).Times(1);
 
   {
-    ScopedMockTimeTaskRunner::ScopedRunner scoped_runner(task_runner_);
+    base::RunLoop run_loop;
 
     // Issue a command before service started.
     server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST,
@@ -314,12 +242,11 @@ TEST_F(RemoteCommandsServiceTest, ExistingCommand) {
                           base::Bind(&ExpectSucceededJob, kTestPayload), false);
 
     // Start the service, run until the command is fetched.
-    cloud_policy_client_->ExpectFetchCommands(0u, 1u,
-                                              scoped_runner.QuitClosure());
+    cloud_policy_client_->ExpectFetchCommands(0u, 1u, run_loop.QuitClosure());
     StartService(std::move(factory));
     EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
 
-    scoped_runner.Run();
+    run_loop.Run();
   }
 
   // And run again so that the result can be reported.
@@ -364,15 +291,14 @@ TEST_F(RemoteCommandsServiceTest, NewCommandFollwingFetch) {
   StartService(std::move(factory));
 
   {
-    ScopedMockTimeTaskRunner::ScopedRunner scoped_runner(task_runner_);
+    base::RunLoop run_loop;
 
     // Add a command which will be issued after first fetch.
     server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST,
                           kTestPayload,
                           base::Bind(&ExpectSucceededJob, kTestPayload), true);
 
-    cloud_policy_client_->ExpectFetchCommands(0u, 0u,
-                                              scoped_runner.QuitClosure());
+    cloud_policy_client_->ExpectFetchCommands(0u, 0u, run_loop.QuitClosure());
 
     // Attempts to fetch commands.
     EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
@@ -387,7 +313,7 @@ TEST_F(RemoteCommandsServiceTest, NewCommandFollwingFetch) {
     EXPECT_FALSE(remote_commands_service_->FetchRemoteCommands());
 
     // Run until first fetch request is completed.
-    scoped_runner.Run();
+    run_loop.Run();
   }
 
   // The command should be issued now. Note that this command was actually
