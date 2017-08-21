@@ -516,7 +516,7 @@ void EasyUnlockService::HandleAuthFailure(const AccountId& account_id) {
 void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
 #if defined(OS_CHROMEOS)
   const AccountId& account_id = GetAccountId();
-  if (!account_id.is_valid())
+  if (!account_id.is_valid() || !IsChromeOSLoginEnabled())
     return;
 
   const base::ListValue* device_list = GetRemoteDevices();
