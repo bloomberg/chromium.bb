@@ -301,11 +301,4 @@ base::string16 Accelerator::GetShortcutText() const {
   return shortcut;
 }
 
-// static
-constexpr int AcceleratorTarget::kUnknownAcceleratorId;
-
-int AcceleratorTarget::GetAcceleratorId(const Accelerator& accelerator) const {
-  return kUnknownAcceleratorId;
-}
-
 }  // namespace ui

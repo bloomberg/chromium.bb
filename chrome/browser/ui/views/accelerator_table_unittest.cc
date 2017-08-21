@@ -67,6 +67,29 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         ash_entry.action == ash::TOUCH_HUD_PROJECTION_TOGGLE ||
         ash_entry.action == ash::OPEN_GET_HELP)
       continue;
+
+    // The following actions are duplicated in both ash and browser accelerator
+    // list to ensure BrowserView can retrieve browser command id from the
+    // accelerator without needing to know ash.
+    // See http://crbug.com/737307 for details.
+    if (ash_entry.action == ash::NEW_WINDOW ||
+        ash_entry.action == ash::NEW_INCOGNITO_WINDOW ||
+#if defined(GOOGLE_CHROME_BUILD)
+        ash_entry.action == ash::OPEN_FEEDBACK_PAGE ||
+#endif
+        ash_entry.action == ash::RESTORE_TAB ||
+        ash_entry.action == ash::NEW_TAB) {
+      AcceleratorMapping entry;
+      entry.keycode = ash_entry.keycode;
+      entry.modifiers = ash_entry.modifiers;
+      entry.command_id = 0;  // dummy
+      // These accelerators should use the same shortcuts in browser accelerator
+      // table and ash accelerator table.
+      EXPECT_FALSE(accelerators.insert(entry).second)
+          << "Action " << ash_entry.action;
+      continue;
+    }
+
     AcceleratorMapping entry;
     entry.keycode = ash_entry.keycode;
     entry.modifiers = ash_entry.modifiers;
@@ -75,7 +98,8 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
         << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
-        << (entry.modifiers & ui::EF_ALT_DOWN);
+        << (entry.modifiers & ui::EF_ALT_DOWN) << ", action "
+        << (ash_entry.action);
   }
 }
 #endif  // USE_ASH

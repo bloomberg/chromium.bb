@@ -77,11 +77,6 @@ class UI_BASE_EXPORT AcceleratorManager {
   // Returns true if an accelerator was activated.
   bool Process(const Accelerator& accelerator);
 
-  // Finds the target associated with the specified |accelerator| and returns
-  // its accelerator id. Returns |kUnknownAcceleratorId| if no target can handle
-  // the |accelerator|.
-  int GetAcceleratorId(const Accelerator& accelerator) const;
-
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;
 

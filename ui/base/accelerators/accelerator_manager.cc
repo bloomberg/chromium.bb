@@ -106,25 +106,6 @@ bool AcceleratorManager::Process(const Accelerator& accelerator) {
   return false;
 }
 
-int AcceleratorManager::GetAcceleratorId(const Accelerator& accelerator) const {
-  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end())
-    return AcceleratorTarget::kUnknownAcceleratorId;
-
-  const AcceleratorTargetList& targets = map_iter->second.second;
-  for (AcceleratorTargetList::const_iterator iter = targets.begin();
-       iter != targets.end();
-       iter++) {
-    if ((*iter)->CanHandleAccelerators()) {
-      const int accelerator_id = (*iter)->GetAcceleratorId(accelerator);
-      if (accelerator_id != AcceleratorTarget::kUnknownAcceleratorId)
-        return accelerator_id;
-    }
-  }
-
-  return AcceleratorTarget::kUnknownAcceleratorId;
-}
-
 bool AcceleratorManager::HasPriorityHandler(
     const Accelerator& accelerator) const {
   AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);

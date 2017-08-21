@@ -442,7 +442,6 @@ class BrowserView : public BrowserWindow,
 
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  int GetAcceleratorId(const ui::Accelerator& accelerator) const override;
 
   // OmniboxPopupModelObserver overrides
   void OnOmniboxPopupShownOrHidden() override;
@@ -593,6 +592,12 @@ class BrowserView : public BrowserWindow,
 
   // Returns the max top arrow height for infobar.
   int GetMaxTopInfoBarArrowHeight();
+
+  // Retrieves the chrome command id associated with |accelerator|. The function
+  // returns false if |accelerator| is unknown. Otherwise |command_id| will be
+  // set to the chrome command id defined in //chrome/app/chrome_command_ids.h.
+  bool FindCommandIdForAccelerator(const ui::Accelerator& accelerator,
+                                   int* command_id) const;
 
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
