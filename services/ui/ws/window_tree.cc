@@ -59,6 +59,15 @@ FrameGenerator* GetFrameGenerator(WindowManagerDisplayRoot* display_root) {
              : nullptr;
 }
 
+display::ViewportMetrics TransportMetricsToDisplayMetrics(
+    const ui::mojom::WmViewportMetrics& transport_metrics) {
+  display::ViewportMetrics viewport_metrics;
+  viewport_metrics.bounds_in_pixels = transport_metrics.bounds_in_pixels;
+  viewport_metrics.device_scale_factor = transport_metrics.device_scale_factor;
+  viewport_metrics.ui_scale_factor = transport_metrics.ui_scale_factor;
+  return viewport_metrics;
+}
+
 }  // namespace
 
 class TargetedEvent : public ServerWindowObserver {
@@ -293,7 +302,7 @@ void WindowTree::OnWmMoveDragImageAck() {
 
 ServerWindow* WindowTree::ProcessSetDisplayRoot(
     const display::Display& display_to_create,
-    const mojom::WmViewportMetrics& transport_viewport_metrics,
+    const display::ViewportMetrics& viewport_metrics,
     bool is_primary_display,
     const ClientWindowId& client_window_id) {
   DCHECK(window_manager_state_);  // Only called for window manager.
@@ -325,12 +334,6 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
     return nullptr;
   }
 
-  display::ViewportMetrics viewport_metrics;
-  viewport_metrics.bounds_in_pixels =
-      transport_viewport_metrics.bounds_in_pixels;
-  viewport_metrics.device_scale_factor =
-      transport_viewport_metrics.device_scale_factor;
-  viewport_metrics.ui_scale_factor = transport_viewport_metrics.ui_scale_factor;
   Display* display = display_manager()->AddDisplayForWindowManager(
       is_primary_display, display_to_create, viewport_metrics);
   DCHECK(display);
@@ -1423,7 +1426,8 @@ uint32_t WindowTree::GenerateEventAckId() {
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
                                         const ui::Event& event,
                                         DispatchEventCallback callback) {
-  DVLOG(3) << "DispatchInputEventImpl client=" << id_;
+  // DispatchInputEventImpl() is called so often that log level 4 is used.
+  DVLOG(4) << "DispatchInputEventImpl client=" << id_;
   GenerateEventAckId();
   event_ack_callback_ = std::move(callback);
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(target);
@@ -1657,10 +1661,10 @@ void WindowTree::SetWindowBounds(
     return;
   }
 
-  DVLOG(3) << "set window bounds client window_id=" << window_id
-           << " global window_id="
-           << (window ? WindowIdToTransportId(window->id()) : 0)
-           << " bounds=" << bounds.ToString();
+  DVLOG(3) << "SetWindowBounds window_id=" << window_id << " global window_id="
+           << (window ? window->id().ToString() : std::string())
+           << " bounds=" << bounds.ToString() << " local_surface_id="
+           << (local_surface_id ? local_surface_id->ToString() : "null");
 
   if (!window) {
     DVLOG(1) << "SetWindowBounds failed (invalid window id)";
@@ -1686,7 +1690,7 @@ void WindowTree::SetWindowTransform(uint32_t change_id,
   // we don't bother routing it to the window-manager.
 
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  DVLOG(3) << "set window transform client window_id=" << window_id
+  DVLOG(3) << "SetWindowTransform client window_id=" << window_id
            << " global window_id="
            << (window ? WindowIdToTransportId(window->id()) : 0)
            << " transform=" << transform.ToString();
@@ -1799,7 +1803,8 @@ void WindowTree::SetImeVisibility(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
-  DVLOG(3) << "OnWindowInputEventAck client=" << id_;
+  // DispatchInputEventImpl() is called so often that log level 4 is used.
+  DVLOG(4) << "OnWindowInputEventAck client=" << id_;
   if (event_ack_id_ == 0 || event_id != event_ack_id_ || !event_ack_callback_) {
     // TODO(sad): Something bad happened. Kill the client?
     NOTIMPLEMENTED() << ": Wrong event acked. event_id=" << event_id
@@ -2374,9 +2379,9 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
                                 bool is_primary_display,
                                 Id window_id,
                                 const SetDisplayRootCallback& callback) {
-  ServerWindow* display_root =
-      ProcessSetDisplayRoot(display, *viewport_metrics, is_primary_display,
-                            ClientWindowId(window_id));
+  ServerWindow* display_root = ProcessSetDisplayRoot(
+      display, TransportMetricsToDisplayMetrics(*viewport_metrics),
+      is_primary_display, ClientWindowId(window_id));
   if (!display_root) {
     callback.Run(base::nullopt);
     return;
@@ -2387,13 +2392,15 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
 
 void WindowTree::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
-    std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+    std::vector<ui::mojom::WmViewportMetricsPtr> transport_metrics,
     int64_t primary_display_id,
     int64_t internal_display_id,
     const SetDisplayConfigurationCallback& callback) {
+  std::vector<display::ViewportMetrics> metrics;
+  for (auto& transport_ptr : transport_metrics)
+    metrics.push_back(TransportMetricsToDisplayMetrics(*transport_ptr));
   callback.Run(display_manager()->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), primary_display_id,
-      internal_display_id));
+      displays, metrics, primary_display_id, internal_display_id));
 }
 
 void WindowTree::SwapDisplayRoots(int64_t display_id1,

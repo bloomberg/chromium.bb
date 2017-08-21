@@ -72,10 +72,6 @@
 namespace aura {
 namespace {
 
-// This serves to document the places that rely on bounds changes to the
-// root window being ignored.
-constexpr bool kRootWindowBoundsChangesAreIgnored = true;
-
 Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
 }
@@ -626,6 +622,8 @@ void WindowTreeClient::OnSetDisplayRootDone(
   if (!window)
     return;  // Display was already deleted.
 
+  // TODO(sky): figure out why this has to be here rather than in
+  // WindowTreeHostMus's constructor.
   ui::Compositor* compositor = window->GetWindow()->GetHost()->compositor();
   compositor->SetLocalSurfaceId(*local_surface_id);
 }
@@ -776,7 +774,6 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
     // bounds changes are routed through OnWindowTreeHostBoundsWillChange()).
     // But the display is created with an initial bounds, and we need to push
     // that to the server.
-    DCHECK(kRootWindowBoundsChangesAreIgnored);
     ScheduleInFlightBoundsChange(
         window, gfx::Rect(),
         gfx::Rect(
@@ -837,7 +834,21 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   // OnWindowTreeHostBoundsWillChange(). Any bounds that happen here are a side
   // effect of those and can be ignored.
   if (IsRoot(window)) {
-    DCHECK(kRootWindowBoundsChangesAreIgnored);
+    // NOTE: this has to happen to here as during the call to
+    // OnWindowTreeHostBoundsWillChange() the compositor hasn't been updated
+    // yet.
+    if (window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED) {
+      WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
+      // |window_tree_host| may be null if this is called during creation of
+      // the window associated with the WindowTreeHostMus.
+      if (window_tree_host) {
+        viz::LocalSurfaceId local_surface_id =
+            window->GetOrAllocateLocalSurfaceId(
+                window_tree_host->GetBoundsInPixels().size());
+        DCHECK(local_surface_id.is_valid());
+        window_tree_host->compositor()->SetLocalSurfaceId(local_surface_id);
+      }
+    }
     return;
   }
 
