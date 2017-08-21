@@ -42,7 +42,15 @@ const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 GURL HTMLToDataURI(const std::string& html) {
   // GURL requires data URLs to be UTF-8 and will fail below if it's not.
   CHECK(base::IsStringUTF8(html)) << "Input file is not UTF-8.";
-  return GURL(std::string("data:text/html;charset=utf-8,") + html);
+
+  // Strip `\n`, `\t`, `\r` from |html| to match old `data:` URL behavior.
+  std::string stripped_html;
+  for (const auto& character : html) {
+    if (character == '\n' || character == '\t' || character == '\r')
+      continue;
+    stripped_html.push_back(character);
+  }
+  return GURL(std::string("data:text/html;charset=utf-8,") + stripped_html);
 }
 
 const base::FilePath& GetTestDataDir() {
