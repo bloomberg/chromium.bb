@@ -44,7 +44,7 @@ PlatformDisplayDefault::PlatformDisplayDefault(
       widget_(gfx::kNullAcceleratedWidget) {}
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
       GetAcceleratedWidget());
 #endif
@@ -206,7 +206,7 @@ gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {
 void PlatformDisplayDefault::SetCursorConfig(
     display::Display::Rotation rotation,
     float scale) {
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   ui::CursorController::GetInstance()->SetCursorConfigForWindow(
       GetAcceleratedWidget(), rotation, scale);
 #endif

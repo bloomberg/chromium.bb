@@ -67,7 +67,7 @@ service_test("services_unittests") {
     deps += [ "//services/video_capture:tests" ]
   }
 
-  if (use_ozone && is_chromeos) {
+  if (is_chromeos) {
     deps += [ "//services/ui/display:tests" ]
   }
 

@@ -53,7 +53,7 @@ source_set("display") {
   }
 }
 
-if (use_ozone && is_chromeos) {
+if (is_chromeos) {
   source_set("tests") {
     testonly = true
 

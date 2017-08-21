@@ -61,7 +61,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
 #include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #endif
 
@@ -389,7 +389,7 @@ void Service::OnWillCreateTreeForWindowManager(
   window_server_->SetDisplayCreationConfig(config);
   if (window_server_->display_creation_config() ==
       ws::DisplayCreationConfig::MANUAL) {
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
     display::ScreenManagerForwarding::Mode mode =
         is_in_process() ? display::ScreenManagerForwarding::Mode::IN_WM_PROCESS
                         : display::ScreenManagerForwarding::Mode::OWN_PROCESS;

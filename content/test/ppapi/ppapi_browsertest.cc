@@ -36,8 +36,8 @@ namespace {
     RunTest(STRIP_PREFIXES(test_name)); \
   }
 
-// Doesn't work in GN CrOS ozone builds yet, http://crbug.com/619765
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+// Doesn't work in CrOS builds, http://crbug.com/619765
+#if defined(OS_CHROMEOS)
 #define MAYBE_BrowserFont DISABLED_BrowserFont
 #else
 #define MAYBE_BrowserFont BrowserFont
