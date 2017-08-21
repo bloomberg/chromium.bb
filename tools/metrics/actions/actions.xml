@@ -18031,6 +18031,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="WebappMenuOpenInChrome">
+  <owner>piotrs@chromium.org</owner>
+  <description>
+    Tracks when Open in Chrome menu option is clicked in WebApps.
+  </description>
+</action>
+
 <action name="WebsiteSettings_CookiesDialogOpened">
   <obsolete>
     Superseded by the WebsiteSettings.Action histogram on 2014-10-30.
