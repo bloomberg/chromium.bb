@@ -337,13 +337,6 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is shown, and that the completion block is called.
 - (void)testShowJavaScriptAlert {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // Load the blank test page and show an alert.
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::ALERT);
@@ -357,13 +350,6 @@ void TapSuppressDialogsButton() {
 // Tests that a confirmation dialog is shown, and that the completion block is
 // called with the correct value when the OK buton is tapped.
 - (void)testShowJavaScriptConfirmationOK {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // Load the blank test page and show a confirmation dialog.
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION);
@@ -377,13 +363,6 @@ void TapSuppressDialogsButton() {
 // Tests that a confirmation dialog is shown, and that the completion block is
 // called with the correct value when the Cancel buton is tapped.
 - (void)testShowJavaScriptConfirmationCancelled {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // Load the blank test page and show a confirmation dialog.
   [self loadBlankTestPage];
   ShowJavaScriptDialog(JavaScriptAlertType::CONFIRMATION);
@@ -399,13 +378,6 @@ void TapSuppressDialogsButton() {
 // Tests that a prompt dialog is shown, and that the completion block is called
 // with the correct value when the OK buton is tapped.
 - (void)testShowJavaScriptPromptOK {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
   if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
@@ -428,13 +400,6 @@ void TapSuppressDialogsButton() {
 // Tests that a prompt dialog is shown, and that the completion block is called
 // with the correct value when the Cancel buton is tapped.
 - (void)testShowJavaScriptPromptCancelled {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
   // grey_typeText works on iOS 11.
   if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
@@ -486,13 +451,6 @@ void TapSuppressDialogsButton() {
 // Tests that if an alert should be called when settings are displays, the alert
 // waits for the dismiss of the settings.
 - (void)testShowJavaScriptBehindSettings {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // Load the blank test page.
   [self loadBlankTestPage];
 
@@ -524,13 +482,6 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after displaying the share menu.
 - (void)testShowJavaScriptAfterShareMenu {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
   // interact with the share menu.
   if (base::ios::IsRunningOnIOS11OrLater()) {
@@ -559,13 +510,6 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after a new tab animation is finished.
 - (void)testShowJavaScriptAfterNewTabAnimation {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
 

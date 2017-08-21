@@ -31,13 +31,6 @@ NSString* kTitle = @"Foo Title";
 
 // Tests that if the alert coordinator is destroyed, the alert is dismissed.
 - (void)testDismissOnDestroy {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
@@ -56,13 +49,6 @@ NSString* kTitle = @"Foo Title";
 }
 
 - (void)testNoInteractionActionAfterTap {
-// TODO(crbug.com/663026): Reenable the test for devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because existing system "
-                          @"alerts would prevent app alerts to present "
-                          @"correctly.");
-#endif
-
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
