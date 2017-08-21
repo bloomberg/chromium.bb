@@ -47,14 +47,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
     const autofill::AutofillProfile& billing_profile) {
   NSString* billing_address_label =
       GetBillingAddressLabelFromAutofillProfile(billing_profile);
-  NSString* notification_label = nil;
   return chrome_test_util::ButtonWithAccessibilityLabel([NSString
-      stringWithFormat:@"%@, %@, %@, %@",
+      stringWithFormat:@"%@, %@, %@",
                        base::SysUTF16ToNSString(
                            credit_card.NetworkAndLastFourDigits()),
                        base::SysUTF16ToNSString(credit_card.GetRawInfo(
                            autofill::CREDIT_CARD_NAME_FULL)),
-                       billing_address_label, notification_label]);
+                       billing_address_label]);
 }
 
 }  // namepsace
