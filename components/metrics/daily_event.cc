@@ -53,7 +53,7 @@ DailyEvent::~DailyEvent() {
 // static
 void DailyEvent::RegisterPref(PrefRegistrySimple* registry,
                               const char* pref_name) {
-  registry->RegisterInt64Pref(pref_name, base::Time().ToInternalValue());
+  registry->RegisterInt64Pref(pref_name, 0);
 }
 
 void DailyEvent::AddObserver(std::unique_ptr<DailyEvent::Observer> observer) {
@@ -66,8 +66,9 @@ void DailyEvent::CheckInterval() {
   base::Time now = base::Time::Now();
   if (last_fired_.is_null()) {
     // The first time we call CheckInterval, we read the time stored in prefs.
-    last_fired_ = base::Time::FromInternalValue(
-        pref_service_->GetInt64(pref_name_));
+    last_fired_ = base::Time() + base::TimeDelta::FromMicroseconds(
+                                     pref_service_->GetInt64(pref_name_));
+
     DVLOG(1) << "DailyEvent time loaded: " << last_fired_;
     if (last_fired_.is_null()) {
       DVLOG(1) << "DailyEvent first run.";
@@ -93,7 +94,8 @@ void DailyEvent::CheckInterval() {
 void DailyEvent::OnInterval(base::Time now) {
   DCHECK(!now.is_null());
   last_fired_ = now;
-  pref_service_->SetInt64(pref_name_, last_fired_.ToInternalValue());
+  pref_service_->SetInt64(pref_name_,
+                          last_fired_.since_origin().InMicroseconds());
 
   // Notify all observers
   for (auto it = observers_.begin(); it != observers_.end(); ++it) {
