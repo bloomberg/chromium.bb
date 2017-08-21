@@ -33,6 +33,7 @@
 namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 const CGFloat kMaxCardWidth = 416;
+const CGFloat kStandardSpacing = 8;
 
 // Returns whether the cells should be displayed using the full width.
 BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
@@ -306,6 +307,48 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         collectionView.frame.size.width);
     parentInset.left = margin;
     parentInset.right = margin;
+    if ([self.collectionUpdater isMostVisitedSection:section]) {
+      // Make sure the Content Suggestions is displayed at a reasonnable
+      // distance from the Most Visited tiles.
+      CGFloat maximumMargin = IsIPadIdiom()
+                                  ? ntp_home::kMostVisitedBottomMarginIPad
+                                  : ntp_home::kMostVisitedBottomMarginIPhone;
+
+      NSInteger promoSection = -1;
+      for (NSInteger i = 0; i < [self.collectionViewModel numberOfSections];
+           i++) {
+        if ([self.collectionUpdater isPromoSection:i]) {
+          promoSection = i;
+        }
+      }
+
+      // Height for the displayed content.
+      CGFloat contentHeight =
+          [self collectionView:collectionView
+                                       layout:collectionViewLayout
+              referenceSizeForHeaderInSection:0]
+              .height;
+      contentHeight += kStandardSpacing;
+      if (promoSection >= 0) {
+        contentHeight += [self
+                   collectionView:collectionView
+            cellHeightAtIndexPath:[NSIndexPath indexPathForItem:0
+                                                      inSection:promoSection]];
+        contentHeight += kStandardSpacing;
+      }
+      contentHeight +=
+          2 * [ContentSuggestionsMostVisitedCell defaultSize].height;
+      contentHeight += content_suggestions::spacingBetweenTiles();
+
+      // The Content Suggestions should idealy be displayed such as only part of
+      // the first suggestion is displayed. The distance should be capped to not
+      // push the suggestions too far.
+      CGFloat collectionHeight = collectionView.bounds.size.height;
+      CGFloat idealMargin =
+          collectionHeight - contentHeight - ntp_home::kSuggestionPeekingHeight;
+      CGFloat margin = MIN(MAX(kStandardSpacing, idealMargin), maximumMargin);
+      parentInset.bottom = margin;
+    }
   } else if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
     CGFloat margin =
         MAX(0, (collectionView.frame.size.width - kMaxCardWidth) / 2);
