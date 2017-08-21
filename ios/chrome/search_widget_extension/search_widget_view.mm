@@ -182,7 +182,7 @@ const CGFloat kMaxContentSize = 421;
                  secondaryEffect:self.secondaryEffect
                            title:NSLocalizedString(@"IDS_IOS_SCAN_QR_CODE",
                                                    @"Scan QR Code")
-                       imageName:@"quick_action_camera_search"],
+                       imageName:@"quick_action_scan_qr_code"],
       ]];
 
   actionsContentStack.axis = UILayoutConstraintAxisHorizontal;

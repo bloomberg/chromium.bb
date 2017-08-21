@@ -31,11 +31,11 @@ imageset("quick_action_voice_search") {
   ]
 }
 
-imageset("quick_action_camera_search") {
+imageset("quick_action_scan_qr_code") {
   sources = [
-    "quick_action_camera_search.imageset/Contents.json",
-    "quick_action_camera_search.imageset/quick_action_camera_search.png",
-    "quick_action_camera_search.imageset/quick_action_camera_search@2x.png",
-    "quick_action_camera_search.imageset/quick_action_camera_search@3x.png",
+    "quick_action_scan_qr_code.imageset/Contents.json",
+    "quick_action_scan_qr_code.imageset/quick_action_scan_qr_code.png",
+    "quick_action_scan_qr_code.imageset/quick_action_scan_qr_code@2x.png",
+    "quick_action_scan_qr_code.imageset/quick_action_scan_qr_code@3x.png",
   ]
 }
