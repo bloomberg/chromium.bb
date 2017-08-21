@@ -26,7 +26,6 @@ function runTest() {
   var attrib = null;
   if (gl)
     attrib = gl.getContextAttributes();
-  domAutomationController.setAutomationId(1);
   if (gl && attrib && attrib.antialias)
     domAutomationController.send("TRUE");
   else

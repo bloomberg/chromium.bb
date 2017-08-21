@@ -3,7 +3,6 @@
 
 <script>
   window.addEventListener('message', function(e) {
-    domAutomationController.setAutomationId(0);
     window.domAutomationController.send(e.data);
   });
 

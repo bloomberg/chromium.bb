@@ -19,7 +19,6 @@ function draw() {
   console.time("___RafWithNoDamage___");
   frameCount++;
   if (frameCount == totalRafs) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FINISHED");
   } else {
     window.requestAnimationFrame(draw);

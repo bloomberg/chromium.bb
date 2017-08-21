@@ -14,12 +14,10 @@ function focusPopup(url) {
 }
 
 window.addEventListener('focus', function() {
-  domAutomationController.setAutomationId(0);
   domAutomationController.send(window.name + '-got-focus');
 });
 
 window.addEventListener('blur', function() {
-  domAutomationController.setAutomationId(0);
   domAutomationController.send(window.name + '-lost-focus');
 });
 

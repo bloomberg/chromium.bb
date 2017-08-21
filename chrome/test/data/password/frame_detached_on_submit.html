@@ -10,7 +10,6 @@ function delayedUpload() {
 function receiveMessage(event) {
   var login_iframe = document.getElementById('login_iframe');
   login_iframe.parentNode.removeChild(login_iframe);
-  window.domAutomationController.setAutomationId(0);
   setTimeout(delayedUpload, 0);
 }
 

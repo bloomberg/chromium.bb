@@ -17,7 +17,6 @@ function popup() {
   gl.readPixels(50, 50, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, a);
   document.title = a[0] + ", " + a[1] + ", " + a[2];
 
-  window.domAutomationController.setAutomationId(1);
   if (a[0] == 255 && a[1] == 0 && a[2] == 0)
     window.domAutomationController.send("SUCCESS");
   else

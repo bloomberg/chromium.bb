@@ -141,7 +141,6 @@ function testMostVisitedContents() {
 
 function handlePostMessage(event) {
   if (event.data.cmd == 'loaded') {
-    domAutomationController.setAutomationId(0);
     domAutomationController.send('loaded');
   }
 }
