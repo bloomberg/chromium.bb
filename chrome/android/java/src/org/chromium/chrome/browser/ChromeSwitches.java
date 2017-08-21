@@ -191,6 +191,9 @@ public abstract class ChromeSwitches {
     /** Switch for enabling "button only" swipe logic for Chrome Home. */
     public static final String CHROME_HOME_SWIPE_LOGIC_BUTTON_ONLY = "button-only";
 
+    /** Switch for enabling the new Install UI for WebAPKs. */
+    public static final String ENABLE_WEBAPK_NEW_INSTALL_UI = "enable-webapk-new-install-ui";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
