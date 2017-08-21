@@ -1703,7 +1703,7 @@ TEST_F(WindowTreeManualDisplayTest, ClientCreatesDisplayRoot) {
   display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
   display1.set_id(101);
 
-  mojom::WmViewportMetrics metrics;
+  display::ViewportMetrics metrics;
   metrics.bounds_in_pixels = display1.bounds();
   metrics.device_scale_factor = 1.5;
   metrics.ui_scale_factor = 2.5;
@@ -1754,7 +1754,7 @@ TEST_F(WindowTreeManualDisplayTest, MoveDisplayRootToNewDisplay) {
   constexpr int64_t display1_id = 101;
   display1.set_id(display1_id);
 
-  mojom::WmViewportMetrics metrics;
+  display::ViewportMetrics metrics;
   metrics.bounds_in_pixels = display1.bounds();
   metrics.device_scale_factor = 1.5;
   metrics.ui_scale_factor = 2.5;
@@ -1851,7 +1851,7 @@ TEST_F(WindowTreeManualDisplayTest,
       MakeDisplay(0, 0, 1024, 768, kDisplay1ScaleFactor);
   const int64_t display_id1 = 101;
   display1.set_id(display_id1);
-  mojom::WmViewportMetrics metrics1;
+  display::ViewportMetrics metrics1;
   metrics1.bounds_in_pixels = display1.bounds();
   metrics1.device_scale_factor = kDisplay1ScaleFactor;
   metrics1.ui_scale_factor = 2.5;
@@ -1862,14 +1862,15 @@ TEST_F(WindowTreeManualDisplayTest,
   RunUntilIdle();
   EXPECT_TRUE(display_manager_observer.GetAndClearObserverCalls().empty());
 
-  // Configure the displays.
+  // Configure the displays, updating the bounds of the first display.
   std::vector<display::Display> displays;
   displays.push_back(display1);
-  std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics;
-  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
+  std::vector<display::ViewportMetrics> viewport_metrics;
+  viewport_metrics.push_back(metrics1);
+  const gfx::Rect updated_bounds(1, 2, 3, 4);
+  viewport_metrics[0].bounds_in_pixels = updated_bounds;
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id1,
-      display::kInvalidDisplayId));
+      displays, viewport_metrics, display_id1, display::kInvalidDisplayId));
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display::kInvalidDisplayId),
@@ -1880,6 +1881,9 @@ TEST_F(WindowTreeManualDisplayTest,
   EXPECT_EQ(
       kDisplay1ScaleFactor * ui::mojom::kCursorMultiplierForExternalDisplays,
       static_cast<TestPlatformDisplay*>(platform_display1)->cursor_scale());
+  EXPECT_EQ(updated_bounds, static_cast<TestPlatformDisplay*>(platform_display1)
+                                ->metrics()
+                                .bounds_in_pixels);
 
   // Create a window for the windowmanager and set it as the root.
   ClientWindowId display_root_id2 =
@@ -1898,7 +1902,7 @@ TEST_F(WindowTreeManualDisplayTest,
       MakeDisplay(0, 0, 1024, 768, kDisplay2ScaleFactor);
   const int64_t display_id2 = 102;
   display2.set_id(display_id2);
-  mojom::WmViewportMetrics metrics2;
+  display::ViewportMetrics metrics2;
   metrics2.bounds_in_pixels = display2.bounds();
   metrics2.device_scale_factor = kDisplay2ScaleFactor;
   metrics2.ui_scale_factor = 2.5;
@@ -1918,10 +1922,11 @@ TEST_F(WindowTreeManualDisplayTest,
   metrics2.bounds_in_pixels = display2.bounds();
   displays.push_back(display2);
 
-  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
-  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics2));
+  viewport_metrics.clear();
+  viewport_metrics.push_back(metrics1);
+  viewport_metrics.push_back(metrics2);
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id2, display_id2));
+      displays, viewport_metrics, display_id2, display_id2));
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display_id2) + " " + std::to_string(display_id2),
@@ -1946,9 +1951,10 @@ TEST_F(WindowTreeManualDisplayTest,
   displays.clear();
   displays.push_back(display1);
 
-  viewport_metrics.push_back(ui::mojom::WmViewportMetrics::New(metrics1));
+  viewport_metrics.clear();
+  viewport_metrics.push_back(metrics1);
   ASSERT_TRUE(display_manager->SetDisplayConfiguration(
-      displays, std::move(viewport_metrics), display_id1, display_id1));
+      displays, viewport_metrics, display_id1, display_id1));
   RunUntilIdle();
   EXPECT_EQ("OnDisplaysChanged " + std::to_string(display_id1) + " " +
                 std::to_string(display_id1),
@@ -1998,7 +2004,7 @@ TEST_F(WindowTreeManualDisplayTest, SwapDisplayRoots) {
   const int64_t display_id1 = 101;
   display::Display display1 = MakeDisplay(0, 0, 1024, 768, 1.0f);
   display1.set_id(display_id1);
-  mojom::WmViewportMetrics metrics;
+  display::ViewportMetrics metrics;
   metrics.bounds_in_pixels = display1.bounds();
   metrics.device_scale_factor = 1.5;
   metrics.ui_scale_factor = 2.5;

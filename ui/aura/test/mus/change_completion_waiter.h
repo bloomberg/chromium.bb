@@ -24,8 +24,10 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
   ~ChangeCompletionWaiter() override;
 
   // Wait for the first change that occurred after construction of this object
-  // of |type| to complete. May return immediately if it's already done.
-  void Wait();
+  // of |type| to complete. May return immediately if it's already done. Returns
+  // true if a change was encountered whose success state matches that of
+  // the supplied success state, false otherwise.
+  bool Wait();
 
  private:
   // WindowTreeClientTestObserver:
@@ -48,6 +50,7 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
   aura::ChangeType type_;
   uint32_t change_id_;
   bool success_;
+  bool success_matched_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeCompletionWaiter);
 };

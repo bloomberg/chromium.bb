@@ -74,7 +74,7 @@ void DisplayManager::OnDisplayCreationConfigSet() {
 
 bool DisplayManager::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
-    std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+    const std::vector<display::ViewportMetrics>& viewport_metrics,
     int64_t primary_display_id,
     int64_t internal_display_id) {
   if (window_server_->display_creation_config() !=
@@ -131,7 +131,7 @@ bool DisplayManager::SetDisplayConfiguration(
     Display* ws_display = GetDisplayById(displays[i].id());
     DCHECK(ws_display);
     ws_display->SetDisplay(displays[i]);
-    ws_display->SetBoundsInPixels(viewport_metrics[i]->bounds_in_pixels);
+    ws_display->OnViewportMetricsChanged(viewport_metrics[i]);
     if (i != primary_display_index) {
       display_list.AddOrUpdateDisplay(displays[i],
                                       display::DisplayList::Type::NOT_PRIMARY);

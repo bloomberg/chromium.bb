@@ -17,6 +17,9 @@
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "ui/display/display.h"
 
+namespace display {
+struct ViewportMetrics;
+}
 namespace ui {
 class EventRewriter;
 namespace ws {
@@ -52,7 +55,7 @@ class DisplayManager : public UserIdTrackerObserver,
   // on success, false if the arguments aren't valid.
   bool SetDisplayConfiguration(
       const std::vector<display::Display>& displays,
-      std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+      const std::vector<display::ViewportMetrics>& viewport_metrics,
       int64_t primary_display_id,
       int64_t internal_display_id);
 

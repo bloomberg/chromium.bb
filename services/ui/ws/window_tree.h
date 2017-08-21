@@ -28,6 +28,9 @@
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_tree_binding.h"
 
+namespace display {
+struct ViewportMetrics;
+}
 namespace gfx {
 class Insets;
 class Rect;
@@ -409,7 +412,7 @@ class WindowTree : public mojom::WindowTree,
   // of the display if successful, otherwise null.
   ServerWindow* ProcessSetDisplayRoot(
       const display::Display& display_to_create,
-      const mojom::WmViewportMetrics& transport_viewport_metrics,
+      const display::ViewportMetrics& transport_viewport_metrics,
       bool is_primary_display,
       const ClientWindowId& client_window_id);
 
@@ -544,7 +547,7 @@ class WindowTree : public mojom::WindowTree,
                       const SetDisplayRootCallback& callback) override;
   void SetDisplayConfiguration(
       const std::vector<display::Display>& displays,
-      std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
+      std::vector<ui::mojom::WmViewportMetricsPtr> transport_metrics,
       int64_t primary_display_id,
       int64_t internal_display_id,
       const SetDisplayConfigurationCallback& callback) override;

@@ -26,11 +26,12 @@ ChangeCompletionWaiter::~ChangeCompletionWaiter() {
   client_->RemoveTestObserver(this);
 }
 
-void ChangeCompletionWaiter::Wait() {
+bool ChangeCompletionWaiter::Wait() {
   if (state_ != WaitState::RECEIVED) {
     quit_closure_ = run_loop_.QuitClosure();
     run_loop_.Run();
   }
+  return success_matched_;
 }
 
 void ChangeCompletionWaiter::OnChangeStarted(uint32_t change_id,
@@ -45,6 +46,7 @@ void ChangeCompletionWaiter::OnChangeCompleted(uint32_t change_id,
                                                aura::ChangeType type,
                                                bool success) {
   if (state_ == WaitState::WAITING && change_id_ == change_id) {
+    success_matched_ = success_ == success;
     EXPECT_EQ(success_, success);
     state_ = WaitState::RECEIVED;
     if (quit_closure_)

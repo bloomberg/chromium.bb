@@ -134,7 +134,7 @@ class WindowTreeTestApi {
   void StopPointerWatcher();
 
   bool ProcessSetDisplayRoot(const display::Display& display_to_create,
-                             const mojom::WmViewportMetrics& viewport_metrics,
+                             const display::ViewportMetrics& viewport_metrics,
                              bool is_primary_display,
                              const ClientWindowId& client_window_id) {
     return tree_->ProcessSetDisplayRoot(display_to_create, viewport_metrics,
@@ -750,6 +750,8 @@ class TestPlatformDisplay : public PlatformDisplay {
   float cursor_scale() const { return cursor_scale_; }
 
   gfx::Rect confine_cursor_bounds() const { return confine_cursor_bounds_; }
+
+  const display::ViewportMetrics& metrics() const { return metrics_; }
 
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;
