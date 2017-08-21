@@ -619,8 +619,9 @@ public class BottomSheet
 
         // If the user is scrolling and the event is a cancel or up action, update scroll state
         // and return.
-        if (e.getActionMasked() == MotionEvent.ACTION_UP
-                || e.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+        if (mIsScrolling
+                && (e.getActionMasked() == MotionEvent.ACTION_UP
+                           || e.getActionMasked() == MotionEvent.ACTION_CANCEL)) {
             mIsScrolling = false;
 
             mVelocityTracker.computeCurrentVelocity(1000);
@@ -1351,7 +1352,7 @@ public class BottomSheet
 
         cancelAnimation();
 
-        if (animate) {
+        if (animate && state != mCurrentState) {
             createSettleAnimation(state);
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
