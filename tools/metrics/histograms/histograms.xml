@@ -61577,6 +61577,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The frequency of selection of each avatar.</summary>
 </histogram>
 
+<histogram name="Profile.AvatarLoadStatus" enum="ProfileAvatarLoadStatus">
+  <owner>chengx@chromium.org</owner>
+  <summary>Load status of an avatar for decorating the Windows taskbar</summary>
+</histogram>
+
 <histogram name="Profile.BookmarksSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the bookmarks database.</summary>

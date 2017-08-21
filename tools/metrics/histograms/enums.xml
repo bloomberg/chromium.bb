@@ -31225,6 +31225,13 @@ from previous Chrome versions.
   <int value="28" label="GAIA"/>
 </enum>
 
+<enum name="ProfileAvatarLoadStatus">
+  <int value="0" label="Loaded"/>
+  <int value="1" label="Loading"/>
+  <int value="2" label="Missing"/>
+  <int value="3" label="Profile deleted"/>
+</enum>
+
 <enum name="ProfileCreateResult">
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
