@@ -69,11 +69,20 @@ Polymer({
     },
 
     /**
-     * The timestamp for when the controller last submitted a volume change
-     * request for the volume slider being dragged.
+     * The timestamp for when the controller last submitted a seek request.
      * @private {boolean}
      */
-    lastVolumeChangeByDragging_: {
+    lastSeekByUser_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
+     * The timestamp for when the controller last submitted a volume change
+     * request.
+     * @private {boolean}
+     */
+    lastVolumeChangeByUser_: {
       type: Number,
       value: 0,
     },
@@ -219,6 +228,10 @@ Polymer({
         this.i18n('pauseTitle');
   },
 
+  /**
+   * @return {string} Text representing the current position on the seek slider.
+   * @private
+   */
   getTimeSliderValueText_: function(displayedCurrentTime) {
     if (!this.routeStatus) {
       return '';
@@ -277,10 +290,10 @@ Polymer({
    * @private
    */
   onRouteStatusChange_: function(newRouteStatus) {
-    if (!this.isSeeking_) {
+    if (this.shouldAcceptCurrentTimeUpdates_()) {
       this.displayedCurrentTime_ = newRouteStatus.currentTime;
     }
-    if (!this.isVolumeChanging_) {
+    if (this.shouldAcceptVolumeUpdates_()) {
       this.displayedVolume_ = Math.round(newRouteStatus.volume * 100) / 100;
     }
     if (newRouteStatus.description !== '') {
@@ -323,9 +336,10 @@ Polymer({
    */
   onSeekComplete_: function(e) {
     this.stopIncrementingCurrentTime_();
-    this.isSeeking_ = false;
     this.displayedCurrentTime_ = e.target.value;
     media_router.browserApi.seekCurrentMedia(this.displayedCurrentTime_);
+    this.isSeeking_ = false;
+    this.lastSeekByUser_ = Date.now();
   },
 
   /**
@@ -347,15 +361,8 @@ Polymer({
   onVolumeChangeComplete_: function(e) {
     this.volumeSliderValue_ = e.target.value;
     media_router.browserApi.setCurrentMediaVolume(this.volumeSliderValue_);
-    if (this.isVolumeChanging_) {
-      // Wait for 1 second before applying external volume updates, to prevent
-      // notifications originating from this controller moving the slider knob
-      // around.
-      var that = this;
-      setTimeout(function() {
-        that.isVolumeChanging_ = false;
-      }, 1000);
-    }
+    this.isVolumeChanging_ = false;
+    this.lastVolumeChangeByUser_ = Date.now();
   },
 
   /**
@@ -367,10 +374,10 @@ Polymer({
     /** @const */ var currentTime = Date.now();
     // We limit the frequency of volume change requests during dragging to
     // limit the number of Mojo calls to the component extension.
-    if (currentTime - this.lastVolumeChangeByDragging_ < 300) {
+    if (currentTime - this.lastVolumeChangeByUser_ < 300) {
       return;
     }
-    this.lastVolumeChangeByDragging_ = currentTime;
+    this.lastVolumeChangeByUser_ = currentTime;
     this.isVolumeChanging_ = true;
     var target = /** @type {{immediateValue: number}} */ (e.target);
     this.volumeSliderValue_ = target.immediateValue;
@@ -383,6 +390,31 @@ Polymer({
   reset: function() {
     this.routeStatus = new media_router.RouteStatus();
     media_router.ui.setRouteControls(null);
+  },
+
+  /**
+   * @return {boolean} Whether external current time updates should be reflected
+   *     on the seek slider.
+   * @private
+   */
+  shouldAcceptCurrentTimeUpdates_: function() {
+    // Ignore external updates immediately after internal updates, because it's
+    // likely to just be internal updates coming back from the device, and could
+    // make the slider knob jump around.
+    return !this.isSeeking_ && Date.now() - this.lastSeekByUser_ > 1000;
+  },
+
+  /**
+   * @return {boolean} Whether external volume updates should be reflected on
+   *     the volume slider.
+   * @private
+   */
+  shouldAcceptVolumeUpdates_: function() {
+    // Ignore external updates immediately after internal updates, because it's
+    // likely to just be internal updates coming back from the device, and could
+    // make the slider knob jump around.
+    return !this.isVolumeChanging_ &&
+        Date.now() - this.lastVolumeChangeByUser_ > 1000;
   },
 
   /**
