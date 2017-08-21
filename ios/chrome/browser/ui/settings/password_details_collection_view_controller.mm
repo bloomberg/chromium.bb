@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -22,6 +23,7 @@
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_utils.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
@@ -34,6 +36,9 @@
 #endif
 
 namespace {
+
+// A help article on how to set up a passcode.
+constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSite = kSectionIdentifierEnumZero,
@@ -382,9 +387,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
             l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW)
                                  handler:showPasswordHandler];
   } else {
-    [self showToast:l10n_util::GetNSString(
-                        IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_MESSAGE)
-         forSuccess:NO];
+    [self showPasscodeDialog];
   }
 }
 
@@ -445,10 +448,37 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
             l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY)
                                  handler:copyPasswordHandler];
   } else {
-    [self showToast:l10n_util::GetNSString(
-                        IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_MESSAGE)
-         forSuccess:NO];
+    [self showPasscodeDialog];
   }
+}
+
+// Show a dialog offering the user to set a passcode in order to see the
+// passwords.
+- (void)showPasscodeDialog {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)
+                       message:l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT)
+                preferredStyle:UIAlertControllerStyleAlert];
+
+  ProceduralBlockWithURL blockOpenURL =
+      ios_internal_settings::BlockToOpenURL(self);
+  UIAlertAction* learnAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction*) {
+                blockOpenURL(GURL(kPasscodeArticleURL));
+              }];
+  [alertController addAction:learnAction];
+  UIAlertAction* okAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:nil];
+  [alertController addAction:okAction];
+  alertController.preferredAction = okAction;
+  [self presentViewController:alertController animated:YES completion:nil];
 }
 
 // Show a MD snack bar with |message| and provide haptic feedback. The haptic
