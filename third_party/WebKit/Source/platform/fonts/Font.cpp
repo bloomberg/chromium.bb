@@ -366,8 +366,7 @@ FloatRect Font::SelectionRectForText(const TextRun& run,
                                      const FloatPoint& point,
                                      int height,
                                      int from,
-                                     int to,
-                                     bool account_for_glyph_bounds) const {
+                                     int to) const {
   to = (to == -1 ? run.length() : to);
 
   FontCachePurgePreventer purge_preventer;
