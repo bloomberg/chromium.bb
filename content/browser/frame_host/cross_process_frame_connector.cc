@@ -385,4 +385,11 @@ bool CrossProcessFrameConnector::IsHidden() const {
   return is_hidden_;
 }
 
+void CrossProcessFrameConnector::SetVisibilityForChildViews(
+    bool visible) const {
+  frame_proxy_in_parent_renderer_->frame_tree_node()
+      ->current_frame_host()
+      ->SetVisibilityForChildViews(visible);
+}
+
 }  // namespace content

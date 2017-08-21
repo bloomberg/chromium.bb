@@ -139,6 +139,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // RenderWidgetHostView::Hide() is called on the current view.
   virtual bool IsHidden() const;
 
+  // Called by RenderWidgetHostViewChildFrame to update the visibility of any
+  // nested child RWHVCFs inside it.
+  virtual void SetVisibilityForChildViews(bool visible) const {}
+
  protected:
   virtual ~FrameConnectorDelegate() {}
 

@@ -217,12 +217,18 @@ void RenderWidgetHostViewChildFrame::Show() {
     return;
 
   host_->WasShown(ui::LatencyInfo());
+
+  if (frame_connector_)
+    frame_connector_->SetVisibilityForChildViews(true);
 }
 
 void RenderWidgetHostViewChildFrame::Hide() {
   if (host_->is_hidden())
     return;
   host_->WasHidden();
+
+  if (frame_connector_)
+    frame_connector_->SetVisibilityForChildViews(false);
 }
 
 bool RenderWidgetHostViewChildFrame::IsShowing() {

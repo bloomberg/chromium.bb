@@ -1498,12 +1498,15 @@ base::TimeTicks WebContentsImpl::GetLastHiddenTime() const {
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 
-  for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree()) {
+  if (auto* view = GetRenderWidgetHostView()) {
     view->Show();
 #if defined(OS_MACOSX)
     view->SetActive(true);
 #endif
   }
+
+  if (!ShowingInterstitialPage())
+    SetVisibilityForChildViews(true);
 
   SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
 
@@ -1525,8 +1528,11 @@ void WebContentsImpl::WasHidden() {
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls WasHidden() (which
     // calls us).
-    for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
+    if (auto* view = GetRenderWidgetHostView())
       view->Hide();
+
+    if (!ShowingInterstitialPage())
+      SetVisibilityForChildViews(true);
 
     SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
@@ -6016,6 +6022,10 @@ void WebContentsImpl::MediaMutedStatusChanged(
     bool muted) {
   for (auto& observer : observers_)
     observer.MediaMutedStatusChanged(id, muted);
+}
+
+void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
+  GetMainFrame()->SetVisibilityForChildViews(visible);
 }
 
 }  // namespace content
