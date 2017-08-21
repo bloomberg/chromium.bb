@@ -15,6 +15,7 @@
 namespace chromeos {
 
 class RecentContext;
+class RecentFile;
 
 // Interface class for a source of recent files.
 //
@@ -28,8 +29,8 @@ class RecentContext;
 // All member functions must be called on the UI thread.
 class RecentSource {
  public:
-  using RecentFileList = std::vector<storage::FileSystemURL>;
-  using GetRecentFilesCallback = base::OnceCallback<void(RecentFileList files)>;
+  using GetRecentFilesCallback =
+      base::OnceCallback<void(std::vector<RecentFile> files)>;
 
   virtual ~RecentSource();
 

@@ -20,6 +20,8 @@ class Profile;
 
 namespace chromeos {
 
+class RecentFile;
+
 // RecentSource implementation for ARC media view.
 //
 // All member functions must be called on the UI thread.
@@ -39,7 +41,7 @@ class RecentArcMediaSource : public RecentSource {
 
   static const char kLoadHistogramName[];
 
-  void OnGetRecentFilesForRoot(RecentFileList files);
+  void OnGetRecentFilesForRoot(std::vector<RecentFile> files);
   void OnComplete();
 
   Profile* const profile_;
@@ -52,7 +54,7 @@ class RecentArcMediaSource : public RecentSource {
   base::TimeTicks build_start_time_;
 
   int num_inflight_roots_ = 0;
-  RecentFileList files_;
+  std::vector<RecentFile> files_;
 
   base::WeakPtrFactory<RecentArcMediaSource> weak_ptr_factory_;
 

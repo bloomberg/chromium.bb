@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_download_source.h"
+#include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -28,8 +30,6 @@
 #include "url/gurl.h"
 
 namespace chromeos {
-
-using RecentFileList = RecentDownloadSource::RecentFileList;
 
 class RecentDownloadSourceTest : public testing::Test {
  public:
@@ -47,8 +47,6 @@ class RecentDownloadSourceTest : public testing::Test {
 
     source_ = base::MakeUnique<RecentDownloadSource>(profile_.get(),
                                                      3 /* max_num_files */);
-
-    base_time_ = base::Time::Now();
   }
 
  protected:
@@ -64,28 +62,25 @@ class RecentDownloadSourceTest : public testing::Test {
         storage::FileSystemMountOption(), base::FilePath()));
   }
 
-  bool CreateEmptyFile(const std::string& filename, int delta_time_in_seconds) {
+  bool CreateEmptyFile(const std::string& filename, const base::Time& time) {
     base::File file(temp_dir_.GetPath().Append(filename),
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     if (!file.IsValid())
       return false;
 
-    base::Time time =
-        base_time_ + base::TimeDelta::FromSeconds(delta_time_in_seconds);
     return file.SetTimes(time, time);
   }
 
-  RecentFileList GetRecentFiles() {
-    std::vector<storage::FileSystemURL> files;
+  std::vector<RecentFile> GetRecentFiles() {
+    std::vector<RecentFile> files;
 
     base::RunLoop run_loop;
 
     source_->GetRecentFiles(
         RecentContext(file_system_context_.get(), origin_),
         base::BindOnce(
-            [](base::RunLoop* run_loop,
-               std::vector<storage::FileSystemURL>* out_files,
-               std::vector<storage::FileSystemURL> files) {
+            [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
+               std::vector<RecentFile> files) {
               run_loop->Quit();
               *out_files = std::move(files);
             },
@@ -106,17 +101,24 @@ class RecentDownloadSourceTest : public testing::Test {
 };
 
 TEST_F(RecentDownloadSourceTest, GetRecentFiles) {
-  ASSERT_TRUE(CreateEmptyFile("1.jpg", 1));  // Oldest
-  ASSERT_TRUE(CreateEmptyFile("2.jpg", 2));
-  ASSERT_TRUE(CreateEmptyFile("3.jpg", 3));
-  ASSERT_TRUE(CreateEmptyFile("4.jpg", 4));  // Newest
+  // Oldest
+  ASSERT_TRUE(CreateEmptyFile("1.jpg", base::Time::FromJavaTime(1000)));
+  ASSERT_TRUE(CreateEmptyFile("2.jpg", base::Time::FromJavaTime(2000)));
+  ASSERT_TRUE(CreateEmptyFile("3.jpg", base::Time::FromJavaTime(3000)));
+  ASSERT_TRUE(CreateEmptyFile("4.jpg", base::Time::FromJavaTime(4000)));
+  // Newest
 
-  std::vector<storage::FileSystemURL> files = GetRecentFiles();
+  std::vector<RecentFile> files = GetRecentFiles();
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
 
   ASSERT_EQ(3u, files.size());
-  EXPECT_EQ("2.jpg", files[0].path().BaseName().value());
-  EXPECT_EQ("3.jpg", files[1].path().BaseName().value());
-  EXPECT_EQ("4.jpg", files[2].path().BaseName().value());
+  EXPECT_EQ("4.jpg", files[0].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+  EXPECT_EQ("3.jpg", files[1].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
+  EXPECT_EQ("2.jpg", files[2].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(2000), files[2].last_modified());
 }
 
 TEST_F(RecentDownloadSourceTest, GetRecentFiles_UmaStats) {
