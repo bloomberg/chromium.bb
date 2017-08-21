@@ -1121,13 +1121,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kPayWithGoogleV1Name[];
 extern const char kPayWithGoogleV1Description[];
 
-extern const char kProgressBarAnimationName[];
-extern const char kProgressBarAnimationDescription[];
-extern const char kProgressBarAnimationLinear[];
-extern const char kProgressBarAnimationSmooth[];
-extern const char kProgressBarAnimationSmoothIndeterminate[];
-extern const char kProgressBarAnimationFastStart[];
-
 extern const char kProgressBarCompletionName[];
 extern const char kProgressBarCompletionDescription[];
 extern const char kProgressBarCompletionLoadEvent[];
