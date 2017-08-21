@@ -28,4 +28,7 @@ per-file chrome_crash_reporter_client*=scottmg@chromium.org
 
 per-file *.plist=file://chrome/browser/ui/cocoa/OWNERS
 
+per-file chrome_exe_main_mac.cc=kerrnel@chromium.org
+per-file chrome_exe_main_mac.cc=mark@chromium.org
+
 # COMPONENT: Internals>PlatformIntegration
