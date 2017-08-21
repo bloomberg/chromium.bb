@@ -25698,6 +25698,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MediaTypePredictionResult">
+  <obsolete>
+    Deprecated as of 08/2017.
+  </obsolete>
   <int value="0" label="All correct"/>
   <int value="1" label="All incorrect"/>
   <int value="2" label="Path-based was better"/>
@@ -25705,6 +25708,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MediaUrlType">
+  <obsolete>
+    Deprecated as of 08/2017.
+  </obsolete>
   <int value="0" label="Non Http Live Stream Type"/>
   <int value="1" label="Http Live Stream Type"/>
 </enum>
