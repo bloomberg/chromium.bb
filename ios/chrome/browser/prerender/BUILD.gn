@@ -26,7 +26,6 @@ source_set("prerender") {
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/web",
     "//ui/base",
     "//url",

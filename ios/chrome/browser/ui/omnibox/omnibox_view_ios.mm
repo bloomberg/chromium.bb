@@ -170,7 +170,6 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       browser_state_(browser_state),
       field_(field),
       controller_(controller),
-      preloader_(preloader),
       ignore_popup_updates_(false),
       attributing_display_string_(nil) {
   DCHECK(field_);
@@ -393,9 +392,6 @@ void OmniboxViewIOS::OnDidEndEditing() {
   // The controller looks at the current pre-edit state, so the call to
   // OnKillFocus() must come after exiting pre-edit.
   controller_->OnKillFocus();
-
-  // Cancel any outstanding preload requests.
-  [preloader_ cancelPrerender];
 
   // Blow away any in-progress edits.
   RevertAll();
@@ -846,27 +842,14 @@ void OmniboxViewIOS::OnTopmostSuggestionImageChanged(int imageId) {
 }
 
 void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {
-  if (!ignore_popup_updates_ && !result.empty()) {
-    const AutocompleteMatch& match = result.match_at(0);
-    bool is_inline_autocomplete = !match.inline_autocompletion.empty();
-
-    // TODO(rohitrao): When prerendering the result of a paste operation, we
-    // should change the transition to LINK instead of TYPED.  b/6143631.
-
-    // Only prerender HISTORY_URL matches, which come from the history DB.  Do
-    // not prerender other types of matches, including matches from the search
-    // provider.
-    if (is_inline_autocomplete &&
-        match.type == AutocompleteMatchType::HISTORY_URL) {
-      ui::PageTransition transition = ui::PageTransitionFromInt(
-          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-      [preloader_ prerenderURL:match.destination_url
-                      referrer:web::Referrer()
-                    transition:transition
-                   immediately:is_inline_autocomplete];
-    } else {
-      [preloader_ cancelPrerender];
-    }
+  if (ignore_popup_updates_) {
+    // Please contact rohitrao@ if the following DCHECK ever fires.  If
+    // |ignore_popup_updates_| is true but |result| is not empty, then the new
+    // prerender code in ChromeOmniboxClientIOS will incorrectly discard its
+    // prerender.
+    // TODO(crbug.com/754050): Remove this whole method once we are reasonably
+    // confident that we are not throwing away prerenders.
+    DCHECK(result.empty());
   }
 }
 

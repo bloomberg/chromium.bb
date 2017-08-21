@@ -171,8 +171,6 @@ class OmniboxViewIOS : public OmniboxView,
   base::scoped_nsobject<OmniboxTextFieldIOS> field_;
   WebOmniboxEditController* controller_;  // weak, owns us
   std::unique_ptr<OmniboxPopupViewIOS> popup_view_;
-  // |preloader_| should be __weak but is included from non-ARC code.
-  __unsafe_unretained id<PreloadProvider> preloader_;
 
   State state_before_change_;
   base::scoped_nsobject<NSString> marked_text_before_change_;
