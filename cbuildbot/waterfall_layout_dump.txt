@@ -290,6 +290,7 @@ daisy-incremental (gce_beefy)
 lakitu-full (baremetal)
 moblab-generic-vm-paladin (gce_beefy)
 oak-full (gce_beefy)
+tatl-full (gce_beefy)
 tatl-paladin (gce_beefy)
 
 == chromiumos.tryserver ==

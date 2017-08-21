@@ -51878,6 +51878,7 @@
     },
     "tatl-full": {
         "_template": "full",
+        "active_waterfall": "chromiumos",
         "boards": [
             "tatl"
         ],

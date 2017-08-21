@@ -772,8 +772,9 @@ _waterfall_config_map = {
         'amd64-generic-full',
         'arm-generic-full',
         'daisy-full',
-        'oak-full',
         'lakitu-full',
+        'oak-full',
+        'tatl-full',
 
         # ASAN.
         'amd64-generic-asan',
