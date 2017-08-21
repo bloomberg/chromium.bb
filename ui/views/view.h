@@ -166,6 +166,96 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     View* move_view;
   };
 
+  // During paint, the origin of each view in physical pixel is calculated by
+  //   view_origin_pixel = ROUND(view.origin() * device_scale_factor)
+  //
+  // Thus in a view hierarchy, the offset between two views, view_i and view_j,
+  // is calculated by:
+  //   view_offset_ij_pixel = SUM [view_origin_pixel.OffsetFromOrigin()]
+  //                        {For all views along the path from view_i to view_j}
+  //
+  // But the offset between the two layers, the layer in view_i and the layer in
+  // view_j, is computed by
+  //   view_offset_ij_dip = SUM [view.origin().OffsetFromOrigin()]
+  //                        {For all views along the path from view_i to view_j}
+  //
+  //   layer_offset_ij_pixel = ROUND (view_offset_ij_dip * device_scale_factor)
+  //
+  // Due to this difference in the logic for computation of offset, the values
+  // view_offset_ij_pixel and layer_offset_ij_pixel may not always be equal.
+  // They will differ by some subpixel_offset. This leads to bugs like
+  // crbug.com/734787.
+  // The subpixel offset needs to be applied to the layer to get the correct
+  // output during paint.
+  //
+  // This class manages the computation of subpixel offset internally when
+  // working with offsets.
+  class LayerOffsetData {
+   public:
+    LayerOffsetData(float device_scale_factor = 1.f,
+                    const gfx::Vector2d& offset = gfx::Vector2d())
+        : device_scale_factor_(device_scale_factor) {
+      AddOffset(offset);
+    }
+
+    const gfx::Vector2d& offset() const { return offset_; }
+
+    const gfx::Vector2dF GetSubpixelOffset() const {
+      // |rounded_pixel_offset_| is stored in physical pixel space. Convert it
+      // into DIP space before returning.
+      gfx::Vector2dF subpixel_offset(rounded_pixel_offset_);
+      subpixel_offset.Scale(1.f / device_scale_factor_);
+      return subpixel_offset;
+    }
+
+    LayerOffsetData& operator+=(const gfx::Vector2d& offset) {
+      AddOffset(offset);
+      return *this;
+    }
+
+    LayerOffsetData operator+(const gfx::Vector2d& offset) const {
+      LayerOffsetData offset_data(*this);
+      offset_data.AddOffset(offset);
+      return offset_data;
+    }
+
+   private:
+    // Adds the |offset_to_parent| to the total |offset_| and updates the
+    // |rounded_pixel_offset_| value.
+    void AddOffset(const gfx::Vector2d& offset_to_parent) {
+      // Add the DIP |offset_to_parent| amount to the total offset.
+      offset_ += offset_to_parent;
+
+      // Convert |offset_to_parent| to physical pixel coordinates.
+      gfx::Vector2dF fractional_pixel_offset(
+          offset_to_parent.x() * device_scale_factor_,
+          offset_to_parent.y() * device_scale_factor_);
+
+      // Since pixels cannot be fractional, we need to round the offset to get
+      // the correct physical pixel coordinate.
+      gfx::Vector2dF integral_pixel_offset(
+          gfx::ToRoundedInt(fractional_pixel_offset.x()),
+          gfx::ToRoundedInt(fractional_pixel_offset.y()));
+
+      // |integral_pixel_offset - fractional_pixel_offset| gives the subpixel
+      // offset amount for |offset_to_parent|. This is added to
+      // |rounded_pixel_offset_| to update the total subpixel offset.
+      rounded_pixel_offset_ += integral_pixel_offset - fractional_pixel_offset;
+    }
+
+    // Total offset so far. This stores the offset between two nodes in the view
+    // hierarchy.
+    gfx::Vector2d offset_;
+
+    // This stores the value such that if added to
+    // |offset_ * device_scale_factor| will give the correct aligned offset in
+    // physical pixels.
+    gfx::Vector2dF rounded_pixel_offset_;
+
+    // The device scale factor at which the subpixel offset is being computed.
+    float device_scale_factor_;
+  };
+
   // Creation and lifetime -----------------------------------------------------
 
   View();
@@ -424,10 +514,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // deleted, or when a new LayoutManager is installed.
   LayoutManager* GetLayoutManager() const;
   void SetLayoutManager(LayoutManager* layout);
-
-  // Adjust the layer's offset so that it snaps to the physical pixel boundary.
-  // This has no effect if the view does not have an associated layer.
-  void SnapLayerToPixelBoundary();
 
   // Attributes ----------------------------------------------------------------
 
@@ -1179,7 +1265,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns the offset from this view to the nearest ancestor with a layer. If
   // |layer_parent| is non-NULL it is set to the nearest ancestor with a layer.
-  virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
+  virtual LayerOffsetData CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent);
 
   // Updates the view's layer's parent. Called when a view is added to a view
@@ -1192,11 +1278,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // recurses through all children. This is used when adding a layer to an
   // existing view to make sure all descendants that have layers are parented to
   // the right layer.
-  void MoveLayerToParent(ui::Layer* parent_layer, const gfx::Point& point);
+  void MoveLayerToParent(ui::Layer* parent_layer,
+                         const LayerOffsetData& offset_data);
 
   // Called to update the bounds of any child layers within this View's
   // hierarchy when something happens to the hierarchy.
-  void UpdateChildLayerBounds(const gfx::Vector2d& offset);
+  void UpdateChildLayerBounds(const LayerOffsetData& offset_data);
 
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
@@ -1421,9 +1508,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void AddDescendantToNotify(View* view);
   void RemoveDescendantToNotify(View* view);
 
-  // Sets the layer's bounds given in DIP coordinates.
-  void SetLayerBounds(const gfx::Rect& bounds_in_dip);
-
   // Transformations -----------------------------------------------------------
 
   // Returns in |transform| the transform to get from coordinates of |ancestor|
@@ -1500,6 +1584,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.
   void OrphanLayers();
+
+  // Adjust the layer's offset so that it snaps to the physical pixel boundary.
+  // This has no effect if the view does not have an associated layer.
+  void SnapLayerToPixelBoundary(const LayerOffsetData& offset_data);
+
+  // Sets the layer's bounds given in DIP coordinates.
+  void SetLayerBounds(const gfx::Size& size_in_dip,
+                      const LayerOffsetData& layer_offset_data);
 
   // Input ---------------------------------------------------------------------
 
