@@ -143,10 +143,8 @@ function test6() {
     switch(event.data) {
     case 'readyToTest':
       if (!testRequested) {
-        //iframe.contentWindow.postMessage('startTest', '*');
+        iframe.contentWindow.postMessage('startTest', '*');
         testRequested = true;
-        test.step(()=>{test.done()});
-        resolvePromise();
       }
     break;
     case 'success':

@@ -1030,14 +1030,6 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
   size_.SetWidth(new_size->width());
   size_.SetHeight(new_size->height());
 
-  // Adjust for effective zoom.
-  if (panel_->GetLayoutObject() && panel_->GetLayoutObject()->Style()) {
-    size_.SetWidth(ceil(size_.Width() /
-                        panel_->GetLayoutObject()->Style()->EffectiveZoom()));
-    size_.SetHeight(ceil(size_.Height() /
-                         panel_->GetLayoutObject()->Style()->EffectiveZoom()));
-  }
-
   // Don't bother to do any work if this matches the most recent size.
   if (old_size != size_)
     element_size_changed_timer_.StartOneShot(0, BLINK_FROM_HERE);
