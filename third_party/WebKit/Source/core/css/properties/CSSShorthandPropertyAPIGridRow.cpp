@@ -12,11 +12,12 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIGridRow::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   const StylePropertyShorthand& shorthand =
       shorthandForProperty(CSSPropertyGridRow);
   DCHECK_EQ(shorthand.length(), 2u);

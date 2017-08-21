@@ -6,23 +6,12 @@
 
 #include <memory>
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSBasicShapeValues.h"
-#include "core/css/CSSContentDistributionValue.h"
-#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSGridAutoRepeatValue.h"
-#include "core/css/CSSGridLineNamesValue.h"
-#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSReflectValue.h"
-#include "core/css/CSSShadowValue.h"
-#include "core/css/CSSStringValue.h"
-#include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSVariableReferenceValue.h"
@@ -32,17 +21,10 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
-#include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
-#include "core/css/properties/CSSPropertyBorderImageUtils.h"
-#include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
-#include "core/css/properties/CSSPropertyLengthUtils.h"
-#include "core/css/properties/CSSPropertyMarginUtils.h"
-#include "core/css/properties/CSSPropertyPositionUtils.h"
-#include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
-#include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -50,8 +32,6 @@
 namespace blink {
 
 using namespace CSSPropertyParserHelpers;
-
-class CSSCustomIdentValue;
 
 CSSPropertyParser::CSSPropertyParser(
     const CSSParserTokenRange& range,
@@ -292,106 +272,14 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   return nullptr;
 }
 
-static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
-                                              bool allow_text_value) {
-  // The values 'border', 'padding' and 'content' are deprecated and do not
-  // apply to the version of the property that has the -webkit- prefix removed.
-  if (CSSValue* value =
-          ConsumeIdentRange(range, CSSValueBorder, CSSValuePaddingBox))
-    return value;
-  if (allow_text_value && range.Peek().Id() == CSSValueText)
-    return ConsumeIdent(range);
-  return nullptr;
-}
-
-static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
-                                            CSSParserTokenRange& range,
-                                            const CSSParserContext& context) {
-  switch (unresolved_property) {
-    case CSSPropertyBackgroundClip:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundBox(range);
-    case CSSPropertyBackgroundBlendMode:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundBlendMode(range);
-    case CSSPropertyBackgroundAttachment:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundAttachment(range);
-    case CSSPropertyBackgroundOrigin:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundBox(range);
-    case CSSPropertyWebkitMaskComposite:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundComposite(range);
-    case CSSPropertyMaskSourceType:
-      return CSSPropertyBackgroundUtils::ConsumeMaskSourceType(range);
-    case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitMaskClip:
-      return ConsumePrefixedBackgroundBox(range, true /* allow_text_value */);
-    case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyWebkitMaskOrigin:
-      return ConsumePrefixedBackgroundBox(range, false /* allow_text_value */);
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyWebkitMaskImage:
-      return ConsumeImageOrNone(range, &context);
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyWebkitMaskPositionX:
-      return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
-                                                               CSSValueRight>(
-          range, context.Mode());
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyWebkitMaskPositionY:
-      return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
-                                                               CSSValueBottom>(
-          range, context.Mode());
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskSize:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
-          range, context.Mode(), ParsingStyle::kNotLegacy);
-    case CSSPropertyAliasWebkitBackgroundSize:
-      return CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
-          range, context.Mode(), ParsingStyle::kLegacy);
-    case CSSPropertyBackgroundColor:
-      return ConsumeColor(range, context.Mode());
-    default:
-      break;
-  };
-  return nullptr;
-}
-
 const CSSValue* CSSPropertyParser::ParseSingleValue(
     CSSPropertyID unresolved_property,
     CSSPropertyID current_shorthand) {
   DCHECK(context_);
-
-  // Gets the parsing method for our current property from the property API.
-  // If it has been implemented, we call this method, otherwise we manually
-  // parse this value in the switch statement below. As we implement APIs for
-  // other properties, those properties will be taken out of the switch
-  // statement.
-  bool needs_legacy_parsing = false;
-  const CSSValue* const parsed_value =
-      CSSPropertyParserHelpers::ParseLonghandViaAPI(
-          unresolved_property, current_shorthand, *context_, range_,
-          needs_legacy_parsing);
-  if (!needs_legacy_parsing)
-    return parsed_value;
-
-  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
-  switch (property) {
-    case CSSPropertyTextDecoration:
-      DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
-      return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
-          range_);
-    case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitMaskClip:
-      return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range_,
-                                       true /* allow_text_value */);
-    case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyWebkitMaskOrigin:
-      return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range_,
-                                       false /* allow_text_value */);
-    case CSSPropertyWebkitMaskRepeatX:
-    case CSSPropertyWebkitMaskRepeatY:
-      return nullptr;
-    default:
-      return nullptr;
-  }
+  // FIXME(meade): This function can be deleted now that everything is handled
+  // in the CSSPropertyAPI classes.
+  return CSSPropertyParserHelpers::ParseLonghandViaAPI(
+      unresolved_property, current_shorthand, *context_, range_);
 }
 
 static CSSIdentifierValue* ConsumeFontDisplay(CSSParserTokenRange& range) {
@@ -627,199 +515,14 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
   }
 }
 
-static bool ConsumeRepeatStyleComponent(CSSParserTokenRange& range,
-                                        CSSValue*& value1,
-                                        CSSValue*& value2,
-                                        bool& implicit) {
-  if (ConsumeIdent<CSSValueRepeatX>(range)) {
-    value1 = CSSIdentifierValue::Create(CSSValueRepeat);
-    value2 = CSSIdentifierValue::Create(CSSValueNoRepeat);
-    implicit = true;
-    return true;
-  }
-  if (ConsumeIdent<CSSValueRepeatY>(range)) {
-    value1 = CSSIdentifierValue::Create(CSSValueNoRepeat);
-    value2 = CSSIdentifierValue::Create(CSSValueRepeat);
-    implicit = true;
-    return true;
-  }
-  value1 = ConsumeIdent<CSSValueRepeat, CSSValueNoRepeat, CSSValueRound,
-                        CSSValueSpace>(range);
-  if (!value1)
-    return false;
-
-  value2 = ConsumeIdent<CSSValueRepeat, CSSValueNoRepeat, CSSValueRound,
-                        CSSValueSpace>(range);
-  if (!value2) {
-    value2 = value1;
-    implicit = true;
-  }
-  return true;
-}
-
-static bool ConsumeRepeatStyle(CSSParserTokenRange& range,
-                               CSSValue*& result_x,
-                               CSSValue*& result_y,
-                               bool& implicit) {
-  do {
-    CSSValue* repeat_x = nullptr;
-    CSSValue* repeat_y = nullptr;
-    if (!ConsumeRepeatStyleComponent(range, repeat_x, repeat_y, implicit))
-      return false;
-    CSSPropertyBackgroundUtils::AddBackgroundValue(result_x, repeat_x);
-    CSSPropertyBackgroundUtils::AddBackgroundValue(result_y, repeat_y);
-  } while (ConsumeCommaIncludingWhitespace(range));
-  return true;
-}
-
-// Note: consumeBackgroundShorthand assumes y properties (for example
-// background-position-y) follow the x properties in the shorthand array.
-bool CSSPropertyParser::ConsumeBackgroundShorthand(
-    const StylePropertyShorthand& shorthand,
-    bool important) {
-  const unsigned longhand_count = shorthand.length();
-  CSSValue* longhands[10] = {0};
-  DCHECK_LE(longhand_count, 10u);
-  DCHECK(context_);
-
-  bool implicit = false;
-  do {
-    bool parsed_longhand[10] = {false};
-    CSSValue* origin_value = nullptr;
-    do {
-      bool found_property = false;
-      for (size_t i = 0; i < longhand_count; ++i) {
-        if (parsed_longhand[i])
-          continue;
-
-        CSSValue* value = nullptr;
-        CSSValue* value_y = nullptr;
-        CSSPropertyID property = shorthand.properties()[i];
-        if (property == CSSPropertyBackgroundRepeatX ||
-            property == CSSPropertyWebkitMaskRepeatX) {
-          ConsumeRepeatStyleComponent(range_, value, value_y, implicit);
-        } else if (property == CSSPropertyBackgroundPositionX ||
-                   property == CSSPropertyWebkitMaskPositionX) {
-          if (!ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                               WebFeature::kThreeValuedPositionBackground,
-                               value, value_y))
-            continue;
-        } else if (property == CSSPropertyBackgroundSize ||
-                   property == CSSPropertyWebkitMaskSize) {
-          if (!ConsumeSlashIncludingWhitespace(range_))
-            continue;
-          value = CSSPropertyBackgroundUtils::ConsumeBackgroundSize(
-              range_, context_->Mode(), ParsingStyle::kNotLegacy);
-          if (!value ||
-              !parsed_longhand[i - 1])  // Position must have been
-                                        // parsed in the current layer.
-            return false;
-        } else if (property == CSSPropertyBackgroundPositionY ||
-                   property == CSSPropertyBackgroundRepeatY ||
-                   property == CSSPropertyWebkitMaskPositionY ||
-                   property == CSSPropertyWebkitMaskRepeatY) {
-          continue;
-        } else {
-          value = ConsumeBackgroundComponent(property, range_, *context_);
-        }
-        if (value) {
-          if (property == CSSPropertyBackgroundOrigin ||
-              property == CSSPropertyWebkitMaskOrigin)
-            origin_value = value;
-          parsed_longhand[i] = true;
-          found_property = true;
-          CSSPropertyBackgroundUtils::AddBackgroundValue(longhands[i], value);
-          if (value_y) {
-            parsed_longhand[i + 1] = true;
-            CSSPropertyBackgroundUtils::AddBackgroundValue(longhands[i + 1],
-                                                           value_y);
-          }
-        }
-      }
-      if (!found_property)
-        return false;
-    } while (!range_.AtEnd() && range_.Peek().GetType() != kCommaToken);
-
-    // TODO(timloh): This will make invalid longhands, see crbug.com/386459
-    for (size_t i = 0; i < longhand_count; ++i) {
-      CSSPropertyID property = shorthand.properties()[i];
-      if (property == CSSPropertyBackgroundColor && !range_.AtEnd()) {
-        if (parsed_longhand[i])
-          return false;  // Colors are only allowed in the last layer.
-        continue;
-      }
-      if ((property == CSSPropertyBackgroundClip ||
-           property == CSSPropertyWebkitMaskClip) &&
-          !parsed_longhand[i] && origin_value) {
-        CSSPropertyBackgroundUtils::AddBackgroundValue(longhands[i],
-                                                       origin_value);
-        continue;
-      }
-      if (!parsed_longhand[i]) {
-        CSSPropertyBackgroundUtils::AddBackgroundValue(
-            longhands[i], CSSInitialValue::Create());
-      }
-    }
-  } while (ConsumeCommaIncludingWhitespace(range_));
-  if (!range_.AtEnd())
-    return false;
-
-  for (size_t i = 0; i < longhand_count; ++i) {
-    CSSPropertyID property = shorthand.properties()[i];
-    if (property == CSSPropertyBackgroundSize && longhands[i] &&
-        context_->UseLegacyBackgroundSizeShorthandBehavior())
-      continue;
-    AddParsedProperty(property, shorthand.id(), *longhands[i], important,
-                      implicit);
-  }
-  return true;
-}
-
 bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                                        bool important) {
   DCHECK(context_);
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
-
-  // Gets the parsing method for our current property from the property API.
-  // If it has been implemented, we call this method, otherwise we manually
-  // parse this value in the switch statement below. As we implement APIs for
-  // other properties, those properties will be taken out of the switch
-  // statement.
-  const CSSPropertyDescriptor& css_property_desc =
-      CSSPropertyDescriptor::Get(property);
-  if (css_property_desc.ParseShorthand) {
-    return css_property_desc.ParseShorthand(
-        important, range_, *context_,
-        CSSParserLocalContext(isPropertyAlias(unresolved_property), property),
-        *parsed_properties_);
-  }
-
-  switch (property) {
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyWebkitMaskRepeat: {
-      CSSValue* result_x = nullptr;
-      CSSValue* result_y = nullptr;
-      bool implicit = false;
-      if (!ConsumeRepeatStyle(range_, result_x, result_y, implicit) ||
-          !range_.AtEnd())
-        return false;
-      AddParsedProperty(property == CSSPropertyBackgroundRepeat
-                            ? CSSPropertyBackgroundRepeatX
-                            : CSSPropertyWebkitMaskRepeatX,
-                        property, *result_x, important, implicit);
-      AddParsedProperty(property == CSSPropertyBackgroundRepeat
-                            ? CSSPropertyBackgroundRepeatY
-                            : CSSPropertyWebkitMaskRepeatY,
-                        property, *result_y, important, implicit);
-      return true;
-    }
-    case CSSPropertyBackground:
-      return ConsumeBackgroundShorthand(backgroundShorthand(), important);
-    case CSSPropertyWebkitMask:
-      return ConsumeBackgroundShorthand(webkitMaskShorthand(), important);
-    default:
-      return false;
-  }
+  return CSSPropertyAPI::Get(property).ParseShorthand(
+      property, important, range_, *context_,
+      CSSParserLocalContext(isPropertyAlias(unresolved_property), property),
+      *parsed_properties_);
 }
 
 }  // namespace blink
