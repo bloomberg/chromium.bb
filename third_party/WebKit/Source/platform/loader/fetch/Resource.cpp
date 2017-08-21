@@ -345,7 +345,7 @@ void Resource::CheckResourceIntegrity() {
   // Edge case: If a resource actually has zero bytes then it will not
   // typically have a resource buffer, but we still need to check integrity
   // because people might want to assert a zero-length resource.
-  CHECK(EncodedSize() + DecodedSize() == 0 || Data());
+  CHECK(DecodedSize() == 0 || Data());
   if (Data()) {
     data = Data()->Data();
     data_length = Data()->size();
