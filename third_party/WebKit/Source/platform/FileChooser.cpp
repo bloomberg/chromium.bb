@@ -31,20 +31,15 @@
 namespace blink {
 
 FileChooserClient::~FileChooserClient() {
-  DiscardChooser();
 }
 
 FileChooser* FileChooserClient::NewFileChooser(
     const FileChooserSettings& settings) {
-  DiscardChooser();
+  if (chooser_)
+    chooser_->DisconnectClient();
 
   chooser_ = FileChooser::Create(this, settings);
   return chooser_.Get();
-}
-
-void FileChooserClient::DiscardChooser() {
-  if (chooser_)
-    chooser_->DisconnectClient();
 }
 
 inline FileChooser::FileChooser(FileChooserClient* client,
