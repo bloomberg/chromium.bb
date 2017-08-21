@@ -189,11 +189,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that after dismissing a ReadingList item, it is not displayed on the
 // NTP. But it is still unread in the Reading List surface.
 - (void)testSwipeToDismissReadingListItem {
-  // TODO(crbug.com/756950): Re-enable this test for iPhone idiom.
-  if (!IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-
   // Add two items to Reading List.
   std::string stdTitle1{"test title1"};
   std::string stdTitle2{"test title2"};
@@ -235,6 +230,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       assertWithMatcher:grey_nil()];
 
   // Open the Reading List surface.
+  ScrollUp();
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
