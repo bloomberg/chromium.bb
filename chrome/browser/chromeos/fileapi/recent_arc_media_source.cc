@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/fileapi/recent_arc_media_source.h"
 
+#include <algorithm>
 #include <iterator>
 #include <map>
 #include <string>
@@ -12,9 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
@@ -52,6 +53,9 @@ base::FilePath GetRelativeMountPath(const std::string& root_id) {
 }
 
 }  // namespace
+
+const char RecentArcMediaSource::kLoadHistogramName[] =
+    "FileBrowser.Recent.LoadArcMedia";
 
 // Handles GetRecentFiles() for a root in MediaDocumentsProvider.
 //
@@ -297,11 +301,14 @@ void RecentArcMediaSource::GetRecentFiles(RecentContext context,
   DCHECK(!callback.is_null());
   DCHECK(!context_.is_valid());
   DCHECK(callback_.is_null());
+  DCHECK(build_start_time_.is_null());
   DCHECK_EQ(0, num_inflight_roots_);
   DCHECK(files_.empty());
 
   context_ = std::move(context);
   callback_ = std::move(callback);
+
+  build_start_time_ = base::TimeTicks::Now();
 
   num_inflight_roots_ = roots_.size();
   if (num_inflight_roots_ == 0) {
@@ -333,7 +340,12 @@ void RecentArcMediaSource::OnComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_.is_valid());
   DCHECK(!callback_.is_null());
+  DCHECK(!build_start_time_.is_null());
   DCHECK_EQ(0, num_inflight_roots_);
+
+  UMA_HISTOGRAM_TIMES(kLoadHistogramName,
+                      base::TimeTicks::Now() - build_start_time_);
+  build_start_time_ = base::TimeTicks();
 
   context_ = RecentContext();
   GetRecentFilesCallback callback;
