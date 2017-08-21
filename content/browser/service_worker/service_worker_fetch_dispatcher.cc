@@ -287,72 +287,91 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
 
 }  // namespace
 
-// ResponseCallback is owned via StrongBinding to an interface request passed
-// to mojom::ServiceWorkerEventDispatcher::DispatchFetchEvent().
+// ResponseCallback is owned by a callback which is passed to
+// ServiceWorkerVersion::StartRequest*(), and held in pending_requests_
+// until FinishRequest() is called.
 class ServiceWorkerFetchDispatcher::ResponseCallback
     : public mojom::ServiceWorkerFetchResponseCallback {
  public:
-  ResponseCallback(base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
-                   ServiceWorkerVersion* version,
-                   int fetch_event_id)
-      : fetch_dispatcher_(fetch_dispatcher),
-        version_(version),
-        fetch_event_id_(fetch_event_id) {}
-  ~ResponseCallback() override {}
+  ResponseCallback(mojom::ServiceWorkerFetchResponseCallbackRequest request,
+                   base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
+                   ServiceWorkerVersion* version)
+      : binding_(this, std::move(request)),
+        fetch_dispatcher_(fetch_dispatcher),
+        version_(version) {}
+
+  ~ResponseCallback() override { DCHECK(fetch_event_id_.has_value()); }
+
+  void set_fetch_event_id(int id) {
+    DCHECK(!fetch_event_id_);
+    fetch_event_id_ = id;
+  }
 
   // Implements mojom::ServiceWorkerFetchResponseCallback.
   void OnResponse(const ServiceWorkerResponse& response,
                   base::Time dispatch_event_time) override {
-    HandleResponse(
-        response, nullptr /* body_as_stream */, nullptr /* body_as_blob */,
-        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, dispatch_event_time);
+    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
+                   nullptr /* body_as_stream */, nullptr /* body_as_blob */,
+                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+                   dispatch_event_time);
   }
   void OnResponseBlob(const ServiceWorkerResponse& response,
                       storage::mojom::BlobPtr body_as_blob,
                       base::Time dispatch_event_time) override {
-    HandleResponse(
-        response, nullptr /* body_as_stream */, std::move(body_as_blob),
-        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, dispatch_event_time);
+    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
+                   nullptr /* body_as_stream */, std::move(body_as_blob),
+                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+                   dispatch_event_time);
   }
   void OnResponseStream(
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       base::Time dispatch_event_time) override {
-    HandleResponse(
-        response, std::move(body_as_stream), nullptr /* body_as_blob */,
-        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, dispatch_event_time);
+    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
+                   std::move(body_as_stream), nullptr /* body_as_blob */,
+                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+                   dispatch_event_time);
   }
   void OnFallback(base::Time dispatch_event_time) override {
-    HandleResponse(ServiceWorkerResponse(), nullptr /* body_as_stream */,
-                   nullptr /* body_as_blob */,
-                   SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-                   dispatch_event_time);
+    HandleResponse(
+        fetch_dispatcher_, version_, fetch_event_id_, ServiceWorkerResponse(),
+        nullptr /* body_as_stream */, nullptr /* body_as_blob */,
+        SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, dispatch_event_time);
   }
 
  private:
-  void HandleResponse(const ServiceWorkerResponse& response,
-                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-                      storage::mojom::BlobPtr body_as_blob,
-                      ServiceWorkerFetchEventResult fetch_result,
-                      base::Time dispatch_event_time) {
-    if (!version_->FinishRequest(
-            fetch_event_id_,
+  // static as version->FinishRequest will remove the calling ResponseCallback
+  // instance.
+  static void HandleResponse(
+      base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
+      ServiceWorkerVersion* version,
+      base::Optional<int> fetch_event_id,
+      const ServiceWorkerResponse& response,
+      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+      storage::mojom::BlobPtr body_as_blob,
+      ServiceWorkerFetchEventResult fetch_result,
+      base::Time dispatch_event_time) {
+    if (!version->FinishRequest(
+            fetch_event_id.value(),
             fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
             dispatch_event_time))
       NOTREACHED() << "Should only receive one reply per event";
-    // |fetch_dispatcher_| is null if the URLRequest was killed.
-    if (!fetch_dispatcher_)
+    // |fetch_dispatcher| is null if the URLRequest was killed.
+    if (!fetch_dispatcher)
       return;
-    fetch_dispatcher_->DidFinish(fetch_event_id_, fetch_result, response,
-                                 std::move(body_as_stream),
-                                 std::move(body_as_blob));
+    fetch_dispatcher->DidFinish(fetch_event_id.value(), fetch_result, response,
+                                std::move(body_as_stream),
+                                std::move(body_as_blob));
   }
 
+  mojo::Binding<mojom::ServiceWorkerFetchResponseCallback> binding_;
   base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
-  // Owns |this| via Mojo pipes (|version_| owns EventDispatcher in the
-  // renderer side, which owns |this| via the Mojo pipe).
+  // Owns |this| via pending_requests_.
   ServiceWorkerVersion* version_;
-  const int fetch_event_id_;
+  // Must be set to a non-nullopt value before the corresponding mojo
+  // handle is passed to the other end (i.e. before any of OnResponse*
+  // is called).
+  base::Optional<int> fetch_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallback);
 };
@@ -478,6 +497,12 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   base::Closure prepare_callback = prepare_callback_;
   prepare_callback.Run();
 
+  mojom::ServiceWorkerFetchResponseCallbackPtr mojo_response_callback_ptr;
+  auto response_callback = base::MakeUnique<ResponseCallback>(
+      mojo::MakeRequest(&mojo_response_callback_ptr),
+      weak_factory_.GetWeakPtr(), version_.get());
+  ResponseCallback* response_callback_rawptr = response_callback.get();
+
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
   int fetch_event_id;
   int event_finish_id;
@@ -485,7 +510,8 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
     fetch_event_id = version_->StartRequestWithCustomTimeout(
         GetEventType(),
         base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                   weak_factory_.GetWeakPtr()),
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&response_callback)),
         *timeout_, ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
     event_finish_id = version_->StartRequestWithCustomTimeout(
         FetchTypeToWaitUntilEventType(request_->fetch_type),
@@ -495,17 +521,15 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
     fetch_event_id = version_->StartRequest(
         GetEventType(),
         base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(&response_callback)));
     event_finish_id = version_->StartRequest(
         FetchTypeToWaitUntilEventType(request_->fetch_type),
         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   }
 
-  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
-  mojo::MakeStrongBinding(
-      base::MakeUnique<ResponseCallback>(weak_factory_.GetWeakPtr(),
-                                         version_.get(), fetch_event_id),
-      mojo::MakeRequest(&response_callback_ptr));
+  response_callback_rawptr->set_fetch_event_id(fetch_event_id);
+
   if (url_loader_assets_) {
     url_loader_assets_->MayBeReportToDevTools(
         std::make_pair(
@@ -520,13 +544,14 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // assets alive while the FetchEvent is ongoing in the service worker.
   version_->event_dispatcher()->DispatchFetchEvent(
       fetch_event_id, *request_, std::move(preload_handle_),
-      std::move(response_callback_ptr),
+      std::move(mojo_response_callback_ptr),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,
                      url_loader_assets_));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
+    std::unique_ptr<ResponseCallback> response_callback,
     ServiceWorkerStatusCode status) {
   EndNetLogEventWithServiceWorkerStatus(
       net_log_, net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT, status);
