@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/h265_parser.h"
+#include "media/video/h265_parser.h"
 
 #include <stddef.h>
 
@@ -39,8 +39,7 @@ H265Parser::H265Parser() {
   Reset();
 }
 
-H265Parser::~H265Parser() {
-}
+H265Parser::~H265Parser() {}
 
 void H265Parser::Reset() {
   stream_ = NULL;
@@ -81,10 +80,9 @@ bool H265Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   off_t nalu_start_off = 0;
   off_t annexb_start_code_size = 0;
 
-  if (!H264Parser::FindStartCodeInClearRanges(stream_, bytes_left_,
-                                              encrypted_ranges_,
-                                              &nalu_start_off,
-                                              &annexb_start_code_size)) {
+  if (!H264Parser::FindStartCodeInClearRanges(
+          stream_, bytes_left_, encrypted_ranges_, &nalu_start_off,
+          &annexb_start_code_size)) {
     DVLOG(4) << "Could not find start code, end of stream?";
     return false;
   }
@@ -108,10 +106,9 @@ bool H265Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   // belong to the current NALU.
   off_t next_start_code_size = 0;
   off_t nalu_size_without_start_code = 0;
-  if (!H264Parser::FindStartCodeInClearRanges(nalu_data, max_nalu_data_size,
-                                              encrypted_ranges_,
-                                              &nalu_size_without_start_code,
-                                              &next_start_code_size)) {
+  if (!H264Parser::FindStartCodeInClearRanges(
+          nalu_data, max_nalu_data_size, encrypted_ranges_,
+          &nalu_size_without_start_code, &next_start_code_size)) {
     nalu_size_without_start_code = max_nalu_data_size;
   }
   *nalu_size = nalu_size_without_start_code + annexb_start_code_size;

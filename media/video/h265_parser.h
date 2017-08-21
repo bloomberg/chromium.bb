@@ -4,8 +4,8 @@
 //
 // This file contains an implementation of an H265 Annex-B video stream parser.
 
-#ifndef MEDIA_FILTERS_H265_PARSER_H_
-#define MEDIA_FILTERS_H265_PARSER_H_
+#ifndef MEDIA_VIDEO_H265_PARSER_H_
+#define MEDIA_VIDEO_H265_PARSER_H_
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -149,4 +149,4 @@ class MEDIA_EXPORT H265Parser {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_H265_PARSER_H_
+#endif  // MEDIA_VIDEO_H265_PARSER_H_
