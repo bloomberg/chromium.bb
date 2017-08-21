@@ -55,12 +55,12 @@ ApplyBlockElementCommand::ApplyBlockElementCommand(
     : CompositeEditCommand(document), tag_name_(tag_name) {}
 
 void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
-  if (!EndingVisibleSelection().RootEditableElement())
-    return;
-
   // ApplyBlockElementCommands are only created directly by editor commands'
   // execution, which updates layout before entering doApply().
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+
+  if (!RootEditableElementOf(EndingSelection().Base()))
+    return;
 
   VisiblePosition visible_end = EndingVisibleSelection().VisibleEnd();
   VisiblePosition visible_start = EndingVisibleSelection().VisibleStart();

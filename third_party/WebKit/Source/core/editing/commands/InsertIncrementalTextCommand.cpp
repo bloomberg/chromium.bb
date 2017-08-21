@@ -129,7 +129,8 @@ InsertIncrementalTextCommand::InsertIncrementalTextCommand(
     : InsertTextCommand(document, text, select_inserted_text, rebalance_type) {}
 
 void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
-  const Element* element = EndingVisibleSelection().RootEditableElement();
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+  const Element* element = RootEditableElementOf(EndingSelection().Base());
   DCHECK(element);
 
   const EphemeralRange selection_range(EndingVisibleSelection().Start(),
