@@ -122,8 +122,8 @@ void SendNativeCommandShift(int key_code) {
 // global and that keys beyond Ctrl+Shift+[0..9] cannot be auto-assigned by an
 // extension.
 //
-// Doesn't work in GN CrOS ozone builds yet, http://crbug.com/619784
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+// Doesn't work in CrOS builds, http://crbug.com/619784
+#if defined(OS_CHROMEOS)
 #define MAYBE_GlobalCommand DISABLED_GlobalCommand
 #else
 #define MAYBE_GlobalCommand GlobalCommand

@@ -3078,7 +3078,7 @@ const struct wl_pointer_interface pointer_implementation = {pointer_set_cursor,
 class WaylandKeyboardDelegate
     : public KeyboardDelegate,
       public KeyboardObserver
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
     ,
       public chromeos::input_method::ImeKeyboard::Observer
 #endif
@@ -3087,7 +3087,7 @@ class WaylandKeyboardDelegate
   explicit WaylandKeyboardDelegate(wl_resource* keyboard_resource)
       : keyboard_resource_(keyboard_resource),
         xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)) {
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {
@@ -3098,7 +3098,7 @@ class WaylandKeyboardDelegate
     SendLayout(nullptr);
 #endif
   }
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   ~WaylandKeyboardDelegate() override {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
@@ -3164,7 +3164,7 @@ class WaylandKeyboardDelegate
     wl_client_flush(client());
   }
 
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // Overridden from input_method::ImeKeyboard::Observer:
   void OnCapsLockChanged(bool enabled) override {}
   void OnLayoutChanging(const std::string& layout_name) override {
@@ -3209,8 +3209,7 @@ class WaylandKeyboardDelegate
     return xkb_modifiers;
   }
 
-
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // Send the named keyboard layout to the client.
   void SendNamedLayout(const std::string& layout_name) {
     std::string layout_id, layout_variant;
