@@ -1417,7 +1417,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 #pragma mark - TabHistory Requirements
 
-- (CGPoint)originPointForToolbarButton:(ToolbarButton)toolbarButton {
+- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
   UIButton* historyButton = toolbarButton ? _backButton : _forwardButton;
 
   // Set the origin for the tools popup to the leading side of the bottom of the
@@ -1430,7 +1430,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return origin;
 }
 
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButton)button {
+- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
   UIButton* historyButton = button ? _backButton : _forwardButton;
   // Keep the button pressed by swapping the normal and highlighted images.
   [self setImagesForNavButton:historyButton withTabHistoryVisible:YES];

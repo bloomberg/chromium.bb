@@ -29,8 +29,8 @@ source_set("history_popup") {
 source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "tab_history_coordinator.h",
-    "tab_history_coordinator.mm",
+    "tab_history_legacy_coordinator.h",
+    "tab_history_legacy_coordinator.mm",
   ]
   deps = [
     ":history_popup",

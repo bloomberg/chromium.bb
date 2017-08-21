@@ -11,7 +11,7 @@
 @optional
 // Tells the receiver to update its UI now that TabHistory popup will be
 // presented.
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButton)button;
+- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button;
 
 // Tells the receiver to update its UI now that TabHistory popup was dismissed.
 - (void)updateUIForTabHistoryWasDismissed;

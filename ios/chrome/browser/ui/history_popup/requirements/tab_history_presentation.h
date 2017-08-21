@@ -7,6 +7,8 @@
 
 @protocol TabHistoryPresentation
 @optional
+// UIView in which the Tab History popup will be presented.
+- (UIView*)viewForTabHistoryPresentation;
 // Tells the receiver the Tab History popup will be presented.
 - (void)prepareForTabHistoryPresentation;
 @end

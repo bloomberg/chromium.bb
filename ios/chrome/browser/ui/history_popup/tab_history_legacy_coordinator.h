@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_LEGACY_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_LEGACY_COORDINATOR_H_
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 
@@ -17,7 +17,7 @@
 // The coordinator in charge of displaying and dismissing the TabHistoryPopup.
 // The TabHistoryPopup is presented when the user long presses the back or
 // forward Toolbar button.
-@interface TabHistoryCoordinator : ChromeCoordinator
+@interface LegacyTabHistoryCoordinator : ChromeCoordinator
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
@@ -31,13 +31,13 @@
 @property(nonatomic, weak) id<TabHistoryUIUpdater> tabHistoryUIUpdater;
 // The current TabModel being used by BVC.
 @property(nonatomic, weak) TabModel* tabModel;
+
 // Dissmisses the currently presented TabHistoryPopup, if none is being
 // presented it will no-op.
-
 - (void)dismissHistoryPopup;
 // Stops listening for dispatcher calls.
 - (void)disconnect;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_LEGACY_COORDINATOR_H_

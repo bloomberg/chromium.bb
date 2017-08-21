@@ -12,11 +12,11 @@ extern NSString* const kTabHistoryPopupWillShowNotification;
 extern NSString* const kTabHistoryPopupWillHideNotification;
 
 // Toolbar buttons that can display the HistoryPopup.
-typedef NS_OPTIONS(NSUInteger, ToolbarButton) {
+typedef NS_OPTIONS(NSUInteger, ToolbarButtonType) {
   // Back Toolbar Button.
-  ToolbarButtonForward = 0,
+  ToolbarButtonTypeForward = 0,
   // Forward Toolbar Button.
-  ToolbarButtonBack = 1,
+  ToolbarButtonTypeBack = 1,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_POPUP_CONSTANTS_H_
