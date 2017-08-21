@@ -102,7 +102,7 @@ VisibleSelection CompositeEditCommand::EndingVisibleSelection() const {
 
 bool CompositeEditCommand::Apply() {
   DCHECK(!IsCommandGroupWrapper());
-  if (!EndingVisibleSelection().IsContentRichlyEditable()) {
+  if (!IsRichlyEditablePosition(EndingVisibleSelection().Base())) {
     switch (GetInputType()) {
       case InputEvent::InputType::kInsertText:
       case InputEvent::InputType::kInsertLineBreak:
