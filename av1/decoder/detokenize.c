@@ -116,9 +116,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM && !CONFIG_NEW_QUANT
   const qm_val_t *iqmatrix = iqm[!ref][tx_size];
-#else
-  (void)tx_type;
 #endif  // CONFIG_AOM_QM
+  (void)tx_type;
   int band, c = 0;
   const int tx_size_ctx = txsize_sqr_map[tx_size];
   aom_cdf_prob(*coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
