@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary অ্যাপ্লিকেশানগুলি</translation>
 <translation id="1457721931618994305">Google Chrome আপডেট হচ্ছে...</translation>
 <translation id="1469002951682717133">Chrome অ্যাপ্লিকেশান লঞ্চার</translation>
-<translation id="1480489203462860648">এটি ব্যবহার করে দেখুন, ইতিমধ্যেই এটি ইনস্টল করা হয়েছে</translation>
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
 <translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> বিপজ্জনক, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
@@ -142,7 +141,7 @@
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
 <translation id="5028489144783860647">Google Chrome আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="5037239767309817516">দয়া করে সব Google Chrome উইন্ডো বন্ধ করুন এবং এই পরিবর্তনকে প্রভাবশালী করতে এটিকে পুনঃলঞ্চ  করুন৷ </translation>
-<translation id="5132929315877954718">Google Chrome এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
+<translation id="5132929315877954718">Google Chrome-এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
 <translation id="5166975452760862670">Google Chrome এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5170938038195470297">আপনার প্রোফাইল ব্যবহার করা যাবে কারণ এটি Google Chrome-এর একটি নতুন সংস্করণে গঠিত৷ 
 
@@ -198,7 +197,6 @@
 <translation id="6634887557811630702">Google Chrome আপ টু ডেট আছে:</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6697947395630195233">এই সাইটটির সাথে আপনার অবস্থান শেয়ার করার জন্য Chrome কে আপনার অবস্থানের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
-<translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="686561893457936865">Chrome কে সর্বত্র নিয়ে চলুন</translation>
 <translation id="6883876366448858277">Google অনুসন্ধানে একটি শব্দ এবং এটির পার্শ্ববর্তী প্রসঙ্গ পাঠায়, সংজ্ঞা, ছবি, অনুসন্ধান ফলাফল, এবং অন্যান্য অনুসন্ধান ফলাফল ফেরত পাঠায়৷</translation>
@@ -213,7 +211,6 @@
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
 <translation id="7164397146364144019">আপনি Google এ নিরাপত্তার সম্ভাব্য লঙ্ঘনের ঘটনাগুলি স্বয়ংক্রিয়ভাবে প্রতিবেদন করার মাধ্যমে Chrome কে নিরাপদ ও সহজে ব্যবহারযোগ্য করতে তুলতে সাহায্য করতে পারেন।</translation>
 <translation id="7185038942300673794">Chrome-এ <ph name="EXTENSION_NAME" />-টি জোড়া হয়েছে৷</translation>
-<translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>
 <translation id="7242029209006116544">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে প্রবেশ করুন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ বিকল্প হিসাবে আপনি আপনার বিদ্যমান Chrome ডেটা আলাদা রাখার জন্য একটি নতুন প্রোফাইল তৈরি করতে পারেন৷ <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">এই কম্পিউটারটি শীঘ্রই Google Chrome আপডেট গ্রহণ করা বন্ধ করবে কারণ Windows XP ও Windows Vista আর সমর্থিত হবে না।</translation>
 <translation id="7330164299247909639">প্রমাণীকরণের শংসাপত্রটি কাজ করেনি। অনুগ্রহ করে <ph name="USER_NAME" /> হিসেবে আবার Google Chrome এ সাইন-ইন করুন বা আরও তথ্যের জন্য আপনার প্রশাসকের সাথে যোগাযোগ করুন। <ph name="ADDITIONAL_EXPLANATION" /></translation>

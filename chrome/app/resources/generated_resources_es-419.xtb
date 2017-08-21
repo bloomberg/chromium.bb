@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">Ajustar</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
-<translation id="1524152555482653726">Película</translation>
 <translation id="1524430321211440688">Teclado</translation>
 <translation id="1525835343380843286">Se produjo un error en la comunicación con el servidor</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">No se pudo modificar el archivo.</translation>
 <translation id="1665770420914915777">Utilizar la página Nueva pestaña</translation>
 <translation id="1666058115165804494">Hora de creación</translation>
-<translation id="1666288758713846745">Dinámico</translation>
 <translation id="1666788816626221136">Tienes certificados archivados que no coinciden con ninguna de las demás categorías:</translation>
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="1673103856845176271">No se pudo acceder al archivo por razones de seguridad.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">la última hora</translation>
 <translation id="2121825465123208577">Ajustar tamaño</translation>
 <translation id="2126167708562367080">Tu administrador inhabilitó la sincronización.</translation>
+<translation id="2126426811489709554">Con tecnología de Chrome</translation>
 <translation id="2127166530420714525">Error al cambiar el estado de alimentación del adaptador Bluetooth</translation>
 <translation id="2127372758936585790">Carga lenta</translation>
 <translation id="212862741129535676">Porcentaje de ocupación de estado de frecuencia</translation>
@@ -1250,7 +1249,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes.</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2807517655263062534">Los archivos que descargas aparecen aquí</translation>
-<translation id="2809346626032021864">Lectura</translation>
 <translation id="2809586584051668049">y <ph name="NUMBER_ADDITIONAL_DISABLED" /> más</translation>
 <translation id="281133045296806353">Se creó una nueva ventana en la sesión existente del navegador.</translation>
 <translation id="2812944337881233323">Intenta salir y volver a acceder</translation>
@@ -1354,7 +1352,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2951247061394563839">Centrar ventana</translation>
 <translation id="2951721188322348056">Información del video</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
-<translation id="2958721676848865875">Advertencia sobre empaquetar extensiones</translation>
+<translation id="2958721676848865875">Advertencia sobre el empaquetado de extensiones</translation>
 <translation id="2959614062380389916">Inhabilitada por el administrador</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensión proporcionada)</translation>
 <translation id="2961695502793809356">Haz clic para continuar o espera para ver el historial</translation>
@@ -3784,7 +3782,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 
 Usa esta función solo con cuentas de confianza.</translation>
 <translation id="6581162200855843583">Vínculo de Google Drive</translation>
-<translation id="6582421931165117398">Para proteger tu información personal, cambia tu contraseña ahora. Antes de cambiar tu contraseña, deberás acceder a tu cuenta.</translation>
+<translation id="6582421931165117398">Para proteger tu información personal, cambia la contraseña ahora. Antes de cambiar la contraseña, deberás acceder a tu cuenta.</translation>
 <translation id="6583851739559471707">Bloqueados en sitios que tienden a mostrar anuncios intrusivos (opción recomendada)</translation>
 <translation id="6584878029876017575">Firma de vigencia de Microsoft</translation>
 <translation id="6585234750898046415">Selecciona una imagen para mostrar en tu cuenta, en la pantalla de inicio.</translation>
@@ -4796,6 +4794,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8137331602592933310">"<ph name="FILENAME" />" se compartió contigo. No puedes eliminarlo porque no eres el propietario.</translation>
 <translation id="8137559199583651773">Administrar extensiones</translation>
 <translation id="8138082791834443598">Opcional: ingresa información nueva o actualiza la existente para asociarla con este dispositivo.</translation>
+<translation id="813913629614996137">Inicializando…</translation>
 <translation id="8140778357236808512">Importar un usuario supervisado existente</translation>
 <translation id="8141725884565838206">Administra tus contraseñas.</translation>
 <translation id="8142699993796781067">Red privada</translation>

@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">Коригиране...</translation>
 <translation id="1521442365706402292">Управление на сертификати</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
-<translation id="1524152555482653726">Филм</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
 <translation id="1525835343380843286">Грешка при комуникацията със сървъра</translation>
 <translation id="1526560967942511387">Неозаглавен документ</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">Файлът не можа да бъде променен.</translation>
 <translation id="1665770420914915777">Използване на бутона „Нова страница“</translation>
 <translation id="1666058115165804494">Час на създаване</translation>
-<translation id="1666288758713846745">Динамично</translation>
 <translation id="1666788816626221136">Разполагате със сертификати, които не отговарят на нито една от другите категории:</translation>
 <translation id="1670399744444387456">Основни</translation>
 <translation id="1673103856845176271">От съображения за сигурност не можа да бъде осъществен достъп до файла.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">последния час</translation>
 <translation id="2121825465123208577">Преоразмеряване</translation>
 <translation id="2126167708562367080">Синхронизирането е деактивирано от администратора ви.</translation>
+<translation id="2126426811489709554">Предоставено от Chrome</translation>
 <translation id="2127166530420714525">Промяната на състоянието на захранването на адаптера за Bluetooth не бе успешна.</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="212862741129535676">Процент на използване в състояние на активност</translation>
@@ -1250,7 +1249,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2805707493867224476">Разрешаване на всички сайтове да показват изскачащи прозорци</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2807517655263062534">Тук се показват изтеглените от вас файлове</translation>
-<translation id="2809346626032021864">Четене</translation>
 <translation id="2809586584051668049">и още <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Създаден е нов прозорец в съществуващата сесия на браузъра.</translation>
 <translation id="2812944337881233323">Опитайте да излезете от профила си и отново да влезете в него</translation>
@@ -4797,6 +4795,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8137331602592933310">Файлът „<ph name="FILENAME" />“ е споделен с вас. Не можете да го изтриете, защото не го притежавате.</translation>
 <translation id="8137559199583651773">Управление на разширенията</translation>
 <translation id="8138082791834443598">Незадължително – въведете нова или актуализирайте съществуващата информация, която да бъде свързана с това устройство.</translation>
+<translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8140778357236808512">Импортиране на съществуващ контролиран потребител</translation>
 <translation id="8141725884565838206">Управление на паролите ви</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>

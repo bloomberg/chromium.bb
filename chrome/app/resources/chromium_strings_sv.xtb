@@ -14,7 +14,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1403254041219632970">Framtida versioner av Chromium kommer inte att ha stöd för Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="1444754455097148408">Licenser för öppen källkod för Chromium</translation>
-<translation id="1480489203462860648">Testa, webbläsaren är redan installerad</translation>
 <translation id="1502360822835740515">Gör Chromium till din standardwebbläsare</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="1559451348202814456">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.6, 10.7 och 10.8.</translation>
@@ -178,7 +177,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
-<translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder och andra sökresultat.</translation>
@@ -191,7 +189,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="707471633328071618">Google Payments (har kopierats till Chromium)</translation>
 <translation id="7138853919861947730">Chromium kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
-<translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="7205698830395646142">Dölj i Chromium-menyn</translation>
 <translation id="7223968959479464213">Aktivitetshanteraren – Chromium</translation>
 <translation id="722928257909516027">Visa Chromium-menyn</translation>

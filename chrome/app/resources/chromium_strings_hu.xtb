@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">A Chromium jövőbeli verziói nem fogják támogatni a következő rendszereket: Mac OS X 10.6, 10.7 és 10.8.</translation>
 <translation id="1414495520565016063">Bejelentkezett a Chromiumba.</translation>
 <translation id="1444754455097148408">Chromium nyílt forráskódú licencek</translation>
-<translation id="1480489203462860648">Próbálja ki, már telepítve van</translation>
 <translation id="1502360822835740515">Legyen a Chromium az alapértelmezett böngészője</translation>
 <translation id="151962892725702025">A Chromium OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="1559451348202814456">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja a következő rendszereket: Mac OS X 10.6, 10.7 és 10.8.</translation>
@@ -174,7 +173,6 @@
 <translation id="6717134281241384636">A profilja nem használható, mert az a Chromium egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Chromium újabb verzióját.</translation>
 <translation id="6734080038664603509">A &amp;Chromium frissítése</translation>
 <translation id="6734291798041940871">A Chromium már telepítve van az összes felhasználó számára a számítógépen.</translation>
-<translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
 <translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">a szót és annak szövegkörnyezetét elküldi a Google Keresésnek, amely meghatározásokat, képeket és egyéb keresési eredményeket küld vissza.</translation>
@@ -187,7 +185,6 @@
 <translation id="707471633328071618">Google Payments (a Chromiumra másolva)</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="7162152143154757523">A Chromium pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy Ön ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
-<translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="7205698830395646142">Elrejtés a Chromium-menüben</translation>
 <translation id="7223968959479464213">Feladatkezelő -- Chromium</translation>
 <translation id="722928257909516027">Chromium menü megjelenítése</translation>

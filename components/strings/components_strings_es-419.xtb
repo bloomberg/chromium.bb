@@ -463,7 +463,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Intenta inhabilitar tus extensiones.</translation>
 <translation id="457875822857220463">Entrega</translation>
-<translation id="4582800630050655161">Es posible que hayas perdido el acceso a tu cuenta de Google o sufrido un robo de identidad. Chromium te recomienda que cambies tu contraseña ahora.</translation>
+<translation id="4582800630050655161">Es posible que hayas perdido el acceso a tu cuenta de Google o sufrido un robo de identidad. Chromium te recomienda que cambies la contraseña ahora.</translation>
 <translation id="4587425331216688090">¿Confirmas que quieres quitar la dirección de Chrome?</translation>
 <translation id="4592951414987517459">Tu conexión a <ph name="DOMAIN" /> está encriptada con un conjunto de cifrado moderno.</translation>
 <translation id="4594403342090139922">&amp;Deshacer Eliminar</translation>
@@ -472,7 +472,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad contiene errores. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="4690462567478992370">Dejar de usar un certificado no válido</translation>
-<translation id="4690954380545377795">Es posible que hayas perdido el acceso a tu cuenta de Google o sufrido un robo de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
+<translation id="4690954380545377795">Es posible que hayas perdido el acceso a tu cuenta de Google o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se interrumpió la conexión</translation>
 <translation id="471880041731876836">No tienes permiso para visitar este sitio</translation>

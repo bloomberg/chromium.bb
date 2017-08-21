@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">تنظیم...</translation>
 <translation id="1521442365706402292">مدیریت گواهی‌ها</translation>
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
-<translation id="1524152555482653726">فیلم</translation>
 <translation id="1524430321211440688">صفحه‌کلید</translation>
 <translation id="1525835343380843286">خطای ارتباط سرور</translation>
 <translation id="1526560967942511387">سند بدون عنوان</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">امکان تغییر این فایل وجود نداشت.</translation>
 <translation id="1665770420914915777">استفاده از صفحه «برگه جدید»</translation>
 <translation id="1666058115165804494">زمان ایجاد</translation>
-<translation id="1666288758713846745">پویا</translation>
 <translation id="1666788816626221136">شما گواهی هایی برای فایل دارید که برای دسته‌های دیگر مناسب نیست:</translation>
 <translation id="1670399744444387456">پایه</translation>
 <translation id="1673103856845176271">دسترسی به این فایل به دلایل امنیتی ممکن نبود.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">ساعت گذشته</translation>
 <translation id="2121825465123208577">تغییر اندازه</translation>
 <translation id="2126167708562367080">همگام‌سازی توسط سرپرست شما غیرفعال شده است.</translation>
+<translation id="2126426811489709554">‏ارائه توسط Chrome</translation>
 <translation id="2127166530420714525">تغییر وضعیت آداپتور بلوتوث ناموفق بود.</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="212862741129535676">درصد اشغال حالت فرکانس</translation>
@@ -1249,7 +1248,6 @@
 <translation id="2805707493867224476">به همه سایت‌ها برای نمایش پنجره‌های بازشو اجازه داده شود</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
 <translation id="2807517655263062534">فایل‌هایی که بارگیری می‌کنید اینجا نشان داده می‌شود</translation>
-<translation id="2809346626032021864">خواندن</translation>
 <translation id="2809586584051668049">و <ph name="NUMBER_ADDITIONAL_DISABLED" /> مورد دیگر</translation>
 <translation id="281133045296806353">پنجرهٔ جدید ایجاد شده در جلسه مرورگر فعلی.</translation>
 <translation id="2812944337881233323">تلاش کنید از سیستم خارج و دوباره وارد شوید</translation>
@@ -4795,6 +4793,7 @@
 <translation id="8137331602592933310">«<ph name="FILENAME" />» با شما به اشتراک گذاشته شده است. شما نمی‌توانید آن را حذف کنید زیرا به شما تعلق ندارد.</translation>
 <translation id="8137559199583651773">مدیریت افزونه‌ها</translation>
 <translation id="8138082791834443598">اختیاری — اطلاعات جدیدی برای مرتبط شدن با این دستگاه وارد کنید یا اطلاعات موجود را به‌روزرسانی کنید.</translation>
+<translation id="813913629614996137">درحال مقداردهی اولیه…</translation>
 <translation id="8140778357236808512">وارد کردن کاربر نظارت‌شده موجود</translation>
 <translation id="8141725884565838206">مدیریت گذرواژه‌های شما</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>

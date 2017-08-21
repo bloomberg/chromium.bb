@@ -18,7 +18,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
 <translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
-<translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="1587325591171447154">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
@@ -202,7 +201,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6634887557811630702">Google Chrome est à jour.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
-<translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="686561893457936865">Chrome avec vous n'importe où</translation>
 <translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
@@ -217,7 +215,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="7164397146364144019">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
 <translation id="7185038942300673794">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Google Chrome.</translation>
-<translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="7330164299247909639">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Google Chrome en tant que <ph name="USER_NAME" /> ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>

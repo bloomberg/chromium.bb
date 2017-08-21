@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">አስተካክል...</translation>
 <translation id="1521442365706402292">ሰርተፊኬቶችን አቀናብር</translation>
 <translation id="152234381334907219">በጭራሽ አልተቀመጠም</translation>
-<translation id="1524152555482653726">ፊልም</translation>
 <translation id="1524430321211440688">የቁልፍ ሰሌዳ</translation>
 <translation id="1525835343380843286">የአገልጋይ ግንኙነት ስህተት</translation>
 <translation id="1526560967942511387">ርዕስ አልባ ሰነድ</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">ይህ ፋይል ሊቀየር አልቻለም።</translation>
 <translation id="1665770420914915777">የአዲሱን ትር ገጽ ተጠቀም</translation>
 <translation id="1666058115165804494">የተፈጠረበት ጊዜ</translation>
-<translation id="1666288758713846745">ተለዋዋጭ</translation>
 <translation id="1666788816626221136">ከማናቸውም ሌሎች መደቦች ጋር የማይመጣጠኑ ሰርቲፊኬቶች በፋይሉ ላይ አሉዎት፦</translation>
 <translation id="1670399744444387456">መሠረታዊ</translation>
 <translation id="1673103856845176271">ይህ ፋይል በደህንነት ምክንያቶች ሊደረስበት አልተቻለም።</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ያለፈው ሰዓት</translation>
 <translation id="2121825465123208577">መጠን ቀይር</translation>
 <translation id="2126167708562367080">ስምረት በእርስዎ አስተዳዳሪ ተሰናክሏል።</translation>
+<translation id="2126426811489709554">በChrome የጎለበተ</translation>
 <translation id="2127166530420714525">የብሉቱዝ አስማሚውን የኃይል ሁኔታ መቀየር አልተሳካም።</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
 <translation id="212862741129535676">የተደጋጋሚነት ሁኔታ ያዥነት መቶኛ</translation>
@@ -1254,7 +1253,6 @@
 <translation id="2805707493867224476">ሁሉም ጣቢያዎች ብቅ-ባዮችን እንዲያሳዩ ፍቀድ</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2807517655263062534">እርስዎ የሚያወርዷቸው ፋይሎች እዚህ ይመጣሉ</translation>
-<translation id="2809346626032021864">ንባብ</translation>
 <translation id="2809586584051668049">እና <ph name="NUMBER_ADDITIONAL_DISABLED" /> ተጨማሪ</translation>
 <translation id="281133045296806353">ባለው አሳሽ ክፍለ ጊዜ አዲስ መስኮት ተፈጥሯል።</translation>
 <translation id="2812944337881233323">ዘግተው ወጥተው እና ተመልሰው ለመግባት ይሞክሩ</translation>
@@ -4803,6 +4801,7 @@ nil</translation>
 <translation id="8137331602592933310">«<ph name="FILENAME" />» ለእርስዎ ተጋርቷል። እርስዎ ባለቤቱ ስላልሆኑ ሊሰርዙት አይችሉም።</translation>
 <translation id="8137559199583651773">ቅጥያዎችን ያስተዳድሩ</translation>
 <translation id="8138082791834443598">ግዴታ ያልሆነ — ከዚህ መሣሪያ ጋር የሚቆራኘውን መረጃ ያስገቡ ወይም አሁን ያለውን መረጃ ያዘምኑ።</translation>
+<translation id="813913629614996137">በማስጀመር ላይ…</translation>
 <translation id="8140778357236808512">አንድ ነባር ክትትል የሚደረግበት ተጠቃሚ አስመጣ</translation>
 <translation id="8141725884565838206">የይለፍ ቃልዎችዎን ያስተዳድሩ</translation>
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>

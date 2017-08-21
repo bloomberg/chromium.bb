@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary アプリ</translation>
 <translation id="1457721931618994305">Google Chrome を更新しています...</translation>
 <translation id="1469002951682717133">Chrome アプリ ランチャー</translation>
-<translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
 <translation id="1587223624401073077">Google Chrome がカメラを使用しています。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> は危険なファイルであるため、Chrome でブロックしました。</translation>
@@ -194,7 +193,6 @@
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
-<translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="686561893457936865">どの端末でも同じ Chrome を使用できます</translation>
 <translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
@@ -209,7 +207,6 @@
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
-<translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="7330164299247909639">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Google Chrome にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>

@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary-apper</translation>
 <translation id="1457721931618994305">Oppdaterer Google Chrome …</translation>
 <translation id="1469002951682717133">Chrome Appvelger</translation>
-<translation id="1480489203462860648">Prøv det – det er allerede installert</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
@@ -194,7 +193,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="6634887557811630702">Google Chrome er oppdatert.</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="6697947395630195233">Chrome trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
-<translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>
 <translation id="686561893457936865">Bruk Chrome overalt</translation>
 <translation id="6883876366448858277">sender et ord og den omkringliggende konteksten til Google Søk. Definisjoner, bilder og andre søkeresultater blir sendt tilbake.</translation>
@@ -209,7 +207,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
 <translation id="7164397146364144019">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke, ved å rapportere detaljer om mulige sikkerhetsbrudd til Google automatisk.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chrome.</translation>
-<translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi Windows XP og Windows Vista ikke støttes lenger.</translation>
 <translation id="7330164299247909639">Autentiseringssertifikatet mislyktes. Logg på Google Chrome på nytt som <ph name="USER_NAME" />, eller kontakt administratoren din for å få mer informasjon. <ph name="ADDITIONAL_EXPLANATION" /></translation>

@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ajusta...</translation>
 <translation id="1521442365706402292">Administra certificats</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
-<translation id="1524152555482653726">Pel·lícula</translation>
 <translation id="1524430321211440688">Teclat</translation>
 <translation id="1525835343380843286">Error de comunicació amb el servidor</translation>
 <translation id="1526560967942511387">Document sense títol</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">El fitxer no s'ha pogut modificar.</translation>
 <translation id="1665770420914915777">Utilitza la pàgina Pestanya nova</translation>
 <translation id="1666058115165804494">Hora de creació</translation>
-<translation id="1666288758713846745">Dinàmic</translation>
 <translation id="1666788816626221136">Teniu certificats arxivats que no s'ajusten a cap de les altres categories:</translation>
 <translation id="1670399744444387456">Opcions bàsiques</translation>
 <translation id="1673103856845176271">No s'ha pogut accedir al fitxer per qüestions de seguretat.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">fa una hora</translation>
 <translation id="2121825465123208577">Canvia la mida</translation>
 <translation id="2126167708562367080">L'administrador ha desactivat la sincronització.</translation>
+<translation id="2126426811489709554">Amb tecnologia de Chrome</translation>
 <translation id="2127166530420714525">No s'ha pogut canviar l'estat d'alimentació de l'adaptador Bluetooth.</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="212862741129535676">Percentatge d'ocupació de l'estat de freqüència</translation>
@@ -1252,7 +1251,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2805707493867224476">Permet que tots els llocs mostrin finestres emergents</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2807517655263062534">Aquí es mostren els fitxers baixats</translation>
-<translation id="2809346626032021864">Lectura</translation>
 <translation id="2809586584051668049">i <ph name="NUMBER_ADDITIONAL_DISABLED" /> més</translation>
 <translation id="281133045296806353">S'ha creat una finestra nova a la sessió del navegador existent.</translation>
 <translation id="2812944337881233323">Tanca la sessió i torna-la a iniciar</translation>
@@ -1584,7 +1582,7 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="3288047731229977326">Les extensions que funcionen amb el mode desenvolupador poden malmetre el vostre ordinador. Si no sou desenvolupador, hauríeu de desactivar aquestes extensions per continuar protegit.</translation>
 <translation id="3289856944988573801">Per comprovar si hi ha actualitzacions, feu servir Ethernet o Wi-Fi.</translation>
 <translation id="3294437725009624529">Convidat</translation>
-<translation id="329650768420594634">Advertiment de l'extensió de paquets</translation>
+<translation id="329650768420594634">Advertiment de l'empaquetatge d'extensió</translation>
 <translation id="3297788108165652516">Aquesta xarxa està compartida amb altres usuaris.</translation>
 <translation id="329838636886466101">Repara</translation>
 <translation id="3298789223962368867">Heu introduït un URL no vàlid.</translation>
@@ -4786,6 +4784,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8137331602592933310">El fitxer "<ph name="FILENAME" />" s'ha compartit amb l'usuari. No el podeu suprimir perquè no és vostre.</translation>
 <translation id="8137559199583651773">Gestiona les extensions</translation>
 <translation id="8138082791834443598">Opcional: introduïu informació nova, o actualitzeu la que hi havia, per associar-la amb aquest dispositiu.</translation>
+<translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8140778357236808512">Importa un usuari supervisat existent</translation>
 <translation id="8141725884565838206">Gestiona les contrasenyes</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>

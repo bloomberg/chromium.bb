@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Applicazioni Chrome Canary</translation>
 <translation id="1457721931618994305">Aggiornamento di Google Chrome in corso...</translation>
 <translation id="1469002951682717133">Avvio applicazioni di Chrome</translation>
-<translation id="1480489203462860648">Provalo, è già installato</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chrome.</translation>
@@ -195,7 +194,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6634887557811630702">Google Chrome è aggiornato.</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
-<translation id="6757767188268205357">Non mi interessa</translation>
 <translation id="683440813066116847">Regola inbound per consentire il traffico mDNS in Google Chrome Canary.</translation>
 <translation id="686561893457936865">Porta Chrome ovunque</translation>
 <translation id="6883876366448858277">invia una parola e il contesto circostante alla Ricerca Google affinché possano essere restituiti definizioni, immagini e altri risultati di ricerca.</translation>
@@ -210,7 +208,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
 <translation id="7164397146364144019">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare segnalando automaticamente a Google i dettagli dei possibili problemi di sicurezza.</translation>
 <translation id="7185038942300673794">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chrome.</translation>
-<translation id="7196020411877309443">Perché visualizzo questo avviso?</translation>
 <translation id="7242029209006116544">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. Se preferisci puoi creare un nuovo profilo per mantenere separati i dati di Chrome esistenti. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non saranno più supportati.</translation>
 <translation id="7330164299247909639">Errore del certificato di autenticazione. Accedi di nuovo a Google Chrome come <ph name="USER_NAME" /> o contatta il tuo amministratore per avere ulteriori informazioni. <ph name="ADDITIONAL_EXPLANATION" /></translation>

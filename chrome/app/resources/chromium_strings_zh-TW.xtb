@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">日後發佈的 Chromium 版本將不再支援 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1414495520565016063">你已登入 Chromium！</translation>
 <translation id="1444754455097148408">Chromium 開放原始碼授權</translation>
-<translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
 <translation id="1502360822835740515">將 Chromium 設為預設瀏覽器</translation>
 <translation id="151962892725702025">你的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理你的資料。</translation>
 <translation id="1559451348202814456">Chromium 已不適用於 Mac OS X 10.6、10.7 或 10.8，因此可能無法正常運作。</translation>
@@ -176,7 +175,6 @@
 這表示你可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="6734291798041940871">電腦上的所有使用者都已經安裝 Chromium 了。</translation>
-<translation id="6757767188268205357">不要再問我</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
@@ -189,7 +187,6 @@
 <translation id="707471633328071618">Google Payments (已複製到 Chromium)</translation>
 <translation id="7138853919861947730">Chromium 透過網路服務改善瀏覽品質。</translation>
 <translation id="7162152143154757523">Chromium 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更精確的拼字檢查功能。</translation>
-<translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7205698830395646142">在 Chromium 選單中隱藏</translation>
 <translation id="7223968959479464213">工作管理員 - Chromium</translation>
 <translation id="722928257909516027">顯示 Chromium 選單</translation>

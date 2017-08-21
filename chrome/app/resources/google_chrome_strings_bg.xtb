@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Приложения в ранната версия на Chrome</translation>
 <translation id="1457721931618994305">Google Chrome се актуализира...</translation>
 <translation id="1469002951682717133">Стартов панел с приложения за Chrome</translation>
-<translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
@@ -196,7 +195,6 @@
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
 <translation id="6697947395630195233">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт.</translation>
-<translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
 <translation id="686561893457936865">Използвайте Chrome навсякъде</translation>
 <translation id="6883876366448858277">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки и други резултати от търсенето.</translation>
@@ -211,7 +209,6 @@
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="7164397146364144019">Можете да ни помогнете да направим Chrome по-надежден и по-лесен за използване, като автоматично ни съобщавате подробности за инциденти, свързани със сигурността.</translation>
 <translation id="7185038942300673794">Разширението <ph name="EXTENSION_NAME" /> е добавено към Chrome.</translation>
-<translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="7242029209006116544">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. По избор можете да създадете нов потребителски профил, за да отделите съществуващите си данни в Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече няма да се поддържат.</translation>
 <translation id="7330164299247909639">Грешка в сертификата за удостоверяване. Моля, влезте отново в Google Chrome като <ph name="USER_NAME" /> или се свържете с администратора си за повече информация. <ph name="ADDITIONAL_EXPLANATION" /></translation>

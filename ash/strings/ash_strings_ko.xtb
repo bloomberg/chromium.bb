@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">입력 방법은 관리자가 설정합니다.</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="1856813161013948396">지문 센서를 탭하여 화면 잠금을 해제합니다. 설정하려면 클릭하세요.</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">돋보기</translation>
+<translation id="4351433414020964307">어시스턴트 로드 중...</translation>
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>

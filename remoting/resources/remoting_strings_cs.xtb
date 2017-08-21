@@ -175,12 +175,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
 <translation id="5170982930780719864">Neplatné ID hostitele.</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
-<translation id="5196958630269420102">Bezpečně ze svého zařízení iOS přistupujte k počítačům.
-
-• Na každém ze svých počítačů nastavte vzdálený přístup pomocí aplikace Vzdálená plocha Chrome z Internetového obchodu Chrome: https://chrome.google.com/remotedesktop
-• Na zařízení iOS otevřete příslušnou aplikaci a klepnutím na některý ze svých online počítačů se připojte.
-
-Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí společnosti Google (http://goo.gl/SyrVzj) a zásadách ochrany soukromí prohlížeče Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Časté dotazy</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
@@ -235,11 +229,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí s
 <translation id="6570205395680337606">Resetovat aplikace. Veškerá neuložená práce bude ztracena.</translation>
 <translation id="6572345186230665992">Pro Mac (OS X Mavericks 10.9 a novější)</translation>
 <translation id="6583902294974160967">Podpora</translation>
-<translation id="6598484667010442494">Vzdálená plocha Chrome
-Vzdálená plocha
-Vzdálené PC
-Vzdálený počítač
-Vzdálený přístup</translation>
 <translation id="6612717000975622067">Odeslat akci Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všechna práva vyhrazena.</translation>
@@ -301,7 +290,7 @@ Vzdálený přístup</translation>
 <translation id="8187079423890319756">Copyright 2013 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8196755618196986400">Abychom vás mohli kontaktovat kvůli dalším informacím, všechny zpětné vazby, které odešlete, budou obsahovat vaši e-mailovou adresu.</translation>
 <translation id="8244400547700556338">Další informace</translation>
-<translation id="8261506727792406068">Vymazat</translation>
+<translation id="8261506727792406068">Smazat</translation>
 <translation id="8355326866731426344">Platnost tohoto přístupového kódu vyprší za <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Zahrnout protokoly aplikací, které nám pomohou s vyřešením vašeho problému (protokoly mohou obsahovat osobní údaje)</translation>
 <translation id="837021510621780684">Z tohoto počítače</translation>

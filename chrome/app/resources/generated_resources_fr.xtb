@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ajuster…</translation>
 <translation id="1521442365706402292">Gérer les certificats</translation>
 <translation id="152234381334907219">Jamais enregistrés</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Clavier</translation>
 <translation id="1525835343380843286">Erreur de communication serveur</translation>
 <translation id="1526560967942511387">Document sans titre</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Impossible de modifier le fichier.</translation>
 <translation id="1665770420914915777">Afficher la page Nouvel onglet</translation>
 <translation id="1666058115165804494">Heure de création</translation>
-<translation id="1666288758713846745">Dynamique</translation>
 <translation id="1666788816626221136">Vous disposez de certificats qui n'appartiennent à aucune autre catégorie :</translation>
 <translation id="1670399744444387456">Général</translation>
 <translation id="1673103856845176271">Impossible d'accéder au fichier pour des raisons de sécurité.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">de moins d'une heure</translation>
 <translation id="2121825465123208577">Redimensionner</translation>
 <translation id="2126167708562367080">Votre administrateur a désactivé la synchronisation.</translation>
+<translation id="2126426811489709554">Proposé par Chrome</translation>
 <translation id="2127166530420714525">Impossible de modifier l'état d'alimentation de l'adaptateur Bluetooth.</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="212862741129535676">Taux d'occupation des bandes de fréquence</translation>
@@ -1253,7 +1252,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2807517655263062534">Les fichiers téléchargés s'affichent ici</translation>
-<translation id="2809346626032021864">Lecture</translation>
 <translation id="2809586584051668049">ainsi que <ph name="NUMBER_ADDITIONAL_DISABLED" /> autre(s) extension(s)</translation>
 <translation id="281133045296806353">Nouvelle fenêtre ouverte dans la session du navigateur</translation>
 <translation id="2812944337881233323">Essayez de vous déconnecter, puis de vous reconnecter</translation>
@@ -4799,6 +4797,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8137331602592933310">Le fichier "<ph name="FILENAME" />" a été partagé avec vous. Vous ne pouvez pas le supprimer, car vous n'en êtes pas le propriétaire.</translation>
 <translation id="8137559199583651773">Gérer les extensions</translation>
 <translation id="8138082791834443598">Facultatif : saisissez ou mettez à jour les informations associées à cet appareil.</translation>
+<translation id="813913629614996137">Initialisation…</translation>
 <translation id="8140778357236808512">Importer un utilisateur supervisé existant</translation>
 <translation id="8141725884565838206">Gérer les mots de passe</translation>
 <translation id="8142699993796781067">Réseau privé</translation>

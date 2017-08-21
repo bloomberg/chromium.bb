@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">ปรับ...</translation>
 <translation id="1521442365706402292">จัดการใบรับรอง</translation>
 <translation id="152234381334907219">ไม่เคยบันทึก</translation>
-<translation id="1524152555482653726">ภาพยนตร์</translation>
 <translation id="1524430321211440688">แป้นพิมพ์</translation>
 <translation id="1525835343380843286">ข้อผิดพลาดในการสื่อสารกับเซิร์ฟเวอร์</translation>
 <translation id="1526560967942511387">เอกสารที่ไม่ระบุชื่อ</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">ไม่สามารถแก้ไขไฟล์</translation>
 <translation id="1665770420914915777">ใช้หน้าในแท็บใหม่</translation>
 <translation id="1666058115165804494">เวลาที่สร้าง</translation>
-<translation id="1666288758713846745">ไดนามิก</translation>
 <translation id="1666788816626221136">คุณมีใบรับรองบนไฟล์ที่ไม่เข้ากับหมวดหมู่ใดๆ:</translation>
 <translation id="1670399744444387456">พื้นฐาน</translation>
 <translation id="1673103856845176271">ไม่สามารถเข้าถึงไฟล์เนื่องจากเหตุผลด้านความปลอดภัย</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ชั่วโมงที่ผ่านมา</translation>
 <translation id="2121825465123208577">ปรับขนาด</translation>
 <translation id="2126167708562367080">ผู้ดูแลระบบปิดใช้การซิงค์</translation>
+<translation id="2126426811489709554">สนับสนุนโดย Chrome</translation>
 <translation id="2127166530420714525">ไม่สามารถเปลี่ยนสถานะพลังงานของอะแดปเตอร์บลูทูธ</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="212862741129535676">เปอร์เซ็นต์การเกิดขึ้นของสถานะความถี่</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">อนุญาตให้ไซต์ทั้งหมดแสดงป๊อปอัป</translation>
 <translation id="2805756323405976993">แอป</translation>
 <translation id="2807517655263062534">ไฟล์ที่คุณดาวน์โหลดจะปรากฏที่นี่</translation>
-<translation id="2809346626032021864">การอ่าน</translation>
 <translation id="2809586584051668049">และอีก <ph name="NUMBER_ADDITIONAL_DISABLED" /> รายการ</translation>
 <translation id="281133045296806353">สร้างหน้าต่างใหม่ในเซสชันของเบราว์เซอร์ปัจจุบัน</translation>
 <translation id="2812944337881233323">ลองออกจากระบบและลงชื่อเข้าใช้อีกครั้ง</translation>
@@ -1357,7 +1355,7 @@
 <translation id="2951247061394563839">กลางหน้าต่าง</translation>
 <translation id="2951721188322348056">ข้อมูลวิดีโอ</translation>
 <translation id="2956763290572484660">คุกกี้ <ph name="COOKIES" /> รายการ</translation>
-<translation id="2958721676848865875">คำเตือนเกี่ยวกับส่วนขยายของแพ็ก</translation>
+<translation id="2958721676848865875">คำเตือนเกี่ยวกับการรวมแพ็กเกจส่วนขยาย</translation>
 <translation id="2959614062380389916">ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (มีส่วนขยายให้มาด้วย)</translation>
 <translation id="2961695502793809356">คลิกเพื่อไปข้างหน้า กดค้างเพื่อดูประวัติการเข้าชม</translation>
@@ -4616,7 +4614,7 @@
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7877451762676714207">ข้อผิดพลาดของเซิร์ฟเวอร์ที่ไม่รู้จัก โปรดลองอีกครั้งหรือติดต่อผู้ดูแลระบบเซิร์ฟเวอร์</translation>
 <translation id="7877680364634660272">ทัวร์ชม</translation>
-<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยแล้ว</translation>
+<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยได้</translation>
 <translation id="7881483672146086348">ดูบัญชี</translation>
 <translation id="7881969471599061635">ปิดคำบรรยาย</translation>
 <translation id="7882358943899516840">ประเภทผู้ให้บริการ</translation>
@@ -4705,7 +4703,7 @@
 รักษาไฟล์กุญแจของคุณไว้ในที่ปลอดภัย คุณจะต้องใช้ไฟล์นี้ในการสร้างส่วนขยายรุ่นใหม่</translation>
 <translation id="799923393800005025">สามารถดูได้</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
-<translation id="8001504501378762252">บางไซต์อาจขโมยรหัสผ่านของคุณแล้ว</translation>
+<translation id="8001504501378762252">บางไซต์อาจขโมยรหัสผ่านของคุณไป</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8007030362289124303">แบตเตอรี่ต่ำ</translation>
 <translation id="8008356846765065031">อินเทอร์เน็ตถูกตัด โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -4799,6 +4797,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" มีการแชร์กับคุณ คุณไม่สามารถลบออกได้เนื่องจากคุณไม่ใช่เจ้าของ</translation>
 <translation id="8137559199583651773">จัดการส่วนขยาย</translation>
 <translation id="8138082791834443598">ไม่บังคับ โปรดป้อนข้อมูลใหม่หรืออัปเดตข้อมูลที่มีอยู่เพื่อเชื่อมโยงกับอุปกรณ์นี้</translation>
+<translation id="813913629614996137">กำลังเริ่มดำเนินการ...</translation>
 <translation id="8140778357236808512">นำเข้าผู้ใช้ภายใต้การดูแลที่มีอยู่</translation>
 <translation id="8141725884565838206">จัดการรหัสผ่านของคุณ</translation>
 <translation id="8142699993796781067">เครือข่ายส่วนบุคคล</translation>
@@ -5113,7 +5112,7 @@
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> หรือ <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">ต้องโหลดหน้านี้ใหม่</translation>
 <translation id="8652139471850419555">เครือข่ายที่ต้องการ</translation>
-<translation id="8652400352452647993">ข้อผิดพลาดเกี่ยวกับส่วนขยายของแพ็ก</translation>
+<translation id="8652400352452647993">ข้อผิดพลาดเกี่ยวกับการรวมแพ็กเกจส่วนขยาย</translation>
 <translation id="8652487083013326477">ปุ่มตัวเลือกช่วงหน้า</translation>
 <translation id="8654151524613148204">ไฟล์มีขนาดใหญ่เกินกว่าที่คอมพิวเตอร์ของคุณจะจัดการได้ ขออภัย</translation>
 <translation id="8655295600908251630">ช่องทาง</translation>

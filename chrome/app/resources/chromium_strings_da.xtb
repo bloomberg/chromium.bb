@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Fremtidige versioner af Chromium vil ikke længere understøtte Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du er logget ind på Chromium.</translation>
 <translation id="1444754455097148408">Chromium open source-licenser</translation>
-<translation id="1480489203462860648">Prøv det, det er allerede installeret</translation>
 <translation id="1502360822835740515">Gør Chromium til din standardbrowser</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængeligt på dit domæne.</translation>
 <translation id="1559451348202814456">Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i Mac OS X 10.6, 10.7 og 10.8.</translation>
@@ -176,7 +175,6 @@
 Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chromium.</translation>
 <translation id="6734080038664603509">Opdater &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium er allerede installeret for alle brugere på computeren.</translation>
-<translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="6810143991807788455">Hjælp med at gøre Chromium bedre ved at rapportere de aktuelle indstillinger</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">sender et ord og ordets kontekst til Google Søgning, der leverer definitioner, billeder, søgeresultater og andre oplysninger.</translation>
@@ -189,7 +187,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="707471633328071618">Google Payments (kopieret til Chromium)</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
 <translation id="7162152143154757523">Chromium kan anvende smartere stavekontrol ved at sende dine indtastninger i browseren til Googles servere, så du kan bruge den samme teknologi til stavekontrol, som der anvendes i Google-søgninger.</translation>
-<translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
 <translation id="7205698830395646142">Skjul i Chromium-menuen</translation>
 <translation id="7223968959479464213">Jobliste – Chromium</translation>
 <translation id="722928257909516027">Vis Chromium-menuen</translation>

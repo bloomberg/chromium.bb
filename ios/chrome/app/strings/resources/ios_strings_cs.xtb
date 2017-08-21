@@ -303,6 +303,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6896758677409633944">Kopírovat</translation>
 <translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6945221475159498467">Vybrat</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Složky</translation>
 <translation id="7004499039102548441">Nedávno použité karty</translation>
 <translation id="7006788746334555276">Nastavení obsahu</translation>
@@ -361,7 +362,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8137558756159375272">Vyhledání klepnutím odešle vybrané slovo a aktuální stránku jako kontext do Vyhledávání Google. Tuto funkci můžete vypnout v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Zrušit</translation>
 <translation id="8225985093977202398">Obrázky a soubory v mezipaměti</translation>
-<translation id="8261506727792406068">Vymazat</translation>
+<translation id="8261506727792406068">Smazat</translation>
 <translation id="8272426682713568063">Platební karty</translation>
 <translation id="8281781826761538115">Výchozí – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Nastavte, jak má Google využívat vaši historii procházení k personalizaci Vyhledávání, reklam a dalších služeb Google</translation>

@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Las próximas versiones de Chromium no serán compatibles con Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1414495520565016063">Accediste a Chromium.</translation>
 <translation id="1444754455097148408">Licencias de código abierto de Chromium</translation>
-<translation id="1480489203462860648">Pruébalo, ya está instalado</translation>
 <translation id="1502360822835740515">Establecer Chromium como navegador predeterminado</translation>
 <translation id="151962892725702025">El Sistema operativo Chromium no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="1559451348202814456">Es posible que Chromium no funcione correctamente porque ya no es compatible con Mac OS X 10.6, 10.7 o 10.8.</translation>
@@ -172,7 +171,6 @@
 <translation id="6717134281241384636">Tu perfil no se puede utilizar porque proviene de una versión más actualizada de Chromium. Es posible que algunas características no estén disponibles. Especifica un directorio de perfil diferente o utiliza una versión más reciente de Chromium.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium ya está instalado para todos los usuarios en tu computadora.</translation>
-<translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="6810143991807788455">Informa tu configuración actual para ayudarnos a mejorar Chromium.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
@@ -185,7 +183,6 @@
 <translation id="707471633328071618">Google Payments (copiada en Chromium)</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar tu experiencia de navegación.</translation>
 <translation id="7162152143154757523">Chromium puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite usar la misma tecnología de corrección ortográfica que usa la Búsqueda de Google.</translation>
-<translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
 <translation id="7205698830395646142">Ocultar en el menú de Chromium</translation>
 <translation id="7223968959479464213">Administrador de tareas - Chromium</translation>
 <translation id="722928257909516027">Mostrar el menú de Chromium</translation>

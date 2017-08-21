@@ -538,7 +538,7 @@
 <translation id="5199729219167945352">การทดลอง</translation>
 <translation id="5205222826937269299">ต้องระบุชื่อ</translation>
 <translation id="5222812217790122047">ต้องระบุอีเมล</translation>
-<translation id="522700295135997067">ไซต์นี้อาจขโมยรหัสผ่านของคุณแล้ว</translation>
+<translation id="522700295135997067">ไซต์นี้อาจเพิ่งขโมยรหัสผ่านของคุณไป</translation>
 <translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5277279256032773186">หากใช้ Chrome ที่ทำงาน ธุรกิจสามารถจัดการการตั้งค่า Chrome ให้พนักงานของตนได้ เรียนรู้เพิ่มเติม</translation>
@@ -858,7 +858,7 @@
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">รับบัตรเดบิตและบัตรเติมเงิน</translation>
-<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยแล้ว</translation>
+<translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยได้</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
 <translation id="79338296614623784">ป้อนหมายเลขโทรศัพท์ที่ถูกต้อง</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

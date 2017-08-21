@@ -256,7 +256,7 @@
       Esta política se aplica tanto a las pantallas principales como a las secundarias.
 
       Si la política no se establece, el valor predeterminado es de 0 grados, y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
-<translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
+<translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2176565653304920879">Cuando se establece esta política, la detección automática de la zona horaria se llevará a cabo de las siguientes formas, según el valor de la configuración:
@@ -917,9 +917,9 @@
       Si esta política se establece en 0, se utilizará el tamaño de caché predeterminado y el usuario no podrá modificarlo.
 
       Si esta política no se establece, se utilizará el tamaño de caché predeterminado y el usuario podrá anular el valor con la marca "--media-cache-size".</translation>
-<translation id="4508686775017063528">Si esta política se establece como verdadera o no se establece, se habilitará <ph name="PRODUCT_NAME" /> y los usuarios podrán ejecutarla desde el menú de la app, los menús contextuales de la página, los controles multimedia en los sitios web compatibles con Cast y (si se muestra) el ícono de la barra de herramientas de Cast.
+<translation id="4508686775017063528">Si se establece esta política como verdadera o no se establece, se habilitará <ph name="PRODUCT_NAME" /> y los usuarios podrán ejecutarla desde el menú de la app, los menús contextuales de la página, los controles multimedia en los sitios web compatibles con Cast y (si se muestra) el ícono de la barra de herramientas de Cast.
 
-          Si esta política se establece como falsa, <ph name="PRODUCT_NAME" /> se inhabilitará.</translation>
+          Si se establece esta política como falsa, <ph name="PRODUCT_NAME" /> se inhabilitará.</translation>
 <translation id="4518251772179446575">Preguntar siempre si un sitio quiere rastrear la ubicación física de los usuarios.</translation>
 <translation id="4519046672992331730">Habilita las sugerencias de búsqueda en el cuadro multifunción de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.    
 
@@ -1024,7 +1024,7 @@
 <translation id="489803897780524242">Parámetro que controla la ubicación del término de búsqueda para el proveedor de búsqueda predeterminado</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de la Política de dispositivos</translation>
-<translation id="494613465159630803">Cast Receiver</translation>
+<translation id="494613465159630803">Receptor de Cast</translation>
 <translation id="4962262530309732070">Si esta política se establece como verdadera o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción para agregar una persona desde el Administrador de usuarios.
 
       Si esta política se establece como falsa, <ph name="PRODUCT_NAME" /> no permitirá la creación de perfiles nuevos desde el Administrador de usuarios.</translation>

@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Sesuaikan...</translation>
 <translation id="1521442365706402292">Kelola sertifikat</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Keyboard</translation>
 <translation id="1525835343380843286">Terjadi error dalam komunikasi server</translation>
 <translation id="1526560967942511387">Dokumen Tanpa Judul</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">File tidak dapat diubah.</translation>
 <translation id="1665770420914915777">Pakai laman Tab Baru</translation>
 <translation id="1666058115165804494">Waktu Pembuatan</translation>
-<translation id="1666288758713846745">Dinamis</translation>
 <translation id="1666788816626221136">Anda memiliki sertifikat pada file yang tidak sesuai dengan kategori lain mana pun:</translation>
 <translation id="1670399744444387456">Dasar</translation>
 <translation id="1673103856845176271">File tidak dapat diakses karena alasan keamanan.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">jam terakhir</translation>
 <translation id="2121825465123208577">Ubah ukuran</translation>
 <translation id="2126167708562367080">Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
+<translation id="2126426811489709554">Diberdayakan oleh Chrome</translation>
 <translation id="2127166530420714525">Gagal mengubah status daya adaptor Bluetooth.</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="212862741129535676">Persentase Pemakaian Status Frekuensi</translation>
@@ -1253,7 +1252,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2805707493867224476">Izinkan semua situs menampilkan pop-up</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2807517655263062534">File yang Anda download muncul di sini</translation>
-<translation id="2809346626032021864">Membaca</translation>
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lainnya</translation>
 <translation id="281133045296806353">Jendela baru dibuat pada sesi browser yang ada.</translation>
 <translation id="2812944337881233323">Coba keluar dan masuk lagi</translation>
@@ -4799,6 +4797,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8137331602592933310">"<ph name="FILENAME" />" telah dibagikan dengan Anda. Namun Anda tidak dapat menghapusnya karena bukan milik Anda.</translation>
 <translation id="8137559199583651773">Kelola ekstensi</translation>
 <translation id="8138082791834443598">Opsional — masukkan informasi baru atau informasi sudah ada yang diperbarui untuk dikaitkan dengan perangkat ini.</translation>
+<translation id="813913629614996137">Memulai...</translation>
 <translation id="8140778357236808512">Impor pengguna yang dilindungi yang sudah ada</translation>
 <translation id="8141725884565838206">Kelola sandi Anda</translation>
 <translation id="8142699993796781067">Jaringan pribadi</translation>

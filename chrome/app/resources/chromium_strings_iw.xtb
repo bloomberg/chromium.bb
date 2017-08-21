@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">‏גרסאות עתידיות של Chromium כבר לא יתמכו במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
 <translation id="1444754455097148408">‏רישיונות קוד פתוח של Chromium</translation>
-<translation id="1480489203462860648">נסה את זה, זה כבר מותקן</translation>
 <translation id="1502360822835740515">‏הגדר את Chromium בתור דפדפן ברירת המחדל</translation>
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1559451348202814456">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
@@ -174,7 +173,6 @@
 ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chromium.</translation>
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="6734291798041940871">‏Chromium כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
-<translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
@@ -187,7 +185,6 @@
 <translation id="707471633328071618">‏Google Payments (‏הועתק ל-Chromium)</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7162152143154757523">‏Chromium יכול לספק בדיקת איות חכמה יותר על ידי שליחת הטקסט שאתה מקליד בדפדפן אל שרתי Google. כך אתה יכול להשתמש באותה טכנולוגיה של בדיקת איות שבה נעשה שימוש בחיפוש Google.</translation>
-<translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="7205698830395646142">‏הסתרה בתפריט Chromium</translation>
 <translation id="7223968959479464213">‏מנהל המשימות - Chromium</translation>
 <translation id="722928257909516027">‏הצג את תפריט Chromium</translation>

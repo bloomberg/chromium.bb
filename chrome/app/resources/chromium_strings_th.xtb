@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Chromium เวอร์ชันต่อไปจะไม่รองรับ Mac OS X 10.6, 10.7 หรือ 10.8 อีกต่อไป</translation>
 <translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
 <translation id="1444754455097148408">ใบอนุญาตโอเพนซอร์สของ Chromium</translation>
-<translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
 <translation id="1502360822835740515">กำหนดให้ Chromium เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="1559451348202814456">Chromium อาจทำงานไม่ถูกต้องเพราะไม่รองรับ Mac OS X 10.6, 10.7 หรือ 10.8 อีกต่อไป</translation>
@@ -176,7 +175,6 @@
 ฟีเจอร์บางประการอาจไม่มี โปรดระบุไดเรกทอรีโปรไฟล์อื่น หรือใช้ Chromium รุ่นใหม่</translation>
 <translation id="6734080038664603509">อัปเดต &amp;Chromium</translation>
 <translation id="6734291798041940871">มีการติดตั้ง Chromium สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
-<translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="6810143991807788455">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">ส่งคำและบริบทโดยรอบไปยัง Google Search เพื่อแสดงคำจำกัดความ รูปภาพ และผลการค้นหาอื่นๆ</translation>
@@ -189,7 +187,6 @@
 <translation id="707471633328071618">Google Payments (คัดลอกลงใน Chromium แล้ว)</translation>
 <translation id="7138853919861947730">Chromium อาจใช้บริการเว็บเพื่อช่วยให้คุณมีประสบการณ์การเรียกดูที่ดีขึ้น</translation>
 <translation id="7162152143154757523">Chromium สามารถให้บริการตรวจสอบการสะกดที่ชาญฉลาดมากขึ้นโดยการส่งสิ่งที่คุณพิมพ์ในเบราว์เซอร์ไปยังเซิร์ฟเวอร์ของ Google คุณจึงสามารถใช้เทคโนโลยีตรวจสอบการสะกดแบบเดียวกันกับที่ Google Search ใช้</translation>
-<translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="7205698830395646142">ซ่อนในเมนู Chromium</translation>
 <translation id="7223968959479464213">ตัวจัดการงาน - Chromium</translation>
 <translation id="722928257909516027">แสดงเมนู Chromium</translation>

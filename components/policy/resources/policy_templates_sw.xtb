@@ -571,7 +571,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kwa kutotogemea ikiwa au jinsi sera hii inavyowekwa, mipangilio ya uboreshaji wa WPAD haiwezi kubadilishwa na watumiaji.</translation>
 <translation id="3072045631333522102">Seva ya skrini kutumiwa kwenye skrini ya kuingia katika modi rejareja</translation>
 <translation id="3072847235228302527">Weka Sheria na Masharti kwa akaunti ya kifaa cha karibu nawe</translation>
-<translation id="3086995894968271156">Weka mipangilio ya Cast Receiver katika <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3086995894968271156">Weka mipangilio ya Kipokea Maudhui ya Google Cast katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3096595567015595053">Orodha ya programu jalizi zilizowezeshwa</translation>
 <translation id="3101501961102569744">Chagua jinsi ya kubainisha mipangilio ya seva mbadala</translation>
 <translation id="3117676313396757089">Onyo: DHE itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 57 (kufikia Machi 2017) na sera hii itaacha kufanya kazi wakati huo.
@@ -965,9 +965,9 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
      Iwapo thamani ya sera hii ni 0, ukubwa chaguo-msingi wa akaiba utatumika lakini mtumiaji hataweza kuibadilisha.
 
      Iwapo sera hii haijawekwa ukubwa chaguo-msingi utatumika na mtumiaji ataweza kubatilisha na alama ya- ukubwa wa-diski ya-akiba.</translation>
-<translation id="4508686775017063528">Ikiwa sera hii imewekwa kuwa kweli au haijawekwa, <ph name="PRODUCT_NAME" /> itawashwa na watumiaji wataweza kuifungua kwenye menyu ya programu, menyu za ukurasa, vidhibiti vya  maudhui kwenye tovuti zinazoweza kutumia Google Cast na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast.
+<translation id="4508686775017063528">Ikiwa sera hii imewekwa kuwa ndivyo au haijawekwa, <ph name="PRODUCT_NAME" /> itawashwa na watumiaji wataweza kuifungua kwenye menyu ya programu, menyu za ukurasa, vidhibiti vya  maudhui kwenye tovuti zinazoweza kutumia Google Cast na (ikiwa imeonyeshwa) aikoni ya upau wa vidhibiti vya Google Cast.
 
-         Ikiwa sera hii imewekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> itazimwa.</translation>
+        Ikiwa sera hii imewekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> itazimwa.</translation>
 <translation id="4518251772179446575">Uliza kila wakati tovuti inataka kufuatilia eneo halisi la mtumiaji</translation>
 <translation id="4519046672992331730">Inawezesha mapendekezo ya utafutaji katika sanduKuu ya <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mpangilio huu.
 
@@ -1886,7 +1886,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           Ikiwa mpangilio huu umewezeshwa, hivyo basi mashine yanaweza kutambua na kuunganisha kwenye mpangishaji wa mbali hata ikiwa yametengamnishwa kwa ngome.
 
           Ikiwa mpangilio huu umelemazwa na miunganisho ya UDP inayoondoka imechujwa kwa ngome, hivyo basi mashine haya yanaweza tu kuunganisha kwenye mashine ya mpangishaji katika mtandao wa karibu.</translation>
-<translation id="7976157349247117979">Jina la mahali pa kutuma la <ph name="PRODUCT_NAME" /></translation>
+<translation id="7976157349247117979">Jina la mahali <ph name="PRODUCT_NAME" /> inapotuma</translation>
 <translation id="7980227303582973781">Hamna vikwazo maalum</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zungusha skrini kwa digrii 0</translation>

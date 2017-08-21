@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Наступні версії Chromium не підтримуватимуть Mac OS X версій 10.6, 10.7 і 10.8.</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
 <translation id="1444754455097148408">Ліцензії Chromium із відкритим кодом</translation>
-<translation id="1480489203462860648">Уже встановлено. Спробуйте</translation>
 <translation id="1502360822835740515">Як зробити Chromium веб-переглядачем за умовчанням</translation>
 <translation id="151962892725702025">ОС Chromium не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="1559451348202814456">Chromium може працювати неналежним чином, оскільки Mac OS X версій 10.6, 10.7 і 10.8 більше не підтримується.</translation>
@@ -176,7 +175,6 @@
 Деякі функції можуть бути недоступними. Укажіть інший каталог профілю або скористайтеся новішою версією Chromium.</translation>
 <translation id="6734080038664603509">Оновити &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
-<translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="6810143991807788455">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
@@ -189,7 +187,6 @@
 <translation id="707471633328071618">Google Payments (скопійовано в Chromium)</translation>
 <translation id="7138853919861947730">Chromium може використовувати веб-служби для покращення умов перегляду.</translation>
 <translation id="7162152143154757523">Chromium може точніше перевіряти правопис, надсилаючи текст, який ви вводите у веб-переглядачі, на сервери Google. Це дозволяє використовувати ту саму технологію перевірки правопису, що й у Пошуку Google.</translation>
-<translation id="7196020411877309443">Чому відображається це повідомлення?</translation>
 <translation id="7205698830395646142">Сховати в меню Chromium</translation>
 <translation id="7223968959479464213">Диспетчер завдань – Chromium</translation>
 <translation id="722928257909516027">Показати меню Chromium</translation>

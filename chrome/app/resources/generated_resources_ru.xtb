@@ -356,7 +356,6 @@
 <translation id="1520635877184409083">Настроить...</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
-<translation id="1524152555482653726">Видео</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
 <translation id="1525835343380843286">Ошибка подключения к серверу</translation>
 <translation id="1526560967942511387">Документ без имени</translation>
@@ -466,7 +465,6 @@
 <translation id="1665611772925418501">Не удалось изменить файл.</translation>
 <translation id="1665770420914915777">Страница быстрого доступа</translation>
 <translation id="1666058115165804494">Время создания</translation>
-<translation id="1666288758713846745">Динамическая</translation>
 <translation id="1666788816626221136">У вас имеются сертификаты, которые не попадают ни в одну из следующих категорий:</translation>
 <translation id="1670399744444387456">Основные настройки</translation>
 <translation id="1673103856845176271">Доступ к файлу ограничен по соображениям безопасности.</translation>
@@ -745,6 +743,7 @@
 <translation id="2116673936380190819">за прошедший час</translation>
 <translation id="2121825465123208577">Изменить размер</translation>
 <translation id="2126167708562367080">Ваш администратор отключил синхронизацию.</translation>
+<translation id="2126426811489709554">Технологии Chrome</translation>
 <translation id="2127166530420714525">Не удалось изменить режим питания адаптера  Bluetooth.</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="212862741129535676">Продолжительность работы процессора на разных ступенях частоты в процентах</translation>
@@ -1254,7 +1253,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2805707493867224476">Разрешить открытие всплывающих окон на всех сайтах</translation>
 <translation id="2805756323405976993">Сервисы</translation>
 <translation id="2807517655263062534">Скачанные файлы появятся здесь</translation>
-<translation id="2809346626032021864">Книги</translation>
 <translation id="2809586584051668049">и ещё <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">В текущем сеансе браузера создано новое окно.</translation>
 <translation id="2812944337881233323">Выйдите из Chrome и снова войдите в систему</translation>
@@ -4801,6 +4799,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8137331602592933310">Вы не можете удалить файл "<ph name="FILENAME" />", так как не являетесь его владельцем.</translation>
 <translation id="8137559199583651773">Управление расширениями</translation>
 <translation id="8138082791834443598">(Необязательно) Обновите данные для этого устройства или укажите новые.</translation>
+<translation id="813913629614996137">Инициализация...</translation>
 <translation id="8140778357236808512">Импортировать существующий контролируемый профиль</translation>
 <translation id="8141725884565838206">Управление паролями</translation>
 <translation id="8142699993796781067">Частные сети</translation>

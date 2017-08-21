@@ -148,7 +148,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="4517233780764084060">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Chromoting na „Otwórz jako okno”.</translation>
 <translation id="4563926062592110512">Rozłączył się klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Połącz</translation>
-<translation id="4592037108270173918">W przypadku łączenia się z urządzeniem przez sieć komórkową może być pobierana opłata za przesyłanie danych. Czy chcesz kontynuować?</translation>
+<translation id="4592037108270173918">Gdy łączysz się z urządzeniem przez sieć komórkową, może być pobierana opłata za przesyłanie danych. Czy chcesz kontynuować?</translation>
 <translation id="4619978527973181021">Zaakceptuj i zainstaluj</translation>
 <translation id="4635770493235256822">Urządzenia zdalne</translation>
 <translation id="4660011489602794167">Pokaż klawiaturę</translation>
@@ -175,12 +175,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5156271271724754543">Wpisz ten sam PIN w obu polach.</translation>
 <translation id="5170982930780719864">Nieprawidłowy identyfikator hosta.</translation>
 <translation id="518094545883702183">Użyjemy tych informacji jedynie do zdiagnozowania zgłoszonego problemu, udostępnimy je tylko osobie sprawdzającej zgłoszenie i usuniemy w ciągu 30 dni.</translation>
-<translation id="5196958630269420102">Uzyskaj bezpieczny dostęp do swoich komputerów z urządzenia z iOS.
-
-• Na każdym ze swoich komputerów skonfiguruj dostęp zdalny w aplikacji Pulpit zdalny Chrome, którą znajdziesz w Chrome Web Store: https://chrome.google.com/remotedesktop
-• Otwórz aplikację na urządzeniu z iOS i wybierz jeden z dostępnych komputerów, by się połączyć.
-
-Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http://goo.gl/SyrVzj) i Polityce prywatności Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Najczęstsze pytania</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="5254120496627797685">Jeśli opuścisz tę stronę, sesja Pulpitu zdalnego Chrome zostanie zakończona.</translation>
@@ -235,11 +229,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="6570205395680337606">Zresetuj aplikację. Niezapisane dane zostaną utracone.</translation>
 <translation id="6572345186230665992">Mac (OS X Mavericks 10.9 lub nowszy)</translation>
 <translation id="6583902294974160967">Pomoc</translation>
-<translation id="6598484667010442494">Pulpit zdalny Chrome
-Pulpit zdalny
-Zdalny pecet
-Zdalny komputer
-Zdalny dostęp</translation>
 <translation id="6612717000975622067">Wyślij Ctrl-Alt-Del</translation>
 <translation id="6668065415969892472">PIN został zaktualizowany.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Wszelkie prawa zastrzeżone.</translation>

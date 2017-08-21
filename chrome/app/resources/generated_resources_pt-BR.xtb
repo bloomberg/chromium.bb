@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Ajustar...</translation>
 <translation id="1521442365706402292">Gerenciar certificados</translation>
 <translation id="152234381334907219">Nunca salvo</translation>
-<translation id="1524152555482653726">Filme</translation>
 <translation id="1524430321211440688">Teclado</translation>
 <translation id="1525835343380843286">Erro de comunicação do servidor</translation>
 <translation id="1526560967942511387">Documento sem título</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Não foi possível modificar o arquivo.</translation>
 <translation id="1665770420914915777">Usar a página "Nova guia"</translation>
 <translation id="1666058115165804494">Hora da criação</translation>
-<translation id="1666288758713846745">Dinâmico</translation>
 <translation id="1666788816626221136">Você tem certificados no arquivo que não se encaixam em nenhuma das outras categorias:</translation>
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="1673103856845176271">Não foi possível acessar o arquivo por motivos de segurança.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">a última hora</translation>
 <translation id="2121825465123208577">Redimensionar</translation>
 <translation id="2126167708562367080">A sincronização foi desativada pelo administrador.</translation>
+<translation id="2126426811489709554">Em execução no Chrome</translation>
 <translation id="2127166530420714525">Falha ao alterar o estado de energia do adaptador de bluetooth.</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="212862741129535676">Porcentagem de ocupação em estado de frequência</translation>
@@ -1253,7 +1252,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2805707493867224476">Permitir que todos os sites exibam pop-ups</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2807517655263062534">Os arquivos transferidos por download aparecem aqui</translation>
-<translation id="2809346626032021864">Leitura</translation>
 <translation id="2809586584051668049">e mais <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Foi criada uma nova janela em uma sessão existente do navegador.</translation>
 <translation id="2812944337881233323">Tente sair e fazer login novamente</translation>
@@ -1805,7 +1803,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3596235046596950091">Ativar serviços em nuvem</translation>
 <translation id="3600456501114769456">O acesso aos arquivos locais de seu dispositivo foi desativado pelo administrador.</translation>
-<translation id="3603533104205588786">Você pode clicar na estrela para adicionar uma página aos favoritos</translation>
+<translation id="3603533104205588786">Você pode clicar no ícone da estrela para adicionar uma página aos favoritos</translation>
 <translation id="3603622770190368340">Obter certificado de rede</translation>
 <translation id="3604048165392640554">Nenhuma conexão móvel encontrada. Ative o tethering instantâneo nos seus outros dispositivos e tente novamente. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Esporte fino</translation>
@@ -3811,7 +3809,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6610183966322615106">Erro ao adicionar impressora</translation>
 <translation id="6610610633807698299">Inserir URL...</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
-<translation id="6613452264606394692">Volte aqui rapidamente adicionando esta página aos favoritos</translation>
+<translation id="6613452264606394692">Você pode voltar rapidamente a esta página, adicionando-a esta aos favoritos</translation>
 <translation id="6615455863669487791">Exibir</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> de <ph name="TOTAL_SIZE" /> copiadas</translation>
 <translation id="661719348160586794">As senhas salvas aparecerão aqui.</translation>
@@ -4801,6 +4799,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8137331602592933310">"<ph name="FILENAME" />" foi compartilhado com você. Não é possível excluí-lo porque você não é o proprietário dele.</translation>
 <translation id="8137559199583651773">Gerenciar extensões</translation>
 <translation id="8138082791834443598">Opcional: inserir novas informações ou atualizar as já existentes para serem associadas a esse dispositivo.</translation>
+<translation id="813913629614996137">Inicializando…</translation>
 <translation id="8140778357236808512">Importar um usuário supervisionado existente</translation>
 <translation id="8141725884565838206">Gerenciar suas senhas</translation>
 <translation id="8142699993796781067">Rede privada</translation>

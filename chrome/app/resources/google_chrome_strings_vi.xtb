@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Ứng dụng Chrome Canary</translation>
 <translation id="1457721931618994305">Đang cập nhật Google Chrome...</translation>
 <translation id="1469002951682717133">Trình chạy ứng dụng Chrome</translation>
-<translation id="1480489203462860648">Hãy dùng thử, ứng dụng đã được cài đặt</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> nguy hiểm, do đó Chrome đã chặn tệp.</translation>
@@ -199,7 +198,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6634887557811630702">Google Chrome đã được cập nhật.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
-<translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="686561893457936865">Mang Chrome tới mọi nơi</translation>
 <translation id="6883876366448858277">gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh và các kết quả tìm kiếm khác.</translation>
@@ -214,7 +212,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
 <translation id="7164397146364144019">Bạn có thể giúp Chrome an toàn và dễ sử dụng hơn bằng cách tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> đã được thêm vào Chrome.</translation>
-<translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7242029209006116544">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo một cấu hình mới để giữ cho dữ liệu Chrome hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Máy tính này sắp dừng nhận bản cập nhật Google Chrome do Windows XP và Windows Vista sẽ không được hỗ trợ nữa.</translation>
 <translation id="7330164299247909639">Lỗi chứng chỉ xác thực. Vui lòng đăng nhập lại vào Google Chrome với tư cách <ph name="USER_NAME" /> hoặc liên hệ với quản trị viên của bạn để biết thêm thông tin. <ph name="ADDITIONAL_EXPLANATION" /></translation>

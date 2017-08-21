@@ -19,7 +19,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1434626383986940139">Aplicaciones de Chrome Canary</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
-<translation id="1480489203462860648">Probarlo (ya instalado)</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1587223624401073077">Google Chrome está utilizando la cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> es peligroso, por lo que Chrome lo ha bloqueado.</translation>
@@ -202,7 +201,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6634887557811630702">Google Chrome está actualizado.</translation>
 <translation id="6676384891291319759">Accede a Internet.</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
-<translation id="6757767188268205357">No volver a preguntarme</translation>
 <translation id="683440813066116847">Regla entrante para que Google Chrome Canary permita tráfico mDNS.</translation>
 <translation id="686561893457936865">Llévate Chrome a todas partes</translation>
 <translation id="6883876366448858277">envía una palabra y su contexto a la Búsqueda de Google y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
@@ -217,7 +215,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="7164397146364144019">Puedes ayudar a que Chrome sea más seguro y más fácil de utilizar enviando a Google automáticamente información sobre posibles incidentes de seguridad.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> se ha añadido a Chrome.</translation>
-<translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista dejarán de ser compatibles.</translation>
 <translation id="7330164299247909639">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Google Chrome como <ph name="USER_NAME" /> o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>

@@ -537,7 +537,7 @@
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5222812217790122047">E-Mail-Adresse erforderlich</translation>
-<translation id="522700295135997067">Diese Website könnte gerade Ihr Passwort gestohlen haben</translation>
+<translation id="522700295135997067">Diese Website hat möglicherweise gerade Ihr Passwort gestohlen</translation>
 <translation id="5230733896359313003">Versandadresse</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Nutzen Sie Chrome bei der Arbeit? Unternehmen können Chrome-Einstellungen für ihre Mitarbeiter verwalten. Weitere Informationen</translation>
@@ -600,7 +600,7 @@
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
 <translation id="5633066919399395251">Zurzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> befindliche Hacker könnten versuchen, gefährliche Programme auf Ihrem Computer zu installieren, um Daten wie Fotos, Passwörter, Nachrichten und Kreditkartendaten zu stehlen oder zu löschen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Betrügerische Inhalte blockiert.</translation>
-<translation id="5646376287012673985">Standort</translation>
+<translation id="5646376287012673985">Speicherort</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669703222995421982">Personalisierte Inhalte erhalten</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
@@ -987,7 +987,7 @@
 <translation id="9078964945751709336">Weitere Informationen erforderlich</translation>
 <translation id="9080712759204168376">Bestellübersicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
-<translation id="910908805481542201">Helfen Sie mir mit der Behebung dieses Fehlers</translation>
+<translation id="910908805481542201">Helfen Sie mir, dieses Problem zu beheben</translation>
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9137248913990643158">Melden Sie sich in Chrome an, bevor Sie diese App nutzen.</translation>

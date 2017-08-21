@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Dostosuj...</translation>
 <translation id="1521442365706402292">Zarządzaj certyfikatami</translation>
 <translation id="152234381334907219">Nigdy nie zapisane</translation>
-<translation id="1524152555482653726">Oglądanie</translation>
 <translation id="1524430321211440688">Klawiatura</translation>
 <translation id="1525835343380843286">Błąd komunikacji z serwerem</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Nie można zmodyfikować pliku.</translation>
 <translation id="1665770420914915777">Nowa karta</translation>
 <translation id="1666058115165804494">Godzina utworzenia</translation>
-<translation id="1666288758713846745">Dynamiczne</translation>
 <translation id="1666788816626221136">Masz zapisane certyfikaty, które nie pasują do żadnej z pozostałych kategorii:</translation>
 <translation id="1670399744444387456">Podstawy</translation>
 <translation id="1673103856845176271">Nie można uzyskać dostępu do pliku ze względów bezpieczeństwa.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">ostatnia godzina</translation>
 <translation id="2121825465123208577">Zmień rozmiar</translation>
 <translation id="2126167708562367080">Synchronizację wyłączył administrator.</translation>
+<translation id="2126426811489709554">Technologia Chrome</translation>
 <translation id="2127166530420714525">Zmiana stanu zasilania adaptera Bluetooth nie powiodła się.</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="212862741129535676">Stan częstotliwości – procentowo</translation>
@@ -1253,7 +1252,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2805707493867224476">Zezwalaj na pokazywanie wyskakujących okienek we wszystkich witrynach</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2807517655263062534">Tutaj wyświetlają się pobrane pliki</translation>
-<translation id="2809346626032021864">Czytanie</translation>
 <translation id="2809586584051668049">i jeszcze <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Utworzono nowe okno w istniejącej sesji przeglądarki.</translation>
 <translation id="2812944337881233323">Wyloguj się i zaloguj się ponownie</translation>
@@ -4790,6 +4788,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8137331602592933310">Plik „<ph name="FILENAME" />” został Ci udostępniony. Nie możesz go usunąć, ponieważ nie jesteś jego właścicielem.</translation>
 <translation id="8137559199583651773">Zarządzaj rozszerzeniami</translation>
 <translation id="8138082791834443598">Opcjonalnie – dodaj lub popraw informacje, które mają być powiązane z tym urządzeniem.</translation>
+<translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8140778357236808512">Importuj istniejącego nadzorowanego użytkownika</translation>
 <translation id="8141725884565838206">Zarządzaj hasłami</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>

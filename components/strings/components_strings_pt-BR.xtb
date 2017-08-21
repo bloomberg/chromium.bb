@@ -462,7 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Tente desativar suas extensões.</translation>
 <translation id="457875822857220463">Entrega</translation>
-<translation id="4582800630050655161">Você pode perder o acesso à sua Conta do Google ou sofrer roubo de identidade. O Chromium recomenda a alteração da sua senha agora.</translation>
+<translation id="4582800630050655161">Você pode perder o acesso à sua Conta do Google ou ter sua identidade roubada. O Chromium recomenda a alteração da sua senha agora.</translation>
 <translation id="4587425331216688090">Remover endereço do Chrome?</translation>
 <translation id="4592951414987517459">Sua conexão com <ph name="DOMAIN" /> foi criptografada usando um pacote de criptografia moderno.</translation>
 <translation id="4594403342090139922">&amp;Desfazer exclusão</translation>
@@ -471,7 +471,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança contém erros. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4690462567478992370">Suspender o uso de um certificado inválido</translation>
-<translation id="4690954380545377795">Você pode perder o acesso à sua Conta do Google ou sofrer roubo de identidade. O Chrome recomenda a alteração da sua senha agora.</translation>
+<translation id="4690954380545377795">Você pode perder o acesso à sua Conta do Google ou ter sua identidade roubada. O Chrome recomenda a alteração da sua senha agora.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">A conexão foi interrompida</translation>
 <translation id="471880041731876836">Você não tem permissão para visitar este site</translation>

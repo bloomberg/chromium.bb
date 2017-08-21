@@ -148,7 +148,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="4517233780764084060">Hinweis: Sie können in Chromoting die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="4563926062592110512">Client getrennt: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Zugreifen</translation>
-<translation id="4592037108270173918">Bei der Verbindung mit einem Gerät über ein mobiles Netzwerk können Kosten für die Datenübertragung anfallen. Möchten Sie fortfahren?</translation>
+<translation id="4592037108270173918">Möglicherweise fallen Kosten für die Datenübertragung an, wenn Sie sich via mobilem Netzwerk mit einem Gerät verbinden. Möchten Sie fortfahren?</translation>
 <translation id="4619978527973181021">Akzeptieren und installieren</translation>
 <translation id="4635770493235256822">Remote-Geräte</translation>
 <translation id="4660011489602794167">Tastatur anzeigen</translation>
@@ -175,12 +175,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5156271271724754543">Die PIN muss in beiden Feldern identisch sein.</translation>
 <translation id="5170982930780719864">Ungültige Host-ID</translation>
 <translation id="518094545883702183">Diese Informationen werden nur zur Diagnose des gemeldeten Problems verwendet. Dabei kann nur die Person auf sie zugreifen, die Ihren Bericht untersucht. Die Informationen werden nach spätestens 30 Tagen gelöscht.</translation>
-<translation id="5196958630269420102">Sicherer Zugriff auf Ihre Computer über Ihr iOS-Gerät.
-
-• Richten Sie auf jedem Ihrer Computer mithilfe der Chrome Remote Desktop App aus dem Chrome Web Store einen Remote-Zugriff ein: https://chrome.google.com/remotedesktop
-• Öffnen Sie die App auf Ihrem iOS-Gerät und tippen Sie auf einen Ihrer Computer mit Online-Status, um eine Verbindung herzustellen.
-
-Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (http://goo.gl/SyrVzj) und der Chrome-Datenschutzerklärung (http://goo.gl/0uXE5d).</translation>
 <translation id="5204575267916639804">Häufig gestellte Fragen</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5254120496627797685">Wenn Sie diese Seite verlassen, wird Ihre Chrome Remote Desktop-Sitzung beendet.</translation>
@@ -235,11 +229,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="6570205395680337606">App zurücksetzen. Alle nicht gespeicherten Daten gehen verloren.</translation>
 <translation id="6572345186230665992">Für Mac OS X Mavericks 10.9 und höher</translation>
 <translation id="6583902294974160967">Hilfe</translation>
-<translation id="6598484667010442494">Chrome Remote Desktop
-Remote Desktop
-Remote-PC
-Remote-Computer
-Remote-Zugriff</translation>
 <translation id="6612717000975622067">Strg-Alt-Entf senden</translation>
 <translation id="6668065415969892472">Ihre PIN wurde aktualisiert.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Alle Rechte vorbehalten</translation>

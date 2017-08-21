@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Приложения Chrome Canary</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
-<translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1587325591171447154">Chrome заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
@@ -194,7 +193,6 @@
 <translation id="6634887557811630702">Вы используете самую новую версию Chrome.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
-<translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="686561893457936865">Chrome всегда под рукой</translation>
 <translation id="6883876366448858277">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты.</translation>
@@ -209,7 +207,6 @@
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="7164397146364144019">Вы можете сделать защиту Chrome ещё надежнее. Просто разрешите автоматически отправлять в Google информацию о возможных проблемах безопасности.</translation>
 <translation id="7185038942300673794">Расширение "<ph name="EXTENSION_NAME" />" установлено.</translation>
-<translation id="7196020411877309443">Что это?</translation>
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Google Chrome скоро перестанет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista будет прекращена.</translation>
 <translation id="7330164299247909639">Ошибка сертификата аутентификации. Войдите в Google Chrome как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>

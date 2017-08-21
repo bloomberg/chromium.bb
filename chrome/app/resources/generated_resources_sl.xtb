@@ -358,7 +358,6 @@
 <translation id="1520635877184409083">Prilagodi ...</translation>
 <translation id="1521442365706402292">Upravljanje certifikatov</translation>
 <translation id="152234381334907219">Nikoli shranjeno</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tipkovnica</translation>
 <translation id="1525835343380843286">Napaka strežnika pri komuniciranju</translation>
 <translation id="1526560967942511387">Dokument brez naslova</translation>
@@ -468,7 +467,6 @@
 <translation id="1665611772925418501">Datoteke ni bilo mogoče spremeniti.</translation>
 <translation id="1665770420914915777">Uporabi stran »Nov zavihek«</translation>
 <translation id="1666058115165804494">Čas ustvarjanja</translation>
-<translation id="1666288758713846745">Dinamično</translation>
 <translation id="1666788816626221136">V dokumentu so potrdila, ki ne sodijo v nobeno od drugih kategorij:</translation>
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="1673103856845176271">Do datoteke zaradi varnosti ni bilo mogoče dostopati.</translation>
@@ -747,6 +745,7 @@
 <translation id="2116673936380190819">v zadnji uri</translation>
 <translation id="2121825465123208577">Spreminjanje velikosti</translation>
 <translation id="2126167708562367080">Sinhronizacijo je onemogočil skrbnik.</translation>
+<translation id="2126426811489709554">Uporablja tehnologijo Chrome</translation>
 <translation id="2127166530420714525">Ni bilo mogoče spremeniti stanja napajanja vmesnika Bluetooth.</translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="212862741129535676">Odstotek zasedenosti frekvenčnega stanja</translation>
@@ -1255,7 +1254,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2805707493867224476">Dovoli vsem mestom, da pokažejo pojavna okna</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2807517655263062534">Tu so prikazane datoteke, ki jih prenesete</translation>
-<translation id="2809346626032021864">Branje</translation>
 <translation id="2809586584051668049">in še <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">Ustvarjeno je novo okno v obstoječi seji brskalnika.</translation>
 <translation id="2812944337881233323">Poskusite se odjaviti in znova prijaviti</translation>
@@ -3813,7 +3811,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="6610183966322615106">Napaka pri dodajanju tiskalnika</translation>
 <translation id="6610610633807698299">Vnesite URL ..</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
-<translation id="6613452264606394692">Hitro se vrnite na to stran, tako da jo dodate med zaznamke</translation>
+<translation id="6613452264606394692">Hitro se vrnite na to stran tako, da jo dodate med zaznamke</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
 <translation id="6615807189585243369">Kopirano <ph name="BURNT_AMOUNT" /> od <ph name="TOTAL_SIZE" /></translation>
 <translation id="661719348160586794">Shranjena gesla bodo prikazana tukaj.</translation>
@@ -4801,6 +4799,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8137331602592933310">Datoteka »<ph name="FILENAME" />« je v skupni rabi z vami. Ne morete je izbrisati, ker niste njen lastnik.</translation>
 <translation id="8137559199583651773">Upravljanje razširitev</translation>
 <translation id="8138082791834443598">Izbirno – vnesite nove ali posodobite obstoječe podatke, ki jih želite povezati s to napravo.</translation>
+<translation id="813913629614996137">Inicializiranje ...</translation>
 <translation id="8140778357236808512">Uvoz obstoječega zaščitenega uporabnika</translation>
 <translation id="8141725884565838206">Upravljanje gesel</translation>
 <translation id="8142699993796781067">Zasebno omrežje</translation>

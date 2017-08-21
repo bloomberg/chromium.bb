@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">แอป Chrome Canary</translation>
 <translation id="1457721931618994305">กำลังอัปเดต Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
-<translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> เป็นอันตราย Chromium จึงบล็อกไว้</translation>
@@ -195,7 +194,6 @@
 <translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
-<translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="686561893457936865">ใช้ Chrome ได้ทุกที่</translation>
 <translation id="6883876366448858277">ส่งคำและบริบทโดยรอบไปยัง Google Search เพื่อแสดงคำจำกัดความ รูปภาพ และผลการค้นหาอื่นๆ</translation>
@@ -210,7 +208,6 @@
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>
 <translation id="7164397146364144019">คุณสามารถช่วยปรับปรุงให้ Chrome ปลอดภัยและใช้งานง่ายขึ้นโดยรายงานรายละเอียดของเหตุการณ์ด้านความปลอดภัยที่อาจจะเกิดขึ้นต่อ Google โดยอัตโนมัติ</translation>
 <translation id="7185038942300673794">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chrome แล้ว</translation>
-<translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="7242029209006116544">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น คุณสามารถเลือกที่จะสร้างโปรไฟล์ใหม่เพื่อแยกเก็บข้อมูล Chrome ที่มีอยู่ของคุณ <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Windows XP และ Windows Vista อีกต่อไป</translation>
 <translation id="7330164299247909639">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Google Chrome อีกครั้งด้วย <ph name="USER_NAME" /> หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>

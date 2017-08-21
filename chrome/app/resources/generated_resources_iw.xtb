@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">התאם...</translation>
 <translation id="1521442365706402292">נהל אישורים</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
-<translation id="1524152555482653726">סרט</translation>
 <translation id="1524430321211440688">מקלדת</translation>
 <translation id="1525835343380843286">שגיאת תקשורת של השרת</translation>
 <translation id="1526560967942511387">מסמך ללא שם</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">הקובץ לא ניתן לשינוי.</translation>
 <translation id="1665770420914915777">השתמש בדף 'כרטיסיות חדשות'</translation>
 <translation id="1666058115165804494">שעת יצירה</translation>
-<translation id="1666288758713846745">דינמי</translation>
 <translation id="1666788816626221136">יש לך אישורים בקובץ שאינם מתאימים לאף אחת מהקטגוריות האחרות:</translation>
 <translation id="1670399744444387456">בסיסי</translation>
 <translation id="1673103856845176271">לא היתה אפשרות לגשת לקובץ מסיבות אבטחה.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">מהשעה האחרונה</translation>
 <translation id="2121825465123208577">שנה גודל</translation>
 <translation id="2126167708562367080">מנהל המערכת שלך השבית את הסינכרון.</translation>
+<translation id="2126426811489709554">‏מבוסס על Chrome</translation>
 <translation id="2127166530420714525">‏נכשל שינוי מצב צריכת החשמל של מתאם ה-Bluetooth.</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="212862741129535676">אחוז תפוסה במצב תדירות</translation>
@@ -1013,7 +1012,7 @@
 <translation id="2498436043474441766">הוסף מדפסות</translation>
 <translation id="2498539833203011245">מזער</translation>
 <translation id="2498765460639677199">ענק</translation>
-<translation id="2500471369733289700">האתר חסום כדי להגן על הפרטיות שלך</translation>
+<translation id="2500471369733289700">הגישה לאתר נחסמה כדי להגן על הפרטיות שלך</translation>
 <translation id="2501173422421700905">אישור בהמתנה</translation>
 <translation id="2501278716633472235">חזור</translation>
 <translation id="2501797496290880632">הקלד קיצור</translation>
@@ -1250,7 +1249,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2805707493867224476">אפשר לכל האתרים להציג חלונות קופצים</translation>
 <translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2807517655263062534">קבצים שתוריד יופיעו כאן</translation>
-<translation id="2809346626032021864">קריאה</translation>
 <translation id="2809586584051668049">ועוד <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">חלון חדש שנוצר בהפעלת דפדפן קיים.</translation>
 <translation id="2812944337881233323">נסה לצאת ולהיכנס שוב</translation>
@@ -3784,7 +3782,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 
 השתמש בתכונה הזו רק עם חשבונות שאתה סומך עליהם.</translation>
 <translation id="6581162200855843583">‏קישור ל-Google Drive</translation>
-<translation id="6582421931165117398">כדאי לשנות את הסיסמה שלך עכשיו כדי להגן על המידע האישי שלך. תוצג לך בקשה להיכנס לחשבונך לפני שינוי הסיסמה.</translation>
+<translation id="6582421931165117398">כדאי לשנות את הסיסמה עכשיו כדי להגן על המידע האישי. תוצג לך בקשה להיכנס לחשבונך לפני שינוי הסיסמה.</translation>
 <translation id="6583851739559471707">חסומות באתרים שנוטים להציג מודעות שמפריעות (מומלץ)</translation>
 <translation id="6584878029876017575">‏חתימה לכל החיים של Microsoft</translation>
 <translation id="6585234750898046415">בחר תמונה להצגה עבור החשבון שלך במסך הכניסה.</translation>
@@ -4604,7 +4602,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="7877451762676714207">שגיאת שרת לא ידועה. נסה שוב או פנה למנהל השרת.</translation>
 <translation id="7877680364634660272">סיור</translation>
-<translation id="7878562273885520351">ייתכן שהסיסמה שלך נפרצה</translation>
+<translation id="7878562273885520351">ייתכן שאבטחת הסיסמה שלך נפגעה</translation>
 <translation id="7881483672146086348">הצג חשבון</translation>
 <translation id="7881969471599061635">השבת כתוביות</translation>
 <translation id="7882358943899516840">סוג ספק</translation>
@@ -4787,6 +4785,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8137331602592933310">"<ph name="FILENAME" />" שותף איתך. אין באפשרותך למחוק אותו מאחר שאינך הבעלים שלו.</translation>
 <translation id="8137559199583651773">נהל תוספים</translation>
 <translation id="8138082791834443598">אופציונלי - הזן פרטים חדשים או עדכן פרטים קיימים לשיוך עם מכשיר זה.</translation>
+<translation id="813913629614996137">מאתחל...</translation>
 <translation id="8140778357236808512">יבא 'משתמש בפיקוח' קיים</translation>
 <translation id="8141725884565838206">נהל את הסיסמאות שלך</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>

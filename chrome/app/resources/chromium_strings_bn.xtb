@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Chromium এর ভবিষ্যত সংস্করণ আর ম্যাক OS X 10.6, 10.7, বা 10.8 সমর্থন করবে না।</translation>
 <translation id="1414495520565016063">আপনি Chromium এ প্রবেশ করেছেন!</translation>
 <translation id="1444754455097148408">Chromium মুক্ত উৎসের লাইসেন্সগুলি</translation>
-<translation id="1480489203462860648">এটি ব্যবহার করে দেখুন, ইতিমধ্যেই এটি ইনস্টল করা হয়েছে</translation>
 <translation id="1502360822835740515">Chromium কে আপনার ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="151962892725702025">আপনার ডোমেনে সিঙ্ক উপলব্ধ না থাকার কারণে Chromium OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="1559451348202814456">Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর ম্যাক OS X 10.6, 10.7, বা 10.8 সমর্থিত নয়।</translation>
@@ -174,7 +173,6 @@
 <translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="6734080038664603509">&amp;Chromium আপডেট করুন</translation>
 <translation id="6734291798041940871">Chromium ইতোমধ্যে আপনার কম্পিউটারের সকল ব্যবহারকারীর জন্য ইনস্টল করা হয়েছে।</translation>
-<translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="6810143991807788455">বর্তমান সেটিংসের প্রতিবেদন করার মাধ্যম Chromium-কে আরো উন্নত করতে সহায়তা করুন</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">Google অনুসন্ধানে একটি শব্দ এবং এটির পার্শ্ববর্তী প্রসঙ্গ পাঠায়, সংজ্ঞা, ছবি, অনুসন্ধান ফলাফল, এবং অন্যান্য অনুসন্ধান ফলাফল ফেরত পাঠায়৷</translation>
@@ -187,7 +185,6 @@
 <translation id="707471633328071618">Google Payments (Chromium এ অনুলিপি করা হয়েছে)</translation>
 <translation id="7138853919861947730">আপনার ব্রাউজিং অভিজ্ঞতা উন্নত করতে Chromium ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷</translation>
 <translation id="7162152143154757523">Chromium আপনাকে Google অনুসন্ধানে ব্যবহৃত একই বানান-পরীক্ষণের প্রযুক্তি ব্যবহার করার অনুমতি দেয়, আপনি Google সার্ভার থেকে ব্রাউজারে টাইপ করেন তা পাঠিয়ে আরো স্মার্ট বানান-পরীক্ষণ সরবরাহ করতে পারে৷</translation>
-<translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>
 <translation id="7205698830395646142">Chromium মেনুর মধ্যে লুকান</translation>
 <translation id="7223968959479464213">টাস্ক ম্যানেজার - Chromium</translation>
 <translation id="722928257909516027">Chromium মেনু দেখান</translation>

@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Upraviť...</translation>
 <translation id="1521442365706402292">Spravovať certifikáty</translation>
 <translation id="152234381334907219">Neuložené</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Klávesnica</translation>
 <translation id="1525835343380843286">Chyba komunikácie so serverom</translation>
 <translation id="1526560967942511387">Dokument bez názvu</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">Súbor sa nepodarilo upraviť.</translation>
 <translation id="1665770420914915777">Použiť stránku Nová karta</translation>
 <translation id="1666058115165804494">Čas vytvorenia</translation>
-<translation id="1666288758713846745">Dynamické</translation>
 <translation id="1666788816626221136">V súbore máte certifikáty, ktoré sa nedajú zaradiť do žiadnej z iných kategórií:</translation>
 <translation id="1670399744444387456">Základné</translation>
 <translation id="1673103856845176271">Súbor je z bezpečnostných dôvodov nedostupný.</translation>
@@ -747,6 +745,7 @@ dotyku</translation>
 <translation id="2116673936380190819">poslednú hodinu</translation>
 <translation id="2121825465123208577">Zmeniť veľkosť</translation>
 <translation id="2126167708562367080">Synchronizácia je zakázaná správcom.</translation>
+<translation id="2126426811489709554">Používa technológiu prehliadača Chrome</translation>
 <translation id="2127166530420714525">Nepodarilo sa zmeniť stav napájania adaptéra Bluetooth.</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="212862741129535676">Percento obsadenia priestoru údajmi stavu frekvencie</translation>
@@ -1255,7 +1254,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2805707493867224476">Povoliť všetkým webovým stránkam zobrazovať kontextové okná</translation>
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2807517655263062534">Tu sa zobrazia súbory, ktoré stiahnete</translation>
-<translation id="2809346626032021864">Čítanie</translation>
 <translation id="2809586584051668049">a ďalšie (počet: <ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
 <translation id="281133045296806353">Vytvorené nové okno v existujúcej relácii prehliadača.</translation>
 <translation id="2812944337881233323">Skúste sa odhlásiť a znovu prihlásiť</translation>
@@ -4799,6 +4797,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8137331602592933310">Bol s vami zdieľaný súbor <ph name="FILENAME" />. Keďže ho nevlastníte, nemôžete ho odstrániť.</translation>
 <translation id="8137559199583651773">Spravovať rozšírenia</translation>
 <translation id="8138082791834443598">Voliteľné – zadajte nové informácie alebo aktualizujte súčasné údaje, ktoré majú byť priradené k tomuto zariadeniu.</translation>
+<translation id="813913629614996137">Prebieha inicializácia...</translation>
 <translation id="8140778357236808512">Importovať existujúceho kontrolovaného používateľa</translation>
 <translation id="8141725884565838206">Správa hesiel</translation>
 <translation id="8142699993796781067">Súkromná sieť</translation>

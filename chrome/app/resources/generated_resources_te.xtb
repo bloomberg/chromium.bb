@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">సర్దుబాటు చేయి...</translation>
 <translation id="1521442365706402292">సర్టిఫికెట్‌లను నిర్వహించు</translation>
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
-<translation id="1524152555482653726">చలన చిత్రం</translation>
 <translation id="1524430321211440688">కీబోర్డ్</translation>
 <translation id="1525835343380843286">సర్వర్ కమ్యూనికేషన్ లోపం ఏర్పడింది</translation>
 <translation id="1526560967942511387">శీర్షికలేని పత్రం</translation>
@@ -467,7 +466,6 @@
 <translation id="1665611772925418501">ఫైల్‌ను సవరించడం సాధ్యపడదు.</translation>
 <translation id="1665770420914915777">క్రొత్త టాబ్ పేజీని ఉపయోగించండి</translation>
 <translation id="1666058115165804494">సృష్టించిన సమయం</translation>
-<translation id="1666288758713846745">డైనమిక్</translation>
 <translation id="1666788816626221136">మీకు ఫైల్‌లోని ఏ ఇతర వర్గంలో సరిపోని సర్టిఫికెట్‌లు ఉన్నాయి:</translation>
 <translation id="1670399744444387456">ప్రాథమికం</translation>
 <translation id="1673103856845176271">భద్రతా కారణాల దృష్ట్యా ఫైల్‌ను ప్రాప్యత చేయడం సాధ్యపడదు.</translation>
@@ -746,6 +744,7 @@
 <translation id="2116673936380190819">గత గంట</translation>
 <translation id="2121825465123208577">పరిమాణం మార్చు</translation>
 <translation id="2126167708562367080">సమకాలీకరణను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
+<translation id="2126426811489709554">Chrome ఆధారితం</translation>
 <translation id="2127166530420714525">Bluetooth అడాప్టర్ యొక్క శక్తి స్థితిని మార్చడం విఫలమైంది.</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="212862741129535676">తరచుదనం స్థితి అధీన శాతం</translation>
@@ -1253,7 +1252,6 @@
 <translation id="2805707493867224476">పాప్-అప్‌లను చూపించడానికి అన్ని సైట్‌లను అనుమతించు</translation>
 <translation id="2805756323405976993">యాప్స్</translation>
 <translation id="2807517655263062534">మీరు డౌన్‌లోడ్ చేసిన ఫైల్‌లు ఇక్కడ కనిపిస్తాయి</translation>
-<translation id="2809346626032021864">చదవడం</translation>
 <translation id="2809586584051668049">ఇంకా మరో <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="281133045296806353">ఇప్పటికే ఉన్న బ్రౌజర్ సెషన్లో క్రొత్త విండో సృష్టించబడింది.</translation>
 <translation id="2812944337881233323">సైన్ అవుట్ చేసి, తిరిగి సైన్ ఇన్ చేయడం ప్రయత్నించండి</translation>
@@ -4796,6 +4794,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" మీతో భాగస్వామ్యం చేయబడింది. మీకు ఇది స్వంతం కానందున మీరు దీన్ని తొలగించలేరు.</translation>
 <translation id="8137559199583651773">పొడిగింపులను నిర్వహించండి</translation>
 <translation id="8138082791834443598">ఐచ్ఛికం — ఈ పరికరంతో అనుబంధించడానికి కొత్త సమాచారం నమోదు చేయండి లేదా ఇప్పటికే ఉన్న సమాచారాన్ని నవీకరించండి.</translation>
+<translation id="813913629614996137">ప్రారంభిస్తోంది...</translation>
 <translation id="8140778357236808512">ఇప్పటికే ఉన్న పర్యవేక్షించబడే వినియోగదారుని దిగుమతి చేయండి</translation>
 <translation id="8141725884565838206">మీ పాస్‌వర్డ్‌లను నిర్వహించండి</translation>
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>

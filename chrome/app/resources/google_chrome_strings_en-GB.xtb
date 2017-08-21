@@ -19,7 +19,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
-<translation id="1480489203462860648">Try it out, it's already installed</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
@@ -202,7 +201,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
-<translation id="6757767188268205357">Don't bother me</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="686561893457936865">Take Chrome everywhere</translation>
 <translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
@@ -217,7 +215,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> has been added to Chrome.</translation>
-<translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">This computer will soon stop receiving Google Chrome updates because Windows XP and Windows Vista will no longer be supported.</translation>
 <translation id="7330164299247909639">Authentication certificate failed. Please sign in to Google Chrome again as <ph name="USER_NAME" />, or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>

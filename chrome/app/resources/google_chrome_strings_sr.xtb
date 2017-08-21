@@ -19,7 +19,6 @@
 <translation id="1434626383986940139">Chrome Canary апликације</translation>
 <translation id="1457721931618994305">Ажурирање Google Chrome-а...</translation>
 <translation id="1469002951682717133">Покретач Chrome апликација</translation>
-<translation id="1480489203462860648">Испробајте га, већ је инсталиран</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1587325591171447154">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chrome блокирао.</translation>
@@ -202,7 +201,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6634887557811630702">Google Chrome је ажуриран.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6697947395630195233">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом.</translation>
-<translation id="6757767188268205357">Не досађуј</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
 <translation id="686561893457936865">Нека Chrome буде увек са вама</translation>
 <translation id="6883876366448858277">шаље реч и околни контекст Google претрази, а приказује дефиниције, слике и друге резултате претраге.</translation>
@@ -217,7 +215,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="7164397146364144019">Можете да помогнете да Chrome буде безбеднији и једноставнији за коришћење ако аутоматски пријављујете Google-у детаље могућих безбедносних инцидената.</translation>
 <translation id="7185038942300673794">Додатак <ph name="EXTENSION_NAME" /> је додат у Chrome.</translation>
-<translation id="7196020411877309443">Зашто видим ово?</translation>
 <translation id="7242029209006116544">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Google Chrome профилом. Chrome подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. Можете опционално да направите нови профил да би постојећи Chrome подаци остали одвојени. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Windows XP и Windows Vista више неће бити подржани.</translation>
 <translation id="7330164299247909639">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome као <ph name="USER_NAME" /> или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>

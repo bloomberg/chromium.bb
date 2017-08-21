@@ -357,7 +357,6 @@
 <translation id="1520635877184409083">Juster...</translation>
 <translation id="1521442365706402292">Administrer certifikater</translation>
 <translation id="152234381334907219">Aldrig gemt</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Tastatur</translation>
 <translation id="1525835343380843286">Serverkommunikationsfejl</translation>
 <translation id="1526560967942511387">Unavngivet dokument</translation>
@@ -464,7 +463,6 @@
 <translation id="1665611772925418501">Filen kunne ikke ændres.</translation>
 <translation id="1665770420914915777">Brug siden Ny fane</translation>
 <translation id="1666058115165804494">Oprettelsestidspunkt</translation>
-<translation id="1666288758713846745">Dynamisk</translation>
 <translation id="1666788816626221136">Du har certifikatfiler, som ikke passer i nogen af de andre kategorier:</translation>
 <translation id="1670399744444387456">Grundlæggende oplysninger</translation>
 <translation id="1673103856845176271">Der kunne ikke opnås adgang til filen af sikkerhedsmæssige årsager.</translation>
@@ -743,6 +741,7 @@
 <translation id="2116673936380190819">seneste time</translation>
 <translation id="2121825465123208577">Tilpas størrelse</translation>
 <translation id="2126167708562367080">Din administrator har deaktiveret synkronisering.</translation>
+<translation id="2126426811489709554">Leveret af Chrome</translation>
 <translation id="2127166530420714525">Kunne ikke ændre strømtilstand for Bluetooth-adapteren.</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="212862741129535676">Anvendt andel for frekvenstilstand</translation>
@@ -1251,7 +1250,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2805707493867224476">Tillad, at alle websites viser pop op-vinduer</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2807517655263062534">Dine downloadede filer vises her</translation>
-<translation id="2809346626032021864">Læsning</translation>
 <translation id="2809586584051668049">og <ph name="NUMBER_ADDITIONAL_DISABLED" /> mere</translation>
 <translation id="281133045296806353">Der blev oprettet et nyt vindue i den aktuelle browsersession.</translation>
 <translation id="2812944337881233323">Prøv at logge ud og ind igen.</translation>
@@ -2580,7 +2578,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4816492930507672669">Tilpas til siden</translation>
 <translation id="4820334425169212497">Nej, jeg kan ikke se den</translation>
 <translation id="4821086771593057290">Din adgangskode er ændret. Prøv igen med din nye adgangskode.</translation>
-<translation id="4821725298388681253">Dette er en tidlig udgivelse Nogle funktioner såsom søgning og indtastning af tekst er ikke tilgængelige endnu.</translation>
+<translation id="4821725298388681253">Dette er en tidlig udgivelse. Nogle funktioner såsom søgning og indtastning af tekst er ikke tilgængelige endnu.</translation>
 <translation id="4821935166599369261">&amp;Profilering aktiveret</translation>
 <translation id="4823484602432206655">Læs og rediger bruger- og enhedsindstillinger</translation>
 <translation id="4823651846660089135">Enheden er skrivebeskyttet</translation>
@@ -4797,6 +4795,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8137331602592933310">"<ph name="FILENAME" />" er blevet delt med dig. Du kan ikke slette filen, fordi du ikke ejer den.</translation>
 <translation id="8137559199583651773">Administrer udvidelser</translation>
 <translation id="8138082791834443598">Valgfrit – indtast nye oplysninger, eller opdater de eksisterende oplysninger, der skal tilknyttes denne enhed.</translation>
+<translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8140778357236808512">Importér en eksisterende administreret bruger</translation>
 <translation id="8141725884565838206">Administrer dine adgangskoder</translation>
 <translation id="8142699993796781067">Privat netværk</translation>

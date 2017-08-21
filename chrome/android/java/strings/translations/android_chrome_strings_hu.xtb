@@ -334,6 +334,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">A Sogou használata a kereséshez</translation>
 <translation id="4412992751769744546">Harmadik felektől származó cookie-k engedélyezése</translation>
+<translation id="443008484043213881">Eszközök</translation>
 <translation id="4432792777822557199">A(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalak mostantól le lesznek fordítva <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="4445444302979002552">A várható kifejezés szolgáltatások használata keresőkifejezések és webhelyek javasolásához</translation>
 <translation id="4452548195519783679">Könyvjelzők közé téve itt: <ph name="FOLDER_NAME" /></translation>
@@ -504,6 +505,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5958275228015807058">A fájlokat és oldalakat a Letöltések között találhatja meg</translation>
 <translation id="5962718611393537961">Koppintson az összecsukáshoz</translation>
 <translation id="6000066717592683814">A Google megtartása</translation>
+<translation id="6023914116273780353">Személyre szabott</translation>
 <translation id="6031101910111098835">Összecsukva – Kattintson a kibontáshoz</translation>
 <translation id="6039379616847168523">Ugrás a következő lapra</translation>
 <translation id="6040143037577758943">Bezárás</translation>
@@ -582,6 +584,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6697947395630195233">A Chrome-nak hozzáférésre van szüksége a helyadatokra ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét.</translation>
 <translation id="6698801883190606802">Szinkronizálás kezelése</translation>
 <translation id="6701279291835318271">Biztonsági jelentések</translation>
+<translation id="6709133671862442373">Hírek</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6727612981472093924">Navigációs panel megnyitva</translation>
 <translation id="6738867403308150051">Letöltés…</translation>

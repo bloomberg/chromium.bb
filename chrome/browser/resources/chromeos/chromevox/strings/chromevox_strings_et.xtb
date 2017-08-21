@@ -220,7 +220,7 @@
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Järgmine rida</translation>
 <translation id="3153024374267644603">Kõne sisselülitamine</translation>
-<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
+<translation id="3153928844647607688">Tabel <ph name="TABLENAME" />, <ph name="TABLEROWS" /> korda <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Eelmist nuppu ei ole.</translation>
 <translation id="3163593631834463955">Veeru päis on tühi</translation>
 <translation id="316542773973815724">Navigeerimine</translation>
@@ -406,7 +406,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4597532268155981612">vorm</translation>
 <translation id="4597896406374528575">Aprill</translation>
 <translation id="460018603901637538">Aktiveeri kuvastiil Kõrvuti.</translation>
-<translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
+<translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" /> korda <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Järgmist klahvivajutust ignoreeritakse</translation>
 <translation id="461613135510474570">Lause</translation>
 <translation id="4647836961514597010">Värvivalija</translation>

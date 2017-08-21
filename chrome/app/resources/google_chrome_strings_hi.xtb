@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary ऐप्स </translation>
 <translation id="1457721931618994305">Google Chrome अपडेट हो रहा है...</translation>
 <translation id="1469002951682717133">Chrome में ऐप चलाने का साधन</translation>
-<translation id="1480489203462860648">इसे आज़माएं, यह पहले से इंस्टॉल है</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> खरतरनाक है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
@@ -196,7 +195,6 @@
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
 <translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान साझा करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
-<translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
 <translation id="6883876366448858277">Google खोज को कोई शब्‍द या उसके आस-पास का प्रसंग भेजता है, जो परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.</translation>
@@ -211,7 +209,6 @@
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> को Chrome में जोड़ दिया गया है.</translation>
-<translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं रहेंगे.</translation>
 <translation id="7330164299247909639">प्रमाणीकरण प्रमाणपत्र विफल रहा. कृपया Google Chrome में <ph name="USER_NAME" /> के रूप में फिर से प्रवेश करें या अधिक जानकारी के लिए अपने व्यवस्थापक से संपर्क करें. <ph name="ADDITIONAL_EXPLANATION" /></translation>

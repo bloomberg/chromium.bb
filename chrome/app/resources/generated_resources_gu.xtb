@@ -354,7 +354,6 @@
 <translation id="1520635877184409083">સમાયોજિત કરો,,,</translation>
 <translation id="1521442365706402292">પ્રમાણપત્રો મેનેજ કરો</translation>
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
-<translation id="1524152555482653726">મૂવી</translation>
 <translation id="1524430321211440688">કીબોર્ડ</translation>
 <translation id="1525835343380843286">સર્વર સંચાર ભૂલ</translation>
 <translation id="1526560967942511387">નામ વિનાનો દસ્તાવેજ</translation>
@@ -463,7 +462,6 @@
 <translation id="1665611772925418501">ફાઇલ સંશોધિત કરી શકાઈ નથી.</translation>
 <translation id="1665770420914915777">નવા ટૅબ પૃષ્ઠનો ઉપયોગ કરો</translation>
 <translation id="1666058115165804494">બનાવ્યાનો સમય</translation>
-<translation id="1666288758713846745">ડાઇનેમિક</translation>
 <translation id="1666788816626221136">તમારી ફાઇલ પર પ્રમાણપત્રો છે જે અન્ય કોઈપણ કેટેગરીમાં ફિટ થતા નથી:</translation>
 <translation id="1670399744444387456">મૂળભૂત</translation>
 <translation id="1673103856845176271">સુરક્ષા કારણોસર ફાઇલ ઍક્સેસ કરી શકાઈ નથી.</translation>
@@ -742,6 +740,7 @@
 <translation id="2116673936380190819">વીતેલી કલાક</translation>
 <translation id="2121825465123208577">આકાર બદલો</translation>
 <translation id="2126167708562367080">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે.</translation>
+<translation id="2126426811489709554">Chrome દ્વારા સંચાલિત</translation>
 <translation id="2127166530420714525">Bluetooth એડેપ્ટરની પાવર સ્થિતિ બદલવામાં નિષ્ફળ થયું.</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="212862741129535676">ફ્રીક્વેંસી સ્થિતિ અક્યુપન્સિ ટકા</translation>
@@ -1250,7 +1249,6 @@
 <translation id="2805707493867224476">બધી સાઇટ્સને પૉપ-અપ્સ બતાવવાની મંજૂરી આપો</translation>
 <translation id="2805756323405976993">એપ્સ</translation>
 <translation id="2807517655263062534">તમે ડાઉનલોડ કરેલી ફાઇલો અહીં દેખાશે</translation>
-<translation id="2809346626032021864">વાંચન</translation>
 <translation id="2809586584051668049">અને <ph name="NUMBER_ADDITIONAL_DISABLED" /> વધુ</translation>
 <translation id="281133045296806353">અસ્તિત્વમાં રહેલા બ્રાઉઝર સત્રમાં નવી વિંડો બનાવી.</translation>
 <translation id="2812944337881233323">સાઇન આઉટ કરીને ફરી પાછા સાઇન ઇન કરવાનો પ્રયાસ કરો</translation>
@@ -4791,6 +4789,7 @@
 <translation id="8137331602592933310">"<ph name="FILENAME" />" તમારી સાથે શેર કરવામાં આવી છે.  તમે તેને કાઢી શકતા નથી કારણ કે તમે તેના માલિક નથી.</translation>
 <translation id="8137559199583651773">એક્સટેન્શનનું સંચાલન કરો</translation>
 <translation id="8138082791834443598">વૈકલ્પિક - આ ઉપકરણ સાથે જોડવા માટે નવી માહિતી દાખલ કરો અથવા અસ્તિત્વમાંની માહિતીને અપડેટ કરો.</translation>
+<translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8140778357236808512">અસ્તિત્વમાંના નિરીક્ષિત વપરાશકર્તાને આયાત કરો</translation>
 <translation id="8141725884565838206">તમારા પાસવર્ડ્સનું સંચાલન કરો</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>

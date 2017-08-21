@@ -358,7 +358,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1520635877184409083">Upravit...</translation>
 <translation id="1521442365706402292">Správa certifikátů</translation>
 <translation id="152234381334907219">Neuloženo</translation>
-<translation id="1524152555482653726">Film</translation>
 <translation id="1524430321211440688">Klávesnice</translation>
 <translation id="1525835343380843286">Chyba komunikace se serverem</translation>
 <translation id="1526560967942511387">Dokument bez názvu</translation>
@@ -468,7 +467,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1665611772925418501">Soubor se nepodařilo upravit.</translation>
 <translation id="1665770420914915777">Použít stránku Nová karta</translation>
 <translation id="1666058115165804494">Čas vytvoření</translation>
-<translation id="1666288758713846745">Dynamické</translation>
 <translation id="1666788816626221136">Máte založené certifikáty, které se nehodí do žádné z ostatních kategorií:</translation>
 <translation id="1670399744444387456">Základní</translation>
 <translation id="1673103856845176271">Soubor je z bezpečnostních důvodů nedostupný.</translation>
@@ -747,6 +745,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2116673936380190819">z uplynulé hodiny</translation>
 <translation id="2121825465123208577">Změnit velikost</translation>
 <translation id="2126167708562367080">Synchronizace je administrátorem zakázána.</translation>
+<translation id="2126426811489709554">Používá technologii Chrome</translation>
 <translation id="2127166530420714525">Stav napájení adaptéru Bluetooth se nepodařilo změnit.</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
 <translation id="212862741129535676">Procentuální zastoupení stavů frekvence</translation>
@@ -1254,7 +1253,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2805707493867224476">Povolit všem webům zobrazovat vyskakovací okna</translation>
 <translation id="2805756323405976993">Aplikace</translation>
 <translation id="2807517655263062534">Zde se zobrazují stažené soubory</translation>
-<translation id="2809346626032021864">Četba</translation>
 <translation id="2809586584051668049">a další (<ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
 <translation id="281133045296806353">Ve stávající relaci prohlížeče bylo vytvořeno nové okno.</translation>
 <translation id="2812944337881233323">Zkuste se odhlásit a opět přihlásit.</translation>
@@ -4790,6 +4788,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8137331602592933310">Soubor <ph name="FILENAME" /> s vámi někdo sdílí. Nemůžete ho smazat, protože ho nevlastníte.</translation>
 <translation id="8137559199583651773">Správa rozšíření</translation>
 <translation id="8138082791834443598">Volitelné: zadejte nové údaje, které budou přidruženy k tomuto zařízení, případně aktualizujte stávající.</translation>
+<translation id="813913629614996137">Probíhá inicializace...</translation>
 <translation id="8140778357236808512">Importovat existujícího dozorovaného uživatele</translation>
 <translation id="8141725884565838206">Správa hesel</translation>
 <translation id="8142699993796781067">Soukromá síť</translation>
@@ -4874,7 +4873,7 @@ Výpočet zbývajícího času</translation>
 <translation id="8260864402787962391">Myš</translation>
 <translation id="8261378640211443080">Toto rozšíření není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="8261387128019234107">Přidat účet pro profil <ph name="PROFILE_NAME" /></translation>
-<translation id="8261506727792406068">Vymazat</translation>
+<translation id="8261506727792406068">Smazat</translation>
 <translation id="8261580862248730866">Výjimky mikrofonu</translation>
 <translation id="8261673729476082470">Probíhá zálohování <ph name="FILE_COUNT" /> fotek na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" /></translation>
 <translation id="826246685091802258">Příznak <ph name="BAD_FLAG" /> v tomto sestavení není implementován.</translation>

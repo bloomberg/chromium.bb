@@ -12,7 +12,6 @@
 <translation id="1403254041219632970">Бъдещите версии на Chromium вече няма да поддържат Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1414495520565016063">Влязохте в Chromium!</translation>
 <translation id="1444754455097148408">Лицензи за отворен код за Chromium</translation>
-<translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="1502360822835740515">Задаване на Chromium като браузър по подразбиране</translation>
 <translation id="151962892725702025">Chromium OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
 <translation id="1559451348202814456">Chromium може да не функционира правилно, тъй като вече не се поддържа под Mac OS X 10.6, 10.7 и 10.8.</translation>
@@ -172,7 +171,6 @@
 <translation id="6717134281241384636">Потребителският ви профил не може да се използва, защото е от по-нова версия на Chromium. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chromium.</translation>
 <translation id="6734080038664603509">Актуализиране на &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
-<translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки и други резултати от търсенето.</translation>
@@ -185,7 +183,6 @@
 <translation id="707471633328071618">Google Payments (копирано в Chromium)</translation>
 <translation id="7138853919861947730">Chromium може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7162152143154757523">Chromium може да предоставя по-интелигентна проверка на правописа, като изпраща до сървърите ни въвежданото от вас в браузъра, позволявайки ви да използвате същата технология за проверка на правописа, както при търсенето с Google.</translation>
-<translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="7205698830395646142">Скриване в менюто на Chromium</translation>
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
 <translation id="722928257909516027">Показване на менюто на Chromium</translation>

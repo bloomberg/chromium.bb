@@ -462,7 +462,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">נסה להשבית את התוספים.</translation>
 <translation id="457875822857220463">משלוח</translation>
-<translation id="4582800630050655161">‏הגישה לחשבון Google שלך עלולה להישלל או שהזהות שלך עלולה להיגנב. ההמלצה של Chromium היא לשנות את הסיסמה עכשיו.</translation>
+<translation id="4582800630050655161">‏הגישה שלך לחשבון Google עלולה להישלל והזהות שלך עלולה להיגנב. לגלישה בטוחה ב-Chromium, מומלץ לשנות את הסיסמה עכשיו.</translation>
 <translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="4592951414987517459">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מתקדמת.</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
@@ -471,7 +471,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4690462567478992370">הפסק להשתמש באישור לא חוקי</translation>
-<translation id="4690954380545377795">‏הגישה לחשבון Google שלך עלולה להישלל או שהזהות שלך עלולה להיגנב. ההמלצה של Chrome היא לשנות את הסיסמה עכשיו.</translation>
+<translation id="4690954380545377795">‏הגישה שלך לחשבון Google עלולה להישלל והזהות שלך עלולה להיגנב. לגלישה בטוחה ב-Chrome, מומלץ לשנות את הסיסמה עכשיו.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">החיבור נקטע</translation>
 <translation id="471880041731876836">אין לך הרשאה להיכנס אל האתר הזה</translation>
@@ -863,7 +863,7 @@ Del</translation>
 <translation id="785549533363645510">עם זאת, אינך בלתי נראה. המעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שאליהם אתה נכנס.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7878176543348854470">אפשר לשלם באמצעות כרטיסי חיוב וכרטיסים משולמים מראש.</translation>
-<translation id="7878562273885520351">ייתכן שהסיסמה שלך נפרצה</translation>
+<translation id="7878562273885520351">ייתכן שאבטחת הסיסמה שלך נפגעה</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="79338296614623784">עליך להזין מספר טלפון חוקי</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
