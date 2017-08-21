@@ -43,6 +43,16 @@
 
 #pragma mark - PaymentItemsDisplayViewControllerDataSource
 
+- (BOOL)canPay {
+  return self.paymentRequest->selected_payment_method() != nullptr &&
+         (self.paymentRequest->selected_shipping_option() != nullptr ||
+          ![self requestShipping]) &&
+         (self.paymentRequest->selected_shipping_profile() != nullptr ||
+          ![self requestShipping]) &&
+         (self.paymentRequest->selected_contact_profile() != nullptr ||
+          ![self requestContactInfo]);
+}
+
 - (CollectionViewItem*)totalItem {
   PriceItem* totalItem = [[PriceItem alloc] init];
   totalItem.item =
@@ -74,6 +84,18 @@
     [lineItems addObject:item];
   }
   return lineItems;
+}
+
+#pragma mark - Helper methods
+
+- (BOOL)requestShipping {
+  return self.paymentRequest->request_shipping();
+}
+
+- (BOOL)requestContactInfo {
+  return self.paymentRequest->request_payer_name() ||
+         self.paymentRequest->request_payer_email() ||
+         self.paymentRequest->request_payer_phone();
 }
 
 @end
