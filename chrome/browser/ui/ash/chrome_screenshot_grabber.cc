@@ -300,7 +300,6 @@ std::string ReadFileToString(const base::FilePath& path) {
 
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
     : screenshot_grabber_(new ui::ScreenshotGrabber(this)),
-      profile_for_test_(nullptr),
       weak_factory_(this) {
   screenshot_grabber_->AddObserver(this);
 }
@@ -611,11 +610,6 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
                                                 screenshot_path));
 }
 
-void ChromeScreenshotGrabber::SetProfileForTest(Profile* profile) {
-  profile_for_test_ = profile;
-}
-
 Profile* ChromeScreenshotGrabber::GetProfile() {
-  return profile_for_test_ ? profile_for_test_
-                           : ProfileManager::GetActiveUserProfile();
+  return ProfileManager::GetActiveUserProfile();
 }
