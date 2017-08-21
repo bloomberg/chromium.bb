@@ -47,6 +47,16 @@ class Helper : public EmbeddedWorkerTestHelper {
     blob_size_ = blob_size;
   }
 
+  // Tells this helper to respond to fetch events with the specified stream.
+  void RespondWithStream(
+      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle) {
+    response_mode_ = ResponseMode::kStream;
+    stream_handle_ = blink::mojom::ServiceWorkerStreamHandle::New();
+    stream_handle_->callback_request = std::move(callback_request);
+    stream_handle_->stream = std::move(consumer_handle);
+  }
+
  protected:
   void OnFetchEvent(
       int embedded_worker_id,
@@ -77,17 +87,35 @@ class Helper : public EmbeddedWorkerTestHelper {
             base::Time::Now());
         std::move(finish_callback).Run(SERVICE_WORKER_OK, base::Time::Now());
         return;
+      case ResponseMode::kStream:
+        response_callback->OnResponseStream(
+            ServiceWorkerResponse(
+                base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+                network::mojom::FetchResponseType::kDefault,
+                base::MakeUnique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                0 /* blob_size */, nullptr /* blob */,
+                blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
+                false /* response_is_in_cache_storage */,
+                std::string() /* response_cache_storage_cache_name */,
+                base::MakeUnique<
+                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+            std::move(stream_handle_), base::Time::Now());
+        std::move(finish_callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+        return;
     }
     NOTREACHED();
   }
 
  private:
-  enum class ResponseMode { kDefault, kBlob };
+  enum class ResponseMode { kDefault, kBlob, kStream };
   ResponseMode response_mode_ = ResponseMode::kDefault;
 
   // For ResponseMode::kBlob.
   std::string blob_uuid_;
   uint64_t blob_size_ = 0;
+
+  // For ResponseMode::kStream.
+  blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -242,7 +270,35 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   EXPECT_EQ(kResponseBody, response);
 }
 
-// TODO(falken): Add tests for stream response, network fallback, etc. Basically
-// everything in ServiceWorkerURLRequestJobTest.
+TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
+  // Construct the Stream to respond with.
+  const char kResponseBody[] = "Here is sample text for the Stream.";
+  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::DataPipe data_pipe;
+  helper_->RespondWithStream(mojo::MakeRequest(&stream_callback),
+                             std::move(data_pipe.consumer_handle));
+
+  // Perform the request.
+  TestRequest();
+  const ResourceResponseHead& info = client_.response_head();
+  EXPECT_EQ(200, info.headers->response_code());
+  ExpectFetchedViaServiceWorker(info);
+
+  // Write the body stream.
+  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
+  stream_callback->OnCompleted();
+  data_pipe.producer_handle.reset();
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client_.response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
+}
 
 }  // namespace content
