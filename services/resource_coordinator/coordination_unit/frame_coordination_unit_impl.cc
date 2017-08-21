@@ -78,6 +78,11 @@ bool FrameCoordinationUnitImpl::IsMainFrame() const {
   return true;
 }
 
+void FrameCoordinationUnitImpl::OnEventReceived(const mojom::Event event) {
+  for (auto& observer : observers())
+    observer.OnFrameEventReceived(this, event);
+}
+
 void FrameCoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
     int64_t value) {

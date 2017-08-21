@@ -81073,6 +81073,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Heuristics.FromBackgroundedToFirstAlertFired"
+    units="ms">
+  <owner>chrisha@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Measures the time duration from when the tab is backgrounded to when a
+    JavaScript alert is updated. Only recorded when the tab is in the
+    background.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Heuristics.FromBackgroundedToFirstAudioStarts"
     units="ms">
   <owner>chrisha@chromium.org</owner>

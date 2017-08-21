@@ -17,6 +17,7 @@ class CoordinationUnitImpl;
 class FrameCoordinationUnitImpl;
 class WebContentsCoordinationUnitImpl;
 
+extern const char kTabFromBackgroundedToFirstAlertFiredUMA[];
 extern const char kTabFromBackgroundedToFirstAudioStartsUMA[];
 extern const char kTabFromBackgroundedToFirstTitleUpdatedUMA[];
 
@@ -38,6 +39,8 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
       const WebContentsCoordinationUnitImpl* web_contents_cu,
       const mojom::PropertyType property_type,
       int64_t value) override;
+  void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
+                            const mojom::Event event) override;
   void OnWebContentsEventReceived(
       const WebContentsCoordinationUnitImpl* web_contents_cu,
       const mojom::Event event) override;
@@ -48,6 +51,7 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   struct MetricsReportRecord {
     MetricsReportRecord();
     void Reset();
+    bool first_alert_fired_after_backgrounded_reported;
     bool first_audible_after_backgrounded_reported;
     bool first_title_updated_after_backgrounded_reported;
   };

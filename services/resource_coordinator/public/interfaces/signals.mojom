@@ -6,6 +6,7 @@ module resource_coordinator.mojom;
 
 enum Event {
   kTestEvent,
+  kAlertFired,
   kTitleUpdated,
 };
 

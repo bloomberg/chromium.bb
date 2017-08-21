@@ -91,6 +91,8 @@ class CoordinationUnitGraphObserver {
   // |coordination_unit| doesn't implement its own EventReceived handler.
   virtual void OnEventReceived(const CoordinationUnitImpl* coordination_unit,
                                const mojom::Event event) {}
+  virtual void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
+                                    const mojom::Event event) {}
   virtual void OnWebContentsEventReceived(
       const WebContentsCoordinationUnitImpl* web_contents_cu,
       const mojom::Event event) {}
