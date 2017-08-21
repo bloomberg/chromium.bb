@@ -37,6 +37,10 @@ def _RunAndCheck(dry_run, args):
       return e.returncode
 
 
+def _IsRunningOnBot():
+  return int(os.environ.get('CHROME_HEADLESS', 0)) != 0
+
+
 def _DumpFile(dry_run, name, description):
   """Prints out the contents of |name| if |dry_run|."""
   if not dry_run:
@@ -157,8 +161,14 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = tempfile.NamedTemporaryFile()
   autorun_file.write('#!/bin/sh\n')
-  if int(os.environ.get('CHROME_HEADLESS', 0)) != 0:
+  if _IsRunningOnBot():
+    # We drop to -smp 1 to avoid counterintuitive observations on the realtime
+    # clock, but keep the concurrency at the default of 4.
+    child_args.append('--test-launcher-jobs=4')
+
+    # TODO(scottmg): Passed through for https://crbug.com/755282.
     autorun_file.write('export CHROME_HEADLESS=1\n')
+
   autorun_file.write('echo Executing ' + os.path.basename(bin_name) + ' ' +
                      ' '.join(child_args) + '\n')
 
@@ -324,7 +334,6 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
   qemu_command = [qemu_path,
       '-m', '2048',
       '-nographic',
-      '-smp', '4',
       '-machine', 'q35',
       '-kernel', kernel_path,
       '-initrd', bootfs,
@@ -346,10 +355,11 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
       '-append', 'TERM=dumb kernel.halt_on_panic=true',
     ]
 
-  if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
-    qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
+  if _IsRunningOnBot():
+    qemu_command += ['-smp', '1', '-cpu', 'Haswell,+smap,-check']
   else:
-    qemu_command += ['-cpu', 'Haswell,+smap,-check']
+    # Bot executions can't (currently) enable KVM.
+    qemu_command += ['-smp', '4', '-enable-kvm', '-cpu', 'host,migratable=no']
 
   if dry_run:
     print 'Run:', ' '.join(qemu_command)
