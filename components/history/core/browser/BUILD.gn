@@ -4,6 +4,9 @@
 
 static_library("browser") {
   sources = [
+    "browsing_history_driver.h",
+    "browsing_history_service.cc",
+    "browsing_history_service.h",
     "delete_directive_handler.cc",
     "delete_directive_handler.h",
     "download_constants.h",
@@ -185,6 +188,7 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "browsing_history_service_unittest.cc",
     "download_slice_info_unittest.cc",
     "expire_history_backend_unittest.cc",
     "history_backend_db_unittest.cc",
