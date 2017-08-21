@@ -100,6 +100,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     readonly attribute DocumentReadyState readyState;
 
     // DOM tree accessors
+    // Named getter is implemented without IDL code generation for better
+    // performance. See LocalWindowProxy.cpp.
+    // getter object (DOMString name);
     [CEReactions, CustomElementCallbacks] attribute DOMString title;
     [CEReactions, CustomElementCallbacks] attribute DOMString dir;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement? body;

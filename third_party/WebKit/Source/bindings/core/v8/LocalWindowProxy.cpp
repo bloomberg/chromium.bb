@@ -382,6 +382,18 @@ void LocalWindowProxy::UpdateDocumentInternal() {
   UpdateSecurityOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
 }
 
+// GetNamedProperty(), Getter(), NamedItemAdded(), and NamedItemRemoved()
+// optimize property access performance for Document.
+//
+// Document interface has [OverrideBuiltins] and a named getter. If we
+// implemented the named getter as a standard IDL-mapped code, we would call a
+// Blink function before any of Document property access, and it would be
+// performance overhead even for builtin properties. Our implementation updates
+// V8 accessors for a Document wrapper when a named object is added or removed,
+// and avoid to check existence of names objects on accessing any properties.
+//
+// See crbug.com/614559 for how this affected benchmarks.
+
 static v8::Local<v8::Value> GetNamedProperty(
     HTMLDocument* html_document,
     const AtomicString& key,
