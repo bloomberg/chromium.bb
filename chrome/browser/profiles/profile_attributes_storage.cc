@@ -218,3 +218,11 @@ size_t ProfileAttributesStorage::ChooseAvatarIconIndexForNewProfile() const {
   NOTREACHED();
   return 0;
 }
+
+void ProfileAttributesStorage::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void ProfileAttributesStorage::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
+}
