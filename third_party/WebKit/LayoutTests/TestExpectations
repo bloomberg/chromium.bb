@@ -1735,6 +1735,14 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/methodName-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/payerEmail-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/payerName-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/payerPhone-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/requestId-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/shippingAddress-attribute-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/payment-response/shippingOption-attribute-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/beacon/beacon-cors.sub.window.html [ Timeout ]
 crbug.com/626703 external/wpt/beacon/beacon-navigate.html [ Timeout ]
 crbug.com/626703 external/wpt/beacon/beacon-redirect.window.html [ Timeout ]
