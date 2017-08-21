@@ -61,27 +61,27 @@ class WebStateImpl;
 // Defaults to NO; this should be enabled before attempting to access the view.
 @property(nonatomic, assign) BOOL webUsageEnabled;
 
-@property(nonatomic, assign) id<CRWWebDelegate> delegate;
-@property(nonatomic, assign) id<CRWNativeContentProvider> nativeProvider;
-@property(nonatomic, assign)
-    id<CRWSwipeRecognizerProvider> swipeRecognizerProvider;
+@property(nonatomic, weak) id<CRWWebDelegate> delegate;
+@property(nonatomic, weak) id<CRWNativeContentProvider> nativeProvider;
+@property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
+    swipeRecognizerProvider;
 @property(nonatomic, readonly) web::WebState* webState;
 @property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
 
 // The container view used to display content.  If the view has been purged due
 // to low memory, this will recreate it.
-@property(nonatomic, readonly) UIView* view;
+@property(weak, nonatomic, readonly) UIView* view;
 
 // The web view proxy associated with this controller.
-@property(nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
+@property(strong, nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
 
 // The web view navigation proxy associated with this controller.
-@property(nonatomic, readonly) id<CRWWebViewNavigationProxy>
+@property(weak, nonatomic, readonly) id<CRWWebViewNavigationProxy>
     webViewNavigationProxy;
 
 // The view that generates print data when printing. It is nil if printing
 // is not supported.
-@property(nonatomic, readonly) UIView* viewForPrinting;
+@property(weak, nonatomic, readonly) UIView* viewForPrinting;
 
 // Returns the current page loading phase.
 @property(nonatomic, readonly) web::LoadPhase loadPhase;

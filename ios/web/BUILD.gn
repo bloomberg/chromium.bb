@@ -16,7 +16,7 @@ group("all_tests") {
   ]
 }
 
-source_set("web_arc") {
+source_set("web") {
   public_deps = [
     ":service_names",
     "//net",
@@ -239,6 +239,10 @@ source_set("web_arc") {
     "web_state/ui/crw_swipe_recognizer_provider.h",
     "web_state/ui/crw_touch_tracking_recognizer.h",
     "web_state/ui/crw_touch_tracking_recognizer.mm",
+    "web_state/ui/crw_web_controller.h",
+    "web_state/ui/crw_web_controller.mm",
+    "web_state/ui/crw_web_controller_container_view.h",
+    "web_state/ui/crw_web_controller_container_view.mm",
     "web_state/ui/crw_web_view_content_view.mm",
     "web_state/ui/crw_web_view_navigation_proxy.h",
     "web_state/ui/crw_web_view_proxy_impl.h",
@@ -307,47 +311,6 @@ mojom("service_names") {
   sources = [
     "public/service_names.mojom",
   ]
-}
-
-source_set("web") {
-  deps = [
-    ":core",
-    ":js_resources",
-    ":reload_type",
-    ":resources",
-    ":user_agent",
-    "//base",
-    "//components/url_formatter",
-    "//ios/net",
-    "//ios/third_party/blink:html_tokenizer",
-    "//mojo/public/cpp/system",
-    "//mojo/public/js",
-    "//net",
-    "//services/service_manager/public/cpp",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/resources",
-    "//url",
-  ]
-
-  public_deps = [
-    ":web_arc",
-  ]
-
-  sources = [
-    "web_state/ui/crw_web_controller.h",
-    "web_state/ui/crw_web_controller.mm",
-    "web_state/ui/crw_web_controller_container_view.h",
-    "web_state/ui/crw_web_controller_container_view.mm",
-  ]
-
-  libs = [
-    "CoreGraphics.framework",
-    "WebKit.framework",
-  ]
-
-  allow_circular_includes_from = [ ":web_arc" ]
 }
 
 source_set("core") {

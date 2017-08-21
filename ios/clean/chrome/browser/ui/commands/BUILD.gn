@@ -17,7 +17,7 @@ source_set("commands") {
   ]
   deps = [
     "//base",
-    "//ios/web:web_arc",
+    "//ios/web:web",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
