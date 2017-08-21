@@ -9,12 +9,16 @@
 #include "base/strings/stringprintf.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/test/fakes/test_native_content.h"
+#import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_int_test.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/web/web_state/web_state_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -272,9 +276,19 @@ class NavigationCallbacksTest : public WebIntTest {
   void SetUp() override {
     WebIntTest::SetUp();
     observer_ = base::MakeUnique<StrictMock<WebStateObserverMock>>(web_state());
+
+    // Stub out NativeContent objects.
+    provider_.reset([[TestNativeContentProvider alloc] init]);
+    content_.reset([[TestNativeContent alloc] initWithURL:GURL::EmptyGURL()
+                                               virtualURL:GURL::EmptyGURL()]);
+
+    WebStateImpl* web_state_impl = reinterpret_cast<WebStateImpl*>(web_state());
+    web_state_impl->GetWebController().nativeProvider = provider_.get();
   }
 
  protected:
+  base::scoped_nsobject<TestNativeContentProvider> provider_;
+  base::scoped_nsobject<TestNativeContent> content_;
   std::unique_ptr<StrictMock<WebStateObserverMock>> observer_;
 };
 
@@ -461,6 +475,7 @@ TEST_F(NavigationCallbacksTest, NativeContentNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
       .WillOnce(VerifyNewNativePageFinishedContext(web_state(), url, &context));
   EXPECT_CALL(*observer_, DidStopLoading());
+  [provider_ setController:content_.get() forURL:url];
   LoadUrl(url);
 }
 
@@ -472,6 +487,7 @@ TEST_F(NavigationCallbacksTest, NativeContentReload) {
   EXPECT_CALL(*observer_, DidStartLoading());
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
+  [provider_ setController:content_.get() forURL:url];
   LoadUrl(url);
 
   // Reload native content.
