@@ -67,6 +67,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/prerender:provider",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
