@@ -85,6 +85,18 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
         return false;
 #endif
       }
+      case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE: {
+#if defined(OS_CHROMEOS)
+        // Each platform only supports one camera buffer type. We list the
+        // supported buffer formats on all platforms here. When allocating a
+        // camera buffer the caller is responsible for making sure a buffer is
+        // successfully allocated. For example, allocating YUV420_BIPLANAR
+        // for SCANOUT_CAMERA_READ_WRITE may only work on Intel boards.
+        return format == gfx::BufferFormat::YUV_420_BIPLANAR;
+#else
+        return false;
+#endif
+      }
     }
     NOTREACHED();
     return false;
@@ -98,6 +110,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
       case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
+      case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
 #if defined(OS_CHROMEOS)
         return ClientNativePixmapDmaBuf::ImportFromDmabuf(handle, size);
 #else
