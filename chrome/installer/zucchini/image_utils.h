@@ -37,10 +37,10 @@ constexpr PoolTag kNoPoolTag(0xFF);
 // Specification of references in an image file.
 struct ReferenceTypeTraits {
   constexpr ReferenceTypeTraits() = default;
-  constexpr ReferenceTypeTraits(offset_t width,
-                                TypeTag type_tag,
-                                PoolTag pool_tag)
-      : width(width), type_tag(type_tag), pool_tag(pool_tag) {}
+  constexpr ReferenceTypeTraits(offset_t width_in,
+                                TypeTag type_tag_in,
+                                PoolTag pool_tag_in)
+      : width(width_in), type_tag(type_tag_in), pool_tag(pool_tag_in) {}
 
   // |width| specifies number of bytes covered by the reference's binary
   // encoding.
@@ -149,8 +149,10 @@ enum ExecutableType : uint32_t {
 // of raw data.
 struct Element {
   Element() = default;
-  constexpr Element(ExecutableType exe_type, offset_t offset, offset_t length)
-      : exe_type(exe_type), offset(offset), length(length) {}
+  constexpr Element(ExecutableType exe_type_in,
+                    offset_t offset_in,
+                    offset_t length_in)
+      : exe_type(exe_type_in), offset(offset_in), length(length_in) {}
   constexpr Element(ExecutableType exe_type, const BufferRegion& region)
       : exe_type(exe_type),
         offset(base::checked_cast<offset_t>(region.offset)),

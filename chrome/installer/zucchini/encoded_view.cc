@@ -29,8 +29,8 @@ EncodedView::value_type EncodedView::Projection(const ImageIndex& image_index,
 
   // |location| points into a Reference.
   Reference ref = image_index.FindReference(type, location);
-  DCHECK(location >= ref.location);
-  DCHECK(location < ref.location + image_index.GetTraits(type).width);
+  DCHECK_GE(location, ref.location);
+  DCHECK_LT(location, ref.location + image_index.GetTraits(type).width);
 
   // |location| is not the first byte of the reference.
   if (location != ref.location) {

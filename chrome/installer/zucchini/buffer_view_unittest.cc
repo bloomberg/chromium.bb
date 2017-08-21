@@ -4,8 +4,12 @@
 
 #include "chrome/installer/zucchini/buffer_view.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iterator>
 #include <type_traits>
+#include <vector>
 
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

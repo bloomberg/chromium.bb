@@ -63,7 +63,7 @@ base::Optional<ConstBufferView> Abs32GapFinder::GetNext() {
 Rel32Finder::Rel32Finder() = default;
 
 Rel32Finder::Rel32Finder(ConstBufferView region)
-    : next_cursor_(region.begin()), region_(region) {}
+    : region_(region), next_cursor_(region_.begin()) {}
 
 Rel32Finder::~Rel32Finder() = default;
 

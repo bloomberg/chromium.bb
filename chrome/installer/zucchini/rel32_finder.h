@@ -120,8 +120,8 @@ class Rel32Finder {
   virtual ConstBufferView Scan(ConstBufferView region) = 0;
 
  private:
-  ConstBufferView::const_iterator next_cursor_ = nullptr;
   ConstBufferView region_;
+  ConstBufferView::const_iterator next_cursor_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Rel32Finder);
 };
