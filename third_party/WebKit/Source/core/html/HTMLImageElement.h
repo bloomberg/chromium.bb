@@ -185,8 +185,9 @@ class CORE_EXPORT HTMLImageElement final
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
-  bool ShouldRegisterAsNamedItem() const override { return true; }
-  bool ShouldRegisterAsExtraNamedItem() const override { return true; }
+  NamedItemType GetNamedItemType() const override {
+    return NamedItemType::kNameOrIdWithName;
+  }
   bool IsInteractiveContent() const override;
   Image* ImageContents() override;
 

@@ -3812,8 +3812,9 @@ inline void Element::UpdateName(const AtomicString& old_name,
   if (old_name == new_name)
     return;
 
-  if (ShouldRegisterAsNamedItem())
-    UpdateNamedItemRegistration(old_name, new_name);
+  NamedItemType type = GetNamedItemType();
+  if (type != NamedItemType::kNone)
+    UpdateNamedItemRegistration(type, old_name, new_name);
 }
 
 inline void Element::UpdateId(const AtomicString& old_id,
@@ -3838,8 +3839,10 @@ inline void Element::UpdateId(TreeScope& scope,
   if (!new_id.IsEmpty())
     scope.AddElementById(new_id, this);
 
-  if (ShouldRegisterAsExtraNamedItem())
-    UpdateExtraNamedItemRegistration(old_id, new_id);
+  NamedItemType type = GetNamedItemType();
+  if (type == NamedItemType::kNameOrId ||
+      type == NamedItemType::kNameOrIdWithName)
+    UpdateIdNamedItemRegistration(type, old_id, new_id);
 }
 
 void Element::WillModifyAttribute(const QualifiedName& name,
@@ -3953,21 +3956,37 @@ void Element::DidMoveToNewDocument(Document& old_document) {
     ReResolveURLsInInlineStyle(GetDocument(), EnsureMutableInlineStyle());
 }
 
-void Element::UpdateNamedItemRegistration(const AtomicString& old_name,
+void Element::UpdateNamedItemRegistration(NamedItemType type,
+                                          const AtomicString& old_name,
                                           const AtomicString& new_name) {
   if (!GetDocument().IsHTMLDocument())
     return;
+  HTMLDocument& doc = ToHTMLDocument(GetDocument());
 
   if (!old_name.IsEmpty())
-    ToHTMLDocument(GetDocument()).RemoveNamedItem(old_name);
+    doc.RemoveNamedItem(old_name);
 
   if (!new_name.IsEmpty())
-    ToHTMLDocument(GetDocument()).AddNamedItem(new_name);
+    doc.AddNamedItem(new_name);
+
+  if (type == NamedItemType::kNameOrIdWithName) {
+    const AtomicString id = GetIdAttribute();
+    if (!id.IsEmpty()) {
+      if (!old_name.IsEmpty() && new_name.IsEmpty())
+        doc.RemoveExtraNamedItem(id);
+      else if (old_name.IsEmpty() && !new_name.IsEmpty())
+        doc.AddExtraNamedItem(id);
+    }
+  }
 }
 
-void Element::UpdateExtraNamedItemRegistration(const AtomicString& old_id,
-                                               const AtomicString& new_id) {
+void Element::UpdateIdNamedItemRegistration(NamedItemType type,
+                                            const AtomicString& old_id,
+                                            const AtomicString& new_id) {
   if (!GetDocument().IsHTMLDocument())
+    return;
+
+  if (type == NamedItemType::kNameOrIdWithName && GetNameAttribute().IsEmpty())
     return;
 
   if (!old_id.IsEmpty())

@@ -118,7 +118,9 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   bool IsURLAttribute(const Attribute&) const override;
   bool HasLegalLinkAttribute(const QualifiedName&) const override;
 
-  bool ShouldRegisterAsNamedItem() const override { return true; }
+  NamedItemType GetNamedItemType() const override {
+    return NamedItemType::kName;
+  }
 
   void CopyNonAttributePropertiesFromElement(const Element&) override;
 
