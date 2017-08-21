@@ -113,7 +113,9 @@ class CSSParserImpl {
   template <typename T>
   bool ConsumeRuleList(CSSParserTokenRange, RuleListType, T callback);
 
-  // These two functions update the range they're given
+  // These functions update the range/stream they're given
+  StyleRuleBase* ConsumeAtRule(CSSParserTokenStream&, AllowedRulesType);
+  // TODO(shend): Remove this overload once we switch over to streams.
   StyleRuleBase* ConsumeAtRule(CSSParserTokenRange&, AllowedRulesType);
   StyleRuleBase* ConsumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
 
