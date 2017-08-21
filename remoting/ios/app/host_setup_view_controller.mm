@@ -25,8 +25,8 @@ static NSString* const kInstallationLink = @"chrome.google.com/remotedesktop";
 
 static NSString* const kReusableIdentifierItem = @"remotingSetupStepVCItem";
 
-static const CGFloat kHeaderHeight = 80.f;
-static const CGFloat kFooterHeight = 15.f;  // 80.0f for HostSetupFooterView
+static const CGFloat kHeaderHeight = 60.f;
+static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
 
 @interface HostSetupViewController () {
   std::vector<std::string> setupSteps;

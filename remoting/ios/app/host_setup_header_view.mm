@@ -32,7 +32,7 @@ static const CGFloat kBottomPadding = 6.f;
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.text = l10n_util::GetNSString(IDS_HOST_SETUP_TITLE);
   titleLabel.font = MDCTypography.titleFont;
-  titleLabel.numberOfLines = 2;
+  titleLabel.numberOfLines = 1;
   titleLabel.adjustsFontSizeToFitWidth = YES;
   titleLabel.textColor = RemotingTheme.setupListTextColor;
   [self addSubview:titleLabel];
