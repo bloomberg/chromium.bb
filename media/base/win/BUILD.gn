@@ -4,6 +4,14 @@
 
 assert(is_win)
 
+config("delay_load_mf") {
+  ldflags = [
+    "/DELAYLOAD:mf.dll",
+    "/DELAYLOAD:mfplat.dll",
+    "/DELAYLOAD:mfreadwrite.dll",
+  ]
+}
+
 component("win") {
   output_name = "media_win_util"
   defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
@@ -30,9 +38,7 @@ component("win") {
     "mfplat.lib",
     "mfreadwrite.lib",
   ]
-  ldflags = [
-    "/DELAYLOAD:mf.dll",
-    "/DELAYLOAD:mfplat.dll",
-    "/DELAYLOAD:mfreadwrite.dll",
-  ]
+
+  # MediaFoundation is not available on Windows N, so must be delay loaded.
+  all_dependent_configs = [ ":delay_load_mf" ]
 }
