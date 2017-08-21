@@ -271,7 +271,7 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 // Enables Media Engagement Index recording. The data from which will
 // be used to bypass autoplay policies.
 const base::Feature kRecordMediaEngagementScores{
-    "kRecordMediaEngagementScores", base::FEATURE_ENABLED_BY_DEFAULT};
+    "RecordMediaEngagementScores", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the Media Engagement Index to override autoplay policies if an
 // origins engagement score is high enough.
