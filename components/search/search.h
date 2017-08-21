@@ -5,41 +5,13 @@
 #ifndef COMPONENTS_SEARCH_SEARCH_H_
 #define COMPONENTS_SEARCH_SEARCH_H_
 
-#include <stdint.h>
-
 #include <string>
-
-#include "base/strings/string_split.h"
 
 namespace search {
 
 // Returns whether the Instant Extended API is enabled. This is always true on
 // desktop and false on mobile.
 bool IsInstantExtendedAPIEnabled();
-
-// Returns the value to pass to the &espv CGI parameter when loading the
-// embedded search page from the user's default search provider. Returns 0 if
-// the Instant Extended API is not enabled.
-uint64_t EmbeddedSearchPageVersion();
-
-// Type for a collection of experiment configuration parameters.
-typedef base::StringPairs FieldTrialFlags;
-
-// Finds the active field trial group name and parses out the configuration
-// flags. On success, |flags| will be filled with the field trial flags. |flags|
-// must not be NULL. Returns true iff the active field trial is successfully
-// parsed and not disabled.
-// Note that |flags| may be successfully populated in some cases when false is
-// returned - in these cases it should not be used.
-// Exposed for testing only.
-bool GetFieldTrialInfo(FieldTrialFlags* flags);
-
-// Given a FieldTrialFlags object, returns the uint64_t value of the provided
-// flag.
-// Exposed for testing only.
-uint64_t GetUInt64ValueForFlagWithDefault(const std::string& flag,
-                                          uint64_t default_value,
-                                          const FieldTrialFlags& flags);
 
 // Returns a string indicating whether InstantExtended is enabled, suitable
 // for adding as a query string param to the homepage or search requests.
