@@ -83,6 +83,8 @@ const CGFloat kIconSize = 35;
                                                 actionButton, stack)];
 
     UIImage* iconImage = [UIImage imageNamed:imageName];
+    iconImage =
+        [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView* icon = [[UIImageView alloc] initWithImage:iconImage];
     icon.translatesAutoresizingMaskIntoConstraints = NO;
     if (base::ios::IsRunningOnIOS10OrLater()) {
