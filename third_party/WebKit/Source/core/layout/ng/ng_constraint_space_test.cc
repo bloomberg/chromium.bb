@@ -17,9 +17,7 @@ RefPtr<NGConstraintSpace> ConstructTestConstraintSpace(
     TextDirection direction,
     NGLogicalSize size,
     const NGLogicalOffset& bfc_offset = {}) {
-  return NGConstraintSpaceBuilder(
-             writing_mode,
-             /* icb_size */ size.ConvertToPhysical(writing_mode))
+  return NGConstraintSpaceBuilder(writing_mode)
       .SetTextDirection(direction)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)

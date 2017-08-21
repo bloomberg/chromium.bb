@@ -26,13 +26,11 @@ class NGLengthUtilsTest : public ::testing::Test {
       bool fixed_inline = false,
       bool fixed_block = false,
       NGWritingMode writing_mode = NGWritingMode::kHorizontalTopBottom) {
-    NGLogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
-
-    return NGConstraintSpaceBuilder(
-               writing_mode,
-               /* icb_size */ size.ConvertToPhysical(writing_mode))
-        .SetAvailableSize(size)
-        .SetPercentageResolutionSize(size)
+    return NGConstraintSpaceBuilder(writing_mode)
+        .SetAvailableSize(
+            NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
+        .SetPercentageResolutionSize(
+            NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetIsFixedSizeInline(fixed_inline)
         .SetIsFixedSizeBlock(fixed_block)
         .ToConstraintSpace(writing_mode);

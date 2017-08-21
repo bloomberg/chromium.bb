@@ -123,8 +123,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
 
   RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(
-          FromPlatformWritingMode(Style().GetWritingMode()),
-          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+          FromPlatformWritingMode(Style().GetWritingMode()))
           .SetTextDirection(Style().Direction())
           .ToConstraintSpace(FromPlatformWritingMode(Style().GetWritingMode()));
 
@@ -145,8 +144,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
   // Now, redo with infinite space for max_content
   constraint_space =
       NGConstraintSpaceBuilder(
-          FromPlatformWritingMode(Style().GetWritingMode()),
-          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+          FromPlatformWritingMode(Style().GetWritingMode()))
           .SetTextDirection(Style().Direction())
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})

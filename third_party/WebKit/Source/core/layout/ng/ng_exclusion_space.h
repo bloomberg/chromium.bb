@@ -29,13 +29,12 @@ class CORE_EXPORT NGExclusionSpace {
 
   // Returns a layout opportunity, within the BFC, starting at the given offset,
   // with a size greater than {@code minimum_size}.
-  NGLayoutOpportunity FindLayoutOpportunity(
-      const NGLogicalOffset& offset,
-      const NGLogicalSize& available_size,
-      const NGLogicalSize& minimum_size) const;
+  NGLayoutOpportunity FindLayoutOpportunity(const NGLogicalOffset& offset,
+                                            const NGLogicalSize& available_size,
+                                            const NGLogicalSize& minimum_size);
 
   // Returns the clearance offset based on the provided {@code clear_type}.
-  LayoutUnit ClearanceOffset(EClear clear_type) const;
+  LayoutUnit ClearanceOffset(EClear clear_type);
 
   // Returns the block start offset of the last float added.
   LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }

@@ -20,7 +20,7 @@ struct NGUnpositionedFloat;
 // unpositioned float. If the float is in a different writing mode, this will
 // perform a layout.
 CORE_EXPORT LayoutUnit
-ComputeInlineSizeForUnpositionedFloat(const NGConstraintSpace& parent_space,
+ComputeInlineSizeForUnpositionedFloat(NGConstraintSpace* parent_space,
                                       NGUnpositionedFloat* unpositioned_float);
 
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
@@ -29,8 +29,7 @@ CORE_EXPORT NGPositionedFloat
 PositionFloat(LayoutUnit origin_block_offset,
               LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
-              const NGConstraintSpace& parent_space,
-              NGExclusionSpace* exclusion_space);
+              NGConstraintSpace* new_parent_space);
 
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
@@ -38,8 +37,7 @@ CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit container_block_offset,
     const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
-    const NGConstraintSpace& space,
-    NGExclusionSpace* exclusion_space);
+    NGConstraintSpace* space);
 
 }  // namespace blink
 

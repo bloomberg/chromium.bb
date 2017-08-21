@@ -39,11 +39,10 @@ RefPtr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
           ? NGFragmentationType::kFragmentColumn
           : NGFragmentationType::kFragmentNone;
 
-  return NGConstraintSpaceBuilder(
-             writing_mode,
-             /* icb_size */ size.ConvertToPhysical(writing_mode))
+  return NGConstraintSpaceBuilder(writing_mode)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
+      .SetInitialContainingBlockSize(size.ConvertToPhysical(writing_mode))
       .SetTextDirection(direction)
       .SetIsShrinkToFit(shrink_to_fit)
       .SetIsNewFormattingContext(is_new_formatting_context)

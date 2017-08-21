@@ -32,9 +32,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
       node.PrepareLayout();
 
     RefPtr<NGConstraintSpace> space =
-        NGConstraintSpaceBuilder(
-            NGWritingMode::kHorizontalTopBottom,
-            /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+        NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
             .SetAvailableSize({available_width, NGSizeIndefinite})
             .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
 
