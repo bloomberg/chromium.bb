@@ -2089,36 +2089,6 @@ TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
   EXPECT_EQ(second_prerender_contents, entry.get());
 }
 
-TEST_F(PrerenderTest, InstantSearchNotAllowedWhenDisabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group82 espv:8 use_cacheable_ntp:1 prefetch_results:1"));
-  DisablePrerender();
-  EXPECT_FALSE(prerender_manager()->AddPrerenderForInstant(
-      GURL("http://www.example.com/instant_search"), nullptr, gfx::Size()));
-}
-
-TEST_F(PrerenderTest, PrerenderContentsForInstantSearch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group82 espv:8 use_cacheable_ntp:1 prefetch_results:1"));
-  GURL url("http://www.example.com/instant_search");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(url, ORIGIN_INSTANT,
-                                                       FINAL_STATUS_USED);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderForInstant(url, nullptr, kSize));
-  ASSERT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_EQ(prerender_contents, prerender_handle->contents());
-  EXPECT_EQ(ORIGIN_INSTANT, prerender_handle->contents()->origin());
-  std::unique_ptr<PrerenderContents> entry =
-      prerender_manager()->FindAndUseEntry(url);
-  ASSERT_EQ(prerender_contents, entry.get());
-  EXPECT_FALSE(prerender_handle->IsPrerendering());
-}
-
 TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
