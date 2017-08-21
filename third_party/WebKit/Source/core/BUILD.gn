@@ -622,7 +622,6 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitLineClamp.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitMargin.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitMaskComposite.h",
-    "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitMaskRepeat.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitMaxLogicalWidthOrHeight.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitOrigin.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitOriginX.h",
