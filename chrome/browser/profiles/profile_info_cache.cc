@@ -223,14 +223,6 @@ void ProfileInfoCache::AddProfileToCache(
     observer.OnProfileAdded(profile_path);
 }
 
-void ProfileInfoCache::AddObserver(ProfileInfoCacheObserver* obs) {
-  observer_list_.AddObserver(obs);
-}
-
-void ProfileInfoCache::RemoveObserver(ProfileInfoCacheObserver* obs) {
-  observer_list_.RemoveObserver(obs);
-}
-
 void ProfileInfoCache::DeleteProfileFromCache(
     const base::FilePath& profile_path) {
   size_t profile_index = GetIndexOfProfileWithPath(profile_path);

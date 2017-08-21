@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -165,9 +164,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
                              const std::string& key,
                              const base::FilePath& image_path);
 
-  void AddObserver(ProfileInfoCacheObserver* obs) override;
-  void RemoveObserver(ProfileInfoCacheObserver* obs) override;
-
   void set_disable_avatar_download_for_testing(
       bool disable_avatar_download_for_testing) {
     disable_avatar_download_for_testing_ = disable_avatar_download_for_testing;
@@ -239,8 +235,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void RemoveDeprecatedStatistics();
 
   std::vector<std::string> sorted_keys_;
-
-  mutable base::ObserverList<ProfileInfoCacheObserver> observer_list_;
 
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.
