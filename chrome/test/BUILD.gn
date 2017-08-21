@@ -458,7 +458,6 @@ if (!is_android) {
       "../browser/ui/browser_focus_uitest.cc",
       "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm",
       "../browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.mm",
-      "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
       "../browser/ui/cocoa/tab_contents/web_contents_view_mac_interactive_uitest.mm",
       "../browser/ui/exclusive_access/flash_fullscreen_interactive_browsertest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_interactive_browsertest.cc",
@@ -811,6 +810,7 @@ if (!is_android) {
       } else {
         sources += [
           "../browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm",
+          "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
           "../browser/ui/cocoa/translate/translate_bubble_test_utils_cocoa.mm",
           "base/interactive_test_utils_cocoa.mm",
         ]
@@ -2115,7 +2115,6 @@ test("browser_tests") {
       ]
       if (!is_chromeos && (!is_mac || mac_views_browser)) {
         sources += [
-          "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
           "../browser/ui/views/profiles/forced_reauthentication_dialog_view_browsertest.cc",
           "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
         ]
@@ -2382,8 +2381,10 @@ test("browser_tests") {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
       if (is_win || is_linux) {
-        sources +=
-            [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
+        sources += [
+          "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
+          "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc",
+        ]
       }
     }
     if (safe_browsing_mode == 1) {
