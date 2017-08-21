@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/network/network_context.h"
@@ -124,33 +125,35 @@ class NetworkServiceTestWithService
   ~NetworkServiceTestWithService() override {}
 
   void LoadURL(const GURL& url) {
-    mojom::NetworkServicePtr network_service;
-    connector()->BindInterface(mojom::kNetworkServiceName, &network_service);
-
-    mojom::NetworkContextPtr network_context;
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
-    network_service->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                          std::move(context_params));
-
-    mojom::URLLoaderFactoryPtr loader_factory;
-    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                            0);
-
-    mojom::URLLoaderPtr loader;
     ResourceRequest request;
     request.url = url;
     request.method = "GET";
     request.request_initiator = url::Origin();
+    StartLoadingURL(request);
+    client_.RunUntilComplete();
+  }
+
+  void StartLoadingURL(const ResourceRequest& request) {
+    mojom::NetworkServicePtr network_service;
+    connector()->BindInterface(mojom::kNetworkServiceName, &network_service);
+
+    mojom::NetworkContextParamsPtr context_params =
+        mojom::NetworkContextParams::New();
+    network_service->CreateNetworkContext(mojo::MakeRequest(&network_context_),
+                                          std::move(context_params));
+    mojom::URLLoaderFactoryPtr loader_factory;
+    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                             0);
+
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 1, 1, mojom::kURLLoadOptionNone, request,
+        mojo::MakeRequest(&loader_), 1, 1, mojom::kURLLoadOptionNone, request,
         client_.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-    client_.RunUntilComplete();
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   TestURLLoaderClient* client() { return &client_; }
+  mojom::URLLoader* loader() { return loader_.get(); }
 
  private:
   std::unique_ptr<service_manager::Service> CreateService() override {
@@ -166,6 +169,8 @@ class NetworkServiceTestWithService
 
   net::EmbeddedTestServer test_server_;
   TestURLLoaderClient client_;
+  mojom::NetworkContextPtr network_context_;
+  mojom::URLLoaderPtr loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
 };
@@ -175,6 +180,63 @@ class NetworkServiceTestWithService
 TEST_F(NetworkServiceTestWithService, Basic) {
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
+}
+
+// Verifies that raw headers are only reported if requested.
+TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
+  ResourceRequest request;
+  request.url = test_server()->GetURL("/server-redirect?/echo");
+  request.method = "GET";
+  request.request_initiator = url::Origin();
+  StartLoadingURL(request);
+  client()->RunUntilRedirectReceived();
+  EXPECT_TRUE(client()->has_received_redirect());
+  EXPECT_TRUE(!client()->response_head().devtools_info);
+  loader()->FollowRedirect();
+  client()->RunUntilComplete();
+  EXPECT_TRUE(!client()->response_head().devtools_info);
+}
+
+TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
+  ResourceRequest request;
+  request.url = test_server()->GetURL("/server-redirect?/echo");
+  request.method = "GET";
+  request.report_raw_headers = true;
+  request.request_initiator = url::Origin();
+  StartLoadingURL(request);
+  client()->RunUntilRedirectReceived();
+  EXPECT_TRUE(client()->has_received_redirect());
+  {
+    scoped_refptr<ResourceDevToolsInfo> devtools_info =
+        client()->response_head().devtools_info;
+    ASSERT_TRUE(devtools_info);
+    EXPECT_EQ(301, devtools_info->http_status_code);
+    EXPECT_EQ("Moved Permanently", devtools_info->http_status_text);
+    EXPECT_TRUE(base::StartsWith(devtools_info->request_headers_text,
+                                 "GET /server-redirect?/echo HTTP/1.1\r\n",
+                                 base::CompareCase::SENSITIVE));
+    EXPECT_GE(devtools_info->request_headers.size(), 1lu);
+    EXPECT_GE(devtools_info->response_headers.size(), 1lu);
+    EXPECT_TRUE(base::StartsWith(devtools_info->response_headers_text,
+                                 "HTTP/1.1 301 Moved Permanently\r",
+                                 base::CompareCase::SENSITIVE));
+  }
+  loader()->FollowRedirect();
+  client()->RunUntilComplete();
+  {
+    scoped_refptr<ResourceDevToolsInfo> devtools_info =
+        client()->response_head().devtools_info;
+    EXPECT_EQ(200, devtools_info->http_status_code);
+    EXPECT_EQ("OK", devtools_info->http_status_text);
+    EXPECT_TRUE(base::StartsWith(devtools_info->request_headers_text,
+                                 "GET /echo HTTP/1.1\r\n",
+                                 base::CompareCase::SENSITIVE));
+    EXPECT_GE(devtools_info->request_headers.size(), 1lu);
+    EXPECT_GE(devtools_info->response_headers.size(), 1lu);
+    EXPECT_TRUE(base::StartsWith(devtools_info->response_headers_text,
+                                 "HTTP/1.1 200 OK\r",
+                                 base::CompareCase::SENSITIVE));
+  }
 }
 
 }  // namespace
