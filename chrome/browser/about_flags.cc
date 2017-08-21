@@ -1871,6 +1871,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationsNativeFlagDescription, kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNativeNotifications)},
 #endif  // ENABLE_NATIVE_NOTIFICATIONS
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+    {"enable-native-window-nav-buttons",
+     flag_descriptions::kWindowNavNativeFlagName,
+     flag_descriptions::kWindowNavNativeFlagDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kNativeWindowNavButtons)},
+#endif  // ENABLE_NATIVE_WINDOW_NAV_BUTTONS
 #if defined(OS_ANDROID)
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,

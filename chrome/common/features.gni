@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//device/vr/features/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
@@ -44,6 +45,11 @@ declare_args() {
   # Enables usage of the system-provided notification center.
   enable_native_notifications =
       is_android || is_mac || (is_desktop_linux && use_dbus)
+
+  # Whether we should draw the minimize, maximize/restore, and close
+  # buttons using the system theme.  Only used on Linux with GTK3.
+  enable_native_window_nav_buttons =
+      use_aura && !use_ozone && is_desktop_linux && use_gtk3
 
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)

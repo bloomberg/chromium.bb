@@ -127,6 +127,8 @@ if (use_gtk3) {
     sources = [
       "native_theme_gtk3.cc",
       "native_theme_gtk3.h",
+      "nav_button_provider_gtk3.cc",
+      "nav_button_provider_gtk3.h",
     ]
     deps = [
       "//build/config/linux/gtk3",

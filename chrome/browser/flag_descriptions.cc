@@ -1417,6 +1417,12 @@ const char kWifiCredentialSyncDescription[] =
     "credentials are synchronized subject to user preferences. (See also, "
     "chrome://settings/syncSetup.)";
 
+const char kWindowNavNativeFlagName[] =
+    "Enable native window navigation buttons.";
+const char kWindowNavNativeFlagDescription[] =
+    "Whether the window frame buttons should be drawn using the system theme. "
+    "Has no effect unless using the GTK3 theme.";
+
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";

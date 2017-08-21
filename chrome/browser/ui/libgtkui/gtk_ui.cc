@@ -62,11 +62,13 @@
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/window/nav_button_provider.h"
 
 #if GTK_MAJOR_VERSION == 2
 #include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"  // nogncheck
 #elif GTK_MAJOR_VERSION == 3
 #include "chrome/browser/ui/libgtkui/native_theme_gtk3.h"  // nogncheck
+#include "chrome/browser/ui/libgtkui/nav_button_provider_gtk3.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -776,6 +778,14 @@ void GtkUi::AddDeviceScaleFactorObserver(
 void GtkUi::RemoveDeviceScaleFactorObserver(
     views::DeviceScaleFactorObserver* observer) {
   device_scale_factor_observer_list_.RemoveObserver(observer);
+}
+
+std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
+#if GTK_MAJOR_VERSION >= 3
+  return base::MakeUnique<libgtkui::NavButtonProviderGtk3>();
+#else
+  return nullptr;
+#endif
 }
 
 bool GtkUi::MatchEvent(const ui::Event& event,

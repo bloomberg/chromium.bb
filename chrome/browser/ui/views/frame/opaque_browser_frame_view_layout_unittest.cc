@@ -20,6 +20,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/window/nav_button_provider.h"
 
 using OBFVL = OpaqueBrowserFrameViewLayout;
 
@@ -39,7 +40,10 @@ const int kCaptionButtonHeight = 18;
 
 class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  public:
-  TestLayoutDelegate() : show_caption_buttons_(true), maximized_(false) {}
+  TestLayoutDelegate()
+      : show_caption_buttons_(true),
+        maximized_(false),
+        should_render_native_nav_buttons_(false) {}
   ~TestLayoutDelegate() override {}
 
   void set_window_title(const base::string16& title) { window_title_ = title; }
@@ -47,6 +51,14 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     show_caption_buttons_ = show_caption_buttons;
   }
   void set_maximized(bool maximized) { maximized_ = maximized; }
+  void set_should_render_native_nav_buttons(
+      bool should_render_native_nav_buttons) {
+    should_render_native_nav_buttons_ = should_render_native_nav_buttons;
+  }
+  void set_nav_button_provider(
+      std::unique_ptr<views::NavButtonProvider> nav_button_provider) {
+    nav_button_provider_ = std::move(nav_button_provider);
+  }
 
   // OpaqueBrowserFrameViewLayoutDelegate:
   bool ShouldShowWindowIcon() const override { return !window_title_.empty(); }
@@ -74,14 +86,92 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   gfx::Size GetTabstripPreferredSize() const override {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
   }
+  bool ShouldRenderNativeNavButtons() const override {
+    return should_render_native_nav_buttons_;
+  }
+  int GetTopAreaHeight() const override { return 0; }
+  const views::NavButtonProvider* GetNavButtonProvider() const override {
+    return nav_button_provider_.get();
+  }
 
  private:
   base::string16 window_title_;
   bool show_caption_buttons_;
   bool maximized_;
+  bool should_render_native_nav_buttons_;
+  std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);
 };
+
+namespace test_nav_button_provider {
+
+constexpr gfx::Size kCloseButtonSize = gfx::Size(2, 3);
+constexpr gfx::Size kMaximizeButtonSize = gfx::Size(5, 7);
+constexpr gfx::Size kMinimizeButtonSize = gfx::Size(11, 13);
+
+constexpr gfx::Insets kCloseButtonMargin = gfx::Insets(17, 19, 23, 29);
+constexpr gfx::Insets kMaximizeButtonMargin = gfx::Insets(31, 37, 41, 43);
+constexpr gfx::Insets kMinimizeButtonMargin = gfx::Insets(47, 53, 59, 61);
+
+constexpr gfx::Insets kTopAreaSpacing = gfx::Insets(67, 71, 73, 79);
+
+constexpr int kInterNavButtonSpacing = 83;
+
+static gfx::ImageSkia GetTestImageForSize(gfx::Size size) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size.width(), size.height());
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
+
+class TestNavButtonProvider : public views::NavButtonProvider {
+ public:
+  TestNavButtonProvider() {}
+
+  ~TestNavButtonProvider() override {}
+
+  void RedrawImages(int top_area_height, bool maximized) override {
+    ASSERT_EQ(false, maximized);  // This only tests the restored state.
+  }
+
+  gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
+                          views::Button::ButtonState state) const override {
+    switch (type) {
+      case chrome::FrameButtonDisplayType::kClose:
+        return GetTestImageForSize(kCloseButtonSize);
+      case chrome::FrameButtonDisplayType::kMaximize:
+        return GetTestImageForSize(kMaximizeButtonSize);
+      case chrome::FrameButtonDisplayType::kMinimize:
+        return GetTestImageForSize(kMinimizeButtonSize);
+      default:
+        NOTREACHED();
+        return gfx::ImageSkia();
+    }
+  }
+
+  gfx::Insets GetNavButtonMargin(
+      chrome::FrameButtonDisplayType type) const override {
+    switch (type) {
+      case chrome::FrameButtonDisplayType::kClose:
+        return kCloseButtonMargin;
+      case chrome::FrameButtonDisplayType::kMaximize:
+        return kMaximizeButtonMargin;
+      case chrome::FrameButtonDisplayType::kMinimize:
+        return kMinimizeButtonMargin;
+      default:
+        NOTREACHED();
+        return gfx::Insets();
+    }
+  }
+
+  gfx::Insets GetTopAreaSpacing() const override { return kTopAreaSpacing; }
+
+  int GetInterNavButtonSpacing() const override {
+    return kInterNavButtonSpacing;
+  }
+};
+
+}  // namespace test_nav_button_provider
 
 }  // namespace
 
@@ -96,7 +186,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     delegate_.reset(new TestLayoutDelegate);
     layout_manager_ = new OBFVL(delegate_.get());
     layout_manager_->set_extra_caption_y(0);
-    layout_manager_->set_window_caption_spacing(0);
+    layout_manager_->set_forced_window_caption_spacing_for_test(0);
     widget_ = new views::Widget;
     widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
     root_view_ = widget_->GetRootView();
@@ -183,6 +273,23 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
             OBFVL::kCaptionButtonBottomPadding - delegate_->GetIconSize()) / 2;
   }
 
+  void ResetNativeNavButtonImagesFromButtonProvider() {
+    std::vector<views::ImageButton*> buttons{close_button_, maximize_button_,
+                                             minimize_button_};
+    std::vector<chrome::FrameButtonDisplayType> button_types{
+        chrome::FrameButtonDisplayType::kClose,
+        chrome::FrameButtonDisplayType::kMaximize,
+        chrome::FrameButtonDisplayType::kMinimize};
+    for (size_t i = 0; i < buttons.size(); i++) {
+      for (views::Button::ButtonState state :
+           {views::Button::STATE_NORMAL, views ::Button::STATE_HOVERED,
+            views::Button::STATE_PRESSED}) {
+        buttons[i]->SetImage(state, delegate_->GetNavButtonProvider()->GetImage(
+                                        button_types[i], state));
+      }
+    }
+  }
+
   void ExpectCaptionButtons(bool caption_buttons_on_left, int extra_height) {
     if (!delegate_->ShouldShowCaptionButtons()) {
       EXPECT_FALSE(maximize_button_->visible());
@@ -224,6 +331,31 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     EXPECT_EQ(visible_button->height(), minimize_button_->height());
     EXPECT_TRUE(minimize_button_->visible());
     EXPECT_FALSE(hidden_button->visible());
+  }
+
+  void ExpectNativeNavButtons() {
+    using namespace test_nav_button_provider;
+    int x = 0;
+
+    // Close button.
+    EXPECT_EQ(kCloseButtonSize, close_button_->size());
+    x += kTopAreaSpacing.left() + kCloseButtonMargin.left();
+    EXPECT_EQ(x, close_button_->x());
+    EXPECT_EQ(kCloseButtonMargin.top(), close_button_->y());
+
+    // Maximize button.
+    EXPECT_EQ(kMaximizeButtonSize, maximize_button_->size());
+    x += kCloseButtonSize.width() + kCloseButtonMargin.right() +
+         kInterNavButtonSpacing + kMaximizeButtonMargin.left();
+    EXPECT_EQ(x, maximize_button_->x());
+    EXPECT_EQ(kMaximizeButtonMargin.top(), maximize_button_->y());
+
+    // Minimize button.
+    EXPECT_EQ(kMinimizeButtonSize, minimize_button_->size());
+    x += kMaximizeButtonSize.width() + kMaximizeButtonMargin.right() +
+         kInterNavButtonSpacing + kMinimizeButtonMargin.left();
+    EXPECT_EQ(x, minimize_button_->x());
+    EXPECT_EQ(kMinimizeButtonMargin.top(), minimize_button_->y());
   }
 
   void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
@@ -431,4 +563,23 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
     ExpectAvatar();
     delegate_->set_maximized(true);
   }
+}
+
+TEST_F(OpaqueBrowserFrameViewLayoutTest, NativeNavButtons) {
+  // Tests layout of native navigation buttons.
+  delegate_->set_should_render_native_nav_buttons(true);
+  delegate_->set_nav_button_provider(
+      base::MakeUnique<test_nav_button_provider::TestNavButtonProvider>());
+
+  std::vector<views::FrameButton> leading_buttons;
+  std::vector<views::FrameButton> trailing_buttons;
+  leading_buttons.push_back(views::FRAME_BUTTON_CLOSE);
+  leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
+  leading_buttons.push_back(views::FRAME_BUTTON_MINIMIZE);
+  layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
+  ResetNativeNavButtonImagesFromButtonProvider();
+
+  root_view_->Layout();
+
+  ExpectNativeNavButtons();
 }

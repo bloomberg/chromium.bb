@@ -173,6 +173,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // Called after the window is maximized or restored.
+  virtual void OnMaximizedStateChanged();
+
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
   // Initializes our X11 surface to draw on. This method performs all
