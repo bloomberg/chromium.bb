@@ -593,6 +593,20 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kNotificationsFeature.name, kBreakingNewsPushFeature.name});
   }
 
+  void SetFetchedNotificationsParams(bool enable, bool force) {
+    // VariationParamsManager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        /*trial_name=*/kNotificationsFeature.name,
+        {
+            {"enable_fetched_suggestions_notifications", BoolToString(enable)},
+            {"force_fetched_suggestions_notifications", BoolToString(force)},
+        },
+        {kNotificationsFeature.name});
+  }
+
   void EnableDeletingRemoteCategoriesNotPresentInLastFetchResponse() {
     // VariationParamsManager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
@@ -3624,6 +3638,73 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
                                 RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_FALSE(fake_listener->IsListening());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldForceFetchedSuggestionsNotificationsWhenEnabled) {
+  SetFetchedNotificationsParams(
+      /*enabled=*/true, /*force=*/true);
+
+  // Initialize the provider with two article suggestions - one with a
+  // notification and one - without.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .SetUrl("http://article_with_notification.com")
+                  .SetShouldNotify(true)
+                  .SetNotificationDeadline(GetDefaultExpirationTime()))
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .SetUrl("http://article_without_notification.com")
+                  .SetShouldNotify(false))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // For the observer, both suggestions must have notifications, because they
+  // are forced via a feature param.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::notification_extra, Not(nullptr)),
+          Property(&ContentSuggestion::notification_extra, Not(nullptr))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldNotForceFetchedSuggestionsNotificationsWhenExplicitlyDisabled) {
+  SetFetchedNotificationsParams(
+      /*enabled=*/false, /*force=*/true);
+
+  // Initialize the provider with an article suggestions without a notification.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder()
+                  .SetUrl("http://article_without_notification.com")
+                  .SetShouldNotify(false))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // For the observer, the suggestion still must not have a notification (even
+  // though they are forced via a feature param), because the fetched
+  // notifications are explicitly disabled via another feature param.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(Property(&ContentSuggestion::notification_extra, nullptr)));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,

@@ -27,9 +27,11 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -50,6 +52,7 @@ using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
+using ntp_snippets::ContentSuggestionsNotificationHelper;
 using ntp_snippets::KnownCategories;
 using ntp_snippets::RemoteSuggestion;
 using ntp_snippets::RemoteSuggestionsProvider;
@@ -206,15 +209,21 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
                              base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "fetchRemoteSuggestionsInTheBackground",
+      "fetchRemoteSuggestionsInTheBackgroundIn2Seconds",
       base::Bind(&SnippetsInternalsMessageHandler::
-                     HandleFetchRemoteSuggestionsInTheBackground,
+                     HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "fetchContextualSuggestions",
       base::Bind(
           &SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "resetNotificationsState",
+      base::Bind(
+          &SnippetsInternalsMessageHandler::HandleResetNotificationsState,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -373,10 +382,14 @@ void SnippetsInternalsMessageHandler::HandleClearClassification(
 }
 
 void SnippetsInternalsMessageHandler::
-    HandleFetchRemoteSuggestionsInTheBackground(const base::ListValue* args) {
+    HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds(
+        const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
-  remote_suggestions_provider_->RefetchInTheBackground(
-      RemoteSuggestionsProvider::FetchStatusCallback());
+  suggestion_push_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(2),
+      base::Bind(&SnippetsInternalsMessageHandler::
+                     FetchRemoteSuggestionsInTheBackground,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions(
@@ -389,6 +402,17 @@ void SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions(
       base::BindOnce(
           &SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched,
           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SnippetsInternalsMessageHandler::HandleResetNotificationsState(
+    const base::ListValue* args) {
+  pref_service_->SetInteger(
+      prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
+  pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentCount,
+                            0);
+  pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentDay, 0);
+  ContentSuggestionsNotificationHelper::HideAllNotifications(
+      ContentSuggestionsNotificationAction::CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
 }
 
 void SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched(
@@ -574,6 +598,11 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveProperty", string_name, string_value);
+}
+
+void SnippetsInternalsMessageHandler::FetchRemoteSuggestionsInTheBackground() {
+  remote_suggestions_provider_->RefetchInTheBackground(
+      RemoteSuggestionsProvider::FetchStatusCallback());
 }
 
 void SnippetsInternalsMessageHandler::PushDummySuggestion() {
