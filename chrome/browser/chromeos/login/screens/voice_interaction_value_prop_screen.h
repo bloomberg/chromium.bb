@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
+namespace arc {
+class ArcVoiceInteractionArcHomeService;
+}
+
 namespace chromeos {
 
 class VoiceInteractionValuePropScreenView;
@@ -32,6 +36,8 @@ class VoiceInteractionValuePropScreen : public BaseScreen {
  private:
   void OnSkipPressed();
   void OnNextPressed();
+
+  arc::ArcVoiceInteractionArcHomeService* GetVoiceInteractionHomeService();
 
   VoiceInteractionValuePropScreenView* view_;
 

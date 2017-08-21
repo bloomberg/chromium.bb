@@ -45,6 +45,8 @@ const char kArcTermsAccepted[] = "arc.terms.accepted";
 const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 // A preference to keep list of Android packages and their infomation.
 const char kArcPackages[] = "arc.packages";
+// A preference that indicates that Play Auto Install flow was already started.
+const char kArcPaiStarted[] = "arc.pai.started";
 // A preference to keep deferred requests of setting notifications enabled flag.
 const char kArcSetNotificationsEnabledDeferred[] =
     "arc.set_notifications_enabled_deferred";
