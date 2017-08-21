@@ -51,7 +51,7 @@ MemlogConnectionManager::~MemlogConnectionManager() {}
 
 void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
                                               base::ProcessId pid) {
-  base::AutoLock l(connections_lock_);
+  base::AutoLock lock(connections_lock_);
   DCHECK(connections_.find(pid) == connections_.end());
 
   scoped_refptr<MemlogReceiverPipe> new_pipe =
@@ -77,7 +77,7 @@ void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
 }
 
 void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
-  base::AutoLock l(connections_lock_);
+  base::AutoLock lock(connections_lock_);
   auto found = connections_.find(pid);
   CHECK(found != connections_.end());
   found->second.release();
@@ -90,7 +90,7 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
     base::ProcessId pid) {
   // This code is called by the allocation tracker which is owned by the
   // connection manager. When we tell the connection manager a connection is
-  // done, we know the conncetion manager will still be in scope.
+  // done, we know the connection manager will still be in scope.
   main_loop->PostTask(FROM_HERE,
                       base::Bind(&MemlogConnectionManager::OnConnectionComplete,
                                  base::Unretained(this), pid));
@@ -101,7 +101,7 @@ void MemlogConnectionManager::DumpProcess(
     std::unique_ptr<base::DictionaryValue> metadata,
     const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
     base::File output_file) {
-  base::AutoLock l(connections_lock_);
+  base::AutoLock lock(connections_lock_);
 
   // Lock all connections to prevent deallocations of atoms from
   // BacktraceStorage. This only works if no new connections are made, which
