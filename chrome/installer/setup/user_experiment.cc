@@ -417,10 +417,18 @@ void RunUserExperiment(const base::CommandLine& command_line,
     return;
   }
 
-  VLOG(1) << "Launching Chrome to show the toast.";
-  experiment.SetState(ExperimentMetrics::kLaunchingChrome);
-  storage_lock->StoreExperiment(experiment);
-  LaunchChrome(*installer_state, experiment);
+  if (experiment.group() != ExperimentMetrics::kHoldbackGroup) {
+    VLOG(1) << "Launching Chrome to show the toast.";
+    experiment.SetState(ExperimentMetrics::kLaunchingChrome);
+    storage_lock->StoreExperiment(experiment);
+    LaunchChrome(*installer_state, experiment);
+  } else {
+    // Move clients in the holdback group directly into the "SelectedClose"
+    // group since they will not be prompted and Chrome will not launch.
+    VLOG(1) << "Skipping Chrome launch for client in the holdback group.";
+    experiment.SetState(ExperimentMetrics::kSelectedClose);
+    storage_lock->StoreExperiment(experiment);
+  }
 }
 
 // Writes the initial state |state| to the registry if there is no existing
@@ -476,15 +484,14 @@ bool IsSelectedForStudy(ExperimentStorage::Lock* lock,
 int PickGroup(ExperimentStorage::Study participation) {
   DCHECK(participation == ExperimentStorage::kStudyOne ||
          participation == ExperimentStorage::kStudyTwo);
-  static constexpr int kHoldbackGroup = ExperimentMetrics::kNumGroups - 1;
-
   if (participation == ExperimentStorage::kStudyOne) {
     // Evenly distrubute clients among the groups.
     return base::RandInt(0, ExperimentMetrics::kNumGroups - 1);
   }
 
   // 1% holdback, 99% in the winning group.
-  return base::RandDouble() < 0.01 ? kHoldbackGroup : kStudyTwoGroup;
+  return base::RandDouble() < 0.01 ? ExperimentMetrics::kHoldbackGroup
+                                   : kStudyTwoGroup;
 }
 
 bool IsUpdateRenamePending() {

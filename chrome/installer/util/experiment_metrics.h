@@ -96,45 +96,48 @@ struct ExperimentMetrics {
   bool operator==(const ExperimentMetrics& other) const;
 
   // The number of experiment groups (including the  holdback group).
-  static constexpr int kNumGroups = 16;
+  enum : int { kNumGroups = 16 };
+
+  // The index of the holdback group.
+  enum : int { kHoldbackGroup = kNumGroups - 1 };
 
   // Unix epoch of time from when time bucket for experiment is started.
   // This will be subtracted from the day the toast was shown to bucket user
   // into cohorts for analysing retention. (13 Jun 2017 00:00:00 PST)
-  static constexpr int64_t kExperimentStartSeconds = 1497337200;
+  enum : int64_t { kExperimentStartSeconds = 1497337200 };
 
   // Maximum number of time toast should be displayed (3 bits).
-  static constexpr int kMaxToastCount = 7;
+  enum : int { kMaxToastCount = 7 };
 
   // Maximum value of first toast offset. (10 bits).
-  static constexpr int kMaxFirstToastOffsetDays = 1023;
+  enum : int { kMaxFirstToastOffsetDays = 1023 };
 
   // Maximum value of last used bucket. (7 bits, in days and log scale).
-  static constexpr int kMaxLastUsed = 1825;  // 5 yr in days.
+  enum : int { kMaxLastUsed = 1825 };  // 5 yr in days.
 
   // Maximum value of user session length. (6 bits, in minutes and log scale).
-  static constexpr int kMaxSessionLength = 40320;  // 28 days in minutes.
+  enum : int { kMaxSessionLength = 40320 };  // 28 days in minutes.
 
   // Maximum value of user session length. (5 bits, in seconds and log scale).
-  static constexpr int kMaxActionDelay = 604800;  // 7 days in seconds.
+  enum : int { kMaxActionDelay = 604800 };  // 7 days in seconds.
 
-  static constexpr int kSessionLengthBucketBits = 6;
+  enum : int { kSessionLengthBucketBits = 6 };
 
-  static constexpr int kActionDelayBucketBits = 5;
+  enum : int { kActionDelayBucketBits = 5 };
 
-  static constexpr int kLastUsedBucketBits = 7;
+  enum : int { kLastUsedBucketBits = 7 };
 
-  static constexpr int kToastHourBits = 5;
+  enum : int { kToastHourBits = 5 };
 
-  static constexpr int kFirstToastOffsetBits = 10;
+  enum : int { kFirstToastOffsetBits = 10 };
 
-  static constexpr int kToastCountBits = 3;
+  enum : int { kToastCountBits = 3 };
 
-  static constexpr int kToastLocationBits = 1;
+  enum : int { kToastLocationBits = 1 };
 
-  static constexpr int kStateBits = 4;
+  enum : int { kStateBits = 4 };
 
-  static constexpr int kGroupBits = 4;
+  enum : int { kGroupBits = 4 };
 
   // The group to which this install has been assigned.
   int group = 0;
