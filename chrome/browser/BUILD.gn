@@ -2502,6 +2502,8 @@ split_static_library("browser") {
       "printing/print_view_manager_common.h",
       "printing/printer_query.cc",
       "printing/printer_query.h",
+      "printing/printing_init.cc",
+      "printing/printing_init.h",
       "printing/printing_message_filter.cc",
       "printing/printing_message_filter.h",
     ]
