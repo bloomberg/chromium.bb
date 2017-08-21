@@ -35,6 +35,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/instance_holder.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -210,11 +211,13 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
     : context_(context), arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
   ArcSessionManager::Get()->AddObserver(this);
+  session_manager::SessionManager::Get()->AddObserver(this);
 }
 
 ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
+  session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
@@ -345,6 +348,24 @@ void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
   SetVoiceInteractionPrefs(std::move(status));
 }
 
+void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  session_manager::SessionState session_state =
+      session_manager::SessionManager::Get()->session_state();
+  if (session_state != session_manager::SessionState::ACTIVE)
+    return;
+
+  // TODO(crbug.com/757012): Avoid using ash::Shell here so that it can work in
+  // mash.
+  bool enabled = ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+      prefs::kVoiceInteractionEnabled);
+  ash::Shell::Get()->NotifyVoiceInteractionEnabled(enabled);
+
+  // We only want notify the status change on first user signed in.
+  session_manager::SessionManager::Get()->RemoveObserver(this);
+}
+
 void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSetupWizard() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc::mojom::VoiceInteractionFrameworkInstance* framework_instance =
@@ -378,6 +399,8 @@ void ArcVoiceInteractionFrameworkService::CallAndResetMetalayerCallback() {
 void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
     bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ash::Shell::Get()->NotifyVoiceInteractionEnabled(enable);
 
   mojom::VoiceInteractionFrameworkInstance* framework_instance =
       ARC_GET_INSTANCE_FOR_METHOD(

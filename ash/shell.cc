@@ -618,6 +618,11 @@ void Shell::NotifyVoiceInteractionStatusChanged(VoiceInteractionState state) {
     observer.OnVoiceInteractionStatusChanged(state);
 }
 
+void Shell::NotifyVoiceInteractionEnabled(bool enabled) {
+  for (auto& observer : shell_observers_)
+    observer.OnVoiceInteractionEnabled(enabled);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 

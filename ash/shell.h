@@ -606,6 +606,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyVoiceInteractionStatusChanged(VoiceInteractionState state);
 
+  void NotifyVoiceInteractionEnabled(bool enabled);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);

@@ -37,6 +37,8 @@ class AppListButtonTest : public AshTestBase {
     AshTestBase::SetUp();
     app_list_button_ =
         GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
+    Shell::Get()->app_list()->SetAppListPresenter(
+        test_app_list_presenter.CreateInterfacePtrAndBind());
   }
 
   virtual void SetupCommandLine(base::CommandLine* command_line) {}
@@ -47,6 +49,9 @@ class AppListButtonTest : public AshTestBase {
 
   const AppListButton* app_list_button() const { return app_list_button_; }
 
+ protected:
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+
  private:
   AppListButton* app_list_button_;
 
@@ -56,10 +61,6 @@ class AppListButtonTest : public AshTestBase {
 };
 
 TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
@@ -84,10 +85,6 @@ class VoiceInteractionAppListButtonTest : public AppListButtonTest {
 
 TEST_F(VoiceInteractionAppListButtonTest,
        LongPressGestureWithVoiceInteractionFlag) {
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
 
@@ -102,10 +99,6 @@ TEST_F(VoiceInteractionAppListButtonTest,
 }
 
 TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
 
@@ -117,6 +110,31 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   RunAllPendingInMessageLoop();
+  // Voice interaction is disabled for secondary user, so the count here should
+  // be 0.
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+}
+
+TEST_F(VoiceInteractionAppListButtonTest,
+       LongPressGestureWithSettingsDisabled) {
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableVoiceInteraction));
+
+  // Simulate two user with primary user as active.
+  CreateUserSessions(2);
+
+  // Notify voice interaction settings disabled.
+  Shell::Get()->NotifyVoiceInteractionEnabled(false);
+
+  ui::GestureEvent long_press =
+      CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  SendGestureEvent(&long_press);
+  RunAllPendingInMessageLoop();
+  // Voice interaction is disabled in settings, so the count here should be 0.
   EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
 
