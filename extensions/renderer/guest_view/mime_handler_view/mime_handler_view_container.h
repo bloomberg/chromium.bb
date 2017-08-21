@@ -116,6 +116,10 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // has been called.
   bool guest_loaded_;
 
+  // True once we receive an ACK from the browser that the guest has been
+  // created.
+  bool guest_created_ = false;
+
   // The size of the element.
   gfx::Size element_size_;
 
