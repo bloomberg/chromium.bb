@@ -461,14 +461,15 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
 }
 
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
-    const std::string& password_saved_domain,
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
   if (pps) {
     pps->MaybeStartProtectedPasswordEntryRequest(
-        web_contents(), GetMainFrameURL(), password_saved_domain,
-        password_field_exists);
+        web_contents(), GetMainFrameURL(), matches_sync_password,
+        matching_domains, password_field_exists);
   }
 }
 

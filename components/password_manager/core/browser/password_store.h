@@ -319,9 +319,9 @@ class PasswordStore : protected PasswordStoreSync,
 
     // PasswordReuseDetectorConsumer
     void OnReuseFound(const base::string16& password,
-                      const std::string& legitimate_domain,
-                      int saved_passwords,
-                      int number_matches) override;
+                      bool matches_sync_password,
+                      const std::vector<std::string>& matches_domains,
+                      int saved_passwords) override;
 
    private:
     const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;

@@ -36,8 +36,6 @@ bool IsSuffix(const base::string16& str,
 
 }  // namespace
 
-const char kSyncPasswordDomain[] = "CHROME SYNC";
-
 bool ReverseStringLess::operator()(const base::string16& lhs,
                                    const base::string16& rhs) const {
   return std::lexicographical_compare(lhs.rbegin(), lhs.rend(), rhs.rbegin(),
@@ -98,7 +96,8 @@ bool PasswordReuseDetector::CheckSyncPasswordReuse(
   if (password_manager_util::CalculateSyncPasswordHash(
           reuse_candidate, sync_password_data_->salt) ==
       sync_password_data_->hash) {
-    consumer->OnReuseFound(reuse_candidate, kSyncPasswordDomain, 1, 0);
+    consumer->OnReuseFound(reuse_candidate, true /* matches_sync_password */,
+                           {}, 1);
     return true;
   }
   return false;
@@ -116,15 +115,18 @@ bool PasswordReuseDetector::CheckSavedPasswordReuse(
 
   const std::set<std::string>& domains = passwords_iterator->second;
   DCHECK(!domains.empty());
-  if (domains.find(registry_controlled_domain) == domains.end()) {
-    // Return only one domain.
-    const std::string& legitimate_domain = *domains.begin();
-    consumer->OnReuseFound(passwords_iterator->first, legitimate_domain,
-                           saved_passwords_, domains.size());
-    return true;
+  // If the page's URL matches a saved domain for this password,
+  // this isn't password-reuse.
+  if (domains.find(registry_controlled_domain) != domains.end()) {
+    return false;
   }
 
-  return false;
+  const std::vector<std::string> matching_domains(domains.begin(),
+                                                  domains.end());
+  consumer->OnReuseFound(passwords_iterator->first,
+                         false /* matches_sync_password */, matching_domains,
+                         saved_passwords_);
+  return true;
 }
 
 void PasswordReuseDetector::UseSyncPasswordHash(

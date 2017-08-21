@@ -216,15 +216,19 @@ class PasswordManagerClient {
   virtual safe_browsing::PasswordProtectionService*
   GetPasswordProtectionService() const = 0;
 
-  // Checks the safe browsing reputation of the webpage where the focused
-  // username/password field is on.
+  // Checks the safe browsing reputation of the webpage when the
+  // user focuses on a username/password field. This is used for reporting
+  // only, and won't trigger a warning.
   virtual void CheckSafeBrowsingReputation(const GURL& form_action,
                                            const GURL& frame_url) = 0;
 
   // Checks the safe browsing reputation of the webpage where password reuse
-  // happens.
+  // happens. This is called by the PasswordReuseDetectionManager when either
+  // the sync password or a saved password is typed on the wrong domain.
+  // This may trigger a warning dialog if it looks like the page is phishy.
   virtual void CheckProtectedPasswordEntry(
-      const std::string& password_saved_domain,
+      bool matches_sync_password,
+      const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
 
   // Records a Chrome Sync event that sync password reuse was detected.

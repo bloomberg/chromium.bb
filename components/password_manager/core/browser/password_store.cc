@@ -73,13 +73,13 @@ PasswordStore::CheckReuseRequest::~CheckReuseRequest() {}
 
 void PasswordStore::CheckReuseRequest::OnReuseFound(
     const base::string16& password,
-    const std::string& legitimate_domain,
-    int saved_passwords,
-    int number_matches) {
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
+    int saved_passwords) {
   origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PasswordReuseDetectorConsumer::OnReuseFound, consumer_weak_,
-                 password, legitimate_domain, saved_passwords, number_matches));
+      FROM_HERE, base::Bind(&PasswordReuseDetectorConsumer::OnReuseFound,
+                            consumer_weak_, password, matches_sync_password,
+                            matching_domains, saved_passwords));
 }
 #endif
 

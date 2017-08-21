@@ -28,9 +28,6 @@ struct ReverseStringLess {
   bool operator()(const base::string16& lhs, const base::string16& rhs) const;
 };
 
-// Used to identify chrome sync password in password entry event.
-extern const char kSyncPasswordDomain[];
-
 // Per-profile class responsible for detection of password reuse, i.e. that the
 // user input on some site contains the password saved on another site.
 // It receives saved passwords through PasswordStoreConsumer interface.

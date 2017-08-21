@@ -24,6 +24,12 @@ namespace password_manager {
 
 namespace {
 
+using StringVector = std::vector<std::string>;
+
+// Constants to make the tests more readable.
+const bool SYNC_REUSE_NO = false;
+const bool SYNC_REUSE_YES = true;
+
 std::vector<std::pair<std::string, std::string>> GetTestDomainsPasswords() {
   return {
       {"https://accounts.google.com", "password"},
@@ -83,20 +89,23 @@ TEST(PasswordReuseDetectorTest, TypingPasswordOnDifferentSite) {
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("password"), "google.com", 5, 1));
+              OnReuseFound(ASCIIToUTF16("password"), SYNC_REUSE_NO,
+                           StringVector({"google.com"}), 5));
   reuse_detector.CheckReuse(ASCIIToUTF16("123password"), "https://evil.com",
                             &mockConsumer);
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("password"), "google.com", 5, 1));
+              OnReuseFound(ASCIIToUTF16("password"), SYNC_REUSE_NO,
+                           StringVector({"google.com"}), 5));
   reuse_detector.CheckReuse(ASCIIToUTF16("password"), "https://evil.com",
                             &mockConsumer);
 
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("secretword"), "example1.com", 5, 2));
+              OnReuseFound(ASCIIToUTF16("secretword"), SYNC_REUSE_NO,
+                           StringVector({"example1.com", "example2.com"}), 5));
   reuse_detector.CheckReuse(ASCIIToUTF16("abcdsecretword"), "https://evil.com",
                             &mockConsumer);
 }
@@ -119,7 +128,8 @@ TEST(PasswordReuseDetectorTest, NoPSLMatchReuseEvent) {
   // a.appspot.com and b.appspot.com are not PSL matches. So reuse event should
   // be raised.
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("abcdefghi"), "a.appspot.com", 5, 1));
+              OnReuseFound(ASCIIToUTF16("abcdefghi"), SYNC_REUSE_NO,
+                           StringVector({"a.appspot.com"}), 5));
   reuse_detector.CheckReuse(ASCIIToUTF16("abcdefghi"), "https://b.appspot.com",
                             &mockConsumer);
 }
@@ -159,7 +169,8 @@ TEST(PasswordReuseDetectorTest, OnLoginsChanged) {
       EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
     } else {
       EXPECT_CALL(mockConsumer,
-                  OnReuseFound(ASCIIToUTF16("password"), "google.com", 5, 1));
+                  OnReuseFound(ASCIIToUTF16("password"), SYNC_REUSE_NO,
+                               StringVector({"google.com"}), 5));
     }
     reuse_detector.CheckReuse(ASCIIToUTF16("123password"), "https://evil.com",
                               &mockConsumer);
@@ -179,13 +190,15 @@ TEST(PasswordReuseDetectorTest, CheckLongestPasswordMatchReturn) {
   MockPasswordReuseDetectorConsumer mockConsumer;
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("01234567890"), "example2.com", 3, 1));
+              OnReuseFound(ASCIIToUTF16("01234567890"), SYNC_REUSE_NO,
+                           StringVector({"example2.com"}), 3));
   reuse_detector.CheckReuse(ASCIIToUTF16("abcd01234567890"), "https://evil.com",
                             &mockConsumer);
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("1234567890"), "example3.com", 3, 1));
+              OnReuseFound(ASCIIToUTF16("1234567890"), SYNC_REUSE_NO,
+                           StringVector({"example3.com"}), 3));
   reuse_detector.CheckReuse(ASCIIToUTF16("1234567890"), "https://evil.com",
                             &mockConsumer);
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
@@ -220,9 +233,8 @@ TEST(PasswordReuseDetectorTest, SyncPasswordReuseFound) {
   std::string sync_password = "sync_password";
   reuse_detector.UseSyncPasswordHash(GetSyncPasswordData(sync_password));
 
-  EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("sync_password"),
-                           std::string(kSyncPasswordDomain), 1, 0));
+  EXPECT_CALL(mockConsumer, OnReuseFound(ASCIIToUTF16("sync_password"),
+                                         SYNC_REUSE_YES, StringVector(), 1));
   reuse_detector.CheckReuse(ASCIIToUTF16("sync_password"), "https://evil.com",
                             &mockConsumer);
 }
@@ -238,7 +250,8 @@ TEST(PasswordReuseDetectorTest, SavedPasswordsReuseSyncPasswordAvailable) {
   reuse_detector.UseSyncPasswordHash(GetSyncPasswordData(sync_password));
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("password"), "google.com", 5, 1));
+              OnReuseFound(ASCIIToUTF16("password"), SYNC_REUSE_NO,
+                           StringVector({"google.com"}), 5));
   reuse_detector.CheckReuse(ASCIIToUTF16("password"), "https://evil.com",
                             &mockConsumer);
 }

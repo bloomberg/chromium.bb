@@ -85,7 +85,8 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& frame_url) {}
 
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
-    const std::string& password_saved_domain,
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
     bool password_field_exists) {}
 
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}

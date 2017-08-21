@@ -384,17 +384,17 @@ void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
-    const std::string& saved_domain,
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
     TriggerType trigger_type,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(
           web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, saved_domain, trigger_type,
-          password_field_exists, this, GetRequestTimeoutInMS()));
+          password_form_frame_url, matches_sync_password, matching_domains,
+          trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
 
-  DCHECK(request);
   request->Start();
   requests_.insert(std::move(request));
 }
@@ -408,7 +408,8 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
   if (CanSendPing(kPasswordFieldOnFocusPinging, main_frame_url, false)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url,
-                 std::string(), /* saved_domain: not used for this type */
+                 false, /* matches_sync_password: not used for this type */
+                 {},    /* matching_domains: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
 }
@@ -416,13 +417,14 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
-    const std::string& saved_domain,
+    bool matches_sync_password,
+    const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (CanSendPing(
-          kProtectedPasswordEntryPinging, main_frame_url,
-          saved_domain == std::string(password_manager::kSyncPasswordDomain))) {
-    StartRequest(web_contents, main_frame_url, GURL(), GURL(), saved_domain,
+  if (CanSendPing(kProtectedPasswordEntryPinging, main_frame_url,
+                  matches_sync_password)) {
+    StartRequest(web_contents, main_frame_url, GURL(), GURL(),
+                 matches_sync_password, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
   }
