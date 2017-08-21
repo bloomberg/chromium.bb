@@ -7,17 +7,28 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_errors.h"
 
 class Profile;
 
+namespace storage {
+
+class FileSystemURL;
+
+}  // namespace storage
+
 namespace chromeos {
+
+class RecentFile;
 
 // RecentSource implementation for Drive files.
 //
@@ -37,13 +48,23 @@ class RecentDriveSource : public RecentSource {
   static const char kLoadHistogramName[];
 
   void OnSearchMetadata(
-      RecentContext context,
-      GetRecentFilesCallback callback,
-      const base::TimeTicks& build_start_time,
       drive::FileError error,
       std::unique_ptr<drive::MetadataSearchResultVector> results);
+  void OnGetMetadata(const storage::FileSystemURL& url,
+                     base::File::Error result,
+                     const base::File::Info& info);
+  void OnComplete();
 
   Profile* const profile_;
+
+  // Set at the beginning of GetRecentFiles().
+  RecentContext context_;
+  GetRecentFilesCallback callback_;
+
+  base::TimeTicks build_start_time_;
+
+  int num_inflight_stats_ = 0;
+  std::vector<RecentFile> files_;
 
   base::WeakPtrFactory<RecentDriveSource> weak_ptr_factory_;
 

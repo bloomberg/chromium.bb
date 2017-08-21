@@ -68,19 +68,6 @@ void GetMetadataOnIOThread(
 
 }  // namespace
 
-struct RecentDownloadSource::FileSystemURLWithLastModified {
-  storage::FileSystemURL url;
-  base::Time last_modified;
-
-  friend bool operator<(const FileSystemURLWithLastModified& a,
-                        const FileSystemURLWithLastModified& b) {
-    // Reverse the comparison order because std::priority_queue.pop() deletes
-    // the most *largest* element whereas we want to delete the *oldest*
-    // document.
-    return a.last_modified > b.last_modified;
-  }
-};
-
 const char RecentDownloadSource::kLoadHistogramName[] =
     "FileBrowser.Recent.LoadDownloads";
 
@@ -108,7 +95,7 @@ void RecentDownloadSource::GetRecentFiles(RecentContext context,
   DCHECK(build_start_time_.is_null());
   DCHECK_EQ(0, inflight_readdirs_);
   DCHECK_EQ(0, inflight_stats_);
-  DCHECK(top_entries_.empty());
+  DCHECK(recent_files_.empty());
 
   context_ = std::move(context);
   callback_ = std::move(callback);
@@ -173,12 +160,12 @@ void RecentDownloadSource::OnGetMetadata(const storage::FileSystemURL& url,
                                          base::File::Error result,
                                          const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(context_.is_valid());
 
   if (result == base::File::FILE_OK) {
-    top_entries_.emplace(
-        FileSystemURLWithLastModified{url, info.last_modified});
-    while (top_entries_.size() > max_num_files_)
-      top_entries_.pop();
+    recent_files_.emplace(RecentFile(url, info.last_modified));
+    while (recent_files_.size() > max_num_files_)
+      recent_files_.pop();
   }
 
   --inflight_stats_;
@@ -192,10 +179,10 @@ void RecentDownloadSource::OnReadOrStatFinished() {
     return;
 
   // All reads/scans completed.
-  RecentFileList files;
-  while (!top_entries_.empty()) {
-    files.emplace_back(top_entries_.top().url);
-    top_entries_.pop();
+  std::vector<RecentFile> files;
+  while (!recent_files_.empty()) {
+    files.emplace_back(recent_files_.top());
+    recent_files_.pop();
   }
 
   DCHECK(!build_start_time_.is_null());
@@ -212,7 +199,7 @@ void RecentDownloadSource::OnReadOrStatFinished() {
   DCHECK(build_start_time_.is_null());
   DCHECK_EQ(0, inflight_readdirs_);
   DCHECK_EQ(0, inflight_stats_);
-  DCHECK(top_entries_.empty());
+  DCHECK(recent_files_.empty());
 
   std::move(callback).Run(std::move(files));
 }

@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
+#include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -41,8 +42,6 @@ class RecentDownloadSource : public RecentSource {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RecentDownloadSourceTest, GetRecentFiles_UmaStats);
-
-  struct FileSystemURLWithLastModified;
 
   static const char kLoadHistogramName[];
 
@@ -72,8 +71,9 @@ class RecentDownloadSource : public RecentSource {
   int inflight_readdirs_ = 0;
   // Number of GetMetadata() calls in flight.
   int inflight_stats_ = 0;
-  // Most recently modified entries.
-  std::priority_queue<FileSystemURLWithLastModified> top_entries_;
+  // Most recently modified files.
+  std::priority_queue<RecentFile, std::vector<RecentFile>, RecentFileComparator>
+      recent_files_;
 
   base::WeakPtrFactory<RecentDownloadSource> weak_ptr_factory_;
 

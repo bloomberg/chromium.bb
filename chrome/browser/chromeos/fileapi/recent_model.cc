@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_download_source.h"
 #include "chrome/browser/chromeos/fileapi/recent_drive_source.h"
+#include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model_factory.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,13 +72,13 @@ RecentModel::~RecentModel() {
   DCHECK(sources_.empty());
 }
 
-void RecentModel::GetRecentFiles(RecentContext context,
+void RecentModel::GetRecentFiles(const RecentContext& context,
                                  GetRecentFilesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Use cache if available.
-  if (cached_files_.has_value()) {
-    std::move(callback).Run(cached_files_.value());
+  if (cached_urls_.has_value()) {
+    std::move(callback).Run(cached_urls_.value());
     return;
   }
 
@@ -102,9 +103,9 @@ void RecentModel::GetRecentFiles(RecentContext context,
   }
 
   for (const auto& source : sources_) {
-    source->GetRecentFiles(context,
-                           base::BindOnce(&RecentModel::OnGetRecentFiles,
-                                          weak_ptr_factory_.GetWeakPtr()));
+    source->GetRecentFiles(
+        context, base::BindOnce(&RecentModel::OnGetRecentFiles,
+                                weak_ptr_factory_.GetWeakPtr(), context));
   }
 }
 
@@ -116,14 +117,17 @@ void RecentModel::Shutdown() {
   sources_.clear();
 }
 
-void RecentModel::OnGetRecentFiles(RecentFileList files) {
+void RecentModel::OnGetRecentFiles(const RecentContext& context,
+                                   std::vector<RecentFile> files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_LT(0, num_inflight_sources_);
 
-  intermediate_files_.insert(intermediate_files_.end(),
-                             std::make_move_iterator(files.begin()),
-                             std::make_move_iterator(files.end()));
+  for (const auto& file : files)
+    intermediate_files_.emplace(file);
+
+  while (intermediate_files_.size() > kMaxFilesFromSingleSource)
+    intermediate_files_.pop();
 
   --num_inflight_sources_;
   if (num_inflight_sources_ == 0)
@@ -134,13 +138,18 @@ void RecentModel::OnGetRecentFilesCompleted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(0, num_inflight_sources_);
-  DCHECK(!cached_files_.has_value());
+  DCHECK(!cached_urls_.has_value());
   DCHECK(!build_start_time_.is_null());
 
-  cached_files_ = RecentFileList();
-  cached_files_.value().swap(intermediate_files_);
+  std::vector<storage::FileSystemURL> urls;
+  while (!intermediate_files_.empty()) {
+    urls.emplace_back(intermediate_files_.top().url());
+    intermediate_files_.pop();
+  }
+  std::reverse(urls.begin(), urls.end());
+  cached_urls_ = std::move(urls);
 
-  DCHECK(cached_files_.has_value());
+  DCHECK(cached_urls_.has_value());
   DCHECK(intermediate_files_.empty());
 
   UMA_HISTOGRAM_TIMES(kLoadHistogramName,
@@ -158,13 +167,13 @@ void RecentModel::OnGetRecentFilesCompleted() {
   DCHECK(pending_callbacks_.empty());
   DCHECK(!callbacks_to_call.empty());
   for (auto& callback : callbacks_to_call)
-    std::move(callback).Run(cached_files_.value());
+    std::move(callback).Run(cached_urls_.value());
 }
 
 void RecentModel::ClearCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  cached_files_.reset();
+  cached_urls_.reset();
 }
 
 }  // namespace chromeos
