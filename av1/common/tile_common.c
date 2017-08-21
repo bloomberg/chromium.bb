@@ -16,16 +16,10 @@
 #if CONFIG_DEPENDENT_HORZTILES
 void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
                               int row, int col) {
-  if (row < cm->tile_rows - 1) {
-    tile->tg_horz_boundary =
-        col >= cm->tile_group_start_col[row][col]
-            ? (row == cm->tile_group_start_row[row][col] ? 1 : 0)
-            : (row == cm->tile_group_start_row[row + 1][col] ? 1 : 0);
-  } else {
-    assert(col >= cm->tile_group_start_col[row][col]);
-    tile->tg_horz_boundary =
-        (row == cm->tile_group_start_row[row][col] ? 1 : 0);
-  }
+  const int tg_start_row = cm->tile_group_start_row[row][col];
+  const int tg_start_col = cm->tile_group_start_col[row][col];
+  tile->tg_horz_boundary = ((row == tg_start_row && col >= tg_start_col) ||
+                            (row == tg_start_row + 1 && col < tg_start_col));
 #if CONFIG_MAX_TILE
   if (cm->tile_row_independent[row]) {
     tile->tg_horz_boundary = 1;  // this tile row is independent
