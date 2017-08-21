@@ -156,7 +156,8 @@ void ResourceCoordinatorWebContentsObserver::TitleWasSet(
 
 void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
     const GURL& url) {
-  if (!base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
+  if (!base::FeatureList::IsEnabled(ukm::kUkmFeature) ||
+      !ukm::UkmRecorder::Get()) {
     return;
   }
 
