@@ -63,7 +63,7 @@ TEST_F(DailyEventTest, TestNewFires) {
 // The event should fire if the preference is more than a day old.
 TEST_F(DailyEventTest, TestOldFires) {
   base::Time last_time = base::Time::Now() - base::TimeDelta::FromHours(25);
-  prefs_.SetInt64(kTestPrefName, last_time.ToInternalValue());
+  prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
   EXPECT_TRUE(observer_->fired());
 }
@@ -71,7 +71,7 @@ TEST_F(DailyEventTest, TestOldFires) {
 // The event should fire if the preference is more than a day in the future.
 TEST_F(DailyEventTest, TestFutureFires) {
   base::Time last_time = base::Time::Now() + base::TimeDelta::FromHours(25);
-  prefs_.SetInt64(kTestPrefName, last_time.ToInternalValue());
+  prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
   EXPECT_TRUE(observer_->fired());
 }
@@ -79,7 +79,7 @@ TEST_F(DailyEventTest, TestFutureFires) {
 // The event should not fire if the preference is more recent than a day.
 TEST_F(DailyEventTest, TestRecentNotFired) {
   base::Time last_time = base::Time::Now() - base::TimeDelta::FromMinutes(2);
-  prefs_.SetInt64(kTestPrefName, last_time.ToInternalValue());
+  prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
   EXPECT_FALSE(observer_->fired());
 }
@@ -87,7 +87,7 @@ TEST_F(DailyEventTest, TestRecentNotFired) {
 // The event should not fire if the preference is less than a day in the future.
 TEST_F(DailyEventTest, TestSoonNotFired) {
   base::Time last_time = base::Time::Now() + base::TimeDelta::FromMinutes(2);
-  prefs_.SetInt64(kTestPrefName, last_time.ToInternalValue());
+  prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
   EXPECT_FALSE(observer_->fired());
 }
