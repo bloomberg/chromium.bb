@@ -139,24 +139,30 @@ Object.defineProperty(
 /**
  * FederatedCredential interface, for more information see
  * https://w3c.github.io/webappsec-credential-management/#federatedcredential-interface
+ * @param {FederatedCredentialInit} init Dictionary to create
+ *     FederatedCredential from.
  * @extends {Credential}
  * @constructor
  */
-// TODO(crbug.com/435046) Implement constructor taking
-// FederatedCredentialInit
-function FederatedCredential() {
+function FederatedCredential(init) {
+  if (!init.id) {
+    throw new TypeError('id must be a non-empty string');
+  }
+  if (!init.provider) {
+    throw new TypeError('provider must be a non-empty string');
+  }
   /** @type {string} */
-  this.id;
+  this.id = init.id;
   /** @type {string} */
-  this.type;
+  this.type = 'FederatedCredential';
   /** @type {string} */
-  this.name;
+  this.name = init.name;
   /** @type {string} */
-  this.iconURL;
+  this.iconURL = init.iconURL;
   /** @type {string} */
-  this.provider;
+  this.provider = init.provider;
   /** @type {?string} */
-  this.protocol;
+  this.protocol = init.protocol;
 }
 
 FederatedCredential.prototype = {
@@ -165,8 +171,26 @@ FederatedCredential.prototype = {
 Object.defineProperty(FederatedCredential, 'prototype', { writable: false });
 
 FederatedCredential.prototype.constructor = FederatedCredential;
-Object.defineProperty(
-    FederatedCredential.prototype, 'constructor', { enumerable: false });
+Object.defineProperties(
+  FederatedCredential.prototype,
+  {
+    'constructor': {
+      enumerable: false
+    },
+    'provider': {
+      value: '' // Required for IDL tests to recognize the type as string.
+      // TODO(crbug.com/435046): IDL tests require that getting property
+      // |provider| on FederatedCredential.prototype throws TypeError. Implement
+      // getter conforming to those tests.
+    },
+    'protocol': {
+      value: '' // Required for IDL tests to recognize the type as string.
+      // TODO(crbug.com/435046): IDL tests require that getting property
+      // |protocol| on FederatedCredential.prototype throws TypeError. Implement
+      // getter conforming to those tests.
+    }
+  }
+);
 
 /**
  * CredentialData dictionary
