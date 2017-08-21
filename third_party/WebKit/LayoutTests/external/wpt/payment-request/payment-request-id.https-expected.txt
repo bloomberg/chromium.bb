@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test for PaymentRequest identifier usage Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-Harness: the test ran to completion.
-
