@@ -173,6 +173,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   readingListModel->DeleteAllEntries();
   [super setUp];
+  if (IsIPadIdiom()) {
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_NEW_TAB_HOME)] performAction:grey_tap()];
+  }
 }
 
 - (void)tearDown {
@@ -251,11 +256,22 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(title1)]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // On iPad two Reading List items are displayed as the Reading List view is
+  // displayed modally, the NTP is still visible.
   [[EarlGrey
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(title2),
-                     grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+                     grey_not(grey_ancestor(
+                         grey_accessibilityID([ContentSuggestionsViewController
+                             collectionAccessibilityIdentifier]))),
+                     nil)] assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Close Reading List.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_READING_LIST_DONE_BUTTON)]
+      performAction:grey_tap()];
 }
 
 // Tests that only the 3 most recent Reading List items are displayed.
