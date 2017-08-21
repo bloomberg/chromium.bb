@@ -12,6 +12,7 @@ import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,6 +21,8 @@ import android.os.StatFs;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -150,7 +153,21 @@ public class UpdateMenuItemHelper {
             return true;
         }
 
+        if (!isGooglePlayStoreAvailable(activity)) {
+            return false;
+        }
+
         return updateAvailable(activity);
+    }
+
+    private static boolean isGooglePlayStoreAvailable(Context context) {
+        try {
+            context.getPackageManager().getPackageInfo(
+                    GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -173,6 +190,10 @@ public class UpdateMenuItemHelper {
     public boolean shouldShowToolbarBadge(ChromeActivity activity) {
         if (getBooleanParam(ChromeSwitches.FORCE_SHOW_UPDATE_MENU_BADGE)) {
             return true;
+        }
+
+        if (!isGooglePlayStoreAvailable(activity)) {
+            return false;
         }
 
         // The badge is hidden if the update menu item has been clicked until there is an
