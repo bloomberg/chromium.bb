@@ -56,8 +56,10 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "ENABLE_DEBUGGING_FINISHED";
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       return "ENABLE_DEBUGGING_CANCELED";
-    case ScreenExitCode::ARC_TERMS_OF_SERVICE_FINISHED:
-      return "ARC_TERMS_OF_SERVICE_FINISHED";
+    case ScreenExitCode::ARC_TERMS_OF_SERVICE_SKIPPED:
+      return "ARC_TERMS_OF_SERVICE_SKIPPED";
+    case ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED:
+      return "ARC_TERMS_OF_SERVICE_ACCEPTED";
     case ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
       return "UPDATE_ERROR_UPDATING_CRITICAL_UPDATE";
     case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED:
