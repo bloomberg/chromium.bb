@@ -33,8 +33,8 @@ class AnswerCardWebContents : public AnswerCardContents,
   views::View* GetView() override;
 
   // content::WebContentsDelegate overrides:
-  void UpdatePreferredSize(content::WebContents* web_contents,
-                           const gfx::Size& pref_size) override;
+  void ResizeDueToAutoResize(content::WebContents* web_contents,
+                             const gfx::Size& new_size) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
