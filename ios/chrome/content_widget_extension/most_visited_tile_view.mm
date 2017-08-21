@@ -35,7 +35,7 @@ const CGFloat kTileWidth = 73;
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _titleLabel.textColor = [UIColor colorWithWhite:kLabelTextColor alpha:1.0];
     _titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.isAccessibilityElement = NO;
     _titleLabel.numberOfLines = kLabelNumLines;

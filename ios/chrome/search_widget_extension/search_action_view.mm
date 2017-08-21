@@ -53,7 +53,7 @@ const CGFloat kIconSize = 35;
     labelView.text = title;
     labelView.numberOfLines = 0;
     labelView.textAlignment = NSTextAlignmentCenter;
-    labelView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    labelView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     labelView.isAccessibilityElement = NO;
     [labelView
         setContentCompressionResistancePriority:UILayoutPriorityRequired
