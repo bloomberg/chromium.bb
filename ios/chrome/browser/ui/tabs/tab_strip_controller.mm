@@ -185,7 +185,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
   // Timer used to autoscroll when in reordering mode.  Is nil when not active.
   // Owned by its runloop.
-  NSTimer* _autoscrollTimer;  // weak
+  __weak NSTimer* _autoscrollTimer;  // weak
 
   // The distance to scroll for each autoscroll timer tick.  If negative, the
   // tabstrip will scroll to the left; if positive, to the right.

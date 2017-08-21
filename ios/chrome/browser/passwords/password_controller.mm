@@ -260,7 +260,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
   PasswordGenerationAgent* passwordGenerationAgent_;
 
-  JsPasswordManager* passwordJsManager_;  // weak
+  __weak JsPasswordManager* passwordJsManager_;
   web::WebState* webState_;               // weak
 
   // The pending form data.

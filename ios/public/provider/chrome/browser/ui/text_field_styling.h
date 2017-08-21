@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, TextFieldStylingPlaceholder) {
 
 // The object used to validate text in this text field.  If nil, no validation
 // is performed.
-@property(nonatomic, assign) id<TextFieldValidation> textValidator;  // weak
+@property(nonatomic, weak) id<TextFieldValidation> textValidator;
 
 // If |error| is YES, display this field using error colors and styling.
 - (void)setUseErrorStyling:(BOOL)error;

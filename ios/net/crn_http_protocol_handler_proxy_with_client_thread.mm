@@ -28,11 +28,11 @@
 //   as described by the item above.
 
 @interface CRNHTTPProtocolHandlerProxyWithClientThread () {
-  NSURLProtocol* _protocol;  // weak
+  __weak NSURLProtocol* _protocol;
   // Thread used to call the client back.
   // This thread does not have a base::MessageLoop, and thus does not work with
   // the usual task posting functions.
-  NSThread* _clientThread;  // weak
+  __weak NSThread* _clientThread;
   // The run loop modes to use when posting tasks to |clientThread_|.
   base::scoped_nsobject<NSArray> _runLoopModes;
   // The request URL.

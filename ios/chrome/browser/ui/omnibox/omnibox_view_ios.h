@@ -194,7 +194,7 @@ class OmniboxViewIOS : public OmniboxView,
 
   // Temporary pointer to the attributed display string, stored as color and
   // other emphasis attributes are applied by the superclass.
-  NSMutableAttributedString* attributing_display_string_;  // weak
+  NSMutableAttributedString* attributing_display_string_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_IOS_H_

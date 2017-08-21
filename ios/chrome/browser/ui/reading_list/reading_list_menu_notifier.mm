@@ -60,7 +60,7 @@ class ReadingListObserverBridge : public ReadingListModelObserver {
   }
 
  private:
-  ReadingListMenuNotifier* owner_;  // weak, owns us
+  __weak ReadingListMenuNotifier* owner_;  // weak, owns us
 };
 
 @implementation ReadingListMenuNotifier

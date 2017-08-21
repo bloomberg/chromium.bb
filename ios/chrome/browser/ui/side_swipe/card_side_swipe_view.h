@@ -36,7 +36,7 @@
   CGFloat topMargin_;
 
   // Tab model.
-  TabModel* model_;  // weak
+  __unsafe_unretained TabModel* model_;  // weak
 
   // The image view containing the background image.
   base::scoped_nsobject<UIImageView> backgroundView_;
