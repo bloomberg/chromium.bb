@@ -198,7 +198,11 @@ ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
       ->provider();
 }
 
-ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {}
+ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
+  if (context()) {
+    context()->OnNetworkProviderDestroyed();
+  }
+}
 
 int ServiceWorkerNetworkProvider::provider_id() const {
   if (!context())
@@ -235,9 +239,10 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   ServiceWorkerProviderHostInfo host_info(
       browser_provider_id, route_id, provider_type, is_parent_frame_secure);
-  host_info.host_request = mojo::MakeRequest(&provider_host_);
   mojom::ServiceWorkerProviderAssociatedRequest client_request =
       mojo::MakeRequest(&host_info.client_ptr_info);
+  mojom::ServiceWorkerProviderHostAssociatedPtrInfo host_ptr_info;
+  host_info.host_request = mojo::MakeRequest(&host_ptr_info);
   DCHECK(host_info.host_request.is_pending());
   DCHECK(host_info.host_request.handle().is_valid());
 
@@ -249,14 +254,14 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
             base::ThreadTaskRunnerHandle::Get().get());
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
-        dispatcher);
+        std::move(host_ptr_info), dispatcher);
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_);
     dispatcher_host_->OnProviderCreated(std::move(host_info));
   } else {
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
-        nullptr /* dispatcher */);
+        std::move(host_ptr_info), nullptr /* dispatcher */);
   }
 }
 
@@ -271,7 +276,8 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
           sender, base::ThreadTaskRunnerHandle::Get().get());
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-      std::move(info->client_request), dispatcher);
+      std::move(info->client_request), std::move(info->host_ptr_info),
+      dispatcher);
   std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
       ServiceWorkerRegistrationHandleReference::Adopt(info->registration,
                                                       sender);
@@ -288,8 +294,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     script_loader_factory_.Bind(
         std::move(info->script_loader_factory_ptr_info));
   }
-
-  provider_host_.Bind(std::move(info->host_ptr_info));
 }
 
 }  // namespace content
