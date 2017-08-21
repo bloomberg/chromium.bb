@@ -125,8 +125,6 @@ class UI_BASE_EXPORT Accelerator {
 // should implement.
 class UI_BASE_EXPORT AcceleratorTarget {
  public:
-  static constexpr int kUnknownAcceleratorId = -1;
-
   // Should return true if the accelerator was processed.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;
 
@@ -134,11 +132,6 @@ class UI_BASE_EXPORT AcceleratorTarget {
   // AcceleratorPressed method is invoked only for targets for which
   // CanHandleAccelerators returns true.
   virtual bool CanHandleAccelerators() const = 0;
-
-  // Returns an ID to represent the action of the |accelerator|. Returns
-  // |kUnknownAcceleratorId| if the |accelerator| cannot be processed by this
-  // AcceleratorTarget or this function is not supported.
-  virtual int GetAcceleratorId(const Accelerator& accelerator) const;
 
  protected:
   virtual ~AcceleratorTarget() {}

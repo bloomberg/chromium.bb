@@ -1330,45 +1330,31 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   }
 #endif
 
+  int id;
+  if (!FindCommandIdForAccelerator(accelerator, &id)) {
+    // |accelerator| is not a browser command, it may be handled by ash (e.g.
+    // F4-F10). Report if we handled it.
+    if (focus_manager->ProcessAccelerator(accelerator))
+      return content::KeyboardEventProcessingResult::HANDLED;
+    // Otherwise, it's not an accelerator.
+    return content::KeyboardEventProcessingResult::NOT_HANDLED;
+  }
+
+  // If it's a known browser command, we decide whether to consume it now, i.e.
+  // reserved by browser.
   chrome::BrowserCommandController* controller = browser_->command_controller();
-
-  // Here we need to retrieve the command id (if any) associated to the
-  // keyboard event. Instead of looking up the command id in the
-  // |accelerator_table_| by ourselves, we block the command execution of
-  // the |browser_| object then send the keyboard event to the
-  // |focus_manager| as if we are activating an accelerator key.
-  // Then we can retrieve the command id from the |browser_| object.
-  bool original_block_command_state = controller->block_command_execution();
-  controller->SetBlockCommandExecution(true);
-  // If the |accelerator| is a non-browser shortcut (e.g. Ash shortcut), the
-  // command execution cannot be blocked and true is returned. However, it is
-  // okay as long as is_app() is false. See comments in this function.
-  const bool processed = focus_manager->ProcessAccelerator(accelerator);
-  const int id = controller->GetLastBlockedCommand(nullptr);
-  controller->SetBlockCommandExecution(original_block_command_state);
-
   // Executing the command may cause |this| object to be destroyed.
   if (controller->IsReservedCommandOrKey(id, event)) {
     UpdateAcceleratorMetrics(accelerator, id);
-    return chrome::ExecuteCommand(browser_.get(), id)
+    return focus_manager->ProcessAccelerator(accelerator)
                ? content::KeyboardEventProcessingResult::HANDLED
                : content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
-  if (id != -1) {
-    // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
-    return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
-               ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
-               : content::KeyboardEventProcessingResult::NOT_HANDLED;
-  }
-
-  if (processed) {
-    // |accelerator| is a non-browser shortcut (e.g. F4-F10 on Ash). Report
-    // that we handled it.
-    return content::KeyboardEventProcessingResult::HANDLED;
-  }
-
-  return content::KeyboardEventProcessingResult::NOT_HANDLED;
+  // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
+  return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
+             ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
+             : content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
@@ -2023,26 +2009,14 @@ void BrowserView::OnThemeChanged() {
 // BrowserView, ui::AcceleratorTarget overrides:
 
 bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  const int command_id = GetAcceleratorId(accelerator);
-  if (command_id == kUnknownAcceleratorId)
+  int command_id;
+  // Though AcceleratorManager should not send unknown |accelerator| to us, it's
+  // still possible the command cannot be executed now.
+  if (!FindCommandIdForAccelerator(accelerator, &command_id))
     return false;
 
-  chrome::BrowserCommandController* controller = browser_->command_controller();
-  if (!controller->block_command_execution())
-    UpdateAcceleratorMetrics(accelerator, command_id);
+  UpdateAcceleratorMetrics(accelerator, command_id);
   return chrome::ExecuteCommand(browser_.get(), command_id);
-}
-
-int BrowserView::GetAcceleratorId(const ui::Accelerator& accelerator) const {
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
-  DCHECK(iter != accelerator_table_.end());
-
-  const int command_id = iter->second;
-  if (accelerator.IsRepeat() && !IsCommandRepeatable(command_id))
-    return kUnknownAcceleratorId;
-
-  return command_id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2633,6 +2607,21 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
     top_arrow_height = infobar_top.y() - icon_bottom.y();
   }
   return top_arrow_height;
+}
+
+bool BrowserView::FindCommandIdForAccelerator(
+    const ui::Accelerator& accelerator,
+    int* command_id) const {
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerator_table_.find(accelerator);
+  if (iter == accelerator_table_.end())
+    return false;
+
+  *command_id = iter->second;
+  if (accelerator.IsRepeat() && !IsCommandRepeatable(*command_id))
+    return false;
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

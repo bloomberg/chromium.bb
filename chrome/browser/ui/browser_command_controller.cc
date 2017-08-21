@@ -98,10 +98,7 @@ namespace chrome {
 
 BrowserCommandController::BrowserCommandController(Browser* browser)
     : browser_(browser),
-      command_updater_(this),
-      block_command_execution_(false),
-      last_blocked_command_id_(-1),
-      last_blocked_command_disposition_(WindowOpenDisposition::CURRENT_TAB) {
+      command_updater_(this) {
   browser_->tab_strip_model()->AddObserver(this);
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -232,21 +229,6 @@ bool BrowserCommandController::IsReservedCommandOrKey(
          command_id == IDC_EXIT;
 }
 
-void BrowserCommandController::SetBlockCommandExecution(bool block) {
-  block_command_execution_ = block;
-  if (block) {
-    last_blocked_command_id_ = -1;
-    last_blocked_command_disposition_ = WindowOpenDisposition::CURRENT_TAB;
-  }
-}
-
-int BrowserCommandController::GetLastBlockedCommand(
-    WindowOpenDisposition* disposition) {
-  if (disposition)
-    *disposition = last_blocked_command_disposition_;
-  return last_blocked_command_id_;
-}
-
 void BrowserCommandController::TabStateChanged() {
   UpdateCommandsForTabState();
 }
@@ -295,16 +277,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
                                                 << id;
-
-  // If command execution is blocked then just record the command and return.
-  if (block_command_execution_) {
-    // We actually only allow no more than one blocked command, otherwise some
-    // commands maybe lost.
-    DCHECK_EQ(last_blocked_command_id_, -1);
-    last_blocked_command_id_ = id;
-    last_blocked_command_disposition_ = disposition;
-    return;
-  }
 
   // The order of commands in this switch statement must match the function
   // declaration order in browser.h!

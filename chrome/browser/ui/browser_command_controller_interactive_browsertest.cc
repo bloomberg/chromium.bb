@@ -287,9 +287,6 @@ void BrowserCommandControllerInteractiveTest::
   // The window should not be closed.
   ASSERT_NO_FATAL_FAILURE(SendShiftShortcut(ui::VKEY_W));
   ASSERT_EQ(initial_browser_count, GetBrowserCount());
-  // TODO(zijiehe): ChromeOS incorrectly handles these;
-  // see http://crbug.com/737307.
-#if !defined(OS_CHROMEOS)
   // A new tab should not be created.
   ASSERT_NO_FATAL_FAILURE(SendShortcut(ui::VKEY_T));
   ASSERT_EQ(initial_tab_count, GetTabCount());
@@ -302,7 +299,6 @@ void BrowserCommandControllerInteractiveTest::
   // Last closed tab should not be restored.
   ASSERT_NO_FATAL_FAILURE(SendShiftShortcut(ui::VKEY_T));
   ASSERT_EQ(initial_tab_count, GetTabCount());
-#endif
   // Browser should not switch to the next tab.
   ASSERT_NO_FATAL_FAILURE(SendShortcut(ui::VKEY_TAB));
   ASSERT_EQ(initial_active_index, GetActiveTabIndex());

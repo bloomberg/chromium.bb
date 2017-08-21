@@ -34,25 +34,12 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   ~BrowserCommandController() override;
 
   CommandUpdater* command_updater() { return &command_updater_; }
-  bool block_command_execution() const { return block_command_execution_; }
 
   // Returns true if |command_id| is a reserved command whose keyboard shortcuts
   // should not be sent to the renderer or |event| was triggered by a key that
   // we never want to send to the renderer.
   bool IsReservedCommandOrKey(int command_id,
                               const content::NativeWebKeyboardEvent& event);
-
-  // Sets if command execution shall be blocked. If |block| is true then
-  // following calls to ExecuteCommand() or ExecuteCommandWithDisposition()
-  // method will not execute the command, and the last blocked command will be
-  // recorded for retrieval.
-  void SetBlockCommandExecution(bool block);
-
-  // Gets the last blocked command after calling SetBlockCommandExecution(true).
-  // Returns the command id or -1 if there is no command blocked. The
-  // disposition type of the command will be stored in |*disposition| if it's
-  // not NULL.
-  int GetLastBlockedCommand(WindowOpenDisposition* disposition);
 
   // Notifies the controller that state has changed in one of the following
   // areas and it should update command states.
@@ -177,15 +164,6 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;
-
-  // Indicates if command execution is blocked.
-  bool block_command_execution_;
-
-  // Stores the last blocked command id when |block_command_execution_| is true.
-  int last_blocked_command_id_;
-
-  // Stores the disposition type of the last blocked command.
-  WindowOpenDisposition last_blocked_command_disposition_;
 
   std::vector<InterstitialObserver*> interstitial_observers_;
 
