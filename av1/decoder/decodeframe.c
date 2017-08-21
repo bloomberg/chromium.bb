@@ -2139,7 +2139,7 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
       partition_plane_context(xd, mi_row, mi_col, has_rows, has_cols, bsize);
   const aom_prob *const probs =
       ctx < PARTITION_CONTEXTS ? cm->fc->partition_prob[ctx] : NULL;
-  FRAME_COUNTS *const counts = ctx < PARTITION_CONTEXTS ? xd->counts : NULL;
+  FRAME_COUNTS *const counts = ctx >= 0 ? xd->counts : NULL;
 #else
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
   const aom_prob *const probs = cm->fc->partition_prob[ctx];
