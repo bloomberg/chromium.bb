@@ -372,7 +372,7 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (i = 0; i < 4; ++i) {
 #if CONFIG_DAALA_DCT4
     tran_low_t temp_in[4];
-    for (j = 0; j < 4; j++) temp_in[j] = input[j] << 1;
+    for (j = 0; j < 4; j++) temp_in[j] = input[j] * 2;
     IHT_4[tx_type].rows(temp_in, out[i]);
 #else
 #if CONFIG_LGT
@@ -1285,7 +1285,7 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (i = 0; i < 16; ++i) {
 #if CONFIG_DAALA_DCT16
     tran_low_t temp_in[16];
-    for (j = 0; j < 16; j++) temp_in[j] = input[j] << 1;
+    for (j = 0; j < 16; j++) temp_in[j] = input[j] * 2;
     IHT_16[tx_type].rows(temp_in, out[i]);
 #else
     IHT_16[tx_type].rows(input, out[i]);
