@@ -3338,12 +3338,10 @@
     },
     {
       name: "-webkit-mask-repeat-x",
-      api_class: "CSSPropertyAPIWebkitMaskRepeat",
       custom_all: true,
     },
     {
       name: "-webkit-mask-repeat-y",
-      api_class: "CSSPropertyAPIWebkitMaskRepeat",
       custom_all: true,
     },
     {

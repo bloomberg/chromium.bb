@@ -66,9 +66,6 @@ const CSSValue* CSSPropertyAPI::ParseSingleValue(
     case CSSPropertyWebkitMaskOrigin:
       return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range,
                                        false /* allow_text_value */);
-    case CSSPropertyWebkitMaskRepeatX:
-    case CSSPropertyWebkitMaskRepeatY:
-      return nullptr;
     default:
       return nullptr;
   }

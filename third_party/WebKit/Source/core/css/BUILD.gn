@@ -524,7 +524,6 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIWebkitLineClamp.cpp",
     "properties/CSSPropertyAPIWebkitMargin.cpp",
     "properties/CSSPropertyAPIWebkitMaskComposite.cpp",
-    "properties/CSSPropertyAPIWebkitMaskRepeat.cpp",
     "properties/CSSPropertyAPIWebkitMaxLogicalWidthOrHeight.cpp",
     "properties/CSSPropertyAPIWebkitOriginX.cpp",
     "properties/CSSPropertyAPIWebkitOriginY.cpp",
