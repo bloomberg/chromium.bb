@@ -189,10 +189,22 @@ Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
 }
 
 void HTMLCanvasElement::setHeight(int value, ExceptionState& exception_state) {
+  if (IsPlaceholderRegistered()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Cannot resize canvas after call to transferControlToOffscreen().");
+    return;
+  }
   SetIntegralAttribute(heightAttr, value);
 }
 
 void HTMLCanvasElement::setWidth(int value, ExceptionState& exception_state) {
+  if (IsPlaceholderRegistered()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "Cannot resize canvas after call to transferControlToOffscreen().");
+    return;
+  }
   SetIntegralAttribute(widthAttr, value);
 }
 
@@ -1359,6 +1371,8 @@ void HTMLCanvasElement::SetPlaceholderFrame(
   OffscreenCanvasPlaceholder::SetPlaceholderFrame(
       std::move(image), std::move(dispatcher), std::move(task_runner),
       resource_id);
+  IntSize new_size(PlaceholderFrame()->width(), PlaceholderFrame()->height());
+  SetSize(new_size);
   NotifyListenersCanvasChanged();
 }
 
