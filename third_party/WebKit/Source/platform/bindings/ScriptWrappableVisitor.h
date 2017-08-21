@@ -15,8 +15,6 @@
 namespace blink {
 
 class HeapObjectHeader;
-template <typename T>
-class Member;
 class ScriptWrappable;
 class ScriptWrappableVisitor;
 class TraceWrapperBase;
@@ -153,19 +151,14 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // TraceWrapperV8Reference.
   static void WriteBarrier(v8::Isolate*, const v8::Persistent<v8::Object>*);
 
-  template <typename T>
-  static void WriteBarrier(const Member<T>& value) {
-    WriteBarrier(value.Get());
-  }
-
   ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
   virtual ~ScriptWrappableVisitor();
 
   // Trace all wrappers of |t|.
   //
   // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
-  // for some reason (e.g., due to sizeof(TraceWrapperMember)), you can use
-  // Member and |TraceWrappersWithManualWriteBarrier()|. See below.
+  // for some reason (e.g., unions using raw pointers), see
+  // |TraceWrappersWithManualWriteBarrier()| below.
   template <typename T>
   void TraceWrappers(const TraceWrapperMember<T>& t) const {
     MarkAndTraceWrappers(t.Get());
@@ -189,16 +182,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // |TraceWrappers| definition. Be sure to add
   // |ScriptWrappableVisitor::WriteBarrier(new_value)| after all assignments to
   // the field. Otherwise, the objects may be collected prematurely.
-  template <typename T>
-  void TraceWrappersWithManualWriteBarrier(const Member<T>& t) const {
-    MarkAndTraceWrappers(t.Get());
-  }
-
-  template <typename T>
-  void TraceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
-    MarkAndTraceWrappers(t.Get());
-  }
-
   template <typename T>
   void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
     MarkAndTraceWrappers(traceable);

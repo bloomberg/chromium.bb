@@ -40,14 +40,12 @@ class DeathAwareScriptWrappable
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->Trace(raw_dependency_);
     visitor->Trace(wrapped_dependency_);
     visitor->Trace(wrapped_vector_dependency_);
     visitor->Trace(wrapped_hash_map_dependency_);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->TraceWrappersWithManualWriteBarrier(raw_dependency_);
     visitor->TraceWrappers(wrapped_dependency_);
     for (auto dep : wrapped_vector_dependency_) {
       visitor->TraceWrappers(dep);
@@ -56,11 +54,6 @@ class DeathAwareScriptWrappable
       visitor->TraceWrappers(pair.key);
       visitor->TraceWrappers(pair.value);
     }
-  }
-
-  void SetRawDependency(DeathAwareScriptWrappable* dependency) {
-    raw_dependency_ = dependency;
-    ScriptWrappableVisitor::WriteBarrier(dependency);
   }
 
   void SetWrappedDependency(DeathAwareScriptWrappable* dependency) {
@@ -79,7 +72,6 @@ class DeathAwareScriptWrappable
  private:
   DeathAwareScriptWrappable() {}
 
-  Member<DeathAwareScriptWrappable> raw_dependency_;
   Wrapper wrapped_dependency_;
   HeapVector<Wrapper> wrapped_vector_dependency_;
   HeapHashMap<Wrapper, Wrapper> wrapped_hash_map_dependency_;
