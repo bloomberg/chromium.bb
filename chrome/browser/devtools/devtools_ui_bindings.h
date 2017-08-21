@@ -167,6 +167,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   void SendMessageAck(int request_id,
                       const base::Value* arg1);
+  void InnerAttach();
 
   // DevToolsAndroidBridge::DeviceCountListener override:
   void DeviceCountChanged(int count) override;
