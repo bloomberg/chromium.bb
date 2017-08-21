@@ -6,6 +6,8 @@
 
 namespace offline_pages {
 
+// NOTE: When adding a namespace constant, you MUST add this as a suffix in
+// //tools/metrics/histograms/histograms.xml or risk crashes due to DCHECKs.
 const char kBookmarkNamespace[] = "bookmark";
 const char kLastNNamespace[] = "last_n";
 const char kAsyncNamespace[] = "async_loading";
