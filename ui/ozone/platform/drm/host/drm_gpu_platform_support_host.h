@@ -63,7 +63,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   bool GpuRefreshNativeDisplays() override;
   bool GpuRelinquishDisplayControl() override;
   bool GpuAddGraphicsDevice(const base::FilePath& path,
-                            const base::FileDescriptor& fd) override;
+                            base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
   // Methods needed for DrmOverlayManager.

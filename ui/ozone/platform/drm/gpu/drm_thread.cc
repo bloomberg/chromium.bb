@@ -77,7 +77,7 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 
 }  // namespace
 
-DrmThread::DrmThread() : base::Thread("DrmThread") {}
+DrmThread::DrmThread() : base::Thread("DrmThread"), binding_(this) {}
 
 DrmThread::~DrmThread() {
   Stop();
@@ -207,19 +207,19 @@ void DrmThread::GetVSyncParameters(
     window->GetVSyncParameters(callback);
 }
 
-void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
+void DrmThread::CreateWindow(const gfx::AcceleratedWidget& widget) {
   std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   screen_manager_->AddWindow(widget, std::move(window));
 }
 
-void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {
+void DrmThread::DestroyWindow(const gfx::AcceleratedWidget& widget) {
   std::unique_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
   window->Shutdown();
 }
 
-void DrmThread::SetWindowBounds(gfx::AcceleratedWidget widget,
+void DrmThread::SetWindowBounds(const gfx::AcceleratedWidget& widget,
                                 const gfx::Rect& bounds) {
   screen_manager_->GetWindow(widget)->SetBounds(bounds);
 }
@@ -284,9 +284,8 @@ void DrmThread::RelinquishDisplayControl(
   std::move(callback).Run(true);
 }
 
-void DrmThread::AddGraphicsDevice(const base::FilePath& path,
-                                  const base::FileDescriptor& fd) {
-  device_manager_->AddDrmDevice(path, fd);
+void DrmThread::AddGraphicsDevice(const base::FilePath& path, base::File file) {
+  device_manager_->AddDrmDevice(path, std::move(file));
 }
 
 void DrmThread::RemoveGraphicsDevice(const base::FilePath& path) {
@@ -321,6 +320,11 @@ void DrmThread::SetColorCorrection(
 // be used from multiple threads in multiple processes.
 void DrmThread::AddBinding(ozone::mojom::DeviceCursorRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+void DrmThread::AddBindingGpu(ozone::mojom::GpuAdapterRequest request) {
+  TRACE_EVENT0("drm", "DrmThread::AddBindingGpu");
+  binding_.Bind(std::move(request));
 }
 
 }  // namespace ui

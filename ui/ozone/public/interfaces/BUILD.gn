@@ -7,11 +7,14 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "device_cursor.mojom",
+    "gpu_adapter.mojom",
     "overlay_surface_candidate.mojom",
   ]
 
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//skia/public/interfaces:interfaces",
+    "//ui/display/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]

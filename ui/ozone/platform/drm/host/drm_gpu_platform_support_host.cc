@@ -245,10 +245,10 @@ bool DrmGpuPlatformSupportHost::GpuRelinquishDisplayControl() {
   return Send(new OzoneGpuMsg_RelinquishDisplayControl());
 }
 
-bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(
-    const base::FilePath& path,
-    const base::FileDescriptor& fd) {
-  IPC::Message* message = new OzoneGpuMsg_AddGraphicsDevice(path, fd);
+bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(const base::FilePath& path,
+                                                     base::ScopedFD fd) {
+  IPC::Message* message = new OzoneGpuMsg_AddGraphicsDevice(
+      path, base::FileDescriptor(std::move(fd)));
 
   // This function may be called from two places:
   // - DrmDisplayHostManager::OnGpuProcessLaunched() invoked synchronously
