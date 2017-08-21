@@ -1825,7 +1825,7 @@
     },
     {
       name: "min-height",
-      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_class: "CSSPropertyAPIMinWidthOrHeight",
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
@@ -1836,7 +1836,7 @@
     },
     {
       name: "min-width",
-      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_class: "CSSPropertyAPIMinWidthOrHeight",
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLengthSizing",
       is_descriptor: true,
