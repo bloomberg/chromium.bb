@@ -349,6 +349,12 @@ Still reading?
   <issue id="VisibleForTests" severity="Error">
     <ignore regexp="chrome/android/javatests"/>
     <ignore regexp="/test/"/>
+    <!-- TODO(crbug.com/757124): Remove all these specific Feedback files after underlying issue is resolved -->
+    <!-- Underlying issue is that Android FeedbackOptions.Builder using @VisibleForTesting without 'otherwise='. -->
+    <ignore regexp="clank/java/src/com/google/android/apps/chrome/feedback/FeedbackUtil.java"/>
+    <ignore regexp="clank/java/src/com/google/android/apps/chrome/feedback/PlayServicesFeedbackReporter.java"/>
+    <ignore regexp="clank/java/src/com/google/android/apps/chrome/help/FeedbackCategoryChooserActivity.java"/>
+    <ignore regexp="clank/java/src/com/google/android/apps/chrome/help/HelpAndFeedbackInternal.java"/>
   </issue>
   <issue id="WrongCall" severity="ignore"/>
   <issue id="WrongConstant">
