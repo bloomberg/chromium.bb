@@ -103,7 +103,9 @@ TEST(FileManagerPathUtilTest, ConvertPathToArcUrl) {
       chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user@gmail.com-hash"));
   EXPECT_TRUE(ConvertPathToArcUrl(downloads.AppendASCII("a/b/c"), &url));
-  EXPECT_EQ(GURL("file:///sdcard/Download/a/b/c"), url);
+  EXPECT_EQ(GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                 "download/a/b/c"),
+            url);
 
   // Non-primary profile's downloads folder is not supported for ARC yet.
   const base::FilePath downloads2 = GetDownloadsFolderForProfile(
