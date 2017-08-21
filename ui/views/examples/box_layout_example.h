@@ -38,7 +38,7 @@ class VIEWS_EXAMPLES_EXPORT BoxLayoutExample : public ExampleBase,
   void CreateExampleView(View* container) override;
 
  private:
-  friend class views::examples::ChildPanel;
+  friend views::examples::ChildPanel;
   // ButtonListener
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
