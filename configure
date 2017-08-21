@@ -342,6 +342,7 @@ EXPERIMENT_LIST="
     txmg
     hash_me
     colorspace_headers
+    mfmv
 "
 CONFIG_LIST="
     dependency_tracking
