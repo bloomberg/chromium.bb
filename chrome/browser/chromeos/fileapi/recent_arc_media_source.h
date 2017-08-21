@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 
@@ -31,7 +33,11 @@ class RecentArcMediaSource : public RecentSource {
                       GetRecentFilesCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RecentArcMediaSourceTest, GetRecentFiles_UmaStats);
+
   class MediaRoot;
+
+  static const char kLoadHistogramName[];
 
   void OnGetRecentFilesForRoot(RecentFileList files);
   void OnComplete();
@@ -41,6 +47,9 @@ class RecentArcMediaSource : public RecentSource {
 
   RecentContext context_;
   GetRecentFilesCallback callback_;
+
+  // Time when the build started.
+  base::TimeTicks build_start_time_;
 
   int num_inflight_roots_ = 0;
   RecentFileList files_;

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/fileapi/recent_arc_media_source.h"
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/fileapi/recent_arc_media_source.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
@@ -46,6 +49,8 @@ arc::FakeFileSystemInstance::Document MakeDocument(
       0,                                 // size
       0);                                // last_modified
 }
+
+}  // namespace
 
 class RecentArcMediaSourceTest : public testing::Test {
  public:
@@ -144,5 +149,13 @@ TEST_F(RecentArcMediaSourceTest, GetRecentFiles_ArcNotAvailable) {
   EXPECT_EQ(0u, files.size());
 }
 
-}  // namespace
+TEST_F(RecentArcMediaSourceTest, GetRecentFiles_UmaStats) {
+  base::HistogramTester histogram_tester;
+
+  GetRecentFiles();
+
+  histogram_tester.ExpectTotalCount(RecentArcMediaSource::kLoadHistogramName,
+                                    1);
+}
+
 }  // namespace chromeos

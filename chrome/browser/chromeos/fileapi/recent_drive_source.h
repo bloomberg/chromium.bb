@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_errors.h"
@@ -21,6 +22,8 @@ namespace chromeos {
 // RecentSource implementation for Drive files.
 //
 // All member functions must be called on the UI thread.
+//
+// TODO(nya): Write unit tests.
 class RecentDriveSource : public RecentSource {
  public:
   explicit RecentDriveSource(Profile* profile);
@@ -31,9 +34,12 @@ class RecentDriveSource : public RecentSource {
                       GetRecentFilesCallback callback) override;
 
  private:
+  static const char kLoadHistogramName[];
+
   void OnSearchMetadata(
       RecentContext context,
       GetRecentFilesCallback callback,
+      const base::TimeTicks& build_start_time,
       drive::FileError error,
       std::unique_ptr<drive::MetadataSearchResultVector> results);
 

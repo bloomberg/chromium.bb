@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_context.h"
@@ -19,6 +20,9 @@
 using content::BrowserThread;
 
 namespace chromeos {
+
+const char RecentDriveSource::kLoadHistogramName[] =
+    "FileBrowser.Recent.LoadDrive";
 
 RecentDriveSource::RecentDriveSource(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
@@ -33,11 +37,13 @@ void RecentDriveSource::GetRecentFiles(RecentContext context,
                                        GetRecentFilesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  base::TimeTicks build_start_time = base::TimeTicks::Now();
+
   drive::FileSystemInterface* file_system =
       drive::util::GetFileSystemByProfile(profile_);
   if (!file_system) {
     // |file_system| is nullptr if Drive is disabled.
-    OnSearchMetadata(std::move(context), std::move(callback),
+    OnSearchMetadata(std::move(context), std::move(callback), build_start_time,
                      drive::FILE_ERROR_FAILED, nullptr);
     return;
   }
@@ -45,41 +51,43 @@ void RecentDriveSource::GetRecentFiles(RecentContext context,
   file_system->SearchMetadata(
       "" /* query */, drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES,
       kMaxFilesFromSingleSource, drive::MetadataSearchOrder::LAST_MODIFIED,
-      base::Bind(
-          &RecentDriveSource::OnSearchMetadata, weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(std::move(context)), base::Passed(std::move(callback))));
+      base::Bind(&RecentDriveSource::OnSearchMetadata,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(context)),
+                 base::Passed(std::move(callback)), build_start_time));
 }
 
 void RecentDriveSource::OnSearchMetadata(
     RecentContext context,
     GetRecentFilesCallback callback,
+    const base::TimeTicks& build_start_time,
     drive::FileError error,
     std::unique_ptr<drive::MetadataSearchResultVector> results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (error != drive::FILE_ERROR_OK) {
-    std::move(callback).Run({});
-    return;
-  }
-
-  DCHECK(results.get());
-
-  std::string extension_id = context.origin().host();
-
   std::vector<storage::FileSystemURL> files;
 
-  for (const auto& result : *results) {
-    if (result.is_directory)
-      continue;
+  if (error == drive::FILE_ERROR_OK) {
+    DCHECK(results.get());
 
-    base::FilePath virtual_path =
-        file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
-            profile_, extension_id, result.path);
-    storage::FileSystemURL file =
-        context.file_system_context()->CreateCrackedFileSystemURL(
-            context.origin(), storage::kFileSystemTypeExternal, virtual_path);
-    files.emplace_back(file);
+    std::string extension_id = context.origin().host();
+
+    for (const auto& result : *results) {
+      if (result.is_directory)
+        continue;
+
+      base::FilePath virtual_path =
+          file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
+              profile_, extension_id, result.path);
+      storage::FileSystemURL file =
+          context.file_system_context()->CreateCrackedFileSystemURL(
+              context.origin(), storage::kFileSystemTypeExternal, virtual_path);
+      files.emplace_back(file);
+    }
   }
+
+  UMA_HISTOGRAM_TIMES(kLoadHistogramName,
+                      base::TimeTicks::Now() - build_start_time);
 
   std::move(callback).Run(std::move(files));
 }
